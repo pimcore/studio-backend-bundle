@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     PCL
  */
 
-namespace Pimcore\Bundle\xTemplateBundlex;
+namespace Pimcore\Bundle\StudioApiBundle;
 
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
 

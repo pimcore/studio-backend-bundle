@@ -11,14 +11,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     PCL
  */
 
-namespace Pimcore\Bundle\xTemplateBundlex;
+namespace Pimcore\Bundle\StudioApiBundle;
 
 use Pimcore\Bundle\EnterpriseSubscriptionToolsBundle\Bundle\EnterpriseBundleInterface;
 use Pimcore\Bundle\EnterpriseSubscriptionToolsBundle\PimcoreEnterpriseSubscriptionToolsBundle;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 
-class PimcorexTemplateBundlex extends AbstractPimcoreBundle implements
+class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
     EnterpriseBundleInterface
 {
     private const ENTERPRISE_BUNDLE_LICENSE_ID = 'xLicensex';
