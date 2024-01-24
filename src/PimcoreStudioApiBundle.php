@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioApiBundle;
 use Pimcore\Bundle\EnterpriseSubscriptionToolsBundle\Bundle\EnterpriseBundleInterface;
 use Pimcore\Bundle\EnterpriseSubscriptionToolsBundle\PimcoreEnterpriseSubscriptionToolsBundle;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
+use Pimcore\Extension\Bundle\Installer\InstallerInterface;
 use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 
 class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
