@@ -13,14 +13,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle;
 
+use ApiPlatform\Symfony\Bundle\ApiPlatformBundle;
 use Pimcore\Bundle\EnterpriseSubscriptionToolsBundle\Bundle\EnterpriseBundleInterface;
 use Pimcore\Bundle\EnterpriseSubscriptionToolsBundle\PimcoreEnterpriseSubscriptionToolsBundle;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
+use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
 use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 
 class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
-    EnterpriseBundleInterface
+    EnterpriseBundleInterface, DependentBundleInterface
 {
     private const ENTERPRISE_BUNDLE_LICENSE_ID = 'xLicensex';
 
@@ -50,6 +52,7 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
     public static function registerDependentBundles(BundleCollection $collection): void
     {
         $collection->addBundle(new PimcoreEnterpriseSubscriptionToolsBundle());
+        $collection->addBundle(new ApiPlatformBundle());
     }
 
     public function getBundleLicenseId(): string
