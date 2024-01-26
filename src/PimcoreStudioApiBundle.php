@@ -22,7 +22,8 @@ use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
 use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 
 class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
-    EnterpriseBundleInterface, DependentBundleInterface
+    EnterpriseBundleInterface,
+    DependentBundleInterface
 {
     private const ENTERPRISE_BUNDLE_LICENSE_ID = 'xLicensex';
 

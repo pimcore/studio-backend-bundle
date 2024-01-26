@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Pimcore
+ *
+ * This source file is available under following license:
+ * - Pimcore Commercial License (PCL)
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     PCL
+ */
+
 namespace Pimcore\Bundle\StudioApiBundle\Serializer;
 
 use Pimcore\Model\Asset;
@@ -10,7 +20,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 final class AssetNormalizer implements NormalizerInterface, NormalizerAwareInterface
 {
-   use NormalizerAwareTrait;
+    use NormalizerAwareTrait;
 
     private const ALREADY_CALLED = 'ASSET_NORMALIZER_ALREADY_CALLED';
 
@@ -18,7 +28,7 @@ final class AssetNormalizer implements NormalizerInterface, NormalizerAwareInter
     {
     }
 
-    public function normalize($object, $format = null, array $context = array()): array
+    public function normalize($object, $format = null, array $context = []): array
     {
         $context[self::ALREADY_CALLED] = true;
 

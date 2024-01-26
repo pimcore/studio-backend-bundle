@@ -1,6 +1,16 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * Pimcore
+ *
+ * This source file is available under following license:
+ * - Pimcore Commercial License (PCL)
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     PCL
+ */
+
 namespace Pimcore\Bundle\StudioApiBundle\State;
 
 use ApiPlatform\Exception\InvalidValueException;
@@ -21,7 +31,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-
 
 final class ResetPasswordProcessor implements ProcessorInterface
 {
@@ -109,6 +118,7 @@ final class ResetPasswordProcessor implements ProcessorInterface
         if ($error) {
             Logger::error('Lost password service: ' . $error);
         }
+
         return $data;
     }
 }

@@ -20,7 +20,6 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-
 /**
  * This is the class that loads and manages your bundle configuration.
  *
@@ -58,11 +57,11 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
     public function prepend(ContainerBuilder $container): void
     {
         $apiPlatformConfig = [
-            "mapping"=>[
-                "paths"=> [
-                    __DIR__ . '/../../config/api_platform/'
-                ]
-            ]
+            'mapping'=>[
+                'paths'=> [
+                    __DIR__ . '/../../config/api_platform/',
+                ],
+            ],
         ];
         $container->prependExtensionConfig('api_platform', $apiPlatformConfig);
     }
