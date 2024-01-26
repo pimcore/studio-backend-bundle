@@ -1,0 +1,31 @@
+resources:
+    Pimcore\Model\Asset:
+        provider: Pimcore\Bundle\StudioApiBundle\State\AssetProvider
+        normalizationContext:
+            groups: ['get']
+        denormalizationContext:
+            groups: ['set']
+        properties:
+            id:
+                identifier: true
+            parentId: ~
+            type: ~
+            data: ~
+            fullPath: ~
+
+    Pimcore\Model\Asset\Image:
+        provider: Pimcore\Bundle\StudioApiBundle\State\AssetProvider
+        properties:
+            id:
+                identifier: true
+        normalizationContext:
+            groups: ['get']
+        denormalizationContext:
+            groups: ['set']
+
+    Pimcore\Model\Asset\Image\Thumbnail:
+        provider: Pimcore\Bundle\StudioApiBundle\State\AssetProvider
+        normalizationContext:
+            groups: ['get']
+        denormalizationContext:
+            groups: ['set']

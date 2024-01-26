@@ -18,3 +18,10 @@ services:
         resource: '../src/Controller'
         public: true
         tags: [ 'controller.service_arguments' ]
+
+    Pimcore\Bundle\StudioApiBundle\State\AssetProvider: ~
+    Pimcore\Bundle\StudioApiBundle\State\ResetPasswordProcessor: ~
+
+    Pimcore\Bundle\StudioApiBundle\Serializer\AssetNormalizer:
+        tags:
+            - { name: 'serializer.normalizer' }

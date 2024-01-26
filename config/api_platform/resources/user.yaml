@@ -1,0 +1,19 @@
+resources:
+    Pimcore\Model\User:
+        operations:
+            ApiPlatform\Metadata\Post:
+                status: 202
+                processor: Pimcore\Bundle\StudioApiBundle\State\ResetPasswordProcessor
+                input: Pimcore\Bundle\StudioApiBundle\Dto\ResetPasswordRequest
+                output: false
+                uriTemplate: '/users/reset-password'
+#            ApiPlatform\Metadata\Get:
+#                controller: ApiPlatform\Action\NotFoundAction
+#                read: false
+#                output: false
+
+
+        normalizationContext:
+            groups: [ 'get' ]
+        denormalizationContext:
+            groups: [ 'set' ]

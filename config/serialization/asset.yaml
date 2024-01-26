@@ -1,0 +1,64 @@
+Pimcore\Model\Asset:
+    attributes:
+        id:
+            groups: ['get', 'bla:read']
+        parentId:
+            groups: ['get']
+        type:
+            groups: ['get']
+        filename:
+            groups: ['get']
+        path:
+            groups: ['get']
+        mimetype:
+            groups: ['get']
+        creationDate:
+            groups: ['get']
+        modificationDate:
+            groups: ['get']
+        userOwner:
+            groups: ['get']
+        userModification:
+            groups: ['get']
+        properties:
+            groups: ['get']
+        versions:
+            groups: ['get']
+        metadata:
+            groups: ['get']
+        locked:
+            groups: ['get']
+        customSettings:
+            groups: ['get']
+        hasMetaData:
+            groups: ['get']
+        dependencies:
+            groups: ['get']
+        scheduledTasks:
+            groups: ['get']
+        versionCount:
+            groups: ['get']
+        fullPath:
+            groups: ['get']
+
+Pimcore\Model\Asset\Image:
+    attributes:
+        thumbnail:
+            groups: ['get']
+        format:
+            groups: ['get']
+        dimensions:
+            groups: ['get']
+        width:
+            groups: [ 'get' ]
+        height:
+            groups: [ 'get' ]
+
+Pimcore\Model\Asset\Image\Thumbnail:
+    attributes:
+        path:
+            groups: ['get']
+        imageTag:
+            groups: ['get']
+        media:
+            groups: ['get']

@@ -1,0 +1,4 @@
+Pimcore\Bundle\StudioApiBundle\Dto\ResetPasswordRequest:
+    attributes:
+        username:
+            groups: ['get', 'set']
