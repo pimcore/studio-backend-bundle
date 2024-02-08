@@ -36,8 +36,8 @@ final class ResetPasswordProcessor implements ProcessorInterface
 {
     public function __construct(
         private readonly UrlGeneratorInterface $router,
-        private readonly RequestStack          $requestStack,
-        private readonly RateLimiterFactory    $resetPasswordLimiter,
+        private readonly RequestStack $requestStack,
+        private readonly RateLimiterFactory $resetPasswordLimiter,
         private readonly EventDispatcherInterface $eventDispatcher
     ) {
     }
@@ -107,7 +107,7 @@ final class ResetPasswordProcessor implements ProcessorInterface
                 $mail = Tool::getMail([$user->getEmail()], 'Pimcore lost password service');
                 $mail->setIgnoreDebugMode(true);
                 $mail->text(
-                    "Login to pimcore and change your password using the following link. ".
+                    'Login to pimcore and change your password using the following link. '.
                     "This temporary login link will expire in 24 hours: \r\n\r\n" . $loginUrl
                 );
                 $mail->send();
