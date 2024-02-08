@@ -1,31 +1,26 @@
 resources:
-    Pimcore\Model\Asset:
+    Pimcore\Bundle\StudioApiBundle\Dto\Asset:
+        operations:
+            ApiPlatform\Metadata\GetCollection:
+                filters: [ Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter ]
+                paginationClientItemsPerPage: true
+            ApiPlatform\Metadata\Get:
+                normalizationContext:
+                    groups: [ 'asset:read', 'asset:item:get', 'dependency:read', 'property:read']
+            ApiPlatform\Metadata\Put:
+            ApiPlatform\Metadata\Post:
+            ApiPlatform\Metadata\Delete:
+            ApiPlatform\Metadata\Patch:
         provider: Pimcore\Bundle\StudioApiBundle\State\AssetProvider
         normalizationContext:
-            groups: ['get']
+            groups: ['asset:read', 'dependency:read', 'property:read']
         denormalizationContext:
-            groups: ['set']
+            groups: ['asset:write']
         properties:
             id:
                 identifier: true
-            parentId: ~
-            type: ~
-            data: ~
-            fullPath: ~
 
-    Pimcore\Model\Asset\Image:
-        provider: Pimcore\Bundle\StudioApiBundle\State\AssetProvider
-        properties:
-            id:
-                identifier: true
-        normalizationContext:
-            groups: ['get']
-        denormalizationContext:
-            groups: ['set']
-
-    Pimcore\Model\Asset\Image\Thumbnail:
-        provider: Pimcore\Bundle\StudioApiBundle\State\AssetProvider
-        normalizationContext:
-            groups: ['get']
-        denormalizationContext:
-            groups: ['set']
+properties:
+    Pimcore\Bundle\StudioApiBundle\Dto\Asset:
+        dependencies:
+            genId: false

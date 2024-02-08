@@ -51,7 +51,10 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
         }
 
         // Pass the configuration to the custom normalizer
-        $container->setParameter('pimcore_studio_api.serializer.mapping.paths', $config['serializer']['mapping']['paths']);
+        $container->setParameter(
+            'pimcore_studio_api.serializer.mapping.paths',
+            $config['serializer']['mapping']['paths']
+        );
     }
 
     public function prepend(ContainerBuilder $container): void

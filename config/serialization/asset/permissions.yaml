@@ -1,0 +1,20 @@
+Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions:
+    attributes:
+        list:
+            groups: ['asset:read']
+        view:
+            groups: ['asset:read']
+        publish:
+            groups: ['asset:read']
+        delete:
+            groups: ['asset:read']
+        rename:
+            groups: ['asset:read']
+        create:
+            groups: ['asset:read']
+        settings:
+            groups: ['asset:read']
+        versions:
+            groups: ['asset:read']
+        properties:
+            groups: ['asset:read']

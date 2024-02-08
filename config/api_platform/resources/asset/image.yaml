@@ -1,0 +1,10 @@
+resources:
+    Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image:
+        provider: Pimcore\Bundle\StudioApiBundle\State\AssetProvider
+        properties:
+            id:
+                identifier: true
+        normalizationContext:
+            groups: ['image:read', 'asset:read', 'task:read', 'dependency:read', 'property:read', 'version:read']
+        denormalizationContext:
+            groups: ['image:write', 'asset:write']

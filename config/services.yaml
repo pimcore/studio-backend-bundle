@@ -19,9 +19,19 @@ services:
         public: true
         tags: [ 'controller.service_arguments' ]
 
+    # Providers
     Pimcore\Bundle\StudioApiBundle\State\AssetProvider: ~
+    Pimcore\Bundle\StudioApiBundle\State\ScheduledTaskProvider: ~
+    Pimcore\Bundle\StudioApiBundle\State\VersionProvider: ~
+
+    # Processors
     Pimcore\Bundle\StudioApiBundle\State\ResetPasswordProcessor: ~
 
+    # Filters
+    Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter:
+        tags:  [ 'api_platform.filter' ]
+
+    # Normalizers
     Pimcore\Bundle\StudioApiBundle\Serializer\AssetNormalizer:
         tags:
             - { name: 'serializer.normalizer' }

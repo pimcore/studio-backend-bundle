@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -12,8 +13,7 @@
 
 namespace Pimcore\Bundle\StudioApiBundle\Serializer;
 
-use Pimcore\Model\Asset;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -23,10 +23,6 @@ final class AssetNormalizer implements NormalizerInterface, NormalizerAwareInter
     use NormalizerAwareTrait;
 
     private const ALREADY_CALLED = 'ASSET_NORMALIZER_ALREADY_CALLED';
-
-    public function __construct(private RequestStack $requestStack)
-    {
-    }
 
     public function normalize($object, $format = null, array $context = []): array
     {
@@ -39,7 +35,7 @@ final class AssetNormalizer implements NormalizerInterface, NormalizerAwareInter
         }
 
         if ($object instanceof Asset\Image) {
-            $data['thumbnail'] = $object->getThumbnail()->getPath(['frontend' => true]);
+            $data['thumbnailXXX'] = $object->getThumbnail()->getPath(['frontend' => true]);
         }
 
         return $data;
@@ -47,11 +43,12 @@ final class AssetNormalizer implements NormalizerInterface, NormalizerAwareInter
 
     public function supportsNormalization($data, $format = null, array $context = []): bool
     {
-        if (isset($context[self::ALREADY_CALLED])) {
+        return false;
+        /*if (isset($context[self::ALREADY_CALLED])) {
             return false;
         }
 
-        return $data instanceof Asset;
+        return $data instanceof Asset;*/
     }
 
     public function getSupportedTypes(?string $format): array
