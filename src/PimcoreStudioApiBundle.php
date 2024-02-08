@@ -15,11 +15,9 @@ namespace Pimcore\Bundle\StudioApiBundle;
 
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
-use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 
 class PimcoreStudioApiBundle extends AbstractPimcoreBundle
 {
-
     public function getPath(): string
     {
         return dirname(__DIR__);
@@ -42,5 +40,4 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle
         /** @var InstallerInterface|null */
         return $this->container->get(Installer::class);
     }
-
 }
