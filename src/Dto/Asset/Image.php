@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
+use Exception;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Model\Asset\Image as ModelImage;
 use Pimcore\Model\Asset\Image\ThumbnailInterface;
@@ -34,8 +35,10 @@ class Image extends Asset
         return $this->asset->getLowQualityPreviewDataUri();
     }
 
-    public function getThumbnail(array|string|ModelImage\Thumbnail\Config|null $config = null, bool $deferred = true): ThumbnailInterface
-    {
+    public function getThumbnail(
+        array|string|ModelImage\Thumbnail\Config|null $config = null,
+        bool $deferred = true
+    ): ThumbnailInterface {
         return $this->asset->getThumbnail($config, $deferred);
     }
 
@@ -44,6 +47,12 @@ class Image extends Asset
         return $this->asset->getFormat();
     }
 
+    /**
+     * @param string|null $path
+     * @param bool $force
+     * @return array|null
+     * @throws Exception
+     */
     public function getDimensions(string $path = null, bool $force = false): ?array
     {
         return $this->asset->getDimensions($path, $force);

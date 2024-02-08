@@ -61,7 +61,7 @@ final class ResetPasswordProcessor implements ProcessorInterface
         $currentRequest = $this->requestStack->getCurrentRequest();
         $limiter = $this->resetPasswordLimiter->create($currentRequest->getClientIp());
 
-        if (false === $limiter->consume()->isAccepted()) {
+        if ($limiter->consume()->isAccepted() === false) {
             throw new InvalidValueException('Rate limit exceeded');
         }
 

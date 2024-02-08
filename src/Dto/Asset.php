@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
 use ApiPlatform\Metadata\ApiProperty;
+use Exception;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions;
 use Pimcore\Model\Asset as ModelAsset;
 use Pimcore\Model\Dependency;
@@ -21,7 +22,7 @@ use Pimcore\Model\User;
 
 class Asset
 {
-    public function __construct(private ModelAsset $asset, private Permissions $permission)
+    public function __construct(private readonly ModelAsset $asset, private readonly Permissions $permission)
     {
     }
 
@@ -180,6 +181,11 @@ class Asset
         return $this->asset->getFrontendFullPath();
     }
 
+    /**
+     * @param User|null $user
+     * @return array
+     * @throws Exception
+     */
     public function getUserPermissions(?User $user = null): array
     {
         return $this->asset->getUserPermissions($user);

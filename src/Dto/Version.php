@@ -20,7 +20,7 @@ use Pimcore\Model\Version as ModelVersion;
 
 class Version
 {
-    public function __construct(private ModelVersion $version)
+    public function __construct(private readonly ModelVersion $version)
     {
     }
 
@@ -72,7 +72,7 @@ class Version
     {
         $data = $this->version->getData();
         if ($data instanceof Image) {
-            return new \Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image($data, new Permissions());
+            return new Asset\Image($data, new Permissions());
         }
 
         return $data;
