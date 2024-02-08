@@ -35,16 +35,20 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 final class ResetPasswordProcessor implements ProcessorInterface
 {
     public function __construct(
-        private UrlGeneratorInterface $router,
-        private RequestStack $requestStack,
-        private RateLimiterFactory $resetPasswordLimiter,
-        private EventDispatcherInterface $eventDispatcher
+        private readonly UrlGeneratorInterface $router,
+        private readonly RequestStack          $requestStack,
+        private readonly RateLimiterFactory    $resetPasswordLimiter,
+        private readonly EventDispatcherInterface $eventDispatcher
     ) {
     }
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        if (!$operation instanceof Post || $operation->getUriTemplate() !== '/users/reset-password' || !$data instanceof ResetPasswordRequest) {
+        if (
+            !$operation instanceof Post ||
+            !$data instanceof ResetPasswordRequest ||
+            $operation->getUriTemplate() !== '/users/reset-password'
+        ) {
             // wrong operation
             throw new OperationNotFoundException();
         }
@@ -57,7 +61,7 @@ final class ResetPasswordProcessor implements ProcessorInterface
         $currentRequest = $this->requestStack->getCurrentRequest();
         $limiter = $this->resetPasswordLimiter->create($currentRequest->getClientIp());
 
-        if (false === $limiter->consume(1)->isAccepted()) {
+        if (false === $limiter->consume()->isAccepted()) {
             throw new InvalidValueException('Rate limit exceeded');
         }
 
@@ -102,7 +106,10 @@ final class ResetPasswordProcessor implements ProcessorInterface
             if ($event->getSendMail()) {
                 $mail = Tool::getMail([$user->getEmail()], 'Pimcore lost password service');
                 $mail->setIgnoreDebugMode(true);
-                $mail->text("Login to pimcore and change your password using the following link. This temporary login link will expire in 24 hours: \r\n\r\n" . $loginUrl);
+                $mail->text(
+                    "Login to pimcore and change your password using the following link. ".
+                    "This temporary login link will expire in 24 hours: \r\n\r\n" . $loginUrl
+                );
                 $mail->send();
             }
 
