@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Serializer;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -24,10 +23,6 @@ final class AssetNormalizer implements NormalizerInterface, NormalizerAwareInter
     use NormalizerAwareTrait;
 
     private const ALREADY_CALLED = 'ASSET_NORMALIZER_ALREADY_CALLED';
-
-    public function __construct(private readonly RequestStack $requestStack)
-    {
-    }
 
     public function normalize($object, $format = null, array $context = []): array
     {
@@ -49,11 +44,11 @@ final class AssetNormalizer implements NormalizerInterface, NormalizerAwareInter
     public function supportsNormalization($data, $format = null, array $context = []): bool
     {
         return false;
-        if (isset($context[self::ALREADY_CALLED])) {
+        /*if (isset($context[self::ALREADY_CALLED])) {
             return false;
         }
 
-        return $data instanceof Asset;
+        return $data instanceof Asset;*/
     }
 
     public function getSupportedTypes(?string $format): array
