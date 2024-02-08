@@ -1,6 +1,16 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * Pimcore
+ *
+ * This source file is available under following license:
+ * - Pimcore Commercial License (PCL)
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     PCL
+ */
+
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
 use ApiPlatform\Metadata\ApiProperty;
@@ -79,6 +89,7 @@ class Asset
         foreach ($this->asset->getProperties() as $property) {
             $properties[] = new Property($property);
         }
+
         return $properties;
     }
 
@@ -111,6 +122,7 @@ class Asset
         foreach ($this->asset->getVersions() as $version) {
             $versions[] = new Version($version);
         }
+
         return $versions;
     }
 
@@ -133,6 +145,7 @@ class Asset
         foreach ($this->asset->getScheduledTasks() as $task) {
             $tasks[] = new Task($task);
         }
+
         return $tasks;
     }
 
@@ -145,6 +158,7 @@ class Asset
     {
         return $this->asset->getMetadata();
     }
+
     #[ApiProperty(genId: false)]
     public function getDependencies(): Dependency
     {

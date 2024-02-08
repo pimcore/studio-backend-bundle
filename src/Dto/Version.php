@@ -1,13 +1,22 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * Pimcore
+ *
+ * This source file is available under following license:
+ * - Pimcore Commercial License (PCL)
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     PCL
+ */
+
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\User;
 use Pimcore\Model\Version as ModelVersion;
-use ApiPlatform\Metadata\ApiProperty;
 
 class Version
 {
@@ -17,7 +26,7 @@ class Version
 
     public function getBinaryFileStream(): mixed
     {
-       return $this->version->getBinaryFileStream();
+        return $this->version->getBinaryFileStream();
     }
 
     public function getId(): ?int
@@ -65,6 +74,7 @@ class Version
         if ($data instanceof Image) {
             return new \Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image($data, new Permissions());
         }
+
         return $data;
     }
 

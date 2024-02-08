@@ -26,13 +26,12 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
 use Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter;
 use Pimcore\Model\Asset\Image as ImageModel;
 
-
 final class AssetProvider implements ProviderInterface
 {
     public function __construct(
-        private readonly AssetResolverInterface    $assetResolver,
+        private readonly AssetResolverInterface $assetResolver,
         private readonly AssetTreeServiceInterface $assetTreeService,
-        private readonly Pagination                $pagination
+        private readonly Pagination $pagination
     ) {
     }
 
@@ -41,7 +40,7 @@ final class AssetProvider implements ProviderInterface
         if ($operation instanceof CollectionOperationInterface) {
             $result =[];
             $totalItems = 0;
-            if (array_key_exists(AssetParentIdFilter::ASSET_PARENT_ID_FILTER_CONTEXT, $context)){
+            if (array_key_exists(AssetParentIdFilter::ASSET_PARENT_ID_FILTER_CONTEXT, $context)) {
                 $parentId = (int)($context[AssetParentIdFilter::ASSET_PARENT_ID_FILTER_CONTEXT] ?? 1);
                 $items = $this->assetTreeService->fetchTreeItems(
                     $parentId,
@@ -74,6 +73,7 @@ final class AssetProvider implements ProviderInterface
         if ($assetModel instanceof ImageModel) {
             return new Image($assetModel, new Asset\Permissions());
         }
+
         return new Asset($assetModel, new Asset\Permissions());
     }
 }
