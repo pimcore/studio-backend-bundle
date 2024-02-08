@@ -1,64 +1,48 @@
-Pimcore\Model\Asset:
+Pimcore\Bundle\StudioApiBundle\Dto\Asset:
     attributes:
         id:
-            groups: ['get', 'bla:read']
+            groups: ['asset:read']
         parentId:
-            groups: ['get']
+            groups: ['asset:read']
+        permissions:
+            groups: [ 'asset:read' ]
         type:
-            groups: ['get']
+            groups: ['asset:read']
+        children:
+            groups: ['asset:read']
         filename:
-            groups: ['get']
+            groups: ['asset:read']
         path:
-            groups: ['get']
+            groups: ['asset:read']
         mimetype:
-            groups: ['get']
+            groups: ['asset:read']
         creationDate:
-            groups: ['get']
+            groups: ['asset:read']
         modificationDate:
-            groups: ['get']
+            groups: ['asset:read']
         userOwner:
-            groups: ['get']
+            groups: ['asset:read']
         userModification:
-            groups: ['get']
+            groups: ['asset:read']
         properties:
-            groups: ['get']
+            groups: ['asset:item:get']
         versions:
-            groups: ['get']
+            groups: ['asset:read']
         metadata:
-            groups: ['get']
+            groups: ['asset:read']
         locked:
-            groups: ['get']
+            groups: ['asset:read']
+        lock:
+            groups: ['asset:read']
         customSettings:
-            groups: ['get']
+            groups: ['asset:item:get']
         hasMetaData:
-            groups: ['get']
+            groups: ['asset:read']
         dependencies:
-            groups: ['get']
+            groups: ['asset:item:get']
         scheduledTasks:
-            groups: ['get']
+            groups: ['asset:item:get']
         versionCount:
-            groups: ['get']
+            groups: ['asset:item:get']
         fullPath:
-            groups: ['get']
-
-Pimcore\Model\Asset\Image:
-    attributes:
-        thumbnail:
-            groups: ['get']
-        format:
-            groups: ['get']
-        dimensions:
-            groups: ['get']
-        width:
-            groups: [ 'get' ]
-        height:
-            groups: [ 'get' ]
-
-Pimcore\Model\Asset\Image\Thumbnail:
-    attributes:
-        path:
-            groups: ['get']
-        imageTag:
-            groups: ['get']
-        media:
-            groups: ['get']
+            groups: ['asset:read']

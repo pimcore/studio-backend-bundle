@@ -1,0 +1,18 @@
+Pimcore\Bundle\StudioApiBundle\Dto\Property:
+    attributes:
+        name:
+            groups: ['property:read']
+        data:
+            groups: ['property:read']
+        type:
+            groups: ['property:read']
+        ctype:
+            groups: ['property:read']
+        cpath:
+            groups: ['property:read']
+        cid:
+            groups: ['property:read']
+        inheritable:
+            groups: ['property:read']
+        inherited:
+            groups: ['property:read']

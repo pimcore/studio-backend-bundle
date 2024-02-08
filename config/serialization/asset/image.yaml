@@ -1,0 +1,20 @@
+Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image:
+    attributes:
+        thumbnail:
+            groups: ['image:read']
+        format:
+            groups: ['image:read']
+        dimensions:
+            groups: ['image:read']
+        width:
+            groups: ['image:read']
+        height:
+            groups: ['image:read']
+        animated:
+            groups: ['image:read']
+        vectorGraphic:
+            groups: ['image:read']
+        lowQualityPreviewDataUri:
+            groups: ['image:read']
+        lowQualityPreviewPath:
+            groups: ['image:read']

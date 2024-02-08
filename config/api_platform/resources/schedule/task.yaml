@@ -1,0 +1,10 @@
+resources:
+    Pimcore\Bundle\StudioApiBundle\Dto\Task:
+        provider: Pimcore\Bundle\StudioApiBundle\State\ScheduledTaskProvider
+        normalizationContext:
+            groups: ['task:read']
+        denormalizationContext:
+            groups: ['task:write']
+        properties:
+            id:
+                identifier: true
