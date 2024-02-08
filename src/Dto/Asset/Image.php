@@ -50,7 +50,9 @@ class Image extends Asset
     /**
      * @param string|null $path
      * @param bool $force
+     *
      * @return array|null
+     *
      * @throws Exception
      */
     public function getDimensions(string $path = null, bool $force = false): ?array

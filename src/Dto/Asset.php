@@ -183,7 +183,9 @@ class Asset
 
     /**
      * @param User|null $user
+     *
      * @return array
+     *
      * @throws Exception
      */
     public function getUserPermissions(?User $user = null): array
