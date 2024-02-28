@@ -48,6 +48,7 @@ final readonly class AssetProvider implements ProviderInterface
                 $searchResult->getTotalItems()
             );
         }
+
         return $this->assetSearchService->getAssetById($uriVariables['id']);
     }
 }

@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 final class AssetParentIdFilter implements FilterInterface
 {
     public const ASSET_PARENT_ID_FILTER_CONTEXT = 'asset_parent_id_filter';
+
     private const PARENT_ID_QUERY_PARAM = 'parentId';
 
     public function apply(Request $request, bool $normalization, array $attributes, array &$context): void

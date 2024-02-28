@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 final class AssetIdSearchFilter implements FilterInterface
 {
     public const ASSET_ID_SEARCH_FILTER = 'asset_id_search_filter';
+
     private const ID_SEARCH_FILTER_QUERY_PARAM = 'idSearchTerm';
 
     public function apply(Request $request, bool $normalization, array $attributes, array &$context): void

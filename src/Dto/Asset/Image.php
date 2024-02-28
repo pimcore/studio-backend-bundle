@@ -17,7 +17,7 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
 class Image extends Asset
 {
-    #use MetaData\EmbeddedMetaDataTrait;
+    //use MetaData\EmbeddedMetaDataTrait;
 
     public function __construct(
         private readonly string $format,
@@ -96,14 +96,14 @@ class Image extends Asset
     {
         return $this->animated;
     }
-//
-//    public function getLowQualityPreviewPath(): string
-//    {
-//        return $this->asset->getLowQualityPreviewPath();
-//    }
-//
-//    public function getLowQualityPreviewDataUri(): ?string
-//    {
-//        return $this->asset->getLowQualityPreviewDataUri();
-//    }
+    //
+    //    public function getLowQualityPreviewPath(): string
+    //    {
+    //        return $this->asset->getLowQualityPreviewPath();
+    //    }
+    //
+    //    public function getLowQualityPreviewDataUri(): ?string
+    //    {
+    //        return $this->asset->getLowQualityPreviewDataUri();
+    //    }
 }

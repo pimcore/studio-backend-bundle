@@ -77,10 +77,10 @@ class Asset extends Element
         return $this->type;
     }
 
-//    public function getCustomSettings(): array
-//    {
-//        return $this->asset->getCustomSettings();
-//    }
+    //    public function getCustomSettings(): array
+    //    {
+    //        return $this->asset->getCustomSettings();
+    //    }
 
     public function getMimeType(): ?string
     {
@@ -103,15 +103,15 @@ class Asset extends Element
         return $this->fullPath;
     }
 
-//    /**
-//     * @param User|null $user
-//     *
-//     * @return array
-//     *
-//     * @throws Exception
-//     */
-//    public function getUserPermissions(?User $user = null): array
-//    {
-//        return $this->permis;
-//    }
+    //    /**
+    //     * @param User|null $user
+    //     *
+    //     * @return array
+    //     *
+    //     * @throws Exception
+    //     */
+    //    public function getUserPermissions(?User $user = null): array
+    //    {
+    //        return $this->permis;
+    //    }
 }

@@ -1,6 +1,16 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * Pimcore
+ *
+ * This source file is available under following license:
+ * - Pimcore Commercial License (PCL)
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     PCL
+ */
+
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
 use ApiPlatform\Metadata\ApiProperty;
@@ -66,35 +76,32 @@ class Element
         return $this->locked;
     }
 
+    //    public function getParent(): ?Element2
+    //    {
+    //        if ($this->element->getParent() === null) {
+    //            return null;
+    //        }
+    //        // TODO: implement proper user permission handling via service
+    //        return new Element2($this->element->getParent(), new Permissions());
+    //    }
 
+    //    /**
+    //     * @return Property[] the $properties
+    //     */
+    //    public function getProperties(): array
+    //    {
+    //        $properties = [];
+    //        foreach ($this->element->getProperties() as $property) {
+    //            $properties[] = new Property($property);
+    //        }
+    //
+    //        return $properties;
+    //    }
 
-//    public function getParent(): ?Element2
-//    {
-//        if ($this->element->getParent() === null) {
-//            return null;
-//        }
-//        // TODO: implement proper user permission handling via service
-//        return new Element2($this->element->getParent(), new Permissions());
-//    }
-
-//    /**
-//     * @return Property[] the $properties
-//     */
-//    public function getProperties(): array
-//    {
-//        $properties = [];
-//        foreach ($this->element->getProperties() as $property) {
-//            $properties[] = new Property($property);
-//        }
-//
-//        return $properties;
-//    }
-
-
-//    public function getVersionCount(): int
-//    {
-//        return $this->element->getVersionCount();
-//    }
+    //    public function getVersionCount(): int
+    //    {
+    //        return $this->element->getVersionCount();
+    //    }
 
     public function isLocked(): bool
     {
@@ -107,36 +114,35 @@ class Element
         return $this->permissions;
     }
 
+    //    #[ApiProperty(genId: false)]
+    //    public function getDependencies(): Dependency
+    //    {
+    //        return new Dependency($this->element->getDependencies());
+    //    }
 
-//    #[ApiProperty(genId: false)]
-//    public function getDependencies(): Dependency
-//    {
-//        return new Dependency($this->element->getDependencies());
-//    }
+    //    /**
+    //     * @return Task[] the $scheduledTasks
+    //     */
+    //    public function getScheduledTasks(): array
+    //    {
+    //        $tasks = [];
+    //        foreach ($this->element->getScheduledTasks() as $task) {
+    //            $tasks[] = new Task($task);
+    //        }
+    //
+    //        return $tasks;
+    //    }
 
-//    /**
-//     * @return Task[] the $scheduledTasks
-//     */
-//    public function getScheduledTasks(): array
-//    {
-//        $tasks = [];
-//        foreach ($this->element->getScheduledTasks() as $task) {
-//            $tasks[] = new Task($task);
-//        }
-//
-//        return $tasks;
-//    }
-
-//    /**
-//     * @return Version[] the $versions
-//     */
-//    public function getVersions(): array
-//    {
-//        $versions = [];
-//        foreach ($this->element->getVersions() as $version) {
-//            $versions[] = new Version($version);
-//        }
-//
-//        return $versions;
-//    }
+    //    /**
+    //     * @return Version[] the $versions
+    //     */
+    //    public function getVersions(): array
+    //    {
+    //        $versions = [];
+    //        foreach ($this->element->getVersions() as $version) {
+    //            $versions[] = new Version($version);
+    //        }
+    //
+    //        return $versions;
+    //    }
 }

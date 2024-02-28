@@ -17,7 +17,7 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
 class Video extends Asset
 {
-    #use MetaData\EmbeddedMetaDataTrait;
+    //use MetaData\EmbeddedMetaDataTrait;
 
     public function __construct(
         private ?float $duration,
