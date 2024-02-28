@@ -1,0 +1,25 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: [Bug]
+body:
+    - type: input
+      attributes:
+          label: Studio API version
+      validations:
+          required: true
+    - type: textarea
+      attributes:
+          label: Steps to reproduce
+      validations:
+          required: true
+    - type: textarea
+      attributes:
+          label: Actual Behavior
+      validations:
+          required: true
+    - type: textarea
+      attributes:
+          label: Expected Behavior
+      validations:
+          required: true
