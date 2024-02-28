@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions;
-use Pimcore\Model\Asset\Image;
 use Pimcore\Model\User;
 use Pimcore\Model\Version as ModelVersion;
 
@@ -70,12 +68,10 @@ class Version
      */
     public function getData(): mixed
     {
-        $data = $this->version->getData();
+        return $this->version->getData();
         //        if ($data instanceof Image) {
         //            return new Asset\Image($data, new Permissions());
         //        }
-
-        return $data;
     }
 
     public function getSerialized(): bool
