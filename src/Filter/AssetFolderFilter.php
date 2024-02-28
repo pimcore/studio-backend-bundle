@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 final class AssetFolderFilter implements FilterInterface
 {
     public const ASSET_FOLDER_FILTER_CONTEXT = 'asset_folder_filter';
+
     private const FOLDER_FILTER_QUERY_PARAM = 'filterFolders';
 
     public function apply(Request $request, bool $normalization, array $attributes, array &$context): void
