@@ -19,10 +19,10 @@ use ApiPlatform\State\ProviderInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Schedule\TaskResolverInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Task;
 
-final class ScheduledTaskProvider implements ProviderInterface
+final readonly class ScheduledTaskProvider implements ProviderInterface
 {
     public function __construct(
-        private readonly TaskResolverInterface $taskResolver,
+        private TaskResolverInterface $taskResolver,
     ) {
     }
 

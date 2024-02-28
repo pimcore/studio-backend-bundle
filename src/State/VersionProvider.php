@@ -19,10 +19,10 @@ use ApiPlatform\State\ProviderInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolverInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Version;
 
-final class VersionProvider implements ProviderInterface
+final readonly class VersionProvider implements ProviderInterface
 {
     public function __construct(
-        private readonly VersionResolverInterface $versionResolver,
+        private VersionResolverInterface $versionResolver,
     ) {
     }
 

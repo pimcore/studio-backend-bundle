@@ -15,17 +15,13 @@ namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
-class Image extends Asset
+class Document extends Asset
 {
     #use MetaData\EmbeddedMetaDataTrait;
 
     public function __construct(
-        private readonly string $format,
-        private readonly int $width,
-        private readonly int $height,
-        private readonly bool $vectorGraphic,
-        private readonly bool $animated,
-        private readonly string $thumbnailPath,
+        private ?int $pageCount,
+        private ?string $imageThumbnailPath,
         string $iconName,
         bool $hasChildren,
         string $type,
@@ -67,43 +63,13 @@ class Image extends Asset
         );
     }
 
-    public function getThumbnailPath(): string
+    public function getPageCount(): ?int
     {
-        return $this->thumbnailPath;
+        return $this->pageCount;
     }
 
-    public function getFormat(): string
+    public function getImageThumbnailPath(): ?string
     {
-        return $this->format;
+        return $this->imageThumbnailPath;
     }
-
-    public function getWidth(): int
-    {
-        return $this->width;
-    }
-
-    public function getHeight(): int
-    {
-        return $this->height;
-    }
-
-    public function isVectorGraphic(): bool
-    {
-        return $this->vectorGraphic;
-    }
-
-    public function isAnimated(): bool
-    {
-        return $this->animated;
-    }
-//
-//    public function getLowQualityPreviewPath(): string
-//    {
-//        return $this->asset->getLowQualityPreviewPath();
-//    }
-//
-//    public function getLowQualityPreviewDataUri(): ?string
-//    {
-//        return $this->asset->getLowQualityPreviewDataUri();
-//    }
 }

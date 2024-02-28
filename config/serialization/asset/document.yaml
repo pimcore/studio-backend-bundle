@@ -1,0 +1,6 @@
+Pimcore\Bundle\StudioApiBundle\Dto\Asset\Document:
+    attributes:
+        pageCount:
+            groups: ['document:read', 'asset:read']
+        imageThumbnailPath:
+            groups: ['document:read', 'asset:read']

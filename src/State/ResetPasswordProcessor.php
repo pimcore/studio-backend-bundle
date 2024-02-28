@@ -32,13 +32,13 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-final class ResetPasswordProcessor implements ProcessorInterface
+final readonly class ResetPasswordProcessor implements ProcessorInterface
 {
     public function __construct(
-        private readonly UrlGeneratorInterface $router,
-        private readonly RequestStack $requestStack,
-        private readonly RateLimiterFactory $resetPasswordLimiter,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private UrlGeneratorInterface $router,
+        private RequestStack $requestStack,
+        private RateLimiterFactory $resetPasswordLimiter,
+        private EventDispatcherInterface $eventDispatcher
     ) {
     }
 

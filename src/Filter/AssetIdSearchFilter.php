@@ -18,33 +18,33 @@ use ApiPlatform\Serializer\Filter\FilterInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Symfony\Component\HttpFoundation\Request;
 
-final class AssetParentIdFilter implements FilterInterface
+final class AssetIdSearchFilter implements FilterInterface
 {
-    public const ASSET_PARENT_ID_FILTER_CONTEXT = 'asset_parent_id_filter';
-    private const PARENT_ID_QUERY_PARAM = 'parentId';
+    public const ASSET_ID_SEARCH_FILTER = 'asset_id_search_filter';
+    private const ID_SEARCH_FILTER_QUERY_PARAM = 'idSearchTerm';
 
     public function apply(Request $request, bool $normalization, array $attributes, array &$context): void
     {
-        $parentId = $request->query->get(self::PARENT_ID_QUERY_PARAM);
+        $searchIdTerm = $request->query->get(self::ID_SEARCH_FILTER_QUERY_PARAM);
 
-        if (!$parentId) {
+        if (!$searchIdTerm) {
             return;
         }
 
-        $context[self::ASSET_PARENT_ID_FILTER_CONTEXT] = (int)$parentId;
+        $context[self::ASSET_ID_SEARCH_FILTER] = $searchIdTerm;
     }
 
     public function getDescription(string $resourceClass): array
     {
         return [
-            self::PARENT_ID_QUERY_PARAM => [
+            self::ID_SEARCH_FILTER_QUERY_PARAM => [
                 'property' => Asset::class,
-                'type' => 'int',
+                'type' => 'string',
                 'required' => false,
                 'is_collection' => false,
-                'description' => 'Filters assets by parent id.',
+                'description' => 'Filters assets by matching ids. As a wildcard, you can use *.',
                 'openapi' => [
-                    'description' => 'Filters assets by parent id.',
+                    'description' => 'Filters assets by matching ids. As a wildcard, you can use *.',
                 ],
             ],
         ];

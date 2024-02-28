@@ -21,6 +21,7 @@ services:
 
     # Providers
     Pimcore\Bundle\StudioApiBundle\State\AssetProvider: ~
+    Pimcore\Bundle\StudioApiBundle\State\UserProvider: ~
     Pimcore\Bundle\StudioApiBundle\State\ScheduledTaskProvider: ~
     Pimcore\Bundle\StudioApiBundle\State\VersionProvider: ~
 
@@ -31,7 +32,44 @@ services:
     Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter:
         tags:  [ 'api_platform.filter' ]
 
-    # Normalizers
-    Pimcore\Bundle\StudioApiBundle\Serializer\AssetNormalizer:
-        tags:
-            - { name: 'serializer.normalizer' }
+    Pimcore\Bundle\StudioApiBundle\Filter\AssetIdSearchFilter:
+        tags: [ 'api_platform.filter' ]
+
+    # Hydrators
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ArchiveHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ArchiveHydrator
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\AudioHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\AudioHydrator
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\DocumentHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\DocumentHydrator
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\FolderHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\FolderHydrator
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ImageHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ImageHydrator
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\TextHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\TextHydrator
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\UnknownHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\UnknownHydrator
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\VideoHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\VideoHydrator
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\MetaDataHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\MetaDataHydrator
+
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydrator
+
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydrator
+
+    # Services
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydratorServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydratorService
+
+    Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\AssetSearchService
+
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\AssetSearchAdapterInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetSearchAdapter
+
+    Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\IconService
