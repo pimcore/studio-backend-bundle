@@ -39,7 +39,7 @@ final readonly class VideoHydrator implements VideoHydratorInterface
             $item->getType(),
             $item->getKey(),
             $item->getMimeType(),
-            $this->metaDataHydrator->hydrate($item->getMetadata()),
+            $this->metaDataHydrator->hydrate($item->getMetaData()),
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
             $item->getId(),

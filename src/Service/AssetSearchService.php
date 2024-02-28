@@ -22,8 +22,12 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     {
     }
 
-    public function searchAssets(int $page = 1, int $pageSize = 50, ?string $query = null, ?int $parentId = null): AssetSearchResult
-    {
+    public function searchAssets(
+        int $page = 1,
+        int $pageSize = 50,
+        ?string $query = null,
+        ?int $parentId = null
+    ): AssetSearchResult {
         return $this->assetSearchAdapter->searchAsset($page, $pageSize, $query, $parentId);
     }
 

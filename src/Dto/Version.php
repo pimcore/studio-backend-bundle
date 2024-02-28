@@ -71,9 +71,9 @@ class Version
     public function getData(): mixed
     {
         $data = $this->version->getData();
-        if ($data instanceof Image) {
-            return new Asset\Image($data, new Permissions());
-        }
+//        if ($data instanceof Image) {
+//            return new Asset\Image($data, new Permissions());
+//        }
 
         return $data;
     }

@@ -26,7 +26,12 @@ interface AssetSearchAdapterInterface
      *
      * @return AssetSearchResult
      */
-    public function searchAsset(int $page, int $pageSize, ?string $searchTerm, ?int $parentId = null): AssetSearchResult;
+    public function searchAsset(
+        int $page,
+        int $pageSize,
+        ?string $searchTerm,
+        ?int $parentId = null
+    ): AssetSearchResult;
 
     public function getAssetById(int $id): ?Asset;
 }

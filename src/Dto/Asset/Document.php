@@ -20,8 +20,8 @@ class Document extends Asset
     //use MetaData\EmbeddedMetaDataTrait;
 
     public function __construct(
-        private ?int $pageCount,
-        private ?string $imageThumbnailPath,
+        private readonly ?int $pageCount,
+        private readonly ?string $imageThumbnailPath,
         string $iconName,
         bool $hasChildren,
         string $type,

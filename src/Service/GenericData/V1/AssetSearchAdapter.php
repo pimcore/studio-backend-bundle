@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchProviderInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchResult;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\AssetSearchAdapterInterface;
@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydrator
 final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 {
     public function __construct(
+        private SearchProviderInterface $searchProvider,
         private AssetSearchServiceInterface $searchService,
         private AssetHydratorServiceInterface $assetHydratorService
     ) {
@@ -40,9 +41,9 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
      */
     public function searchAsset(int $page, int $pageSize, ?string $searchTerm, ?int $parentId = null): AssetSearchResult
     {
-        $search = new AssetSearch();
-        $search->setPage($page)
-            ->setPageSize($pageSize);
+        $search = $this->searchProvider->createAssetSearch();
+        $search->setPageSize($pageSize);
+        $search->setPage($page);
 
         if ($parentId !== null) {
             $search->addModifier(new ParentIdFilter($parentId));

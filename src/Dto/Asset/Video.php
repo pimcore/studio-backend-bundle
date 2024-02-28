@@ -20,10 +20,10 @@ class Video extends Asset
     //use MetaData\EmbeddedMetaDataTrait;
 
     public function __construct(
-        private ?float $duration,
-        private ?int $width,
-        private ?int $height,
-        private ?string $imageThumbnailPath,
+        private readonly ?float $duration,
+        private readonly ?int $width,
+        private readonly ?int $height,
+        private readonly?string $imageThumbnailPath,
         string $iconName,
         bool $hasChildren,
         string $type,

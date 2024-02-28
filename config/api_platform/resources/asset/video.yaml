@@ -1,0 +1,14 @@
+resources:
+    Pimcore\Bundle\StudioApiBundle\Dto\Asset\Video:
+        provider: Pimcore\Bundle\StudioApiBundle\State\AssetProvider
+        operations:
+            ApiPlatform\Metadata\Get:
+                normalizationContext:
+                    groups: ['video:read', 'asset:read', 'asset:item:get', 'dependency:read', 'property:read', 'element:read', 'element:item:get' ]
+        properties:
+            id:
+                identifier: true
+        normalizationContext:
+            groups: ['video:read', 'asset:read', 'dependency:read', 'property:read', 'element:read']
+        denormalizationContext:
+            groups: ['video:write', 'asset:write']
