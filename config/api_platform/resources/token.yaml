@@ -1,0 +1,20 @@
+resources:
+  Pimcore\Bundle\StudioApiBundle\Dto\Token:
+    operations:
+      ApiPlatform\Metadata\Post:
+        processor: Pimcore\Bundle\StudioApiBundle\State\Token\PostProcessor
+        output: Pimcore\Bundle\StudioApiBundle\Dto\Token\Output
+        uriTemplate: '/token/create'
+        openapiContext:
+            summary: 'Creates and returns a token'
+
+      ApiPlatform\Metadata\Put:
+        processor: Pimcore\Bundle\StudioApiBundle\State\Token\PutProcessor
+        input: Pimcore\Bundle\StudioApiBundle\Dto\Token\Refresh
+        output: Pimcore\Bundle\StudioApiBundle\Dto\Token\Output
+        uriTemplate: '/token/refresh'
+        openapiContext:
+            summary:  'Refreshes an existing token'
+
+    normalizationContext:
+      groups: [ 'token:read' ]
