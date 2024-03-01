@@ -30,8 +30,6 @@ use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
  */
 final class PutProcessor implements ProcessorInterface
 {
-    private const TOKEN_TTL = 3600;
-
     private const OPERATION_URI_TEMPLATE = '/token/refresh';
 
     public function __construct(

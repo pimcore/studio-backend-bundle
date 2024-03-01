@@ -10,6 +10,9 @@ use Pimcore\Security\User\UserProvider;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
+/**
+ * @internal
+ */
 final class PostProcessorTest extends Unit
 {
     private const TOKEN_TTL = 3600;
