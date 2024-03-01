@@ -54,11 +54,7 @@ final readonly class SecurityService implements SecurityServiceInterface
 
     public function isAllowed(string $token): bool
     {
-        $userIds = $this->tmpStoreResolver->getIdsByTag($token);
-        if(count($userIds) === 0 || count($userIds) > 1) {
-            return false;
-        }
-        $entry = $this->tmpStoreResolver->get($userIds[0]);
-        return $entry && $entry->getTag() === $token;
+        $entry = $this->tmpStoreResolver->get($token);
+        return  $entry !== null && $entry->getId() === $token;
     }
 }
