@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\State;
 
 use ApiPlatform\Metadata\Operation;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use InvalidArgumentException;
 use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
@@ -40,15 +41,14 @@ final class TranslationProcessor implements ProcessorInterface
 
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Translation
     {
-
-      // if (
-      //     !$operation instanceof Post ||
-      //     !$data instanceof Translation ||
-      //     $operation->getUriTemplate() !== '/translations'
-      // ) {
-      //     // wrong operation
-      //     throw new OperationNotFoundException();
-      // }
+         if (
+             !$operation instanceof Post ||
+             !$data instanceof Translation ||
+             $operation->getUriTemplate() !== '/translations'
+         ) {
+             // wrong operation
+             throw new OperationNotFoundException();
+         }
 
         $translationKeys = $data->getTranslationKeys();
 
