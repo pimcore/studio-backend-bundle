@@ -27,6 +27,7 @@ services:
 
     # Processors
     Pimcore\Bundle\StudioApiBundle\State\ResetPasswordProcessor: ~
+    Pimcore\Bundle\StudioApiBundle\State\TranslationProcessor: ~
 
     # Filters
     Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter:

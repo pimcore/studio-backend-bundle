@@ -1,0 +1,6 @@
+Pimcore\Bundle\StudioApiBundle\Dto\Translation:
+  attributes:
+    locale:
+      groups: ['translation:read']
+    translationKeys:
+      groups: ['translation:read']

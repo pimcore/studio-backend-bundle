@@ -1,0 +1,9 @@
+resources:
+  Pimcore\Bundle\StudioApiBundle\Dto\Translation:
+      operations:
+          ApiPlatform\Metadata\Post:
+              processor: Pimcore\Bundle\StudioApiBundle\State\TranslationProcessor
+              openapiContext:
+                summary: 'Getting translations based on context'
+      normalizationContext:
+        groups: [ 'translation:read' ]
