@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 final class IconService implements IconServiceInterface
 {
+    private string $defaultIcon = 'file-question-02';
+
     public function getIconForAsset(string $assetType, ?string $mimeType): string
     {
         if ($assetType === 'document' && $mimeType !== null) {
@@ -23,7 +25,7 @@ final class IconService implements IconServiceInterface
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'file-x-03',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'file-02',
                 'application/pdf' => 'file-check-02',
-                default => 'file'
+                default => $this->defaultIcon
             };
         }
 
@@ -32,7 +34,8 @@ final class IconService implements IconServiceInterface
                 'application/json' => 'file-code-01',
                 'application/type9' => 'file-check-02',
                 'text/plain' => 'file-02',
-                default => 'file'
+                'text/csv' => 'file-x-03',
+                default => $this->defaultIcon
             };
         }
 
@@ -41,7 +44,7 @@ final class IconService implements IconServiceInterface
             'image' => 'image-01',
             'video' => 'video-recorder',
             'audio' => 'volume-max',
-            default => 'file-question-02'
+            default => $this->defaultIcon
         };
     }
 }

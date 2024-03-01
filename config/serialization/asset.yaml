@@ -2,6 +2,8 @@ Pimcore\Bundle\StudioApiBundle\Dto\Asset:
     attributes:
         type:
             groups: ['asset:read']
+        iconName:
+            groups: [ 'asset:read' ]
         children:
             groups: ['asset:read']
         filename:
