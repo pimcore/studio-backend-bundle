@@ -22,5 +22,6 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 interface SecurityServiceInterface
 {
     public function authenticateUser(Create $token): PasswordAuthenticatedUserInterface;
+
     public function isAllowed(string $token): bool;
 }

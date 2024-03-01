@@ -30,8 +30,7 @@ final class Processor implements ProcessorInterface
 
     public function __construct(
         private readonly TokenServiceInterface $tokenService,
-    )
-    {
+    ) {
     }
 
     public function process(
@@ -39,8 +38,7 @@ final class Processor implements ProcessorInterface
         Operation $operation,
         array $uriVariables = [],
         array $context = []
-    ): Output
-    {
+    ): Output {
         if (
             !$operation instanceof Post ||
             !$data instanceof Refresh ||

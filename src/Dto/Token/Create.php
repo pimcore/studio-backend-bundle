@@ -21,8 +21,7 @@ final readonly class Create
     public function __construct(
         private string $username,
         private string $password
-    )
-    {
+    ) {
     }
 
     public function getUsername(): string

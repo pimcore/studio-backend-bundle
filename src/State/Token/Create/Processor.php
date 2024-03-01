@@ -18,12 +18,10 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token\Create;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token\Info;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token\Output;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Pimcore\Security\User\User;
-
 
 /**
  * @internal
@@ -35,8 +33,7 @@ final class Processor implements ProcessorInterface
     public function __construct(
         private readonly SecurityServiceInterface $securityService,
         private readonly TokenServiceInterface $tokenService,
-    )
-    {
+    ) {
     }
 
     public function process(
@@ -44,8 +41,7 @@ final class Processor implements ProcessorInterface
         Operation $operation,
         array $uriVariables = [],
         array $context = []
-    ): Output
-    {
+    ): Output {
         if (
             !$operation instanceof Post ||
             !$data instanceof Create ||
@@ -60,6 +56,6 @@ final class Processor implements ProcessorInterface
 
         $token = $this->tokenService->generateAndSaveToken($user->getUserIdentifier());
 
-       return new Output($token, $this->tokenService->getLifetime(), $user->getUserIdentifier());
+        return new Output($token, $this->tokenService->getLifetime(), $user->getUserIdentifier());
     }
 }

@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Pimcore
+ *
+ * This source file is available under following license:
+ * - Pimcore Commercial License (PCL)
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     PCL
+ */
+
 namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Token;
 
 use ApiPlatform\State\ProcessorInterface;
@@ -16,6 +26,7 @@ use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 final class PostProcessorTest extends Unit
 {
     private const TOKEN_TTL = 3600;
+
     public function testTokenCreate()
     {
         $processor = $this->mockProcessor();
@@ -33,7 +44,8 @@ final class PostProcessorTest extends Unit
         );
     }
 
-    private function mockUserProvider(): UserProvider {
+    private function mockUserProvider(): UserProvider
+    {
         return $this->makeEmpty(UserProvider::class);
     }
 

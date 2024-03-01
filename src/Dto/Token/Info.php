@@ -21,8 +21,7 @@ final readonly class Info
     public function __construct(
         private string $token,
         private string $username
-    )
-    {
+    ) {
     }
 
     public function getToken(): string

@@ -21,14 +21,14 @@ use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 final class TokenService implements TokenServiceInterface
 {
     private const TMP_STORE_TAG = 'studio-api-token-tag-user-{userId}';
+
     private const TMP_STORE_TAG_PLACEHOLDER = '{userId}';
 
     public function __construct(
         private readonly TokenGeneratorInterface $tokenGenerator,
         private readonly TmpStoreResolverInterface $tmpStoreResolver,
         private readonly int $tokenLifetime,
-    )
-    {
+    ) {
     }
 
     public function generateAndSaveToken(string $userIdentifier): string

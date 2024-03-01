@@ -22,10 +22,9 @@ final readonly class Output
 {
     public function __construct(
         private string $token,
-        private int    $lifetime,
+        private int $lifetime,
         private string $username
-    )
-    {
+    ) {
     }
 
     public function getToken(): string

@@ -30,8 +30,7 @@ final readonly class SecurityService implements SecurityServiceInterface
         private UserProvider $userProvider,
         private UserPasswordHasherInterface $passwordHasher,
         private TmpStoreResolverInterface $tmpStoreResolver
-    )
-    {
+    ) {
     }
 
     public function authenticateUser(Create $token): PasswordAuthenticatedUserInterface
@@ -45,7 +44,7 @@ final readonly class SecurityService implements SecurityServiceInterface
         if(
             !$user instanceof PasswordAuthenticatedUserInterface ||
             !$this->passwordHasher->isPasswordValid($user, $token->getPassword())
-        ){
+        ) {
             throw new AccessDeniedException('Invalid credentials');
         }
 
@@ -55,6 +54,7 @@ final readonly class SecurityService implements SecurityServiceInterface
     public function isAllowed(string $token): bool
     {
         $entry = $this->tmpStoreResolver->get($token);
+
         return  $entry !== null && $entry->getId() === $token;
     }
 }
