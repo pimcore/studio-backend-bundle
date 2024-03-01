@@ -2,5 +2,5 @@ Pimcore\Bundle\StudioApiBundle\Dto\Translation:
   attributes:
     locale:
       groups: ['translation:read']
-    translationKeys:
+    keys:
       groups: ['translation:read']

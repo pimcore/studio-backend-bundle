@@ -20,7 +20,7 @@ final readonly class Translation
 {
     public function __construct(
         private string $locale = 'en',
-        private array  $translationKeys = []
+        private array $keys = []
     )
     {
     }
@@ -30,8 +30,8 @@ final readonly class Translation
         return $this->locale;
     }
 
-    public function getTranslationKeys(): array
+    public function getKeys(): array
     {
-        return $this->translationKeys;
+        return $this->keys;
     }
 }

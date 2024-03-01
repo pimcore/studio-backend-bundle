@@ -74,3 +74,6 @@ services:
 
     Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\IconService
+
+    Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\TranslatorService
