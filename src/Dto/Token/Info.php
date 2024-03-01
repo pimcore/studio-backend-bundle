@@ -20,7 +20,6 @@ final readonly class Info
 {
     public function __construct(
         private string $token,
-        private string $tmpStoreId,
         private string $username
     )
     {
@@ -29,11 +28,6 @@ final readonly class Info
     public function getToken(): string
     {
         return $this->token;
-    }
-
-    public function getTmpStoreId(): string
-    {
-        return $this->tmpStoreId;
     }
 
     public function getUsername(): string

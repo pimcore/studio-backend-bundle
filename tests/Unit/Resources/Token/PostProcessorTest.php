@@ -5,7 +5,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Token;
 use ApiPlatform\State\ProcessorInterface;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
-use Pimcore\Bundle\StudioApiBundle\State\Token\PostProcessor;
+use Pimcore\Bundle\StudioApiBundle\State\Token\Processor;
 use Pimcore\Security\User\UserProvider;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
@@ -24,7 +24,7 @@ final class PostProcessorTest extends Unit
 
     private function mockProcessor(): ProcessorInterface
     {
-        return new PostProcessor(
+        return new Processor(
             $this->mockUserProvider(),
             $this->mockTokenGenerator(),
             $this->mockPasswordHasher(),

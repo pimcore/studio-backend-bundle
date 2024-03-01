@@ -13,14 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Token\Create;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Pimcore\Bundle\StudioApiBundle\Dto\Token\Info;
 
-/**
- * @internal
- */
-interface SecurityServiceInterface
+interface TokenServiceInterface
 {
-    public function authenticateUser(Create $token): PasswordAuthenticatedUserInterface;
-    public function isAllowed(string $token): bool;
+    public function generateAndSaveToken(string $userIdentifier): string;
+
+    public function refreshToken(string $token): Info;
+
+    public function getLifetime(): int;
 }

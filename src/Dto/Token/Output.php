@@ -43,8 +43,8 @@ final readonly class Output
         return $this->lifetime;
     }
 
-    public function validUntil(): string
+    public function validUntil(): int
     {
-        return Carbon::now()->addSeconds($this->lifetime)->toDateTimeString();
+        return Carbon::now()->addSeconds($this->lifetime)->getTimestamp();
     }
 }

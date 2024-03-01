@@ -11,12 +11,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto;
+namespace Pimcore\Bundle\StudioApiBundle\Dto\Token;
 
 /**
  * @internal
  */
-final readonly class Token
+final readonly class Create
 {
     public function __construct(
         private string $username,

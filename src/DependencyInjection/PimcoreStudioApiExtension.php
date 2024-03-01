@@ -14,8 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
 use Exception;
-use Pimcore\Bundle\StudioApiBundle\State\Token\PostProcessor;
-use Pimcore\Bundle\StudioApiBundle\State\Token\PutProcessor;
+use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -58,10 +57,7 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
             $config['serializer']['mapping']['paths']
         );
 
-        $definition = $container->getDefinition(PostProcessor::class);
-        $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
-
-        $definition = $container->getDefinition(PutProcessor::class);
+        $definition = $container->getDefinition(TokenServiceInterface::class);
         $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
     }
 
