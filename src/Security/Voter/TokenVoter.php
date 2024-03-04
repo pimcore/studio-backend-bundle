@@ -33,8 +33,7 @@ final class TokenVoter extends Voter
         private readonly RequestStack $requestStack,
         private readonly SecurityServiceInterface $securityService
 
-    )
-    {
+    ) {
     }
 
     /**
@@ -50,12 +49,12 @@ final class TokenVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        if($attribute !== self::SUPPORTED_ATTRIBUTE){
+        if($attribute !== self::SUPPORTED_ATTRIBUTE) {
             return false;
         }
 
         $authToken = $this->requestStack->getCurrentRequest()->headers->get(self::AUTHORIZATION_HEADER);
-        if($authToken === null){
+        if($authToken === null) {
             return false;
         }
 
@@ -64,6 +63,6 @@ final class TokenVoter extends Voter
 
     private function removeBearerPrefix(string $token): string
     {
-        return str_replace( self::BEARER_PREFIX, '', $token);
+        return str_replace(self::BEARER_PREFIX, '', $token);
     }
 }
