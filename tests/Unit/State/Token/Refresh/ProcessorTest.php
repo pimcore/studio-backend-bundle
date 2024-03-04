@@ -43,7 +43,6 @@ final class ProcessorTest extends Unit
     /**
      * @throws Exception
      */
-
     public function testWrongOperation(): void
     {
         $translationProcessor = $this->mockProcessor();

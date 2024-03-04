@@ -25,7 +25,6 @@ use Pimcore\Security\User\UserProvider;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
-
 final class SecurityServiceTest extends Unit
 {
     /**
@@ -43,7 +42,6 @@ final class SecurityServiceTest extends Unit
     /**
      * @throws Exception
      */
-
     public function testInvalidPassword(): void
     {
         $securityService = $this->mockSecurityService(false);
@@ -51,7 +49,6 @@ final class SecurityServiceTest extends Unit
         $this->expectExceptionMessage('Invalid credentials');
         $securityService->authenticateUser(new Create('test', 'test'));
     }
-
 
     /**
      * @throws Exception
@@ -102,11 +99,11 @@ final class SecurityServiceTest extends Unit
     private function mockUserProviderWithUser(): UserProvider
     {
         return $this->makeEmpty(UserProvider::class, [
-            'loadUserByIdentifier' => function() {
+            'loadUserByIdentifier' => function () {
                 return $this->makeEmpty(User::class, [
-                    'getPassword' => 'test'
+                    'getPassword' => 'test',
                 ]);
-            }
+            },
         ]);
     }
 
@@ -116,7 +113,7 @@ final class SecurityServiceTest extends Unit
     private function mockUserProviderWithOutUser(): UserProvider
     {
         return $this->makeEmpty(UserProvider::class, [
-            'loadUserByIdentifier' => fn() => throw new UserNotFoundException('User not found')
+            'loadUserByIdentifier' => fn () => throw new UserNotFoundException('User not found'),
         ]);
     }
 
@@ -126,7 +123,7 @@ final class SecurityServiceTest extends Unit
     private function mockPasswordHasher($validPassword = true): UserPasswordHasherInterface
     {
         return $this->makeEmpty(UserPasswordHasherInterface::class, [
-            'isPasswordValid' => $validPassword
+            'isPasswordValid' => $validPassword,
         ]);
     }
 
@@ -136,14 +133,15 @@ final class SecurityServiceTest extends Unit
     private function mockTmpStoreResolver($withTmpStore = true): TmpStoreResolverInterface
     {
         return $this->makeEmpty(TmpStoreResolverInterface::class, [
-            'get' => $withTmpStore ? $this->mockTmpStore(): null
+            'get' => $withTmpStore ? $this->mockTmpStore() : null,
         ]);
     }
 
     private function mockTmpStore(): TmpStore
     {
-       $tmpStore = new TmpStore();
-       $tmpStore->setId('test');
-       return $tmpStore;
+        $tmpStore = new TmpStore();
+        $tmpStore->setId('test');
+
+        return $tmpStore;
     }
 }

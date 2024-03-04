@@ -20,7 +20,7 @@ final class OutputTest extends Unit
 {
     public function testTokenOutput(): void
     {
-        $output = new Output('token',3600, 'test');
+        $output = new Output('token', 3600, 'test');
         $this->assertSame('token', $output->getToken());
         $this->assertSame(3600, $output->getLifetime());
         $this->assertSame('test', $output->getUsername());
