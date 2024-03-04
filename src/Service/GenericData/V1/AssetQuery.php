@@ -1,6 +1,16 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * Pimcore
+ *
+ * This source file is available under following license:
+ * - Pimcore Commercial License (PCL)
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     PCL
+ */
+
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
@@ -20,12 +30,14 @@ final class AssetQuery
     public function setPage(int $page): self
     {
         $this->search->setPage($page);
+
         return $this;
     }
 
     public function setPageSize(int $pageSize): self
     {
         $this->search->setPageSize($pageSize);
+
         return $this;
     }
 
@@ -34,12 +46,14 @@ final class AssetQuery
         if ($parentId !== null) {
             $this->search->addModifier(new ParentIdFilter($parentId));
         }
+
         return $this;
     }
 
     public function filterPath(string $path, bool $includeDescendants, bool $includeParent): self
     {
         $this->search->addModifier(new PathFilter($path, !$includeDescendants, $includeParent));
+
         return $this;
     }
 
@@ -48,12 +62,14 @@ final class AssetQuery
         if ($term !== null) {
             $this->search->addModifier(new ElementKeySearch($term));
         }
+
         return $this;
     }
 
     public function excludeFolders(): self
     {
         $this->search->addModifier(new ExcludeFoldersFilter());
+
         return $this;
     }
 

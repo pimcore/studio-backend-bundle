@@ -22,8 +22,11 @@ use Symfony\Component\HttpFoundation\Request;
 final class AssetPathFilter implements FilterInterface
 {
     use AssetQueryContextTrait;
+
     private const ASSET_PATH_QUERY_PARAM = 'assetPath';
+
     private const ASSET_PATH_INCLUDE_PARENT_PARAM = 'assetPathIncludeParent';
+
     private const ASSET_PATH_INCLUDE_DESCENDANTS_PARAM = 'assetPathIncludeDescendants';
 
     public function __construct(AssetQueryProviderInterface $assetQueryProvider)

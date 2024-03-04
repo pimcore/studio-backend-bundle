@@ -31,7 +31,8 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     {
     }
 
-    public function searchAssets(AssetQuery $assetQuery): AssetSearchResult {
+    public function searchAssets(AssetQuery $assetQuery): AssetSearchResult
+    {
         return $this->assetSearchAdapter->searchAssets($assetQuery);
     }
 
