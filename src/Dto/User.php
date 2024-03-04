@@ -15,9 +15,9 @@ namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
 use Pimcore\Model\User as ModelUser;
 
-class User
+readonly class User
 {
-    public function __construct(private readonly ModelUser $user)
+    public function __construct(private ModelUser $user)
     {
     }
 

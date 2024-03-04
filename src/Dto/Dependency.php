@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
-class Dependency
+readonly class Dependency
 {
-    public function __construct(private readonly \Pimcore\Model\Dependency $dependency)
+    public function __construct(private \Pimcore\Model\Dependency $dependency)
     {
     }
 

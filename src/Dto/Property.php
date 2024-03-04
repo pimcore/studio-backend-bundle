@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
-class Property
+readonly class Property
 {
-    public function __construct(private readonly \Pimcore\Model\Property $property)
+    public function __construct(private \Pimcore\Model\Property $property)
     {
     }
 

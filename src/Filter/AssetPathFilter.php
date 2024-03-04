@@ -23,11 +23,11 @@ final class AssetPathFilter implements FilterInterface
 {
     use AssetQueryContextTrait;
 
-    private const ASSET_PATH_QUERY_PARAM = 'assetPath';
+    private const AP_QUERY_PARAM = 'assetPath';
 
-    private const ASSET_PATH_INCLUDE_PARENT_PARAM = 'assetPathIncludeParent';
+    private const AP_INCLUDE_PARENT_PARAM = 'assetPathIncludeParent';
 
-    private const ASSET_PATH_INCLUDE_DESCENDANTS_PARAM = 'assetPathIncludeDescendants';
+    private const AP_INCLUDE_DESCENDANTS_PARAM = 'assetPathIncludeDescendants';
 
     public function __construct(AssetQueryProviderInterface $assetQueryProvider)
     {
@@ -36,7 +36,7 @@ final class AssetPathFilter implements FilterInterface
 
     public function apply(Request $request, bool $normalization, array $attributes, array &$context): void
     {
-        $path = $request->query->get(self::ASSET_PATH_QUERY_PARAM);
+        $path = $request->query->get(self::AP_QUERY_PARAM);
 
         if (!$path) {
             return;
@@ -44,13 +44,13 @@ final class AssetPathFilter implements FilterInterface
 
         $includeDescendants = $this->getBooleanValueFromQuery(
             $request,
-            self::ASSET_PATH_INCLUDE_DESCENDANTS_PARAM,
+            self::AP_INCLUDE_DESCENDANTS_PARAM,
             false
         );
 
         $includeParent = $this->getBooleanValueFromQuery(
             $request,
-            self::ASSET_PATH_INCLUDE_PARENT_PARAM,
+            self::AP_INCLUDE_PARENT_PARAM,
             false
         );
 
@@ -61,7 +61,7 @@ final class AssetPathFilter implements FilterInterface
     public function getDescription(string $resourceClass): array
     {
         return [
-            self::ASSET_PATH_QUERY_PARAM => [
+            self::AP_QUERY_PARAM => [
                 'property' => Asset::class,
                 'type' => 'string',
                 'required' => false,
@@ -71,7 +71,7 @@ final class AssetPathFilter implements FilterInterface
                     'description' => 'Filter assets by path.',
                 ],
             ],
-            self::ASSET_PATH_INCLUDE_PARENT_PARAM => [
+            self::AP_INCLUDE_PARENT_PARAM => [
                 'property' => Asset::class,
                 'type' => 'bool',
                 'required' => false,
@@ -81,7 +81,7 @@ final class AssetPathFilter implements FilterInterface
                     'description' => 'Include the parent item in the result.',
                 ],
             ],
-            self::ASSET_PATH_INCLUDE_DESCENDANTS_PARAM => [
+            self::AP_INCLUDE_DESCENDANTS_PARAM => [
                 'property' => Asset::class,
                 'type' => 'bool',
                 'required' => false,

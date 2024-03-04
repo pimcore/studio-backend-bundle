@@ -16,9 +16,9 @@ namespace Pimcore\Bundle\StudioApiBundle\Dto;
 use Pimcore\Model\User;
 use Pimcore\Model\Version as ModelVersion;
 
-class Version
+readonly class Version
 {
-    public function __construct(private readonly ModelVersion $version)
+    public function __construct(private ModelVersion $version)
     {
     }
 

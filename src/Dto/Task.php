@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
-class Task
+readonly class Task
 {
-    public function __construct(private readonly \Pimcore\Model\Schedule\Task $task)
+    public function __construct(private \Pimcore\Model\Schedule\Task $task)
     {
     }
 
