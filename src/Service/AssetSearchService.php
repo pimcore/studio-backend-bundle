@@ -14,7 +14,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Archive;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Audio;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Document;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Folder;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Text;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Unknown;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Video;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\AssetSearchAdapterInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
 
 final readonly class AssetSearchService implements AssetSearchServiceInterface
 {
@@ -22,16 +31,11 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     {
     }
 
-    public function searchAssets(
-        int $page = 1,
-        int $pageSize = 50,
-        ?string $query = null,
-        ?int $parentId = null
-    ): AssetSearchResult {
-        return $this->assetSearchAdapter->searchAsset($page, $pageSize, $query, $parentId);
+    public function searchAssets(AssetQuery $assetQuery): AssetSearchResult {
+        return $this->assetSearchAdapter->searchAssets($assetQuery);
     }
 
-    public function getAssetById(int $id): ?Asset
+    public function getAssetById(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video|null
     {
         return $this->assetSearchAdapter->getAssetById($id);
     }

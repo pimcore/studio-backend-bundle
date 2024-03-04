@@ -13,10 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
-use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchProviderInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchResult;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\AssetSearchAdapterInterface;
@@ -25,35 +22,14 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydrator
 final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 {
     public function __construct(
-        private SearchProviderInterface $searchProvider,
         private AssetSearchServiceInterface $searchService,
         private AssetHydratorServiceInterface $assetHydratorService
     ) {
     }
 
-    /**
-     * @param int $page
-     * @param int $pageSize
-     * @param string|null $searchTerm
-     * @param int|null $parentId
-     *
-     * @return AssetSearchResult
-     */
-    public function searchAsset(int $page, int $pageSize, ?string $searchTerm, ?int $parentId = null): AssetSearchResult
+    public function searchAssets(AssetQuery $assetQuery): AssetSearchResult
     {
-        $search = $this->searchProvider->createAssetSearch();
-        $search->setPageSize($pageSize);
-        $search->setPage($page);
-
-        if ($parentId !== null) {
-            $search->addModifier(new ParentIdFilter($parentId));
-        }
-
-        if ($searchTerm !== null) {
-            $search->addModifier(new ElementKeySearch($searchTerm));
-        }
-
-        $searchResult = $this->searchService->search($search);
+        $searchResult = $this->searchService->search($assetQuery->getSearch());
         $result = [];
         foreach ($searchResult->getItems() as $item) {
             $result[] = $this->assetHydratorService->hydrate($item);

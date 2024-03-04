@@ -5,6 +5,8 @@ resources:
                 filters:
                     - Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter
                     - Pimcore\Bundle\StudioApiBundle\Filter\AssetIdSearchFilter
+                    - Pimcore\Bundle\StudioApiBundle\Filter\AssetExcludeFolderFilter
+                    - Pimcore\Bundle\StudioApiBundle\Filter\AssetPathFilter
                 paginationClientItemsPerPage: true
             ApiPlatform\Metadata\Get:
                 normalizationContext:
