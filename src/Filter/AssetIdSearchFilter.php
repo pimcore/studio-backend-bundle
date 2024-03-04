@@ -14,15 +14,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
 use ApiPlatform\Serializer\Filter\FilterInterface;
-
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryContextTrait;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 final class AssetIdSearchFilter implements FilterInterface
 {
-    public const ASSET_ID_SEARCH_FILTER = 'asset_id_search_filter';
+    use AssetQueryContextTrait;
 
     private const ID_SEARCH_FILTER_QUERY_PARAM = 'idSearchTerm';
+
+    public function __construct(AssetQueryProviderInterface $assetQueryProvider)
+    {
+        $this->assetQueryProvider = $assetQueryProvider;
+    }
 
     public function apply(Request $request, bool $normalization, array $attributes, array &$context): void
     {
@@ -32,7 +38,8 @@ final class AssetIdSearchFilter implements FilterInterface
             return;
         }
 
-        $context[self::ASSET_ID_SEARCH_FILTER] = $searchIdTerm;
+        $assetQuery = $this->getAssetQuery($context)->setSearchTerm($searchIdTerm);
+        $this->setAssetQuery($context, $assetQuery);
     }
 
     public function getDescription(string $resourceClass): array
@@ -43,9 +50,9 @@ final class AssetIdSearchFilter implements FilterInterface
                 'type' => 'string',
                 'required' => false,
                 'is_collection' => false,
-                'description' => 'Filters assets by matching ids. As a wildcard, you can use *.',
+                'description' => 'Filter assets by matching ids. As a wildcard * can be used',
                 'openapi' => [
-                    'description' => 'Filters assets by matching ids. As a wildcard, you can use *.',
+                    'description' => 'Filter assets by matching ids. As a wildcard * can be used',
                 ],
             ],
         ];

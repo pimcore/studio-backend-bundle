@@ -14,15 +14,19 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Archive;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Audio;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Document;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Folder;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Text;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Unknown;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Video;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
 
 interface AssetSearchServiceInterface
 {
-    public function searchAssets(
-        int $page = 1,
-        int $pageSize = 50,
-        ?string $query = null,
-        ?int $parentId = null
-    ): AssetSearchResult;
+    public function searchAssets(AssetQuery $assetQuery): AssetSearchResult;
 
-    public function getAssetById(int $id): ?Asset;
+    public function getAssetById(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video|null;
 }

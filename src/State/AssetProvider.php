@@ -19,27 +19,31 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use ArrayIterator;
-use Pimcore\Bundle\StudioApiBundle\Filter\AssetIdSearchFilter;
-use Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryContextTrait;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
 
 final readonly class AssetProvider implements ProviderInterface
 {
+    use AssetQueryContextTrait;
+
     public function __construct(
+        AssetQueryProviderInterface $assetQueryProvider,
         private AssetSearchServiceInterface $assetSearchService,
         private Pagination $pagination
     ) {
+        $this->assetQueryProvider = $assetQueryProvider;
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
-            $searchResult = $this->assetSearchService->searchAssets(
-                $this->pagination->getPage($context),
-                $this->pagination->getLimit($operation, $context),
-                $context[AssetIdSearchFilter::ASSET_ID_SEARCH_FILTER] ?? null,
-                $context[AssetParentIdFilter::ASSET_PARENT_ID_FILTER_CONTEXT] ?? null,
-            );
+
+            $assetQuery = $this->getAssetQuery($context)
+                ->setPage($this->pagination->getPage($context))
+                ->setPageSize($this->pagination->getLimit($operation, $context));
+
+            $searchResult = $this->assetSearchService->searchAssets($assetQuery);
 
             return new TraversablePaginator(
                 new ArrayIterator($searchResult->getItems()),
