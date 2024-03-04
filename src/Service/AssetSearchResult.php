@@ -14,6 +14,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Archive;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Audio;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Document;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Folder;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Text;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Unknown;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Video;
 
 final readonly class AssetSearchResult
 {
@@ -37,7 +45,7 @@ final readonly class AssetSearchResult
     }
 
     /**
-     * @return array<int, Asset>
+     * @return array<int, Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video>
      */
     public function getItems(): array
     {

@@ -14,25 +14,32 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
 use ApiPlatform\Serializer\Filter\FilterInterface;
-
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryContextTrait;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-final class AssetFolderFilter implements FilterInterface
+final class AssetExcludeFolderFilter implements FilterInterface
 {
-    public const ASSET_FOLDER_FILTER_CONTEXT = 'asset_folder_filter';
+    use AssetQueryContextTrait;
 
-    private const FOLDER_FILTER_QUERY_PARAM = 'filterFolders';
+    private const FOLDER_FILTER_QUERY_PARAM = 'excludeFolders';
+
+    public function __construct(AssetQueryProviderInterface $assetQueryProvider)
+    {
+        $this->assetQueryProvider = $assetQueryProvider;
+    }
 
     public function apply(Request $request, bool $normalization, array $attributes, array &$context): void
     {
-        $parentId = $request->query->get(self::FOLDER_FILTER_QUERY_PARAM);
+        $excludeFolders = $request->query->get(self::FOLDER_FILTER_QUERY_PARAM);
 
-        if (!$parentId) {
+        if ($excludeFolders !== 'true') {
             return;
         }
 
-        $context[self::ASSET_FOLDER_FILTER_CONTEXT] = (bool)$parentId;
+        $assetQuery = $this->getAssetQuery($context)->excludeFolders();
+        $this->setAssetQuery($context, $assetQuery);
     }
 
     public function getDescription(string $resourceClass): array

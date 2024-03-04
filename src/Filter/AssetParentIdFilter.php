@@ -14,15 +14,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
 use ApiPlatform\Serializer\Filter\FilterInterface;
-
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryContextTrait;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 final class AssetParentIdFilter implements FilterInterface
 {
-    public const ASSET_PARENT_ID_FILTER_CONTEXT = 'asset_parent_id_filter';
+    use AssetQueryContextTrait;
 
     private const PARENT_ID_QUERY_PARAM = 'parentId';
+
+    public function __construct(AssetQueryProviderInterface $assetQueryProvider)
+    {
+        $this->assetQueryProvider = $assetQueryProvider;
+    }
 
     public function apply(Request $request, bool $normalization, array $attributes, array &$context): void
     {
@@ -32,7 +38,8 @@ final class AssetParentIdFilter implements FilterInterface
             return;
         }
 
-        $context[self::ASSET_PARENT_ID_FILTER_CONTEXT] = (int)$parentId;
+        $assetQuery = $this->getAssetQuery($context)->filterParentId((int)$parentId);
+        $this->setAssetQuery($context, $assetQuery);
     }
 
     public function getDescription(string $resourceClass): array
@@ -43,9 +50,9 @@ final class AssetParentIdFilter implements FilterInterface
                 'type' => 'int',
                 'required' => false,
                 'is_collection' => false,
-                'description' => 'Filters assets by parent id.',
+                'description' => 'Filter assets by parent id.',
                 'openapi' => [
-                    'description' => 'Filters assets by parent id.',
+                    'description' => 'Filter assets by parent id.',
                 ],
             ],
         ];
