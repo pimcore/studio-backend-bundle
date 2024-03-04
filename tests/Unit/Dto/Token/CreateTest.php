@@ -20,8 +20,8 @@ final class CreateTest extends Unit
 {
     public function testTokenCreate(): void
     {
-        $info = new Create('token', 'test');
-        $this->assertSame('token', $info->getUsername());
-        $this->assertSame('test', $info->getPassword());
+        $create = new Create('token', 'test');
+        $this->assertSame('token', $create->getUsername());
+        $this->assertSame('test', $create->getPassword());
     }
 }

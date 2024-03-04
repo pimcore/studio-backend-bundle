@@ -20,7 +20,7 @@ final class RefreshTest extends Unit
 {
     public function testTokenRefresh(): void
     {
-        $info = new Refresh('token');
-        $this->assertSame('token', $info->getToken());
+        $refresh = new Refresh('token');
+        $this->assertSame('token', $refresh->getToken());
     }
 }
