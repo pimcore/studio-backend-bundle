@@ -32,7 +32,12 @@ final class TranslationProcessor implements ProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Translation
+    public function process(
+        mixed $data,
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = []
+    ): Translation
     {
          if (
              !$operation instanceof Post ||

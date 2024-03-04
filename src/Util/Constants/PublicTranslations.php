@@ -11,8 +11,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     PCL
  */
 
+namespace Pimcore\Bundle\StudioApiBundle\Util\Constants;
+
 final readonly class PublicTranslations {
-    public const KEYS = [
+    public const PUBLIC_KEYS = [
         'username',
         'password',
         'login',
