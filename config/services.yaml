@@ -90,3 +90,10 @@ services:
 
     Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\SecurityService
+
+
+    #Voters
+    Pimcore\Bundle\StudioApiBundle\Security\Voter\TokenVoter:
+        arguments: ['@request_stack']
+        tags:
+            - { name: security.voter }
