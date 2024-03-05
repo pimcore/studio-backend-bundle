@@ -52,7 +52,7 @@ final class TokenVoter extends Voter
             return false;
         }
 
-        $request = $this->getCurrentRequest();
+        $request = $this->getCurrentRequest($this->requestStack);
 
         $authToken = $this->getAuthToken($request);
 

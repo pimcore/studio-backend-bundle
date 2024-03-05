@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Security\Trait;
 use Pimcore\Bundle\StudioApiBundle\Exception\NoAuthTokenFound;
 use Pimcore\Bundle\StudioApiBundle\Exception\NoRequestException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 trait RequestTrait
 {
@@ -36,9 +37,9 @@ trait RequestTrait
         return $this->removeBearerPrefix($authToken);
     }
 
-    private function getCurrentRequest(): Request
+    private function getCurrentRequest(RequestStack $requestStack): Request
     {
-        $request = $this->requestStack->getCurrentRequest();
+        $request = $requestStack->getCurrentRequest();
         if(!$request) {
             throw new NoRequestException('No request found');
         }
