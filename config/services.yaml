@@ -86,3 +86,9 @@ services:
 
     Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\TranslatorService
+
+    #Voters
+    Pimcore\Bundle\StudioApiBundle\Security\Voter\PublicTokenVoter:
+        arguments: [ '@request_stack' ]
+        tags:
+            - { name: security.voter }

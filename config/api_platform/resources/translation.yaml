@@ -1,5 +1,6 @@
 resources:
   Pimcore\Bundle\StudioApiBundle\Dto\Translation:
+      security: 'is_granted("PUBLIC_API_PLATFORM", "translation")'
       operations:
           ApiPlatform\Metadata\Post:
               processor: Pimcore\Bundle\StudioApiBundle\State\TranslationProcessor
