@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
 use Exception;
+use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -58,6 +59,9 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
             'pimcore_studio_api.serializer.mapping.paths',
             $config['serializer']['mapping']['paths']
         );
+
+        $definition = $container->getDefinition(TokenServiceInterface::class);
+        $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
     }
 
     public function prepend(ContainerBuilder $container): void

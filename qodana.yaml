@@ -33,6 +33,7 @@ exclude:
       - .env
       - .gitatributes
       - src/DependencyInjection/Configuration.php
+      - qodana.sarif.json
 include:
   - name: PhpTaintFunctionInspection
   - name: PhpVulnerablePathsInspection

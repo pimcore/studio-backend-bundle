@@ -26,11 +26,26 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
+    public const ROOT_NODE = 'pimcore_studio_api';
+
     /**
      * {@inheritdoc}
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        return new TreeBuilder('pimcore_studio_api');
+        $treeBuilder = new TreeBuilder(self::ROOT_NODE);
+
+        $rootNode = $treeBuilder->getRootNode();
+        $rootNode->addDefaultsIfNotSet();
+        $rootNode->children()
+            ->arrayNode('api_token')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->integerNode('lifetime')
+                        ->defaultValue(3600)
+                    ->end()
+                ->end();
+
+        return $treeBuilder;
     }
 }
