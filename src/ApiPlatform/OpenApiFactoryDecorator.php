@@ -24,6 +24,7 @@ use ArrayObject;
 final readonly class OpenApiFactoryDecorator implements OpenApiFactoryInterface
 {
     private const ACCESS_TOKEN = 'access_token';
+
     public function __construct(private OpenApiFactoryInterface $decorated)
     {
     }
