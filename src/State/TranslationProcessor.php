@@ -37,17 +37,15 @@ final class TranslationProcessor implements ProcessorInterface
         Operation $operation,
         array $uriVariables = [],
         array $context = []
-    ): Translation
-    {
-         if (
-             !$operation instanceof Post ||
-             !$data instanceof Translation ||
-             $operation->getUriTemplate() !== self::OPERATION_URI_TEMPLATE
-         ) {
-             // wrong operation
-             throw new OperationNotFoundException();
-         }
-
+    ): Translation {
+        if (
+            !$operation instanceof Post ||
+            !$data instanceof Translation ||
+            $operation->getUriTemplate() !== self::OPERATION_URI_TEMPLATE
+        ) {
+            // wrong operation
+            throw new OperationNotFoundException();
+        }
 
         if(empty($data->getKeys())) {
             return $this->translatorService->getAllTranslations($data->getLocale());

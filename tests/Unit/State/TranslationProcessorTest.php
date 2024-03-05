@@ -43,7 +43,6 @@ final class TranslationProcessorTest extends Unit
     /**
      * @throws Exception
      */
-
     public function testWrongOperation(): void
     {
         $translationProcessor = $this->mockTranslationProcessor();
@@ -77,6 +76,7 @@ final class TranslationProcessorTest extends Unit
     private function mockTranslationProcessor(): TranslationProcessor
     {
         $translatorInterface = $this->makeEmpty(TranslatorServiceInterface::class);
+
         return new TranslationProcessor($translatorInterface);
     }
 

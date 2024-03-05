@@ -59,6 +59,7 @@ final class TranslatorServiceTest extends Unit
     private function mockTranslatorService(): TranslatorServiceInterface
     {
         $translator = $this->makeEmpty(Translator::class);
+
         return new TranslatorService($translator);
     }
 }

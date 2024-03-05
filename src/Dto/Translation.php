@@ -21,8 +21,7 @@ final readonly class Translation
     public function __construct(
         private string $locale = 'en',
         private array $keys = []
-    )
-    {
+    ) {
     }
 
     public function getLocale(): string

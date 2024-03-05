@@ -23,8 +23,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 final class TranslatorService implements TranslatorServiceInterface
 {
-
     private TranslatorBagInterface $translator;
+
     private const DOMAIN = 'admin';
 
     public function __construct(
@@ -51,6 +51,7 @@ final class TranslatorService implements TranslatorServiceInterface
         foreach ($keys as $key) {
             $translations[$key] = $this->translator->getCatalogue($locale)->get($key, self::DOMAIN);
         }
+
         return new Translation($locale, $translations);
     }
 }
