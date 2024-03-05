@@ -97,3 +97,7 @@ services:
         arguments: ['@request_stack']
         tags:
             - { name: security.voter }
+
+    #Decorators
+    Pimcore\Bundle\StudioApiBundle\ApiPlatform\OpenApiFactoryDecorator:
+        decorates: 'api_platform.openapi.factory'
