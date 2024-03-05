@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Security\Trait;
 
+use Pimcore\Bundle\StudioApiBundle\Exception\NonPublicTranslationException;
 use Pimcore\Bundle\StudioApiBundle\Util\Constants\PublicTranslations;
 use Symfony\Component\HttpFoundation\InputBag;
 
@@ -23,15 +24,14 @@ trait PublicTranslationTrait
     private function voteOnTranslation(InputBag $payload): bool
     {
         $parameters = $payload->all();
-        if(!array_key_exists(self::ARRAY_KEYS_INDEX, $parameters)) {
+        if (!array_key_exists(self::ARRAY_KEYS_INDEX, $parameters)) {
             return false;
         }
 
-        foreach($parameters[self::ARRAY_KEYS_INDEX] as $key) {
-            // Allow only public keys
-            if(!in_array($key, PublicTranslations::PUBLIC_KEYS, true)) {
-                return false;
-            }
+        $nonPublicTranslations = array_diff($parameters[self::ARRAY_KEYS_INDEX], PublicTranslations::PUBLIC_KEYS);
+
+        if (!empty($nonPublicTranslations)) {
+            throw new NonPublicTranslationException(sprintf('You have requested non public keys: %s', implode(',', $nonPublicTranslations)));
         }
 
         return true;

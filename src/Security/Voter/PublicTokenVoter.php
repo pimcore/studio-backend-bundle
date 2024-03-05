@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioApiBundle\Security\Voter;
 
 use Pimcore\Bundle\StudioApiBundle\Exception\NoRequestException;
 use Pimcore\Bundle\StudioApiBundle\Security\Trait\PublicTranslationTrait;
+use Pimcore\Bundle\StudioApiBundle\Security\Trait\RequestTrait;
+use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -22,6 +24,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 final class PublicTokenVoter extends Voter
 {
+    use RequestTrait;
     use PublicTranslationTrait;
 
     private const SUPPORTED_ATTRIBUTE = 'PUBLIC_API_PLATFORM';
@@ -30,6 +33,7 @@ final class PublicTokenVoter extends Voter
 
     public function __construct(
         private readonly RequestStack $requestStack,
+        private readonly SecurityServiceInterface $securityService
     ) {
     }
 
@@ -41,20 +45,15 @@ final class PublicTokenVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
 
-        $request = $this->getCurrentRequest();
+        $request = $this->getCurrentRequest($this->requestStack);
 
-        // TODO Add security service once merged with PR#5
-        return $this->voteOnRequest($request, $subject);
-    }
+        $authToken = $this->getAuthToken($request);
 
-    private function getCurrentRequest(): Request
-    {
-        $request = $this->requestStack->getCurrentRequest();
-        if(!$request) {
-            throw new NoRequestException('No request found');
+        if ($this->securityService->checkAuthToken($authToken)) {
+            return true;
         }
 
-        return $request;
+        return $this->voteOnRequest($request, $subject);
     }
 
     private function voteOnRequest(Request $request, string $subject): bool
