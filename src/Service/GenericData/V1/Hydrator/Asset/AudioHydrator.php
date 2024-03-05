@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchResult\AssetSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Audio as AudioItem;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Audio;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface;
@@ -30,7 +30,7 @@ final readonly class AudioHydrator implements AudioHydratorInterface
     ) {
     }
 
-    public function hydrate(AssetSearchResultItem\Audio $item): Audio
+    public function hydrate(AudioItem $item): Audio
     {
         return new Audio(
             $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),

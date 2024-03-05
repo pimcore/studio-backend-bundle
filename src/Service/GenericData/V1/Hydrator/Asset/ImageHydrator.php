@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchResult\AssetSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Image as ImageItem;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface;
@@ -30,7 +30,7 @@ final readonly class ImageHydrator implements ImageHydratorInterface
     ) {
     }
 
-    public function hydrate(AssetSearchResultItem\Image $item): Image
+    public function hydrate(ImageItem $item): Image
     {
         return new Image(
             'muhFormat', // TODO: Implement format

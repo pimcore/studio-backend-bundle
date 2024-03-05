@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchResult\AssetMetaData;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetMetaData;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\MetaData;
 
 final class MetaDataHydrator implements MetaDataHydratorInterface

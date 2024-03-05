@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchResult\AssetSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown as UnknownItem;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Unknown;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface;
@@ -30,7 +30,7 @@ final readonly class UnknownHydrator implements UnknownHydratorInterface
     ) {
     }
 
-    public function hydrate(AssetSearchResultItem\Unknown $item): Unknown
+    public function hydrate(UnknownItem $item): Unknown
     {
         return new Unknown(
             $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),

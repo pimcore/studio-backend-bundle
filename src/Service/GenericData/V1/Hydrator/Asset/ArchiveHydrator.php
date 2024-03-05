@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchResult\AssetSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Archive as ArchiveItem;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Archive;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface;
@@ -30,7 +30,7 @@ final readonly class ArchiveHydrator implements ArchiveHydratorInterface
     ) {
     }
 
-    public function hydrate(AssetSearchResultItem\Archive $item): Archive
+    public function hydrate(ArchiveItem $item): Archive
     {
         return new Archive(
             $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
