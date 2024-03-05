@@ -19,9 +19,11 @@ namespace Pimcore\Bundle\StudioApiBundle\ApiPlatform;
 use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\OpenApi\Model\SecurityScheme;
 use ApiPlatform\OpenApi\OpenApi;
+use ArrayObject;
 
 final readonly class OpenApiFactoryDecorator implements OpenApiFactoryInterface
 {
+    private const ACCESS_TOKEN = 'access_token';
     public function __construct(private OpenApiFactoryInterface $decorated)
     {
     }
@@ -30,8 +32,8 @@ final readonly class OpenApiFactoryDecorator implements OpenApiFactoryInterface
     {
         $openApi = $this->decorated->__invoke($context);
 
-        $securitySchemes = $openApi->getComponents()->getSecuritySchemes() ?: new \ArrayObject();
-        $securitySchemes['access_token'] = new SecurityScheme(
+        $securitySchemes = $openApi->getComponents()->getSecuritySchemes() ?: new ArrayObject();
+        $securitySchemes[self::ACCESS_TOKEN] = new SecurityScheme(
             type: 'http',
             scheme: 'bearer',
         );
