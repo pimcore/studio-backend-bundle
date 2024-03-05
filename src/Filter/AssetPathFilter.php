@@ -100,7 +100,7 @@ final class AssetPathFilter implements FilterInterface
     private function getBooleanValueFromQuery(Request $request, string $queryName, bool $defaultValue): bool
     {
         return filter_var(
-            $request->query->get($queryName, $defaultValue),
+            $request->query->getBoolean($queryName, $defaultValue),
             FILTER_VALIDATE_BOOLEAN
         );
     }
