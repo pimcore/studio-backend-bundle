@@ -54,7 +54,7 @@ final readonly class SecurityService implements SecurityServiceInterface
         return $user;
     }
 
-    public function isAllowed(string $token): bool
+    public function checkAuthToken(string $token): bool
     {
         $entry = $this->tmpStoreResolver->get($token);
 

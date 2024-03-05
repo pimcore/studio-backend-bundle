@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Security\Voter;
 
+use Pimcore\Bundle\StudioApiBundle\Security\Trait\RequestTrait;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -23,9 +24,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 final class TokenVoter extends Voter
 {
-    private const BEARER_PREFIX = 'Bearer ';
-
-    private const AUTHORIZATION_HEADER = 'Authorization';
+    use RequestTrait;
 
     private const SUPPORTED_ATTRIBUTE = 'API_PLATFORM';
 
@@ -53,16 +52,12 @@ final class TokenVoter extends Voter
             return false;
         }
 
-        $authToken = $this->requestStack->getCurrentRequest()->headers->get(self::AUTHORIZATION_HEADER);
-        if($authToken === null) {
-            return false;
-        }
+        $request = $this->getCurrentRequest();
 
-        return $this->securityService->isAllowed($this->removeBearerPrefix($authToken));
+        $authToken = $this->getAuthToken($request);
+
+        return $this->securityService->checkAuthToken($authToken);
     }
 
-    private function removeBearerPrefix(string $token): string
-    {
-        return str_replace(self::BEARER_PREFIX, '', $token);
-    }
+
 }

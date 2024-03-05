@@ -14,17 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Service;
+namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Token\Create;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use RuntimeException;
 
-/**
- * @internal
- */
-interface SecurityServiceInterface
+final class NoAuthTokenFound extends RuntimeException
 {
-    public function authenticateUser(Create $token): PasswordAuthenticatedUserInterface;
 
-    public function checkAuthToken(string $token): bool;
 }

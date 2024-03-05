@@ -71,7 +71,7 @@ final class SecurityServiceTest extends Unit
     {
         $securityService = $this->mockSecurityService(false, false);
 
-        $this->assertTrue($securityService->isAllowed('test'));
+        $this->assertTrue($securityService->checkAuthToken('test'));
     }
 
     /**
@@ -81,7 +81,7 @@ final class SecurityServiceTest extends Unit
     {
         $securityService = $this->mockSecurityService(false, false, false);
 
-        $this->assertFalse($securityService->isAllowed('test'));
+        $this->assertFalse($securityService->checkAuthToken('test'));
     }
 
     /**
