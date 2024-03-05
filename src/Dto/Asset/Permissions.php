@@ -16,19 +16,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
-class Permissions
+readonly class Permissions
 {
     //TODO: remove or change default permissions
     public function __construct(
-        private readonly bool $list = true,
-        private readonly bool $view = true,
-        private readonly bool $publish = true,
-        private readonly bool $delete = true,
-        private readonly bool $rename = true,
-        private readonly bool $create = true,
-        private readonly bool $settings = true,
-        private readonly bool $versions = true,
-        private readonly bool $properties = true
+        private bool $list = true,
+        private bool $view = true,
+        private bool $publish = true,
+        private bool $delete = true,
+        private bool $rename = true,
+        private bool $create = true,
+        private bool $settings = true,
+        private bool $versions = true,
+        private bool $properties = true
     ) {
     }
 
