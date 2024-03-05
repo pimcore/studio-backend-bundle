@@ -12,3 +12,9 @@ api_platform:
     enable_entrypoint: false
     enable_swagger_ui: false
     enable_re_doc: false
+    show_webby: false
+    swagger:
+        api_keys:
+            access_token:
+                name: 'Authorization'
+                type: 'header'

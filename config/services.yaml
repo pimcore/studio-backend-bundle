@@ -28,6 +28,8 @@ services:
     # Processors
     Pimcore\Bundle\StudioApiBundle\State\ResetPasswordProcessor: ~
     Pimcore\Bundle\StudioApiBundle\State\TranslationProcessor: ~
+    Pimcore\Bundle\StudioApiBundle\State\Token\Create\Processor: ~
+    Pimcore\Bundle\StudioApiBundle\State\Token\Refresh\Processor: ~
 
     # Filters
     Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter:
@@ -92,3 +94,25 @@ services:
         arguments: [ '@request_stack' ]
         tags:
             - { name: security.voter }
+
+    Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\TokenService
+
+    Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\SecurityService
+
+
+    #Voters
+    Pimcore\Bundle\StudioApiBundle\Security\Voter\TokenVoter:
+        arguments: ['@request_stack']
+        tags:
+            - { name: security.voter }
+
+    Pimcore\Bundle\StudioApiBundle\Security\Voter\PublicTokenVoter:
+      arguments: [ '@request_stack' ]
+      tags:
+        - { name: security.voter }
+
+    #Decorators
+    Pimcore\Bundle\StudioApiBundle\ApiPlatform\OpenApiFactoryDecorator:
+        decorates: 'api_platform.openapi.factory'

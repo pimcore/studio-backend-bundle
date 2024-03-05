@@ -1,0 +1,106 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * Pimcore
+ *
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
+ * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ */
+
+namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\State\Token\Refresh;
+
+use ApiPlatform\Exception\OperationNotFoundException;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use Codeception\Test\Unit;
+use Exception;
+use Pimcore\Bundle\StudioApiBundle\Dto\Token\Create;
+use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
+use Pimcore\Bundle\StudioApiBundle\State\Token\Refresh\Processor;
+use stdClass;
+
+final class ProcessorTest extends Unit
+{
+    /**
+     * @throws Exception
+     */
+    public function testWrongUriTemplate(): void
+    {
+        $translationProcessor = $this->mockProcessor();
+
+        $this->expectException(OperationNotFoundException::class);
+
+        $translationProcessor->process(
+            $this->getCreateToken(),
+            $this->getPostOperation('/wrong-uri-template')
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testWrongOperation(): void
+    {
+        $translationProcessor = $this->mockProcessor();
+
+        $this->expectException(OperationNotFoundException::class);
+
+        $translationProcessor->process(
+            $this->getCreateToken(),
+            $this->getGetOperation()
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testWrongData(): void
+    {
+        $translationProcessor = $this->mockProcessor();
+
+        $this->expectException(OperationNotFoundException::class);
+
+        $translationProcessor->process(
+            new stdClass(),
+            $this->getPostOperation('/token/refresh')
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function mockProcessor(): Processor
+    {
+        return new Processor($this->mockTokenService());
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function mockTokenService(): TokenServiceInterface
+    {
+        return $this->makeEmpty(TokenServiceInterface::class);
+    }
+
+    private function getCreateToken(): Create
+    {
+        return new Create('test', 'test');
+    }
+
+    private function getPostOperation(string $uriTemplate): Post
+    {
+        return new Post(uriTemplate: $uriTemplate);
+    }
+
+    private function getGetOperation(): Get
+    {
+        return new Get(uriTemplate: '/token/refresh');
+    }
+}

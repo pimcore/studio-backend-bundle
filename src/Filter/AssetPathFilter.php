@@ -4,11 +4,14 @@ declare(strict_types=1);
 /**
  * Pimcore
  *
- * This source file is available under following license:
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
  * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
  *
  *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     PCL
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
@@ -23,11 +26,11 @@ final class AssetPathFilter implements FilterInterface
 {
     use AssetQueryContextTrait;
 
-    private const ASSET_PATH_QUERY_PARAM = 'assetPath';
+    private const AP_QUERY_PARAM = 'assetPath';
 
-    private const ASSET_PATH_INCLUDE_PARENT_PARAM = 'assetPathIncludeParent';
+    private const AP_INCLUDE_PARENT_PARAM = 'assetPathIncludeParent';
 
-    private const ASSET_PATH_INCLUDE_DESCENDANTS_PARAM = 'assetPathIncludeDescendants';
+    private const AP_INCLUDE_DESCENDANTS_PARAM = 'assetPathIncludeDescendants';
 
     public function __construct(AssetQueryProviderInterface $assetQueryProvider)
     {
@@ -36,7 +39,7 @@ final class AssetPathFilter implements FilterInterface
 
     public function apply(Request $request, bool $normalization, array $attributes, array &$context): void
     {
-        $path = $request->query->get(self::ASSET_PATH_QUERY_PARAM);
+        $path = $request->query->get(self::AP_QUERY_PARAM);
 
         if (!$path) {
             return;
@@ -44,13 +47,13 @@ final class AssetPathFilter implements FilterInterface
 
         $includeDescendants = $this->getBooleanValueFromQuery(
             $request,
-            self::ASSET_PATH_INCLUDE_DESCENDANTS_PARAM,
+            self::AP_INCLUDE_DESCENDANTS_PARAM,
             false
         );
 
         $includeParent = $this->getBooleanValueFromQuery(
             $request,
-            self::ASSET_PATH_INCLUDE_PARENT_PARAM,
+            self::AP_INCLUDE_PARENT_PARAM,
             false
         );
 
@@ -61,7 +64,7 @@ final class AssetPathFilter implements FilterInterface
     public function getDescription(string $resourceClass): array
     {
         return [
-            self::ASSET_PATH_QUERY_PARAM => [
+            self::AP_QUERY_PARAM => [
                 'property' => Asset::class,
                 'type' => 'string',
                 'required' => false,
@@ -71,7 +74,7 @@ final class AssetPathFilter implements FilterInterface
                     'description' => 'Filter assets by path.',
                 ],
             ],
-            self::ASSET_PATH_INCLUDE_PARENT_PARAM => [
+            self::AP_INCLUDE_PARENT_PARAM => [
                 'property' => Asset::class,
                 'type' => 'bool',
                 'required' => false,
@@ -81,7 +84,7 @@ final class AssetPathFilter implements FilterInterface
                     'description' => 'Include the parent item in the result.',
                 ],
             ],
-            self::ASSET_PATH_INCLUDE_DESCENDANTS_PARAM => [
+            self::AP_INCLUDE_DESCENDANTS_PARAM => [
                 'property' => Asset::class,
                 'type' => 'bool',
                 'required' => false,

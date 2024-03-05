@@ -1,0 +1,10 @@
+Pimcore\Bundle\StudioApiBundle\Dto\Token\Output:
+  attributes:
+    token:
+      groups: ['token:read', 'tokenrefresh:read']
+    username:
+      groups: [ 'token:read' , 'tokenrefresh:read']
+    lifetime:
+      groups: ['token:read', 'tokenrefresh:read']
+    validUntil:
+      groups: ['token:read', 'tokenrefresh:read']
