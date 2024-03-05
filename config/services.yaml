@@ -29,6 +29,7 @@ services:
     Pimcore\Bundle\StudioApiBundle\State\ResetPasswordProcessor: ~
     Pimcore\Bundle\StudioApiBundle\State\Token\Create\Processor: ~
     Pimcore\Bundle\StudioApiBundle\State\Token\Refresh\Processor: ~
+    Pimcore\Bundle\StudioApiBundle\State\TranslationProcessor: ~
 
     # Filters
     Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter:
@@ -85,16 +86,23 @@ services:
     Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProvider
 
+    Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\TranslatorService
+
     Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\TokenService
 
     Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\SecurityService
 
-
     #Voters
     Pimcore\Bundle\StudioApiBundle\Security\Voter\TokenVoter:
         arguments: ['@request_stack']
+        tags:
+            - { name: security.voter }
+
+    Pimcore\Bundle\StudioApiBundle\Security\Voter\PublicTokenVoter:
+        arguments: [ '@request_stack' ]
         tags:
             - { name: security.voter }
 
