@@ -20,7 +20,6 @@ use ApiPlatform\OpenApi\Factory\OpenApiFactoryInterface;
 use ApiPlatform\OpenApi\Model\SecurityScheme;
 use ApiPlatform\OpenApi\OpenApi;
 
-
 final readonly class OpenApiFactoryDecorator implements OpenApiFactoryInterface
 {
     public function __construct(private OpenApiFactoryInterface $decorated)
