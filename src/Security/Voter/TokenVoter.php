@@ -58,6 +58,4 @@ final class TokenVoter extends Voter
 
         return $this->securityService->checkAuthToken($authToken);
     }
-
-
 }

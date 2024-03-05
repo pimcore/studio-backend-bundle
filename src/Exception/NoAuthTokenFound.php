@@ -20,5 +20,4 @@ use RuntimeException;
 
 final class NoAuthTokenFound extends RuntimeException
 {
-
 }
