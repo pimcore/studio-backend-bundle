@@ -31,10 +31,18 @@ trait PublicTranslationTrait
             return false;
         }
 
-        $nonPublicTranslations = array_diff($parameters[self::ARRAY_KEYS_INDEX], PublicTranslations::PUBLIC_KEYS);
+        $nonPublicTranslations = array_diff(
+            $parameters[self::ARRAY_KEYS_INDEX],
+            PublicTranslations::PUBLIC_KEYS
+        );
 
         if (!empty($nonPublicTranslations)) {
-            throw new NonPublicTranslationException(sprintf('You have requested non public keys: %s', implode(',', $nonPublicTranslations)));
+            throw new NonPublicTranslationException(
+                sprintf(
+                    'You have requested non public keys: %s',
+                    implode(',', $nonPublicTranslations)
+                )
+            );
         }
 
         return true;
