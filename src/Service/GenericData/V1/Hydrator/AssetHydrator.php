@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator;
 
-
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\MetaDataHydratorInterface;

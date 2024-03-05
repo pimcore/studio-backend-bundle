@@ -19,10 +19,10 @@ namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 readonly class MetaData
 {
     public function __construct(
-        private string  $name,
+        private string $name,
         private ?string $language,
-        private string  $type,
-        private mixed   $data,
+        private string $type,
+        private mixed $data,
     ) {
     }
 
