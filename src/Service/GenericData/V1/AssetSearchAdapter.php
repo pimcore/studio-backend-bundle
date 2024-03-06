@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
+use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchResult;
@@ -30,6 +31,9 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     ) {
     }
 
+    /**
+     * @throws Exception
+     */
     public function searchAssets(AssetQuery $assetQuery): AssetSearchResult
     {
         $searchResult = $this->searchService->search($assetQuery->getSearch());
@@ -46,6 +50,9 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
         );
     }
 
+    /**
+     * @throws Exception
+     */
     public function getAssetById(int $id): ?Asset
     {
         $searchResult = $this->searchService->byId($id);
