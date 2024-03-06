@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use RuntimeException;
+use Exception;
 
-final class NoAuthTokenFound extends RuntimeException
+final class NoAuthTokenFound extends Exception
 {
 }

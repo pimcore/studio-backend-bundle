@@ -27,6 +27,9 @@ trait RequestTrait
 
     private const AUTHORIZATION_HEADER = 'Authorization';
 
+    /**
+     * @throws NoAuthTokenFound
+     */
     private function getAuthToken(Request $request): string
     {
         $authToken = $request->headers->get(self::AUTHORIZATION_HEADER);
@@ -37,6 +40,9 @@ trait RequestTrait
         return $this->removeBearerPrefix($authToken);
     }
 
+    /**
+     * @throws NoRequestException
+     */
     private function getCurrentRequest(RequestStack $requestStack): Request
     {
         $request = $requestStack->getCurrentRequest();

@@ -16,6 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Security\Voter;
 
+use Pimcore\Bundle\StudioApiBundle\Exception\NoAuthTokenFound;
+use Pimcore\Bundle\StudioApiBundle\Exception\NonPublicTranslationException;
+use Pimcore\Bundle\StudioApiBundle\Exception\NoRequestException;
 use Pimcore\Bundle\StudioApiBundle\Security\Trait\PublicTranslationTrait;
 use Pimcore\Bundle\StudioApiBundle\Security\Trait\RequestTrait;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
@@ -44,6 +47,11 @@ final class PublicTokenVoter extends Voter
         return $attribute === self::SUPPORTED_ATTRIBUTE && in_array((string)$subject, self::SUPPORTED_SUBJECTS, true);
     }
 
+    /**
+     * @throws NoRequestException
+     * @throws NoAuthTokenFound
+     * @throws NonPublicTranslationException
+     */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
 
@@ -58,6 +66,9 @@ final class PublicTokenVoter extends Voter
         return $this->voteOnRequest($request, $subject);
     }
 
+    /**
+     * @throws NonPublicTranslationException
+     */
     private function voteOnRequest(Request $request, string $subject): bool
     {
         return match ($subject) {

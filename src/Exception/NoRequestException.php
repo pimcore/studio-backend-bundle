@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use RuntimeException;
+use Exception;
 
-final class NoRequestException extends RuntimeException
+final class NoRequestException extends Exception
 {
 }

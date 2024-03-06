@@ -24,6 +24,9 @@ trait PublicTranslationTrait
 {
     private const ARRAY_KEYS_INDEX = 'keys';
 
+    /**
+     * @throws NonPublicTranslationException
+     */
     private function voteOnTranslation(InputBag $payload): bool
     {
         $parameters = $payload->all();
