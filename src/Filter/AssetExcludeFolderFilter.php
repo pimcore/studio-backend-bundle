@@ -35,9 +35,9 @@ final class AssetExcludeFolderFilter implements FilterInterface
 
     public function apply(Request $request, bool $normalization, array $attributes, array &$context): void
     {
-        $excludeFolders = $request->query->get(self::FOLDER_FILTER_QUERY_PARAM);
+        $excludeFolders = $request->query->getBoolean(self::FOLDER_FILTER_QUERY_PARAM);
 
-        if ($excludeFolders !== 'true') {
+        if (!$excludeFolders) {
             return;
         }
 

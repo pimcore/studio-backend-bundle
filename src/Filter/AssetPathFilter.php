@@ -45,17 +45,8 @@ final class AssetPathFilter implements FilterInterface
             return;
         }
 
-        $includeDescendants = $this->getBooleanValueFromQuery(
-            $request,
-            self::AP_INCLUDE_DESCENDANTS_PARAM,
-            false
-        );
-
-        $includeParent = $this->getBooleanValueFromQuery(
-            $request,
-            self::AP_INCLUDE_PARENT_PARAM,
-            false
-        );
+        $includeDescendants = $request->query->getBoolean(self::AP_INCLUDE_DESCENDANTS_PARAM);
+        $includeParent = $request->query->getBoolean(self::AP_INCLUDE_PARENT_PARAM);
 
         $assetQuery = $this->getAssetQuery($context)->filterPath($path, $includeDescendants, $includeParent);
         $this->setAssetQuery($context, $assetQuery);
@@ -95,13 +86,5 @@ final class AssetPathFilter implements FilterInterface
                 ],
             ],
         ];
-    }
-
-    private function getBooleanValueFromQuery(Request $request, string $queryName, bool $defaultValue): bool
-    {
-        return filter_var(
-            $request->query->getBoolean($queryName, $defaultValue),
-            FILTER_VALIDATE_BOOLEAN
-        );
     }
 }
