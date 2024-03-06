@@ -21,7 +21,6 @@ readonly class MetaData
     public function __construct(
         private string $name,
         private ?string $language,
-        private string $type,
         private mixed $data,
     ) {
     }
@@ -34,11 +33,6 @@ readonly class MetaData
     public function getLanguage(): ?string
     {
         return $this->language;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
     }
 
     public function getData(): mixed

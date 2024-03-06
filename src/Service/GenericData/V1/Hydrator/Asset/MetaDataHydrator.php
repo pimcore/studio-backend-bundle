@@ -33,7 +33,6 @@ final class MetaDataHydrator implements MetaDataHydratorInterface
             $result[] = new MetaData(
                 $item->getName(),
                 $item->getLanguage(),
-                $item->getType(),
                 $item->getData()
             );
         }
