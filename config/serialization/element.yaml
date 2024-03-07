@@ -1,9 +1,9 @@
 Pimcore\Bundle\StudioApiBundle\Dto\Element:
     attributes:
         id:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         parentId:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         permissions:
             groups: ['element:read']
         path:

@@ -20,7 +20,7 @@ services:
         tags: [ 'controller.service_arguments' ]
 
     # Providers
-    Pimcore\Bundle\StudioApiBundle\State\AssetProvider: ~
+    Pimcore\Bundle\StudioApiBundle\State\Asset\Provider: ~
     Pimcore\Bundle\StudioApiBundle\State\UserProvider: ~
     Pimcore\Bundle\StudioApiBundle\State\ScheduledTaskProvider: ~
     Pimcore\Bundle\StudioApiBundle\State\VersionProvider: ~
@@ -30,6 +30,7 @@ services:
     Pimcore\Bundle\StudioApiBundle\State\Token\Create\Processor: ~
     Pimcore\Bundle\StudioApiBundle\State\Token\Refresh\Processor: ~
     Pimcore\Bundle\StudioApiBundle\State\TranslationProcessor: ~
+    Pimcore\Bundle\StudioApiBundle\State\Asset\Processor: ~
 
     # Filters
     Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter:
@@ -95,6 +96,9 @@ services:
     Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\SecurityService
 
+    Pimcore\Bundle\StudioApiBundle\Service\AssetServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\AssetService
+
     #Voters
     Pimcore\Bundle\StudioApiBundle\Security\Voter\TokenVoter:
         arguments: ['@request_stack']
@@ -109,3 +113,11 @@ services:
     #Decorators
     Pimcore\Bundle\StudioApiBundle\ApiPlatform\OpenApiFactoryDecorator:
         decorates: 'api_platform.openapi.factory'
+
+
+    # Model Hydrators
+    Pimcore\Bundle\StudioApiBundle\Service\ModelData\V1\Hydrator\AssetHydratorServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\ModelData\V1\Hydrator\AssetHydratorService
+
+    Pimcore\Bundle\StudioApiBundle\Service\ModelData\V1\Hydrator\Asset\ImageHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\ModelData\V1\Hydrator\Asset\ImageHydrator

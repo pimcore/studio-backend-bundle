@@ -21,53 +21,44 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions;
 
 class Asset extends Element
 {
-    public function __construct(
-        private readonly string $iconName,
-        private readonly bool $hasChildren,
-        private readonly string $type,
-        private readonly string $filename,
-        private readonly ?string $mimeType,
-        private readonly array $metaData,
-        private readonly bool $workflowWithPermissions,
-        private readonly string $fullPath,
-        int $id,
-        int $parentId,
-        string $path,
-        int $userOwner,
-        int $userModification,
-        ?string $locked,
-        bool $isLocked,
-        ?int $creationDate,
-        ?int $modificationDate,
-        Permissions $permissions
-    ) {
-        parent::__construct(
-            $id,
-            $parentId,
-            $path,
-            $userOwner,
-            $userModification,
-            $locked,
-            $isLocked,
-            $creationDate,
-            $modificationDate,
-            $permissions
-        );
-    }
+    private ?string $iconName;
+    private ?bool $hasChildren;
+    private ?string $type;
+    private ?string $filename = null;
+    private ?string $mimeType;
+    #[ApiProperty(genId: false)]
+    private ?array $metaData;
+    private ?bool $workflowWithPermissions;
+    private ?string $fullPath;
 
-    public function getIconName(): string
+    public function getIconName(): ?string
     {
         return $this->iconName;
     }
 
-    public function hasChildren(): bool
+    public function setIconName(?string $iconName): void
+    {
+        $this->iconName = $iconName;
+    }
+
+    public function getHasChildren(): ?bool
     {
         return $this->hasChildren;
     }
 
-    public function hasWorkflowWithPermissions(): bool
+    public function setHasChildren(?bool $hasChildren): void
     {
-        return $this->workflowWithPermissions;
+        $this->hasChildren = $hasChildren;
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function setType(?string $type): void
+    {
+        $this->type = $type;
     }
 
     public function getFilename(): ?string
@@ -75,23 +66,22 @@ class Asset extends Element
         return $this->filename;
     }
 
-    public function getType(): string
+    public function setFilename(?string $filename): void
     {
-        return $this->type;
+        $this->filename = $filename;
     }
-
-    //    public function getCustomSettings(): array
-    //    {
-    //        return $this->asset->getCustomSettings();
-    //    }
 
     public function getMimeType(): ?string
     {
         return $this->mimeType;
     }
 
-    #[ApiProperty(genId: false)]
-    public function getMetadata(): array
+    public function setMimeType(?string $mimeType): void
+    {
+        $this->mimeType = $mimeType;
+    }
+
+    public function getMetaData(): ?array
     {
         return $this->metaData;
     }
@@ -101,20 +91,28 @@ class Asset extends Element
         return count($this->metaData) > 0;
     }
 
-    public function getFullPath(): string
+    public function setMetaData(?array $metaData): void
+    {
+        $this->metaData = $metaData;
+    }
+
+    public function getWorkflowWithPermissions(): ?bool
+    {
+        return $this->workflowWithPermissions;
+    }
+
+    public function setWorkflowWithPermissions(?bool $workflowWithPermissions): void
+    {
+        $this->workflowWithPermissions = $workflowWithPermissions;
+    }
+
+    public function getFullPath(): ?string
     {
         return $this->fullPath;
     }
 
-    //    /**
-    //     * @param User|null $user
-    //     *
-    //     * @return array
-    //     *
-    //     * @throws Exception
-    //     */
-    //    public function getUserPermissions(?User $user = null): array
-    //    {
-    //        return $this->permis;
-    //    }
+    public function setFullPath(?string $fullPath): void
+    {
+        $this->fullPath = $fullPath;
+    }
 }

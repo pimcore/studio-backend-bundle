@@ -1,6 +1,7 @@
 resources:
     Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image:
-        provider: Pimcore\Bundle\StudioApiBundle\State\AssetProvider
+        provider: Pimcore\Bundle\StudioApiBundle\State\Asset\Provider
+        processor: Pimcore\Bundle\StudioApiBundle\Processor\Asset\Processor
         operations:
             ApiPlatform\Metadata\Get:
                 normalizationContext:

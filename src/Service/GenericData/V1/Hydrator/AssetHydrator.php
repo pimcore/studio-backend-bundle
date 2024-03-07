@@ -32,25 +32,29 @@ final readonly class AssetHydrator implements AssetHydratorInterface
 
     public function hydrate(AssetSearchResultItem $item): Asset
     {
-        return new Asset(
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
-            $item->isHasChildren(),
-            $item->getType(),
-            $item->getKey(),
-            $item->getMimeType(),
-            $this->metaDataHydrator->hydrate($item->getMetaData()),
-            $item->isHasWorkflowWithPermissions(),
-            $item->getFullPath(),
-            $item->getId(),
-            $item->getParentId(),
-            $item->getPath(),
-            $item->getUserOwner(),
-            $item->getUserModification(),
-            $item->getLocked(),
-            $item->isLocked(),
-            $item->getCreationDate(),
-            $item->getModificationDate(),
-            $this->permissionsHydrator->hydrate($item->getPermissions())
-        );
+        $asset = new Asset($item->getId());
+        // parent element stuff
+        $asset->setParentId($item->getParentId());
+        $asset->setPath($item->getPath());
+        $asset->setUserOwner($item->getUserOwner());
+        $asset->setUserModification($item->getUserModification());
+        $asset->setLocked($item->getLocked());
+        $asset->setIsLocked($item->isLocked());
+        $asset->setCreationDate($item->getCreationDate());
+        $asset->setModificationDate($item->getModificationDate());
+        $asset->setPermissions($this->permissionsHydrator->hydrate($item->getPermissions()));
+        $asset->setUserModification($item->getUserModification());
+
+        // asset specific stuff
+        $asset->setIconName($this->iconService->getIconForAsset($item->getType(), $item->getMimeType()));
+        $asset->setHasChildren($item->isHasChildren());
+        $asset->setType($item->getType());
+        $asset->setFilename($item->getKey());
+        $asset->setMimeType($item->getMimeType());
+        $asset->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
+        $asset->setWorkflowWithPermissions($item->isHasWorkflowWithPermissions());
+        $asset->setFullPath($item->getFullPath());
+
+        return $asset;
     }
 }

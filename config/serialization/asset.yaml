@@ -7,7 +7,7 @@ Pimcore\Bundle\StudioApiBundle\Dto\Asset:
         children:
             groups: ['asset:read']
         filename:
-            groups: ['asset:read']
+            groups: ['asset:read', 'asset:write']
         mimetype:
             groups: ['asset:read']
         metadata:

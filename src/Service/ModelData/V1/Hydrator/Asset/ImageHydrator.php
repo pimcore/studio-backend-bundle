@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset;
+namespace Pimcore\Bundle\StudioApiBundle\Service\ModelData\V1\Hydrator\Asset;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Image as ImageItem;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
@@ -25,12 +25,12 @@ final readonly class ImageHydrator implements ImageHydratorInterface
 {
     public function __construct(
         private IconServiceInterface $iconService,
-        private MetaDataHydratorInterface $metaDataHydrator,
-        private PermissionsHydratorInterface $permissionsHydrator
+        //private MetaDataHydratorInterface $metaDataHydrator,
+        //private PermissionsHydratorInterface $permissionsHydrator
     ) {
     }
 
-    public function hydrate(ImageItem $item): Image
+    public function hydrate(\Pimcore\Model\Asset\Image $item): Image
     {
         $image = new Image($item->getId());
         // parent element stuff
@@ -42,22 +42,22 @@ final readonly class ImageHydrator implements ImageHydratorInterface
         $image->setIsLocked($item->isLocked());
         $image->setCreationDate($item->getCreationDate());
         $image->setModificationDate($item->getModificationDate());
-        $image->setPermissions($this->permissionsHydrator->hydrate($item->getPermissions()));
+
         $image->setUserModification($item->getUserModification());
 
         // asset specific stuff
         $image->setIconName($this->iconService->getIconForAsset($item->getType(), $item->getMimeType()));
-        $image->setHasChildren($item->isHasChildren());
+
         $image->setType($item->getType());
         $image->setFilename($item->getKey());
         $image->setMimeType($item->getMimeType());
-        $image->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
-        $image->setWorkflowWithPermissions($item->isHasWorkflowWithPermissions());
+       // $image->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
+
         $image->setFullPath($item->getFullPath());
 
         $image->setWidth($item->getWidth());
         $image->setHeight($item->getHeight());
-        $image->setThumbnailPath($item->getThumbnail());
+
 
         return $image;
     }
