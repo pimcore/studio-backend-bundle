@@ -46,6 +46,7 @@ trait RequestTrait
     private function getCurrentRequest(RequestStack $requestStack): Request
     {
         $request = $requestStack->getCurrentRequest();
+
         if(!$request) {
             throw new NoRequestException('No request found');
         }
