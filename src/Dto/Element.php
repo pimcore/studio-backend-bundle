@@ -22,13 +22,21 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions;
 class Element
 {
     private ?int $parentId = null;
+
     private ?string $path;
+
     private ?int $userOwner;
+
     private ?int $userModification;
+
     private ?string $locked;
+
     private ?bool $isLocked;
+
     private ?int $creationDate;
+
     private ?int $modificationDate;
+
     private ?Permissions $permissions;
 
     public function __construct(

@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\ModelData\V1\Hydrator\Asset;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Image as ImageItem;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
 
 interface ImageHydratorInterface

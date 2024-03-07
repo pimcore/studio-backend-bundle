@@ -21,7 +21,9 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 final class Image extends Asset
 {
     private ?int $width;
+
     private ?int $height;
+
     private ?string $thumbnailPath;
 
     public function getWidth(): ?int

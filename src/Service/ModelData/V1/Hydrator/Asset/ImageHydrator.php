@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\ModelData\V1\Hydrator\Asset;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Image as ImageItem;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface;
@@ -51,13 +50,12 @@ final readonly class ImageHydrator implements ImageHydratorInterface
         $image->setType($item->getType());
         $image->setFilename($item->getKey());
         $image->setMimeType($item->getMimeType());
-       // $image->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
+        // $image->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
 
         $image->setFullPath($item->getFullPath());
 
         $image->setWidth($item->getWidth());
         $image->setHeight($item->getHeight());
-
 
         return $image;
     }
