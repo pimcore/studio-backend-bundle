@@ -1,4 +1,4 @@
-Pimcore\Model\Dependency:
+Pimcore\Bundle\StudioApiBundle\Dto\Dependency:
     attributes:
         sourceId:
             groups: ['dependency:read']

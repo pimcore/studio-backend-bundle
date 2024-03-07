@@ -1,0 +1,13 @@
+resources:
+  Pimcore\Bundle\StudioApiBundle\Dto\Token\Refresh:
+    shortName: Token-Refresh
+    operations:
+      ApiPlatform\Metadata\Post:
+        processor: Pimcore\Bundle\StudioApiBundle\State\Token\Refresh\Processor
+        output: Pimcore\Bundle\StudioApiBundle\Dto\Token\Output
+        uriTemplate: '/token/refresh'
+        openapiContext:
+          summary: 'Refreshes an existing token'
+
+    normalizationContext:
+      groups: [ 'tokenrefresh:read' ]

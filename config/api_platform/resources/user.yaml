@@ -7,7 +7,10 @@ resources:
                 input: Pimcore\Bundle\StudioApiBundle\Dto\ResetPasswordRequest
                 output: false
                 uriTemplate: '/users/reset-password'
-
+            ApiPlatform\Metadata\Get:
+                normalizationContext:
+                    groups: [ 'user:read' ]
+        provider: Pimcore\Bundle\StudioApiBundle\State\UserProvider
         normalizationContext:
             groups: [ 'get' ]
         denormalizationContext:

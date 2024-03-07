@@ -1,48 +1,20 @@
 Pimcore\Bundle\StudioApiBundle\Dto\Asset:
     attributes:
-        id:
-            groups: ['asset:read']
-        parentId:
-            groups: ['asset:read']
-        permissions:
-            groups: [ 'asset:read' ]
         type:
             groups: ['asset:read']
+        iconName:
+            groups: [ 'asset:read' ]
         children:
             groups: ['asset:read']
         filename:
             groups: ['asset:read']
-        path:
-            groups: ['asset:read']
         mimetype:
             groups: ['asset:read']
-        creationDate:
-            groups: ['asset:read']
-        modificationDate:
-            groups: ['asset:read']
-        userOwner:
-            groups: ['asset:read']
-        userModification:
-            groups: ['asset:read']
-        properties:
-            groups: ['asset:item:get']
-        versions:
-            groups: ['asset:read']
         metadata:
-            groups: ['asset:read']
-        locked:
-            groups: ['asset:read']
-        lock:
             groups: ['asset:read']
         customSettings:
             groups: ['asset:item:get']
         hasMetaData:
             groups: ['asset:read']
-        dependencies:
-            groups: ['asset:item:get']
-        scheduledTasks:
-            groups: ['asset:item:get']
-        versionCount:
-            groups: ['asset:item:get']
-        fullPath:
+        userPermissions:
             groups: ['asset:read']

@@ -1,32 +1,32 @@
 Pimcore\Bundle\StudioApiBundle\Dto\Version:
     attributes:
         id:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         cid:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         ctype:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         userId:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         user:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         note:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         date:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         data:
             groups: ['version:read']
         public:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         serialized:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         versionCount:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         binaryFileHash:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         binaryFileId:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         autosave:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']
         storageType:
-            groups: ['version:read', 'asset:item:get']
+            groups: ['version:read', 'element:item:get']

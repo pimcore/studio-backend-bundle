@@ -1,6 +1,8 @@
 parameters:
-    level: 5
+    level: 6
     reportUnmatchedIgnoredErrors: false
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
     paths:
         - src
     bootstrapFiles:
@@ -9,4 +11,5 @@ parameters:
         - src/Tests/*
 
 includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
     - phpstan-baseline.neon

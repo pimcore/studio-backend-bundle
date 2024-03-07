@@ -4,11 +4,14 @@ declare(strict_types=1);
 /**
  * Pimcore
  *
- * This source file is available under following license:
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
  * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
  *
  *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     PCL
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
 namespace Pimcore\Bundle\StudioApiBundle\State;
@@ -19,61 +22,40 @@ use ApiPlatform\State\Pagination\Pagination;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use ArrayIterator;
-use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\Search\Tree\AssetTreeServiceInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
-use Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter;
-use Pimcore\Model\Asset\Image as ImageModel;
+use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryContextTrait;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
 
-final class AssetProvider implements ProviderInterface
+final readonly class AssetProvider implements ProviderInterface
 {
+    use AssetQueryContextTrait;
+
     public function __construct(
-        private readonly AssetResolverInterface $assetResolver,
-        private readonly AssetTreeServiceInterface $assetTreeService,
-        private readonly Pagination $pagination
+        AssetQueryProviderInterface $assetQueryProvider,
+        private AssetSearchServiceInterface $assetSearchService,
+        private Pagination $pagination
     ) {
+        $this->assetQueryProvider = $assetQueryProvider;
     }
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
-            $result =[];
-            $totalItems = 0;
-            if (array_key_exists(AssetParentIdFilter::ASSET_PARENT_ID_FILTER_CONTEXT, $context)) {
-                $parentId = (int)($context[AssetParentIdFilter::ASSET_PARENT_ID_FILTER_CONTEXT] ?? 1);
-                $items = $this->assetTreeService->fetchTreeItems(
-                    $parentId,
-                    $this->pagination->getPage($context),
-                    $this->pagination->getLimit($operation, $context)
-                );
-                $totalItems = $items->getPagination()->getTotalItems();
-                foreach ($items->getItems() as $item) {
-                    $assetModel = $this->assetResolver->getById($item->getId());
-                    if ($assetModel === null) {
-                        continue;
-                    }
-                    $result[] = new Asset($assetModel, new Asset\Permissions());
-                }
-            }
+
+            $assetQuery = $this->getAssetQuery($context)
+                ->setPage($this->pagination->getPage($context))
+                ->setPageSize($this->pagination->getLimit($operation, $context));
+
+            $searchResult = $this->assetSearchService->searchAssets($assetQuery);
 
             return new TraversablePaginator(
-                new ArrayIterator($result),
+                new ArrayIterator($searchResult->getItems()),
                 $this->pagination->getPage($context),
                 $this->pagination->getLimit($operation, $context),
-                $totalItems
+                $searchResult->getTotalItems()
             );
         }
-        $assetModel = $this->assetResolver->getById($uriVariables['id']);
 
-        if ($assetModel === null) {
-            return null;
-        }
-
-        if ($assetModel instanceof ImageModel) {
-            return new Image($assetModel, new Asset\Permissions());
-        }
-
-        return new Asset($assetModel, new Asset\Permissions());
+        return $this->assetSearchService->getAssetById($uriVariables['id']);
     }
 }

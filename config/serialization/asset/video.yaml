@@ -1,0 +1,10 @@
+Pimcore\Bundle\StudioApiBundle\Dto\Asset\Video:
+    attributes:
+        duration:
+            groups: ['video:read', 'asset:read']
+        width:
+            groups: ['video:read', 'asset:read']
+        height:
+            groups: ['video:read', 'asset:read']
+        imageThumbnailPath:
+            groups: ['video:read', 'asset:read']
