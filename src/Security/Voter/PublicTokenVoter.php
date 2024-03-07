@@ -58,11 +58,12 @@ final class PublicTokenVoter extends Voter
 
         try {
             $authToken = $this->getAuthToken($request);
-            if ($this->securityService->checkAuthToken($authToken)) {
-                return true;
-            }
         } catch (NoAuthTokenFound) {
             return $this->voteOnRequest($request, $subject);
+        }
+
+        if ($this->securityService->checkAuthToken($authToken)) {
+            return true;
         }
 
         return $this->voteOnRequest($request, $subject);
