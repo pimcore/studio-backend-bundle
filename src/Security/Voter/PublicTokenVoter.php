@@ -49,7 +49,6 @@ final class PublicTokenVoter extends Voter
 
     /**
      * @throws NoRequestException
-     * @throws NoAuthTokenFound
      * @throws NonPublicTranslationException
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
@@ -57,10 +56,13 @@ final class PublicTokenVoter extends Voter
 
         $request = $this->getCurrentRequest($this->requestStack);
 
-        $authToken = $this->getAuthToken($request);
-
-        if ($this->securityService->checkAuthToken($authToken)) {
-            return true;
+        try {
+            $authToken = $this->getAuthToken($request);
+            if ($this->securityService->checkAuthToken($authToken)) {
+                return true;
+            }
+        } catch (NoAuthTokenFound) {
+            return $this->voteOnRequest($request, $subject);
         }
 
         return $this->voteOnRequest($request, $subject);
