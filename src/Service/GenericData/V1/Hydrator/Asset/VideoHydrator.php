@@ -32,29 +32,31 @@ final readonly class VideoHydrator implements VideoHydratorInterface
 
     public function hydrate(VideoItem $item): Video
     {
-        return new Video(
-            $item->getDuration(),
-            $item->getWidth(),
-            $item->getHeight(),
-            $item->getImageThumbnail(),
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
-            $item->isHasChildren(),
-            $item->getType(),
-            $item->getKey(),
-            $item->getMimeType(),
-            $this->metaDataHydrator->hydrate($item->getMetaData()),
-            $item->isHasWorkflowWithPermissions(),
-            $item->getFullPath(),
-            $item->getId(),
-            $item->getParentId(),
-            $item->getPath(),
-            $item->getUserOwner(),
-            $item->getUserModification(),
-            $item->getLocked(),
-            $item->isLocked(),
-            $item->getCreationDate(),
-            $item->getModificationDate(),
-            $this->permissionsHydrator->hydrate($item->getPermissions())
-        );
+        $video = new Video($item->getId());
+
+        $video->setParentId($item->getParentId());
+        $video->setPath($item->getPath());
+        $video->setUserOwner($item->getUserOwner());
+        $video->setUserModification($item->getUserModification());
+        $video->setLocked($item->getLocked());
+        $video->setIsLocked($item->isLocked());
+        $video->setCreationDate($item->getCreationDate());
+        $video->setModificationDate($item->getModificationDate());
+        $video->setPermissions($this->permissionsHydrator->hydrate($item->getPermissions()));
+        $video->setUserModification($item->getUserModification());
+
+        // asset specific stuff
+        $video->setIconName($this->iconService->getIconForAsset($item->getType(), $item->getMimeType()));
+        $video->setHasChildren($item->isHasChildren());
+        $video->setType($item->getType());
+        $video->setFilename($item->getKey());
+        $video->setMimeType($item->getMimeType());
+        $video->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
+        $video->setWorkflowWithPermissions($item->isHasWorkflowWithPermissions());
+        $video->setFullPath($item->getFullPath());
+
+        $video->setDuration($item->getDuration());
+
+        return $video;
     }
 }

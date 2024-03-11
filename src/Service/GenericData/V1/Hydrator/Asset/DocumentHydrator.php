@@ -32,27 +32,29 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
 
     public function hydrate(DocumentItem $item): Document
     {
-        return new Document(
-            $item->getPageCount(),
-            $item->getImageThumbnail(),
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
-            $item->isHasChildren(),
-            $item->getType(),
-            $item->getKey(),
-            $item->getMimeType(),
-            $this->metaDataHydrator->hydrate($item->getMetaData()),
-            $item->isHasWorkflowWithPermissions(),
-            $item->getFullPath(),
-            $item->getId(),
-            $item->getParentId(),
-            $item->getPath(),
-            $item->getUserOwner(),
-            $item->getUserModification(),
-            $item->getLocked(),
-            $item->isLocked(),
-            $item->getCreationDate(),
-            $item->getModificationDate(),
-            $this->permissionsHydrator->hydrate($item->getPermissions())
-        );
+        $document = new Document($item->getId());
+
+        $document->setParentId($item->getParentId());
+        $document->setPath($item->getPath());
+        $document->setUserOwner($item->getUserOwner());
+        $document->setUserModification($item->getUserModification());
+        $document->setLocked($item->getLocked());
+        $document->setIsLocked($item->isLocked());
+        $document->setCreationDate($item->getCreationDate());
+        $document->setModificationDate($item->getModificationDate());
+        $document->setPermissions($this->permissionsHydrator->hydrate($item->getPermissions()));
+        $document->setUserModification($item->getUserModification());
+
+        // asset specific stuff
+        $document->setIconName($this->iconService->getIconForAsset($item->getType(), $item->getMimeType()));
+        $document->setHasChildren($item->isHasChildren());
+        $document->setType($item->getType());
+        $document->setFilename($item->getKey());
+        $document->setMimeType($item->getMimeType());
+        $document->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
+        $document->setWorkflowWithPermissions($item->isHasWorkflowWithPermissions());
+        $document->setFullPath($item->getFullPath());
+
+        $document->setPageCount($item->getPageCount());
     }
 }

@@ -32,9 +32,29 @@ final readonly class FolderHydrator implements FolderHydratorInterface
 
     public function hydrate(FolderItem $item): Folder
     {
-        return new Folder(
-            $item->getId()
-        );
-        // TODO Implement hydrate() method.
+        $folder = new Folder($item->getId());
+
+        $folder->setParentId($item->getParentId());
+        $folder->setPath($item->getPath());
+        $folder->setUserOwner($item->getUserOwner());
+        $folder->setUserModification($item->getUserModification());
+        $folder->setLocked($item->getLocked());
+        $folder->setIsLocked($item->isLocked());
+        $folder->setCreationDate($item->getCreationDate());
+        $folder->setModificationDate($item->getModificationDate());
+        $folder->setPermissions($this->permissionsHydrator->hydrate($item->getPermissions()));
+        $folder->setUserModification($item->getUserModification());
+
+        // asset specific stuff
+        $folder->setIconName($this->iconService->getIconForAsset($item->getType(), $item->getMimeType()));
+        $folder->setHasChildren($item->isHasChildren());
+        $folder->setType($item->getType());
+        $folder->setFilename($item->getKey());
+        $folder->setMimeType($item->getMimeType());
+        $folder->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
+        $folder->setWorkflowWithPermissions($item->isHasWorkflowWithPermissions());
+        $folder->setFullPath($item->getFullPath());
+
+        return $folder;
     }
 }
