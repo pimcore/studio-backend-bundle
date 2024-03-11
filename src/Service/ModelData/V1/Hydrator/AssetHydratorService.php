@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Video;
 use Pimcore\Model\Asset as ModelAsset;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
-
 final readonly class AssetHydratorService implements AssetHydratorServiceInterface
 {
     public function __construct(
@@ -47,6 +46,7 @@ final readonly class AssetHydratorService implements AssetHydratorServiceInterfa
         if($this->assetHydratorLocator->has($class)) {
             return $this->assetHydratorLocator->get($class)->hydrate($item);
         }
+
         return new Asset($item->getId());
     }
 }
