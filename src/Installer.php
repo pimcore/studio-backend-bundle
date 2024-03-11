@@ -16,6 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Schema\Comparator;
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\DBAL\Schema\SchemaException;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
 
 /**
@@ -23,4 +29,91 @@ use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
  */
 final class Installer extends SettingsStoreAwareInstaller
 {
+    public const TRANSLATION_DOMAIN = 'studioUi';
+
+    public function __construct(
+        private readonly Connection $db
+    ){
+    }
+
+    /**
+     * @throws SchemaException|Exception
+     */
+    public function install(): void
+    {
+        $schema = $this->db->createSchemaManager()->introspectSchema();
+
+        $this->createTranslationTable($schema);
+        $this->executeDiffSql($schema);
+
+        parent::install();
+    }
+
+    private function createTranslationTable(Schema $schema): void
+    {
+        $translationsDomainTableName = 'translations_' . self::TRANSLATION_DOMAIN;
+        if (!$schema->hasTable($translationsDomainTableName)) {
+            $translationDomainTable = $schema->createTable($translationsDomainTableName);
+
+            $translationDomainTable->addColumn('key', 'string', [
+                'notnull' => true,
+                'length' => 190
+            ]);
+
+            $translationDomainTable->addColumn('type', 'string', [
+                'notnull' => true,
+                'length' => 15
+            ]);
+
+            $translationDomainTable->addColumn('language', 'string', [
+                'notnull' => true,
+                'length' => 10
+            ]);
+
+            $translationDomainTable->addColumn('text', 'text');
+
+            $translationDomainTable->addColumn('creationDate', 'integer', [
+                'unsigned' => true,
+                'length' => 11
+            ]);
+
+            $translationDomainTable->addColumn('modificationDate', 'integer', [
+                'unsigned' => true,
+                'length' => 11
+            ]);
+
+            $translationDomainTable->addColumn('userOwner', 'integer', [
+                'unsigned' => true,
+                'length' => 11
+            ]);
+
+            $translationDomainTable->addColumn('userModification', 'integer', [
+                'unsigned' => true,
+                'length' => 11
+            ]);
+
+            $translationDomainTable->setPrimaryKey(['key', 'language'], 'pk_translation');
+            $translationDomainTable->addIndex(['language'], 'idx_language');
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function executeDiffSql(Schema $newSchema): void
+    {
+        $currentSchema = $this->db->createSchemaManager()->introspectSchema();
+        $schemaComparator = new Comparator($this->db->getDatabasePlatform());
+        $schemaDiff = $schemaComparator->compareSchemas($currentSchema, $newSchema);
+        $dbPlatform = $this->db->getDatabasePlatform();
+        if (!$dbPlatform instanceof AbstractPlatform) {
+            throw new InstallationException('Could not get database platform.');
+        }
+
+        $sqlStatements = $dbPlatform->getAlterSchemaSQL($schemaDiff);
+
+        if (!empty($sqlStatements)) {
+            $this->db->executeStatement(implode(';', $sqlStatements));
+        }
+    }
 }

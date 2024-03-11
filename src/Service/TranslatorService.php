@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use InvalidArgumentException;
+use Pimcore\Bundle\StudioApiBundle\Installer;
 use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -28,7 +29,7 @@ final class TranslatorService implements TranslatorServiceInterface
 {
     private TranslatorBagInterface $translator;
 
-    private const DOMAIN = 'admin';
+    private const DOMAIN = Installer::TRANSLATION_DOMAIN;
 
     public function __construct(
         TranslatorInterface $translator
