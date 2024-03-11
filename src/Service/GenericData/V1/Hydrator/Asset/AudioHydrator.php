@@ -32,9 +32,29 @@ final readonly class AudioHydrator implements AudioHydratorInterface
 
     public function hydrate(AudioItem $item): Audio
     {
-        return new Audio(
-            $item->getId()
-        );
-        // TODO: Implement hydrate() method.
+        $audio = new Audio($item->getId());
+        // parent element stuff
+        $audio->setParentId($item->getParentId());
+        $audio->setPath($item->getPath());
+        $audio->setUserOwner($item->getUserOwner());
+        $audio->setUserModification($item->getUserModification());
+        $audio->setLocked($item->getLocked());
+        $audio->setIsLocked($item->isLocked());
+        $audio->setCreationDate($item->getCreationDate());
+        $audio->setModificationDate($item->getModificationDate());
+        $audio->setPermissions($this->permissionsHydrator->hydrate($item->getPermissions()));
+        $audio->setUserModification($item->getUserModification());
+
+        // asset specific stuff
+        $audio->setIconName($this->iconService->getIconForAsset($item->getType(), $item->getMimeType()));
+        $audio->setHasChildren($item->isHasChildren());
+        $audio->setType($item->getType());
+        $audio->setFilename($item->getKey());
+        $audio->setMimeType($item->getMimeType());
+        $audio->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
+        $audio->setWorkflowWithPermissions($item->isHasWorkflowWithPermissions());
+        $audio->setFullPath($item->getFullPath());
+
+        return $audio;
     }
 }

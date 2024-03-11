@@ -32,9 +32,29 @@ final readonly class ArchiveHydrator implements ArchiveHydratorInterface
 
     public function hydrate(ArchiveItem $item): Archive
     {
-        return new Archive(
-            $item->getId()
-        );
-        // TODO: Implement hydrate() method.
+        $archive =  new Archive($item->getId());
+
+        $archive->setParentId($item->getParentId());
+        $archive->setPath($item->getPath());
+        $archive->setUserOwner($item->getUserOwner());
+        $archive->setUserModification($item->getUserModification());
+        $archive->setLocked($item->getLocked());
+        $archive->setIsLocked($item->isLocked());
+        $archive->setCreationDate($item->getCreationDate());
+        $archive->setModificationDate($item->getModificationDate());
+        $archive->setPermissions($this->permissionsHydrator->hydrate($item->getPermissions()));
+        $archive->setUserModification($item->getUserModification());
+
+        // asset specific stuff
+        $archive->setIconName($this->iconService->getIconForAsset($item->getType(), $item->getMimeType()));
+        $archive->setHasChildren($item->isHasChildren());
+        $archive->setType($item->getType());
+        $archive->setFilename($item->getKey());
+        $archive->setMimeType($item->getMimeType());
+        $archive->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
+        $archive->setWorkflowWithPermissions($item->isHasWorkflowWithPermissions());
+        $archive->setFullPath($item->getFullPath());
+
+        return $archive;
     }
 }

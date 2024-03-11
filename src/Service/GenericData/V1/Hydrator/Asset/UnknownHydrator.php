@@ -32,10 +32,31 @@ final readonly class UnknownHydrator implements UnknownHydratorInterface
 
     public function hydrate(UnknownItem $item): Unknown
     {
-        return new Unknown(
+        $unknown = new Unknown(
             $item->getId()
         );
 
-        // TODO: Implement hydrate() method.
+        $unknown->setParentId($item->getParentId());
+        $unknown->setPath($item->getPath());
+        $unknown->setUserOwner($item->getUserOwner());
+        $unknown->setUserModification($item->getUserModification());
+        $unknown->setLocked($item->getLocked());
+        $unknown->setIsLocked($item->isLocked());
+        $unknown->setCreationDate($item->getCreationDate());
+        $unknown->setModificationDate($item->getModificationDate());
+        $unknown->setPermissions($this->permissionsHydrator->hydrate($item->getPermissions()));
+        $unknown->setUserModification($item->getUserModification());
+
+        // asset specific stuff
+        $unknown->setIconName($this->iconService->getIconForAsset($item->getType(), $item->getMimeType()));
+        $unknown->setHasChildren($item->isHasChildren());
+        $unknown->setType($item->getType());
+        $unknown->setFilename($item->getKey());
+        $unknown->setMimeType($item->getMimeType());
+        $unknown->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
+        $unknown->setWorkflowWithPermissions($item->isHasWorkflowWithPermissions());
+        $unknown->setFullPath($item->getFullPath());
+
+        return $unknown;
     }
 }

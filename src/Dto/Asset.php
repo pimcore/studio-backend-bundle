@@ -94,7 +94,7 @@ class Asset extends Element
 
     public function getHasMetaData(): bool
     {
-        return $this->metaData && count($this->metaData) > 0;
+        return $this->metaData && count($this->metaData) !== 0;
     }
 
     public function setMetaData(?array $metaData): void

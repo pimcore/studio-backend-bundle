@@ -32,10 +32,29 @@ final readonly class TextHydrator implements TextHydratorInterface
 
     public function hydrate(TextItem $item): Text
     {
-        return new Text(
-            $item->getId()
-        );
+        $text = new Text($item->getId());
 
-        // TODO: Implement hydrate() method.
+        $text->setParentId($item->getParentId());
+        $text->setPath($item->getPath());
+        $text->setUserOwner($item->getUserOwner());
+        $text->setUserModification($item->getUserModification());
+        $text->setLocked($item->getLocked());
+        $text->setIsLocked($item->isLocked());
+        $text->setCreationDate($item->getCreationDate());
+        $text->setModificationDate($item->getModificationDate());
+        $text->setPermissions($this->permissionsHydrator->hydrate($item->getPermissions()));
+        $text->setUserModification($item->getUserModification());
+
+        // asset specific stuff
+        $text->setIconName($this->iconService->getIconForAsset($item->getType(), $item->getMimeType()));
+        $text->setHasChildren($item->isHasChildren());
+        $text->setType($item->getType());
+        $text->setFilename($item->getKey());
+        $text->setMimeType($item->getMimeType());
+        $text->setMetaData($this->metaDataHydrator->hydrate($item->getMetaData()));
+        $text->setWorkflowWithPermissions($item->isHasWorkflowWithPermissions());
+        $text->setFullPath($item->getFullPath());
+
+        return $text;
     }
 }
