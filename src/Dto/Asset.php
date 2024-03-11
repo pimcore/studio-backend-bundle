@@ -20,22 +20,22 @@ use ApiPlatform\Metadata\ApiProperty;
 
 class Asset extends Element
 {
-    private ?string $iconName;
+    private ?string $iconName = null;
 
-    private ?bool $hasChildren;
+    private ?bool $hasChildren = null;
 
-    private ?string $type;
+    private ?string $type = null;
 
     private ?string $filename = null;
 
-    private ?string $mimeType;
+    private ?string $mimeType = null;
 
     #[ApiProperty(genId: false)]
-    private ?array $metaData;
+    private ?array $metaData = null;
 
-    private ?bool $workflowWithPermissions;
+    private ?bool $workflowWithPermissions = null;
 
-    private ?string $fullPath;
+    private ?string $fullPath = null;
 
     public function getIconName(): ?string
     {
@@ -94,7 +94,7 @@ class Asset extends Element
 
     public function getHasMetaData(): bool
     {
-        return count($this->metaData) > 0;
+        return $this->metaData && count($this->metaData) > 0;
     }
 
     public function setMetaData(?array $metaData): void

@@ -23,21 +23,21 @@ class Element
 {
     private ?int $parentId = null;
 
-    private ?string $path;
+    private ?string $path = null;
 
-    private ?int $userOwner;
+    private ?int $userOwner = null;
 
-    private ?int $userModification;
+    private ?int $userModification = null;
 
-    private ?string $locked;
+    private ?string $locked = null;
 
-    private ?bool $isLocked;
+    private ?bool $isLocked = null;
 
-    private ?int $creationDate;
+    private ?int $creationDate = null;
 
-    private ?int $modificationDate;
+    private ?int $modificationDate = null;
 
-    private ?Permissions $permissions;
+    private ?Permissions $permissions = null;
 
     public function __construct(
         private readonly int $id,
@@ -133,12 +133,12 @@ class Element
     }
 
     #[ApiProperty(genId: false)]
-    public function getPermissions(): Permissions
+    public function getPermissions(): ?Permissions
     {
         return $this->permissions;
     }
 
-    public function setPermissions(Permissions $permissions): void
+    public function setPermissions(?Permissions $permissions): void
     {
         $this->permissions = $permissions;
     }

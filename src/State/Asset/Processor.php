@@ -22,6 +22,7 @@ use ApiPlatform\State\ProcessorInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\ModelData\V1\Hydrator\AssetHydratorServiceInterface;
+use Pimcore\Model\Element\DuplicateFullPathException;
 
 final readonly class Processor implements ProcessorInterface
 {
@@ -32,6 +33,9 @@ final readonly class Processor implements ProcessorInterface
     ) {
     }
 
+    /**
+     * @throws DuplicateFullPathException
+     */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): Asset
     {
         if (
@@ -43,6 +47,8 @@ final readonly class Processor implements ProcessorInterface
         }
 
         $asset = $this->assetService->handleAsset($data->getId(), $data);
+
+        $asset->save();
 
         return $this->assetHydratorService->hydrate($asset);
     }
