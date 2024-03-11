@@ -45,7 +45,7 @@ final class AssetService implements AssetServiceInterface
      */
     private function setAssetData(\Pimcore\Model\Asset $asset, Asset $data): \Pimcore\Model\Asset
     {
-        $getters = array_filter(get_class_methods($data), static fn($method) => str_starts_with($method, 'get'));
+        $getters = array_filter(get_class_methods($data), static fn ($method) => str_starts_with($method, 'get'));
         foreach($getters as $getter) {
             $property = lcfirst(substr($getter, 3));
             $value = $data->$getter();
@@ -54,10 +54,9 @@ final class AssetService implements AssetServiceInterface
             }
             $this->propertySetter($asset, $property, $value);
         }
+
         return $asset;
     }
-
-
 
     private function propertySetter(\Pimcore\Model\Asset $asset, string $property, mixed $value): void
     {
