@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\ModelData\V1\Hydrator;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Archive;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Audio;
@@ -26,25 +25,28 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Text;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Unknown;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Video;
-use Pimcore\Bundle\StudioApiBundle\Service\ModelData\V1\Hydrator\Asset\ImageHydratorInterface;
+use Pimcore\Model\Asset as ModelAsset;
+use Symfony\Contracts\Service\ServiceProviderInterface;
+
 
 final readonly class AssetHydratorService implements AssetHydratorServiceInterface
 {
     public function __construct(
-        private ImageHydratorInterface $imageHydrator,
+        private ServiceProviderInterface $assetHydratorLocator,
     ) {
     }
 
     /**
-     * @param AssetSearchResultItem $item
+     * @param ModelAsset $item
      *
      * @return Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
      */
-    public function hydrate(\Pimcore\Model\Asset $item): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
+    public function hydrate(ModelAsset $item): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
     {
-        return match (true) {
-            $item instanceof \Pimcore\Model\Asset\Image => $this->imageHydrator->hydrate($item),
-            default => null
-        };
+        $class = get_class($item);
+        if($this->assetHydratorLocator->has($class)) {
+            return $this->assetHydratorLocator->get($class)->hydrate($item);
+        }
+        return new Asset($item->getId());
     }
 }
