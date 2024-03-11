@@ -56,5 +56,7 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
         $document->setFullPath($item->getFullPath());
 
         $document->setPageCount($item->getPageCount());
+
+        return $document;
     }
 }
