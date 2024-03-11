@@ -18,6 +18,6 @@ namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
-class Unknown extends Asset
+final class Unknown extends Asset
 {
 }

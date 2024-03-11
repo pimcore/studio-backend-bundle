@@ -18,61 +18,30 @@ namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
-class Document extends Asset
+final class Document extends Asset
 {
     //use MetaData\EmbeddedMetaDataTrait;
+    private ?int $pageCount = null;
 
-    public function __construct(
-        private readonly ?int $pageCount,
-        private readonly ?string $imageThumbnailPath,
-        string $iconName,
-        bool $hasChildren,
-        string $type,
-        string $filename,
-        string $mimeType,
-        array $metaData,
-        bool $workflowWithPermissions,
-        string $fullPath,
-        int $id,
-        int $parentId,
-        string $path,
-        int $userOwner,
-        int $userModification,
-        ?string $locked,
-        bool $isLocked,
-        ?int $creationDate,
-        ?int $modificationDate,
-        Permissions $permissions
-    ) {
-        parent::__construct(
-            $iconName,
-            $hasChildren,
-            $type,
-            $filename,
-            $mimeType,
-            $metaData,
-            $workflowWithPermissions,
-            $fullPath,
-            $id,
-            $parentId,
-            $path,
-            $userOwner,
-            $userModification,
-            $locked,
-            $isLocked,
-            $creationDate,
-            $modificationDate,
-            $permissions
-        );
-    }
+    private ?string $imageThumbnailPath = null;
 
     public function getPageCount(): ?int
     {
         return $this->pageCount;
     }
 
+    public function setPageCount(?int $pageCount): void
+    {
+        $this->pageCount = $pageCount;
+    }
+
     public function getImageThumbnailPath(): ?string
     {
         return $this->imageThumbnailPath;
+    }
+
+    public function setImageThumbnailPath(?string $imageThumbnailPath): void
+    {
+        $this->imageThumbnailPath = $imageThumbnailPath;
     }
 }

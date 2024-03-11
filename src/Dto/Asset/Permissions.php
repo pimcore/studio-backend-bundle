@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
-readonly class Permissions
+final readonly class Permissions
 {
     //TODO: remove or change default permissions
     public function __construct(

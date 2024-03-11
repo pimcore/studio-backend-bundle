@@ -18,6 +18,6 @@ namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
-class Folder extends Asset
+final class Folder extends Asset
 {
 }

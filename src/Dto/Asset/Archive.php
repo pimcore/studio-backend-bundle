@@ -18,6 +18,6 @@ namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
-class Archive extends Asset
+final class Archive extends Asset
 {
 }

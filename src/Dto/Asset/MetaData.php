@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
-readonly class MetaData
+final readonly class MetaData
 {
     public function __construct(
         private string $name,

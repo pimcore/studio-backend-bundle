@@ -25,13 +25,14 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Text;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Unknown;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Video;
+use Pimcore\Model\Asset as ModelAsset;
 
 interface AssetHydratorServiceInterface
 {
     /**
-     * @param \Pimcore\Model\Asset
+     * @param ModelAsset $item
      *
      * @return Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
      */
-    public function hydrate(\Pimcore\Model\Asset $item): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video;
+    public function hydrate(ModelAsset $item): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video;
 }
