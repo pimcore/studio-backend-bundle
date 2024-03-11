@@ -21,9 +21,12 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 final class Video extends Asset
 {
     //use MetaData\EmbeddedMetaDataTrait;
-    private  ?float $duration;
-    private  ?int $width;
-    private  ?int $height;
+    private ?float $duration;
+
+    private ?int $width;
+
+    private ?int $height;
+
     private ?string $imageThumbnailPath;
 
     public function getDuration(): ?float
