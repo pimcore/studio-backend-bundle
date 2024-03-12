@@ -1,14 +1,16 @@
 resources:
     Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image:
-        provider: Pimcore\Bundle\StudioApiBundle\State\AssetProvider
+        provider: Pimcore\Bundle\StudioApiBundle\State\Asset\Provider
+        processor: Pimcore\Bundle\StudioApiBundle\State\Asset\Processor
         operations:
             ApiPlatform\Metadata\Get:
                 normalizationContext:
                     groups: ['image:read', 'asset:read', 'asset:item:get', 'dependency:read', 'property:read', 'element:read', 'element:item:get' ]
+            ApiPlatform\Metadata\Put:
         properties:
             id:
                 identifier: true
         normalizationContext:
             groups: ['image:read', 'asset:read', 'dependency:read', 'property:read', 'element:read']
         denormalizationContext:
-            groups: ['image:write', 'asset:write']
+            groups: ['image:write', 'asset:write', 'element:write']

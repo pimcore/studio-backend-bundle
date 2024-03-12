@@ -1,20 +1,20 @@
 Pimcore\Bundle\StudioApiBundle\Dto\Asset:
     attributes:
         type:
-            groups: ['asset:read']
+            groups: ['asset:read', 'asset:write']
         iconName:
-            groups: [ 'asset:read' ]
+            groups: [ 'asset:read' , 'asset:write']
         children:
-            groups: ['asset:read']
+            groups: ['asset:read', 'asset:write']
         filename:
-            groups: ['asset:read']
+            groups: ['asset:read', 'asset:write']
         mimetype:
-            groups: ['asset:read']
+            groups: ['asset:read', 'asset:write']
         metadata:
-            groups: ['asset:read']
+            groups: ['asset:read', 'asset:write']
         customSettings:
-            groups: ['asset:item:get']
+            groups: ['asset:item:get', 'asset:write']
         hasMetaData:
-            groups: ['asset:read']
+            groups: ['asset:read', 'asset:write']
         userPermissions:
-            groups: ['asset:read']
+            groups: ['asset:read', 'asset:write']

@@ -33,11 +33,8 @@ final readonly class ImageHydrator implements ImageHydratorInterface
     public function hydrate(ImageItem $item): Image
     {
         return new Image(
-            'muhFormat', // TODO: Implement format
             $item->getWidth(),
             $item->getHeight(),
-            false, // TODO: Implement isVectorGraphic
-            false,// TODO: Implement isAnimated
             $item->getThumbnail(),
             $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->isHasChildren(),

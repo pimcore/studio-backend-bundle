@@ -1,36 +1,36 @@
 Pimcore\Bundle\StudioApiBundle\Dto\Element:
     attributes:
         id:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         parentId:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         permissions:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         path:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         creationDate:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         modificationDate:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         userOwner:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         userModification:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         properties:
-            groups: ['element:item:get']
+            groups: ['element:item:get', 'element:write']
         versions:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         locked:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         lock:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         dependencies:
-            groups: ['element:item:get']
+            groups: ['element:item:get', 'element:write']
         scheduledTasks:
-            groups: ['element:item:get']
+            groups: ['element:item:get', 'element:write']
         versionCount:
-            groups: ['element:item:get']
+            groups: ['element:item:get', 'element:write']
         fullPath:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']
         userPermissions:
-            groups: ['element:read']
+            groups: ['element:read', 'element:write']

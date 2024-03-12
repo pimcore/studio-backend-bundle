@@ -1,19 +1,13 @@
 Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image:
     attributes:
         thumbnail:
-            groups: ['image:read', 'asset:read']
-        format:
-            groups: ['image:read', 'asset:read']
+            groups: ['image:read', 'asset:read', 'image:write']
         dimensions:
-            groups: ['image:read', 'asset:read']
+            groups: ['image:read', 'asset:read', 'image:write']
         width:
-            groups: ['image:read', 'asset:read']
+            groups: ['image:read', 'asset:read', 'image:write']
         height:
-            groups: ['image:read', 'asset:read']
-        animated:
-            groups: ['image:read', 'asset:read']
-        vectorGraphic:
-            groups: ['image:read', 'asset:read']
+            groups: ['image:read', 'asset:read', 'image:write']
 #        lowQualityPreviewDataUri:
 #            groups: ['image:read']
 #        lowQualityPreviewPath:

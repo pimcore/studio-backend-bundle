@@ -20,12 +20,13 @@ services:
         tags: [ 'controller.service_arguments' ]
 
     # Providers
-    Pimcore\Bundle\StudioApiBundle\State\AssetProvider: ~
+    Pimcore\Bundle\StudioApiBundle\State\Asset\Provider: ~
     Pimcore\Bundle\StudioApiBundle\State\UserProvider: ~
     Pimcore\Bundle\StudioApiBundle\State\ScheduledTaskProvider: ~
     Pimcore\Bundle\StudioApiBundle\State\VersionProvider: ~
 
     # Processors
+
     Pimcore\Bundle\StudioApiBundle\State\ResetPasswordProcessor: ~
     Pimcore\Bundle\StudioApiBundle\State\Token\Create\Processor: ~
     Pimcore\Bundle\StudioApiBundle\State\Token\Refresh\Processor: ~
@@ -70,11 +71,22 @@ services:
     Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydratorInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydrator
 
+    Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\Asset\ImageHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\Asset\ImageHydrator
+
     # Services
     Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydratorServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydratorService
         arguments:
             $assetHydratorLocator: '@generic_data_index.asset_hydrator.service_locator'
+
+    Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\AssetHydratorServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\AssetHydratorService
+        arguments:
+            $assetHydratorLocator: '@pimcore_model_data.asset_hydrator.service_locator'
+
+    Pimcore\Bundle\StudioApiBundle\Service\AssetServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\AssetService
 
     Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\AssetSearchService
@@ -126,3 +138,8 @@ services:
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Text: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\TextHydratorInterface'
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\UnknownHydratorInterface'
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\VideoHydratorInterface'
+
+    pimcore_model_data.asset_hydrator.service_locator:
+        class: Symfony\Component\DependencyInjection\ServiceLocator
+        arguments:
+            - Pimcore\Model\Asset\Image: '@Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\Asset\ImageHydratorInterface'

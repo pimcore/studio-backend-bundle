@@ -18,16 +18,13 @@ namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
-class Image extends Asset
+final class Image extends Asset
 {
     //use MetaData\EmbeddedMetaDataTrait;
 
     public function __construct(
-        private readonly string $format,
         private readonly int $width,
         private readonly int $height,
-        private readonly bool $vectorGraphic,
-        private readonly bool $animated,
         private readonly string $thumbnailPath,
         string $iconName,
         bool $hasChildren,
