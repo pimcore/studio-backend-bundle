@@ -22,18 +22,22 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\SchemaException;
+use Pimcore\Extension\Bundle\Installer\Exception\InstallationException;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
+use Symfony\Component\HttpKernel\Bundle\BundleInterface;
 
 /**
  * @internal
  */
 final class Installer extends SettingsStoreAwareInstaller
 {
-    public const TRANSLATION_DOMAIN = 'studioUi';
+    public const TRANSLATION_DOMAIN = 'studio_ui';
 
     public function __construct(
-        private readonly Connection $db
+        private readonly Connection $db,
+        BundleInterface $bundle,
     ){
+        parent::__construct($bundle);
     }
 
     /**
