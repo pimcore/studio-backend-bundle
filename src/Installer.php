@@ -36,7 +36,7 @@ final class Installer extends SettingsStoreAwareInstaller
     public function __construct(
         private readonly Connection $db,
         BundleInterface $bundle,
-    ){
+    ) {
         parent::__construct($bundle);
     }
 
@@ -61,39 +61,39 @@ final class Installer extends SettingsStoreAwareInstaller
 
             $translationDomainTable->addColumn('key', 'string', [
                 'notnull' => true,
-                'length' => 190
+                'length' => 190,
             ]);
 
             $translationDomainTable->addColumn('type', 'string', [
                 'notnull' => true,
-                'length' => 15
+                'length' => 15,
             ]);
 
             $translationDomainTable->addColumn('language', 'string', [
                 'notnull' => true,
-                'length' => 10
+                'length' => 10,
             ]);
 
             $translationDomainTable->addColumn('text', 'text');
 
             $translationDomainTable->addColumn('creationDate', 'integer', [
                 'unsigned' => true,
-                'length' => 11
+                'length' => 11,
             ]);
 
             $translationDomainTable->addColumn('modificationDate', 'integer', [
                 'unsigned' => true,
-                'length' => 11
+                'length' => 11,
             ]);
 
             $translationDomainTable->addColumn('userOwner', 'integer', [
                 'unsigned' => true,
-                'length' => 11
+                'length' => 11,
             ]);
 
             $translationDomainTable->addColumn('userModification', 'integer', [
                 'unsigned' => true,
-                'length' => 11
+                'length' => 11,
             ]);
 
             $translationDomainTable->setPrimaryKey(['key', 'language'], 'pk_translation');

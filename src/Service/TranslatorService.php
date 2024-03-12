@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use InvalidArgumentException;
-use Pimcore\Bundle\StudioApiBundle\Installer;
 use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
+use Pimcore\Bundle\StudioApiBundle\Installer;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
