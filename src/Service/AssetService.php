@@ -19,17 +19,16 @@ namespace Pimcore\Bundle\StudioApiBundle\Service;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use Pimcore\Model\Asset as CoreAsset;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Exception\NotFoundException;
-use Pimcore\Model\Asset as CoreAsset;
 
 final readonly class AssetService implements AssetServiceInterface
 {
     public function __construct(
         private AssetResolverInterface $assetResolver,
         private SynchronousProcessingServiceInterface $synchronousProcessingService
-    )
-    {
+    ) {
     }
 
     /**
@@ -50,9 +49,9 @@ final readonly class AssetService implements AssetServiceInterface
         }
         $this->synchronousProcessingService->enable();
         $asset->save();
+
         return $asset;
     }
-
 
     private function compare(CoreAsset $current, Asset $data): array
     {
@@ -63,16 +62,18 @@ final readonly class AssetService implements AssetServiceInterface
                 $fieldName = str_replace('get', '', $field);
                 $differences[$fieldName] = [
                     'current' => $current->$field(),
-                    'new' => $data->$field()
+                    'new' => $data->$field(),
                 ];
             }
         }
+
         return $differences;
     }
 
     private function fieldsToCheck(array $methods): array
     {
         $setters = array_filter($methods, static fn ($method) => str_starts_with($method, 'set'));
+
         return array_map(static fn ($setter) => str_replace('set', 'get', $setter), $setters);
     }
 }
