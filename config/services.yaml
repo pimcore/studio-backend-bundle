@@ -26,7 +26,7 @@ services:
     Pimcore\Bundle\StudioApiBundle\State\VersionProvider: ~
 
     # Processors
-
+    Pimcore\Bundle\StudioApiBundle\State\Asset\Processor: ~
     Pimcore\Bundle\StudioApiBundle\State\ResetPasswordProcessor: ~
     Pimcore\Bundle\StudioApiBundle\State\Token\Create\Processor: ~
     Pimcore\Bundle\StudioApiBundle\State\Token\Refresh\Processor: ~

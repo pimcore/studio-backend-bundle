@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Model\Asset as CoreAsset;
 
-interface AssetHydratorInterface
+interface AssetHydratorServiceInterface
 {
     /**
      * @param CoreAsset $item

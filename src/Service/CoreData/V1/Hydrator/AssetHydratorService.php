@@ -6,7 +6,7 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Model\Asset as CoreAsset;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
-final readonly class AssetHydratorService implements AssetHydratorInterface
+final readonly class AssetHydratorService implements AssetHydratorServiceInterface
 {
     public function __construct(
         private ServiceProviderInterface $assetHydratorLocator,

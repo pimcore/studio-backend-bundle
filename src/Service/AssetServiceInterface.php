@@ -20,5 +20,5 @@ use Pimcore\Model\Asset as CoreAsset;
 
 interface AssetServiceInterface
 {
-    public function processAsset(int $id, Asset $data): CoreAsset;
+    public function processAsset(Asset $data): CoreAsset;
 }

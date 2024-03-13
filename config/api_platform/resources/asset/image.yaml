@@ -6,7 +6,7 @@ resources:
             ApiPlatform\Metadata\Get:
                 normalizationContext:
                     groups: ['image:read', 'asset:read', 'asset:item:get', 'dependency:read', 'property:read', 'element:read', 'element:item:get' ]
-            ApiPlatform\Metadata\Put:
+            ApiPlatform\Metadata\Patch:
         properties:
             id:
                 identifier: true

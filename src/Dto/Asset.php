@@ -25,7 +25,7 @@ class Asset extends Element
         private readonly string $iconName,
         private readonly bool $hasChildren,
         private readonly string $type,
-        private readonly string $filename,
+        private string $filename,
         private readonly ?string $mimeType,
         private readonly array $metaData,
         private readonly bool $workflowWithPermissions,
@@ -70,9 +70,14 @@ class Asset extends Element
         return $this->workflowWithPermissions;
     }
 
-    public function getFilename(): ?string
+    public function getFilename(): string
     {
         return $this->filename;
+    }
+
+    public function setFilename(string $filename): void
+    {
+        $this->filename = $filename;
     }
 
     public function getType(): string

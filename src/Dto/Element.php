@@ -23,7 +23,7 @@ class Element
 {
     public function __construct(
         private readonly int $id,
-        private readonly int $parentId,
+        private int $parentId,
         private readonly string $path,
         private readonly int $userOwner,
         private readonly int $userModification,
@@ -43,6 +43,11 @@ class Element
     public function getParentId(): int
     {
         return $this->parentId;
+    }
+
+    public function setParentId(int $parentId): void
+    {
+        $this->parentId = $parentId;
     }
 
     public function getPath(): string
