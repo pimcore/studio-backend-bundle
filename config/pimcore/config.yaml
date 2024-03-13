@@ -18,3 +18,8 @@ api_platform:
             access_token:
                 name: 'Authorization'
                 type: 'header'
+
+pimcore:
+    translations:
+        domains:
+            - studio
