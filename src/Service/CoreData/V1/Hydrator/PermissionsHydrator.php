@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator;
 
-
 use Exception;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions;
 use Pimcore\Bundle\StudioApiBundle\Util\ValueObjects\Permission;
@@ -30,6 +29,7 @@ final class PermissionsHydrator implements PermissionsHydratorInterface
     public function hydrate(Asset $asset): Permissions
     {
         $permission = new Permission($asset->getUserPermissions());
+
         return new Permissions(
             $permission->isList(),
             $permission->isView(),

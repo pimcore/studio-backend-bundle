@@ -52,6 +52,7 @@ final class TokenService implements TokenServiceInterface
     public function getUserForToken(string $token): User
     {
         $tokenInfo = $this->getInfoForToken($token);
+
         return $this->userResolver->getByName($tokenInfo->getUsername());
     }
 
@@ -59,6 +60,7 @@ final class TokenService implements TokenServiceInterface
     {
         $tokenInfo = $this->getInfoForToken($token);
         $this->saveToken($tokenInfo);
+
         return $tokenInfo;
     }
 
