@@ -22,4 +22,4 @@ api_platform:
 pimcore:
     translations:
         domains:
-            - studio_ui
+            - studio
