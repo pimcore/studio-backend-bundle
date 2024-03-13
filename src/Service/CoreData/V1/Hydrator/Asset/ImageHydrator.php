@@ -16,14 +16,16 @@
 namespace Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\Asset;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Image;
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions;
+
+use Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface;
 use Pimcore\Model\Asset\Image as CoreImage;
 
 final readonly class ImageHydrator implements ImageHydratorInterface
 {
     public function __construct(
-        private IconServiceInterface $iconService
+        private IconServiceInterface $iconService,
+        private PermissionsHydratorInterface $permissionsHydrator
     ) {
     }
 
@@ -50,7 +52,7 @@ final readonly class ImageHydrator implements ImageHydratorInterface
             $item->isLocked(),
             $item->getCreationDate(),
             $item->getModificationDate(),
-            new Permissions()
+            $this->permissionsHydrator->hydrate($item)
         );
     }
 }

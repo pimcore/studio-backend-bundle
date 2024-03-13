@@ -71,8 +71,12 @@ services:
     Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydratorInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydrator
 
+    # Core Data
     Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\Asset\ImageHydratorInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\Asset\ImageHydrator
+
+    Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\PermissionsHydratorInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\CoreData\V1\Hydrator\PermissionsHydrator
 
     # Services
     Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydratorServiceInterface:

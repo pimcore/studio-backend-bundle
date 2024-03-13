@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolver;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token\Info;
+use Pimcore\Model\User;
 use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
@@ -28,6 +30,7 @@ final class TokenService implements TokenServiceInterface
     private const TMP_STORE_TAG_PLACEHOLDER = '{userId}';
 
     public function __construct(
+        private readonly UserResolver $userResolver,
         private readonly TokenGeneratorInterface $tokenGenerator,
         private readonly TmpStoreResolverInterface $tmpStoreResolver,
         private readonly int $tokenLifetime,
@@ -46,22 +49,16 @@ final class TokenService implements TokenServiceInterface
         return $token;
     }
 
+    public function getUserForToken(string $token): User
+    {
+        $tokenInfo = $this->getInfoForToken($token);
+        return $this->userResolver->getByName($tokenInfo->getUsername());
+    }
+
     public function refreshToken(string $token): Info
     {
-        $entry = $this->tmpStoreResolver->get($token);
-        if($entry === null) {
-            throw new TokenNotFoundException('Token not found');
-        }
-
-        $data = $entry->getData();
-
-        if(!isset($data['username'])) {
-            throw new TokenNotFoundException('Token not found');
-        }
-
-        $tokenInfo = new Info($token, $data['username']);
+        $tokenInfo = $this->getInfoForToken($token);
         $this->saveToken($tokenInfo);
-
         return $tokenInfo;
     }
 
@@ -89,5 +86,19 @@ final class TokenService implements TokenServiceInterface
             $userId,
             self::TMP_STORE_TAG
         );
+    }
+
+    private function getInfoForToken(string $token): Info
+    {
+        $entry = $this->tmpStoreResolver->get($token);
+        if($entry === null) {
+            throw new TokenNotFoundException('Token not found');
+        }
+
+        if(!isset($data['username'])) {
+            throw new TokenNotFoundException('Token not found');
+        }
+
+        return new Info($token, $entry->getData()['username']);
     }
 }
