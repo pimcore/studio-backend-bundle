@@ -22,6 +22,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\SchemaException;
+use Pimcore\Bundle\StudioApiBundle\Service\TranslatorService;
 use Pimcore\Extension\Bundle\Installer\Exception\InstallationException;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
@@ -31,8 +32,6 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
  */
 final class Installer extends SettingsStoreAwareInstaller
 {
-    public const TRANSLATION_DOMAIN = 'studio_ui';
-
     public function __construct(
         private readonly Connection $db,
         BundleInterface $bundle,
@@ -55,7 +54,7 @@ final class Installer extends SettingsStoreAwareInstaller
 
     private function createTranslationTable(Schema $schema): void
     {
-        $translationsDomainTableName = 'translations_' . self::TRANSLATION_DOMAIN;
+        $translationsDomainTableName = 'translations_' . TranslatorService::DOMAIN;
         if (!$schema->hasTable($translationsDomainTableName)) {
             $translationDomainTable = $schema->createTable($translationsDomainTableName);
 

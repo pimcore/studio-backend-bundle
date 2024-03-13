@@ -29,7 +29,7 @@ final class TranslatorService implements TranslatorServiceInterface
 {
     private TranslatorBagInterface $translator;
 
-    private const DOMAIN = Installer::TRANSLATION_DOMAIN;
+    public const DOMAIN = 'studio';
 
     public function __construct(
         TranslatorInterface $translator
