@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioApiBundle\Security\Trait\RequestTrait;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 

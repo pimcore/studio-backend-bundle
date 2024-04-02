@@ -16,8 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
-
 /**
  * @internal
  */
