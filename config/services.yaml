@@ -109,8 +109,8 @@ services:
             - { name: security.voter }
 
     #Decorators
-    Pimcore\Bundle\StudioApiBundle\ApiPlatform\OpenApiFactoryDecorator:
-        decorates: 'api_platform.openapi.factory'
+    #Pimcore\Bundle\StudioApiBundle\ApiPlatform\OpenApiFactoryDecorator:
+        #decorates: 'api_platform.openapi.factory'
 
     #Service Locator
     generic_data_index.asset_hydrator.service_locator:
@@ -126,3 +126,8 @@ services:
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Text: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\TextHydratorInterface'
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\UnknownHydratorInterface'
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\VideoHydratorInterface'
+
+
+    Pimcore\Bundle\StudioApiBundle\EventSubscriber\ApiExceptionListener:
+        tags:
+            - { name: kernel.event_subscriber }

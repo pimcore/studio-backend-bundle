@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioApiBundle\Security\Trait\RequestTrait;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -44,7 +45,7 @@ final class PublicTokenVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $attribute === self::SUPPORTED_ATTRIBUTE && in_array((string)$subject, self::SUPPORTED_SUBJECTS, true);
+        return $attribute === self::SUPPORTED_ATTRIBUTE;
     }
 
     /**
@@ -53,13 +54,12 @@ final class PublicTokenVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-
         $request = $this->getCurrentRequest($this->requestStack);
 
         try {
             $authToken = $this->getAuthToken($request);
         } catch (NoAuthTokenFound) {
-            return $this->voteOnRequest($request, $subject);
+            return $this->voteOnRequest($request, $subject->metadata->getName());
         }
 
         if ($this->securityService->checkAuthToken($authToken)) {

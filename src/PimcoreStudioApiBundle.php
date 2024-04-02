@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle;
 
 use ApiPlatform\Symfony\Bundle\ApiPlatformBundle;
+use Nelmio\ApiDocBundle\NelmioApiDocBundle;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
 use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
@@ -51,5 +52,6 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
     public static function registerDependentBundles(BundleCollection $collection): void
     {
         $collection->addBundle(new ApiPlatformBundle());
+        $collection->addBundle(new NelmioApiDocBundle());
     }
 }

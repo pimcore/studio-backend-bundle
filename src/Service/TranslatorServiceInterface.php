@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
  */
 interface TranslatorServiceInterface
 {
-    public function getAllTranslations(string $locale): Translation;
+    public function getAllTranslations(string $locale): array;
 
-    public function getTranslationsForKeys(string $locale, array $keys): Translation;
+    public function getTranslationsForKeys(string $locale, array $keys): array;
 }

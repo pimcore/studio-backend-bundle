@@ -40,21 +40,19 @@ final class TranslatorService implements TranslatorServiceInterface
         $this->translator = $translator;
     }
 
-    public function getAllTranslations(string $locale): Translation
+    public function getAllTranslations(string $locale): array
     {
-        return new Translation(
-            $locale,
-            $this->translator->getCatalogue($locale)->all(self::DOMAIN)
-        );
+        $translations = $this->translator->getCatalogue($locale)->all(self::DOMAIN);
+        return ['locale' => $locale, 'keys' => $translations];
     }
 
-    public function getTranslationsForKeys(string $locale, array $keys): Translation
+    public function getTranslationsForKeys(string $locale, array $keys): array
     {
         $translations = [];
         foreach ($keys as $key) {
             $translations[$key] = $this->translator->getCatalogue($locale)->get($key, self::DOMAIN);
         }
 
-        return new Translation($locale, $translations);
+        return ['locale' => $locale, 'keys' => $translations];
     }
 }

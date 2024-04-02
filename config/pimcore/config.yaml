@@ -1,23 +1,26 @@
-api_platform:
-    title: 'Pimcore Studio API'
-    description: 'API for Pimcore Studio UI'
-    version: 0.0.1
-    graphql:
-        graphql_playground: false
-        graphiql:
-            enabled: false
-    event_listeners_backward_compatibility_layer: false
-    keep_legacy_inflector: false
-    enable_docs: true
-    enable_entrypoint: false
-    enable_swagger_ui: false
-    enable_re_doc: false
-    show_webby: false
-    swagger:
-        api_keys:
-            access_token:
-                name: 'Authorization'
-                type: 'header'
+imports:
+    - { resource: 'packages/nelmio_api_doc.yaml' }
+
+#api_platform:
+#    title: 'Pimcore Studio API'
+#    description: 'API for Pimcore Studio UI'
+#    version: 0.0.1
+#    graphql:
+#        graphql_playground: false
+#        graphiql:
+#            enabled: false
+#    event_listeners_backward_compatibility_layer: false
+#    keep_legacy_inflector: false
+#    enable_docs: true
+#    enable_entrypoint: false
+#    enable_swagger_ui: false
+#    enable_re_doc: false
+#    show_webby: false
+#    swagger:
+#        api_keys:
+#            access_token:
+#                name: 'Authorization'
+#                type: 'header'
 
 pimcore:
     translations:

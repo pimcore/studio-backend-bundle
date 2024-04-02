@@ -1,4 +1,18 @@
 api_platform:
     resource: .
     type: api_platform
-    prefix: /api
+    prefix: /testtesttest
+
+
+api_platform_swagger_ui:
+    path: /api/doc/swagger
+    methods: GET
+    defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
+
+
+studio_api:
+    resource: "../../src/Controller/Api"
+    type:     annotation
+    prefix:   /api
+    options:
+        expose: true

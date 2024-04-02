@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
+use Pimcore\Bundle\StudioApiBundle\Util\Constants\PublicTranslations;
+
 /**
  * @internal
  */
@@ -23,7 +25,7 @@ final readonly class Translation
 {
     public function __construct(
         private string $locale = 'en',
-        private array $keys = []
+        private array $keys = PublicTranslations::PUBLIC_KEYS
     ) {
     }
 

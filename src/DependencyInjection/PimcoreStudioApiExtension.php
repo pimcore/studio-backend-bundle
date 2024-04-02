@@ -22,7 +22,9 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * This is the class that loads and manages your bundle configuration.
@@ -64,15 +66,33 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
         $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function prepend(ContainerBuilder $container): void
     {
-        $apiPlatformConfig = [
-            'mapping'=>[
-                'paths'=> [
-                    __DIR__ . '/../../config/api_platform/',
-                ],
+        $paths = $this->getPaths();
+
+        if(empty($paths)) {
+            return;
+        }
+
+        $container->prependExtensionConfig('nelmio_api_doc', [
+            'documentation' => [
+                'paths' => $paths,
             ],
-        ];
-        $container->prependExtensionConfig('api_platform', $apiPlatformConfig);
+        ]);
+    }
+
+    private function getPaths(): array
+    {
+        $finder = new Finder();
+        $finder->files()->in(__DIR__ . '/../../config/api')->name('*.yaml');
+        $paths = [];
+        foreach($finder as $file) {
+            $paths = [...$paths, ...Yaml::parseFile($file->getRealPath())];
+        }
+
+        return $paths;
     }
 }

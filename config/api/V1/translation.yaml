@@ -1,0 +1,36 @@
+/api/v1/translations:
+  post:
+    tags: [Translation]
+    summary: Get all translations
+    requestBody:
+        description: Locale and array of keys
+        content:
+          application/json:
+            schema:
+               ref: '#/components/schemas/Translation'
+    responses:
+      '200':
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                locale:
+                  type: string
+                  example: en
+                keys:
+                  type: array
+                  items:
+                    type: string
+                    example: 'key1'
+      '403':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'Unauthorized'

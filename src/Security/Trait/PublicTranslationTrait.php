@@ -44,7 +44,8 @@ trait PublicTranslationTrait
                 sprintf(
                     'You have requested non public keys: %s',
                     implode(',', $nonPublicTranslations)
-                )
+                ),
+                403
             );
         }
 
