@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 /**
  * Pimcore
  *
@@ -13,8 +13,24 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Trait;
+namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
-trait JsonLdResponseTrait
+final readonly class Collection
 {
+    public function __construct(
+        private int $page = 1,
+        private int $pageSize = 10
+    )
+    {
+    }
+
+    public function getPage(): int
+    {
+        return $this->page;
+    }
+
+    public function getPageSize(): int
+    {
+        return $this->pageSize;
+    }
 }

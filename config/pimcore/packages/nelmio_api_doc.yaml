@@ -1,6 +1,7 @@
 nelmio_api_doc:
   models:
     names:
+      - { alias: Asset, type: Pimcore\Bundle\StudioApiBundle\Dto\Asset }
       - { alias: Translation, type: Pimcore\Bundle\StudioApiBundle\Dto\Translation }
   areas:
     path_patterns: # an array of regexps (document only routes under /api, except /api/doc)

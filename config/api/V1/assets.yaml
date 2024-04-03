@@ -1,0 +1,38 @@
+/api/v1/assets:
+  get:
+    tags: [Assets]
+    summary: Get all assets
+    parameters:
+      - in: query
+        name: page
+        description: Page number
+        required: true
+        schema:
+          type: integer
+          format: int
+        example: 1
+      - in: query
+        name: pageSize
+        description: Number of items per page
+        required: true
+        schema:
+          type: integer
+          format: int
+        example: 10
+    responses:
+      '200':
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              ref: '#/components/schemas/Asset'
+      '403':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'Unauthorized'
