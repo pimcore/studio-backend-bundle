@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 /**
  * Pimcore
  *
@@ -26,8 +27,7 @@ final class GetController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly AssetSearchServiceInterface $assetSearchService,
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 

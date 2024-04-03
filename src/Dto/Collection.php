@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 /**
  * Pimcore
  *
@@ -20,8 +21,7 @@ final readonly class Collection
     public function __construct(
         private int $page = 1,
         private int $pageSize = 10
-    )
-    {
+    ) {
     }
 
     public function getPage(): int

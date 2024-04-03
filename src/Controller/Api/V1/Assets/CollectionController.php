@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 /**
  * Pimcore
  *
@@ -31,8 +32,7 @@ final class CollectionController extends AbstractApiController
         SerializerInterface $serializer,
         private readonly AssetQueryProviderInterface $assetQueryProvider,
         private readonly AssetSearchServiceInterface $assetSearchService,
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -40,12 +40,11 @@ final class CollectionController extends AbstractApiController
     public function getAssets(#[MapQueryString] Collection $collection): JsonResponse
     {
 
-       $assetQuery = $this->getAssetQuery()
-           ->setPage($collection->getPage())
-           ->setPageSize($collection->getPageSize());
+        $assetQuery = $this->getAssetQuery()
+            ->setPage($collection->getPage())
+            ->setPageSize($collection->getPageSize());
 
-
-       return $this->jsonLd($this->assetSearchService->searchAssets($assetQuery));
+        return $this->jsonLd($this->assetSearchService->searchAssets($assetQuery));
     }
 
     private function getAssetQuery(): AssetQuery
