@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\V1;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
 use Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface;
-
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;

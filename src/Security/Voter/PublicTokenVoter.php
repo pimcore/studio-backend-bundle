@@ -44,7 +44,8 @@ final class PublicTokenVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $attribute === self::SUPPORTED_ATTRIBUTE;
+        return $attribute === self::SUPPORTED_ATTRIBUTE &&
+            in_array($this->getSubjectName($subject), self::SUPPORTED_SUBJECTS, true);
     }
 
     /**
@@ -58,7 +59,7 @@ final class PublicTokenVoter extends Voter
         try {
             $authToken = $this->getAuthToken($request);
         } catch (NoAuthTokenFound) {
-            return $this->voteOnRequest($request, $subject->metadata->getName());
+            return $this->voteOnRequest($request, $this->getSubjectName($subject));
         }
 
         if ($this->securityService->checkAuthToken($authToken)) {
@@ -77,5 +78,13 @@ final class PublicTokenVoter extends Voter
             'translation' => $this->voteOnTranslation($request->getPayload()),
             default => false,
         };
+    }
+
+    private function getSubjectName(mixed $subject): string
+    {
+        if($subject instanceof MapRequestPayload) {
+            return $subject->metadata->getName();
+        }
+        return '';
     }
 }
