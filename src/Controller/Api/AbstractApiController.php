@@ -16,9 +16,20 @@
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 #[Route('/api')]
 abstract class AbstractApiController extends AbstractController
 {
+    public function __construct(private readonly SerializerInterface $serializer)
+    {
+
+    }
+
+    protected function jsonLd(mixed $resource): JsonResponse
+    {
+        return new JsonResponse($this->serializer->serialize($resource, 'jsonld'), 200, [], true);
+    }
 }

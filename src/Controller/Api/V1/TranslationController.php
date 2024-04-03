@@ -22,12 +22,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\SerializerInterface;
 
 final class TranslationController extends AbstractApiController
 {
-    public function __construct(private readonly TranslatorServiceInterface $translatorService)
+    public function __construct(
+        SerializerInterface $serializer,
+        private readonly TranslatorServiceInterface $translatorService
+    )
     {
-
+        parent::__construct($serializer);
     }
 
     #[Route('/v1/translations', name: 'pimcore_studio_api_v1_translations', methods: ['POST'])]
@@ -35,13 +39,16 @@ final class TranslationController extends AbstractApiController
     public function getTranslations(
         #[MapRequestPayload] Translation $translation,
     ): JsonResponse {
+
         if(empty($translation->getKeys())) {
-            return new JsonResponse($this->translatorService->getAllTranslations($translation->getLocale()));
+            return $this->jsonLd($this->translatorService->getAllTranslations($translation->getLocale()));
         }
 
-        return new JsonResponse($this->translatorService->getTranslationsForKeys(
-            $translation->getLocale(),
-            $translation->getKeys()
-        ));
+        return $this->jsonLd(
+            $this->translatorService->getTranslationsForKeys(
+                $translation->getLocale(),
+                $translation->getKeys()
+            )
+        );
     }
 }

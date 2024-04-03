@@ -16,12 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
+use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
+
 /**
  * @internal
  */
 interface TranslatorServiceInterface
 {
-    public function getAllTranslations(string $locale): array;
+    public function getAllTranslations(string $locale): Translation;
 
-    public function getTranslationsForKeys(string $locale, array $keys): array;
+    public function getTranslationsForKeys(string $locale, array $keys): Translation;
 }

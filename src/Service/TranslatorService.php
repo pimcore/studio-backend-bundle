@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use InvalidArgumentException;
+use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -39,20 +40,20 @@ final class TranslatorService implements TranslatorServiceInterface
         $this->translator = $translator;
     }
 
-    public function getAllTranslations(string $locale): array
+    public function getAllTranslations(string $locale): Translation
     {
         $translations = $this->translator->getCatalogue($locale)->all(self::DOMAIN);
 
-        return ['locale' => $locale, 'keys' => $translations];
+        return new Translation($locale, $translations);
     }
 
-    public function getTranslationsForKeys(string $locale, array $keys): array
+    public function getTranslationsForKeys(string $locale, array $keys): Translation
     {
         $translations = [];
         foreach ($keys as $key) {
             $translations[$key] = $this->translator->getCatalogue($locale)->get($key, self::DOMAIN);
         }
 
-        return ['locale' => $locale, 'keys' => $translations];
+        return new Translation($locale, $translations);
     }
 }
