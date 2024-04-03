@@ -85,6 +85,7 @@ final class PublicTokenVoter extends Voter
         if($subject instanceof MapRequestPayload) {
             return $subject->metadata->getName();
         }
+
         return '';
     }
 }
