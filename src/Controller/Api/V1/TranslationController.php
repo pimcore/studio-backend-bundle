@@ -29,8 +29,7 @@ final class TranslationController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly TranslatorServiceInterface $translatorService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
