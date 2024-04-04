@@ -2,10 +2,12 @@
   post:
     tags: [Translation]
     summary: Get all translations
+    security:
+      - access_token: []
     requestBody:
         description: Locale and array of keys
         content:
-          application/hal+json:
+          application/json:
             schema:
                ref: '#/components/schemas/Translation'
     responses:
@@ -14,16 +16,7 @@
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                locale:
-                  type: string
-                  example: en
-                keys:
-                  type: array
-                  items:
-                    type: string
-                    example: 'key1'
+              ref: '#/components/schemas/Translation'
       '403':
         description: Unauthorized
         content:
