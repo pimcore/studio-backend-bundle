@@ -37,12 +37,11 @@ abstract class AbstractApiController extends AbstractController
         int $page = 1,
         int $limit = 10,
         int $totalItems = 0
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $paginatedCollection = new PaginatedRepresentation(
             new CollectionRepresentation($data),
             $route, // route
-            array(), // route parameters
+            [], // route parameters
             $page,       // page number
             $limit,      // limit
             (int)($totalItems / $limit),       // total pages
@@ -52,6 +51,7 @@ abstract class AbstractApiController extends AbstractController
             $totalItems       // total collection size, optional, defaults to `null`
         );
         $serialized = $this->serializer->serialize($paginatedCollection, 'json');
+
         return new JsonResponse($serialized, 200, [], true);
     }
 
