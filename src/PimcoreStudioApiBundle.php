@@ -39,7 +39,9 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
 
     public function getCssPaths(): array
     {
-        return [];
+        return [
+            '/bundles/pimcorestudioapi/css/styles.css',
+        ];
     }
 
     public function getInstaller(): ?InstallerInterface

@@ -1,4 +1,4 @@
-/studio/api/v1/assets:
+/api/v1/assets:
   get:
     tags: [Assets]
     summary: Get all assets

@@ -1,16 +1,16 @@
 api_dcos:
-    path: /studio/api/docs
+    path: /api/docs
     methods: GET
     defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
 
 openapi_docs:
-    path: /studio/api/docs/openapi
+    path: /api/docs/openapi
     methods: GET
     defaults: { _controller: nelmio_api_doc.controller.swagger }
 
 studio_api:
     resource: "../../src/Controller/Api"
     type:     annotation
-    prefix:   /studio/api
+    prefix:   /api
     options:
         expose: true

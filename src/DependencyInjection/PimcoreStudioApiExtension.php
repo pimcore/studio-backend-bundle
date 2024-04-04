@@ -82,6 +82,13 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
                 'paths' => $paths,
             ],
         ]);
+
+        $thirdPartyBundlesViewFileLocator = (new FileLocator(__DIR__ . '/../../templates/bundles'));
+        $container->loadFromExtension('twig', [
+            'paths' => [
+                $thirdPartyBundlesViewFileLocator->locate('NelmioApiDocBundle') => 'NelmioApiDoc',
+            ],
+        ]);
     }
 
     private function getPaths(): array

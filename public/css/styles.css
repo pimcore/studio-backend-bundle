@@ -1,0 +1,9 @@
+header::before {
+    content: '';
+    background-color: #6428B4;
+}
+
+header #logo img {
+    height: 48px;
+    background-color: transparent;
+}

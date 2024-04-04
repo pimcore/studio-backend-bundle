@@ -1,4 +1,4 @@
-/studio/api/v1/translations:
+/api/v1/translations:
   post:
     tags: [Translation]
     summary: Get all translations
