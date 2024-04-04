@@ -7,3 +7,7 @@ header #logo img {
     height: 48px;
     background-color: transparent;
 }
+
+#swagger-ui.api-platform .info .title {
+    color: #6428B4;
+}
