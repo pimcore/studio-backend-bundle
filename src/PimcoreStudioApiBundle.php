@@ -16,7 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle;
 
-use ApiPlatform\Symfony\Bundle\ApiPlatformBundle;
+use Bazinga\Bundle\HateoasBundle\BazingaHateoasBundle;
+use JMS\SerializerBundle\JMSSerializerBundle;
 use Nelmio\ApiDocBundle\NelmioApiDocBundle;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
@@ -51,7 +52,8 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
 
     public static function registerDependentBundles(BundleCollection $collection): void
     {
-        $collection->addBundle(new ApiPlatformBundle());
+        $collection->addBundle(new JMSSerializerBundle());
+        $collection->addBundle(new BazingaHateoasBundle());
         $collection->addBundle(new NelmioApiDocBundle());
     }
 }

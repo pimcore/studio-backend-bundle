@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\V1;
 
+use JMS\Serializer\SerializerInterface;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
 use Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface;
@@ -23,7 +24,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Serializer\SerializerInterface;
 
 final class TranslationController extends AbstractApiController
 {
@@ -41,10 +41,10 @@ final class TranslationController extends AbstractApiController
     ): JsonResponse {
 
         if(empty($translation->getKeys())) {
-            return $this->jsonLd($this->translatorService->getAllTranslations($translation->getLocale()));
+            return $this->jsonHal($this->translatorService->getAllTranslations($translation->getLocale()));
         }
 
-        return $this->jsonLd(
+        return $this->jsonHal(
             $this->translatorService->getTranslationsForKeys(
                 $translation->getLocale(),
                 $translation->getKeys()

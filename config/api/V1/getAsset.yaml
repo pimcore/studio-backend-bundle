@@ -1,4 +1,4 @@
-/api/v1/assets/{id}:
+/studio/api/v1/assets/{id}:
   get:
     tags: [Assets]
     summary: Get asset with id

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\V1\Assets;
 
+use JMS\Serializer\SerializerInterface;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
@@ -24,7 +25,6 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInte
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 
 final class CollectionController extends AbstractApiController
 {
@@ -36,15 +36,21 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/v1/assets', name: 'pimcore_studio_api_v1_asets', methods: ['GET'])]
+    #[Route('/v1/assets', name: 'pimcore_studio_api_v1_assets', methods: ['GET'])]
     public function getAssets(#[MapQueryString] Collection $collection): JsonResponse
     {
 
         $assetQuery = $this->getAssetQuery()
             ->setPage($collection->getPage())
-            ->setPageSize($collection->getPageSize());
+            ->setPageSize($collection->getLimit());
+        $result = $this->assetSearchService->searchAssets($assetQuery);
 
-        return $this->jsonLd($this->assetSearchService->searchAssets($assetQuery));
+        return $this->getPaginatedCollection('pimcore_studio_api_v1_assets',
+            $result->getItems(),
+            $result->getCurrentPage(),
+            $result->getPageSize(),
+            $result->getTotalItems()
+        );
     }
 
     private function getAssetQuery(): AssetQuery

@@ -1,11 +1,11 @@
-/api/v1/translations:
+/studio/api/v1/translations:
   post:
     tags: [Translation]
     summary: Get all translations
     requestBody:
         description: Locale and array of keys
         content:
-          application/json:
+          application/hal+json:
             schema:
                ref: '#/components/schemas/Translation'
     responses:

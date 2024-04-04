@@ -16,11 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\V1\Assets;
 
+use JMS\Serializer\SerializerInterface;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 
 final class GetController extends AbstractApiController
 {
@@ -34,6 +34,6 @@ final class GetController extends AbstractApiController
     #[Route('/v1/assets/{id}', name: 'pimcore_studio_api_v1_get_asset', methods: ['GET'])]
     public function getAssets(int $id): JsonResponse
     {
-        return $this->jsonLd($this->assetSearchService->getAssetById($id));
+        return $this->jsonHal($this->assetSearchService->getAssetById($id));
     }
 }

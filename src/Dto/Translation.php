@@ -25,7 +25,7 @@ final readonly class Translation
 {
     public function __construct(
         private string $locale = 'en',
-        private array $keys = PublicTranslations::PUBLIC_KEYS
+        private array $keys = []
     ) {
     }
 

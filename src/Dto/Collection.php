@@ -20,7 +20,7 @@ final readonly class Collection
 {
     public function __construct(
         private int $page = 1,
-        private int $pageSize = 10
+        private int $limit = 10
     ) {
     }
 
@@ -29,8 +29,8 @@ final readonly class Collection
         return $this->page;
     }
 
-    public function getPageSize(): int
+    public function getLimit(): int
     {
-        return $this->pageSize;
+        return $this->limit;
     }
 }
