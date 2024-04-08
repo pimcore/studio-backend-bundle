@@ -105,6 +105,7 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
         }
 
         ksort($paths);
+
         return $paths;
     }
 
@@ -118,6 +119,7 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
         }
 
         ksort($schemas);
+
         return $schemas;
     }
 }
