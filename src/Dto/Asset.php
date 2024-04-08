@@ -90,7 +90,6 @@ class Asset extends Element
         return $this->mimeType;
     }
 
-    #[ApiProperty(genId: false)]
     public function getMetadata(): array
     {
         return $this->metaData;

@@ -16,13 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
-use ApiPlatform\Serializer\Filter\FilterInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryContextTrait;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 
-final class AssetExcludeFolderFilter implements FilterInterface
+final class AssetExcludeFolderFilter
 {
     use AssetQueryContextTrait;
 

@@ -29,7 +29,7 @@ abstract class AbstractApiController extends AbstractController
 
     }
 
-    protected function jsonResponse(mixed $data, $headers = []): JsonResponse
+    protected function jsonResponse(mixed $data, array $headers = []): JsonResponse
     {
         return new JsonResponse($this->serializer->serialize($data, 'json'), 200, $headers, true);
     }

@@ -111,7 +111,6 @@ class Element
         return $this->isLocked;
     }
 
-    #[ApiProperty(genId: false)]
     public function getPermissions(): Permissions
     {
         return $this->permissions;
