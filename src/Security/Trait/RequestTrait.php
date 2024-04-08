@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Security\Trait;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\NoAuthTokenFound;
+use Pimcore\Bundle\StudioApiBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioApiBundle\Exception\NoRequestException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -28,13 +28,16 @@ trait RequestTrait
     private const AUTHORIZATION_HEADER = 'Authorization';
 
     /**
-     * @throws NoAuthTokenFound
+     * @throws NotAuthorizedException
      */
     private function getAuthToken(Request $request): string
     {
         $authToken = $request->headers->get(self::AUTHORIZATION_HEADER);
         if($authToken === null) {
-            throw new NoAuthTokenFound('Full authentication is required to access this resource.');
+            throw new NotAuthorizedException(
+                403,
+                'Full authentication is required.'
+            );
         }
 
         return $this->removeBearerPrefix($authToken);
@@ -48,7 +51,7 @@ trait RequestTrait
         $request = $requestStack->getCurrentRequest();
 
         if(!$request) {
-            throw new NoRequestException('No request found');
+            throw new NoRequestException(500, 'No request found');
         }
 
         return $request;

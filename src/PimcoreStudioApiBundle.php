@@ -54,8 +54,6 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
 
     public static function registerDependentBundles(BundleCollection $collection): void
     {
-        $collection->addBundle(new JMSSerializerBundle());
-        $collection->addBundle(new BazingaHateoasBundle());
         $collection->addBundle(new NelmioApiDocBundle());
     }
 }

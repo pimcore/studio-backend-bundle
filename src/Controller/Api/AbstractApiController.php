@@ -16,47 +16,21 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api;
 
-use Hateoas\Representation\CollectionRepresentation;
-use Hateoas\Representation\PaginatedRepresentation;
-use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
-#[Route('/api')]
+#[Route('/studio/api')]
 abstract class AbstractApiController extends AbstractController
 {
-    public function __construct(private readonly SerializerInterface $serializer)
+    public function __construct(protected readonly SerializerInterface $serializer)
     {
 
     }
 
-    protected function getPaginatedCollection(
-        string $route,
-        array $data,
-        int $page = 1,
-        int $limit = 10,
-        int $totalItems = 0
-    ): JsonResponse {
-        $paginatedCollection = new PaginatedRepresentation(
-            new CollectionRepresentation($data),
-            $route, // route
-            [], // route parameters
-            $page,       // page number
-            $limit,      // limit
-            (int)($totalItems / $limit) + 1,       // total pages
-            'page',  // page route parameter name, optional, defaults to 'page'
-            'limit', // limit route parameter name, optional, defaults to 'limit'
-            false,   // generate relative URIs, optional, defaults to `false`
-            $totalItems       // total collection size, optional, defaults to `null`
-        );
-        $serialized = $this->serializer->serialize($paginatedCollection, 'json');
-
-        return new JsonResponse($serialized, 200, [], true);
-    }
-
-    protected function jsonHal(mixed $data): JsonResponse
+    protected function jsonResponse(mixed $data, $headers = []): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($data, 'json'), 200, [], true);
+        return new JsonResponse($this->serializer->serialize($data, 'json'), 200, $headers, true);
     }
 }

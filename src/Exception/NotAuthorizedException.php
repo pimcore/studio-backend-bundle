@@ -14,17 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Dto\Token;
+namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
-final class CreateTest extends Unit
+final class NotAuthorizedException extends HttpException
 {
-    public function testTokenCreate(): void
-    {
-        $create = new Credentials('token', 'test');
-        $this->assertSame('token', $create->getUsername());
-        $this->assertSame('test', $create->getPassword());
-    }
 }

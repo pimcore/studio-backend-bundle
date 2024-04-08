@@ -1,0 +1,12 @@
+Token:
+  type: object
+  properties:
+    token:
+      type: string
+      example: generated_token
+    username:
+      type: string
+      example: admin
+    lifetime:
+      type: integer
+      example: 3600

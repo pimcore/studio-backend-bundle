@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Exception;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
-final class NoRequestException extends Exception
+final class NoRequestException extends HttpException
 {
 }

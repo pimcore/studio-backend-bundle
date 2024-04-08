@@ -1,8 +1,0 @@
-Pimcore\Bundle\StudioApiBundle\Dto\Asset\MetaData:
-    attributes:
-        name:
-            groups: [ 'asset:read' ]
-        language:
-            groups: [ 'asset:read' ]
-        data:
-            groups: [ 'asset:read' ]

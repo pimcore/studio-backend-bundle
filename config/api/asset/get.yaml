@@ -1,0 +1,32 @@
+/studio/api/assets/{id}:
+  get:
+    tags: [Assets]
+    summary: Get asset with id
+    security:
+      - access_token: [ ]
+    parameters:
+      - in: path
+        name: id
+        description: Id of the asset
+        required: true
+        schema:
+          type: integer
+          format: int
+        example: 1
+    responses:
+      '200':
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              ref: '#/components/schemas/Asset'
+      '403':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'Unauthorized'

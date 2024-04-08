@@ -4,29 +4,17 @@ nelmio_api_doc:
       - { alias: Asset, type: Pimcore\Bundle\StudioApiBundle\Dto\Asset }
   areas:
     path_patterns: # an array of regexps (document only routes under /api, except /api/doc)
-      - ^/api(?!/doc$)
+      - ^/studio/api(?!/doc$)
     host_patterns: # document only routes with a host of the form api.*
-      - ^api\.
+      - ^studio/api\.
     documentation:
       info:
         title: Studio Api
         description: It is an API platform with the rest API in the core.
         version: 0.0.1
-
       components:
         securitySchemes:
           access_token:
             type: http
             scheme: bearer
-        schemas:
-          Translation:
-            type: object
-            properties:
-              locale:
-                type: string
-                example: en
-              keys:
-                type: array
-                items:
-                  type: string
-                  example: key1
+

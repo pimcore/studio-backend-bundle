@@ -1,0 +1,11 @@
+Translation:
+  type: object
+  properties:
+    locale:
+      type: string
+      example: en
+    keys:
+      type: array
+      items:
+        type: string
+        example: username

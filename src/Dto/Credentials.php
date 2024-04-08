@@ -14,17 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Dto\Token;
+namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
-use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
-
-final class CreateTest extends Unit
+/**
+ * @internal
+ */
+final readonly class Credentials
 {
-    public function testTokenCreate(): void
+    public function __construct(
+        private string $username,
+        private string $password
+    ) {
+    }
+
+    public function getUsername(): string
     {
-        $create = new Credentials('token', 'test');
-        $this->assertSame('token', $create->getUsername());
-        $this->assertSame('test', $create->getPassword());
+        return $this->username;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
     }
 }

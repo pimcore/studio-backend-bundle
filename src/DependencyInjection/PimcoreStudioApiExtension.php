@@ -72,14 +72,18 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
     public function prepend(ContainerBuilder $container): void
     {
         $paths = $this->getPaths();
+        $schemas = $this->getSchemas();
 
-        if(empty($paths)) {
+        if(empty($paths) || empty($schemas)) {
             return;
         }
 
         $container->prependExtensionConfig('nelmio_api_doc', [
             'documentation' => [
                 'paths' => $paths,
+                'components' => [
+                    'schemas' => $schemas,
+                ],
             ],
         ]);
 
@@ -101,5 +105,17 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
         }
 
         return $paths;
+    }
+
+    private function getSchemas(): array
+    {
+        $finder = new Finder();
+        $finder->files()->in(__DIR__ . '/../../config/api/schemas')->name('*.yaml');
+        $schemas = [];
+        foreach($finder as $file) {
+            $schemas = [...$schemas, ...Yaml::parseFile($file->getRealPath())];
+        }
+
+        return $schemas;
     }
 }

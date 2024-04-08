@@ -21,7 +21,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use Codeception\Test\Unit;
 use Exception;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token\Create;
+use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\State\Token\Refresh\Processor;
 use stdClass;
@@ -89,9 +89,9 @@ final class ProcessorTest extends Unit
         return $this->makeEmpty(TokenServiceInterface::class);
     }
 
-    private function getCreateToken(): Create
+    private function getCreateToken(): Credentials
     {
-        return new Create('test', 'test');
+        return new Credentials('test', 'test');
     }
 
     private function getPostOperation(string $uriTemplate): Post

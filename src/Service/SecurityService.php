@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use ApiPlatform\Symfony\Security\Exception\AccessDeniedException;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token\Create;
+use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
 use Pimcore\Security\User\UserProvider;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
@@ -36,17 +36,17 @@ final readonly class SecurityService implements SecurityServiceInterface
     ) {
     }
 
-    public function authenticateUser(Create $token): PasswordAuthenticatedUserInterface
+    public function authenticateUser(Credentials $credentials): PasswordAuthenticatedUserInterface
     {
         try {
-            $user = $this->userProvider->loadUserByIdentifier($token->getUsername());
+            $user = $this->userProvider->loadUserByIdentifier($credentials->getUsername());
         } catch (UserNotFoundException) {
             throw new AccessDeniedException('Invalid credentials');
         }
 
         if(
             !$user instanceof PasswordAuthenticatedUserInterface ||
-            !$this->passwordHasher->isPasswordValid($user, $token->getPassword())
+            !$this->passwordHasher->isPasswordValid($user, $credentials->getPassword())
         ) {
             throw new AccessDeniedException('Invalid credentials');
         }
