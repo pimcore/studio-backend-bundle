@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Security\Voter;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioApiBundle\Exception\NonPublicTranslationException;
 use Pimcore\Bundle\StudioApiBundle\Exception\NoRequestException;
+use Pimcore\Bundle\StudioApiBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioApiBundle\Security\Trait\PublicTranslationTrait;
 use Pimcore\Bundle\StudioApiBundle\Security\Trait\RequestTrait;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
