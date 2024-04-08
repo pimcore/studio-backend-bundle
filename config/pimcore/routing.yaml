@@ -1,4 +1,4 @@
-api_dcos:
+api_docs:
     path: /studio/api/docs
     methods: GET
     defaults: { _controller: nelmio_api_doc.controller.swagger_ui }

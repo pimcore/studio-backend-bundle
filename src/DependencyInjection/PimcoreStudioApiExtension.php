@@ -104,6 +104,7 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
             $paths = [...$paths, ...Yaml::parseFile($file->getRealPath())];
         }
 
+        ksort($paths);
         return $paths;
     }
 
@@ -116,6 +117,7 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
             $schemas = [...$schemas, ...Yaml::parseFile($file->getRealPath())];
         }
 
+        ksort($schemas);
         return $schemas;
     }
 }
