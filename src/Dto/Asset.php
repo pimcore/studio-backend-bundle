@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
-use ApiPlatform\Metadata\ApiProperty;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions;
 
 class Asset extends Element
