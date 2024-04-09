@@ -1,10 +1,22 @@
 <?php
 
+/**
+ * Pimcore
+ *
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
+ * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ */
+
 namespace Pimcore\Bundle\StudioApiBundle\Config\OpenApi;
 
 use OpenApi\Attributes\Info;
 use OpenApi\Attributes\License;
-use OpenApi\Attributes\SecurityScheme;
 
 #[Info(
     version: 'v1',
@@ -14,5 +26,4 @@ use OpenApi\Attributes\SecurityScheme;
 #[License(name: 'MIT', identifier: 'MIT')]
 final class Spec
 {
-
 }

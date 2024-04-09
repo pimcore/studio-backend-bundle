@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\MediaType;
 use OpenApi\Attributes\PathParameter;
-use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Response;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
@@ -48,8 +47,8 @@ final class GetController extends AbstractApiController
         summary: 'Get all assets',
         security: [
             [
-                'auth_token' => []
-            ]
+                'auth_token' => [],
+            ],
         ],
         tags: ['Assets']
     )]
@@ -68,7 +67,7 @@ final class GetController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Asset::class, type: 'object')
-            )
+            ),
         ]
     )]
     #[Response(
@@ -78,7 +77,7 @@ final class GetController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Unauthorized::class, type: 'object')
-            )
+            ),
         ]
     )]
     public function getAssets(int $id): JsonResponse

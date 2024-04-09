@@ -49,8 +49,8 @@ final class TranslationController extends AbstractApiController
         summary: 'Get translations',
         security: [
             [
-                'auth_token' => []
-            ]
+                'auth_token' => [],
+            ],
         ],
         tags: ['Translation']
     )]
@@ -60,7 +60,7 @@ final class TranslationController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Translation::class, type: 'object')
-            )
+            ),
         ]
     )]
     #[Response(
@@ -70,7 +70,7 @@ final class TranslationController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Translation::class, type: 'object')
-            )
+            ),
         ]
     )]
     #[Response(
@@ -80,7 +80,7 @@ final class TranslationController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Unauthorized::class, type: 'object')
-            )
+            ),
         ]
     )]
     public function getTranslations(

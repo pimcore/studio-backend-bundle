@@ -21,7 +21,6 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\Exc
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolver;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 
 final class DataObjectQuery
@@ -31,8 +30,7 @@ final class DataObjectQuery
     public function __construct(
         private readonly DataObjectSearchInterface $search,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver
-    )
-    {
+    ) {
     }
 
     public function setPage(int $page): self
@@ -80,7 +78,7 @@ final class DataObjectQuery
 
         return $this;
     }
-    
+
     public function setClassDefinitionId(string $classDefinitionId): self
     {
         $classDefinition = $this->classDefinitionResolver->getById($classDefinitionId);

@@ -22,7 +22,6 @@ use OpenApi\Attributes\Schema;
 /**
  * @internal
  */
-
 #[Schema(
     title: 'Refresh',
     description: 'Token that needs to be refresh',

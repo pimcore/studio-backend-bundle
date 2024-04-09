@@ -55,8 +55,8 @@ final class CollectionController extends AbstractApiController
         summary: 'Get all assets',
         security: [
             [
-                'auth_token' => []
-            ]
+                'auth_token' => [],
+            ],
         ],
         tags: ['Assets']
     )]
@@ -83,7 +83,7 @@ final class CollectionController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Asset::class, type: 'object')
-            )
+            ),
         ]
     )]
     #[Response(
@@ -93,7 +93,7 @@ final class CollectionController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Unauthorized::class, type: 'object')
-            )
+            ),
         ]
     )]
     public function getAssets(#[MapQueryString] Collection $collection): JsonResponse

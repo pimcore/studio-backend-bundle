@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token\Refresh;
-use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
 use Pimcore\Bundle\StudioApiBundle\Dto\Unauthorized;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
@@ -57,7 +56,7 @@ final class AuthorizationController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Credentials::class, type: 'object')
-            )
+            ),
         ]
     )]
     #[Response(
@@ -67,7 +66,7 @@ final class AuthorizationController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Token::class, type: 'object')
-            )
+            ),
         ]
     )]
     #[Response(
@@ -77,7 +76,7 @@ final class AuthorizationController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Unauthorized::class, type: 'object')
-            )
+            ),
         ]
     )]
     public function login(#[MapRequestPayload] Credentials $credentials): JsonResponse
@@ -101,7 +100,7 @@ final class AuthorizationController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Refresh::class, type: 'object')
-            )
+            ),
         ]
     )]
     #[Response(
@@ -111,7 +110,7 @@ final class AuthorizationController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Token::class, type: 'object')
-            )
+            ),
         ]
     )]
     #[Response(
@@ -121,7 +120,7 @@ final class AuthorizationController extends AbstractApiController
             new MediaType(
                 mediaType: 'application/json',
                 schema: new Schema(ref: Unauthorized::class, type: 'object')
-            )
+            ),
         ]
     )]
     #[Route('/refresh', name: 'pimcore_studio_api_refresh', methods: ['POST'])]

@@ -16,14 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
-use Carbon\Carbon;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-
 #[Schema(
     title: 'Token',
     description: 'Token Scheme for API',

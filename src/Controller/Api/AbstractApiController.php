@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api;
 
-use OpenApi\Attributes\Info;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -26,6 +25,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 abstract class AbstractApiController extends AbstractController
 {
     public const VOTER_STUDIO_API = 'STUDIO_API';
+
     public const VOTER_PUBLIC_STUDIO_API = 'PUBLIC_STUDIO_API';
 
     public const API_PATH = '/studio/api';

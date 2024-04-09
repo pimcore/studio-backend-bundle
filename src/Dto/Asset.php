@@ -41,7 +41,7 @@ class Asset extends Element
         #[Property(
             description: 'Metadata',
             type: 'array',
-            items: new Items(type: 'string' , example: 'meta_data_example'),
+            items: new Items(type: 'string', example: 'meta_data_example'),
             example: 'pimcore_icon_pdf'
         )]
         private readonly array $metaData,
