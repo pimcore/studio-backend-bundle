@@ -16,14 +16,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
+use OpenApi\Attributes\Schema;
+use OpenApi\Attributes\Property;
+
 /**
  * @internal
  */
+#[Schema(
+    title: 'Credentials',
+    description: 'Credentials for authentication',
+    type: 'object'
+)]
 final readonly class Credentials
 {
     public function __construct(
+        #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
         private string $username,
-        private string $password
+        #[Property(description: 'Password', type: 'string', example: '*****')]
+        private string $password,
     ) {
     }
 

@@ -1,0 +1,23 @@
+<!-- HTML for static distribution bundle build -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Pimcore Swagger UI</title>
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/pimcorestudioapi/css/swagger-ui/swagger-ui.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ asset('bundles/pimcorestudioapi/css/swagger-ui/index.css') }}" />
+    <link rel="icon" type="image/png" href="/bundles/pimcoreadmin/img/favicon/favicon-32x32.png" sizes="32x32" />
+  </head>
+
+  <body>
+    <div class="header">
+      <a style="text-decoration: none;" id="logo" href="#" target="_blank">
+        <img alt="{{ "Pimcore's logotype"|trans([], 'admin') }}" src="{{ path('pimcore_settings_display_custom_logo') }}">
+      </a>
+    </div>
+    <div id="swagger-ui" data-url="{{ path('pimcore_studio_api_docs_json') }}" ></div>
+    <script src="{{ asset('bundles/pimcorestudioapi/js/swagger-ui/swagger-ui-bundle.js') }}" charset="UTF-8"> </script>
+    <script src="{{ asset('bundles/pimcorestudioapi/js/swagger-ui/swagger-ui-standalone-preset.js') }}" charset="UTF-8"> </script>
+    <script src="{{ asset('bundles/pimcorestudioapi/js/swagger-ui/swagger-initializer.js') }}" charset="UTF-8"> </script>
+  </body>
+</html>

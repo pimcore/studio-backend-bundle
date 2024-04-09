@@ -16,15 +16,28 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Util\Constants\PublicTranslations;
 
 /**
  * @internal
  */
+
+#[Schema(
+    title: 'Translation',
+    description: 'Translation Scheme for API',
+    type: 'object'
+)]
 final readonly class Translation
 {
     public function __construct(
+        #[Property(description: 'Locale', type: 'string', example: 'en')]
         private string $locale = 'en',
+        #[Property(description: 'Keys', type: 'array', items: new Items(
+            type: 'string', example: 'not_your_typical_key'
+        ))]
         private array $keys = [PublicTranslations::PUBLIC_KEYS]
     ) {
     }

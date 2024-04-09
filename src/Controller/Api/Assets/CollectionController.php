@@ -16,9 +16,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 
+use OpenApi\Attributes\Get;
+use OpenApi\Attributes\MediaType;
+use OpenApi\Attributes\QueryParameter;
+use OpenApi\Attributes\Response;
+use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
+use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
+use Pimcore\Bundle\StudioApiBundle\Dto\Unauthorized;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
@@ -42,6 +49,53 @@ final class CollectionController extends AbstractApiController
 
     #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
     #[IsGranted('STUDIO_API')]
+    #[GET(
+        path: self::API_PATH . '/assets',
+        description: 'Get paginated assets',
+        summary: 'Get all assets',
+        security: [
+            [
+                'auth_token' => []
+            ]
+        ],
+        tags: ['Assets']
+    )]
+    #[QueryParameter(
+        name: 'page',
+        description: 'Page number',
+        in: 'query',
+        required: true,
+        schema: new Schema(type: 'integer', example: 1),
+        example: 1
+    )]
+    #[QueryParameter(
+        name: 'limit',
+        description: 'Number of items per page',
+        in: 'query',
+        required: true,
+        schema: new Schema(type: 'integer', example: 1),
+        example: 10
+    )]
+    #[Response(
+        response: 200,
+        description: 'Paginated assets with total count as header param',
+        content:[
+            new MediaType(
+                mediaType: 'application/json',
+                schema: new Schema(ref: Asset::class, type: 'object')
+            )
+        ]
+    )]
+    #[Response(
+        response: 403,
+        description: 'Unauthorized',
+        content:[
+            new MediaType(
+                mediaType: 'application/json',
+                schema: new Schema(ref: Unauthorized::class, type: 'object')
+            )
+        ]
+    )]
     public function getAssets(#[MapQueryString] Collection $collection): JsonResponse
     {
 

@@ -1,0 +1,29 @@
+html {
+    box-sizing: border-box;
+    overflow: -moz-scrollbars-vertical;
+    overflow-y: scroll;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+body {
+    margin: 0;
+    background: #fafafa;
+}
+
+#logo {
+    position: absolute;
+    top: 7px;
+    right: 10px;
+    width: 150px;
+}
+
+.header {
+    height: 55px;
+    background-color: #6428B4;
+    color: #fff;
+}

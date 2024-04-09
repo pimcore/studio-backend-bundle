@@ -16,10 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Authorization;
 
+use OpenApi\Attributes\MediaType;
+use OpenApi\Attributes\Post;
+use OpenApi\Attributes\RequestBody;
+use OpenApi\Attributes\Response;
+use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token\Refresh;
+use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
+use Pimcore\Bundle\StudioApiBundle\Dto\Unauthorized;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Pimcore\Security\User\User;
@@ -28,7 +35,7 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
-final class TokenController extends AbstractApiController
+final class AuthorizationController extends AbstractApiController
 {
     public function __construct(
         private readonly SecurityServiceInterface $securityService,
@@ -39,6 +46,40 @@ final class TokenController extends AbstractApiController
     }
 
     #[Route('/login', name: 'pimcore_studio_api_login', methods: ['POST'])]
+    #[POST(
+        path: self::API_PATH . '/login',
+        summary: 'Login with user credentials and get access token',
+        tags: ['Authorization']
+    )]
+    #[RequestBody(
+        required: true,
+        content:[
+            new MediaType(
+                mediaType: 'application/json',
+                schema: new Schema(ref: Credentials::class, type: 'object')
+            )
+        ]
+    )]
+    #[Response(
+        response: 200,
+        description: 'Key value pairs for given keys and locale',
+        content:[
+            new MediaType(
+                mediaType: 'application/json',
+                schema: new Schema(ref: Token::class, type: 'object')
+            )
+        ]
+    )]
+    #[Response(
+        response: 403,
+        description: 'Unauthorized',
+        content:[
+            new MediaType(
+                mediaType: 'application/json',
+                schema: new Schema(ref: Unauthorized::class, type: 'object')
+            )
+        ]
+    )]
     public function login(#[MapRequestPayload] Credentials $credentials): JsonResponse
     {
         /** @var User $user */
@@ -49,6 +90,40 @@ final class TokenController extends AbstractApiController
         return $this->jsonResponse(new Token($token, $this->tokenService->getLifetime(), $user->getUserIdentifier()));
     }
 
+    #[POST(
+        path: self::API_PATH . '/refresh',
+        summary: 'Login with user credentials and get access token',
+        tags: ['Authorization']
+    )]
+    #[RequestBody(
+        required: true,
+        content:[
+            new MediaType(
+                mediaType: 'application/json',
+                schema: new Schema(ref: Refresh::class, type: 'object')
+            )
+        ]
+    )]
+    #[Response(
+        response: 200,
+        description: 'Key value pairs for given keys and locale',
+        content:[
+            new MediaType(
+                mediaType: 'application/json',
+                schema: new Schema(ref: Token::class, type: 'object')
+            )
+        ]
+    )]
+    #[Response(
+        response: 403,
+        description: 'Unauthorized',
+        content:[
+            new MediaType(
+                mediaType: 'application/json',
+                schema: new Schema(ref: Unauthorized::class, type: 'object')
+            )
+        ]
+    )]
     #[Route('/refresh', name: 'pimcore_studio_api_refresh', methods: ['POST'])]
     public function refresh(#[MapRequestPayload] Refresh $refresh): JsonResponse
     {

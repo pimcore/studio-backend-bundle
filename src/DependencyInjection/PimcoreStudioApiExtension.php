@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
 use Exception;
+use Pimcore\Bundle\StudioApiBundle\Service\OpenApiService;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -35,7 +36,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * @internal
  */
-class PimcoreStudioApiExtension extends Extension implements PrependExtensionInterface
+class PimcoreStudioApiExtension extends Extension
 {
     /**
      * {@inheritdoc}
@@ -64,62 +65,5 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
 
         $definition = $container->getDefinition(TokenServiceInterface::class);
         $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function prepend(ContainerBuilder $container): void
-    {
-        $paths = $this->getPaths();
-        $schemas = $this->getSchemas();
-
-        if(empty($paths) || empty($schemas)) {
-            return;
-        }
-
-        $container->prependExtensionConfig('nelmio_api_doc', [
-            'documentation' => [
-                'paths' => $paths,
-                'components' => [
-                    'schemas' => $schemas,
-                ],
-            ],
-        ]);
-
-        $thirdPartyBundlesViewFileLocator = (new FileLocator(__DIR__ . '/../../templates/bundles'));
-        $container->loadFromExtension('twig', [
-            'paths' => [
-                $thirdPartyBundlesViewFileLocator->locate('NelmioApiDocBundle') => 'NelmioApiDoc',
-            ],
-        ]);
-    }
-
-    private function getPaths(): array
-    {
-        $finder = new Finder();
-        $finder->files()->in(__DIR__ . '/../../config/api')->name('*.yaml');
-        $paths = [];
-        foreach($finder as $file) {
-            $paths = [...$paths, ...Yaml::parseFile($file->getRealPath())];
-        }
-
-        ksort($paths);
-
-        return $paths;
-    }
-
-    private function getSchemas(): array
-    {
-        $finder = new Finder();
-        $finder->files()->in(__DIR__ . '/../../config/api/schemas')->name('*.yaml');
-        $schemas = [];
-        foreach($finder as $file) {
-            $schemas = [...$schemas, ...Yaml::parseFile($file->getRealPath())];
-        }
-
-        ksort($schemas);
-
-        return $schemas;
     }
 }

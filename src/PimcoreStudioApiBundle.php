@@ -32,13 +32,21 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
 
     public function getJsPaths(): array
     {
-        return [];
+        return [
+            '/bundles/pimcorestudioapi/js/swagger-ui/swagger-ui.js',
+            '/bundles/pimcorestudioapi/js/swagger-ui/swagger-ui-bundle.js',
+            '/bundles/pimcorestudioapi/js/swagger-ui/swagger-ui-es-bundle.js',
+            '/bundles/pimcorestudioapi/js/swagger-ui/swagger-ui-es-bundle-core.js',
+            '/bundles/pimcorestudioapi/js/swagger-ui/swagger-ui-standalone-preset.js',
+        ];
     }
 
     public function getCssPaths(): array
     {
         return [
             '/bundles/pimcorestudioapi/css/styles.css',
+            '/bundles/pimcorestudioapi/css/swagger-ui/index.css',
+            '/bundles/pimcorestudioapi/css/swagger-ui/swagger-ui.css',
         ];
     }
 
@@ -52,6 +60,6 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
 
     public static function registerDependentBundles(BundleCollection $collection): void
     {
-        $collection->addBundle(new NelmioApiDocBundle());
+        // nothing to register here.
     }
 }

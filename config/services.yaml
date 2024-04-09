@@ -51,17 +51,29 @@ services:
         arguments:
             $assetHydratorLocator: '@generic_data_index.asset_hydrator.service_locator'
 
+
+    # Assets
     Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\AssetSearchService
 
     Pimcore\Bundle\StudioApiBundle\Service\GenericData\AssetSearchAdapterInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetSearchAdapter
 
-    Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\IconService
-
     Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProvider
+
+    #Data Objects
+    Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchService
+
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\DataObjectSearchAdapterInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectSearchAdapter
+
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProviderInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProvider
+
+    Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\IconService
 
     Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\TranslatorService
@@ -71,6 +83,9 @@ services:
 
     Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\SecurityService
+
+    Pimcore\Bundle\StudioApiBundle\Service\OpenApiServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\OpenApiService
 
     #Voters
     Pimcore\Bundle\StudioApiBundle\Security\Voter\AuthorizationVoter:

@@ -1,6 +1,0 @@
-RefreshToken:
-  type: object
-  properties:
-    token:
-      type: string
-      example: refresh_token
