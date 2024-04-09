@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -25,6 +26,16 @@ use OpenApi\Attributes\Schema;
 )]
 final readonly class Unauthorized
 {
-    #[Property(description: 'Message', type: 'string')]
-    public string $message;
+    public function __construct(
+        #[Property(description: 'Message', type: 'string')]
+        private string $message
+    )
+    {
+
+    }
+
+    public function getMessage(): string
+    {
+        return $this->message;
+    }
 }
