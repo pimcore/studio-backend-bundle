@@ -29,8 +29,7 @@ final readonly class Unauthorized
     public function __construct(
         #[Property(description: 'Message', type: 'string')]
         private string $message
-    )
-    {
+    ) {
 
     }
 
