@@ -30,8 +30,9 @@ final readonly class DataObjectQueryProvider implements DataObjectQueryProviderI
 
     public function createDataObjectQuery(): DataObjectQuery
     {
-        /** @var DataObjectSearchInterface  $dataObjectSearch */
+        /** @var DataObjectSearchInterface $dataObjectSearch */
         $dataObjectSearch = $this->searchProvider->createDataObjectSearch();
+
         return new DataObjectQuery($dataObjectSearch, $this->classDefinitionResolver);
     }
 }

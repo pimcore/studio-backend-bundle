@@ -25,7 +25,6 @@ use OpenApi\Attributes\Schema;
 )]
 final readonly class Permissions
 {
-
     public function __construct(
         #[Property(description: 'List', type: 'bool', example: true)]
         private bool $list = true,
