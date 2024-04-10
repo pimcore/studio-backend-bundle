@@ -20,5 +20,4 @@ use Exception;
 
 final class InvalidPathException extends Exception
 {
-
 }

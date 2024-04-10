@@ -48,6 +48,7 @@ class Configuration implements ConfigurationInterface
                             throw new InvalidPathException(sprintf('The path "%s" is not a valid directory.', $path));
                         }
                     }
+
                     return $paths;
                 })
                 ->end()
