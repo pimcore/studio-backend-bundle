@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
@@ -28,7 +28,7 @@ final class DataObjectQuery
     public const DATA_OBJECT_QUERY_ID = 'data_object_query';
 
     public function __construct(
-        private readonly DataObjectSearchInterface $search,
+        private readonly DataObjectSearch $search,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver
     ) {
     }
@@ -88,7 +88,7 @@ final class DataObjectQuery
         return $this;
     }
 
-    public function getSearch(): DataObjectSearchInterface
+    public function getSearch(): DataObjectSearch
     {
         return $this->search;
     }

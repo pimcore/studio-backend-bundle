@@ -25,6 +25,6 @@ use OpenApi\Attributes\SecurityScheme;
     name: 'auth_token',
     scheme: 'bearer'
 )]
-final class Security
+abstract class Security
 {
 }

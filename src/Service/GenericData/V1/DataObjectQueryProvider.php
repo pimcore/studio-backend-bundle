@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchProviderInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 
@@ -30,7 +30,7 @@ final readonly class DataObjectQueryProvider implements DataObjectQueryProviderI
 
     public function createDataObjectQuery(): DataObjectQuery
     {
-        /** @var DataObjectSearchInterface $dataObjectSearch */
+        /** @var DataObjectSearch $dataObjectSearch */
         $dataObjectSearch = $this->searchProvider->createDataObjectSearch();
 
         return new DataObjectQuery($dataObjectSearch, $this->classDefinitionResolver);

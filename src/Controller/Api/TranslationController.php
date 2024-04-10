@@ -74,7 +74,7 @@ final class TranslationController extends AbstractApiController
         ]
     )]
     #[Response(
-        response: 403,
+        response: 401,
         description: 'Unauthorized',
         content:[
             new MediaType(
