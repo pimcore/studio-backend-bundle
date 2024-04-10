@@ -53,11 +53,7 @@ final class CollectionController extends AbstractApiController
         path: self::API_PATH . '/assets',
         description: 'Get paginated assets',
         summary: 'Get all assets',
-        security: [
-            [
-                'auth_token' => [],
-            ],
-        ],
+        security: self::SECURITY_SCHEME,
         tags: ['Assets'],
     )]
     #[PageParameter]

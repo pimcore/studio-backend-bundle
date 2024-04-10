@@ -44,11 +44,7 @@ final class GetController extends AbstractApiController
         path: self::API_PATH . '/assets/{id}',
         description: 'Get paginated assets',
         summary: 'Get all assets',
-        security: [
-            [
-                'auth_token' => [],
-            ],
-        ],
+        security: self::SECURITY_SCHEME,
         tags: ['Assets']
     )]
     #[IdParameter(type: 'asset')]

@@ -46,11 +46,7 @@ final class TranslationController extends AbstractApiController
         path: self::API_PATH . self::PATH,
         description: 'Get translations for given keys and locale',
         summary: 'Get translations',
-        security: [
-            [
-                'auth_token' => [],
-            ],
-        ],
+        security: self::SECURITY_SCHEME,
         tags: ['Translation']
     )]
     #[TranslationRequestBody]
