@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioApiBundle\Util\Constants\PublicTranslations;
  * @internal
  */
 #[Schema(
+    schema: 'Translation',
     title: 'Translation',
     description: 'Translation Scheme for API',
     type: 'object'

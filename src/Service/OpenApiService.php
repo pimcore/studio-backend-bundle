@@ -23,9 +23,11 @@ final class OpenApiService implements OpenApiServiceInterface
     private const PATH_PREFIX = __DIR__ . '/../../';
 
     private const PATHS = [
-        self::PATH_PREFIX . 'src/Controller/Api',
-        self::PATH_PREFIX . 'src/Dto/',
+        self::PATH_PREFIX . 'src/Attributes/',
         self::PATH_PREFIX . 'src/Config/',
+        self::PATH_PREFIX . 'src/Controller/Api/',
+        self::PATH_PREFIX . 'src/Dto/',
+
     ];
 
     public function getConfig(): OpenApi

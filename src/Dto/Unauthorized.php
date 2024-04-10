@@ -20,6 +20,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 #[Schema(
+    schema: 'Unauthorized',
     title: 'Unauthorized',
     description: 'Bad credentials or missing token',
     type: 'object'

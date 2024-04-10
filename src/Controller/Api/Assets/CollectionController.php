@@ -17,15 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\MediaType;
-use OpenApi\Attributes\QueryParameter;
-use OpenApi\Attributes\Response;
-use OpenApi\Attributes\Schema;
+use OpenApi\Attributes\JsonContent;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\LimitParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
+use Pimcore\Bundle\StudioApiBundle\Config\Parameters\Query\CollectionParameters;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
-use Pimcore\Bundle\StudioApiBundle\Dto\Unauthorized;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
@@ -58,44 +59,15 @@ final class CollectionController extends AbstractApiController
                 'auth_token' => [],
             ],
         ],
-        tags: ['Assets']
+        tags: ['Assets'],
     )]
-    #[QueryParameter(
-        name: 'page',
-        description: 'Page number',
-        in: 'query',
-        required: true,
-        schema: new Schema(type: 'integer', example: 1),
-        example: 1
-    )]
-    #[QueryParameter(
-        name: 'limit',
-        description: 'Number of items per page',
-        in: 'query',
-        required: true,
-        schema: new Schema(type: 'integer', example: 1),
-        example: 10
-    )]
-    #[Response(
-        response: 200,
+    #[PageParameter]
+    #[LimitParameter]
+    #[SuccessResponse(
         description: 'Paginated assets with total count as header param',
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Asset::class, type: 'object')
-            ),
-        ]
+        content: new JsonContent(ref: Asset::class)
     )]
-    #[Response(
-        response: 401,
-        description: 'Unauthorized',
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Unauthorized::class, type: 'object')
-            ),
-        ]
-    )]
+    #[UnauthorizedResponse]
     public function getAssets(#[MapQueryString] Collection $collection): JsonResponse
     {
 

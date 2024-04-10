@@ -16,10 +16,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+
+#[Schema(
+    schema: 'Collection',
+    title: 'Collection',
+    type: 'object'
+)]
 final readonly class Collection
 {
     public function __construct(
+        #[Property(description: 'page', type: 'integer', example: 1)]
         private int $page = 1,
+        #[Property(description: 'limit', type: 'integer', example: 10)]
         private int $limit = 10
     ) {
     }

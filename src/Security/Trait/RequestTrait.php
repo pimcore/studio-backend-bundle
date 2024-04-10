@@ -35,7 +35,7 @@ trait RequestTrait
         $authToken = $request->headers->get(self::AUTHORIZATION_HEADER);
         if($authToken === null) {
             throw new NotAuthorizedException(
-                403,
+                401,
                 'Full authentication is required.'
             );
         }

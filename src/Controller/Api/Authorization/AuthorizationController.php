@@ -16,16 +16,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Authorization;
 
-use OpenApi\Attributes\MediaType;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use OpenApi\Attributes\RequestBody;
-use OpenApi\Attributes\Response;
-use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Request\CredentialsRequestBody;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Request\TokenRequestBody;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token\Refresh;
-use Pimcore\Bundle\StudioApiBundle\Dto\Unauthorized;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Pimcore\Security\User\User;
@@ -50,35 +50,12 @@ final class AuthorizationController extends AbstractApiController
         summary: 'Login with user credentials and get access token',
         tags: ['Authorization']
     )]
-    #[RequestBody(
-        required: true,
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Credentials::class, type: 'object')
-            ),
-        ]
+    #[CredentialsRequestBody]
+    #[SuccessResponse(
+        description: 'Token, lifetime and user identifier',
+        content: new JsonContent(ref: Token::class)
     )]
-    #[Response(
-        response: 200,
-        description: 'Key value pairs for given keys and locale',
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Token::class, type: 'object')
-            ),
-        ]
-    )]
-    #[Response(
-        response: 403,
-        description: 'Unauthorized',
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Unauthorized::class, type: 'object')
-            ),
-        ]
-    )]
+    #[UnauthorizedResponse]
     public function login(#[MapRequestPayload] Credentials $credentials): JsonResponse
     {
         /** @var User $user */
@@ -89,41 +66,18 @@ final class AuthorizationController extends AbstractApiController
         return $this->jsonResponse(new Token($token, $this->tokenService->getLifetime(), $user->getUserIdentifier()));
     }
 
+    #[Route('/refresh', name: 'pimcore_studio_api_refresh', methods: ['POST'])]
     #[POST(
         path: self::API_PATH . '/refresh',
         summary: 'Login with user credentials and get access token',
         tags: ['Authorization']
     )]
-    #[RequestBody(
-        required: true,
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Refresh::class, type: 'object')
-            ),
-        ]
+    #[TokenRequestBody]
+    #[SuccessResponse(
+        description: 'Token, lifetime and user identifier',
+        content: new JsonContent(ref: Token::class)
     )]
-    #[Response(
-        response: 200,
-        description: 'Key value pairs for given keys and locale',
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Token::class, type: 'object')
-            ),
-        ]
-    )]
-    #[Response(
-        response: 403,
-        description: 'Unauthorized',
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Unauthorized::class, type: 'object')
-            ),
-        ]
-    )]
-    #[Route('/refresh', name: 'pimcore_studio_api_refresh', methods: ['POST'])]
+    #[UnauthorizedResponse]
     public function refresh(#[MapRequestPayload] Refresh $refresh): JsonResponse
     {
         $token = $this->tokenService->refreshToken($refresh->getToken());

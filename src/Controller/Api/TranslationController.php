@@ -16,13 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api;
 
-use OpenApi\Attributes\MediaType;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use OpenApi\Attributes\RequestBody;
-use OpenApi\Attributes\Response;
-use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Request\TranslationRequestBody;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
-use Pimcore\Bundle\StudioApiBundle\Dto\Unauthorized;
 use Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -54,35 +53,12 @@ final class TranslationController extends AbstractApiController
         ],
         tags: ['Translation']
     )]
-    #[RequestBody(
-        required: true,
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Translation::class, type: 'object')
-            ),
-        ]
-    )]
-    #[Response(
-        response: 200,
+    #[TranslationRequestBody]
+    #[SuccessResponse(
         description: 'Key value pairs for given keys and locale',
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Translation::class, type: 'object')
-            ),
-        ]
+        content: new JsonContent(ref: Translation::class)
     )]
-    #[Response(
-        response: 401,
-        description: 'Unauthorized',
-        content:[
-            new MediaType(
-                mediaType: 'application/json',
-                schema: new Schema(ref: Unauthorized::class, type: 'object')
-            ),
-        ]
-    )]
+    #[UnauthorizedResponse]
     public function getTranslations(
         #[MapRequestPayload] Translation $translation,
     ): JsonResponse {
