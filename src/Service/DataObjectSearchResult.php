@@ -16,12 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
-use Pimcore\Model\DataObject\Concrete;
-
 final readonly class DataObjectSearchResult
 {
     /**
-     * @param array<int, Concrete> $items
+     * @param array $items
      * @param int $currentPage
      * @param int $pageSize
      * @param int $totalItems
@@ -40,7 +38,7 @@ final readonly class DataObjectSearchResult
     }
 
     /**
-     * @return array<int, Concrete>
+     * @return array
      */
     public function getItems(): array
     {
