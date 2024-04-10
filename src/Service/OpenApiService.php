@@ -31,8 +31,12 @@ final class OpenApiService implements OpenApiServiceInterface
 
     ];
 
+    public function __construct(private readonly array $openApiScanPaths = [])
+    {
+    }
+
     public function getConfig(): OpenApi
     {
-        return Generator::scan(self::PATHS);
+        return Generator::scan([...self::PATHS, ...$this->openApiScanPaths]);
     }
 }
