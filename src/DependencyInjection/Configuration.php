@@ -41,7 +41,7 @@ class Configuration implements ConfigurationInterface
         $rootNode->children()
             ->arrayNode('openApiScanPaths')
                 ->prototype('scalar')->end()
-                ?->validate()
+                ->validate()
                 ->always(function ($paths) {
                     foreach ($paths as $path) {
                         if (!is_dir($path)) {
@@ -53,13 +53,13 @@ class Configuration implements ConfigurationInterface
                 })
                 ->end()
             ->end()
-            ?->arrayNode('api_token')
+            ->arrayNode('api_token')
                 ->addDefaultsIfNotSet()
                 ->children()
                     ->integerNode('lifetime')
                         ->defaultValue(3600)
                     ->end()
-                ?->end()
+                ->end()
             ->end();
 
         return $treeBuilder;
