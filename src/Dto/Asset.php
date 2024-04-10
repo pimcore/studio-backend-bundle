@@ -67,6 +67,7 @@ class Asset extends Element
         ?int $creationDate,
         #[Property(description: 'Modification date', type: 'integer', example: 1634025800)]
         ?int $modificationDate,
+        #[Property(ref: Permissions::class)]
         Permissions $permissions
     ) {
         parent::__construct(
