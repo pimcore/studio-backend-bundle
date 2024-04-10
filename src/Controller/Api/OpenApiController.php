@@ -17,21 +17,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api;
 
 use Pimcore\Bundle\StudioApiBundle\Service\OpenApiServiceInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 
-final class OpenApiController extends AbstractApiController
+final class OpenApiController extends AbstractController
 {
-    public function __construct(
-        SerializerInterface $serializer,
-        private readonly OpenApiServiceInterface $openApiService)
+    public function __construct(private readonly OpenApiServiceInterface $openApiService)
     {
-        parent::__construct($serializer);
     }
 
-    #[Route('/docs', name: 'pimcore_studio_api_docs', methods: ['GET'])]
+    #[Route('/docs', name: 'pimcore_studio_api_docs', methods: ['GET'], condition: "'dev' === '%kernel.environment%'")]
     public function index(): Response
     {
         return $this->render('@PimcoreStudioApi/swagger-ui/index.html.twig');
