@@ -65,6 +65,7 @@ final class AuthorizationVoter extends Voter
                 'Full authentication is required.'
             );
         }
+
         return true;
     }
 }

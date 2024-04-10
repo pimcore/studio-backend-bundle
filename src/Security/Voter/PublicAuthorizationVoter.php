@@ -57,6 +57,7 @@ final class PublicAuthorizationVoter extends Voter
     {
         $request = $this->getCurrentRequest($this->requestStack);
         $subjectName = $this->getSubjectName($subject);
+
         try {
             $authToken = $this->getAuthToken($request);
         } catch (NotAuthorizedException) {
