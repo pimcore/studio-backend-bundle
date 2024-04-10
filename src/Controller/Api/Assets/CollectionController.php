@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\LimitParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
-use Pimcore\Bundle\StudioApiBundle\Config\Parameters\Query\CollectionParameters;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
