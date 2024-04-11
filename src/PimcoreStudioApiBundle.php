@@ -18,11 +18,8 @@ namespace Pimcore\Bundle\StudioApiBundle;
 
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
-use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
-use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 
-class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
-    DependentBundleInterface
+class PimcoreStudioApiBundle extends AbstractPimcoreBundle
 {
     public function getPath(): string
     {
@@ -55,10 +52,5 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements
 
         /** @var InstallerInterface|null */
         return $this->container->get(Installer::class);
-    }
-
-    public static function registerDependentBundles(BundleCollection $collection): void
-    {
-        // nothing to register here.
     }
 }
