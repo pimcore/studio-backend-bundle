@@ -16,16 +16,30 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\DataObjects;
 
+use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ExcludeFoldersParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\IdSearchTermParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageSizeParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ParentIdParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeDescendantsParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeParentParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
+use Pimcore\Bundle\StudioApiBundle\Dto\DataObject;
+use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProviderInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
+
 use Symfony\Component\Serializer\SerializerInterface;
 
 final class CollectionController extends AbstractApiController
@@ -34,21 +48,47 @@ final class CollectionController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly DataObjectQueryProviderInterface $dataObjectQueryProvider,
         private readonly DataObjectSearchServiceInterface $dataObjectSearchService,
+        private readonly FilterServiceInterface $filterService
     ) {
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws InvalidQueryTypeException
+     */
     #[Route('/data-objects', name: 'pimcore_studio_api_data_objects', methods: ['GET'])]
-    #[IsGranted(self::VOTER_STUDIO_API)]
-    public function getAssets(#[MapQueryString] Collection $collection): JsonResponse
+    //#[IsGranted(self::VOTER_STUDIO_API)]
+    #[GET(
+        path: self::API_PATH . '/data-objects',
+        description: 'Get paginated data objects',
+        summary: 'Get all DataObjects',
+        security: self::SECURITY_SCHEME,
+        tags: ['DataObjects'],
+    )]
+    #[PageParameter]
+    #[PageSizeParameter]
+    #[ParentIdParameter]
+    #[IdSearchTermParameter]
+    #[ExcludeFoldersParameter]
+    #[PathParameter]
+    #[PathIncludeParentParameter]
+    #[PathIncludeDescendantsParameter]
+    #[SuccessResponse(
+        description: 'Paginated data objects with total count as header param',
+        content: new JsonContent(ref: DataObject::class)
+    )]
+    #[UnauthorizedResponse]
+
+    /**
+     * @throws InvalidQueryTypeException
+     */
+    public function getDataObjects(#[MapQueryString] Collection $collection): JsonResponse
     {
 
-        $dataObjectQuery = $this->getDataQuery()
-            ->setPage($collection->getPage())
-            ->setPageSize($collection->getPageSize())
-            ->setClassDefinitionId('EV');
+        /** @var DataObjectQuery $dataObjectQuery */
+        $dataObjectQuery = $this->filterService->applyCollectionFilter($collection, 'dataObject');
+
         $result = $this->dataObjectSearchService->searchDataObjects($dataObjectQuery);
 
         return $this->getPaginatedCollection(
@@ -56,10 +96,5 @@ final class CollectionController extends AbstractApiController
             $result->getItems(),
             $result->getTotalItems()
         );
-    }
-
-    private function getDataQuery(): DataObjectQuery
-    {
-        return $this->dataObjectQueryProvider->createDataObjectQuery();
     }
 }

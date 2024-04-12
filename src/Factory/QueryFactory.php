@@ -18,11 +18,15 @@ namespace Pimcore\Bundle\StudioApiBundle\Factory;
 
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 final readonly class QueryFactory implements QueryFactoryInterface
 {
-    public function __construct(private AssetQueryProviderInterface $assetQueryProvider)
+    public function __construct(
+        private AssetQueryProviderInterface $assetQueryProvider,
+        private  DataObjectQueryProviderInterface $dataObjectQueryProvider
+    )
     {
 
     }
@@ -34,6 +38,7 @@ final readonly class QueryFactory implements QueryFactoryInterface
     {
         return match($type) {
             'asset' => $this->assetQueryProvider->createAssetQuery(),
+            'dataObject' => $this->dataObjectQueryProvider->createDataObjectQuery(),
             default => throw new InvalidQueryTypeException("Unknown query type: $type")
         };
     }

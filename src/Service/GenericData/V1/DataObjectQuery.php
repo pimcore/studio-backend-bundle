@@ -23,7 +23,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\Path
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 
-final class DataObjectQuery
+final class DataObjectQuery implements QueryInterface
 {
     public const DATA_OBJECT_QUERY_ID = 'data_object_query';
 

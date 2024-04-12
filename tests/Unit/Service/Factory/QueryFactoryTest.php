@@ -18,11 +18,15 @@ namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Service\Factory;
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactory;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProviderInterface;
 
 final class QueryFactoryTest extends Unit
 {
@@ -57,6 +61,21 @@ final class QueryFactoryTest extends Unit
         return $this->makeEmpty(AssetQueryProviderInterface::class, [
             'createAssetQuery' => function () {
                 return new AssetQuery($this->makeEmpty(SearchInterface::class));
+            },
+        ]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function mockDataObjectAdapterInterface(): DataObjectQueryProviderInterface
+    {
+        return $this->makeEmpty(DataObjectQueryProviderInterface::class, [
+            'createDataObjectQuery' => function () {
+                return new DataObjectQuery(
+                    $this->makeEmpty(DataObjectSearch::class),
+                    $this->makeEmpty(ClassDefinitionResolverInterface::class)
+                );
             },
         ]);
     }

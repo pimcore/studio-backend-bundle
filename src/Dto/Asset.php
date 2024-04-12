@@ -49,7 +49,6 @@ class Asset extends Element
         private readonly bool $workflowWithPermissions,
         #[Property(description: 'Full path', type: 'string', example: '/path/to/asset.jpg')]
         private readonly string $fullPath,
-        #[Property(description: 'ID', type: 'integer', example: 83)]
         int $id,
         #[Property(description: 'Parent ID', type: 'integer', example: 1)]
         int $parentId,
