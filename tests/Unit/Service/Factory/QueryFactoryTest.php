@@ -94,7 +94,7 @@ final class QueryFactoryTest extends Unit
         return $this->makeEmpty(DataObjectQueryProviderInterface::class, [
             'createDataObjectQuery' => function () {
                 return new DataObjectQuery(
-                    $this->makeEmpty(DataObjectSearch::class),
+                    $this->makeEmpty(new DataObjectSearch()),
                     $this->makeEmpty(ClassDefinitionResolverInterface::class)
                 );
             },
