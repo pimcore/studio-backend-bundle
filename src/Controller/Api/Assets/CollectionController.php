@@ -18,14 +18,14 @@ namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeDescendantsParameter;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeParentParameter;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\IdSearchTermParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ParentIdParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeDescendantsParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeParentParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
@@ -54,7 +54,6 @@ final class CollectionController extends AbstractApiController
     ) {
         parent::__construct($serializer);
     }
-
 
     #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]

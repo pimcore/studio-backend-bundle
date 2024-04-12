@@ -28,6 +28,7 @@ final class ExcludeFolderFilter implements FilterInterface
         if(!$excludeFolders) {
             return $query;
         }
+
         /** @var AssetQuery $query */
         return $query->excludeFolders();
     }

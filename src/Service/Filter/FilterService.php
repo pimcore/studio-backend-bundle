@@ -26,8 +26,7 @@ final readonly class FilterService implements FilterServiceInterface
     public function __construct(
         private FilterLoaderInterface $filterLoader,
         private QueryFactoryInterface $queryFactory
-    )
-    {
+    ) {
     }
 
     /**
@@ -35,10 +34,11 @@ final readonly class FilterService implements FilterServiceInterface
      */
     public function applyCollectionFilter(Collection $collection, string $type): QueryInterface
     {
-       $query = $this->queryFactory->create($type);
-       foreach ($this->filterLoader->loadFilters() as $filter) {
-           $query = $filter->apply($collection, $query);
-       }
-       return $query;
+        $query = $this->queryFactory->create($type);
+        foreach ($this->filterLoader->loadFilters() as $filter) {
+            $query = $filter->apply($collection, $query);
+        }
+
+        return $query;
     }
 }

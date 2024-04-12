@@ -20,5 +20,4 @@ use Exception;
 
 final class InvalidQueryTypeException extends Exception
 {
-
 }
