@@ -23,6 +23,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterfac
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactory;
+use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
@@ -36,7 +37,7 @@ final class QueryFactoryTest extends Unit
      */
     public function testInvalidQueryType(): void
     {
-        $queryFactory = new QueryFactory($this->mockAssetAdapterInterface());
+        $queryFactory = $this->getQueryFactory();
         $this->expectExceptionMessage('Unknown query type: invalid');
         $queryFactory->create('invalid');
     }
@@ -47,10 +48,32 @@ final class QueryFactoryTest extends Unit
      */
     public function testAssetQueryType(): void
     {
-        $queryFactory = new QueryFactory($this->mockAssetAdapterInterface());
+        $queryFactory = $this->getQueryFactory();
         $query = $queryFactory->create('asset');
 
         $this->assertInstanceOf(AssetQuery::class, $query);
+    }
+
+
+    /**
+     * @throws InvalidQueryTypeException
+     * @throws Exception
+     */
+    public function testDataObjectQueryType(): void
+    {
+        $queryFactory = $this->getQueryFactory();
+        $query = $queryFactory->create('dataObject');
+
+        $this->assertInstanceOf(DataObjectQuery::class, $query);
+    }
+
+
+    private function getQueryFactory(): QueryFactoryInterface
+    {
+        return new QueryFactory(
+            $this->mockAssetAdapterInterface(),
+            $this->mockDataObjectAdapterInterface()
+        );
     }
 
     /**
