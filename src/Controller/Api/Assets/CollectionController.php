@@ -55,6 +55,9 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws InvalidQueryTypeException
+     */
     #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[GET(

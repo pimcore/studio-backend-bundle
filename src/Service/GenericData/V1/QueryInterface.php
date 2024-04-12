@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -25,7 +26,7 @@ interface QueryInterface
 
     public function filterParentId(?int $parentId): self;
 
-    public function filterPath(string $path, bool $includeDescendants, bool $includeParent);
+    public function filterPath(string $path, bool $includeDescendants, bool $includeParent): self;
 
     public function setSearchTerm(?string $term): self;
 
