@@ -54,7 +54,6 @@ final class QueryFactoryTest extends Unit
         $this->assertInstanceOf(AssetQuery::class, $query);
     }
 
-
     /**
      * @throws InvalidQueryTypeException
      * @throws Exception
@@ -66,7 +65,6 @@ final class QueryFactoryTest extends Unit
 
         $this->assertInstanceOf(DataObjectQuery::class, $query);
     }
-
 
     private function getQueryFactory(): QueryFactoryInterface
     {
