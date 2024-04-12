@@ -47,7 +47,7 @@ final class CollectionController extends AbstractApiController
 
         $dataObjectQuery = $this->getDataQuery()
             ->setPage($collection->getPage())
-            ->setPageSize($collection->getLimit())
+            ->setPageSize($collection->getPageSize())
             ->setClassDefinitionId('EV');
         $result = $this->dataObjectSearchService->searchDataObjects($dataObjectQuery);
 
