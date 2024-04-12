@@ -21,12 +21,12 @@ use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class LimitParameter extends QueryParameter
+final class PageSizeParameter extends QueryParameter
 {
     public function __construct()
     {
         parent::__construct(
-            name: 'limit',
+            name: 'pageSize',
             description: 'Number of items per page',
             in: 'query',
             required: true,

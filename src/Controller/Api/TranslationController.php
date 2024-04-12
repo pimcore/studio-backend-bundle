@@ -41,7 +41,7 @@ final class TranslationController extends AbstractApiController
     }
 
     #[Route(self::PATH, name: 'pimcore_studio_api_translations', methods: ['POST'])]
-    #[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
+    //#[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
     #[POST(
         path: self::API_PATH . self::PATH,
         description: 'Get translations for given keys and locale',

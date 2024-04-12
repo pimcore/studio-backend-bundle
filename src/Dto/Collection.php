@@ -16,21 +16,21 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
-#[Schema(
-    schema: 'Collection',
-    title: 'Collection',
-    type: 'object'
-)]
 final readonly class Collection
 {
     public function __construct(
-        #[Property(description: 'page', type: 'integer', example: 1)]
+        #[NotBlank]
         private int $page = 1,
-        #[Property(description: 'limit', type: 'integer', example: 10)]
-        private int $limit = 10
+        #[NotBlank]
+        private int $pageSize = 10,
+        private ?int $parentId = null,
+        private ?string $idSearchTerm = null,
+        private ?string $excludeFolders = null,
+        private ?string $path = null,
+        private ?string $pathIncludeParent = null,
+        private ?string $pathIncludeDescendants = null
     ) {
     }
 
@@ -39,8 +39,38 @@ final readonly class Collection
         return $this->page;
     }
 
-    public function getLimit(): int
+    public function getPageSize(): int
     {
-        return $this->limit;
+        return $this->pageSize;
+    }
+
+    public function getParentId(): ?int
+    {
+        return $this->parentId;
+    }
+
+    public function getIdSearchTerm(): ?string
+    {
+        return $this->idSearchTerm;
+    }
+
+    public function getExcludeFolders(): ?bool
+    {
+        return $this->excludeFolders === 'true'; // TODO: symfony 7.1 will support bool type
+    }
+
+    public function getPath(): ?string
+    {
+        return $this->path;
+    }
+
+    public function getPathIncludeParent(): ?bool
+    {
+        return $this->pathIncludeParent === 'true'; // TODO: symfony 7.1 will support bool type
+    }
+
+    public function getPathIncludeDescendants(): ?bool
+    {
+        return $this->pathIncludeDescendants === 'true'; // TODO: symfony 7.1 will support bool type
     }
 }

@@ -18,21 +18,28 @@ namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\LimitParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeDescendantsParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeParentParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ExcludeFoldersParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\IdSearchTermParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageSizeParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ParentIdParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
+use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 final class CollectionController extends AbstractApiController
@@ -43,12 +50,14 @@ final class CollectionController extends AbstractApiController
         SerializerInterface $serializer,
         private readonly AssetQueryProviderInterface $assetQueryProvider,
         private readonly AssetSearchServiceInterface $assetSearchService,
+        private readonly FilterServiceInterface $filterService
     ) {
         parent::__construct($serializer);
     }
 
+
     #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
-    #[IsGranted('STUDIO_API')]
+    //#[IsGranted('STUDIO_API')]
     #[GET(
         path: self::API_PATH . '/assets',
         description: 'Get paginated assets',
@@ -57,18 +66,27 @@ final class CollectionController extends AbstractApiController
         tags: ['Assets'],
     )]
     #[PageParameter]
-    #[LimitParameter]
+    #[PageSizeParameter]
+    #[ParentIdParameter]
+    #[IdSearchTermParameter]
+    #[ExcludeFoldersParameter]
+    #[PathParameter]
+    #[PathIncludeParentParameter]
+    #[PathIncludeDescendantsParameter]
     #[SuccessResponse(
         description: 'Paginated assets with total count as header param',
         content: new JsonContent(ref: Asset::class)
     )]
     #[UnauthorizedResponse]
+
+    /**
+     * @throws InvalidQueryTypeException
+     */
     public function getAssets(#[MapQueryString] Collection $collection): JsonResponse
     {
+        /** @var AssetQuery $assetQuery */
+        $assetQuery = $this->filterService->applyCollectionFilter($collection, 'asset');
 
-        $assetQuery = $this->getAssetQuery()
-            ->setPage($collection->getPage())
-            ->setPageSize($collection->getLimit());
         $result = $this->assetSearchService->searchAssets($assetQuery);
 
         return $this->getPaginatedCollection(
@@ -76,10 +94,5 @@ final class CollectionController extends AbstractApiController
             $result->getItems(),
             $result->getTotalItems()
         );
-    }
-
-    private function getAssetQuery(): AssetQuery
-    {
-        return $this->assetQueryProvider->createAssetQuery();
     }
 }

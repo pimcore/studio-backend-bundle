@@ -48,6 +48,7 @@ class PimcoreStudioApiExtension extends Extension
         // Load services and configuration
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('services.yaml');
+        $loader->load('filters.yaml');
 
         $definition = $container->getDefinition(TokenServiceInterface::class);
         $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);

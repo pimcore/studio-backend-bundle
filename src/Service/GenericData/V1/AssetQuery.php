@@ -22,7 +22,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\Pare
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 
-final class AssetQuery
+final class AssetQuery implements QueryInterface
 {
     public const ASSET_QUERY_ID = 'asset_query';
 

@@ -1,0 +1,27 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+
+  Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterLoaderInterface:
+    class: Pimcore\Bundle\StudioApiBundle\Service\Filter\Loader\TaggedIteratorAdapter
+
+  Pimcore\Bundle\StudioApiBundle\Filter\PageFilter:
+    tags: [ 'pimcore.studio_api.collection.filter' ]
+
+  Pimcore\Bundle\StudioApiBundle\Filter\PageSizeFilter:
+    tags: [ 'pimcore.studio_api.collection.filter' ]
+
+  Pimcore\Bundle\StudioApiBundle\Filter\ExcludeFolderFilter:
+    tags: [ 'pimcore.studio_api.collection.filter' ]
+
+  Pimcore\Bundle\StudioApiBundle\Filter\IdSearchFilter:
+    tags: [ 'pimcore.studio_api.collection.filter' ]
+
+  Pimcore\Bundle\StudioApiBundle\Filter\ParentIdFilter:
+    tags: [ 'pimcore.studio_api.collection.filter' ]
+
+  Pimcore\Bundle\StudioApiBundle\Filter\PathFilter:
+    tags: [ 'pimcore.studio_api.collection.filter' ]

@@ -116,3 +116,13 @@ services:
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Text: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\TextHydratorInterface'
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\UnknownHydratorInterface'
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\VideoHydratorInterface'
+
+
+    #Filter
+    Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterService
+
+    #Factory
+    Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Factory\QueryFactory
+
