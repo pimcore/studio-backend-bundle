@@ -25,6 +25,7 @@ use OpenApi\Attributes\SecurityScheme;
     name: 'auth_token',
     scheme: 'bearer'
 )]
-abstract class Security
+final class Security
 {
+    private function __construct() {}
 }

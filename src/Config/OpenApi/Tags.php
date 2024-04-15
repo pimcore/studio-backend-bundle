@@ -22,6 +22,7 @@ use OpenApi\Attributes\Tag;
 #[Tag(name: 'Authorization', description: 'Login via username and password to get a token or refresh the token')]
 #[Tag(name: 'Translation', description: 'Get translations either for a single key or multiple keys')]
 
-abstract class Tags
+final class Tags
 {
+    private function __construct() {}
 }

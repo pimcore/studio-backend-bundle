@@ -30,6 +30,7 @@ use OpenApi\Attributes\License;
     url: 'https://www.pimcore.org/license'
 )]
 
-abstract class Spec
+final class Spec
 {
+    private function __construct() {}
 }
