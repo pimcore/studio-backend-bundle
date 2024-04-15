@@ -17,11 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 final class ParentIdFilter implements FilterInterface
 {
-    public function apply(Collection $collection, mixed $query): mixed
+    public function apply(Collection $collection, mixed $query): QueryInterface
     {
         $parentId = $collection->getParentId();
 
@@ -29,7 +29,6 @@ final class ParentIdFilter implements FilterInterface
             return $query;
         }
 
-        /** @var AssetQuery $query */
         return $query->filterParentId($parentId);
     }
 }

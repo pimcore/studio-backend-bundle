@@ -14,12 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Filter;
+namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
+use Exception;
 
-interface FilterInterface
+/**
+ * @internal
+ */
+final class MustImplementInterfaceException extends Exception
 {
-    public function apply(Collection $collection, QueryInterface $query): QueryInterface;
 }

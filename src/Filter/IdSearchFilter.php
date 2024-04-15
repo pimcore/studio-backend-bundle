@@ -17,12 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 final class IdSearchFilter implements FilterInterface
 {
-    public function apply(Collection $collection, QueryInterface $query): mixed
+    public function apply(Collection $collection, QueryInterface $query): QueryInterface
     {
         $idSearchTerm = $collection->getIdSearchTerm();
 
@@ -30,7 +29,6 @@ final class IdSearchFilter implements FilterInterface
             return $query;
         }
 
-        /** @var AssetQuery $query */
         return $query->setSearchTerm($idSearchTerm);
     }
 }

@@ -16,8 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle;
 
+use Pimcore\Bundle\StudioApiBundle\DependencyInjection\CompilerPass\FilterPass;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class PimcoreStudioApiBundle extends AbstractPimcoreBundle
 {
@@ -52,5 +54,10 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle
 
         /** @var InstallerInterface|null */
         return $this->container->get(Installer::class);
+    }
+
+    public function build(ContainerBuilder $container): void
+    {
+        $container->addCompilerPass(new FilterPass());
     }
 }

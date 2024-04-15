@@ -4,9 +4,12 @@ services:
     autoconfigure: true
     public: false
 
-
+  #Filter
   Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterLoaderInterface:
     class: Pimcore\Bundle\StudioApiBundle\Service\Filter\Loader\TaggedIteratorAdapter
+
+  Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface:
+    class: Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterService
 
   Pimcore\Bundle\StudioApiBundle\Filter\PageFilter:
     tags: [ 'pimcore.studio_api.collection.filter' ]
