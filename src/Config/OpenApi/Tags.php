@@ -24,5 +24,7 @@ use OpenApi\Attributes\Tag;
 
 final class Tags
 {
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 }

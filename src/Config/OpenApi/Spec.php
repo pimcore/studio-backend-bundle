@@ -32,5 +32,7 @@ use OpenApi\Attributes\License;
 
 final class Spec
 {
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 }

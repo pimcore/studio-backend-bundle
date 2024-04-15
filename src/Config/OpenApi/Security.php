@@ -27,5 +27,7 @@ use OpenApi\Attributes\SecurityScheme;
 )]
 final class Security
 {
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 }
