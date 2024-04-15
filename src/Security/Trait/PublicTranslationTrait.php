@@ -41,7 +41,7 @@ trait PublicTranslationTrait
 
         if (!empty($nonPublicTranslations)) {
             throw new NonPublicTranslationException(
-                403,
+                401,
                 sprintf(
                     'You have requested non public keys: %s',
                     implode(',', $nonPublicTranslations)
