@@ -25,7 +25,7 @@ final readonly class QueryFactory implements QueryFactoryInterface
 {
     public function __construct(
         private AssetQueryProviderInterface $assetQueryProvider,
-        private  DataObjectQueryProviderInterface $dataObjectQueryProvider
+        private DataObjectQueryProviderInterface $dataObjectQueryProvider
     ) {
 
     }

@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 final class ParentIdFilter implements FilterInterface
 {
-    public function apply(Collection $collection, mixed $query): QueryInterface
+    public function apply(Collection $collection, QueryInterface $query): QueryInterface
     {
         $parentId = $collection->getParentId();
 
