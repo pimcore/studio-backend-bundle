@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Request\CredentialsRequestBody;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Request\TokenRequestBody;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
+use Pimcore\Bundle\StudioApiBundle\Config\OpenApi\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token;
@@ -48,7 +49,7 @@ final class AuthorizationController extends AbstractApiController
     #[POST(
         path: self::API_PATH . '/login',
         summary: 'Login with user credentials and get access token',
-        tags: ['Authorization']
+        tags: [Tags::Authorization->name]
     )]
     #[CredentialsRequestBody]
     #[SuccessResponse(

@@ -21,12 +21,12 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Request\TranslationRequestBody;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
+use Pimcore\Bundle\StudioApiBundle\Config\OpenApi\Tags;
 use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
 use Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 final class TranslationController extends AbstractApiController
@@ -47,7 +47,7 @@ final class TranslationController extends AbstractApiController
         description: 'Get translations for given keys and locale',
         summary: 'Get translations',
         security: self::SECURITY_SCHEME,
-        tags: ['Translation']
+        tags: [Tags::Translation->name]
     )]
     #[TranslationRequestBody]
     #[SuccessResponse(

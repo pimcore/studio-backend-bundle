@@ -21,12 +21,12 @@ use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
+use Pimcore\Bundle\StudioApiBundle\Config\OpenApi\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 final class GetController extends AbstractApiController
@@ -45,7 +45,7 @@ final class GetController extends AbstractApiController
         description: 'Get assets by id by path parameter',
         summary: 'Get assets by id',
         security: self::SECURITY_SCHEME,
-        tags: ['Assets']
+        tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]
     #[SuccessResponse(

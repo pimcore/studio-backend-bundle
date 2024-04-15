@@ -16,12 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle;
 
+use Pimcore\Bundle\GenericDataIndexBundle\PimcoreGenericDataIndexBundle;
 use Pimcore\Bundle\StudioApiBundle\DependencyInjection\CompilerPass\FilterPass;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
+use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
+use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-class PimcoreStudioApiBundle extends AbstractPimcoreBundle
+class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements DependentBundleInterface
 {
     public function getPath(): string
     {
@@ -59,5 +62,10 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle
     public function build(ContainerBuilder $container): void
     {
         $container->addCompilerPass(new FilterPass());
+    }
+
+    public static function registerDependentBundles(BundleCollection $collection): void
+    {
+        $collection->addBundle(PimcoreGenericDataIndexBundle::class);
     }
 }
