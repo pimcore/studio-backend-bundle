@@ -21,7 +21,7 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Request\TranslationRequestBody;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
-use Pimcore\Bundle\StudioApiBundle\Config\OpenApi\Tags;
+use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
 use Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;

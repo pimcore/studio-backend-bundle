@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Request\CredentialsRequestBody;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Request\TokenRequestBody;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
-use Pimcore\Bundle\StudioApiBundle\Config\OpenApi\Tags;
+use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Dto\Token;

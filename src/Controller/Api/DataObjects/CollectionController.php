@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeParent
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
-use Pimcore\Bundle\StudioApiBundle\Config\OpenApi\Tags;
+use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
