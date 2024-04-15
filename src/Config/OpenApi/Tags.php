@@ -18,8 +18,10 @@ namespace Pimcore\Bundle\StudioApiBundle\Config\OpenApi;
 
 use OpenApi\Attributes\Tag;
 
-#[Tag(name: 'Translation', description: 'Get translations either for a single key or multiple keys')]
+#[Tag(name: 'Assets', description: 'Asset operations to get/update/create/delete assets')]
 #[Tag(name: 'Authorization', description: 'Login via username and password to get a token or refresh the token')]
+#[Tag(name: 'Translation', description: 'Get translations either for a single key or multiple keys')]
+
 abstract class Tags
 {
 }

@@ -42,8 +42,8 @@ final class GetController extends AbstractApiController
     //#[IsGranted('STUDIO_API')]
     #[GET(
         path: self::API_PATH . '/assets/{id}',
-        description: 'Get paginated assets',
-        summary: 'Get all assets',
+        description: 'Get assets by id by path parameter',
+        summary: 'Get assets by id',
         security: self::SECURITY_SCHEME,
         tags: ['Assets']
     )]
