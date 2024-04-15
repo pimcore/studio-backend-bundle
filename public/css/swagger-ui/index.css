@@ -27,3 +27,13 @@ body {
     background-color: #6428B4;
     color: #fff;
 }
+
+.custom-logo {
+    width: 24px;
+    height: 24px;
+    position: fixed;
+    bottom: 2px;
+    right: 2px;
+    background: url(/bundles/pimcorestudioapi/img/api-icon.png) center center no-repeat;
+    background-size: 24px 24px;
+}
