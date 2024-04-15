@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle;
 
 use Pimcore\Bundle\GenericDataIndexBundle\PimcoreGenericDataIndexBundle;
+use Pimcore\Bundle\StaticResolverBundle\PimcoreStaticResolverBundle;
 use Pimcore\Bundle\StudioApiBundle\DependencyInjection\CompilerPass\FilterPass;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
@@ -66,6 +67,7 @@ class PimcoreStudioApiBundle extends AbstractPimcoreBundle implements DependentB
 
     public static function registerDependentBundles(BundleCollection $collection): void
     {
-        $collection->addBundle(PimcoreGenericDataIndexBundle::class);
+        $collection->addBundle(new PimcoreStaticResolverBundle());
+        $collection->addBundle(new PimcoreGenericDataIndexBundle());
     }
 }
