@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StudioApiBundle\Dto\DataObject;
 use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchResult;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\DataObjectSearchAdapterInterface;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 
 final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterInterface
@@ -36,6 +37,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         $searchResult = $this->searchService->search($dataObjectQuery->getSearch());
 
         foreach($searchResult->getIds() as $id) {
+            /** @var Concrete $dataObject */
             $dataObject = $this->getDataObjectById($id);
             if (!$dataObject) {
                 continue;
