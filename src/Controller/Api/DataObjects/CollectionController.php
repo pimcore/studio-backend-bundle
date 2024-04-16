@@ -81,10 +81,6 @@ final class CollectionController extends AbstractApiController
         content: new JsonContent(ref: DataObject::class)
     )]
     #[UnauthorizedResponse]
-
-    /**
-     * @throws InvalidQueryTypeException
-     */
     public function getDataObjects(#[MapQueryString] DataObjectParameters $parameters): JsonResponse
     {
 

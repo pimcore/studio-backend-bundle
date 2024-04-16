@@ -79,10 +79,6 @@ final class CollectionController extends AbstractApiController
         content: new JsonContent(ref: Asset::class)
     )]
     #[UnauthorizedResponse]
-
-    /**
-     * @throws InvalidQueryTypeException
-     */
     public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
     {
         /** @var AssetQuery $assetQuery */
