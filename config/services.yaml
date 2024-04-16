@@ -19,31 +19,6 @@ services:
         public: true
         tags: [ 'controller.service_arguments' ]
 
-    # Providers
-    Pimcore\Bundle\StudioApiBundle\State\AssetProvider: ~
-    Pimcore\Bundle\StudioApiBundle\State\UserProvider: ~
-    Pimcore\Bundle\StudioApiBundle\State\ScheduledTaskProvider: ~
-    Pimcore\Bundle\StudioApiBundle\State\VersionProvider: ~
-
-    # Processors
-    Pimcore\Bundle\StudioApiBundle\State\ResetPasswordProcessor: ~
-    Pimcore\Bundle\StudioApiBundle\State\Token\Create\Processor: ~
-    Pimcore\Bundle\StudioApiBundle\State\Token\Refresh\Processor: ~
-    Pimcore\Bundle\StudioApiBundle\State\TranslationProcessor: ~
-
-    # Filters
-    Pimcore\Bundle\StudioApiBundle\Filter\AssetParentIdFilter:
-        tags:  [ 'api_platform.filter' ]
-
-    Pimcore\Bundle\StudioApiBundle\Filter\AssetIdSearchFilter:
-        tags: [ 'api_platform.filter' ]
-
-    Pimcore\Bundle\StudioApiBundle\Filter\AssetExcludeFolderFilter:
-        tags: [ 'api_platform.filter' ]
-
-    Pimcore\Bundle\StudioApiBundle\Filter\AssetPathFilter:
-        tags: [ 'api_platform.filter' ]
-
     # Hydrators
     Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ArchiveHydratorInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ArchiveHydrator
@@ -76,17 +51,29 @@ services:
         arguments:
             $assetHydratorLocator: '@generic_data_index.asset_hydrator.service_locator'
 
+
+    # Assets
     Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\AssetSearchService
 
     Pimcore\Bundle\StudioApiBundle\Service\GenericData\AssetSearchAdapterInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetSearchAdapter
 
-    Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\IconService
-
     Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProvider
+
+    #Data Objects
+    Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchService
+
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\DataObjectSearchAdapterInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectSearchAdapter
+
+    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProviderInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProvider
+
+    Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\IconService
 
     Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\TranslatorService
@@ -97,20 +84,23 @@ services:
     Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\SecurityService
 
+    Pimcore\Bundle\StudioApiBundle\Service\OpenApiServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Service\OpenApiService
+
     #Voters
-    Pimcore\Bundle\StudioApiBundle\Security\Voter\TokenVoter:
+    Pimcore\Bundle\StudioApiBundle\Security\Voter\AuthorizationVoter:
         arguments: ['@request_stack']
         tags:
             - { name: security.voter }
 
-    Pimcore\Bundle\StudioApiBundle\Security\Voter\PublicTokenVoter:
+    Pimcore\Bundle\StudioApiBundle\Security\Voter\PublicAuthorizationVoter:
         arguments: [ '@request_stack' ]
         tags:
             - { name: security.voter }
 
     #Decorators
-    Pimcore\Bundle\StudioApiBundle\ApiPlatform\OpenApiFactoryDecorator:
-        decorates: 'api_platform.openapi.factory'
+    #Pimcore\Bundle\StudioApiBundle\ApiPlatform\OpenApiFactoryDecorator:
+        #decorates: 'api_platform.openapi.factory'
 
     #Service Locator
     generic_data_index.asset_hydrator.service_locator:
@@ -126,3 +116,8 @@ services:
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Text: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\TextHydratorInterface'
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\UnknownHydratorInterface'
                 Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\VideoHydratorInterface'
+
+    #Factory
+    Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Factory\QueryFactory
+

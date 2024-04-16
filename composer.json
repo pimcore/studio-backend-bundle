@@ -21,7 +21,7 @@
     "pimcore/static-resolver-bundle": "^1.3",
     "pimcore/generic-data-index-bundle": "1.x-dev",
     "pimcore/pimcore": "^11.0",
-    "api-platform/core": "^3.2"
+    "zircote/swagger-php": "^4.8"
   },
   "require-dev": {
     "pimcore/admin-ui-classic-bundle": "^v1.3",

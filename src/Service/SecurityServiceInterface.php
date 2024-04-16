@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Token\Create;
+use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 /**
@@ -24,7 +24,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
  */
 interface SecurityServiceInterface
 {
-    public function authenticateUser(Create $token): PasswordAuthenticatedUserInterface;
+    public function authenticateUser(Credentials $credentials): PasswordAuthenticatedUserInterface;
 
     public function checkAuthToken(string $token): bool;
 }

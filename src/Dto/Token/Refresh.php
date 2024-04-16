@@ -16,12 +16,21 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto\Token;
 
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+
 /**
  * @internal
  */
+#[Schema(
+    title: 'Refresh',
+    description: 'Token that needs to be refresh',
+    type: 'object'
+)]
 final readonly class Refresh
 {
     public function __construct(
+        #[Property(description: 'Token', type: 'string', example: 'Who you gonna call? Refresh token!')]
         private string $token
     ) {
     }

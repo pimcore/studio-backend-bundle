@@ -17,13 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Dto\Token;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token\Output;
+use Pimcore\Bundle\StudioApiBundle\Dto\Token;
 
 final class OutputTest extends Unit
 {
     public function testTokenOutput(): void
     {
-        $output = new Output('token', 3600, 'test');
+        $output = new Token('token', 3600, 'test');
         $this->assertSame('token', $output->getToken());
         $this->assertSame(3600, $output->getLifetime());
         $this->assertSame('test', $output->getUsername());

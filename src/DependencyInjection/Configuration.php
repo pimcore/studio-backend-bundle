@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
+use Pimcore\Bundle\StudioApiBundle\Exception\InvalidPathException;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -38,13 +39,28 @@ class Configuration implements ConfigurationInterface
         $rootNode = $treeBuilder->getRootNode();
         $rootNode->addDefaultsIfNotSet();
         $rootNode->children()
+            ->arrayNode('openApiScanPaths')
+                ->prototype('scalar')->end()
+                ->validate()
+                ->always(function ($paths) {
+                    foreach ($paths as $path) {
+                        if (!is_dir($path)) {
+                            throw new InvalidPathException(sprintf('The path "%s" is not a valid directory.', $path));
+                        }
+                    }
+
+                    return $paths;
+                })
+                ->end()
+            ->end()
             ->arrayNode('api_token')
                 ->addDefaultsIfNotSet()
                 ->children()
                     ->integerNode('lifetime')
                         ->defaultValue(3600)
                     ->end()
-                ->end();
+                ->end()
+            ->end();
 
         return $treeBuilder;
     }

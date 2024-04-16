@@ -17,11 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Dto;
 
 use ApiPlatform\Metadata\ApiProperty;
+use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions;
 
 class Element
 {
     public function __construct(
+        #[Property(description: 'ID', type: 'integer', example: 83)]
         private readonly int $id,
         private readonly int $parentId,
         private readonly string $path,
@@ -111,7 +113,6 @@ class Element
         return $this->isLocked;
     }
 
-    #[ApiProperty(genId: false)]
     public function getPermissions(): Permissions
     {
         return $this->permissions;

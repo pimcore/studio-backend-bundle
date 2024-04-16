@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Service\Security;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token\Create;
+use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityService;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Pimcore\Model\Tool\TmpStore;
@@ -36,7 +36,7 @@ final class SecurityServiceTest extends Unit
     public function testSecurityService(): void
     {
         $securityService = $this->mockSecurityService();
-        $user = $securityService->authenticateUser(new Create('test', 'test'));
+        $user = $securityService->authenticateUser(new Credentials('test', 'test'));
 
         $this->assertInstanceOf(User::class, $user);
         $this->assertSame('test', $user->getPassword());
@@ -50,7 +50,7 @@ final class SecurityServiceTest extends Unit
         $securityService = $this->mockSecurityService(false);
 
         $this->expectExceptionMessage('Invalid credentials');
-        $securityService->authenticateUser(new Create('test', 'test'));
+        $securityService->authenticateUser(new Credentials('test', 'test'));
     }
 
     /**
@@ -61,7 +61,7 @@ final class SecurityServiceTest extends Unit
         $securityService = $this->mockSecurityService(false, false);
 
         $this->expectExceptionMessage('Invalid credentials');
-        $securityService->authenticateUser(new Create('test', 'test'));
+        $securityService->authenticateUser(new Credentials('test', 'test'));
     }
 
     /**

@@ -16,18 +16,33 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 
-readonly class Permissions
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+
+#[Schema(
+    title: 'Permissions',
+    type: 'object'
+)]
+final readonly class Permissions
 {
-    //TODO: remove or change default permissions
     public function __construct(
+        #[Property(description: 'List', type: 'bool', example: true)]
         private bool $list = true,
+        #[Property(description: 'View', type: 'bool', example: true)]
         private bool $view = true,
+        #[Property(description: 'Publish', type: 'bool', example: true)]
         private bool $publish = true,
+        #[Property(description: 'Delete', type: 'bool', example: true)]
         private bool $delete = true,
+        #[Property(description: 'Rename', type: 'bool', example: true)]
         private bool $rename = true,
+        #[Property(description: 'Create', type: 'bool', example: true)]
         private bool $create = true,
+        #[Property(description: 'Settings', type: 'bool', example: true)]
         private bool $settings = true,
+        #[Property(description: 'Versions', type: 'bool', example: true)]
         private bool $versions = true,
+        #[Property(description: 'Properties', type: 'bool', example: true)]
         private bool $properties = true
     ) {
     }

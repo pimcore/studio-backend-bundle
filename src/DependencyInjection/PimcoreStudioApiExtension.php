@@ -17,10 +17,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
 use Exception;
+use Pimcore\Bundle\StudioApiBundle\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
@@ -33,7 +33,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 /**
  * @internal
  */
-class PimcoreStudioApiExtension extends Extension implements PrependExtensionInterface
+class PimcoreStudioApiExtension extends Extension
 {
     /**
      * {@inheritdoc}
@@ -48,31 +48,12 @@ class PimcoreStudioApiExtension extends Extension implements PrependExtensionInt
         // Load services and configuration
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('services.yaml');
-
-        // Set default serializer mapping if not provided in the app's config
-        if (!isset($config['serializer']['mapping']['paths'])) {
-            $config['serializer']['mapping']['paths'] = [__DIR__ . '/../../config/serialization'];
-        }
-
-        // Pass the configuration to the custom normalizer
-        $container->setParameter(
-            'pimcore_studio_api.serializer.mapping.paths',
-            $config['serializer']['mapping']['paths']
-        );
+        $loader->load('filters.yaml');
 
         $definition = $container->getDefinition(TokenServiceInterface::class);
         $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
-    }
 
-    public function prepend(ContainerBuilder $container): void
-    {
-        $apiPlatformConfig = [
-            'mapping'=>[
-                'paths'=> [
-                    __DIR__ . '/../../config/api_platform/',
-                ],
-            ],
-        ];
-        $container->prependExtensionConfig('api_platform', $apiPlatformConfig);
+        $definition = $container->getDefinition(OpenApiServiceInterface::class);
+        $definition->setArgument('$openApiScanPaths', $config['openApiScanPaths']);
     }
 }
