@@ -61,10 +61,11 @@ final class CollectionController extends AbstractApiController
     //#[IsGranted('STUDIO_API')]
     #[GET(
         path: self::API_PATH . '/assets',
+        operationId: 'getAssets',
         description: 'Get paginated assets',
         summary: 'Get all assets',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::Assets->name],
+        tags: [Tags::Assets->name]
     )]
     #[PageParameter]
     #[PageSizeParameter]

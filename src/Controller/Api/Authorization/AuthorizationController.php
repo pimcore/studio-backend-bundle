@@ -48,6 +48,7 @@ final class AuthorizationController extends AbstractApiController
     #[Route('/login', name: 'pimcore_studio_api_login', methods: ['POST'])]
     #[POST(
         path: self::API_PATH . '/login',
+        operationId: 'login',
         summary: 'Login with user credentials and get access token',
         tags: [Tags::Authorization->name]
     )]
@@ -70,6 +71,7 @@ final class AuthorizationController extends AbstractApiController
     #[Route('/refresh', name: 'pimcore_studio_api_refresh', methods: ['POST'])]
     #[POST(
         path: self::API_PATH . '/refresh',
+        operationId: 'refresh',
         summary: 'Login with user credentials and get access token',
         tags: ['Authorization']
     )]

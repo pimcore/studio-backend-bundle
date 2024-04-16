@@ -62,6 +62,7 @@ final class CollectionController extends AbstractApiController
     //#[IsGranted(self::VOTER_STUDIO_API)]
     #[GET(
         path: self::API_PATH . '/data-objects',
+        operationId: 'getDataObjects',
         description: 'Get paginated data objects',
         summary: 'Get all DataObjects',
         security: self::SECURITY_SCHEME,
