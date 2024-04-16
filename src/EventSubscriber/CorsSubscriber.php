@@ -28,6 +28,7 @@ final readonly class CorsSubscriber implements EventSubscriberInterface
     public function __construct(private array $allowedHosts = [])
     {
     }
+
     public static function getSubscribedEvents(): array
     {
         return [

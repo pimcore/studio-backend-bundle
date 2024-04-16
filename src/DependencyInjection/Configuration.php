@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidPathException;
-use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -34,6 +33,7 @@ class Configuration implements ConfigurationInterface
 
     /**
      * {@inheritdoc}
+     *
      * @throws InvalidPathException
      * @throws InvalidHostException
      */
@@ -50,29 +50,29 @@ class Configuration implements ConfigurationInterface
         return $treeBuilder;
     }
 
-
     private function addOpenApiScanPathsNode(NodeDefinition $node): void
     {
-         $node->children()
-             ->arrayNode('openApiScanPaths')
-                ->prototype('scalar')->end()
-                ->validate()
-                ->always(
-                    function ($paths) {
-                        foreach ($paths as $path) {
-                            if (!is_dir($path)) {
-                                throw new InvalidPathException(
-                                    sprintf(
-                                        'The path "%s" is not a valid directory.',
-                                        $path
-                                    )
-                                );
-                            }
-                        }
-                        return $paths;
-                    })
-                ->end()
-            ->end();
+        $node->children()
+            ->arrayNode('openApiScanPaths')
+               ->prototype('scalar')->end()
+               ->validate()
+               ->always(
+                   function ($paths) {
+                       foreach ($paths as $path) {
+                           if (!is_dir($path)) {
+                               throw new InvalidPathException(
+                                   sprintf(
+                                       'The path "%s" is not a valid directory.',
+                                       $path
+                                   )
+                               );
+                           }
+                       }
+
+                       return $paths;
+                   })
+               ->end()
+           ->end();
     }
 
     private function addApiTokenNode(NodeDefinition $node): void
@@ -106,6 +106,7 @@ class Configuration implements ConfigurationInterface
                                 );
                             }
                         }
+
                         return $hosts;
                     })
                 ->end()
