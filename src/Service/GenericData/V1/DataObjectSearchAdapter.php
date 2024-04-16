@@ -35,13 +35,10 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     public function searchDataObjects(DataObjectQuery $dataObjectQuery): DataObjectSearchResult
     {
         $searchResult = $this->searchService->search($dataObjectQuery->getSearch());
-
+        $result = [];
         foreach($searchResult->getIds() as $id) {
             /** @var Concrete $dataObject */
             $dataObject = $this->getDataObjectById($id);
-            if (!$dataObject) {
-                continue;
-            }
             $result[] = new DataObject($dataObject->getId(), $dataObject->getClassName());
         }
 
