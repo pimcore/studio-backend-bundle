@@ -16,7 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\DataObjects;
 
+use Google\Service\Analytics\Resource\Data;
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ClassIdParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ExcludeFoldersParameter;
@@ -79,7 +81,7 @@ final class CollectionController extends AbstractApiController
     #[ClassIdParameter]
     #[SuccessResponse(
         description: 'Paginated data objects with total count as header param',
-        content: new JsonContent(ref: DataObject::class)
+        content: new JsonContent(type: 'array', items: new Items(ref: DataObject::class))
     )]
     #[UnauthorizedResponse]
     public function getDataObjects(#[MapQueryString] DataObjectParameters $parameters): JsonResponse

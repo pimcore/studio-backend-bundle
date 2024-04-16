@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\IdSearchTermParameter;
@@ -77,7 +78,7 @@ final class CollectionController extends AbstractApiController
     #[PathIncludeDescendantsParameter]
     #[SuccessResponse(
         description: 'Paginated assets with total count as header param',
-        content: new JsonContent(ref: Asset::class)
+        content: new JsonContent(type: 'array', items: new Items(ref: Asset::class))
     )]
     #[UnauthorizedResponse]
     public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
