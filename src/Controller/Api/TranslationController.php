@@ -44,6 +44,7 @@ final class TranslationController extends AbstractApiController
     //#[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
     #[POST(
         path: self::API_PATH . self::PATH,
+        operationId: 'getTranslations',
         description: 'Get translations for given keys and locale',
         summary: 'Get translations',
         security: self::SECURITY_SCHEME,

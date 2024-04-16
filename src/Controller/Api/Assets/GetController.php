@@ -42,6 +42,7 @@ final class GetController extends AbstractApiController
     //#[IsGranted('STUDIO_API')]
     #[GET(
         path: self::API_PATH . '/assets/{id}',
+        operationId: 'getAssetById',
         description: 'Get assets by id by path parameter',
         summary: 'Get assets by id',
         security: self::SECURITY_SCHEME,
@@ -53,7 +54,7 @@ final class GetController extends AbstractApiController
         content: new JsonContent(ref: Asset::class)
     )]
     #[UnauthorizedResponse]
-    public function getAssets(int $id): JsonResponse
+    public function getAssetById(int $id): JsonResponse
     {
         return $this->jsonResponse($this->assetSearchService->getAssetById($id));
     }
