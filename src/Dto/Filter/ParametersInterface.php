@@ -25,6 +25,7 @@ interface ParametersInterface
     public function getParentId(): ?int;
 
     public function getIdSearchTerm(): ?string;
+
     public function getExcludeFolders(): ?bool;
 
     public function getPath(): ?string;

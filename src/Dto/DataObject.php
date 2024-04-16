@@ -43,6 +43,4 @@ readonly class DataObject
     {
         return $this->className;
     }
-
-
 }

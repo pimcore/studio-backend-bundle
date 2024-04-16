@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\Parameters;
 use Pimcore\Bundle\StudioApiBundle\Dto\Filter\ParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
