@@ -27,7 +27,9 @@ readonly class DataObject
 {
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 83)]
-        private int $id
+        private int $id,
+        #[Property(description: 'className', type: 'string', example: 'car')]
+        private string $className
     ) {
 
     }
@@ -36,4 +38,11 @@ readonly class DataObject
     {
         return $this->id;
     }
+
+    public function getClassName(): string
+    {
+        return $this->className;
+    }
+
+
 }

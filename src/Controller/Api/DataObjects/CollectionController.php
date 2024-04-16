@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\DataObjects;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ClassIdParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\IdSearchTermParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageParameter;
@@ -31,8 +32,8 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
-use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
 use Pimcore\Bundle\StudioApiBundle\Dto\DataObject;
+use Pimcore\Bundle\StudioApiBundle\Dto\Filter\DataObjectParameters;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
@@ -74,6 +75,7 @@ final class CollectionController extends AbstractApiController
     #[PathParameter]
     #[PathIncludeParentParameter]
     #[PathIncludeDescendantsParameter]
+    #[ClassIdParameter]
     #[SuccessResponse(
         description: 'Paginated data objects with total count as header param',
         content: new JsonContent(ref: DataObject::class)
@@ -83,11 +85,11 @@ final class CollectionController extends AbstractApiController
     /**
      * @throws InvalidQueryTypeException
      */
-    public function getDataObjects(#[MapQueryString] Collection $collection): JsonResponse
+    public function getDataObjects(#[MapQueryString] DataObjectParameters $parameters): JsonResponse
     {
 
         /** @var DataObjectQuery $dataObjectQuery */
-        $dataObjectQuery = $this->filterService->applyCollectionFilter($collection, 'dataObject');
+        $dataObjectQuery = $this->filterService->applyCollectionFilter($parameters, 'dataObject');
 
         $result = $this->dataObjectSearchService->searchDataObjects($dataObjectQuery);
 

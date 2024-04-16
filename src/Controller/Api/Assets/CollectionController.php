@@ -32,7 +32,7 @@ use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
-use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
+use Pimcore\Bundle\StudioApiBundle\Dto\Filter\Parameters;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
@@ -83,10 +83,10 @@ final class CollectionController extends AbstractApiController
     /**
      * @throws InvalidQueryTypeException
      */
-    public function getAssets(#[MapQueryString] Collection $collection): JsonResponse
+    public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
     {
         /** @var AssetQuery $assetQuery */
-        $assetQuery = $this->filterService->applyCollectionFilter($collection, 'asset');
+        $assetQuery = $this->filterService->applyCollectionFilter($parameters, 'asset');
 
         $result = $this->assetSearchService->searchAssets($assetQuery);
 

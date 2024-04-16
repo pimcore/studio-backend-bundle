@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\Filter;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
+use Pimcore\Bundle\StudioApiBundle\Dto\Filter\Parameters;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
@@ -25,5 +25,5 @@ interface FilterServiceInterface
     /**
      * @throws InvalidQueryTypeException
      */
-    public function applyCollectionFilter(Collection $collection, string $type): QueryInterface;
+    public function applyCollectionFilter(Parameters $collection, string $type): QueryInterface;
 }

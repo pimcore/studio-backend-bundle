@@ -5,6 +5,8 @@ services:
     public: false
 
   #Filter
+
+  #Common
   Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterLoaderInterface:
     class: Pimcore\Bundle\StudioApiBundle\Service\Filter\Loader\TaggedIteratorAdapter
 
@@ -28,3 +30,7 @@ services:
 
   Pimcore\Bundle\StudioApiBundle\Filter\PathFilter:
     tags: [ 'pimcore.studio_api.collection.filter' ]
+
+  # DataObject
+  Pimcore\Bundle\StudioApiBundle\Filter\DataObject\ClassIdFilter:
+      tags: [ 'pimcore.studio_api.collection.filter' ]

@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto;
+namespace Pimcore\Bundle\StudioApiBundle\Dto\Filter;
 
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-final readonly class Collection
+readonly class Parameters implements ParametersInterface
 {
     public function __construct(
         #[NotBlank]

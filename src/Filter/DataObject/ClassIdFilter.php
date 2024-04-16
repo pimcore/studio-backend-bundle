@@ -14,16 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Filter;
+namespace Pimcore\Bundle\StudioApiBundle\Filter\DataObject;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\Parameters;
+use Pimcore\Bundle\StudioApiBundle\Dto\Filter\DataObjectParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Dto\Filter\ParametersInterface;
+use Pimcore\Bundle\StudioApiBundle\Filter\FilterInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
-final class PageSizeFilter implements FilterInterface
+final class ClassIdFilter implements FilterInterface
 {
     public function apply(ParametersInterface $parameters, QueryInterface $query): QueryInterface
     {
-        return $query->setPageSize($parameters->getPageSize());
+        if(
+            !$parameters instanceof DataObjectParametersInterface ||
+            !$query instanceof DataObjectQuery ||
+            !$parameters->getClassId()
+        ) {
+            return $query;
+        }
+
+        return $query->setClassDefinitionId($parameters->getClassId());
     }
 }

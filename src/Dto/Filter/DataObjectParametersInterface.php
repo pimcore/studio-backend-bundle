@@ -14,13 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Filter;
+namespace Pimcore\Bundle\StudioApiBundle\Dto\Filter;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\Parameters;
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\ParametersInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
-
-interface FilterInterface
+interface DataObjectParametersInterface extends ParametersInterface
 {
-    public function apply(ParametersInterface $parameters, QueryInterface $query): QueryInterface;
+    public function getClassId(): ?string;
 }

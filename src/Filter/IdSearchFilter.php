@@ -16,14 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Collection;
+use Pimcore\Bundle\StudioApiBundle\Dto\Filter\Parameters;
+use Pimcore\Bundle\StudioApiBundle\Dto\Filter\ParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 final class IdSearchFilter implements FilterInterface
 {
-    public function apply(Collection $collection, QueryInterface $query): QueryInterface
+    public function apply(ParametersInterface $parameters, QueryInterface $query): QueryInterface
     {
-        $idSearchTerm = $collection->getIdSearchTerm();
+        $idSearchTerm = $parameters->getIdSearchTerm();
 
         if(!$idSearchTerm) {
             return $query;
