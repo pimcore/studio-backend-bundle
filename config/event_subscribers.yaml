@@ -1,0 +1,9 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Pimcore\Bundle\StudioApiBundle\EventSubscriber\CorsSubscriber:
+    tags:
+      - { name: kernel.event_subscriber }

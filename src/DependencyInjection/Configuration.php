@@ -16,7 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
+use Pimcore\Bundle\StudioApiBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidPathException;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -31,6 +34,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * {@inheritdoc}
+     * @throws InvalidPathException
+     * @throws InvalidHostException
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
@@ -38,21 +43,41 @@ class Configuration implements ConfigurationInterface
 
         $rootNode = $treeBuilder->getRootNode();
         $rootNode->addDefaultsIfNotSet();
-        $rootNode->children()
-            ->arrayNode('openApiScanPaths')
+        $this->addOpenApiScanPathsNode($rootNode);
+        $this->addApiTokenNode($rootNode);
+        $this->addAllowedHostsForCorsNode($rootNode);
+
+        return $treeBuilder;
+    }
+
+
+    private function addOpenApiScanPathsNode(NodeDefinition $node): void
+    {
+         $node->children()
+             ->arrayNode('openApiScanPaths')
                 ->prototype('scalar')->end()
                 ->validate()
-                ->always(function ($paths) {
-                    foreach ($paths as $path) {
-                        if (!is_dir($path)) {
-                            throw new InvalidPathException(sprintf('The path "%s" is not a valid directory.', $path));
+                ->always(
+                    function ($paths) {
+                        foreach ($paths as $path) {
+                            if (!is_dir($path)) {
+                                throw new InvalidPathException(
+                                    sprintf(
+                                        'The path "%s" is not a valid directory.',
+                                        $path
+                                    )
+                                );
+                            }
                         }
-                    }
-
-                    return $paths;
-                })
+                        return $paths;
+                    })
                 ->end()
-            ->end()
+            ->end();
+    }
+
+    private function addApiTokenNode(NodeDefinition $node): void
+    {
+        $node->children()
             ->arrayNode('api_token')
                 ->addDefaultsIfNotSet()
                 ->children()
@@ -61,7 +86,29 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
             ->end();
+    }
 
-        return $treeBuilder;
+    private function addAllowedHostsForCorsNode(NodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('allowedHostsForCors')
+                ->prototype('scalar')->end()
+                ->validate()
+                ->always(
+                    function ($hosts) {
+                        foreach ($hosts as $host) {
+                            if (!filter_var($host)) {
+                                throw new InvalidHostException(
+                                    sprintf(
+                                        'The host "%s" is not a valid url.',
+                                        $host
+                                    )
+                                );
+                            }
+                        }
+                        return $hosts;
+                    })
+                ->end()
+            ->end();
     }
 }

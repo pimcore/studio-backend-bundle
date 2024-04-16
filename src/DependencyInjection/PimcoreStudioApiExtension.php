@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
 use Exception;
+use Pimcore\Bundle\StudioApiBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioApiBundle\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Symfony\Component\Config\FileLocator;
@@ -49,11 +50,15 @@ class PimcoreStudioApiExtension extends Extension
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('services.yaml');
         $loader->load('filters.yaml');
+        $loader->load('event_subscribers.yaml');
 
         $definition = $container->getDefinition(TokenServiceInterface::class);
         $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
 
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
         $definition->setArgument('$openApiScanPaths', $config['openApiScanPaths']);
+
+        $definition = $container->getDefinition(CorsSubscriber::class);
+        $definition->setArgument('$allowedHosts', $config['allowedHostsForCors']);
     }
 }
