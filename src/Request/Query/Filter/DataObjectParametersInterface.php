@@ -14,23 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto\Filter;
+namespace Pimcore\Bundle\StudioApiBundle\Request\Query\Filter;
 
-interface ParametersInterface
+/**
+ * @internal
+ */
+interface DataObjectParametersInterface extends ParametersInterface
 {
-    public function getPage(): int;
-
-    public function getPageSize(): int;
-
-    public function getParentId(): ?int;
-
-    public function getIdSearchTerm(): ?string;
-
-    public function getExcludeFolders(): ?bool;
-
-    public function getPath(): ?string;
-
-    public function getPathIncludeParent(): ?bool;
-
-    public function getPathIncludeDescendants(): ?bool;
+    public function getClassId(): ?string;
 }

@@ -21,6 +21,9 @@ use Pimcore\Bundle\StudioApiBundle\Exception\NotAuthorizedException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
+/**
+ * @internal
+ */
 trait RequestTrait
 {
     private const BEARER_PREFIX = 'Bearer ';

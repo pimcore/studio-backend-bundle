@@ -33,8 +33,8 @@ use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\Parameters;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\Parameters;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
@@ -43,6 +43,9 @@ use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 final class CollectionController extends AbstractApiController
 {
     use PaginatedResponseTrait;
@@ -54,6 +57,7 @@ final class CollectionController extends AbstractApiController
     ) {
         parent::__construct($serializer);
     }
+
 
     /**
      * @throws InvalidQueryTypeException
@@ -81,6 +85,7 @@ final class CollectionController extends AbstractApiController
         content: new JsonContent(type: 'array', items: new Items(ref: Asset::class))
     )]
     #[UnauthorizedResponse]
+
     public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
     {
         /** @var AssetQuery $assetQuery */

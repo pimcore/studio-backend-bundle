@@ -16,10 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\Filter;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\Parameters;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\Parameters;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
+/**
+ * @internal
+ */
 interface FilterServiceInterface
 {
     public const TYPE_DATA_OBJECT = 'dataObject';

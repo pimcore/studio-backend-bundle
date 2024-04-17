@@ -25,8 +25,8 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token\Refresh;
+use Pimcore\Bundle\StudioApiBundle\Response\Schema\Token;
+use Pimcore\Bundle\StudioApiBundle\Response\Schema\Token\Refresh;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Pimcore\Security\User\User;
@@ -35,6 +35,9 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 final class AuthorizationController extends AbstractApiController
 {
     public function __construct(

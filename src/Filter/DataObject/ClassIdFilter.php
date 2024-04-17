@@ -16,12 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Filter\DataObject;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\DataObjectParametersInterface;
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\ParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Filter\FilterInterface;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\DataObjectParametersInterface;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\ParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
+/**
+ * @internal
+ */
 final class ClassIdFilter implements FilterInterface
 {
     public function apply(ParametersInterface $parameters, QueryInterface $query): QueryInterface

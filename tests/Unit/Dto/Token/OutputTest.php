@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Dto\Token;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token;
+use Pimcore\Bundle\StudioApiBundle\Response\Schema\Token;
 
 final class OutputTest extends Unit
 {

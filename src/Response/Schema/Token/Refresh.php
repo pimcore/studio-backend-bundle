@@ -14,28 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto;
+namespace Pimcore\Bundle\StudioApiBundle\Response\Schema\Token;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
+/**
+ * @internal
+ */
 #[Schema(
-    schema: 'Unauthorized',
-    title: 'Unauthorized',
-    description: 'Bad credentials or missing token',
+    title: 'Refresh',
+    description: 'Token that needs to be refresh',
     type: 'object'
 )]
-final readonly class Unauthorized
+final readonly class Refresh
 {
     public function __construct(
-        #[Property(description: 'Message', type: 'string')]
-        private string $message
+        #[Property(description: 'Token', type: 'string', example: 'Who you gonna call? Refresh token!')]
+        protected string $token
     ) {
-
-    }
-
-    public function getMessage(): string
-    {
-        return $this->message;
     }
 }

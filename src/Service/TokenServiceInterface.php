@@ -18,6 +18,9 @@ namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use Pimcore\Bundle\StudioApiBundle\Dto\Token\Info;
 
+/**
+ * @internal
+ */
 interface TokenServiceInterface
 {
     public function generateAndSaveToken(string $userIdentifier): string;

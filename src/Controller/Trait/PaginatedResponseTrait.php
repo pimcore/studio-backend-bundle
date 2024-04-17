@@ -19,6 +19,9 @@ namespace Pimcore\Bundle\StudioApiBundle\Controller\Trait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 trait PaginatedResponseTrait
 {
     private const HEADER_TOTAL_ITEMS = 'X-Pimcore-Total-Items';
