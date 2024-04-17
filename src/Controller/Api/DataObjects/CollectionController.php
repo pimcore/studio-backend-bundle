@@ -87,7 +87,7 @@ final class CollectionController extends AbstractApiController
     {
 
         /** @var DataObjectQuery $dataObjectQuery */
-        $dataObjectQuery = $this->filterService->applyCollectionFilter($parameters, 'dataObject');
+        $dataObjectQuery = $this->filterService->applyFilters($parameters, 'dataObject');
 
         $result = $this->dataObjectSearchService->searchDataObjects($dataObjectQuery);
 

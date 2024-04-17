@@ -34,7 +34,7 @@ final readonly class FilterService implements FilterServiceInterface
      * @throws InvalidQueryTypeException
      * @throws InvalidFilterTypeException
      */
-    public function applyCollectionFilter(Parameters $parameters, string $type): QueryInterface
+    public function applyFilters(Parameters $parameters, string $type): QueryInterface
     {
         $query = $this->queryFactory->create($type);
         // apply default filters
@@ -59,9 +59,9 @@ final readonly class FilterService implements FilterServiceInterface
     private function getTypeFilters(Filters $filters, string $type): array
     {
         return match($type) {
-            'asset' => $filters->getAssetFilters(),
-            'dataObject' => $filters->getDataObjectFilters(),
-            'document' => $filters->getDocumentFilters(),
+            FilterServiceInterface::TYPE_ASSET => $filters->getAssetFilters(),
+            FilterServiceInterface::TYPE_DATA_OBJECT => $filters->getDataObjectFilters(),
+            FilterServiceInterface::TYPE_DOCUMENT => $filters->getDocumentFilters(),
             default => throw new InvalidFilterTypeException("Unknown filter type: $type")
         };
     }

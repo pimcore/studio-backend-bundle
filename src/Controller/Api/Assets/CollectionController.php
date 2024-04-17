@@ -84,7 +84,10 @@ final class CollectionController extends AbstractApiController
     public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
     {
         /** @var AssetQuery $assetQuery */
-        $assetQuery = $this->filterService->applyCollectionFilter($parameters, 'asset');
+        $assetQuery = $this->filterService->applyFilters(
+            $parameters,
+            FilterServiceInterface::TYPE_ASSET
+        );
 
         $result = $this->assetSearchService->searchAssets($assetQuery);
 
