@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Response\Schema\Token;
+namespace Pimcore\Bundle\StudioApiBundle\Request\Query;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -31,7 +31,12 @@ final readonly class Refresh
 {
     public function __construct(
         #[Property(description: 'Token', type: 'string', example: 'Who you gonna call? Refresh token!')]
-        protected string $token
+        private string $token
     ) {
+    }
+
+    public function getToken(): string
+    {
+        return $this->token;
     }
 }
