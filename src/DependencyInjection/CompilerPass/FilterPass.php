@@ -40,7 +40,7 @@ final class FilterPass implements CompilerPassInterface
                 ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_TAG),
                 ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_ASSET_TAG),
                 ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_DATA_OBJECT_TAG),
-                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_DOCUMENT_TAG)
+                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_DOCUMENT_TAG),
 
             ]
         );
