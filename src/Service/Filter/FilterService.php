@@ -32,13 +32,31 @@ final readonly class FilterService implements FilterServiceInterface
     /**
      * @throws InvalidQueryTypeException
      */
-    public function applyCollectionFilter(Parameters $collection, string $type): QueryInterface
+    public function applyCollectionFilter(Parameters $parameters, string $type): QueryInterface
     {
         $query = $this->queryFactory->create($type);
-        foreach ($this->filterLoader->loadFilters() as $filter) {
-            $query = $filter->apply($collection, $query);
+        // apply default filters
+        $filters = $this->filterLoader->loadFilters();
+
+        foreach($filters->getFilters() as $filter) {
+            $query = $filter->apply($parameters, $query);
+        }
+
+        // apply type specific filters
+
+        foreach ($this->getTypeFilters($filters, $type) as $filter) {
+            $query = $filter->apply($parameters, $query);
         }
 
         return $query;
+    }
+
+    private function getTypeFilters(Filters $filters, string $type): array
+    {
+        return match($type) {
+            'asset' => $filters->getAssetFilters(),
+            'dataObject' => $filters->getDataObjectFilters(),
+            'document' => $filters->getDocumentFilters()
+        };
     }
 }

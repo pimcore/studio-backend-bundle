@@ -25,5 +25,5 @@ interface FilterServiceInterface
     /**
      * @throws InvalidQueryTypeException
      */
-    public function applyCollectionFilter(Parameters $collection, string $type): QueryInterface;
+    public function applyCollectionFilter(Parameters $parameters, string $type): QueryInterface;
 }

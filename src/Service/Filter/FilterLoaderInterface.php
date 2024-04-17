@@ -21,5 +21,5 @@ namespace Pimcore\Bundle\StudioApiBundle\Service\Filter;
  */
 interface FilterLoaderInterface
 {
-    public function loadFilters(): array;
+    public function loadFilters(): Filters;
 }
