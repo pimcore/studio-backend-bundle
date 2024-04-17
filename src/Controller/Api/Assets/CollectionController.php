@@ -58,7 +58,6 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-
     /**
      * @throws InvalidQueryTypeException
      */
@@ -85,7 +84,6 @@ final class CollectionController extends AbstractApiController
         content: new JsonContent(type: 'array', items: new Items(ref: Asset::class))
     )]
     #[UnauthorizedResponse]
-
     public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
     {
         /** @var AssetQuery $assetQuery */
