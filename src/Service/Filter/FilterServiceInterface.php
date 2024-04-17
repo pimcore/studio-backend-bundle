@@ -23,7 +23,9 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 interface FilterServiceInterface
 {
     public const TYPE_DATA_OBJECT = 'dataObject';
+
     public const TYPE_ASSET = 'asset';
+
     public const TYPE_DOCUMENT = 'document';
 
     /**
