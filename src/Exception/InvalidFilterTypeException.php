@@ -21,4 +21,3 @@ use Exception;
 final class InvalidFilterTypeException extends Exception
 {
 }
-
