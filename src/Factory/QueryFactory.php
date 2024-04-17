@@ -21,6 +21,9 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInte
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
+/**
+ * @internal
+ */
 final readonly class QueryFactory implements QueryFactoryInterface
 {
     public function __construct(

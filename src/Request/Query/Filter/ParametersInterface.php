@@ -14,13 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Exception;
-
-use Symfony\Component\HttpKernel\Exception\HttpException;
+namespace Pimcore\Bundle\StudioApiBundle\Request\Query\Filter;
 
 /**
  * @internal
  */
-final class NonPublicTranslationException extends HttpException
+interface ParametersInterface
 {
+    public function getPage(): int;
+
+    public function getPageSize(): int;
+
+    public function getParentId(): ?int;
+
+    public function getIdSearchTerm(): ?string;
+
+    public function getExcludeFolders(): ?bool;
+
+    public function getPath(): ?string;
+
+    public function getPathIncludeParent(): ?bool;
+
+    public function getPathIncludeDescendants(): ?bool;
 }

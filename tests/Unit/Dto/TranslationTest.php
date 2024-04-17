@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Dto;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Translation;
 
 final class TranslationTest extends Unit
 {

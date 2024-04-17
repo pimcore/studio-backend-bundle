@@ -21,6 +21,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 #[Route('/studio/api')]
 abstract class AbstractApiController extends AbstractController
 {

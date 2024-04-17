@@ -14,18 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Dto\Token;
+namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
-final class OutputTest extends Unit
+/**
+ * @internal
+ */
+final class AccessDeniedException extends HttpException
 {
-    public function testTokenOutput(): void
-    {
-        $output = new Token('token', 3600, 'test');
-        $this->assertSame('token', $output->getToken());
-        $this->assertSame(3600, $output->getLifetime());
-        $this->assertSame('test', $output->getUsername());
-    }
 }

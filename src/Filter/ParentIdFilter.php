@@ -16,9 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\ParametersInterface;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\ParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
+/**
+ * @internal
+ */
 final class ParentIdFilter implements FilterInterface
 {
     public function apply(ParametersInterface $parameters, QueryInterface $query): QueryInterface

@@ -18,6 +18,9 @@ namespace Pimcore\Bundle\StudioApiBundle\Config;
 
 use OpenApi\Attributes\Tag;
 
+/**
+ * @internal
+ */
 #[Tag(name: Tags::Assets->name, description: 'Asset operations to get/update/create/delete assets')]
 #[Tag(name: Tags::Authorization->name, description: 'Login via username and password to get a token or refresh the token')]
 #[Tag(name: Tags::DataObjects->name, description: 'DataObject operations to get/update/create/delete data objects')]

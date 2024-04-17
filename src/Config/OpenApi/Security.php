@@ -18,6 +18,10 @@ namespace Pimcore\Bundle\StudioApiBundle\Config\OpenApi;
 
 use OpenApi\Attributes\SecurityScheme;
 
+/**
+ * @internal
+ * This class exists to document the public api
+ */
 #[SecurityScheme(
     securityScheme: 'auth_token',
     type: 'http',

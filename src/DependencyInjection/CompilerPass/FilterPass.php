@@ -36,9 +36,13 @@ final class FilterPass implements CompilerPassInterface
     public function process(ContainerBuilder $container): void
     {
         $taggedServices = array_keys(
-            $container->findTaggedServiceIds(
-                TaggedIteratorAdapter::FILTER_TAG
-            )
+            [
+                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_TAG),
+                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_ASSET_TAG),
+                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_DATA_OBJECT_TAG),
+                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_DOCUMENT_TAG),
+
+            ]
         );
 
         foreach ($taggedServices as $environmentType) {

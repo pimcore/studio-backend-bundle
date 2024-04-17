@@ -19,6 +19,9 @@ namespace Pimcore\Bundle\StudioApiBundle\Factory;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
+/**
+ * @internal
+ */
 interface QueryFactoryInterface
 {
     /**

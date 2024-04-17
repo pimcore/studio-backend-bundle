@@ -20,6 +20,9 @@ use Pimcore\Bundle\StudioApiBundle\Exception\NonPublicTranslationException;
 use Pimcore\Bundle\StudioApiBundle\Util\Constants\PublicTranslations;
 use Symfony\Component\HttpFoundation\InputBag;
 
+/**
+ * @internal
+ */
 trait PublicTranslationTrait
 {
     private const ARRAY_KEYS_INDEX = 'keys';

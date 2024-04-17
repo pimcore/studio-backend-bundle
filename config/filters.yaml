@@ -33,4 +33,4 @@ services:
 
   # DataObject
   Pimcore\Bundle\StudioApiBundle\Filter\DataObject\ClassIdFilter:
-      tags: [ 'pimcore.studio_api.collection.filter' ]
+      tags: [ 'pimcore.studio_api.collection.data_object.filter' ]

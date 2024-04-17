@@ -34,8 +34,8 @@ use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Dto\DataObject;
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\DataObjectParameters;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\DataObjectParameters;
 use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
@@ -87,7 +87,7 @@ final class CollectionController extends AbstractApiController
     {
 
         /** @var DataObjectQuery $dataObjectQuery */
-        $dataObjectQuery = $this->filterService->applyCollectionFilter($parameters, 'dataObject');
+        $dataObjectQuery = $this->filterService->applyFilters($parameters, 'dataObject');
 
         $result = $this->dataObjectSearchService->searchDataObjects($dataObjectQuery);
 

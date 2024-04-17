@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Attributes\Request;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioApiBundle\Dto\Translation;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Translation;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class TranslationRequestBody extends RequestBody

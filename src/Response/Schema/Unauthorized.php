@@ -14,11 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto;
+namespace Pimcore\Bundle\StudioApiBundle\Response\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
+/**
+ * @internal
+ */
 #[Schema(
     schema: 'Unauthorized',
     title: 'Unauthorized',
@@ -29,13 +32,8 @@ final readonly class Unauthorized
 {
     public function __construct(
         #[Property(description: 'Message', type: 'string')]
-        private string $message
+        protected string $message
     ) {
 
-    }
-
-    public function getMessage(): string
-    {
-        return $this->message;
     }
 }

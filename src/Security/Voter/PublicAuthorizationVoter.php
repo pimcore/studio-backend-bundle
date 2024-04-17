@@ -28,6 +28,9 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/**
+ * @internal
+ */
 final class PublicAuthorizationVoter extends Voter
 {
     use RequestTrait;

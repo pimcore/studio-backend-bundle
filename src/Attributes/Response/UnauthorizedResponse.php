@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Response;
-use Pimcore\Bundle\StudioApiBundle\Dto\Unauthorized;
+use Pimcore\Bundle\StudioApiBundle\Response\Schema\Unauthorized;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class UnauthorizedResponse extends Response
