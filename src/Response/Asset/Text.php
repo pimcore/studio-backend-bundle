@@ -14,10 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+namespace Pimcore\Bundle\StudioApiBundle\Response\Asset;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset;
 
-class Folder extends Asset
+#[Schema(
+    title: 'Text',
+    type: 'object'
+)]
+class Text extends Asset
 {
 }

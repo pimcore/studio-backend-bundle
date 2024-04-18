@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchResult;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\AssetSearchAdapterInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydratorServiceInterface;

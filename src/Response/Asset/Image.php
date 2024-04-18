@@ -14,20 +14,30 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+namespace Pimcore\Bundle\StudioApiBundle\Response\Asset;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset;
 
-class Image extends Asset
+#[Schema(
+    title: 'Image',
+    type: 'object'
+)]
+final class Image extends Asset
 {
-    //use MetaData\EmbeddedMetaDataTrait;
-
     public function __construct(
+        #[Property(description: 'Format', type: 'string', example: 'muhFormat')]
         private readonly string $format,
+        #[Property(description: 'width', type: 'integer', example: 666)]
         private readonly int $width,
+        #[Property(description: 'height', type: 'integer', example: 333)]
         private readonly int $height,
-        private readonly bool $vectorGraphic,
-        private readonly bool $animated,
+        #[Property(description: 'is vector graphic', type: 'boolean', example: false)]
+        private readonly bool $isVectorGraphic,
+        #[Property(description: 'is animated', type: 'boolean', example: false)]
+        private readonly bool $isAnimated,
+        #[Property(description: 'path to thumbnail', type: 'string', example: '/path/to/element/thumbnail.jpg')]
         private readonly string $thumbnailPath,
         string $iconName,
         bool $hasChildren,
@@ -90,23 +100,13 @@ class Image extends Asset
         return $this->height;
     }
 
-    public function isVectorGraphic(): bool
+    public function getIsVectorGraphic(): bool
     {
-        return $this->vectorGraphic;
+        return $this->isVectorGraphic;
     }
 
-    public function isAnimated(): bool
+    public function getIsAnimated(): bool
     {
-        return $this->animated;
+        return $this->isAnimated;
     }
-    //
-    //    public function getLowQualityPreviewPath(): string
-    //    {
-    //        return $this->asset->getLowQualityPreviewPath();
-    //    }
-    //
-    //    public function getLowQualityPreviewDataUri(): ?string
-    //    {
-    //        return $this->asset->getLowQualityPreviewDataUri();
-    //    }
 }

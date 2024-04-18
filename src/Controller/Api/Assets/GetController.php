@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;

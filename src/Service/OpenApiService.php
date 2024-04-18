@@ -28,7 +28,8 @@ final class OpenApiService implements OpenApiServiceInterface
         self::PATH_PREFIX . 'src/Config/',
         self::PATH_PREFIX . 'src/Controller/Api/',
         self::PATH_PREFIX . 'src/Dto/',
-
+        self::PATH_PREFIX . 'src/Request/',
+        self::PATH_PREFIX . 'src/Response/',
     ];
 
     public function __construct(private readonly array $openApiScanPaths = [])

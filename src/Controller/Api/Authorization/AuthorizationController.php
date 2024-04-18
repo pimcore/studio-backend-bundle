@@ -24,9 +24,9 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
-use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
+use Pimcore\Bundle\StudioApiBundle\Request\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Refresh;
-use Pimcore\Bundle\StudioApiBundle\Response\Schema\Token;
+use Pimcore\Bundle\StudioApiBundle\Response\Token;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Pimcore\Security\User\User;
@@ -86,13 +86,13 @@ final class AuthorizationController extends AbstractApiController
     #[UnauthorizedResponse]
     public function refresh(#[MapRequestPayload] Refresh $refresh): JsonResponse
     {
-        $token = $this->tokenService->refreshToken($refresh->getToken());
+        $tokenInfo = $this->tokenService->refreshToken($refresh->getToken());
 
         return $this->jsonResponse(
             new Token(
-                $token->getToken(),
+                $tokenInfo->getToken(),
                 $this->tokenService->getLifetime(),
-                $token->getUsername())
+                $tokenInfo->getUsername())
         );
     }
 }

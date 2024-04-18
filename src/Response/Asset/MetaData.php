@@ -14,13 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+namespace Pimcore\Bundle\StudioApiBundle\Response\Asset;
 
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+
+#[Schema(
+    title: 'MetaData',
+    type: 'object'
+)]
 readonly class MetaData
 {
     public function __construct(
+        #[Property(description: 'Name', type: 'string', example: 'default')]
         private string $name,
+        #[Property(description: 'language', type: 'string', example: 'en')]
         private ?string $language,
+        #[Property(description: 'data', type: 'mixed', example: 'Potato mash!')]
         private mixed $data,
     ) {
     }

@@ -14,16 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+namespace Pimcore\Bundle\StudioApiBundle\Response\Asset;
 
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset;
 
+#[Schema(
+    title: 'Document',
+    type: 'object'
+)]
 class Document extends Asset
 {
     //use MetaData\EmbeddedMetaDataTrait;
 
     public function __construct(
+        #[Property(description: 'Page count', type: 'integer', example: 2)]
         private readonly ?int $pageCount,
+        #[Property(description: 'Path to image thumbnail', type: 'integer', example: '/path/to/document/imagethumbnail.jpg')]
         private readonly ?string $imageThumbnailPath,
         string $iconName,
         bool $hasChildren,

@@ -14,28 +14,33 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Response\Schema;
+namespace Pimcore\Bundle\StudioApiBundle\Response;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
-/**
- * @internal
- */
 #[Schema(
-    title: 'Token',
-    description: 'Token Scheme for API',
+    title: 'DataObject',
     type: 'object'
 )]
-final readonly class Token
+readonly class DataObject
 {
     public function __construct(
-        #[Property(description: 'Token', type: 'string', example: 'This could be your token')]
-        protected string $token,
-        #[Property(description: 'Lifetime in seconds', type: 'integer', format: 'int', example: 3600)]
-        protected int $lifetime,
-        #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
-        protected string $username
+        #[Property(description: 'ID', type: 'integer', example: 83)]
+        private int $id,
+        #[Property(description: 'className', type: 'string', example: 'car')]
+        private string $className
     ) {
+
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getClassName(): string
+    {
+        return $this->className;
     }
 }

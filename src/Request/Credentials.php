@@ -14,33 +14,36 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto;
+namespace Pimcore\Bundle\StudioApiBundle\Request;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
+/**
+ * @internal
+ */
 #[Schema(
-    title: 'DataObject',
+    title: 'Credentials',
+    description: 'Credentials for authentication',
     type: 'object'
 )]
-readonly class DataObject
+final readonly class Credentials
 {
     public function __construct(
-        #[Property(description: 'ID', type: 'integer', example: 83)]
-        private int $id,
-        #[Property(description: 'className', type: 'string', example: 'car')]
-        private string $className
+        #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
+        private string $username,
+        #[Property(description: 'Password', type: 'string', example: '*****')]
+        private string $password,
     ) {
-
     }
 
-    public function getId(): int
+    public function getUsername(): string
     {
-        return $this->id;
+        return $this->username;
     }
 
-    public function getClassName(): string
+    public function getPassword(): string
     {
-        return $this->className;
+        return $this->password;
     }
 }
