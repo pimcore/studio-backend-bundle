@@ -49,7 +49,7 @@ final class AssetCollection extends Property
                     new Schema(ref: Text::class),
                     new Schema(ref: Folder::class),
                     new Schema(ref: Unknown::class),
-            ]
+                ]
             ));
     }
 }

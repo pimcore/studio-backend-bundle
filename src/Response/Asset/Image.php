@@ -37,7 +37,7 @@ final class Image extends Asset
         private readonly bool $isVectorGraphic,
         #[Property(description: 'is animated', type: 'boolean', example: false)]
         private readonly bool $isAnimated,
-        #[Property(description: 'path to thumbnail', type: 'string', example: '/path/to/element/thumbnail.jpg')]
+        #[Property(description: 'path to thumbnail', type: 'string', example: '/path/to/element/hulk-smash.jpg')]
         private readonly string $thumbnailPath,
         string $iconName,
         bool $hasChildren,
