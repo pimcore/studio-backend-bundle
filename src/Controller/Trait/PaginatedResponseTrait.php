@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Trait;
 
+use Pimcore\Bundle\StudioApiBundle\Response\Collection;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -31,7 +32,7 @@ trait PaginatedResponseTrait
         array $data,
         int $totalItems = 0
     ): JsonResponse {
-        $serialized = $serializer->serialize($data, 'json');
+        $serialized = $serializer->serialize(new Collection($totalItems, $data), 'json');
 
         return new JsonResponse($serialized, 200, [self::HEADER_TOTAL_ITEMS => $totalItems], true);
     }
