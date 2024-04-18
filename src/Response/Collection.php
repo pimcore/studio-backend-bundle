@@ -22,7 +22,6 @@ use OpenApi\Attributes\Schema;
 /**
  * @internal
  */
-
 #[Schema(
     title: 'Collection',
     type: 'object'
@@ -34,8 +33,7 @@ final readonly class Collection
         private int $totalItems,
         #[Property(description: 'items', type: 'mixed', example: ['Asset', 'Folder', 'Document', 'DataObject'])]
         private array $items
-    )
-    {
+    ) {
     }
 
     public function getTotalItems(): int

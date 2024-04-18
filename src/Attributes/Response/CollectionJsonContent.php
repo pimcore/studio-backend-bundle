@@ -10,8 +10,8 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
 namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response;
@@ -22,14 +22,14 @@ use OpenApi\Attributes\Property;
 /**
  * @internal
  */
-final  class CollectionJsonContent extends JsonContent
+final class CollectionJsonContent extends JsonContent
 {
     public function __construct(Property $collection)
     {
         parent::__construct(
             properties: [
                 new Property('total-items', title: 'total-items', type: 'integer', example: 666),
-                $collection
+                $collection,
             ],
             type: 'object',
         );

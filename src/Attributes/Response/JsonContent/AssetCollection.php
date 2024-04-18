@@ -32,7 +32,7 @@ use Pimcore\Bundle\StudioApiBundle\Response\Asset\Video;
 /**
  * @internal
  */
-final  class AssetCollection extends JsonContent
+final class AssetCollection extends JsonContent
 {
     public function __construct()
     {
