@@ -14,11 +14,8 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property;
+namespace Pimcore\Bundle\StudioApiBundle\Response;
 
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Archive;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Audio;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Document;
@@ -27,24 +24,20 @@ use Pimcore\Bundle\StudioApiBundle\Response\Asset\Image;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Text;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Unknown;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Video;
-use Pimcore\Bundle\StudioApiBundle\Response\Schemas;
 
 /**
  * @internal
  */
-final class AssetCollection extends Property
+final readonly class Schemas
 {
-    public function __construct()
-    {
-        parent::__construct(
-            'items',
-            title: 'items',
-            type: 'array',
-            items: new Items(
-                anyOf: array_map(static function ($class) {
-                    return new Schema(ref: $class);
-                }, Schemas::Assets)
-            )
-        );
-    }
+    public const Assets = [
+       Image::class,
+       Document::class,
+       Audio::class,
+       Video::class,
+       Archive::class,
+       Text::class,
+       Folder::class,
+       Unknown::class,
+    ];
 }

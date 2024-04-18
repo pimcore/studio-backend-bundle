@@ -18,14 +18,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Archive;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Audio;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Document;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Folder;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Image;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Text;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Unknown;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Video;
+use Pimcore\Bundle\StudioApiBundle\Response\Schemas;
 
 /**
  * @internal
@@ -36,16 +29,9 @@ final class AssetSchemasJson extends JsonContent
     {
         parent::__construct(
             type: 'object',
-            oneOf: [
-                new Schema(ref: Image::class),
-                new Schema(ref: Document::class),
-                new Schema(ref: Audio::class),
-                new Schema(ref: Video::class),
-                new Schema(ref: Archive::class),
-                new Schema(ref: Text::class),
-                new Schema(ref: Folder::class),
-                new Schema(ref: Unknown::class),
-            ],
+            oneOf: array_map(static function ($class) {
+                return new Schema(ref: $class);
+            }, Schemas::Assets),
         );
     }
 }
