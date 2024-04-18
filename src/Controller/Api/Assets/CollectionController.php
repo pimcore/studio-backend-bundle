@@ -33,7 +33,6 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\Parameters;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Archive;
