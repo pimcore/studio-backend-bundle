@@ -19,14 +19,6 @@ namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Archive;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Audio;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Document;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Folder;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Image;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Text;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Unknown;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Video;
 use Pimcore\Bundle\StudioApiBundle\Response\Schemas;
 
 /**
