@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Service\Security;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
-use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
+use Pimcore\Bundle\StudioApiBundle\Request\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityService;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Pimcore\Model\Tool\TmpStore;

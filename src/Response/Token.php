@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Dto;
+namespace Pimcore\Bundle\StudioApiBundle\Response;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -23,27 +23,34 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'Credentials',
-    description: 'Credentials for authentication',
+    title: 'Token',
+    description: 'Token Scheme for API',
     type: 'object'
 )]
-final readonly class Credentials
+final readonly class Token
 {
     public function __construct(
+        #[Property(description: 'Token', type: 'string', example: 'This could be your token')]
+        private string $token,
+        #[Property(description: 'Lifetime in seconds', type: 'integer', format: 'int', example: 3600)]
+        private int $lifetime,
         #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
-        private string $username,
-        #[Property(description: 'Password', type: 'string', example: '*****')]
-        private string $password,
+        private string $username
     ) {
+    }
+
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+
+    public function getLifetime(): int
+    {
+        return $this->lifetime;
     }
 
     public function getUsername(): string
     {
         return $this->username;
-    }
-
-    public function getPassword(): string
-    {
-        return $this->password;
     }
 }

@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Permission\AssetPermissions;
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset\Permissions;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\Permissions;
 
 interface PermissionsHydratorInterface
 {

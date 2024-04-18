@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
-use Pimcore\Bundle\StudioApiBundle\Dto\DataObject;
+use Pimcore\Bundle\StudioApiBundle\Response\DataObject;
 use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchResult;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\DataObjectSearchAdapterInterface;
 use Pimcore\Model\DataObject\Concrete;

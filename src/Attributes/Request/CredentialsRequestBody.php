@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Attributes\Request;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
+use Pimcore\Bundle\StudioApiBundle\Request\Credentials;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class CredentialsRequestBody extends RequestBody

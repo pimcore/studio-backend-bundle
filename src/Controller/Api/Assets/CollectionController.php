@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\IdSearchTermParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageParameter;
@@ -32,9 +33,17 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\Parameters;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\Archive;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\Audio;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\Document;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\Folder;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\Image;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\Text;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\Unknown;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\Video;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
@@ -81,7 +90,23 @@ final class CollectionController extends AbstractApiController
     #[PathIncludeDescendantsParameter]
     #[SuccessResponse(
         description: 'Paginated assets with total count as header param',
-        content: new JsonContent(type: 'array', items: new Items(ref: Asset::class))
+        content: new JsonContent(
+            type: 'array',
+            items: new Items(
+                description: 'Asset or Image object',
+                anyOf: [
+                    // TODO maybe find an easier way of describing this
+                    new Schema(ref: Archive::class),
+                    new Schema(ref: Audio::class),
+                    new Schema(ref: Document::class),
+                    new Schema(ref: Folder::class),
+                    new Schema(ref: Image::class),
+                    new Schema(ref: Text::class),
+                    new Schema(ref: Unknown::class),
+                    new Schema(ref: Video::class),
+                ]
+            )
+        )
     )]
     #[UnauthorizedResponse]
     public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
