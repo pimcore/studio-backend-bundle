@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response;
+namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
@@ -22,7 +22,7 @@ use OpenApi\Attributes\Property;
 /**
  * @internal
  */
-final class CollectionJsonContent extends JsonContent
+final class CollectionJson extends JsonContent
 {
     public function __construct(Property $collection)
     {
