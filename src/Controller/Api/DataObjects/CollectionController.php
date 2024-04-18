@@ -28,6 +28,8 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ParentIdParameter
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeDescendantsParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeParentParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property\DataObjectCollection;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
@@ -80,7 +82,7 @@ final class CollectionController extends AbstractApiController
     #[ClassIdParameter]
     #[SuccessResponse(
         description: 'Paginated data objects with total count as header param',
-        content: new JsonContent(type: 'array', items: new Items(ref: DataObject::class))
+        content: new CollectionJson(new DataObjectCollection())
     )]
     #[UnauthorizedResponse]
     public function getDataObjects(#[MapQueryString] DataObjectParameters $parameters): JsonResponse
