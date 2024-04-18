@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioApiBundle\Provider\SchemaProvider;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Archive;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Audio;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Document;
