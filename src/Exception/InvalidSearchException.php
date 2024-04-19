@@ -14,9 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
+namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-interface DataObjectQueryProviderInterface
+use Exception;
+
+final class InvalidSearchException extends Exception
 {
-    public function createDataObjectQuery(): QueryInterface;
+
 }
