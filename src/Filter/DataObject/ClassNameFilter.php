@@ -25,18 +25,18 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 /**
  * @internal
  */
-final class ClassIdFilter implements FilterInterface
+final class ClassNameFilter implements FilterInterface
 {
     public function apply(ParametersInterface $parameters, QueryInterface $query): QueryInterface
     {
         if(
             !$parameters instanceof DataObjectParametersInterface ||
             !$query instanceof DataObjectQuery ||
-            !$parameters->getClassId()
+            !$parameters->getClassName()
         ) {
             return $query;
         }
 
-        return $query->setClassDefinitionId($parameters->getClassId());
+        return $query->setClassDefinitionName($parameters->getClassName());
     }
 }

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
+use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
@@ -79,9 +80,12 @@ final class DataObjectQuery implements QueryInterface
         return $this;
     }
 
-    public function setClassDefinitionId(string $classDefinitionId): self
+    /**
+     * @throws Exception
+     */
+    public function setClassDefinitionName(string $classDefinitionId): self
     {
-        $classDefinition = $this->classDefinitionResolver->getById($classDefinitionId);
+        $classDefinition = $this->classDefinitionResolver->getByName($classDefinitionId);
 
         $this->search->setClassDefinition($classDefinition);
 
