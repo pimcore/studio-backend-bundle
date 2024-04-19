@@ -21,6 +21,9 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Permissions;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'Asset',
     type: 'object'

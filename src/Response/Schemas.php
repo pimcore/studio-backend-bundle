@@ -14,11 +14,8 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property;
+namespace Pimcore\Bundle\StudioApiBundle\Response;
 
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Archive;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Audio;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Document;
@@ -31,26 +28,16 @@ use Pimcore\Bundle\StudioApiBundle\Response\Asset\Video;
 /**
  * @internal
  */
-final class AssetCollection extends Property
+final readonly class Schemas
 {
-    public function __construct()
-    {
-        parent::__construct(
-            'items',
-            title: 'items',
-            type: 'array',
-            items: new Items(
-                anyOf: [
-                    new Schema(ref: Image::class),
-                    new Schema(ref: Document::class),
-                    new Schema(ref: Audio::class),
-                    new Schema(ref: Video::class),
-                    new Schema(ref: Archive::class),
-                    new Schema(ref: Text::class),
-                    new Schema(ref: Folder::class),
-                    new Schema(ref: Unknown::class),
-                ]
-            )
-        );
-    }
+    public const Assets = [
+       Image::class,
+       Document::class,
+       Audio::class,
+       Video::class,
+       Archive::class,
+       Text::class,
+       Folder::class,
+       Unknown::class,
+    ];
 }
