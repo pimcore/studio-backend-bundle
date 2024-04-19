@@ -24,7 +24,7 @@ final readonly class AssetQueryProvider implements AssetQueryProviderInterface
     {
     }
 
-    public function createAssetQuery(): AssetQuery
+    public function createAssetQuery(): QueryInterface
     {
         return new AssetQuery($this->searchProvider->createAssetSearch());
     }

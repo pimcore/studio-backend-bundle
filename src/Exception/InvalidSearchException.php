@@ -14,15 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData;
+namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchResult;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
-use Pimcore\Model\Element\ElementInterface;
+use Exception;
 
-interface DataObjectSearchAdapterInterface
+final class InvalidSearchException extends Exception
 {
-    public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult;
-
-    public function getDataObjectById(int $id): ?ElementInterface;
 }
