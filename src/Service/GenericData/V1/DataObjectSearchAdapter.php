@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StudioApiBundle\Response\DataObject;
@@ -34,7 +35,10 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
 
     public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
     {
-        $searchResult = $this->searchService->search($dataObjectQuery->getSearch());
+        /** @var DataObjectSearchInterface $search */
+        $search = $dataObjectQuery->getSearch();
+
+        $searchResult = $this->searchService->search($search);
         $result = [];
         foreach($searchResult->getIds() as $id) {
             /** @var Concrete $dataObject */
