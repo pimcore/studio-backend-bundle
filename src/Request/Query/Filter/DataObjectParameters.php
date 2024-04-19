@@ -30,7 +30,7 @@ final readonly class DataObjectParameters extends Parameters implements DataObje
         ?string $path = null,
         ?string $pathIncludeParent = null,
         ?string $pathIncludeDescendants = null,
-        private ?string $classId = null
+        private ?string $className = null
     ) {
         parent::__construct(
             $page,
@@ -44,8 +44,8 @@ final readonly class DataObjectParameters extends Parameters implements DataObje
         );
     }
 
-    public function getClassId(): ?string
+    public function getClassName(): ?string
     {
-        return $this->classId;
+        return $this->className;
     }
 }

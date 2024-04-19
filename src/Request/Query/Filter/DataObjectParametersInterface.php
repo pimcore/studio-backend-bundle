@@ -21,5 +21,5 @@ namespace Pimcore\Bundle\StudioApiBundle\Request\Query\Filter;
  */
 interface DataObjectParametersInterface extends ParametersInterface
 {
-    public function getClassId(): ?string;
+    public function getClassName(): ?string;
 }

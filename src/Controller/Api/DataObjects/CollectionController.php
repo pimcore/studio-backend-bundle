@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\DataObjects;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ClassIdParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ClassNameParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\IdSearchTermParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageParameter;
@@ -75,7 +75,7 @@ final class CollectionController extends AbstractApiController
     #[PathParameter]
     #[PathIncludeParentParameter]
     #[PathIncludeDescendantsParameter]
-    #[ClassIdParameter]
+    #[ClassNameParameter]
     #[SuccessResponse(
         description: 'Paginated data objects with total count as header param',
         content: new CollectionJson(new DataObjectCollection())

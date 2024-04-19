@@ -32,5 +32,5 @@ services:
     tags: [ 'pimcore.studio_api.filter' ]
 
   # DataObject
-  Pimcore\Bundle\StudioApiBundle\Filter\DataObject\ClassIdFilter:
+  Pimcore\Bundle\StudioApiBundle\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_api.data_object.filter' ]
