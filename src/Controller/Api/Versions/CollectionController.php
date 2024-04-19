@@ -10,8 +10,8 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Versions;
@@ -53,7 +53,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/versions', name: 'pimcore_studio_api_element_versions', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[GET(path: self::API_PATH
-        .'/versions', description: 'Get versions of an element', summary: 'Get all versions of an specific element (Asset, DataObject, Document) by its ID.', security: self::SECURITY_SCHEME, tags: [Tags::Versions->name],)]
+        .'/versions', description: 'Get versions of an element', summary: 'Get all versions of an specific element (Asset, DataObject, Document) by its ID.', security: self::SECURITY_SCHEME, tags: [Tags::Versions->name], )]
     #[IdParameter]
     #[ElementTypeParameter]
     #[SuccessResponse(description: 'Paginated versions with total count as header param', content: new JsonContent(
