@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\AssetSchemasJson;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\OneOfAssetJson;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
@@ -53,7 +53,7 @@ final class GetController extends AbstractApiController
     #[IdParameter(type: 'asset')]
     #[SuccessResponse(
         description: 'Paginated assets with total count as header param',
-        content: new AssetSchemasJson()
+        content: new OneOfAssetJson()
     )]
     #[UnauthorizedResponse]
     public function getAssetById(int $id): JsonResponse

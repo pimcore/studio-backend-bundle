@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeDescen
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeParentParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\CollectionJson;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property\AssetCollection;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property\AnyOfAsset;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
@@ -80,7 +80,7 @@ final class CollectionController extends AbstractApiController
     #[PathIncludeDescendantsParameter]
     #[SuccessResponse(
         description: 'Paginated assets with total count as header param',
-        content: new CollectionJson(new AssetCollection())
+        content: new CollectionJson(new AnyOfAsset())
     )]
     #[UnauthorizedResponse]
     public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse

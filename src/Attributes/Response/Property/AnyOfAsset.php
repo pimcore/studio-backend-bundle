@@ -14,24 +14,29 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content;
+namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property;
 
-use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Response\Schemas;
 
 /**
  * @internal
  */
-final class AssetSchemasJson extends JsonContent
+final class AnyOfAsset extends Property
 {
     public function __construct()
     {
         parent::__construct(
-            type: 'object',
-            oneOf: array_map(static function ($class) {
-                return new Schema(ref: $class);
-            }, Schemas::Assets),
+            'items',
+            title: 'items',
+            type: 'array',
+            items: new Items(
+                anyOf: array_map(static function ($class) {
+                    return new Schema(ref: $class);
+                }, Schemas::Assets)
+            )
         );
     }
 }
