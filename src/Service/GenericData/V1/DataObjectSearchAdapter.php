@@ -32,7 +32,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     ) {
     }
 
-    public function searchDataObjects(DataObjectQuery $dataObjectQuery): DataObjectSearchResult
+    public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
     {
         $searchResult = $this->searchService->search($dataObjectQuery->getSearch());
         $result = [];

@@ -85,7 +85,6 @@ final class CollectionController extends AbstractApiController
     public function getDataObjects(#[MapQueryString] DataObjectParameters $parameters): JsonResponse
     {
 
-        /** @var DataObjectQuery $dataObjectQuery */
         $dataObjectQuery = $this->filterService->applyFilters($parameters, 'dataObject');
 
         $result = $this->dataObjectSearchService->searchDataObjects($dataObjectQuery);

@@ -19,10 +19,11 @@ namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchResult;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 interface AssetSearchAdapterInterface
 {
-    public function searchAssets(AssetQuery $assetQuery): AssetSearchResult;
+    public function searchAssets(QueryInterface $assetQuery): AssetSearchResult;
 
     public function getAssetById(int $id): ?Asset;
 }
