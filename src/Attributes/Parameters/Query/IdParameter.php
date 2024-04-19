@@ -14,24 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content;
+namespace Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query;
 
-use OpenApi\Attributes\JsonContent;
+use Attribute;
+use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioApiBundle\Response\Schemas;
 
-/**
- * @internal
- */
-final class OneOfAssetJson extends JsonContent
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class IdParameter extends QueryParameter
 {
     public function __construct()
     {
         parent::__construct(
-            type: 'object',
-            oneOf: array_map(static function (string $class) {
-                return new Schema(ref: $class);
-            }, Schemas::Assets),
+            name: 'id',
+            description: 'Element id.',
+            in: 'query',
+            required: true,
+            schema: new Schema(type: 'integer', example: 1),
         );
     }
 }

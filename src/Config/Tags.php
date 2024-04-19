@@ -25,10 +25,12 @@ use OpenApi\Attributes\Tag;
 #[Tag(name: Tags::Authorization->name, description: 'Login via username and password to get a token or refresh the token')]
 #[Tag(name: Tags::DataObjects->name, description: 'DataObject operations to get/update/create/delete data objects')]
 #[Tag(name: Tags::Translation->name, description: 'Get translations either for a single key or multiple keys')]
+#[Tag(name: Tags::Versions->name, description: 'Get versions of an element')]
 enum Tags
 {
     case Assets;
     case Authorization;
     case DataObjects;
     case Translation;
+    case Versions;
 }
