@@ -37,7 +37,6 @@ use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\DataObjectParameters;
 use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;

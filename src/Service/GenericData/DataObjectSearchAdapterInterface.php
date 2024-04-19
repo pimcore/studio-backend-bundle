@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData;
 
 use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchResult;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 use Pimcore\Model\Element\ElementInterface;
 
