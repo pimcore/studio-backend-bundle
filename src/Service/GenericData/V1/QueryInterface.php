@@ -33,5 +33,5 @@ interface QueryInterface
 
     public function excludeFolders(): self;
 
-    public function getSearch(): SearchInterface|DataObjectSearchInterface;
+    public function getSearch(): SearchInterface;
 }
