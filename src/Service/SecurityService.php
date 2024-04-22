@@ -30,6 +30,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 final readonly class SecurityService implements SecurityServiceInterface
 {
     private const STATUS_CODE = 401;
+
     private const MESSAGE = 'Bad credentials';
 
     public function __construct(

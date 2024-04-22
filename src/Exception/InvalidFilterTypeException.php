@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**

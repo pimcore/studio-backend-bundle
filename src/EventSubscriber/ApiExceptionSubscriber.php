@@ -27,11 +27,10 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
  */
 final class ApiExceptionSubscriber implements EventSubscriberInterface
 {
-
     public static function getSubscribedEvents(): array
     {
         return [
-            'kernel.exception' => 'onKernelException'
+            'kernel.exception' => 'onKernelException',
         ];
     }
 
@@ -39,7 +38,6 @@ final class ApiExceptionSubscriber implements EventSubscriberInterface
     {
         $exception = $event->getThrowable();
         $request = $event->getRequest();
-
 
         if(!$exception instanceof ApiExceptionInterface && !$this->isStudioApiCall($request->getPathInfo())) {
             return;
