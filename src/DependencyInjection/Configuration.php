@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidPathException;
-use Symfony\Component\Config\Definition\Builder\NodeDefinition;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -50,7 +50,7 @@ class Configuration implements ConfigurationInterface
         return $treeBuilder;
     }
 
-    private function addOpenApiScanPathsNode(NodeDefinition $node): void
+    private function addOpenApiScanPathsNode(ArrayNodeDefinition $node): void
     {
         $node->children()
             ->arrayNode('openApiScanPaths')
@@ -75,7 +75,7 @@ class Configuration implements ConfigurationInterface
            ->end();
     }
 
-    private function addApiTokenNode(NodeDefinition $node): void
+    private function addApiTokenNode(ArrayNodeDefinition $node): void
     {
         $node->children()
             ->arrayNode('api_token')
@@ -88,14 +88,16 @@ class Configuration implements ConfigurationInterface
             ->end();
     }
 
-    private function addAllowedHostsForCorsNode(NodeDefinition $node): void
+    private function addAllowedHostsForCorsNode(ArrayNodeDefinition $node): void
     {
         $node->children()
             ->arrayNode('allowedHostsForCors')
                 ->prototype('scalar')->end()
                 ->validate()
                 ->always(
-                    function ($hosts) {
+                /**
+                 * @throws InvalidHostException
+                 */ function ($hosts) {
                         foreach ($hosts as $host) {
                             if (!filter_var($host)) {
                                 throw new InvalidHostException(
