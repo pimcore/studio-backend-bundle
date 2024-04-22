@@ -43,7 +43,6 @@ use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -65,7 +64,7 @@ final class CollectionController extends AbstractApiController
      * @throws InvalidQueryTypeException
      */
     #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
-    #[IsGranted('STUDIO_API')]
+    //#[IsGranted('STUDIO_API')]
     #[GET(
         path: self::API_PATH . '/assets',
         operationId: 'getAssets',
