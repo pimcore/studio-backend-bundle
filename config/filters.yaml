@@ -14,23 +14,23 @@ services:
     class: Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterService
 
   Pimcore\Bundle\StudioApiBundle\Filter\PageFilter:
-    tags: [ 'pimcore.studio_api.collection.filter' ]
+    tags: [ 'pimcore.studio_api.filter' ]
 
   Pimcore\Bundle\StudioApiBundle\Filter\PageSizeFilter:
-    tags: [ 'pimcore.studio_api.collection.filter' ]
+    tags: [ 'pimcore.studio_api.filter' ]
 
   Pimcore\Bundle\StudioApiBundle\Filter\ExcludeFolderFilter:
-    tags: [ 'pimcore.studio_api.collection.filter' ]
+    tags: [ 'pimcore.studio_api.filter' ]
 
   Pimcore\Bundle\StudioApiBundle\Filter\IdSearchFilter:
-    tags: [ 'pimcore.studio_api.collection.filter' ]
+    tags: [ 'pimcore.studio_api.filter' ]
 
   Pimcore\Bundle\StudioApiBundle\Filter\ParentIdFilter:
-    tags: [ 'pimcore.studio_api.collection.filter' ]
+    tags: [ 'pimcore.studio_api.filter' ]
 
   Pimcore\Bundle\StudioApiBundle\Filter\PathFilter:
-    tags: [ 'pimcore.studio_api.collection.filter' ]
+    tags: [ 'pimcore.studio_api.filter' ]
 
   # DataObject
-  Pimcore\Bundle\StudioApiBundle\Filter\DataObject\ClassIdFilter:
-      tags: [ 'pimcore.studio_api.collection.filter' ]
+  Pimcore\Bundle\StudioApiBundle\Filter\DataObject\ClassNameFilter:
+      tags: [ 'pimcore.studio_api.data_object.filter' ]

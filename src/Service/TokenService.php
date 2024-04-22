@@ -21,6 +21,9 @@ use Pimcore\Bundle\StudioApiBundle\Dto\Token\Info;
 use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
+/**
+ * @internal
+ */
 final class TokenService implements TokenServiceInterface
 {
     private const TMP_STORE_TAG = 'studio-api-token-tag-user-{userId}';

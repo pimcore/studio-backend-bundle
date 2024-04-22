@@ -24,6 +24,9 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
+/**
+ * @internal
+ */
 final class AuthorizationVoter extends Voter
 {
     use RequestTrait;

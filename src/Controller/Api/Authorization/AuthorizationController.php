@@ -20,13 +20,14 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Request\CredentialsRequestBody;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Request\TokenRequestBody;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
-use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token;
-use Pimcore\Bundle\StudioApiBundle\Dto\Token\Refresh;
+use Pimcore\Bundle\StudioApiBundle\Request\Credentials;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Refresh;
+use Pimcore\Bundle\StudioApiBundle\Response\Token;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Pimcore\Security\User\User;
@@ -35,6 +36,9 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 final class AuthorizationController extends AbstractApiController
 {
     public function __construct(
@@ -48,6 +52,7 @@ final class AuthorizationController extends AbstractApiController
     #[Route('/login', name: 'pimcore_studio_api_login', methods: ['POST'])]
     #[POST(
         path: self::API_PATH . '/login',
+        operationId: 'login',
         summary: 'Login with user credentials and get access token',
         tags: [Tags::Authorization->name]
     )]
@@ -57,6 +62,7 @@ final class AuthorizationController extends AbstractApiController
         content: new JsonContent(ref: Token::class)
     )]
     #[UnauthorizedResponse]
+    #[MethodNotAllowedResponse]
     public function login(#[MapRequestPayload] Credentials $credentials): JsonResponse
     {
         /** @var User $user */
@@ -70,6 +76,7 @@ final class AuthorizationController extends AbstractApiController
     #[Route('/refresh', name: 'pimcore_studio_api_refresh', methods: ['POST'])]
     #[POST(
         path: self::API_PATH . '/refresh',
+        operationId: 'refresh',
         summary: 'Login with user credentials and get access token',
         tags: ['Authorization']
     )]
@@ -79,15 +86,16 @@ final class AuthorizationController extends AbstractApiController
         content: new JsonContent(ref: Token::class)
     )]
     #[UnauthorizedResponse]
+    #[MethodNotAllowedResponse]
     public function refresh(#[MapRequestPayload] Refresh $refresh): JsonResponse
     {
-        $token = $this->tokenService->refreshToken($refresh->getToken());
+        $tokenInfo = $this->tokenService->refreshToken($refresh->getToken());
 
         return $this->jsonResponse(
             new Token(
-                $token->getToken(),
+                $tokenInfo->getToken(),
                 $this->tokenService->getLifetime(),
-                $token->getUsername())
+                $tokenInfo->getUsername())
         );
     }
 }

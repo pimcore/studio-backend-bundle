@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\IdSearchTermParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageParameter;
@@ -26,22 +25,27 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ParentIdParameter
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeDescendantsParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeParentParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\BadRequestResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property\AnyOfAsset;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
-use Pimcore\Bundle\StudioApiBundle\Dto\Filter\Parameters;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\Parameters;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 final class CollectionController extends AbstractApiController
 {
     use PaginatedResponseTrait;
@@ -61,10 +65,11 @@ final class CollectionController extends AbstractApiController
     //#[IsGranted('STUDIO_API')]
     #[GET(
         path: self::API_PATH . '/assets',
+        operationId: 'getAssets',
         description: 'Get paginated assets',
         summary: 'Get all assets',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::Assets->name],
+        tags: [Tags::Assets->name]
     )]
     #[PageParameter]
     #[PageSizeParameter]
@@ -76,13 +81,17 @@ final class CollectionController extends AbstractApiController
     #[PathIncludeDescendantsParameter]
     #[SuccessResponse(
         description: 'Paginated assets with total count as header param',
-        content: new JsonContent(ref: Asset::class)
+        content: new CollectionJson(new AnyOfAsset())
     )]
+    #[BadRequestResponse]
     #[UnauthorizedResponse]
+    #[MethodNotAllowedResponse]
     public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
     {
-        /** @var AssetQuery $assetQuery */
-        $assetQuery = $this->filterService->applyCollectionFilter($parameters, 'asset');
+        $assetQuery = $this->filterService->applyFilters(
+            $parameters,
+            FilterServiceInterface::TYPE_ASSET
+        );
 
         $result = $this->assetSearchService->searchAssets($assetQuery);
 

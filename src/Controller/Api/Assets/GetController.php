@@ -17,18 +17,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Path\IdParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\OneOfAssetJson;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
-use Pimcore\Bundle\StudioApiBundle\Dto\Asset;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 final class GetController extends AbstractApiController
 {
     public function __construct(
@@ -42,6 +45,7 @@ final class GetController extends AbstractApiController
     //#[IsGranted('STUDIO_API')]
     #[GET(
         path: self::API_PATH . '/assets/{id}',
+        operationId: 'getAssetById',
         description: 'Get assets by id by path parameter',
         summary: 'Get assets by id',
         security: self::SECURITY_SCHEME,
@@ -50,10 +54,11 @@ final class GetController extends AbstractApiController
     #[IdParameter(type: 'asset')]
     #[SuccessResponse(
         description: 'Paginated assets with total count as header param',
-        content: new JsonContent(ref: Asset::class)
+        content: new OneOfAssetJson()
     )]
     #[UnauthorizedResponse]
-    public function getAssets(int $id): JsonResponse
+    #[MethodNotAllowedResponse]
+    public function getAssetById(int $id): JsonResponse
     {
         return $this->jsonResponse($this->assetSearchService->getAssetById($id));
     }

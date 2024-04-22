@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Dto\Token;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioApiBundle\Dto\Credentials;
+use Pimcore\Bundle\StudioApiBundle\Request\Credentials;
 
 final class CreateTest extends Unit
 {

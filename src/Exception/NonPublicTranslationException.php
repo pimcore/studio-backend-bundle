@@ -16,8 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Symfony\Component\HttpKernel\Exception\HttpException;
-
-final class NonPublicTranslationException extends HttpException
+/**
+ * @internal
+ */
+final class NonPublicTranslationException extends AbstractApiException
 {
 }

@@ -21,6 +21,9 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInte
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
+/**
+ * @internal
+ */
 final readonly class QueryFactory implements QueryFactoryInterface
 {
     public function __construct(
@@ -38,7 +41,7 @@ final readonly class QueryFactory implements QueryFactoryInterface
         return match($type) {
             'asset' => $this->assetQueryProvider->createAssetQuery(),
             'dataObject' => $this->dataObjectQueryProvider->createDataObjectQuery(),
-            default => throw new InvalidQueryTypeException("Unknown query type: $type")
+            default => throw new InvalidQueryTypeException(400, "Unknown query type: $type")
         };
     }
 }

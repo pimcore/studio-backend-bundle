@@ -18,5 +18,5 @@ namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
 interface AssetQueryProviderInterface
 {
-    public function createAssetQuery(): AssetQuery;
+    public function createAssetQuery(): QueryInterface;
 }
