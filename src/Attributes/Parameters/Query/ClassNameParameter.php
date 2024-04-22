@@ -22,26 +22,23 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Model\DataObject\ClassDefinition;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class ClassIdParameter extends QueryParameter
+final class ClassNameParameter extends QueryParameter
 {
     public function __construct()
     {
         // TODO Find better concept for this
         $classDefinitions = new ClassDefinition\Listing();
-        $classNames = [];
-        $description = 'Filter by class.';
-        foreach ($classDefinitions->load() as $classDefinition) {
-            $classNames[] = $classDefinition->getId();
-            $description .= '<br>' . $classDefinition->getId() . ' => ' . $classDefinition->getName();
-        }
-        $description .= '<br><br>';
 
         parent::__construct(
-            name: 'classId',
-            description: $description,
+            name: 'className',
+            description: 'Filter by class.',
             in: 'query',
             required: false,
-            schema: new Schema(type: 'string', enum:  $classNames, example: null),
+            schema: new Schema(
+                type: 'string',
+                enum:  array_map(static fn (ClassDefinition $def) => $def->getName(), $classDefinitions->load()),
+                example: null
+            ),
         );
     }
 }

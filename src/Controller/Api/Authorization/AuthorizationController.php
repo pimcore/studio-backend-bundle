@@ -20,8 +20,11 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Request\CredentialsRequestBody;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Request\TokenRequestBody;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnprocessableContentResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Request\Credentials;
@@ -61,6 +64,7 @@ final class AuthorizationController extends AbstractApiController
         content: new JsonContent(ref: Token::class)
     )]
     #[UnauthorizedResponse]
+    #[MethodNotAllowedResponse]
     public function login(#[MapRequestPayload] Credentials $credentials): JsonResponse
     {
         /** @var User $user */
@@ -84,6 +88,9 @@ final class AuthorizationController extends AbstractApiController
         content: new JsonContent(ref: Token::class)
     )]
     #[UnauthorizedResponse]
+    #[MethodNotAllowedResponse]
+    #[UnsupportedMediaTypeResponse]
+    #[UnprocessableContentResponse]
     public function refresh(#[MapRequestPayload] Refresh $refresh): JsonResponse
     {
         $tokenInfo = $this->tokenService->refreshToken($refresh->getToken());

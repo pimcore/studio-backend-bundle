@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\DataObjectSearchAdapterInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 use Pimcore\Model\DataObject\Concrete;
 
 final readonly class DataObjectSearchService implements DataObjectSearchServiceInterface
@@ -26,7 +26,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
     {
     }
 
-    public function searchDataObjects(DataObjectQuery $dataObjectQuery): DataObjectSearchResult
+    public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
     {
         return $this->dataObjectSearchAdapter->searchDataObjects($dataObjectQuery);
     }

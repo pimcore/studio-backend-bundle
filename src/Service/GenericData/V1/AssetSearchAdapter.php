@@ -34,7 +34,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     /**
      * @throws Exception
      */
-    public function searchAssets(AssetQuery $assetQuery): AssetSearchResult
+    public function searchAssets(QueryInterface $assetQuery): AssetSearchResult
     {
         $searchResult = $this->searchService->search($assetQuery->getSearch());
         $result = [];

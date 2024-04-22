@@ -29,6 +29,10 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
  */
 final readonly class SecurityService implements SecurityServiceInterface
 {
+    private const STATUS_CODE = 401;
+
+    private const MESSAGE = 'Bad credentials';
+
     public function __construct(
         private UserProvider $userProvider,
         private UserPasswordHasherInterface $passwordHasher,
@@ -41,14 +45,14 @@ final readonly class SecurityService implements SecurityServiceInterface
         try {
             $user = $this->userProvider->loadUserByIdentifier($credentials->getUsername());
         } catch (UserNotFoundException) {
-            throw new AccessDeniedException(401, 'Invalid credentials');
+            throw new AccessDeniedException(self::STATUS_CODE, self::MESSAGE);
         }
 
         if(
             !$user instanceof PasswordAuthenticatedUserInterface ||
             !$this->passwordHasher->isPasswordValid($user, $credentials->getPassword())
         ) {
-            throw new AccessDeniedException(401, 'Invalid credentials');
+            throw new AccessDeniedException(self::STATUS_CODE, self::MESSAGE);
         }
 
         return $user;

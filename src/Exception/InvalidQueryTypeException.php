@@ -16,11 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Exception;
-
 /**
  * @internal
  */
-final class InvalidQueryTypeException extends Exception
+final class InvalidQueryTypeException extends AbstractApiException
 {
 }

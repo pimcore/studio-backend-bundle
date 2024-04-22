@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\DataObjects;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ClassIdParameter;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ClassNameParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\IdSearchTermParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PageParameter;
@@ -27,9 +27,13 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeDescen
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeParentParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\BadRequestResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnprocessableContentResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property\DataObjectCollection;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
@@ -37,7 +41,6 @@ use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\DataObjectParameters;
 use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
@@ -76,16 +79,19 @@ final class CollectionController extends AbstractApiController
     #[PathParameter]
     #[PathIncludeParentParameter]
     #[PathIncludeDescendantsParameter]
-    #[ClassIdParameter]
+    #[ClassNameParameter]
     #[SuccessResponse(
         description: 'Paginated data objects with total count as header param',
         content: new CollectionJson(new DataObjectCollection())
     )]
+    #[BadRequestResponse]
     #[UnauthorizedResponse]
+    #[MethodNotAllowedResponse]
+    #[UnsupportedMediaTypeResponse]
+    #[UnprocessableContentResponse]
     public function getDataObjects(#[MapQueryString] DataObjectParameters $parameters): JsonResponse
     {
 
-        /** @var DataObjectQuery $dataObjectQuery */
         $dataObjectQuery = $this->filterService->applyFilters($parameters, 'dataObject');
 
         $result = $this->dataObjectSearchService->searchDataObjects($dataObjectQuery);

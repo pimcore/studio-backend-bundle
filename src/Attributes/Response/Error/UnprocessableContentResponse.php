@@ -14,22 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response;
+namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error;
 
 use Attribute;
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Response;
-use Pimcore\Bundle\StudioApiBundle\Response\Schema\Unauthorized;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class UnauthorizedResponse extends Response
+final class UnprocessableContentResponse extends Response
 {
     public function __construct()
     {
         parent::__construct(
-            response: 401,
-            description: 'Unauthorized',
-            content: new JsonContent(ref: Unauthorized::class)
+            response: 422,
+            description: 'Unprocessable Content',
         );
     }
 }

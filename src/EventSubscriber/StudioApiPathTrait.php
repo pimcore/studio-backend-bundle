@@ -14,11 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Exception;
+namespace Pimcore\Bundle\StudioApiBundle\EventSubscriber;
+
+use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 
 /**
  * @internal
  */
-final class InvalidFilterTypeException extends AbstractApiException
+trait StudioApiPathTrait
 {
+    private function isStudioApiPath(string $path): bool
+    {
+        return str_starts_with($path, AbstractApiController::API_PATH);
+    }
 }

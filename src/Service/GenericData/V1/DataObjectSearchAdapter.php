@@ -16,8 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
+use Pimcore\Bundle\StudioApiBundle\Exception\InvalidSearchException;
 use Pimcore\Bundle\StudioApiBundle\Response\DataObject;
 use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchResult;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\DataObjectSearchAdapterInterface;
@@ -32,9 +34,24 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     ) {
     }
 
-    public function searchDataObjects(DataObjectQuery $dataObjectQuery): DataObjectSearchResult
+    /**
+     * @throws InvalidSearchException
+     */
+    public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
     {
-        $searchResult = $this->searchService->search($dataObjectQuery->getSearch());
+
+        $search = $dataObjectQuery->getSearch();
+        if (!$search instanceof DataObjectSearchInterface) {
+            throw new InvalidSearchException(
+                400,
+                sprintf(
+                    'Expected search to be an instance of %s, got %s',
+                    DataObjectSearchInterface::class,
+                    get_class($search)
+                )
+            );
+        }
+        $searchResult = $this->searchService->search($search);
         $result = [];
         foreach($searchResult->getIds() as $id) {
             /** @var Concrete $dataObject */

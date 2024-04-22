@@ -19,6 +19,9 @@ namespace Pimcore\Bundle\StudioApiBundle\Exception;
 /**
  * @internal
  */
-final class InvalidFilterTypeException extends AbstractApiException
+interface ApiExceptionInterface
 {
+    public function getStatusCode(): int;
+
+    public function getMessage(): string;
 }

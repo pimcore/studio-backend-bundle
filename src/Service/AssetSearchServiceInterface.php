@@ -25,11 +25,11 @@ use Pimcore\Bundle\StudioApiBundle\Response\Asset\Image;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Text;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Unknown;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Video;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 interface AssetSearchServiceInterface
 {
-    public function searchAssets(AssetQuery $assetQuery): AssetSearchResult;
+    public function searchAssets(QueryInterface $assetQuery): AssetSearchResult;
 
     public function getAssetById(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video|null;
 }

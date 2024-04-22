@@ -16,9 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-/**
- * @internal
- */
-final class InvalidFilterTypeException extends AbstractApiException
+final class InvalidSearchException extends AbstractApiException
 {
 }
