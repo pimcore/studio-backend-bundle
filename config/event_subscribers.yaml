@@ -1,0 +1,9 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  #Subscriber
+  Pimcore\Bundle\StudioApiBundle\EventSubscriber\ApiExceptionSubscriber:
+    tags: [ 'kernel.event_subscriber' ]

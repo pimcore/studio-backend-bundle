@@ -14,26 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Response\Schema;
+namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
-/**
- * @internal
- */
-#[Schema(
-    schema: 'Unauthorized',
-    title: 'Unauthorized',
-    description: 'Bad credentials or missing token',
-    type: 'object'
-)]
-final readonly class Unauthorized
+abstract class AbstractApiException extends HttpException implements ApiExceptionInterface
 {
-    public function __construct(
-        #[Property(description: 'Message', type: 'string')]
-        protected string $message
-    ) {
-
-    }
 }

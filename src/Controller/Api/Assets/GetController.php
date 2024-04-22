@@ -19,8 +19,9 @@ namespace Pimcore\Bundle\StudioApiBundle\Controller\Api\Assets;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\OneOfAssetJson;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
@@ -56,6 +57,7 @@ final class GetController extends AbstractApiController
         content: new OneOfAssetJson()
     )]
     #[UnauthorizedResponse]
+    #[MethodNotAllowedResponse]
     public function getAssetById(int $id): JsonResponse
     {
         return $this->jsonResponse($this->assetSearchService->getAssetById($id));

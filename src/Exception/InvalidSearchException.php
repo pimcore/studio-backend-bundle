@@ -16,8 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Exception;
-
-final class InvalidSearchException extends Exception
+final class InvalidSearchException extends AbstractApiException
 {
 }

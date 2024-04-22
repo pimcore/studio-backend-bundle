@@ -65,7 +65,7 @@ final readonly class FilterService implements FilterServiceInterface
             FilterServiceInterface::TYPE_ASSET => $filters->getAssetFilters(),
             FilterServiceInterface::TYPE_DATA_OBJECT => $filters->getDataObjectFilters(),
             FilterServiceInterface::TYPE_DOCUMENT => $filters->getDocumentFilters(),
-            default => throw new InvalidFilterTypeException("Unknown filter type: $type")
+            default => throw new InvalidFilterTypeException(400, "Unknown filter type: $type")
         };
     }
 }
