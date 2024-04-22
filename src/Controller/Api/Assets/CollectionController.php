@@ -90,7 +90,7 @@ final class CollectionController extends AbstractApiController
     {
         $assetQuery = $this->filterService->applyFilters(
             $parameters,
-            'test'
+            FilterServiceInterface::TYPE_ASSET
         );
 
         $result = $this->assetSearchService->searchAssets($assetQuery);
