@@ -45,6 +45,6 @@ final readonly class Schemas
 
     public const Errors = [
         Error::class,
-        DevError::class
+        DevError::class,
     ];
 }

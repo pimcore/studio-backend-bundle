@@ -32,8 +32,7 @@ final class CorsSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly RouterInterface $router,
         private readonly array $allowedHosts = []
-    )
-    {
+    ) {
         foreach($this->router->getRouteCollection()->getIterator() as $route) {
             if($this->isStudioApiPath($route->getPath())) {
                 $this->routeMethods[$route->getPath()] = implode(', ', $route->getMethods());

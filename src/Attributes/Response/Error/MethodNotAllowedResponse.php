@@ -20,7 +20,6 @@ use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Response;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioApiBundle\Response\Schema\Error;
 use Pimcore\Bundle\StudioApiBundle\Response\Schemas;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]

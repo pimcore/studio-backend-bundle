@@ -17,9 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error;
 
 use Attribute;
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Response;
-use Pimcore\Bundle\StudioApiBundle\Response\Schema\Error;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class UnprocessableContentResponse extends Response
