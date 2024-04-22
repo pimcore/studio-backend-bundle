@@ -21,6 +21,8 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Request\TranslationRequestBody;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnprocessableContentResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Translation;
@@ -61,6 +63,8 @@ final class TranslationController extends AbstractApiController
     )]
     #[UnauthorizedResponse]
     #[MethodNotAllowedResponse]
+    #[UnsupportedMediaTypeResponse]
+    #[UnprocessableContentResponse]
     public function getTranslations(
         #[MapRequestPayload] Translation $translation,
     ): JsonResponse {

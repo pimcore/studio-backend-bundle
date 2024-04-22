@@ -14,25 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Response\Schema;
+namespace Pimcore\Bundle\StudioApiBundle\EventSubscriber;
 
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 
 /**
  * @internal
  */
-#[Schema(
-    schema: 'Error',
-    title: 'Error',
-    description: 'Bad credentials or missing token, bad request, method not allowed, etc.',
-    type: 'object'
-)]
-final readonly class Error
+trait StudioApiPathTrait
 {
-    public function __construct(
-        #[Property(description: 'Message', type: 'string', example: 'I am an error message')]
-        protected string $message
-    ) {
+    private function isStudioApiPath(string $path): bool
+    {
+        return str_starts_with($path, AbstractApiController::API_PATH);
     }
 }

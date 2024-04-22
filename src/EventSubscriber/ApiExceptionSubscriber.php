@@ -16,17 +16,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\EventSubscriber;
 
-use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
-use Pimcore\Bundle\StudioApiBundle\Exception\ApiExceptionInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
  * @internal
  */
 final class ApiExceptionSubscriber implements EventSubscriberInterface
 {
+    use StudioApiPathTrait;
+
+    public function __construct(private readonly string $environment)
+    {
+    }
+
     public static function getSubscribedEvents(): array
     {
         return [
@@ -39,22 +45,33 @@ final class ApiExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
         $request = $event->getRequest();
 
-        if(!$exception instanceof ApiExceptionInterface && !$this->isStudioApiCall($request->getPathInfo())) {
+        if(!$this->isStudioApiPath($request->getPathInfo())) {
             return;
         }
-        /** @var ApiExceptionInterface $exception */
-        $response = new JsonResponse(
-            [
-                'message' => $exception->getMessage(),
-            ],
-            $exception->getStatusCode()
-        );
 
-        $event->setResponse($response);
+        if(!$exception instanceof HttpExceptionInterface) {
+            return;
+        }
+
+        $event->setResponse($this->createResponse($exception));
     }
 
-    private function isStudioApiCall(string $path): bool
+    private function createResponse(HttpExceptionInterface $exception): Response
     {
-        return str_starts_with($path, AbstractApiController::API_PATH);
+        if(!$exception->getMessage()) {
+            return new Response(null, $exception->getStatusCode());
+        }
+        $responseData = [
+            'message' => $exception->getMessage(),
+        ];
+
+        if ($this->environment === 'dev') {
+            $responseData['detail'] = $exception->getTraceAsString();
+        }
+
+        return new JsonResponse(
+            $responseData,
+            $exception->getStatusCode(),
+        );
     }
 }

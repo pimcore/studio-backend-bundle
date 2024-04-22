@@ -23,16 +23,19 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    schema: 'Error',
-    title: 'Error',
-    description: 'Bad credentials or missing token, bad request, method not allowed, etc.',
+    schema: 'DevError',
+    title: 'DevError',
+    description: 'Error with details for developers',
     type: 'object'
 )]
-final readonly class Error
+final readonly class DevError
 {
     public function __construct(
-        #[Property(description: 'Message', type: 'string', example: 'I am an error message')]
-        protected string $message
+        #[Property(description: 'Message', type: 'string', example: 'I got a bad feeling about this')]
+        protected string $message,
+        #[Property(description: 'Details', type: 'string', example: 'Search your feelings. (Stack trace)')]
+        protected string $details
     ) {
+
     }
 }

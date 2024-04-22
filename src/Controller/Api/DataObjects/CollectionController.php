@@ -30,6 +30,8 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\BadRequestResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnprocessableContentResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property\DataObjectCollection;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
@@ -85,6 +87,8 @@ final class CollectionController extends AbstractApiController
     #[BadRequestResponse]
     #[UnauthorizedResponse]
     #[MethodNotAllowedResponse]
+    #[UnsupportedMediaTypeResponse]
+    #[UnprocessableContentResponse]
     public function getDataObjects(#[MapQueryString] DataObjectParameters $parameters): JsonResponse
     {
 

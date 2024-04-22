@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
 use Exception;
+use Pimcore\Bundle\StudioApiBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioApiBundle\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Symfony\Component\Config\FileLocator;
@@ -56,5 +57,8 @@ class PimcoreStudioApiExtension extends Extension
 
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
         $definition->setArgument('$openApiScanPaths', $config['openApiScanPaths']);
+
+        $definition = $container->getDefinition(CorsSubscriber::class);
+        $definition->setArgument('$allowedHosts', $config['allowedHostsForCors']);
     }
 }

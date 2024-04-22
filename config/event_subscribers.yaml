@@ -5,5 +5,9 @@ services:
     public: false
 
   #Subscriber
+  Pimcore\Bundle\StudioApiBundle\EventSubscriber\CorsSubscriber:
+    tags: [ 'kernel.event_subscriber' ]
+
   Pimcore\Bundle\StudioApiBundle\EventSubscriber\ApiExceptionSubscriber:
     tags: [ 'kernel.event_subscriber' ]
+    arguments: ["%kernel.environment%"]
