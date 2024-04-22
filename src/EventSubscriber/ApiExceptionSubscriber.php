@@ -27,6 +27,8 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
  */
 final class ApiExceptionSubscriber implements EventSubscriberInterface
 {
+    use StudioApiPathTrait;
+
     public static function getSubscribedEvents(): array
     {
         return [
@@ -39,7 +41,7 @@ final class ApiExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
         $request = $event->getRequest();
 
-        if(!$exception instanceof ApiExceptionInterface && !$this->isStudioApiCall($request->getPathInfo())) {
+        if(!$exception instanceof ApiExceptionInterface && !$this->isStudioApiPath($request->getPathInfo())) {
             return;
         }
         /** @var ApiExceptionInterface $exception */
@@ -51,10 +53,5 @@ final class ApiExceptionSubscriber implements EventSubscriberInterface
         );
 
         $event->setResponse($response);
-    }
-
-    private function isStudioApiCall(string $path): bool
-    {
-        return str_starts_with($path, AbstractApiController::API_PATH);
     }
 }

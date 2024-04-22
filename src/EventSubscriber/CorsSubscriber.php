@@ -25,6 +25,8 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 final readonly class CorsSubscriber implements EventSubscriberInterface
 {
+    use StudioApiPathTrait;
+
     public function __construct(private array $allowedHosts = [])
     {
     }
@@ -46,7 +48,7 @@ final readonly class CorsSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
 
-        if(!$this->checkStudioApiPath($request->getPathInfo())) {
+        if(!$this->isStudioApiPath($request->getPathInfo())) {
             return;
         }
 
@@ -67,11 +69,11 @@ final readonly class CorsSubscriber implements EventSubscriberInterface
     {
         $request = $event->getRequest();
 
-        if(!$this->checkStudioApiPath($request->getPathInfo())) {
+        if (!$this->isStudioApiPath($request->getPathInfo())) {
             return;
         }
         // Run CORS check in here to ensure domain is in the system
-        $corsOrigin =  $request->headers->get('origin');
+        $corsOrigin = $request->headers->get('origin');
 
         if (in_array($corsOrigin, $this->allowedHosts, true)) {
             $response = $event->getResponse();
@@ -83,10 +85,5 @@ final readonly class CorsSubscriber implements EventSubscriberInterface
             $response->headers->set('Vary', 'Origin');
 
         }
-    }
-
-    private function checkStudioApiPath(string $path): bool
-    {
-        return str_contains($path, AbstractApiController::API_PATH);
     }
 }
