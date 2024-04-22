@@ -16,8 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
-final class InvalidSearchException extends HttpException implements ApiExceptionInterface
+final class InvalidSearchException extends AbstractApiException
 {
 }

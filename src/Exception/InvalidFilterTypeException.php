@@ -16,11 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
-use Symfony\Component\HttpKernel\Exception\HttpException;
-
 /**
  * @internal
  */
-final class InvalidFilterTypeException extends HttpException implements ApiExceptionInterface
+final class InvalidFilterTypeException extends AbstractApiException
 {
 }
