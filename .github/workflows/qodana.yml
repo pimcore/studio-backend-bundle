@@ -21,7 +21,6 @@ on:
       - '*'
       - '**'
 
-version: 1.0
 jobs:
   qodana:
     timeout-minutes: 15
