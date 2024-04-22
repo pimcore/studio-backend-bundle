@@ -14,26 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Response\Schema;
-
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
+namespace Pimcore\Bundle\StudioApiBundle\Exception;
 
 /**
  * @internal
  */
-#[Schema(
-    schema: 'Unauthorized',
-    title: 'Unauthorized',
-    description: 'Bad credentials or missing token',
-    type: 'object'
-)]
-final readonly class Unauthorized
+interface ApiExceptionInterface
 {
-    public function __construct(
-        #[Property(description: 'Message', type: 'string')]
-        protected string $message
-    ) {
+    public function getStatusCode(): int;
 
-    }
+    public function getMessage(): string;
 }

@@ -26,9 +26,11 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeDescen
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathIncludeParentParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Parameters\Query\PathParameter;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\BadRequestResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property\AnyOfAsset;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\UnauthorizedResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
@@ -81,12 +83,14 @@ final class CollectionController extends AbstractApiController
         description: 'Paginated assets with total count as header param',
         content: new CollectionJson(new AnyOfAsset())
     )]
+    #[BadRequestResponse]
     #[UnauthorizedResponse]
+    #[MethodNotAllowedResponse]
     public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
     {
         $assetQuery = $this->filterService->applyFilters(
             $parameters,
-            FilterServiceInterface::TYPE_ASSET
+            'test'
         );
 
         $result = $this->assetSearchService->searchAssets($assetQuery);

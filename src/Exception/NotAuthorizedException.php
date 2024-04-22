@@ -21,6 +21,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 /**
  * @internal
  */
-final class NotAuthorizedException extends HttpException
+final class NotAuthorizedException extends HttpException implements ApiExceptionInterface
 {
 }

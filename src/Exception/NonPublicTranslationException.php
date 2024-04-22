@@ -21,6 +21,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 /**
  * @internal
  */
-final class NonPublicTranslationException extends HttpException
+final class NonPublicTranslationException extends HttpException implements ApiExceptionInterface
 {
 }
