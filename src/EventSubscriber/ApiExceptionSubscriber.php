@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioApiBundle\Exception\ApiExceptionInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Throwable;
 
 /**
  * @internal
@@ -42,7 +43,7 @@ final class ApiExceptionSubscriber implements EventSubscriberInterface
         if(!$exception instanceof ApiExceptionInterface && !$this->isStudioApiCall($request->getPathInfo())) {
             return;
         }
-
+        /** @var ApiExceptionInterface $exception */
         $response = new JsonResponse(
             [
                 'message' => $exception->getMessage(),

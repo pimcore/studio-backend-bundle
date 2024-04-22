@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Service\Security;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
+use Pimcore\Bundle\StudioApiBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioApiBundle\Request\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityService;
 use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
@@ -49,7 +50,8 @@ final class SecurityServiceTest extends Unit
     {
         $securityService = $this->mockSecurityService(false);
 
-        $this->expectExceptionMessage('Invalid credentials');
+        $this->expectException(AccessDeniedException::class);
+        $this->expectExceptionMessage('Bad credentials');
         $securityService->authenticateUser(new Credentials('test', 'test'));
     }
 
@@ -60,7 +62,8 @@ final class SecurityServiceTest extends Unit
     {
         $securityService = $this->mockSecurityService(false, false);
 
-        $this->expectExceptionMessage('Invalid credentials');
+        $this->expectException(AccessDeniedException::class);
+        $this->expectExceptionMessage('Bad credentials');
         $securityService->authenticateUser(new Credentials('test', 'test'));
     }
 
