@@ -19,7 +19,9 @@ namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Response;
+use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Response\Schema\Error;
+use Pimcore\Bundle\StudioApiBundle\Response\Schemas;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class MethodNotAllowedResponse extends Response
@@ -28,8 +30,12 @@ final class MethodNotAllowedResponse extends Response
     {
         parent::__construct(
             response: 405,
-            description: 'Bad Request',
-            content: new JsonContent(ref: Error::class, example: ['message' => 'Using the wrong method you are'])
+            description: 'Method Not Allowed',
+            content: new JsonContent(
+                oneOf: array_map(static function ($class) {
+                    return new Schema(ref: $class);
+                }, Schemas::Errors),
+            )
         );
     }
 }

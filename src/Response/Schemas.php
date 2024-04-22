@@ -24,6 +24,8 @@ use Pimcore\Bundle\StudioApiBundle\Response\Asset\Image;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Text;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Unknown;
 use Pimcore\Bundle\StudioApiBundle\Response\Asset\Video;
+use Pimcore\Bundle\StudioApiBundle\Response\Schema\DevError;
+use Pimcore\Bundle\StudioApiBundle\Response\Schema\Error;
 
 /**
  * @internal
@@ -39,5 +41,10 @@ final readonly class Schemas
        Text::class,
        Folder::class,
        Unknown::class,
+    ];
+
+    public const Errors = [
+        Error::class,
+        DevError::class
     ];
 }

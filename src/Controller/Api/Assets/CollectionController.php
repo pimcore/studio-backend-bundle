@@ -29,6 +29,8 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\BadRequestResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnprocessableContentResponse;
+use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property\AnyOfAsset;
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
@@ -41,6 +43,7 @@ use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -62,7 +65,7 @@ final class CollectionController extends AbstractApiController
      * @throws InvalidQueryTypeException
      */
     #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
-    //#[IsGranted('STUDIO_API')]
+    #[IsGranted('STUDIO_API')]
     #[GET(
         path: self::API_PATH . '/assets',
         operationId: 'getAssets',
@@ -86,6 +89,8 @@ final class CollectionController extends AbstractApiController
     #[BadRequestResponse]
     #[UnauthorizedResponse]
     #[MethodNotAllowedResponse]
+    #[UnsupportedMediaTypeResponse]
+    #[UnprocessableContentResponse]
     public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
     {
         $assetQuery = $this->filterService->applyFilters(

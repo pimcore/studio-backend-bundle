@@ -24,13 +24,13 @@ use Pimcore\Bundle\StudioApiBundle\Response\Schema\Error;
 use Pimcore\Bundle\StudioApiBundle\Response\Schemas;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class UnauthorizedResponse extends Response
+final class UnsupportedMediaTypeResponse extends Response
 {
     public function __construct()
     {
         parent::__construct(
-            response: 401,
-            description: 'Unauthorized',
+            response: 415,
+            description: 'Unsupported Media Type',
             content: new JsonContent(
                 oneOf: array_map(static function ($class) {
                     return new Schema(ref: $class);

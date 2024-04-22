@@ -21,13 +21,24 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Routing\RouterInterface;
 
-final readonly class CorsSubscriber implements EventSubscriberInterface
+final class CorsSubscriber implements EventSubscriberInterface
 {
     use StudioApiPathTrait;
 
-    public function __construct(private array $allowedHosts = [])
+    private array $routeMethods;
+
+    public function __construct(
+        private readonly RouterInterface $router,
+        private readonly array $allowedHosts = []
+    )
     {
+        foreach($this->router->getRouteCollection()->getIterator() as $route) {
+            if($this->isStudioApiPath($route->getPath())) {
+                $this->routeMethods[$route->getPath()] = implode(', ', $route->getMethods());
+            }
+        }
     }
 
     public static function getSubscribedEvents(): array
@@ -56,7 +67,7 @@ final readonly class CorsSubscriber implements EventSubscriberInterface
             $response = new Response();
 
             $response->headers->set('Access-Control-Allow-Credentials', 'true');
-            $response->headers->set('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, PATCH, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Methods', $this->routeMethods[$request->getPathInfo()]);
             $response->headers->set('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization');
             $response->headers->set('Access-Control-Max-Age', '3600');
 

@@ -19,23 +19,16 @@ namespace Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Response;
-use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioApiBundle\Response\Schema\Error;
-use Pimcore\Bundle\StudioApiBundle\Response\Schemas;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class UnauthorizedResponse extends Response
+final class UnprocessableContentResponse extends Response
 {
     public function __construct()
     {
         parent::__construct(
-            response: 401,
-            description: 'Unauthorized',
-            content: new JsonContent(
-                oneOf: array_map(static function ($class) {
-                    return new Schema(ref: $class);
-                }, Schemas::Errors),
-            )
+            response: 422,
+            description: 'Unprocessable Content',
         );
     }
 }
