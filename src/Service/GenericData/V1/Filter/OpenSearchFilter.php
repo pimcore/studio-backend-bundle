@@ -14,18 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Service\Filter;
+namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Filter;
 
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParametersInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\FilterServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 /**
  * @internal
  */
-final readonly class FilterService implements FilterServiceInterface
+final readonly class OpenSearchFilter implements FilterServiceInterface, OpenSearchFilterInterface
 {
     public function __construct(
         private FilterLoaderInterface $filterLoader,
@@ -62,10 +63,15 @@ final readonly class FilterService implements FilterServiceInterface
     private function getTypeFilters(Filters $filters, string $type): array
     {
         return match($type) {
-            FilterServiceInterface::TYPE_ASSET => $filters->getAssetFilters(),
-            FilterServiceInterface::TYPE_DATA_OBJECT => $filters->getDataObjectFilters(),
-            FilterServiceInterface::TYPE_DOCUMENT => $filters->getDocumentFilters(),
+            OpenSearchFilterInterface::TYPE_ASSET => $filters->getAssetFilters(),
+            OpenSearchFilterInterface::TYPE_DATA_OBJECT => $filters->getDataObjectFilters(),
+            OpenSearchFilterInterface::TYPE_DOCUMENT => $filters->getDocumentFilters(),
             default => throw new InvalidFilterTypeException(400, "Unknown filter type: $type")
         };
+    }
+
+    public function getType(): string
+    {
+        return OpenSearchFilterInterface::SERVICE_TYPE;
     }
 }

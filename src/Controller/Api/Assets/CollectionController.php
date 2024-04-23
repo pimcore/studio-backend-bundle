@@ -37,9 +37,10 @@ use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioApiBundle\Factory\FilterServiceFactoryInterface;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\ElementParameters;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Filter\OpenSearchFilterInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
@@ -55,7 +56,7 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly AssetSearchServiceInterface $assetSearchService,
-        private readonly FilterServiceInterface $filterService
+        private readonly FilterServiceFactoryInterface $filterServiceFactory
     ) {
         parent::__construct($serializer);
     }
@@ -92,9 +93,11 @@ final class CollectionController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getAssets(#[MapQueryString] ElementParameters $parameters): JsonResponse
     {
-        $assetQuery = $this->filterService->applyFilters(
+        $filterService = $this->filterServiceFactory->create(OpenSearchFilterInterface::SERVICE_TYPE);
+
+        $assetQuery = $filterService->applyFilters(
             $parameters,
-            FilterServiceInterface::TYPE_ASSET
+            OpenSearchFilterInterface::TYPE_ASSET
         );
 
         $result = $this->assetSearchService->searchAssets($assetQuery);

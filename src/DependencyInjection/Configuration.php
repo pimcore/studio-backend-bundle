@@ -33,9 +33,6 @@ class Configuration implements ConfigurationInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @throws InvalidPathException
-     * @throws InvalidHostException
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Service\Filter;
+namespace Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Filter;
 
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParametersInterface;
@@ -23,8 +23,10 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 /**
  * @internal
  */
-interface FilterServiceInterface
+interface OpenSearchFilterInterface
 {
+    public const SERVICE_TYPE = 'open_search_filter';
+
     public const TYPE_DATA_OBJECT = 'dataObject';
 
     public const TYPE_ASSET = 'asset';
