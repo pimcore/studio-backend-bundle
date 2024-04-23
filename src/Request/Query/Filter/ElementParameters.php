@@ -16,22 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Request\Query\Filter;
 
-use Pimcore\ValueObject\Integer\PositiveInteger;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Positive;
 
 /**
  * @internal
  */
-readonly class Parameters implements ParametersInterface
+readonly class ElementParameters extends CollectionParameters implements ElementParametersInterface
 {
     public function __construct(
-        #[NotBlank]
-        #[Positive]
-        private int $page = 1,
-        #[NotBlank]
-        #[Positive]
-        private int $pageSize = 10,
+        int $page = 1,
+        int $pageSize = 10,
         private ?int $parentId = null,
         private ?string $idSearchTerm = null,
         private ?string $excludeFolders = null,
@@ -39,17 +32,7 @@ readonly class Parameters implements ParametersInterface
         private ?string $pathIncludeParent = null,
         private ?string $pathIncludeDescendants = null
     ) {
-        $this->validate();
-    }
-
-    public function getPage(): int
-    {
-        return $this->page;
-    }
-
-    public function getPageSize(): int
-    {
-        return $this->pageSize;
+        parent::__construct($page, $pageSize);
     }
 
     public function getParentId(): ?int
@@ -80,11 +63,5 @@ readonly class Parameters implements ParametersInterface
     public function getPathIncludeDescendants(): ?bool
     {
         return $this->pathIncludeDescendants === 'true'; // TODO: symfony 7.1 will support bool type
-    }
-
-    private function validate(): void
-    {
-        new PositiveInteger($this->page);
-        new PositiveInteger($this->pageSize);
     }
 }

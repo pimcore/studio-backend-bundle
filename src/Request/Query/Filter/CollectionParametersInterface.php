@@ -19,21 +19,9 @@ namespace Pimcore\Bundle\StudioApiBundle\Request\Query\Filter;
 /**
  * @internal
  */
-interface ParametersInterface
+interface CollectionParametersInterface
 {
     public function getPage(): int;
 
     public function getPageSize(): int;
-
-    public function getParentId(): ?int;
-
-    public function getIdSearchTerm(): ?string;
-
-    public function getExcludeFolders(): ?bool;
-
-    public function getPath(): ?string;
-
-    public function getPathIncludeParent(): ?bool;
-
-    public function getPathIncludeDescendants(): ?bool;
 }

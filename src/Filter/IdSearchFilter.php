@@ -16,7 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
-use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\ParametersInterface;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParametersInterface;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\ElementParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 /**
@@ -24,8 +25,12 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
  */
 final class IdSearchFilter implements FilterInterface
 {
-    public function apply(ParametersInterface $parameters, QueryInterface $query): QueryInterface
+    public function apply(CollectionParametersInterface $parameters, QueryInterface $query): QueryInterface
     {
+        if (!$parameters instanceof ElementParametersInterface) {
+            return $query;
+        }
+
         $idSearchTerm = $parameters->getIdSearchTerm();
 
         if(!$idSearchTerm) {
