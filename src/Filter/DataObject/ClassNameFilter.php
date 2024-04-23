@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Filter\DataObject;
 
+use Exception;
 use Pimcore\Bundle\StudioApiBundle\Filter\FilterInterface;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\DataObjectParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\ParametersInterface;
@@ -27,6 +28,9 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
  */
 final class ClassNameFilter implements FilterInterface
 {
+    /**
+     * @throws Exception
+     */
     public function apply(ParametersInterface $parameters, QueryInterface $query): QueryInterface
     {
         if(

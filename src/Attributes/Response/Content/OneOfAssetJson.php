@@ -31,7 +31,7 @@ final class OneOfAssetJson extends JsonContent
             type: 'object',
             oneOf: array_map(static function ($class) {
                 return new Schema(ref: $class);
-            }, Schemas::Assets),
+            }, Schemas::ASSETS),
         );
     }
 }

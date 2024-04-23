@@ -52,6 +52,9 @@ final class Installer extends SettingsStoreAwareInstaller
         parent::install();
     }
 
+    /**
+     * @throws SchemaException
+     */
     private function createTranslationTable(Schema $schema): void
     {
         $translationsDomainTableName = 'translations_' . TranslatorService::DOMAIN;

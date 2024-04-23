@@ -33,7 +33,7 @@ final class MethodNotAllowedResponse extends Response
             content: new JsonContent(
                 oneOf: array_map(static function ($class) {
                     return new Schema(ref: $class);
-                }, Schemas::Errors),
+                }, Schemas::ERRORS),
             )
         );
     }

@@ -35,7 +35,11 @@ class Video extends Asset
         private readonly ?int $width,
         #[Property(description: 'Height', type: 'integer', example: 1080)]
         private readonly ?int $height,
-        #[Property(description: 'Path to Image Thumbnail', type: 'string', example: '/path/to/video/imagethumbnail.jpg')]
+        #[Property(
+            description: 'Path to Image Thumbnail',
+            type: 'string',
+            example: '/path/to/video/imagethumbnail.jpg'
+        )]
         private readonly?string $imageThumbnailPath,
         string $iconName,
         bool $hasChildren,
