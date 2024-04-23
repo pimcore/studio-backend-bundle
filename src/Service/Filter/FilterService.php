@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioApiBundle\Service\Filter;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface;
-use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParameters;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
