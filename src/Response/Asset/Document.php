@@ -31,7 +31,11 @@ class Document extends Asset
     public function __construct(
         #[Property(description: 'Page count', type: 'integer', example: 2)]
         private readonly ?int $pageCount,
-        #[Property(description: 'Path to image thumbnail', type: 'integer', example: '/path/to/document/imagethumbnail.jpg')]
+        #[Property(
+            description: 'Path to image thumbnail',
+            type: 'integer',
+            example: '/path/to/document/imagethumbnail.jpg'
+        )]
         private readonly ?string $imageThumbnailPath,
         string $iconName,
         bool $hasChildren,

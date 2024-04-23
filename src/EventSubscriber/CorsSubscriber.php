@@ -62,7 +62,7 @@ final class CorsSubscriber implements EventSubscriberInterface
         }
 
         // perform preflight checks
-        if ('OPTIONS' === $request->getMethod()) {
+        if ($request->getMethod() === 'OPTIONS') {
             $response = new Response();
 
             $response->headers->set('Access-Control-Allow-Credentials', 'true');

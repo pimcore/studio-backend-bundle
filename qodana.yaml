@@ -15,6 +15,7 @@ exclude:
       - translations
       - .php_cs.dist
       - doc
+      - templates
       - .github
       - .php-cs-fixer.dist.php
       - .qodana-profile.xml

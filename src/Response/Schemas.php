@@ -32,7 +32,7 @@ use Pimcore\Bundle\StudioApiBundle\Response\Schema\Error;
  */
 final readonly class Schemas
 {
-    public const Assets = [
+    public const ASSETS = [
        Image::class,
        Document::class,
        Audio::class,
@@ -43,7 +43,7 @@ final readonly class Schemas
        Unknown::class,
     ];
 
-    public const Errors = [
+    public const ERRORS = [
         Error::class,
         DevError::class,
     ];

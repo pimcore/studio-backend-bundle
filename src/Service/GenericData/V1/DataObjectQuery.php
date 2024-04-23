@@ -23,6 +23,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\Pare
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StudioApiBundle\Exception\ClassDefinitionNotFoundException;
 
 final class DataObjectQuery implements QueryInterface
 {
@@ -86,7 +87,9 @@ final class DataObjectQuery implements QueryInterface
     public function setClassDefinitionName(string $classDefinitionId): self
     {
         $classDefinition = $this->classDefinitionResolver->getByName($classDefinitionId);
-
+        if($classDefinition === null) {
+            throw new ClassDefinitionNotFoundException(400, 'Class definition not found');
+        }
         $this->search->setClassDefinition($classDefinition);
 
         return $this;

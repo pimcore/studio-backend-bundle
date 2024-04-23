@@ -37,7 +37,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class TranslationController extends AbstractApiController
 {
-    private const PATH = '/translations';
+    private const ROUTE = '/translations';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -46,10 +46,10 @@ final class TranslationController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route(self::PATH, name: 'pimcore_studio_api_translations', methods: ['POST'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_translations', methods: ['POST'])]
     //#[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
     #[POST(
-        path: self::API_PATH . self::PATH,
+        path: self::API_PATH . self::ROUTE,
         operationId: 'getTranslations',
         description: 'Get translations for given keys and locale',
         summary: 'Get translations',
