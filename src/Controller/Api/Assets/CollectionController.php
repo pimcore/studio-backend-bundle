@@ -37,7 +37,7 @@ use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
 use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\Parameters;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\ElementParameters;
 use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -90,7 +90,7 @@ final class CollectionController extends AbstractApiController
     #[MethodNotAllowedResponse]
     #[UnsupportedMediaTypeResponse]
     #[UnprocessableContentResponse]
-    public function getAssets(#[MapQueryString] Parameters $parameters): JsonResponse
+    public function getAssets(#[MapQueryString] ElementParameters $parameters): JsonResponse
     {
         $assetQuery = $this->filterService->applyFilters(
             $parameters,

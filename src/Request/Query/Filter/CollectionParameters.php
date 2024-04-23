@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Constraints\Positive;
 /**
  * @internal
  */
-readonly class Parameters implements ParametersInterface
+readonly class CollectionParameters implements CollectionParametersInterface
 {
     public function __construct(
         #[NotBlank]
@@ -32,12 +32,6 @@ readonly class Parameters implements ParametersInterface
         #[NotBlank]
         #[Positive]
         private int $pageSize = 10,
-        private ?int $parentId = null,
-        private ?string $idSearchTerm = null,
-        private ?string $excludeFolders = null,
-        private ?string $path = null,
-        private ?string $pathIncludeParent = null,
-        private ?string $pathIncludeDescendants = null
     ) {
         $this->validate();
     }
@@ -50,36 +44,6 @@ readonly class Parameters implements ParametersInterface
     public function getPageSize(): int
     {
         return $this->pageSize;
-    }
-
-    public function getParentId(): ?int
-    {
-        return $this->parentId;
-    }
-
-    public function getIdSearchTerm(): ?string
-    {
-        return $this->idSearchTerm;
-    }
-
-    public function getExcludeFolders(): ?bool
-    {
-        return $this->excludeFolders === 'true'; // TODO: symfony 7.1 will support bool type
-    }
-
-    public function getPath(): ?string
-    {
-        return $this->path;
-    }
-
-    public function getPathIncludeParent(): ?bool
-    {
-        return $this->pathIncludeParent === 'true'; // TODO: symfony 7.1 will support bool type
-    }
-
-    public function getPathIncludeDescendants(): ?bool
-    {
-        return $this->pathIncludeDescendants === 'true'; // TODO: symfony 7.1 will support bool type
     }
 
     private function validate(): void

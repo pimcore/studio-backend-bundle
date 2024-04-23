@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Service\Filter;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface;
-use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\Parameters;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 /**
@@ -37,7 +37,7 @@ final readonly class FilterService implements FilterServiceInterface
      * @throws InvalidQueryTypeException
      * @throws InvalidFilterTypeException
      */
-    public function applyFilters(Parameters $parameters, string $type): QueryInterface
+    public function applyFilters(CollectionParametersInterface $parameters, string $type): QueryInterface
     {
         $query = $this->queryFactory->create($type);
         // apply default filters

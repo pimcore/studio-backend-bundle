@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Request\Query\Filter;
 /**
  * @internal
  */
-interface DataObjectParametersInterface extends ParametersInterface
+interface DataObjectParametersInterface extends ElementParametersInterface
 {
     public function getClassName(): ?string;
 }

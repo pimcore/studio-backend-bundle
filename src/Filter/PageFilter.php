@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Filter;
 
-use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\ParametersInterface;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParametersInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
 
 /**
@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
  */
 final class PageFilter implements FilterInterface
 {
-    public function apply(ParametersInterface $parameters, QueryInterface $query): QueryInterface
+    public function apply(CollectionParametersInterface $parameters, QueryInterface $query): QueryInterface
     {
         return $query->setPage($parameters->getPage());
     }

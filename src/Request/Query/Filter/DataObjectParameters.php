@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Request\Query\Filter;
 /**
  * @internal
  */
-final readonly class DataObjectParameters extends Parameters implements DataObjectParametersInterface
+final readonly class DataObjectParameters extends ElementParameters implements DataObjectParametersInterface
 {
     public function __construct(
         int $page = 1,
