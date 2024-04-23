@@ -16,8 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Factory;
 
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Filter\Filters;
-
 /**
  * @internal
  */

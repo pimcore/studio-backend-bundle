@@ -21,12 +21,14 @@ use Pimcore\Bundle\StudioApiBundle\Exception\InvalidFilterServiceTypeException;
 final class FilterServiceFactory implements FilterServiceFactoryInterface
 {
     private array $filterServices = [];
+
     public function __construct(FilterServiceLoaderInterface $taggedIteratorAdapter)
     {
         foreach($taggedIteratorAdapter->loadFilterServices() as $filterService) {
             $this->filterServices[$filterService->getType()] = $filterService;
         }
     }
+
     public function create(string $type): mixed
     {
         if(!array_key_exists($type, $this->filterServices)) {
