@@ -56,7 +56,7 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly AssetSearchServiceInterface $assetSearchService,
-        private readonly FilterServiceProviderInterface $filterServiceFactory
+        private readonly FilterServiceProviderInterface $filterServiceProvider
     ) {
         parent::__construct($serializer);
     }
@@ -93,7 +93,7 @@ final class CollectionController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getAssets(#[MapQueryString] ElementParameters $parameters): JsonResponse
     {
-        $filterService = $this->filterServiceFactory->create(OpenSearchFilterInterface::SERVICE_TYPE);
+        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
 
         $assetQuery = $filterService->applyFilters(
             $parameters,

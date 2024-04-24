@@ -29,10 +29,10 @@ trait PaginatedResponseTrait
 
     protected function getPaginatedCollection(
         SerializerInterface $serializer,
-        array $data,
+        array $items,
         int $totalItems = 0
     ): JsonResponse {
-        $serialized = $serializer->serialize(new Collection($totalItems, $data), 'json');
+        $serialized = $serializer->serialize(new Collection($totalItems, $items), 'json');
 
         return new JsonResponse($serialized, 200, [self::HEADER_TOTAL_ITEMS => $totalItems], true);
     }

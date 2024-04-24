@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioApiBundle\Request\Query\Filter;
 /**
  * @internal
  */
-interface ElementParametersInterface
+interface ElementParametersInterface extends CollectionParametersInterface
 {
     public function getPage(): int;
 

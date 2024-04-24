@@ -54,7 +54,7 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly DataObjectSearchServiceInterface $dataObjectSearchService,
-        private readonly FilterServiceProviderInterface $filterServiceFactory
+        private readonly FilterServiceProviderInterface $filterServiceProvider
     ) {
         parent::__construct($serializer);
     }
@@ -92,7 +92,7 @@ final class CollectionController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getDataObjects(#[MapQueryString] DataObjectParameters $parameters): JsonResponse
     {
-        $filterService = $this->filterServiceFactory->create(OpenSearchFilterInterface::SERVICE_TYPE);
+        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
 
         $dataObjectQuery = $filterService->applyFilters($parameters, 'dataObject');
 
