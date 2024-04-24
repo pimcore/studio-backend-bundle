@@ -14,10 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory\Loader;
+namespace Pimcore\Bundle\StudioApiBundle\Provider\Loader;
 
-use Pimcore\Bundle\StudioApiBundle\Factory\FilterServiceLoaderInterface;
-
+use Pimcore\Bundle\StudioApiBundle\Provider\FilterServiceLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 /**

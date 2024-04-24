@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  #Factory
+
+  Pimcore\Bundle\StudioApiBundle\Provider\FilterServiceProviderInterface:
+    class: Pimcore\Bundle\StudioApiBundle\Provider\FilterServiceProvider
+
+  Pimcore\Bundle\StudioApiBundle\Provider\FilterServiceLoaderInterface:
+    class: Pimcore\Bundle\StudioApiBundle\Provider\Loader\TaggedIteratorAdapter

@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
+namespace Pimcore\Bundle\StudioApiBundle\Provider;
 
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidFilterServiceTypeException;
 
-final class FilterServiceFactory implements FilterServiceFactoryInterface
+final class FilterServiceProvider implements FilterServiceProviderInterface
 {
     private array $filterServices = [];
 

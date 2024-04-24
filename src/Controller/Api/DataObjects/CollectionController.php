@@ -36,12 +36,12 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Property\DataObjectCollec
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
-use Pimcore\Bundle\StudioApiBundle\Controller\Trait\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioApiBundle\Factory\FilterServiceFactoryInterface;
+use Pimcore\Bundle\StudioApiBundle\Provider\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\DataObjectParameters;
 use Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Filter\OpenSearchFilterInterface;
+use Pimcore\Bundle\StudioApiBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
@@ -54,7 +54,7 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly DataObjectSearchServiceInterface $dataObjectSearchService,
-        private readonly FilterServiceFactoryInterface $filterServiceFactory
+        private readonly FilterServiceProviderInterface $filterServiceFactory
     ) {
         parent::__construct($serializer);
     }

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Controller\Trait;
+namespace Pimcore\Bundle\StudioApiBundle\Util\Traits;
 
 use Pimcore\Bundle\StudioApiBundle\Response\Collection;
 use Symfony\Component\HttpFoundation\JsonResponse;

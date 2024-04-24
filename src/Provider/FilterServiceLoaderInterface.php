@@ -14,9 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
+namespace Pimcore\Bundle\StudioApiBundle\Provider;
 
-interface FilterServiceFactoryInterface
+/**
+ * @internal
+ */
+interface FilterServiceLoaderInterface
 {
-    public function create(string $type): mixed;
+    public function loadFilterServices(): array;
 }
