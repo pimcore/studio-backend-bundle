@@ -12,7 +12,7 @@
   <body>
     <div class="header">
       <a style="text-decoration: none;" id="logo" href="#" target="_blank">
-        <img alt="{{ "Pimcore's logotype"|trans([], 'admin') }}" src="{{ path('pimcore_settings_display_custom_logo') }}">
+        <img alt="{{ "Pimcore's logotype"|trans([], 'admin') }}" src="{{ path('pimcore_settings_display_custom_logo', {'white': true}) }}">
       </a>
     </div>
     <div id="swagger-ui" data-url="{{ path('pimcore_studio_api_docs_json') }}" ></div>
