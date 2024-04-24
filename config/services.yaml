@@ -27,8 +27,8 @@ services:
     Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\TranslatorService
 
-    Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\TokenService
+    Pimcore\Bundle\StudioApiBundle\Authorization\Service\TokenServiceInterface:
+        class: Pimcore\Bundle\StudioApiBundle\Authorization\Service\TokenService
 
     Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\SecurityService

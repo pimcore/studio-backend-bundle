@@ -1,0 +1,13 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioApiBundle\Authorization\Controller\:
+    resource: '../src/Authorization/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]

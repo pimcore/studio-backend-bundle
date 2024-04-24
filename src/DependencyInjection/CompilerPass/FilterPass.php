@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection\CompilerPass;
 
+use Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\FilterInterface;
+use Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioApiBundle\Exception\MustImplementInterfaceException;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\FilterInterface;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioApiBundle\Util\Traits\MustImplementInterfaceTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;

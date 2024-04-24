@@ -25,6 +25,7 @@ final class OpenApiService implements OpenApiServiceInterface
 
     private const PATHS = [
         self::PATH_PREFIX . 'src/Attributes/',
+        self::PATH_PREFIX . 'src/Authorization/',
         self::PATH_PREFIX . 'src/Config/',
         self::PATH_PREFIX . 'src/Controller/Api/',
         self::PATH_PREFIX . 'src/Dto/',

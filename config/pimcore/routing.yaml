@@ -1,5 +1,5 @@
 studio_api:
-    resource: "../../src/Controller/Api"
+    resource: "../../src/"
     type:     annotation
     prefix:   /studio/api
     options:

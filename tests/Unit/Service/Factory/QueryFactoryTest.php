@@ -21,13 +21,13 @@ use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StudioApiBundle\DataIndex\Provider\AssetQueryProviderInterface;
+use Pimcore\Bundle\StudioApiBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
+use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\AssetQuery;
+use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\DataObjectQuery;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactory;
 use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\AssetQuery;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\AssetQueryProviderInterface;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\DataObjectQuery;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\DataObjectQueryProviderInterface;
 
 final class QueryFactoryTest extends Unit
 {

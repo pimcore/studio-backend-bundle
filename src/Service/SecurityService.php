@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
+use Pimcore\Bundle\StudioApiBundle\Authorization\Schema\Credentials;
 use Pimcore\Bundle\StudioApiBundle\Exception\AccessDeniedException;
-use Pimcore\Bundle\StudioApiBundle\Request\Credentials;
 use Pimcore\Security\User\UserProvider;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;

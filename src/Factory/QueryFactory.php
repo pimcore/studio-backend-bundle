@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioApiBundle\Factory;
 
+use Pimcore\Bundle\StudioApiBundle\DataIndex\Provider\AssetQueryProviderInterface;
+use Pimcore\Bundle\StudioApiBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
+use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\AssetQueryProviderInterface;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\DataObjectQueryProviderInterface;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\QueryInterface;
 
 /**
  * @internal

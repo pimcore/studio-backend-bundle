@@ -17,9 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
 
 use Exception;
+use Pimcore\Bundle\StudioApiBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioApiBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioApiBundle\Service\OpenApiServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -49,11 +49,12 @@ class PimcoreStudioApiExtension extends Extension
         // Load services and configuration
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
 
+        $loader->load('authorization.yaml');
         $loader->load('event_subscribers.yaml');
         $loader->load('factories.yaml');
         $loader->load('providers.yaml');
-        $loader->load('open_search.yaml');
-        $loader->load('open_search_filters.yaml');
+        $loader->load('data_index.yaml');
+        $loader->load('data_index_filters.yaml');
         $loader->load('services.yaml');
 
         $definition = $container->getDefinition(TokenServiceInterface::class);
