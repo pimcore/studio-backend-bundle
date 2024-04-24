@@ -14,18 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
+namespace Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Hydrator\Asset;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\QueryInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetMetaData;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\MetaData;
 
-/**
- * @internal
- */
-interface QueryFactoryInterface
+interface MetaDataHydratorInterface
 {
     /**
-     * @throws InvalidQueryTypeException
+     * @param array<int, AssetMetaData> $metaData
+     *
+     * @return array<int, MetaData>
      */
-    public function create(string $type): QueryInterface;
+    public function hydrate(array $metaData): array;
 }

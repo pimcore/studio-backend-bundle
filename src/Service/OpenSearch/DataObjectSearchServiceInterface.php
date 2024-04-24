@@ -14,18 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
+namespace Pimcore\Bundle\StudioApiBundle\Service\OpenSearch;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioApiBundle\OpenSearch\DataObjectSearchResult;
 use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\QueryInterface;
+use Pimcore\Model\DataObject\Concrete;
 
-/**
- * @internal
- */
-interface QueryFactoryInterface
+interface DataObjectSearchServiceInterface
 {
-    /**
-     * @throws InvalidQueryTypeException
-     */
-    public function create(string $type): QueryInterface;
+    public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult;
+
+    public function getDataObjectById(int $id): Concrete|null;
 }

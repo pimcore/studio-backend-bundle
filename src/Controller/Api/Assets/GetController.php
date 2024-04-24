@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnsupportedMediaTyp
 use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioApiBundle\Config\Tags;
 use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
-use Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioApiBundle\Service\OpenSearch\AssetSearchServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;

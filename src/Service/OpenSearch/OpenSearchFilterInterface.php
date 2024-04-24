@@ -14,18 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
+namespace Pimcore\Bundle\StudioApiBundle\Service\OpenSearch;
 
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\QueryInterface;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParametersInterface;
 
 /**
  * @internal
  */
-interface QueryFactoryInterface
+interface OpenSearchFilterInterface
 {
+    public const SERVICE_TYPE = 'open_search_filter';
+
+    public const TYPE_DATA_OBJECT = 'dataObject';
+
+    public const TYPE_ASSET = 'asset';
+
+    public const TYPE_DOCUMENT = 'document';
+
     /**
      * @throws InvalidQueryTypeException
      */
-    public function create(string $type): QueryInterface;
+    public function applyFilters(CollectionParametersInterface $parameters, string $type): QueryInterface;
 }

@@ -1,0 +1,37 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  #Filter
+
+  #Common
+  Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\FilterLoaderInterface:
+    class:  Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\Loader\TaggedIteratorAdapter
+
+  Pimcore\Bundle\StudioApiBundle\Service\OpenSearch\OpenSearchFilterInterface:
+    class: Pimcore\Bundle\StudioApiBundle\Service\OpenSearch\OpenSearchFilter
+    tags: [ 'pimcore.studio_api.filter_service' ]
+
+  Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\PageFilter:
+    tags: [ 'pimcore.studio_api.open_search.filter' ]
+
+  Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\PageSizeFilter:
+    tags: [ 'pimcore.studio_api.open_search.filter' ]
+
+  Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\ExcludeFolderFilter:
+    tags: [ 'pimcore.studio_api.open_search.filter' ]
+
+  Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\IdSearchFilter:
+    tags: [ 'pimcore.studio_api.open_search.filter' ]
+
+  Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\ParentIdFilter:
+    tags: [ 'pimcore.studio_api.open_search.filter' ]
+
+  Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\PathFilter:
+    tags: [ 'pimcore.studio_api.open_search.filter' ]
+
+  # DataObject
+  Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter\DataObject\ClassNameFilter:
+      tags: [ 'pimcore.studio_api.open_search.data_object.filter' ]

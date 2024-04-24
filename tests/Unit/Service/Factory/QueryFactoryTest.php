@@ -24,10 +24,10 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactory;
 use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQuery;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQuery;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProviderInterface;
+use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\AssetQuery;
+use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\AssetQueryProviderInterface;
+use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\DataObjectQuery;
+use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\DataObjectQueryProviderInterface;
 
 final class QueryFactoryTest extends Unit
 {

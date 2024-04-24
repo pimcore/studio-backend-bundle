@@ -14,18 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
-
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\QueryInterface;
+namespace Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter;
 
 /**
  * @internal
  */
-interface QueryFactoryInterface
+interface FilterLoaderInterface
 {
-    /**
-     * @throws InvalidQueryTypeException
-     */
-    public function create(string $type): QueryInterface;
+    public function loadFilters(): Filters;
 }

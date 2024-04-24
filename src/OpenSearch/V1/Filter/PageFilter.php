@@ -14,18 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
+namespace Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Filter;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\QueryInterface;
+use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParametersInterface;
 
 /**
  * @internal
  */
-interface QueryFactoryInterface
+final class PageFilter implements FilterInterface
 {
-    /**
-     * @throws InvalidQueryTypeException
-     */
-    public function create(string $type): QueryInterface;
+    public function apply(CollectionParametersInterface $parameters, QueryInterface $query): QueryInterface
+    {
+        return $query->setPage($parameters->getPage());
+    }
 }

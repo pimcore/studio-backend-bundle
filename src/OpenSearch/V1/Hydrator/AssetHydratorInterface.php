@@ -14,18 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
+namespace Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Hydrator;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\QueryInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset;
 
-/**
- * @internal
- */
-interface QueryFactoryInterface
+interface AssetHydratorInterface
 {
-    /**
-     * @throws InvalidQueryTypeException
-     */
-    public function create(string $type): QueryInterface;
+    public function hydrate(AssetSearchResultItem $item): Asset;
 }

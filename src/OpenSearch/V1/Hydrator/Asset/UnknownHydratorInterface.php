@@ -14,18 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
+namespace Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\Hydrator\Asset;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioApiBundle\OpenSearch\V1\QueryInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown as UnknownItem;
+use Pimcore\Bundle\StudioApiBundle\Response\Asset\Unknown;
 
-/**
- * @internal
- */
-interface QueryFactoryInterface
+interface UnknownHydratorInterface
 {
-    /**
-     * @throws InvalidQueryTypeException
-     */
-    public function create(string $type): QueryInterface;
+    public function hydrate(UnknownItem $item): Unknown;
 }
