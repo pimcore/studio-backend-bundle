@@ -1,5 +1,5 @@
 {
-  "name": "pimcore/studio-api-bundle",
+  "name": "pimcore/studio-backend-bundle",
   "license": "proprietary",
   "type": "pimcore-bundle",
   "description": "Pimcore Studio Backend Bundle",

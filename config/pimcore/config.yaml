@@ -5,4 +5,4 @@ pimcore:
 
 pimcore_studio_backend:
     open_api_scan_paths:
-        - "%kernel.project_dir%/vendor/pimcore/studio-api-bundle/src"
+        - "%kernel.project_dir%/vendor/pimcore/studio-backend-bundle/src"
