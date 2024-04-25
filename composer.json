@@ -51,7 +51,7 @@
   "extra": {
     "pimcore": {
       "bundles": [
-        "PimcoreStudioBackendBundle"
+        "Pimcore\\Bundle\\StudioBackendBundle\\PimcoreStudioBackendBundle"
       ]
     }
   }
