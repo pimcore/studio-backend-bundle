@@ -7,31 +7,31 @@ services:
   #Filter
 
   #Common
-  Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\FilterLoaderInterface:
-    class:  Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\Loader\TaggedIteratorAdapter
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterLoaderInterface:
+    class:  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Loader\TaggedIteratorAdapter
 
-  Pimcore\Bundle\StudioApiBundle\DataIndex\OpenSearchFilterInterface:
-    class: Pimcore\Bundle\StudioApiBundle\DataIndex\OpenSearchFilter
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilter
     tags: [ 'pimcore.studio_api.filter_service' ]
 
-  Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\PageFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\PageFilter:
     tags: [ 'pimcore.studio_api.open_search.filter' ]
 
-  Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\PageSizeFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\PageSizeFilter:
     tags: [ 'pimcore.studio_api.open_search.filter' ]
 
-  Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\ExcludeFolderFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\ExcludeFolderFilter:
     tags: [ 'pimcore.studio_api.open_search.filter' ]
 
-  Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\IdSearchFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\IdSearchFilter:
     tags: [ 'pimcore.studio_api.open_search.filter' ]
 
-  Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\ParentIdFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\ParentIdFilter:
     tags: [ 'pimcore.studio_api.open_search.filter' ]
 
-  Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\PathFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\PathFilter:
     tags: [ 'pimcore.studio_api.open_search.filter' ]
 
   # DataObject
-  Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\DataObject\ClassNameFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_api.open_search.data_object.filter' ]

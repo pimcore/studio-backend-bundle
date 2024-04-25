@@ -14,20 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Service\Factory;
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Factory;
 
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Provider\AssetQueryProviderInterface;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\AssetQuery;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\DataObjectQuery;
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactory;
-use Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactory;
+use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 
 final class QueryFactoryTest extends Unit
 {

@@ -14,15 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\DataObjectSearchResult;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidSearchException;
-use Pimcore\Bundle\StudioApiBundle\Response\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidSearchException;
+use Pimcore\Bundle\StudioBackendBundle\Response\DataObject;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 

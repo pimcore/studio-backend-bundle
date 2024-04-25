@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Dto\Token;
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dto\Token;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioApiBundle\Authorization\Schema\Refresh;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Refresh;
 
 final class RefreshTest extends Unit
 {

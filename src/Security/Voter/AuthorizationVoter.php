@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Security\Voter;
+namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\NoRequestException;
-use Pimcore\Bundle\StudioApiBundle\Exception\NotAuthorizedException;
-use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\Util\Traits\RequestTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NoRequestException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
+use Pimcore\Bundle\StudioBackendBundle\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\RequestTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;

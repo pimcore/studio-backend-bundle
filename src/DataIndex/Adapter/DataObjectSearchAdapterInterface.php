@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
-use Pimcore\Bundle\StudioApiBundle\DataIndex\DataObjectSearchResult;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Model\Element\ElementInterface;
 
 interface DataObjectSearchAdapterInterface

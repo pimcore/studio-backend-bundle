@@ -14,14 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\AssetSearchResult;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Hydrator\AssetHydratorServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset;
 
 final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 {

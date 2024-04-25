@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Permission\AssetPermissions;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Permissions;
 
 interface PermissionsHydratorInterface
 {

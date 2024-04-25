@@ -1,1 +1,1 @@
-suite_namespace: Pimcore\Bundle\StudioApiBundle\Tests
+suite_namespace: Pimcore\Bundle\StudioBackendBundle\Tests

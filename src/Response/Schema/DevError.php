@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Response\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Response\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;

@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
+namespace Pimcore\Bundle\StudioBackendBundle\Factory;
 
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
 
 /**
  * @internal

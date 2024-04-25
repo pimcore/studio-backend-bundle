@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Hydrator\Asset\MetaDataHydratorInterface;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset;
-use Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\MetaDataHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Service\IconServiceInterface;
 
 final readonly class AssetHydrator implements AssetHydratorInterface
 {

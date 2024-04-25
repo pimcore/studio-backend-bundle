@@ -14,9 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Provider;
+namespace Pimcore\Bundle\StudioBackendBundle\Provider;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidFilterServiceTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterServiceTypeException;
 
 final class FilterServiceProvider implements FilterServiceProviderInterface
 {

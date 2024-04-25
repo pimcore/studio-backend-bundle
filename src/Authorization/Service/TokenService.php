@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Authorization\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
-use Pimcore\Bundle\StudioApiBundle\Authorization\Info;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Info;
 use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
@@ -26,7 +26,7 @@ use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
  */
 final class TokenService implements TokenServiceInterface
 {
-    private const TMP_STORE_TAG = 'studio-api-token-tag-user-{userId}';
+    private const TMP_STORE_TAG = 'studio-backend-token-tag-user-{userId}';
 
     private const TMP_STORE_TAG_PLACEHOLDER = '{userId}';
 

@@ -14,18 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Response;
+namespace Pimcore\Bundle\StudioBackendBundle\Response;
 
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Archive;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Audio;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Document;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Folder;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Image;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Text;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Unknown;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Video;
-use Pimcore\Bundle\StudioApiBundle\Response\Schema\DevError;
-use Pimcore\Bundle\StudioApiBundle\Response\Schema\Error;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Archive;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Audio;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Document;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Folder;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Image;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Text;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Unknown;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Video;
+use Pimcore\Bundle\StudioBackendBundle\Response\Schema\DevError;
+use Pimcore\Bundle\StudioBackendBundle\Response\Schema\Error;
 
 /**
  * @internal

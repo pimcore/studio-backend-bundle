@@ -1,0 +1,12 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\:
+    resource: '../src/DataObject/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]

@@ -14,24 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Authorization\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Request\CredentialsRequestBody;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Request\TokenRequestBody;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\MethodNotAllowedResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnauthorizedResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnprocessableContentResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\Error\UnsupportedMediaTypeResponse;
-use Pimcore\Bundle\StudioApiBundle\Attributes\Response\SuccessResponse;
-use Pimcore\Bundle\StudioApiBundle\Authorization\Schema\Credentials;
-use Pimcore\Bundle\StudioApiBundle\Authorization\Schema\Refresh;
-use Pimcore\Bundle\StudioApiBundle\Authorization\Schema\Token;
-use Pimcore\Bundle\StudioApiBundle\Authorization\Service\TokenServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\Config\Tags;
-use Pimcore\Bundle\StudioApiBundle\Controller\Api\AbstractApiController;
-use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Refresh;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Token;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Controller\Api\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\CredentialsRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\TokenRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Service\SecurityServiceInterface;
 use Pimcore\Security\User\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;

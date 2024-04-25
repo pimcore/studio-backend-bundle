@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParametersInterface;
 
 /**
  * @internal

@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
-use Pimcore\Bundle\StudioApiBundle\Authorization\Schema\Credentials;
-use Pimcore\Bundle\StudioApiBundle\Exception\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Security\User\UserProvider;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;

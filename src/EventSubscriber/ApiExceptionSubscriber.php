@@ -14,8 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\EventSubscriber;
+namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +28,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
  */
 final class ApiExceptionSubscriber implements EventSubscriberInterface
 {
-    use StudioApiPathTrait;
+    use StudioBackendPathTrait;
 
     public function __construct(private readonly string $environment)
     {
@@ -45,7 +46,7 @@ final class ApiExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
         $request = $event->getRequest();
 
-        if(!$this->isStudioApiPath($request->getPathInfo())) {
+        if(!$this->isStudioBackendPath($request->getPathInfo())) {
             return;
         }
 

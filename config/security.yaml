@@ -5,15 +5,15 @@ services:
     public: false
 
   #Voters
-  Pimcore\Bundle\StudioApiBundle\Security\Voter\AuthorizationVoter:
+  Pimcore\Bundle\StudioBackendBundle\Security\Voter\AuthorizationVoter:
     arguments: ['@request_stack']
     tags:
       - { name: security.voter }
 
-  Pimcore\Bundle\StudioApiBundle\Security\Voter\PublicAuthorizationVoter:
+  Pimcore\Bundle\StudioBackendBundle\Security\Voter\PublicAuthorizationVoter:
     arguments: [ '@request_stack' ]
     tags:
       - { name: security.voter }
 
-  Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface:
-    class: Pimcore\Bundle\StudioApiBundle\Service\SecurityService
+  Pimcore\Bundle\StudioBackendBundle\Service\SecurityServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Service\SecurityService

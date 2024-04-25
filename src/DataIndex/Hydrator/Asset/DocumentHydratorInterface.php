@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Hydrator\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Document as DocumentItem;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Document;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Document;
 
 interface DocumentHydratorInterface
 {

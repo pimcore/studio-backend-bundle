@@ -7,27 +7,23 @@ services:
     #
     # INSTALLER
     #
-    Pimcore\Bundle\StudioApiBundle\Installer:
+    Pimcore\Bundle\StudioBackendBundle\Installer:
         public: true
         arguments:
-            $bundle: "@=service('kernel').getBundle('PimcoreStudioApiBundle')"
+            $bundle: "@=service('kernel').getBundle('PimcoreStudioBackendBundle')"
 
     # controllers are imported separately to make sure they're public
     # and have a tag that allows actions to type-hint services
-    Pimcore\Bundle\StudioApiBundle\Controller\:
+    Pimcore\Bundle\StudioBackendBundle\Controller\:
         resource: '../src/Controller'
         public: true
         tags: [ 'controller.service_arguments' ]
 
 
-    Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\IconService
+    Pimcore\Bundle\StudioBackendBundle\Service\IconServiceInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Service\IconService
 
-    Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\TranslatorService
 
-    Pimcore\Bundle\StudioApiBundle\Service\OpenApiServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\OpenApiService
 
 
 

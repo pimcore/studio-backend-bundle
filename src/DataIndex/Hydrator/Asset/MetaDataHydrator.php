@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Hydrator\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetMetaData;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\MetaData;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\MetaData;
 
 final class MetaDataHydrator implements MetaDataHydratorInterface
 {

@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Provider;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchProviderInterface;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\AssetQuery;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 
 final readonly class AssetQueryProvider implements AssetQueryProviderInterface
 {

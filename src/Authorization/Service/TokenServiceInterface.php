@@ -14,9 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Authorization\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Service;
 
-use Pimcore\Bundle\StudioApiBundle\Authorization\Info;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Info;
 
 /**
  * @internal

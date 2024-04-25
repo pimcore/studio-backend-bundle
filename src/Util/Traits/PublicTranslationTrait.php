@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Util\Traits;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\NonPublicTranslationException;
-use Pimcore\Bundle\StudioApiBundle\Util\Constants\PublicTranslations;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NonPublicTranslationException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\PublicTranslations;
 use Symfony\Component\HttpFoundation\InputBag;
 
 /**

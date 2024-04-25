@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Query;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
@@ -23,7 +23,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\Pare
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StudioApiBundle\Exception\ClassDefinitionNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ClassDefinitionNotFoundException;
 
 final class DataObjectQuery implements QueryInterface
 {

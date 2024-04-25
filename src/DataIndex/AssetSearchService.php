@@ -14,19 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Adapter\AssetSearchAdapterInterface;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Archive;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Audio;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Document;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Folder;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Image;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Text;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Unknown;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset\Video;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Archive;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Audio;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Document;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Folder;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Image;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Text;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Unknown;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Video;
 
 final readonly class AssetSearchService implements AssetSearchServiceInterface
 {

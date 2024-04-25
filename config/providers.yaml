@@ -6,8 +6,8 @@ services:
 
   #Factory
 
-  Pimcore\Bundle\StudioApiBundle\Provider\FilterServiceProviderInterface:
-    class: Pimcore\Bundle\StudioApiBundle\Provider\FilterServiceProvider
+  Pimcore\Bundle\StudioBackendBundle\Provider\FilterServiceProviderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Provider\FilterServiceProvider
 
-  Pimcore\Bundle\StudioApiBundle\Provider\FilterServiceLoaderInterface:
-    class: Pimcore\Bundle\StudioApiBundle\Provider\Loader\TaggedIteratorAdapter
+  Pimcore\Bundle\StudioBackendBundle\Provider\FilterServiceLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Provider\Loader\TaggedIteratorAdapter

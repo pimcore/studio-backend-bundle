@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\Loader;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Loader;
 
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\FilterLoaderInterface;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\Filters;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Filters;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 /**

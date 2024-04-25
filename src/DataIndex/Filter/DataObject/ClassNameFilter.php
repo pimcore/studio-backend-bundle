@@ -14,14 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\DataObject;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject;
 
 use Exception;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Filter\FilterInterface;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\DataObjectQuery;
-use Pimcore\Bundle\StudioApiBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\CollectionParametersInterface;
-use Pimcore\Bundle\StudioApiBundle\Request\Query\Filter\DataObjectParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParametersInterface;
 
 /**
  * @internal

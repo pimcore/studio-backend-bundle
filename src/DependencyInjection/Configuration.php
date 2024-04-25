@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection;
+namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidHostException;
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidPathException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -29,7 +29,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
-    public const ROOT_NODE = 'pimcore_studio_api';
+    public const ROOT_NODE = 'pimcore_studio_backend';
 
     /**
      * {@inheritdoc}

@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Dto;
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dto;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioApiBundle\Request\Query\Translation;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 
 final class TranslationTest extends Unit
 {
