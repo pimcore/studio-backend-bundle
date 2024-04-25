@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Controller;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Controller\Api\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\TranslationRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;

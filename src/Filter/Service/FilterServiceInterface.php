@@ -14,9 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Filter\Service;
 
-interface IconServiceInterface
+interface FilterServiceInterface
 {
-    public function getIconForAsset(string $assetType, string $mimeType): string;
+    public function getType(): string;
 }

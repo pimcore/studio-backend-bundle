@@ -1,0 +1,8 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconService

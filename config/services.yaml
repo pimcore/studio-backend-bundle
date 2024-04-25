@@ -20,10 +20,6 @@ services:
         tags: [ 'controller.service_arguments' ]
 
 
-    Pimcore\Bundle\StudioBackendBundle\Service\IconServiceInterface:
-        class: Pimcore\Bundle\StudioBackendBundle\Service\IconService
-
-
 
 
 

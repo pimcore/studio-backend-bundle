@@ -15,5 +15,5 @@ services:
     tags:
       - { name: security.voter }
 
-  Pimcore\Bundle\StudioBackendBundle\Service\SecurityServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Service\SecurityService
+  Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService

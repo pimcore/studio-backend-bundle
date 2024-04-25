@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
 
 final class IconService implements IconServiceInterface
 {

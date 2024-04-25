@@ -56,6 +56,7 @@ class PimcoreStudioBackendExtension extends Extension
         $loader->load('data_objects.yaml');
         $loader->load('event_subscribers.yaml');
         $loader->load('factories.yaml');
+        $loader->load('icon.yaml');
         $loader->load('open_api.yaml');
         $loader->load('providers.yaml');
         $loader->load('security.yaml');

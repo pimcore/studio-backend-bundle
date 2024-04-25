@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\NoRequestException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
-use Pimcore\Bundle\StudioBackendBundle\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\RequestTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;

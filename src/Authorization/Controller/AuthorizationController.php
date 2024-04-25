@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Refresh;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Token;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Controller\Api\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\CredentialsRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\TokenRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
@@ -31,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unproce
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Security\User\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
