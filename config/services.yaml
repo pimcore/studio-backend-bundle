@@ -20,32 +20,16 @@ services:
         tags: [ 'controller.service_arguments' ]
 
 
-
     Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\IconService
 
     Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\TranslatorService
 
-    Pimcore\Bundle\StudioApiBundle\Authorization\Service\TokenServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Authorization\Service\TokenService
-
-    Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\SecurityService
-
     Pimcore\Bundle\StudioApiBundle\Service\OpenApiServiceInterface:
         class: Pimcore\Bundle\StudioApiBundle\Service\OpenApiService
 
-    #Voters
-    Pimcore\Bundle\StudioApiBundle\Security\Voter\AuthorizationVoter:
-        arguments: ['@request_stack']
-        tags:
-            - { name: security.voter }
 
-    Pimcore\Bundle\StudioApiBundle\Security\Voter\PublicAuthorizationVoter:
-        arguments: [ '@request_stack' ]
-        tags:
-            - { name: security.voter }
 
 
 

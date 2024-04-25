@@ -55,6 +55,7 @@ class PimcoreStudioApiExtension extends Extension
         $loader->load('providers.yaml');
         $loader->load('data_index.yaml');
         $loader->load('data_index_filters.yaml');
+        $loader->load('security.yaml');
         $loader->load('services.yaml');
 
         $definition = $container->getDefinition(TokenServiceInterface::class);

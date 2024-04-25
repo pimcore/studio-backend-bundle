@@ -11,3 +11,7 @@ services:
     resource: '../src/Authorization/Controller'
     public: true
     tags: [ 'controller.service_arguments' ]
+
+
+  Pimcore\Bundle\StudioApiBundle\Authorization\Service\TokenServiceInterface:
+    class: Pimcore\Bundle\StudioApiBundle\Authorization\Service\TokenService
