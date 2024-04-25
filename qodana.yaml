@@ -34,6 +34,7 @@ exclude:
       - .env
       - .gitatributes
       - src/DependencyInjection/Configuration.php
+      - src/OpenApi/Attributes.php
       - qodana.sarif.json
 include:
   - name: PhpTaintFunctionInspection
