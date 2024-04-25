@@ -56,6 +56,7 @@ jobs:
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@latest
         with:
+          use-caches: false
           args: --baseline,qodana.sarif.json
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
