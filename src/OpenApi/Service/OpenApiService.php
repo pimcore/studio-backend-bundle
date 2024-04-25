@@ -19,9 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Service;
 use OpenApi\Annotations\OpenApi;
 use OpenApi\Generator;
 
-final class OpenApiService implements OpenApiServiceInterface
+final readonly class OpenApiService implements OpenApiServiceInterface
 {
-    public function __construct(private readonly array $openApiScanPaths = [])
+    public function __construct(private array $openApiScanPaths = [])
     {
     }
 
