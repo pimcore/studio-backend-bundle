@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\DependencyInjection\CompilerPass;
+namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\MustImplementInterfaceException;
-use Pimcore\Bundle\StudioApiBundle\Filter\FilterInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Filter\Loader\TaggedIteratorAdapter;
-use Pimcore\Bundle\StudioApiBundle\Util\Traits\MustImplementInterfaceTrait;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Loader\TaggedIteratorAdapter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\MustImplementInterfaceTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 

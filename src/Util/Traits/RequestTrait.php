@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Util\Traits;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\NoRequestException;
-use Pimcore\Bundle\StudioApiBundle\Exception\NotAuthorizedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NoRequestException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 

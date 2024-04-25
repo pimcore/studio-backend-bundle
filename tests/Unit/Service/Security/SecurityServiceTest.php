@@ -14,15 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Service\Security;
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Security;
 
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
-use Pimcore\Bundle\StudioApiBundle\Exception\AccessDeniedException;
-use Pimcore\Bundle\StudioApiBundle\Request\Credentials;
-use Pimcore\Bundle\StudioApiBundle\Service\SecurityService;
-use Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Service\SecurityService;
+use Pimcore\Bundle\StudioBackendBundle\Service\SecurityServiceInterface;
 use Pimcore\Model\Tool\TmpStore;
 use Pimcore\Security\User\User;
 use Pimcore\Security\User\UserProvider;

@@ -14,9 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Service;
 
-use Pimcore\Bundle\StudioApiBundle\Request\Credentials;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 /**

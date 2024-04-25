@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Response\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\Response\Asset;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioApiBundle\Response\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Response\Asset;
 
 #[Schema(
     title: 'Document',

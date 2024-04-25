@@ -14,8 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\EventSubscriber;
+namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -25,7 +26,7 @@ use Symfony\Component\Routing\RouterInterface;
 
 final class CorsSubscriber implements EventSubscriberInterface
 {
-    use StudioApiPathTrait;
+    use StudioBackendPathTrait;
 
     private array $routeMethods;
 
@@ -34,7 +35,7 @@ final class CorsSubscriber implements EventSubscriberInterface
         private readonly array $allowedHosts = []
     ) {
         foreach($this->router->getRouteCollection()->getIterator() as $route) {
-            if($this->isStudioApiPath($route->getPath())) {
+            if($this->isStudioBackendPath($route->getPath())) {
                 $this->routeMethods[$route->getPath()] = implode(', ', $route->getMethods());
             }
         }
@@ -57,7 +58,7 @@ final class CorsSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
 
-        if(!$this->isStudioApiPath($request->getPathInfo())) {
+        if(!$this->isStudioBackendPath($request->getPathInfo())) {
             return;
         }
 
@@ -78,7 +79,7 @@ final class CorsSubscriber implements EventSubscriberInterface
     {
         $request = $event->getRequest();
 
-        if (!$this->isStudioApiPath($request->getPathInfo())) {
+        if (!$this->isStudioBackendPath($request->getPathInfo())) {
             return;
         }
         // Run CORS check in here to ensure domain is in the system

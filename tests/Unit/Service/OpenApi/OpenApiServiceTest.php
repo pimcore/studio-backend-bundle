@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Service\OpenApi;
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\OpenApi;
 
 use Codeception\Test\Unit;
 use ErrorException;
-use Pimcore\Bundle\StudioApiBundle\Service\OpenApiService;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiService;
 
 final class OpenApiServiceTest extends Unit
 {

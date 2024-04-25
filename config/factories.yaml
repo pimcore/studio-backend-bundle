@@ -5,5 +5,5 @@ services:
     public: false
 
   #Factory
-  Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface:
-    class: Pimcore\Bundle\StudioApiBundle\Factory\QueryFactory
+  Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactory

@@ -37209,11 +37209,11 @@
       "language": "en-US",
       "versionControlProvenance": [
         {
-          "repositoryUri": "https://github.com/pimcore/studio-api-bundle.git",
+          "repositoryUri": "https://github.com/pimcore/studio-backend-bundle.git",
           "revisionId": "d44e6fe87239160c64004cbe3387f1b4779cf343",
           "branch": "0x-First-Prototype",
           "properties": {
-            "repoUrl": "https://github.com/pimcore/studio-api-bundle.git",
+            "repoUrl": "https://github.com/pimcore/studio-backend-bundle.git",
             "lastAuthorName": "mattamon",
             "vcsType": "Git",
             "lastAuthorEmail": "matthias.schuhmayer@pimcore.com"
@@ -37478,7 +37478,7 @@
                   "charOffset": 2687,
                   "charLength": 215,
                   "snippet": {
-                    "text": "use Pimcore\\Bundle\\StudioApiBundle\\Service\\GenericData\\V1\\Hydrator\\Asset\\VideoHydratorInterface;\n\nfinal readonly class AssetHydratorService implements AssetHydratorServiceInterface\n{\n    public function __construct("
+                    "text": "use Pimcore\\Bundle\\StudioBackendBundle\\Service\\GenericData\\V1\\Hydrator\\Asset\\VideoHydratorInterface;\n\nfinal readonly class AssetHydratorService implements AssetHydratorServiceInterface\n{\n    public function __construct("
                   },
                   "sourceLanguage": "PHP"
                 }
@@ -37564,7 +37564,7 @@
         "id": "project/qodana/2024-03-06",
         "guid": "8da1f312-bbe5-4efb-91a8-5929ccb22f55",
         "properties": {
-          "jobUrl": "https://github.com/pimcore/studio-api-bundle/actions/runs/8173608135"
+          "jobUrl": "https://github.com/pimcore/studio-backend-bundle/actions/runs/8173608135"
         }
       },
       "newlineSequences": [

@@ -34,6 +34,6 @@ body {
     position: fixed;
     bottom: 2px;
     right: 2px;
-    background: url(/bundles/pimcorestudioapi/img/api-icon.png) center center no-repeat;
+    background: url(/bundles/pimcorestudiobackend/img/api-icon.png) center center no-repeat;
     background-size: 24px 24px;
 }
