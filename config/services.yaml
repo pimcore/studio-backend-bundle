@@ -7,117 +7,14 @@ services:
     #
     # INSTALLER
     #
-    Pimcore\Bundle\StudioApiBundle\Installer:
+    Pimcore\Bundle\StudioBackendBundle\Installer:
         public: true
         arguments:
-            $bundle: "@=service('kernel').getBundle('PimcoreStudioApiBundle')"
-
-    # controllers are imported separately to make sure they're public
-    # and have a tag that allows actions to type-hint services
-    Pimcore\Bundle\StudioApiBundle\Controller\:
-        resource: '../src/Controller'
-        public: true
-        tags: [ 'controller.service_arguments' ]
-
-    # Hydrators
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ArchiveHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ArchiveHydrator
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\AudioHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\AudioHydrator
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\DocumentHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\DocumentHydrator
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\FolderHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\FolderHydrator
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ImageHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ImageHydrator
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\TextHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\TextHydrator
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\UnknownHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\UnknownHydrator
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\VideoHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\VideoHydrator
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\MetaDataHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\MetaDataHydrator
-
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydrator
-
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydratorInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\PermissionsHydrator
-
-    # Services
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydratorServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\AssetHydratorService
-        arguments:
-            $assetHydratorLocator: '@generic_data_index.asset_hydrator.service_locator'
+            $bundle: "@=service('kernel').getBundle('PimcoreStudioBackendBundle')"
 
 
-    # Assets
-    Pimcore\Bundle\StudioApiBundle\Service\AssetSearchServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\AssetSearchService
 
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\AssetSearchAdapterInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetSearchAdapter
 
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProvider
 
-    #Data Objects
-    Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\DataObjectSearchService
 
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\DataObjectSearchAdapterInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectSearchAdapter
-
-    Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProviderInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProvider
-
-    Pimcore\Bundle\StudioApiBundle\Service\IconServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\IconService
-
-    Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\TranslatorService
-
-    Pimcore\Bundle\StudioApiBundle\Service\TokenServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\TokenService
-
-    Pimcore\Bundle\StudioApiBundle\Service\SecurityServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\SecurityService
-
-    Pimcore\Bundle\StudioApiBundle\Service\OpenApiServiceInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Service\OpenApiService
-
-    #Voters
-    Pimcore\Bundle\StudioApiBundle\Security\Voter\AuthorizationVoter:
-        arguments: ['@request_stack']
-        tags:
-            - { name: security.voter }
-
-    Pimcore\Bundle\StudioApiBundle\Security\Voter\PublicAuthorizationVoter:
-        arguments: [ '@request_stack' ]
-        tags:
-            - { name: security.voter }
-
-    #Decorators
-    #Pimcore\Bundle\StudioApiBundle\ApiPlatform\OpenApiFactoryDecorator:
-        #decorates: 'api_platform.openapi.factory'
-
-    #Service Locator
-    generic_data_index.asset_hydrator.service_locator:
-        class: Symfony\Component\DependencyInjection\ServiceLocator
-        tags: ['container.service_locator']
-        arguments:
-            -
-                Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Archive: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ArchiveHydratorInterface'
-                Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Audio: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\AudioHydratorInterface'
-                Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Document: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\DocumentHydratorInterface'
-                Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Folder: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\FolderHydratorInterface'
-                Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Image: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\ImageHydratorInterface'
-                Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Text: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\TextHydratorInterface'
-                Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\UnknownHydratorInterface'
-                Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video: '@Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\Hydrator\Asset\VideoHydratorInterface'
-
-    #Factory
-    Pimcore\Bundle\StudioApiBundle\Factory\QueryFactoryInterface:
-        class: Pimcore\Bundle\StudioApiBundle\Factory\QueryFactory
 

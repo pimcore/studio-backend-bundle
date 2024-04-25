@@ -14,13 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Tests\Unit\Service\Translator;
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Translator;
 
 use Codeception\Test\Unit;
 use Exception;
-use Pimcore\Bundle\StudioApiBundle\Service\TranslatorService;
-use Pimcore\Bundle\StudioApiBundle\Service\TranslatorServiceInterface;
-use Pimcore\Bundle\StudioApiBundle\Util\Constants\PublicTranslations;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\PublicTranslations;
 use Pimcore\Translation\Translator;
 
 final class TranslatorServiceTest extends Unit

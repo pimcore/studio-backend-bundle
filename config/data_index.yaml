@@ -1,0 +1,73 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # Hydrators
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\ArchiveHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\ArchiveHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\AudioHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\AudioHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\DocumentHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\DocumentHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\FolderHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\FolderHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\ImageHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\ImageHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\TextHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\TextHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\UnknownHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\UnknownHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\MetaDataHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\MetaDataHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\PermissionsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\PermissionsHydrator
+
+  # Services
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorService
+    arguments:
+      $assetHydratorLocator: '@open_search.asset_hydrator.service_locator'
+
+
+  # Assets
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchService
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProvider
+
+  #Data Objects
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchService
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProvider
+
+
+  #Service Locator
+  open_search.asset_hydrator.service_locator:
+    class: Symfony\Component\DependencyInjection\ServiceLocator
+    tags: [ 'container.service_locator' ]
+    arguments:
+      - Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Archive: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\ArchiveHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Audio: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\AudioHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Document: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\DocumentHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Folder: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\FolderHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Image: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\ImageHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Text: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\TextHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\UnknownHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydratorInterface'

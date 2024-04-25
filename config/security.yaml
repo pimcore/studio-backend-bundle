@@ -1,0 +1,19 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  #Voters
+  Pimcore\Bundle\StudioBackendBundle\Security\Voter\AuthorizationVoter:
+    arguments: ['@request_stack']
+    tags:
+      - { name: security.voter }
+
+  Pimcore\Bundle\StudioBackendBundle\Security\Voter\PublicAuthorizationVoter:
+    arguments: [ '@request_stack' ]
+    tags:
+      - { name: security.voter }
+
+  Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService

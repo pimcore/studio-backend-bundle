@@ -1,0 +1,9 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  #Factory
+  Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactory

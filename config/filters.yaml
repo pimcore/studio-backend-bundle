@@ -4,33 +4,10 @@ services:
     autoconfigure: true
     public: false
 
-  #Filter
+  #Factory
 
-  #Common
-  Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterLoaderInterface:
-    class: Pimcore\Bundle\StudioApiBundle\Service\Filter\Loader\TaggedIteratorAdapter
+  Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProvider
 
-  Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterServiceInterface:
-    class: Pimcore\Bundle\StudioApiBundle\Service\Filter\FilterService
-
-  Pimcore\Bundle\StudioApiBundle\Filter\PageFilter:
-    tags: [ 'pimcore.studio_api.filter' ]
-
-  Pimcore\Bundle\StudioApiBundle\Filter\PageSizeFilter:
-    tags: [ 'pimcore.studio_api.filter' ]
-
-  Pimcore\Bundle\StudioApiBundle\Filter\ExcludeFolderFilter:
-    tags: [ 'pimcore.studio_api.filter' ]
-
-  Pimcore\Bundle\StudioApiBundle\Filter\IdSearchFilter:
-    tags: [ 'pimcore.studio_api.filter' ]
-
-  Pimcore\Bundle\StudioApiBundle\Filter\ParentIdFilter:
-    tags: [ 'pimcore.studio_api.filter' ]
-
-  Pimcore\Bundle\StudioApiBundle\Filter\PathFilter:
-    tags: [ 'pimcore.studio_api.filter' ]
-
-  # DataObject
-  Pimcore\Bundle\StudioApiBundle\Filter\DataObject\ClassNameFilter:
-      tags: [ 'pimcore.studio_api.data_object.filter' ]
+  Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Filter\Service\Loader\TaggedIteratorAdapter

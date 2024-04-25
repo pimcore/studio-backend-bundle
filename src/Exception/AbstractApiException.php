@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-abstract class AbstractApiException extends HttpException implements ApiExceptionInterface
+abstract class AbstractApiException extends HttpException
 {
 }

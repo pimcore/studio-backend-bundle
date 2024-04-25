@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Factory;
+namespace Pimcore\Bundle\StudioBackendBundle\Factory;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\AssetQueryProviderInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\DataObjectQueryProviderInterface;
-use Pimcore\Bundle\StudioApiBundle\Service\GenericData\V1\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
 
 /**
  * @internal

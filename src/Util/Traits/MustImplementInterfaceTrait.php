@@ -14,9 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Util\Traits;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
-use Pimcore\Bundle\StudioApiBundle\Exception\MustImplementInterfaceException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 
 /**
  * @internal

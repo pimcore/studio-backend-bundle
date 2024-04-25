@@ -2,3 +2,7 @@ pimcore:
     translations:
         domains:
             - studio
+
+pimcore_studio_backend:
+    open_api_scan_paths:
+        - "%kernel.project_dir%/vendor/pimcore/studio-api-bundle/src"

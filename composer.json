@@ -2,7 +2,7 @@
   "name": "pimcore/studio-api-bundle",
   "license": "proprietary",
   "type": "pimcore-bundle",
-  "description": "Pimcore Studio Api Bundle",
+  "description": "Pimcore Studio Backend Bundle",
   "config": {
     "discard-changes": true,
     "sort-packages": true,
@@ -39,19 +39,19 @@
   },
   "autoload": {
     "psr-4": {
-      "Pimcore\\Bundle\\StudioApiBundle\\": "src/",
+      "Pimcore\\Bundle\\StudioBackendBundle\\": "src/",
       "Pimcore\\": "core-extension/Pimcore/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Pimcore\\Bundle\\StudioApiBundle\\Tests\\": "tests"
+      "Pimcore\\Bundle\\StudioBackendBundle\\Tests\\": "tests"
     }
   },
   "extra": {
     "pimcore": {
       "bundles": [
-        "Pimcore\\Bundle\\StudioApiBundle\\PimcoreStudioApiBundle"
+        "PimcoreStudioBackendBundle"
       ]
     }
   }

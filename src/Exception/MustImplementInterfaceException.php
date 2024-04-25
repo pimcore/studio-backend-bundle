@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioApiBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 use Exception;
 
