@@ -14,12 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Response;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
 
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 
 /**
  * @internal

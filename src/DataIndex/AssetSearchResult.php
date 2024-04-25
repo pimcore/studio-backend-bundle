@@ -16,15 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Archive;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Audio;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Document;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Folder;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Image;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Text;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Unknown;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Video;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Folder;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 
 final readonly class AssetSearchResult
 {

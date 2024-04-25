@@ -12,15 +12,6 @@ services:
         arguments:
             $bundle: "@=service('kernel').getBundle('PimcoreStudioBackendBundle')"
 
-    # controllers are imported separately to make sure they're public
-    # and have a tag that allows actions to type-hint services
-    Pimcore\Bundle\StudioBackendBundle\Controller\:
-        resource: '../src/Controller'
-        public: true
-        tags: [ 'controller.service_arguments' ]
-
-
-
 
 
 

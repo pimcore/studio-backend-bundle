@@ -4,5 +4,5 @@ pimcore:
             - studio
 
 pimcore_studio_backend:
-    openApiScanPaths:
+    open_api_scan_paths:
         - "%kernel.project_dir%/vendor/pimcore/studio-api-bundle/src"

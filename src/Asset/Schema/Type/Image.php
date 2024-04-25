@@ -14,29 +14,31 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Response\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 
 #[Schema(
-    title: 'Document',
+    title: 'Image',
     type: 'object'
 )]
-class Document extends Asset
+final class Image extends Asset
 {
-    //use MetaData\EmbeddedMetaDataTrait;
-
     public function __construct(
-        #[Property(description: 'Page count', type: 'integer', example: 2)]
-        private readonly ?int $pageCount,
-        #[Property(
-            description: 'Path to image thumbnail',
-            type: 'integer',
-            example: '/path/to/document/imagethumbnail.jpg'
-        )]
-        private readonly ?string $imageThumbnailPath,
+        #[Property(description: 'Format', type: 'string', example: 'muhFormat')]
+        private readonly string $format,
+        #[Property(description: 'width', type: 'integer', example: 666)]
+        private readonly int $width,
+        #[Property(description: 'height', type: 'integer', example: 333)]
+        private readonly int $height,
+        #[Property(description: 'is vector graphic', type: 'boolean', example: false)]
+        private readonly bool $isVectorGraphic,
+        #[Property(description: 'is animated', type: 'boolean', example: false)]
+        private readonly bool $isAnimated,
+        #[Property(description: 'path to thumbnail', type: 'string', example: '/path/to/element/hulk-smash.jpg')]
+        private readonly string $thumbnailPath,
         string $iconName,
         bool $hasChildren,
         string $type,
@@ -78,13 +80,33 @@ class Document extends Asset
         );
     }
 
-    public function getPageCount(): ?int
+    public function getThumbnailPath(): string
     {
-        return $this->pageCount;
+        return $this->thumbnailPath;
     }
 
-    public function getImageThumbnailPath(): ?string
+    public function getFormat(): string
     {
-        return $this->imageThumbnailPath;
+        return $this->format;
+    }
+
+    public function getWidth(): int
+    {
+        return $this->width;
+    }
+
+    public function getHeight(): int
+    {
+        return $this->height;
+    }
+
+    public function getIsVectorGraphic(): bool
+    {
+        return $this->isVectorGraphic;
+    }
+
+    public function getIsAnimated(): bool
+    {
+        return $this->isAnimated;
     }
 }

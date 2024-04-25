@@ -14,15 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Response\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
 
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 
 #[Schema(
-    title: 'Audio',
+    title: 'Archive',
     type: 'object'
 )]
-class Audio extends Asset
+class Archive extends Asset
 {
 }

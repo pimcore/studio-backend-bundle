@@ -67,9 +67,9 @@ class PimcoreStudioBackendExtension extends Extension
         $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
 
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
-        $definition->setArgument('$openApiScanPaths', $config['openApiScanPaths']);
+        $definition->setArgument('$openApiScanPaths', $config['open_api_scan_paths']);
 
         $definition = $container->getDefinition(CorsSubscriber::class);
-        $definition->setArgument('$allowedHosts', $config['allowedHostsForCors']);
+        $definition->setArgument('$allowedHosts', $config['allowed_hosts_for_cors']);
     }
 }

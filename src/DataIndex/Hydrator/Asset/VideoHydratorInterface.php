@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video as VideoItem;
-use Pimcore\Bundle\StudioBackendBundle\Response\Asset\Video;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 
 interface VideoHydratorInterface
 {

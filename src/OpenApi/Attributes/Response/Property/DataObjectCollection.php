@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Propert
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Response\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 
 /**
  * @internal

@@ -50,7 +50,7 @@ class Configuration implements ConfigurationInterface
     private function addOpenApiScanPathsNode(ArrayNodeDefinition $node): void
     {
         $node->children()
-            ->arrayNode('openApiScanPaths')
+            ->arrayNode('open_api_scan_paths')
                ->prototype('scalar')->end()
                ->validate()
                ->always(
@@ -88,7 +88,7 @@ class Configuration implements ConfigurationInterface
     private function addAllowedHostsForCorsNode(ArrayNodeDefinition $node): void
     {
         $node->children()
-            ->arrayNode('allowedHostsForCors')
+            ->arrayNode('allowed_hosts_for_cors')
                 ->prototype('scalar')->end()
                 ->validate()
                 ->always(
