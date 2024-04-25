@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;

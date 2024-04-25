@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;

@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
 final readonly class AssetHydratorService implements AssetHydratorServiceInterface
