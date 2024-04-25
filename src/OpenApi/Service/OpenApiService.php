@@ -21,8 +21,6 @@ use OpenApi\Generator;
 
 final class OpenApiService implements OpenApiServiceInterface
 {
-    private const PATH_PREFIX = __DIR__ . '/../../../../';
-
     public function __construct(private readonly array $openApiScanPaths = [])
     {
     }
