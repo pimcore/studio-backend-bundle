@@ -21,7 +21,7 @@ use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 use Pimcore\Model\DataObject\ClassDefinition;
 
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_METHOD)]
 final class ClassNameParameter extends QueryParameter
 {
     public function __construct()
