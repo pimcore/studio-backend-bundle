@@ -21,7 +21,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Refresh;
 
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_METHOD)]
 final class TokenRequestBody extends RequestBody
 {
     public function __construct()

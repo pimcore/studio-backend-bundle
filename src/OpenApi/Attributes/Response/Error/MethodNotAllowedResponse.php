@@ -22,7 +22,7 @@ use OpenApi\Attributes\Response;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schemas;
 
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_METHOD)]
 final class MethodNotAllowedResponse extends Response
 {
     public function __construct()

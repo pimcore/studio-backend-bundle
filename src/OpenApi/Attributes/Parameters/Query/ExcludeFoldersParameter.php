@@ -20,7 +20,7 @@ use Attribute;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_METHOD)]
 final class ExcludeFoldersParameter extends QueryParameter
 {
     public function __construct()
