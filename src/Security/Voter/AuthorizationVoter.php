@@ -54,7 +54,7 @@ final class AuthorizationVoter extends Voter
         if($attribute !== self::SUPPORTED_ATTRIBUTE) {
             return false;
         }
-        
+
         $authToken = $this->tokenService->getCurrentToken();
 
         if(!$this->securityService->checkAuthToken($authToken)) {
