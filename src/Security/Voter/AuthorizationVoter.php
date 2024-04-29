@@ -63,10 +63,7 @@ final class AuthorizationVoter extends Voter
         $authToken = $this->getAuthToken($request);
 
         if(!$this->securityService->checkAuthToken($authToken)) {
-            throw new NotAuthorizedException(
-                401,
-                'Full authentication is required.'
-            );
+            throw new NotAuthorizedException();
         }
 
         return true;

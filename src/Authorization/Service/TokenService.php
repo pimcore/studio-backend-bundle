@@ -37,7 +37,7 @@ final class TokenService implements TokenServiceInterface
     public function __construct(
         private readonly TokenGeneratorInterface $tokenGenerator,
         private readonly TmpStoreResolverInterface $tmpStoreResolver,
-        private RequestStack $requestStack,
+        private readonly RequestStack $requestStack,
         private readonly int $tokenLifetime,
     ) {
     }
