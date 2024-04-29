@@ -93,9 +93,10 @@ final class TokenService implements TokenServiceInterface
         );
     }
 
-    public function getCurrentToken() : string
+    public function getCurrentToken(): string
     {
         $currentRequest = $this->getCurrentRequest($this->requestStack);
+
         return $this->getAuthToken($currentRequest);
     }
 

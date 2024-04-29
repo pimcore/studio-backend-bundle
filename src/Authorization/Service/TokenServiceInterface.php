@@ -33,5 +33,5 @@ interface TokenServiceInterface
 
     public function getLifetime(): int;
 
-    public function getCurrentToken() : string;
+    public function getCurrentToken(): string;
 }
