@@ -6,7 +6,6 @@ services:
 
   #Voters
   Pimcore\Bundle\StudioBackendBundle\Security\Voter\AuthorizationVoter:
-    arguments: ['@request_stack']
     tags:
       - { name: security.voter }
 
