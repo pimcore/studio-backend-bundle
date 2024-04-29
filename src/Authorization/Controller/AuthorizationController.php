@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Refresh;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Token;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\CredentialsRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\TokenRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
@@ -36,6 +37,7 @@ use Pimcore\Security\User\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -51,6 +53,9 @@ final class AuthorizationController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws AccessDeniedException
+     */
     #[Route('/login', name: 'pimcore_studio_api_login', methods: ['POST'])]
     #[POST(
         path: self::API_PATH . '/login',
@@ -75,6 +80,9 @@ final class AuthorizationController extends AbstractApiController
         return $this->jsonResponse(new Token($token, $this->tokenService->getLifetime(), $user->getUserIdentifier()));
     }
 
+    /**
+     * @throws TokenNotFoundException
+     */
     #[Route('/refresh', name: 'pimcore_studio_api_refresh', methods: ['POST'])]
     #[POST(
         path: self::API_PATH . '/refresh',

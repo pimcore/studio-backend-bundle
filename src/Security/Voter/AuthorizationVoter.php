@@ -16,11 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NoRequestException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\RequestTrait;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -29,12 +28,10 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 final class AuthorizationVoter extends Voter
 {
-    use RequestTrait;
-
     private const SUPPORTED_ATTRIBUTE = 'STUDIO_API';
 
     public function __construct(
-        private readonly RequestStack $requestStack,
+        private readonly TokenServiceInterface $tokenService,
         private readonly SecurityServiceInterface $securityService
 
     ) {
@@ -58,15 +55,10 @@ final class AuthorizationVoter extends Voter
             return false;
         }
 
-        $request = $this->getCurrentRequest($this->requestStack);
-
-        $authToken = $this->getAuthToken($request);
+        $authToken = $this->tokenService->getCurrentToken();
 
         if(!$this->securityService->checkAuthToken($authToken)) {
-            throw new NotAuthorizedException(
-                401,
-                'Full authentication is required.'
-            );
+            throw new NotAuthorizedException();
         }
 
         return true;

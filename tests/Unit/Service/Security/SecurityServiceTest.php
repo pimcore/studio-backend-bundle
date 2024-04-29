@@ -19,11 +19,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Security;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Tool\TmpStore;
+use Pimcore\Model\User as PimcoreUser;
 use Pimcore\Security\User\User;
 use Pimcore\Security\User\UserProvider;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -90,12 +94,37 @@ final class SecurityServiceTest extends Unit
     /**
      * @throws Exception
      */
+    public function testGetCurrentUserWithInvalidToken(): void
+    {
+        $securityService = $this->mockSecurityService(false, false, false);
+
+        $this->expectException(NotAuthorizedException::class);
+        $securityService->getCurrentUser();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testGetCurrentUserWithValidToken(): void
+    {
+        $securityService = $this->mockSecurityService();
+
+        $user = $securityService->getCurrentUser();
+
+        $this->assertInstanceOf(PimcoreUser::class, $user);
+    }
+
+    /**
+     * @throws Exception
+     */
     private function mockSecurityService($validPassword = true, bool $withUser = true, bool $withTmpStore = true): SecurityServiceInterface
     {
         return new SecurityService(
             $withUser ? $this->mockUserProviderWithUser() : $this->mockUserProviderWithOutUser(),
+            $this->mockUserResolverService(),
             $this->mockPasswordHasher($validPassword),
-            $this->mockTmpStoreResolver($withTmpStore)
+            $this->mockTmpStoreResolver($withTmpStore),
+            $this->mockTokenService(),
         );
     }
 
@@ -126,6 +155,26 @@ final class SecurityServiceTest extends Unit
     /**
      * @throws Exception
      */
+    private function mockUserResolverService(): UserResolverInterface
+    {
+        return $this->makeEmpty(UserResolverInterface::class, [
+            'getByName' => new PimcoreUser(),
+        ]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function mockTokenService(): TokenServiceInterface
+    {
+        return $this->makeEmpty(TokenServiceInterface::class, [
+            'getCurrentToken' => 'test',
+        ]);
+    }
+
+    /**
+     * @throws Exception
+     */
     private function mockPasswordHasher($validPassword = true): UserPasswordHasherInterface
     {
         return $this->makeEmpty(UserPasswordHasherInterface::class, [
@@ -147,6 +196,7 @@ final class SecurityServiceTest extends Unit
     {
         $tmpStore = new TmpStore();
         $tmpStore->setId('test');
+        $tmpStore->setData(['username' => 'test']);
 
         return $tmpStore;
     }
