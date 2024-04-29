@@ -17,8 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
+use Pimcore\Model\UserInterface;
 use Pimcore\Security\User\UserProvider;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
@@ -29,30 +33,31 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
  */
 final readonly class SecurityService implements SecurityServiceInterface
 {
-    private const STATUS_CODE = 401;
-
-    private const MESSAGE = 'Bad credentials';
-
     public function __construct(
         private UserProvider $userProvider,
+        private UserResolverInterface $userResolver,
         private UserPasswordHasherInterface $passwordHasher,
-        private TmpStoreResolverInterface $tmpStoreResolver
+        private TmpStoreResolverInterface $tmpStoreResolver,
+        private TokenServiceInterface $tokenService,
     ) {
     }
 
+    /**
+     * @throws AccessDeniedException
+     */
     public function authenticateUser(Credentials $credentials): PasswordAuthenticatedUserInterface
     {
         try {
             $user = $this->userProvider->loadUserByIdentifier($credentials->getUsername());
         } catch (UserNotFoundException) {
-            throw new AccessDeniedException(self::STATUS_CODE, self::MESSAGE);
+            throw new AccessDeniedException();
         }
 
         if(
             !$user instanceof PasswordAuthenticatedUserInterface ||
             !$this->passwordHasher->isPasswordValid($user, $credentials->getPassword())
         ) {
-            throw new AccessDeniedException(self::STATUS_CODE, self::MESSAGE);
+            throw new AccessDeniedException();
         }
 
         return $user;
@@ -63,5 +68,25 @@ final readonly class SecurityService implements SecurityServiceInterface
         $entry = $this->tmpStoreResolver->get($token);
 
         return  $entry !== null && $entry->getId() === $token;
+    }
+
+    /**
+     * @throws NotAuthorizedException
+     */
+    public function getCurrentUser(): UserInterface
+    {
+        $entry = $this->tmpStoreResolver->get($this->tokenService->getCurrentToken());
+
+        if($entry === null || !is_array($entry->getData()) || !isset($entry->getData()['username'])) {
+            throw new NotAuthorizedException();
+        }
+
+        $user = $this->userResolver->getByName($entry->getData()['username']);
+
+        if(!$user) {
+            throw new NotAuthorizedException();
+        }
+
+        return $user;
     }
 }

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Info;
+use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
 
 /**
  * @internal
@@ -25,7 +26,12 @@ interface TokenServiceInterface
 {
     public function generateAndSaveToken(string $userIdentifier): string;
 
+    /**
+     * @throws TokenNotFoundException
+     */
     public function refreshToken(string $token): Info;
 
     public function getLifetime(): int;
+
+    public function getCurrentToken() : string;
 }

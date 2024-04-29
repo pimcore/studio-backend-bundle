@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Info;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\RequestTrait;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
 
@@ -26,6 +28,8 @@ use Symfony\Component\Security\Csrf\TokenGenerator\TokenGeneratorInterface;
  */
 final class TokenService implements TokenServiceInterface
 {
+    use RequestTrait;
+
     private const TMP_STORE_TAG = 'studio-backend-token-tag-user-{userId}';
 
     private const TMP_STORE_TAG_PLACEHOLDER = '{userId}';
@@ -33,6 +37,7 @@ final class TokenService implements TokenServiceInterface
     public function __construct(
         private readonly TokenGeneratorInterface $tokenGenerator,
         private readonly TmpStoreResolverInterface $tmpStoreResolver,
+        private RequestStack $requestStack,
         private readonly int $tokenLifetime,
     ) {
     }
@@ -49,6 +54,9 @@ final class TokenService implements TokenServiceInterface
         return $token;
     }
 
+    /**
+     * @throws TokenNotFoundException
+     */
     public function refreshToken(string $token): Info
     {
         $entry = $this->tmpStoreResolver->get($token);
@@ -83,6 +91,12 @@ final class TokenService implements TokenServiceInterface
             $this->getTmpStoreTag($tokenInfo->getUsername()),
             $this->tokenLifetime
         );
+    }
+
+    public function getCurrentToken() : string
+    {
+        $currentRequest = $this->getCurrentRequest($this->requestStack);
+        return $this->getAuthToken($currentRequest);
     }
 
     private function getTmpStoreTag(string $userId): string

@@ -21,4 +21,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception;
  */
 final class NotAuthorizedException extends AbstractApiException
 {
+    public function __construct()
+    {
+        parent::__construct(401, 'Full authentication is required.');
+    }
 }

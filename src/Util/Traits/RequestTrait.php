@@ -37,10 +37,7 @@ trait RequestTrait
     {
         $authToken = $request->headers->get(self::AUTHORIZATION_HEADER);
         if($authToken === null) {
-            throw new NotAuthorizedException(
-                401,
-                'Full authentication is required.'
-            );
+            throw new NotAuthorizedException();
         }
 
         return $this->removeBearerPrefix($authToken);
@@ -54,7 +51,7 @@ trait RequestTrait
         $request = $requestStack->getCurrentRequest();
 
         if(!$request) {
-            throw new NoRequestException(500, 'No request found');
+            throw new NoRequestException();
         }
 
         return $request;
