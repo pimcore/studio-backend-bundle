@@ -54,7 +54,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     /**
      * @throws Exception
      */
-    public function getAssetById(int $id): ?Asset
+    public function getAssetById(int $id): Asset
     {
         $asset = $this->searchService->byId($id);
 

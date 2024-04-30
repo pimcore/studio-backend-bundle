@@ -24,5 +24,5 @@ interface AssetSearchAdapterInterface
 {
     public function searchAssets(QueryInterface $assetQuery): AssetSearchResult;
 
-    public function getAssetById(int $id): ?Asset;
+    public function getAssetById(int $id): Asset;
 }
