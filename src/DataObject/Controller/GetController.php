@@ -14,11 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\OneOfAssetJson;
@@ -40,25 +43,25 @@ final class GetController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly AssetSearchServiceInterface $assetSearchService,
+        private readonly DataObjectSearchServiceInterface $dataObjectSearchService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/{id}', name: 'pimcore_studio_api_get_asset', methods: ['GET'])]
+    #[Route('/data-objects/{id}', name: 'pimcore_studio_api_get_data_object', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[GET(
-        path: self::API_PATH . '/assets/{id}',
-        operationId: 'getAssetById',
-        description: 'Get assets by id by path parameter',
-        summary: 'Get assets by id',
+        path: self::API_PATH . '/data-objects/{id}',
+        operationId: 'getDataObjectById',
+        description: 'Get data object by id by path parameter',
+        summary: 'Get data object by id',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::Assets->name]
+        tags: [Tags::DataObjects->name]
     )]
-    #[IdParameter(type: 'asset')]
+    #[IdParameter(type: 'data-object')]
     #[SuccessResponse(
-        description: 'One of asset types',
-        content: new OneOfAssetJson()
+        description: 'Data object response',
+        content: new JsonContent(ref: DataObject::class)
     )]
     #[UnauthorizedResponse]
     #[NotFoundResponse]
@@ -67,6 +70,6 @@ final class GetController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getAssetById(int $id): JsonResponse
     {
-        return $this->jsonResponse($this->assetSearchService->getAssetById($id));
+        return $this->jsonResponse( $this->dataObjectSearchService->getDataObjectById($id));
     }
 }

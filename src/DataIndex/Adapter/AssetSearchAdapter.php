@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 
 final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 {
@@ -55,11 +56,12 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
      */
     public function getAssetById(int $id): ?Asset
     {
-        $searchResult = $this->searchService->byId($id);
-        if ($searchResult === null) {
-            return null;
+        $asset = $this->searchService->byId($id);
+
+        if (!$asset) {
+            throw new ElementNotFoundException($id);
         }
 
-        return $this->assetHydratorService->hydrate($searchResult);
+        return $this->assetHydratorService->hydrate($asset);
     }
 }

@@ -18,11 +18,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Model\Element\ElementInterface;
 
 interface DataObjectSearchAdapterInterface
 {
     public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult;
 
-    public function getDataObjectById(int $id): ?ElementInterface;
+    public function getDataObjectById(int $id): DataObject;
 }

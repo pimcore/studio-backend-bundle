@@ -14,15 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
-use Pimcore\Model\DataObject\Concrete;
-
-interface DataObjectSearchServiceInterface
+/**
+ * @internal
+ */
+final class ElementNotFoundException extends AbstractApiException
 {
-    public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult;
-
-    public function getDataObjectById(int $id): DataObject;
+    public function __construct(int $id)
+    {
+        parent::__construct(404, 'Element with ID ' . $id . ' not found');
+    }
 }

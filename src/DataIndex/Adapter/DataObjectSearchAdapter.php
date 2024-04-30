@@ -22,6 +22,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidSearchException;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
@@ -52,12 +53,10 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
             );
         }
         $searchResult = $this->searchService->search($search);
-        $result = [];
-        foreach($searchResult->getIds() as $id) {
-            /** @var Concrete $dataObject */
-            $dataObject = $this->getDataObjectById($id);
-            $result[] = new DataObject($dataObject->getId(), $dataObject->getClassName());
-        }
+
+        $result = array_map(function($id) {
+            return $this->getDataObjectById($id);
+        }, $searchResult->getIds());
 
         return new DataObjectSearchResult(
             $result,
@@ -67,8 +66,15 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         );
     }
 
-    public function getDataObjectById(int $id): ?ElementInterface
+    public function getDataObjectById(int $id): DataObject
     {
-        return $this->serviceResolver->getElementById('object', $id);
+        /** @var Concrete $dataObject */
+        $dataObject =  $this->serviceResolver->getElementById('object', $id);
+
+        if (!$dataObject) {
+            throw new ElementNotFoundException($id);
+        }
+
+        return new DataObject($dataObject->getId(), $dataObject->getClassName());
     }
 }
