@@ -39,7 +39,7 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
         return $this->assetSearchAdapter->searchAssets($assetQuery);
     }
 
-    public function getAssetById(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video|null
+    public function getAssetById(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
     {
         return $this->assetSearchAdapter->getAssetById($id);
     }

@@ -17,11 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 
 interface DataObjectSearchServiceInterface
 {
     public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult;
 
-    public function getDataObjectById(int $id): Concrete|null;
+    public function getDataObjectById(int $id): DataObject;
 }

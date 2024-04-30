@@ -31,5 +31,5 @@ interface AssetSearchServiceInterface
 {
     public function searchAssets(QueryInterface $assetQuery): AssetSearchResult;
 
-    public function getAssetById(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video|null;
+    public function getAssetById(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video;
 }

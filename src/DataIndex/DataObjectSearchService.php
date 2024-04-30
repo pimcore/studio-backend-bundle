@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 
 final readonly class DataObjectSearchService implements DataObjectSearchServiceInterface
 {
@@ -31,8 +31,8 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
         return $this->dataObjectSearchAdapter->searchDataObjects($dataObjectQuery);
     }
 
-    public function getDataObjectById(int $id): Concrete|null
+    public function getDataObjectById(int $id): DataObject
     {
-        return null;
+        return $this->dataObjectSearchAdapter->getDataObjectById($id);
     }
 }

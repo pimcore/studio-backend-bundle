@@ -14,15 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-
-interface AssetSearchAdapterInterface
+/**
+ * @internal
+ */
+final class ElementNotFoundException extends AbstractApiException
 {
-    public function searchAssets(QueryInterface $assetQuery): AssetSearchResult;
-
-    public function getAssetById(int $id): Asset;
+    public function __construct(int $id)
+    {
+        parent::__construct(404, 'Element with ID ' . $id . ' not found');
+    }
 }
