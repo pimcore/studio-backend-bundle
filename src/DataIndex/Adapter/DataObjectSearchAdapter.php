@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidSearchException;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\Element\ElementInterface;
 
 final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterInterface
 {
@@ -54,7 +53,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         }
         $searchResult = $this->searchService->search($search);
 
-        $result = array_map(function($id) {
+        $result = array_map(function ($id) {
             return $this->getDataObjectById($id);
         }, $searchResult->getIds());
 
