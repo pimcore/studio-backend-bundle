@@ -67,7 +67,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
 
     public function getDataObjectById(int $id): DataObject
     {
-        /** @var Concrete $dataObject */
+        /** @var null|Concrete $dataObject */
         $dataObject =  $this->serviceResolver->getElementById('object', $id);
 
         if (!$dataObject) {
