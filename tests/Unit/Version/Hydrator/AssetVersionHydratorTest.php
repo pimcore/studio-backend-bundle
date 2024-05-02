@@ -27,7 +27,8 @@ use Pimcore\Model\Asset\Document;
  */
 final class AssetVersionHydratorTest extends Unit
 {
-    #[NoReturn] public function testGetHydratedVersionData(): void
+    #[NoReturn]
+    public function testGetHydratedVersionData(): void
     {
         $asset = new Document();
         $asset->setId(1);
@@ -41,5 +42,4 @@ final class AssetVersionHydratorTest extends Unit
         $this->expectExceptionMessage('Element with ID 1 was not processed yet');
         $assetVersionHydrator->hydrate($asset);
     }
-
 }
