@@ -30,8 +30,7 @@ trait ElementPermissionTrait
         ElementInterface $element,
         UserInterface $user,
         string $permission
-    ): void
-    {
+    ): void {
 
         /** @var User $user
          *  Because of isAllowed method in the core :)
@@ -42,5 +41,4 @@ trait ElementPermissionTrait
             );
         }
     }
-
 }

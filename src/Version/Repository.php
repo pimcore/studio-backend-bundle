@@ -17,12 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolver;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
@@ -38,8 +38,7 @@ final class Repository implements RepositoryInterface
 
     public function __construct(
         private readonly VersionResolver $versionResolver
-    )
-    {
+    ) {
 
     }
 
@@ -47,8 +46,7 @@ final class Repository implements RepositoryInterface
         ElementInterface $element,
         VersionParameters $parameters,
         UserInterface $user
-    ): VersionListing
-    {
+    ): VersionListing {
         $this->isAllowed($element, $user, Permissions::VERSIONS_PERMISSION);
         $limit = $parameters->getPageSize();
         $page = $parameters->getPage();
@@ -68,8 +66,7 @@ final class Repository implements RepositoryInterface
         int $elementId,
         string $elementType,
         UserInterface $user
-    ): Version
-    {
+    ): Version {
         $list = $this->getElementVersionsListing(
             $elementId,
             $elementType,
@@ -83,8 +80,7 @@ final class Repository implements RepositoryInterface
     public function getElementFromVersion(
         Version $version,
         UserInterface $user
-    ): ElementInterface
-    {
+    ): ElementInterface {
         $element = $version->getData();
         $this->isAllowed($element, $user, Permissions::VERSIONS_PERMISSION);
 
@@ -93,8 +89,7 @@ final class Repository implements RepositoryInterface
 
     public function getVersionById(
         int $id
-    ): Version
-    {
+    ): Version {
         $version = $this->versionResolver->getById($id);
         if (!$version) {
             throw new ElementNotFoundException($id);
@@ -105,19 +100,17 @@ final class Repository implements RepositoryInterface
 
     public function cleanupVersions(
         VersionCleanupParameters $parameters
-    ): array
-    {
+    ): array {
         $deletedVersions = [];
         $list = $this->getVersionListing(
             'cid = ? AND ctype = ? AND date <> ?',
             [
                 $parameters->getElementId(),
                 $parameters->getElementType(),
-                $parameters->getElementModificationDate()
+                $parameters->getElementModificationDate(),
             ]
         );
         $versions = $list->load();
-
 
         foreach ($versions as $version) {
             $deletedVersions[] = $version->getId();
@@ -131,8 +124,7 @@ final class Repository implements RepositoryInterface
         int $elementId,
         string $elementType,
         int $userId
-    ): VersionListing
-    {
+    ): VersionListing {
         return $this->getVersionListing(
             'cid = ? AND ctype = ? AND (autoSave=0 OR (autoSave=1 AND userId = ?))',
             [
@@ -146,8 +138,7 @@ final class Repository implements RepositoryInterface
     private function getVersionListing(
         string $condition,
         array $params,
-    ): VersionListing
-    {
+    ): VersionListing {
         $list = new VersionListing();
         $list->setLoadAutoSave(true);
         $list->setCondition($condition, $params)

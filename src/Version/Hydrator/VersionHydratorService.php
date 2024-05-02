@@ -41,15 +41,13 @@ final readonly class VersionHydratorService implements VersionHydratorServiceInt
         private ServiceResolverInterface $serviceResolver,
         private ServiceProviderInterface $versionHydratorLocator,
         private VersionHydratorInterface $versionHydrator,
-    )
-    {
+    ) {
     }
-    
+
     public function getHydratedVersions(
         VersionParameters $parameters,
         UserInterface $user
-    ): ListingResult
-    {
+    ): ListingResult {
         $element = $this->getElement(
             $this->serviceResolver,
             $parameters->getElementType(),
@@ -74,8 +72,7 @@ final readonly class VersionHydratorService implements VersionHydratorServiceInt
     public function getHydratedVersionData(
         int $id,
         UserInterface $user
-    ): AssetVersion|DataObjectVersion|DocumentVersion
-    {
+    ): AssetVersion|DataObjectVersion|DocumentVersion {
         $version = $this->repository->getVersionById($id);
         $element = $this->repository->getElementFromVersion($version, $user);
 
@@ -88,8 +85,7 @@ final readonly class VersionHydratorService implements VersionHydratorServiceInt
     private function hydrate(
         ElementInterface $element,
         string $class
-    ): AssetVersion|DocumentVersion|DataObjectVersion
-    {
+    ): AssetVersion|DocumentVersion|DataObjectVersion {
         if ($this->versionHydratorLocator->has($class)) {
             return $this->versionHydratorLocator->get($class)->hydrate($element);
         }

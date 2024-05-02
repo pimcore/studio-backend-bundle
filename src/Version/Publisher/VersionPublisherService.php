@@ -43,8 +43,7 @@ final class VersionPublisherService implements VersionPublisherServiceInterface
     public function publishVersion(
         int $versionId,
         UserInterface $user
-    ): int
-    {
+    ): int {
         $version = $this->repository->getVersionById($versionId);
         $element = $this->repository->getElementFromVersion(
             $version,
@@ -74,5 +73,4 @@ final class VersionPublisherService implements VersionPublisherServiceInterface
             $user
         )->getId();
     }
-
 }

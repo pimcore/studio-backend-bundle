@@ -29,8 +29,7 @@ final class AssetVersionPublisher implements AssetVersionPublisherInterface
     public function publish(
         Asset $versionAsset,
         UserInterface $user
-    ): void
-    {
+    ): void {
         try {
             $versionAsset->setUserModification($user->getId());
             $versionAsset->save();
@@ -41,5 +40,4 @@ final class AssetVersionPublisher implements AssetVersionPublisherInterface
             );
         }
     }
-
 }

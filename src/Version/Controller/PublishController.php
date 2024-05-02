@@ -71,7 +71,7 @@ final class PublishController extends AbstractApiController
         $user = $this->securityService->getCurrentUser();
 
         return $this->jsonResponse([
-            'id' => $this->publisher->publishVersion($id, $user)
+            'id' => $this->publisher->publishVersion($id, $user),
         ]);
     }
 }

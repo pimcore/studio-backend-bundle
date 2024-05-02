@@ -22,13 +22,20 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 final class Permissions
 {
     public const LIST_PERMISSION = 'list';
-    public const VIEW_PERMISSION = 'view';
-    public const PUBLISH_PERMISSION = 'publish';
-    public const DELETE_PERMISSION = 'delete';
-    public const RENAME_PERMISSION = 'rename';
-    public const CREATE_PERMISSION = 'create';
-    public const SETTINGS_PERMISSION = 'settings';
-    public const VERSIONS_PERMISSION = 'versions';
-    public const PROPERTIES_PERMISSION = 'properties';
 
+    public const VIEW_PERMISSION = 'view';
+
+    public const PUBLISH_PERMISSION = 'publish';
+
+    public const DELETE_PERMISSION = 'delete';
+
+    public const RENAME_PERMISSION = 'rename';
+
+    public const CREATE_PERMISSION = 'create';
+
+    public const SETTINGS_PERMISSION = 'settings';
+
+    public const VERSIONS_PERMISSION = 'versions';
+
+    public const PROPERTIES_PERMISSION = 'properties';
 }

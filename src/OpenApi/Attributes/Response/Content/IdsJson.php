@@ -38,7 +38,7 @@ final class IdsJson extends JsonContent
                         type: 'integer',
                         example: 420
                     ),
-                )
+                ),
             ],
             type: 'object'
         );

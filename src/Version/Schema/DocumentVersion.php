@@ -25,7 +25,6 @@ use OpenApi\Attributes\Schema;
 )]
 readonly class DocumentVersion
 {
-
     public function __construct(
         #[Property(description: 'modification date', type: 'integer', example: 1712823182)]
         private int $modificationDate,
@@ -51,5 +50,4 @@ readonly class DocumentVersion
     {
         return $this->published;
     }
-
 }

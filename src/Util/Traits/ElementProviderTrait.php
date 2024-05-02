@@ -52,8 +52,7 @@ trait ElementProviderTrait
     private function getLatestVersionForUser(
         Asset|Document|Concrete $element,
         ?UserInterface $user
-    ): ElementInterface
-    {
+    ): ElementInterface {
         // check for latest version
         $version = $element->getLatestVersion($user?->getId());
 

@@ -29,11 +29,10 @@ final class DataObjectVersionPublisher implements DataObjectVersionPublisherInte
     public function publish(
         DataObject $versionDataObject,
         UserInterface $user
-    ): void
-    {
+    ): void {
         try {
             if (!$versionDataObject instanceof DataObject\Concrete) {
-               return;
+                return;
             }
 
             $versionDataObject->setPublished(true);
@@ -46,5 +45,4 @@ final class DataObjectVersionPublisher implements DataObjectVersionPublisherInte
             );
         }
     }
-
 }

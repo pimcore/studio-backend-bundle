@@ -30,15 +30,13 @@ final readonly class DocumentVersionPublisher implements DocumentVersionPublishe
 {
     public function __construct(
         private DocumentResolverInterface $documentResolver
-    )
-    {
+    ) {
     }
 
     public function publish(
         Document $versionDocument,
         UserInterface $user
-    ): void
-    {
+    ): void {
         $currentDocument = $this->documentResolver->getById($versionDocument->getId());
         if (!$currentDocument) {
             throw new ElementNotFoundException(
@@ -59,5 +57,4 @@ final readonly class DocumentVersionPublisher implements DocumentVersionPublishe
             );
         }
     }
-
 }

@@ -27,8 +27,7 @@ final class TimestampParameter extends QueryParameter
         string $name,
         string $description,
         bool $required = true
-    )
-    {
+    ) {
         parent::__construct(
             name: $name,
             description: $description,

@@ -28,8 +28,7 @@ final class VersionHydrator implements VersionHydratorInterface
     public function hydrate(
         PimcoreVersion $version,
         array $scheduledTasks,
-    ): Version
-    {
+    ): Version {
         $user = new User();
         if ($version->getUser()) {
             $user = new User(

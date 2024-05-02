@@ -35,8 +35,7 @@ final class AssetVersionHydrator implements AssetVersionHydratorInterface
      */
     public function hydrate(
         Asset $asset
-    ): ImageVersion|AssetVersion
-    {
+    ): ImageVersion|AssetVersion {
         if ($asset instanceof Asset\Document &&
         $asset->getMimeType() === 'application/pdf') {
             $this->validatePdfStatus($asset);
@@ -110,5 +109,4 @@ final class AssetVersionHydrator implements AssetVersionHydratorInterface
             );
         }
     }
-
 }

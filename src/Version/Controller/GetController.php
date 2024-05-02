@@ -75,5 +75,4 @@ final class GetController extends AbstractApiController
             )
         );
     }
-
 }

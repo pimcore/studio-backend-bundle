@@ -27,8 +27,7 @@ final class IdParameter extends QueryParameter
         string $description,
         ?string $namePrefix = null,
         bool $required = true
-    )
-    {
+    ) {
         parent::__construct(
             name: $namePrefix ? $namePrefix . 'Id' : 'id',
             description: $description,

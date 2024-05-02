@@ -34,7 +34,7 @@ final class IdJson extends JsonContent
                     description: $description,
                     type: 'integer',
                     example: 66
-                )
+                ),
             ],
             type: 'object',
         );

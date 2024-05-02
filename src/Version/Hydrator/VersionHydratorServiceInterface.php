@@ -37,5 +37,4 @@ interface VersionHydratorServiceInterface
         int $id,
         UserInterface $user
     ): AssetVersion|DataObjectVersion|DocumentVersion;
-
 }
