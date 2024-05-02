@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Request;
 
 use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**
  * @internal
@@ -39,6 +40,10 @@ final readonly class VersionParameters extends CollectionParameters
 
     public function getElementType(): string
     {
+        if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
+            return ElementTypes::TYPE_OBJECT;
+        }
+
         return $this->elementType;
     }
 }

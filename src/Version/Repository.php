@@ -66,15 +66,20 @@ final class Repository implements RepositoryInterface
         int $elementId,
         string $elementType,
         UserInterface $user
-    ): Version {
+    ): ?Version {
         $list = $this->getElementVersionsListing(
             $elementId,
             $elementType,
             $user->getId()
         );
         $list->setLimit(1);
+        $versions = $list->load();
 
-        return $list->load()[0];
+        if (empty($versions)) {
+            return null;
+        }
+
+        return $versions[0];
     }
 
     public function getElementFromVersion(

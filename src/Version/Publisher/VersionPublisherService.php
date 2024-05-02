@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Publisher;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementPermissionTrait;
@@ -49,11 +50,12 @@ final class VersionPublisherService implements VersionPublisherServiceInterface
             $version,
             $user
         );
+        $elementId = $element->getId();
 
         $currentElement = $this->getElement(
             $this->serviceResolver,
             $element->getType(),
-            $element->getId(),
+            $elementId,
         );
 
         $this->isAllowed($currentElement, $user, Permissions::PUBLISH_PERMISSION);
@@ -67,10 +69,19 @@ final class VersionPublisherService implements VersionPublisherServiceInterface
             $user
         );
 
-        return $this->repository->getLastVersion(
-            $element->getId(),
+        $lastVersion = $this->repository->getLastVersion(
+            $elementId,
             $element->getType(),
             $user
-        )->getId();
+        );
+
+        if (!$lastVersion) {
+            throw new ElementPublishingFailedException(
+                $elementId,
+                'No last version was found'
+            );
+        }
+
+        return $lastVersion->getId();
     }
 }

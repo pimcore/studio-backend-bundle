@@ -34,11 +34,11 @@ final class ElementTypeParameter extends QueryParameter
             schema: new Schema(
                 type: 'string',
                 enum: [
-                    ElementTypes::TYPE_OBJECT,
                     ElementTypes::TYPE_ASSET,
                     ElementTypes::TYPE_DOCUMENT,
+                    ElementTypes::TYPE_DATA_OBJECT,
                 ],
-                example: ElementTypes::TYPE_OBJECT,
+                example: ElementTypes::TYPE_DATA_OBJECT,
             ),
         );
     }

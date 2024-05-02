@@ -38,7 +38,7 @@ interface RepositoryInterface
         int $elementId,
         string $elementType,
         UserInterface $user
-    ): Version;
+    ): ?Version;
 
     public function getElementFromVersion(
         Version $version,

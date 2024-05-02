@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
@@ -51,7 +52,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         }
         $searchResult = $this->searchService->search($search);
 
-        $result = array_map(static function ($item) {
+        $result = array_map(static function (DataObjectSearchResultItem $item) {
             return new DataObject($item->getId(), $item->getClassName());
         }, $searchResult->getItems());
 
