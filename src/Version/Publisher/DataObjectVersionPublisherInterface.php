@@ -14,15 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Publisher;
+
+use Pimcore\Model\DataObject;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-final class AccessDeniedException extends AbstractApiException
+interface DataObjectVersionPublisherInterface
 {
-    public function __construct(string $message = 'Bad credentials')
-    {
-        parent::__construct(401, $message);
-    }
+    public function publish(
+        DataObject $versionDataObject,
+        UserInterface $user
+    ): void;
 }

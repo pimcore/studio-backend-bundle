@@ -14,15 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 
 /**
  * @internal
  */
-final class AccessDeniedException extends AbstractApiException
+final readonly class ElementTypes
 {
-    public function __construct(string $message = 'Bad credentials')
-    {
-        parent::__construct(401, $message);
-    }
+    public const TYPE_DATA_OBJECT = 'dataObject';
+
+    public const TYPE_OBJECT = 'object';
+
+    public const TYPE_ASSET = 'asset';
+
+    public const TYPE_DOCUMENT = 'document';
 }

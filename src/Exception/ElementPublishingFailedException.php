@@ -19,10 +19,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 /**
  * @internal
  */
-final class AccessDeniedException extends AbstractApiException
+final class ElementPublishingFailedException extends AbstractApiException
 {
-    public function __construct(string $message = 'Bad credentials')
+    public function __construct(int $id, ?string $error = null)
     {
-        parent::__construct(401, $message);
+        parent::__construct(500, sprintf(
+            'Failed to publish element with ID %s: %s',
+            $id,
+            $error ?? 'Unknown error'
+        ));
     }
 }

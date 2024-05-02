@@ -62,6 +62,7 @@ class PimcoreStudioBackendExtension extends Extension
         $loader->load('security.yaml');
         $loader->load('services.yaml');
         $loader->load('translation.yaml');
+        $loader->load('versions.yaml');
 
         $definition = $container->getDefinition(TokenServiceInterface::class);
         $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);

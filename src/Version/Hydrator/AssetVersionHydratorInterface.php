@@ -14,15 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
+
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
+use Pimcore\Model\Asset;
 
 /**
  * @internal
  */
-final class AccessDeniedException extends AbstractApiException
+interface AssetVersionHydratorInterface
 {
-    public function __construct(string $message = 'Bad credentials')
-    {
-        parent::__construct(401, $message);
-    }
+    public function hydrate(
+        Asset $asset
+    ): AssetVersion;
 }

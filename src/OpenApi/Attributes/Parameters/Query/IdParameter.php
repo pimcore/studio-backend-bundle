@@ -14,23 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query;
 
 use Attribute;
-use OpenApi\Attributes\PathParameter;
+use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class IdParameter extends PathParameter
+final class IdParameter extends QueryParameter
 {
-    public function __construct(string $type = 'element')
+    public function __construct(
+        string $description,
+        ?string $namePrefix = null,
+        bool $required = true
+    )
     {
         parent::__construct(
-            name: 'id',
-            description: 'ID of the ' . $type,
-            in: 'path',
-            required: true,
-            schema: new Schema(type: 'integer', example: 83),
+            name: $namePrefix ? $namePrefix . 'Id' : 'id',
+            description: $description,
+            in: 'query',
+            required: $required,
+            schema: new Schema(type: 'integer', example: null),
         );
     }
 }

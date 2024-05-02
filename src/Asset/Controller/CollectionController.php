@@ -40,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unsuppo
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property\AnyOfAsset;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
@@ -97,7 +98,7 @@ final class CollectionController extends AbstractApiController
 
         $assetQuery = $filterService->applyFilters(
             $parameters,
-            OpenSearchFilterInterface::TYPE_ASSET
+            ElementTypes::TYPE_ASSET
         );
 
         $result = $this->assetSearchService->searchAssets($assetQuery);

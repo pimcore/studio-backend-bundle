@@ -14,23 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content;
 
-use Attribute;
-use OpenApi\Attributes\PathParameter;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Response\Schemas;
 
-#[Attribute(Attribute::TARGET_METHOD)]
-final class IdParameter extends PathParameter
+/**
+ * @internal
+ */
+final class OneOfVersionJson extends JsonContent
 {
-    public function __construct(string $type = 'element')
+    public function __construct()
     {
         parent::__construct(
-            name: 'id',
-            description: 'ID of the ' . $type,
-            in: 'path',
-            required: true,
-            schema: new Schema(type: 'integer', example: 83),
+            type: 'object',
+            oneOf: array_map(static function ($class) {
+                return new Schema(ref: $class);
+            }, Schemas::VERSIONS),
         );
     }
 }
