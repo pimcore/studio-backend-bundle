@@ -37,10 +37,15 @@ use OpenApi\Attributes\Tag;
     name: Tags::Translation->name,
     description: 'Get translations either for a single key or multiple keys'
 )]
+#[Tag(
+    name: Tags::Versions->name,
+    description: 'Versions operations to get/list/publish/delete and cleanup versions'
+)]
 enum Tags
 {
     case Assets;
     case Authorization;
     case DataObjects;
     case Translation;
+    case Versions;
 }

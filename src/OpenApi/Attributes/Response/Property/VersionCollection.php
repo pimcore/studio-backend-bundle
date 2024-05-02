@@ -14,23 +14,29 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property;
 
-use Attribute;
-use OpenApi\Attributes\PathParameter;
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Version;
 
-#[Attribute(Attribute::TARGET_METHOD)]
-final class IdParameter extends PathParameter
+/**
+ * @internal
+ */
+final class VersionCollection extends Property
 {
-    public function __construct(string $type = 'element')
+    public function __construct()
     {
         parent::__construct(
-            name: 'id',
-            description: 'ID of the ' . $type,
-            in: 'path',
-            required: true,
-            schema: new Schema(type: 'integer', example: 83),
+            'items',
+            title: 'items',
+            type: 'array',
+            items: new Items(
+                anyOf: [
+                    new Schema(ref: Version::class),
+                ]
+            )
         );
     }
 }

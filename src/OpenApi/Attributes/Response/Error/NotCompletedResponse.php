@@ -14,23 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error;
 
 use Attribute;
-use OpenApi\Attributes\PathParameter;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Response;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Response\Schemas;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class IdParameter extends PathParameter
+final class NotCompletedResponse extends Response
 {
-    public function __construct(string $type = 'element')
+    public function __construct()
     {
         parent::__construct(
-            name: 'id',
-            description: 'ID of the ' . $type,
-            in: 'path',
-            required: true,
-            schema: new Schema(type: 'integer', example: 83),
+            response: 202,
+            description: 'Content not processed',
+            content: new JsonContent(
+                oneOf: array_map(static function ($class) {
+                    return new Schema(ref: $class);
+                }, Schemas::ERRORS),
+            )
         );
     }
 }

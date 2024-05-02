@@ -1,0 +1,66 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Version\Controller\:
+    resource: '../src/Version/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Repository
+
+  Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydrator
+
+  # Hydrators
+  Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\AssetVersionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\AssetVersionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\DataObjectVersionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\DataObjectVersionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\DocumentVersionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\DocumentVersionHydrator
+
+  # Publishers
+  Pimcore\Bundle\StudioBackendBundle\Version\Publisher\AssetVersionPublisherInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Publisher\AssetVersionPublisher
+
+  Pimcore\Bundle\StudioBackendBundle\Version\Publisher\DataObjectVersionPublisherInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Publisher\DataObjectVersionPublisher
+
+  Pimcore\Bundle\StudioBackendBundle\Version\Publisher\DocumentVersionPublisherInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Publisher\DocumentVersionPublisher
+
+  # Services
+  Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorService
+    arguments:
+      $versionHydratorLocator: '@listing.version_hydrator.service_locator'
+
+  Pimcore\Bundle\StudioBackendBundle\Version\Publisher\VersionPublisherServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Publisher\VersionPublisherService
+    arguments:
+      $versionPublisherLocator: '@version.element_publisher.service_locator'
+
+  #Service Locator
+  listing.version_hydrator.service_locator:
+    class: Symfony\Component\DependencyInjection\ServiceLocator
+    tags: [ 'container.service_locator' ]
+    arguments:
+      - Pimcore\Model\Asset: '@Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\AssetVersionHydratorInterface'
+        Pimcore\Model\DataObject: '@Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\DataObjectVersionHydratorInterface'
+        Pimcore\Model\Document: '@Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\DocumentVersionHydratorInterface'
+
+  version.element_publisher.service_locator:
+    class: Symfony\Component\DependencyInjection\ServiceLocator
+    tags: [ 'container.service_locator' ]
+    arguments:
+      - Pimcore\Model\Asset: '@Pimcore\Bundle\StudioBackendBundle\Version\Publisher\AssetVersionPublisherInterface'
+        Pimcore\Model\DataObject: '@Pimcore\Bundle\StudioBackendBundle\Version\Publisher\DataObjectVersionPublisherInterface'
+        Pimcore\Model\Document: '@Pimcore\Bundle\StudioBackendBundle\Version\Publisher\DocumentVersionPublisherInterface'

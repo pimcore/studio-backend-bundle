@@ -16,21 +16,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidSearchException;
-use Pimcore\Model\DataObject\Concrete;
 
 final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterInterface
 {
     public function __construct(
-        private DataObjectSearchServiceInterface $searchService,
-        private ServiceResolver $serviceResolver
+        private DataObjectSearchServiceInterface $searchService
     ) {
     }
 
@@ -53,9 +52,9 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         }
         $searchResult = $this->searchService->search($search);
 
-        $result = array_map(function ($id) {
-            return $this->getDataObjectById($id);
-        }, $searchResult->getIds());
+        $result = array_map(static function (DataObjectSearchResultItem $item) {
+            return new DataObject($item->getId(), $item->getClassName());
+        }, $searchResult->getItems());
 
         return new DataObjectSearchResult(
             $result,
@@ -65,11 +64,12 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         );
     }
 
+    /**
+     * @throws Exception
+     */
     public function getDataObjectById(int $id): DataObject
     {
-        /** @var null|Concrete $dataObject */
-        $dataObject =  $this->serviceResolver->getElementById('object', $id);
-
+        $dataObject =  $this->searchService->byId($id);
         if (!$dataObject) {
             throw new ElementNotFoundException($id);
         }

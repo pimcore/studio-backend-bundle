@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**
  * @internal
@@ -65,9 +66,9 @@ final readonly class OpenSearchFilter implements FilterServiceInterface, OpenSea
     private function getTypeFilters(Filters $filters, string $type): array
     {
         return match($type) {
-            OpenSearchFilterInterface::TYPE_ASSET => $filters->getAssetFilters(),
-            OpenSearchFilterInterface::TYPE_DATA_OBJECT => $filters->getDataObjectFilters(),
-            OpenSearchFilterInterface::TYPE_DOCUMENT => $filters->getDocumentFilters(),
+            ElementTypes::TYPE_ASSET => $filters->getAssetFilters(),
+            ElementTypes::TYPE_DATA_OBJECT => $filters->getDataObjectFilters(),
+            ElementTypes::TYPE_DOCUMENT => $filters->getDocumentFilters(),
             default => throw new InvalidFilterTypeException(400, "Unknown filter type: $type")
         };
     }

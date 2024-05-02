@@ -19,10 +19,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 /**
  * @internal
  */
-final class AccessDeniedException extends AbstractApiException
+final class ElementProcessingNotCompletedException extends AbstractApiException
 {
-    public function __construct(string $message = 'Bad credentials')
+    public function __construct(int $id)
     {
-        parent::__construct(401, $message);
+        parent::__construct(
+            202,
+            sprintf('Element with ID %d was not processed yet', $id)
+        );
     }
 }

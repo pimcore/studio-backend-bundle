@@ -14,23 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query;
 
 use Attribute;
-use OpenApi\Attributes\PathParameter;
+use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_METHOD)]
-final class IdParameter extends PathParameter
+#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class TimestampParameter extends QueryParameter
 {
-    public function __construct(string $type = 'element')
-    {
+    public function __construct(
+        string $name,
+        string $description,
+        bool $required = true
+    ) {
         parent::__construct(
-            name: 'id',
-            description: 'ID of the ' . $type,
-            in: 'path',
-            required: true,
-            schema: new Schema(type: 'integer', example: 83),
+            name: $name,
+            description: $description,
+            in: 'query',
+            required: $required,
+            schema: new Schema(type: 'integer', example: null),
         );
     }
 }

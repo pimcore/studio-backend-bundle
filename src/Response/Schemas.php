@@ -26,6 +26,10 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schema\DevError;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schema\Error;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetType\ImageVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
 
 /**
  * @internal
@@ -41,6 +45,13 @@ final readonly class Schemas
        Text::class,
        Folder::class,
        Unknown::class,
+    ];
+
+    public const VERSIONS = [
+        AssetVersion::class,
+        ImageVersion::class,
+        DataObjectVersion::class,
+        DocumentVersion::class,
     ];
 
     public const ERRORS = [

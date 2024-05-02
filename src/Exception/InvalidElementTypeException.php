@@ -19,10 +19,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 /**
  * @internal
  */
-final class AccessDeniedException extends AbstractApiException
+final class InvalidElementTypeException extends AbstractApiException
 {
-    public function __construct(string $message = 'Bad credentials')
+    public function __construct(string $type)
     {
-        parent::__construct(401, $message);
+        parent::__construct(400, sprintf(
+            'Invalid element type: %s',
+            $type
+        ));
     }
 }

@@ -27,12 +27,6 @@ interface OpenSearchFilterInterface
 {
     public const SERVICE_TYPE = 'open_search_filter';
 
-    public const TYPE_DATA_OBJECT = 'dataObject';
-
-    public const TYPE_ASSET = 'asset';
-
-    public const TYPE_DOCUMENT = 'document';
-
     /**
      * @throws InvalidQueryTypeException
      */
