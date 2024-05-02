@@ -6,6 +6,7 @@ window.onload = function() {
     url: dataUrl,
     dom_id: '#swagger-ui',
     deepLinking: true,
+    operationsSorter: 'method',
     presets: [
       SwaggerUIBundle.presets.apis,
     ],
