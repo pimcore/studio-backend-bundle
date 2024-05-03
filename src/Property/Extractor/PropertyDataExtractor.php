@@ -39,7 +39,7 @@ final class PropertyDataExtractor implements PropertyDataExtractorInterface
         'cid',
         'ctype',
         'cpath',
-        'dao'
+        'dao',
     ];
 
     public function extractData(Property $property): array
@@ -51,11 +51,10 @@ final class PropertyDataExtractor implements PropertyDataExtractorInterface
             default => null,
         };
 
-
         return [
             ... $this->excludeProperties($property->getObjectVars()),
             ... $data,
-            ... $this->extractPredefinedPropertyData($property)
+            ... $this->extractPredefinedPropertyData($property),
         ];
     }
 
@@ -64,7 +63,8 @@ final class PropertyDataExtractor implements PropertyDataExtractorInterface
         return array_intersect_key($data->getObjectVars(), array_flip(self::ALLOWED_MODEL_PROPERTIES));
     }
 
-    private function excludeProperties(array $values): array {
+    private function excludeProperties(array $values): array
+    {
         return array_diff_key($values, array_flip(self::EXCLUDED_PROPERTIES));
     }
 

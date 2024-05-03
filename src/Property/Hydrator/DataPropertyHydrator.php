@@ -33,6 +33,7 @@ final readonly class DataPropertyHydrator implements DataPropertyHydratorInterfa
     public function hydrate(Property $property): DataProperty
     {
         $propertyData = $this->dataExtractor->extractData($property);
+
         return new DataProperty(
             $propertyData['name'],
             $propertyData['modelData'] ?? $propertyData['data'],
@@ -44,7 +45,4 @@ final readonly class DataPropertyHydrator implements DataPropertyHydratorInterfa
             $propertyData['description']
         );
     }
-
-
-
 }

@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty as PropertySchema;
 
 /**
  * @internal
@@ -30,7 +29,7 @@ final class ItemsJson extends JsonContent
     {
         parent::__construct(
             properties: [
-                new Property('items', type: 'array', items: new Items(ref:$schema))
+                new Property('items', type: 'array', items: new Items(ref:$schema)),
             ],
             type: 'object',
         );

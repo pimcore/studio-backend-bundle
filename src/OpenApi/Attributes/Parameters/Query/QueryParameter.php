@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query
 use Attribute;
 use OpenApi\Attributes\QueryParameter as OpenApiQueryParameter;
 use OpenApi\Attributes\Schema;
-use Pimcore\Model\DataObject\ClassDefinition;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class QueryParameter extends OpenApiQueryParameter
