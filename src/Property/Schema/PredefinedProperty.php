@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'Property',
+    title: 'PredefinedProperty',
     type: 'object'
 )]
 final readonly class PredefinedProperty

@@ -12,5 +12,5 @@ interface PropertyHydratorServiceInterface
      */
     public function getHydratedProperties(PropertiesParameters $parameters): array;
 
-    public function getHydratedPropertyForElement(int $id, string $type): array;
+    public function getHydratedPropertyForElement(string $elementType, int $id): array;
 }

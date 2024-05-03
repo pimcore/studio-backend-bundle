@@ -3,15 +3,20 @@
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Schema;
 
 use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
+#[Schema(
+    title: 'DataProperty',
+    type: 'object'
+)]
 final class DataProperty
 {
     public function __construct(
         #[Property(description: 'name', type: 'string', example: 'Mister Proper')]
         private string $name,
         #[Property(description: 'data', type: 'string', example: '123')]
-        private ?string $data,
-        #[Property(description: 'type', type: 'string', example: 'document')]
+        private mixed $data,
+        #[Property(description: 'type', type: 'mixed', example: 'document')]
         private string $type,
         #[Property(description: 'inheritable', type: 'boolean', example: false)]
         private bool $inheritable,
@@ -27,12 +32,14 @@ final class DataProperty
     {
     }
 
+
+
     public function getName(): string
     {
         return $this->name;
     }
 
-    public function getData(): string
+    public function getData(): mixed
     {
         return $this->data;
     }
@@ -50,5 +57,20 @@ final class DataProperty
     public function getIsInherited(): bool
     {
         return $this->inherited;
+    }
+
+    public function getConfig(): ?string
+    {
+        return $this->config;
+    }
+
+    public function getPredefinedName(): ?string
+    {
+        return $this->predefinedName;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
     }
 }

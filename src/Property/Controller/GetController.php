@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unproce
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -39,6 +40,7 @@ final class GetController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
+        private readonly PropertyHydratorServiceInterface $hydratorService,
     ) {
         parent::__construct($serializer);
     }
@@ -66,7 +68,6 @@ final class GetController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getProperties(string $elementType, int $id): JsonResponse
     {
-
-        return $this->jsonResponse([]);
+        return $this->jsonResponse($this->hydratorService->getHydratedPropertyForElement($elementType, $id));
     }
 }

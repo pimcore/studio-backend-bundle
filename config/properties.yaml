@@ -24,3 +24,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PredefinedPropertyHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PredefinedPropertyHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Property\Extractor\PropertyDataExtractorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Property\Extractor\PropertyDataExtractor

@@ -37,9 +37,11 @@ final readonly class PropertyHydratorService implements PropertyHydratorServiceI
         return $hydratedProperties;
     }
 
-    public function getHydratedPropertyForElement(int $id, string $type): array
+    public function getHydratedPropertyForElement(string $elementType, int $id): array
     {
-        $element = $this->getElement($this->serviceResolver, $type, $id);
+        $element = $this->getElement($this->serviceResolver, $elementType, $id);
+
+        $hydratedProperties = [];
 
         foreach($element->getProperties() as $property) {
             $hydratedProperties[] = $this->dataPropertyHydrator->hydrate($property);

@@ -19,6 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Hydrator;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Model\Property\Predefined;
 
+/**
+ * @internal
+ */
 final readonly class PredefinedPropertyHydrator implements PredefinedPropertyHydratorInterface
 {
     public function hydrate(Predefined $property): PredefinedProperty

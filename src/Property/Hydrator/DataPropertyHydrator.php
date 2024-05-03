@@ -16,56 +16,35 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Property\Extractor\PropertyDataExtractorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\DataProperty;
-use Pimcore\Model\Asset;
-use Pimcore\Model\DataObject\AbstractObject;
-use Pimcore\Model\Document;
 use Pimcore\Model\Property;
 
-
+/**
+ * @internal
+ */
 final readonly class DataPropertyHydrator implements DataPropertyHydratorInterface
 {
-    private const ALLOWED_MODEL_PROPERTIES = [
-        'key',
-        'filename',
-        'path',
-        'id',
-        'type',
-    ];
-
-    private const EXCLUDED_PROPERTIES = [
-        'cid',
-        'ctype',
-        'cpath',
-        'dao'
-    ];
+    public function __construct(
+        private PropertyDataExtractorInterface $dataExtractor
+    ) {
+    }
 
     public function hydrate(Property $property): DataProperty
     {
-        p_r($this->extractData($property));
-        die();
+        $propertyData = $this->dataExtractor->extractData($property);
+        return new DataProperty(
+            $propertyData['name'],
+            $propertyData['modelData'] ?? $propertyData['data'],
+            $propertyData['type'],
+            $propertyData['inheritable'],
+            $propertyData['inherited'],
+            $propertyData['config'],
+            $propertyData['predefinedName'],
+            $propertyData['description']
+        );
     }
 
-    private function extractData(Property $property): array
-    {
-        $data = match (true) {
-            $property->getData() instanceof Document ||
-            $property->getData() instanceof Asset ||
-            $property->getData() instanceof AbstractObject => $this->extractDataFromModel($property->getData()),
-            default => [],
-        };
 
-        return [... $this->excludeProperties($property->getObjectVars()), ...$data];
-
-    }
-
-    private function extractDataFromModel(Document|Asset|AbstractObject $data): array
-    {
-        return array_intersect_key($data->getObjectVars(), array_flip(self::ALLOWED_MODEL_PROPERTIES));
-    }
-
-    private function excludeProperties(array $values): array {
-        return array_diff_key($values, array_flip(self::EXCLUDED_PROPERTIES));
-    }
 
 }
