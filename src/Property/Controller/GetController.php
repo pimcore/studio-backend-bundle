@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
@@ -28,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unproce
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\DataProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -55,11 +57,11 @@ final class GetController extends AbstractApiController
         security: self::SECURITY_SCHEME,
         tags: [Tags::Properties->name]
     )]
-    #[IdParameter(type: 'element')]
     #[ElementTypeParameter]
+    #[IdParameter(type: 'element')]
     #[SuccessResponse(
-        description: 'Version data as json',
-        content: new OneOfVersionJson()
+        description: 'Element Properties data as json',
+        content: new JsonContent(ref: DataProperty::class, type: 'object')
     )]
     #[UnauthorizedResponse]
     #[NotFoundResponse]

@@ -20,6 +20,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\QueryParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\BadRequestResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
@@ -65,8 +66,9 @@ final class CollectionController extends AbstractApiController
         tags: [Tags::Properties->name]
     )]
     #[ElementTypeParameter]
+    #[QueryParameter]
     #[SuccessResponse(
-        description: 'Paginated properties with total count as header param',
+        description: 'Predefined properties based on type and query parameters',
         content: new ItemsJson(PredefinedProperty::class)
     )]
     #[BadRequestResponse]
@@ -76,6 +78,6 @@ final class CollectionController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getProperties(#[MapQueryString] PropertiesParameters $parameters): JsonResponse
     {
-        return $this->jsonResponse($this->hydratorService->getHydratedProperties($parameters));
+        return $this->jsonResponse(['items' => $this->hydratorService->getHydratedProperties($parameters)]);
     }
 }

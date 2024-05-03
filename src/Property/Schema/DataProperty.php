@@ -14,9 +14,9 @@ final class DataProperty
     public function __construct(
         #[Property(description: 'name', type: 'string', example: 'Mister Proper')]
         private string $name,
-        #[Property(description: 'data', type: 'string', example: '123')]
+        #[Property(description: 'data', type: 'mixed', example: '123')]
         private mixed $data,
-        #[Property(description: 'type', type: 'mixed', example: 'document')]
+        #[Property(description: 'type', type: 'string', example: 'document')]
         private string $type,
         #[Property(description: 'inheritable', type: 'boolean', example: false)]
         private bool $inheritable,
