@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -22,7 +23,7 @@ use OpenApi\Attributes\Schema;
     title: 'DataProperty',
     type: 'object'
 )]
-final class DataProperty
+final readonly class DataProperty
 {
     public function __construct(
         #[Property(description: 'name', type: 'string', example: 'Mister Proper')]
