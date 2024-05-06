@@ -19,11 +19,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'VersionUser',
     type: 'object'
 )]
-readonly class User
+final readonly class User
 {
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 2)]
