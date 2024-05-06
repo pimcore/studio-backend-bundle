@@ -34,6 +34,10 @@ use OpenApi\Attributes\Tag;
     description: 'DataObject operations to get/update/create/delete data objects'
 )]
 #[Tag(
+    name: Tags::Dependencies->name,
+    description: 'Get dependencies for a single element.'
+)]
+#[Tag(
     name: Tags::Translation->name,
     description: 'Get translations either for a single key or multiple keys'
 )]
@@ -46,6 +50,7 @@ enum Tags
     case Assets;
     case Authorization;
     case DataObjects;
+    case Dependencies;
     case Translation;
     case Versions;
 }

@@ -1,0 +1,27 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Controller\:
+    resource: '../src/Dependency/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Dependency\RepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Repository
+
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyHydratorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyHydratorService
+
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DataPropertyHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DataPropertyHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\PredefinedPropertyHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\PredefinedPropertyHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor\PropertyDataExtractorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor\PropertyDataExtractor
