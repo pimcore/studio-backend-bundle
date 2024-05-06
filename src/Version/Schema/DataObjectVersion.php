@@ -19,11 +19,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'DataObjectVersion',
     type: 'object'
 )]
-readonly class DataObjectVersion
+final readonly class DataObjectVersion
 {
     public function __construct(
         #[Property(description: 'modification date', type: 'integer', example: 1712823182)]
