@@ -32,6 +32,7 @@ final class CustomSettingsHydratorTest extends Unit
     {
         $this->hydrator = new CustomSettingsHydrator();
     }
+
     public function testHydrateEmpty(): void
     {
         $fixedCustomSettings = new FixedCustomSettings();
@@ -48,25 +49,25 @@ final class CustomSettingsHydratorTest extends Unit
         $assetCustomSettings = [
             'embeddedMetaData' => [
                 'FileSize' => '6.9 MB',
-                'FileType' => 'PNG'
+                'FileType' => 'PNG',
             ],
             'embeddedMetaDataExtracted' => true,
             'imageDimensionsCalculated' => true,
             'imageWidth' => 932,
-            'imageHeight' => 327
+            'imageHeight' => 327,
         ];
 
         $hydratedCustomSettings = $this->hydrator->hydrate($assetCustomSettings);
 
         $this->assertEquals([
             'FileSize' => '6.9 MB',
-            'FileType' => 'PNG'
+            'FileType' => 'PNG',
         ], $hydratedCustomSettings->getFixedCustomSettings()->getEmbeddedMetaData());
         $this->assertTrue($hydratedCustomSettings->getFixedCustomSettings()->isEmbeddedMetaDataExtracted());
         $this->assertEquals([
             'imageDimensionsCalculated' => true,
             'imageWidth' => 932,
-            'imageHeight' => 327
+            'imageHeight' => 327,
         ], $hydratedCustomSettings->getDynamicCustomSettings());
     }
 }

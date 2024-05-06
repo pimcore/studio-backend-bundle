@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
 
-
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -44,8 +43,7 @@ final readonly class FixedCustomSettings
             example: true
         )]
         private bool $embeddedMetaDataExtracted = false,
-    )
-    {
+    ) {
     }
 
     public function getEmbeddedMetaData(): array

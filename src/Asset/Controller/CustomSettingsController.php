@@ -67,7 +67,7 @@ final class CustomSettingsController extends AbstractApiController
                     'customSettings',
                     ref: CustomSettings::class,
                     type: 'object'
-                )
+                ),
             ]
         )
     )]

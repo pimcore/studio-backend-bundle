@@ -44,7 +44,7 @@ final readonly class CustomSettings
             example: '{ imageWidth: 1280, imageHeight: 720 }')
         ]
         private array $dynamicCustomSettings = [],
-    ){
+    ) {
 
     }
 

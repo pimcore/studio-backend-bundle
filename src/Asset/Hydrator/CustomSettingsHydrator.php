@@ -25,10 +25,12 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings\FixedCustomSe
 final class CustomSettingsHydrator implements CustomSettingsHydratorInterface
 {
     private const METADATA_KEY = 'embeddedMetaData';
+
     private const METADATA_EXTRACTED_KEY = 'embeddedMetaDataExtracted';
+
     private const FIXED_CUSTOM_SETTINGS_KEYS = [
         self::METADATA_KEY,
-        self::METADATA_EXTRACTED_KEY
+        self::METADATA_EXTRACTED_KEY,
     ];
 
     public function hydrate(array $customSettings): CustomSettings
@@ -48,8 +50,7 @@ final class CustomSettingsHydrator implements CustomSettingsHydratorInterface
 
     private function getFixedCustomSettings(
         array $customSettings
-    ): FixedCustomSettings
-    {
+    ): FixedCustomSettings {
         $embeddedMetadata = $customSettings[self::METADATA_KEY] ?? [];
         $extracted = $customSettings[self::METADATA_EXTRACTED_KEY] ?? false;
 
