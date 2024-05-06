@@ -21,11 +21,14 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'ImageVersion',
     type: 'object'
 )]
-readonly class ImageVersion extends AssetVersion
+final readonly class ImageVersion extends AssetVersion
 {
     public function __construct(
         string $fileName,
