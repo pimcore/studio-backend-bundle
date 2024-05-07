@@ -52,9 +52,9 @@ final class PutController extends AbstractApiController
     /**
      * @throws PropertyNotFoundException
      */
-    #[Route('/property/{id}', name: 'pimcore_studio_api_update_property', methods: ['PUT'])]
+    #[Route('/properties/{id}', name: 'pimcore_studio_api_update_property', methods: ['PUT'])]
     #[Put(
-        path: self::API_PATH . '/property/{id}',
+        path: self::API_PATH . '/properties/{id}',
         operationId: 'updateProperty',
         summary: 'Updating a property',
         security: self::SECURITY_SCHEME,
