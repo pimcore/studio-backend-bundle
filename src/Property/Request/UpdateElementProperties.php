@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Request;
 
-
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdateElementProperty;
 
 /**
@@ -25,10 +24,11 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdateElementProperty;
 final readonly class UpdateElementProperties
 {
     private array $properties;
+
     public function __construct(
-       array $items
+        array $items
     ) {
-        $this->properties = array_map(static function(array $propertyData) {
+        $this->properties = array_map(static function (array $propertyData) {
             return new UpdateElementProperty(
                 $propertyData['key'],
                 $propertyData['data'],

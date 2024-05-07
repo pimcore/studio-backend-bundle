@@ -76,9 +76,9 @@ final class PutController extends AbstractApiController
         string $elementType,
         int $id,
         #[MapRequestPayload] UpdateElementProperties $items
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->propertyService->updateElementProperties($elementType, $id, $items);
+
         return $this->jsonResponse($this->hydratorService->getHydratedPropertyForElement($elementType, $id));
     }
 }

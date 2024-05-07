@@ -35,7 +35,7 @@ final readonly class PropertyService implements PropertyServiceInterface
     public function __construct(
         private RepositoryInterface $repository,
         private ServiceResolver $serviceResolver,
-    ){
+    ) {
     }
 
     /**
@@ -69,6 +69,4 @@ final readonly class PropertyService implements PropertyServiceInterface
     {
         $this->repository->deletePredefinedProperty($id);
     }
-
-
 }
