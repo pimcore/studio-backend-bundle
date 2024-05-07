@@ -137,8 +137,6 @@ final class SecurityServiceTest extends Unit
         );
     }
 
-
-
     /**
      * @throws Exception
      */
@@ -147,8 +145,7 @@ final class SecurityServiceTest extends Unit
         bool $withUser = true,
         bool $withTmpStore = true,
         bool $hasPermission = true
-    ): SecurityServiceInterface
-    {
+    ): SecurityServiceInterface {
         return new SecurityService(
             $this->mockElementPermissionService($hasPermission),
             $withUser ? $this->mockUserProviderWithUser() : $this->mockUserProviderWithOutUser(),
