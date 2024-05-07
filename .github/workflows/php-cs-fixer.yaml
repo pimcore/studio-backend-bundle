@@ -19,3 +19,4 @@ jobs:
         uses: pimcore/workflows-collection-public/.github/workflows/reusable-php-style.yaml@main
         with:
             head_ref: ${{ github.ref }}
+            config_file: .php-cs-fixer.dist.php
