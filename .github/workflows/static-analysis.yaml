@@ -19,7 +19,7 @@ on:
 
 jobs:
   static-analysis:
-    uses: pimcore/workflows-collection-public/.github/workflows/reusable-static-analysis.yaml@main
+    uses: pimcore/workflows-collection-public/.github/workflows/reusable-static-analysis-8-2-only.yaml@main
     secrets:
       COMPOSER_PIMCORE_REPO_PACKAGIST_TOKEN: ${{ secrets.COMPOSER_PIMCORE_REPO_PACKAGIST_TOKEN }}
       SSH_PRIVATE_KEY_PIMCORE_DEPLOYMENTS_USER: ${{ secrets.SSH_PRIVATE_KEY_PIMCORE_DEPLOYMENTS_USER }}
