@@ -68,6 +68,6 @@ final class GetController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getDependenciesByElementId(string $elementType, int $id): JsonResponse
     {
-        return $this->jsonResponse($this->hydratorService->get($elementType, $id));
+        return $this->jsonResponse($this->hydratorService->getHydratedDependenciesForElement($elementType, $id));
     }
 }
