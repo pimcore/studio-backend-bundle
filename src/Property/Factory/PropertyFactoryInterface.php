@@ -16,7 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Factory;
 
+use Pimcore\Model\Property\Predefined;
+
 interface PropertyFactoryInterface
 {
-    public function create();
+    public function create(): Predefined;
 }
