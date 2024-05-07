@@ -75,7 +75,9 @@ final class CollectionController extends AbstractApiController
     #[MethodNotAllowedResponse]
     #[UnsupportedMediaTypeResponse]
     #[UnprocessableContentResponse]
-    public function getProperties(#[MapQueryString] PropertiesParameters $parameters = new PropertiesParameters()): JsonResponse
+    public function getProperties(
+        #[MapQueryString] PropertiesParameters $parameters = new PropertiesParameters()
+    ): JsonResponse
     {
         return $this->jsonResponse(['items' => $this->hydratorService->getHydratedProperties($parameters)]);
     }
