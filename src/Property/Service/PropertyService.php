@@ -56,7 +56,7 @@ final readonly class PropertyService implements PropertyServiceInterface
             $property->setName($updateProperty->getKey());
             $property->setData($updateProperty->getData());
             $property->setInheritable($updateProperty->getInheritable());
-            $properties[] = $property;
+            $properties[$updateProperty->getKey()] = $property;
         }
         $element->setProperties($properties);
         $element->save();

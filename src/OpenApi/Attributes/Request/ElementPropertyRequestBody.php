@@ -17,9 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request;
 
 use Attribute;
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdateElementProperty;
 
 #[Attribute(Attribute::TARGET_METHOD)]
@@ -29,10 +28,7 @@ final class ElementPropertyRequestBody extends RequestBody
     {
         parent::__construct(
             required: true,
-            content: new JsonContent(
-                type: 'array',
-                items: new Items(ref: UpdateElementProperty::class)
-            )
+            content: new ItemsJson(UpdateElementProperty::class)
         );
     }
 }

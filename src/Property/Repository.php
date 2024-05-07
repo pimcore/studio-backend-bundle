@@ -73,7 +73,7 @@ final readonly class Repository implements RepositoryInterface
         $predefined->setData($property->getData());
         $predefined->setConfig($property->getConfig());
         $predefined->setCtype($property->getCtype());
-        $predefined->setInheritable($property->getInheritable());
+        $predefined->setInheritable($property->isInheritable());
 
         $predefined->save();
 
