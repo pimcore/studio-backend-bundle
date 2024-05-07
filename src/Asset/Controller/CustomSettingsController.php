@@ -19,10 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
@@ -31,6 +31,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unproce
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -41,9 +43,12 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class CustomSettingsController extends AbstractApiController
 {
+    use ElementProviderTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly CustomSettingsHydratorInterface $hydrator,
+        private readonly ServiceResolverInterface $serviceResolver
     ) {
         parent::__construct($serializer);
     }
@@ -78,10 +83,8 @@ final class CustomSettingsController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getAssetCustomSettingsById(int $id): JsonResponse
     {
-        $asset = Asset::getById($id);
-        if (!$asset instanceof Asset) {
-            throw new ElementNotFoundException($id);
-        }
+        /** @var Asset $asset */
+        $asset = $this->getElement($this->serviceResolver, ElementTypes::TYPE_ASSET, $id);
 
         return $this->jsonResponse(
             $this->hydrator->hydrate($asset->getCustomSettings())
