@@ -95,19 +95,19 @@ class Configuration implements ConfigurationInterface
 /**
  * @throws InvalidHostException
  */ function ($hosts) {
-                        foreach ($hosts as $host) {
-                            if (!filter_var($host)) {
-                                throw new InvalidHostException(
+    foreach ($hosts as $host) {
+        if (!filter_var($host)) {
+            throw new InvalidHostException(
                                     sprintf(
                                         'The host "%s" is not a valid url.',
                                         $host
                                     )
                                 );
-                            }
-                        }
+        }
+    }
 
-                        return $hosts;
-                    })
+    return $hosts;
+})
                 ->end()
             ->end();
     }
