@@ -32,7 +32,9 @@ final readonly class PredefinedPropertyHydrator implements PredefinedPropertyHyd
             $property->getDescription(),
             $property->getKey(),
             $property->getType(),
+            $property->getData(),
             $property->getConfig(),
+            $property->getCtype(),
             $property->getInheritable(),
             $property->getCreationDate(),
             $property->getModificationDate()

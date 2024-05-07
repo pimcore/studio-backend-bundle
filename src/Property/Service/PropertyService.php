@@ -14,21 +14,30 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
+use Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Model\Property\Predefined;
-use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
 
 /**
  * @internal
  */
-interface RepositoryInterface
+final readonly class PropertyService implements PropertyServiceInterface
 {
-    public function listProperties(PropertiesParameters $parameters): PropertiesListing;
+    public function __construct(private RepositoryInterface $repository)
+    {
 
-    public function updatePredefinedProperty(UpdatePredefinedProperty $property): Predefined;
+    }
 
-    public function deletePredefinedProperty(string $id): void;
+
+    public function updatePredefinedProperty(UpdatePredefinedProperty $property): Predefined
+    {
+        return $this->repository->updatePredefinedProperty($property);
+    }
+
+    public function deletePredefinedProperty(string $id): void
+    {
+        $this->repository->deletePredefinedProperty($id);
+    }
 }

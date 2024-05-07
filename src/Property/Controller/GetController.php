@@ -17,10 +17,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
@@ -48,11 +48,10 @@ final class GetController extends AbstractApiController
 
     #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_get_properties', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
-    #[GET(
+    #[Get(
         path: self::API_PATH . '/properties/{elementType}/{id}',
         operationId: 'getPropertiesByTypeAndId',
-        description: 'Get properties based on the type and the id',
-        summary: 'Get properties by type and ID',
+        summary: 'Get properties for an element based on the element type and the element id',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Properties->name]
     )]
@@ -60,7 +59,7 @@ final class GetController extends AbstractApiController
     #[IdParameter(type: 'element')]
     #[SuccessResponse(
         description: 'Element Properties data as json',
-        content: new JsonContent(ref: DataProperty::class, type: 'object')
+        content: new ItemsJson(DataProperty::class)
     )]
     #[UnauthorizedResponse]
     #[NotFoundResponse]

@@ -16,18 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Model\Property\Predefined;
 
-interface PropertyHydratorServiceInterface
+/**
+ * @internal
+ */
+interface PropertyServiceInterface
 {
-    /**
-     * @return PredefinedProperty[]
-     */
-    public function getHydratedProperties(PropertiesParameters $parameters): array;
-
-    public function getHydratedPropertyForElement(string $elementType, int $id): array;
-
-    public function getHydratedPredefinedProperty(Predefined $predefined): PredefinedProperty;
+    public function updatePredefinedProperty(UpdatePredefinedProperty $property): Predefined;
+    public function deletePredefinedProperty(string $id): void;
 }

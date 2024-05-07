@@ -19,6 +19,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorService
 
+  Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyService
+
   Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\DataPropertyHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\DataPropertyHydrator
 
@@ -27,3 +30,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Property\Extractor\PropertyDataExtractorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Extractor\PropertyDataExtractor
+
+  Pimcore\Bundle\StudioBackendBundle\Property\Factory\PropertyFactoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Property\Factory\PropertyFactory
+
+

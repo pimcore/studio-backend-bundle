@@ -16,7 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -35,19 +37,54 @@ final readonly class Repository implements RepositoryInterface
     {
         $list = new PropertiesListing();
         $type = $parameters->getElementType();
-        $query = $parameters->getQuery();
+        $filter = $parameters->getFilter();
         $translator = $this->translator;
-        $list->setFilter(static function (Predefined $predefined) use ($type, $query, $translator) {
-            if (!str_contains($predefined->getCtype(), $type)) {
+
+        $list->setFilter(static function (Predefined $predefined) use ($type, $filter, $translator) {
+
+            if ($type && !str_contains($predefined->getCtype(), $type)) {
                 return false;
             }
-            if ($query && stripos($translator->trans($predefined->getName(), [], 'admin'), $query) === false) {
+            if ($filter && stripos($translator->trans($predefined->getName(), [], 'admin'), $filter) === false) {
                 return false;
             }
 
             return true;
         });
-
+        
         return $list;
+    }
+
+    public function updatePredefinedProperty(UpdatePredefinedProperty $property): Predefined
+    {
+        $predefined = Predefined::getById($property->getId());
+
+        if (!$predefined) {
+            throw new PropertyNotFoundException($property->getId());
+        }
+
+        $predefined->setName($property->getName());
+        $predefined->setDescription($property->getDescription());
+        $predefined->setKey($property->getKey());
+        $predefined->setType($property->getType());
+        $predefined->setData($property->getData());
+        $predefined->setConfig($property->getConfig());
+        $predefined->setCtype($property->getCtype());
+        $predefined->setInheritable($property->getInheritable());
+
+        $predefined->save();
+
+        return $predefined;
+    }
+
+    public function deletePredefinedProperty(string $id): void
+    {
+        $predefined = Predefined::getById($id);
+
+        if (!$predefined) {
+            throw new PropertyNotFoundException($id);
+        }
+
+        $predefined->delete();
     }
 }

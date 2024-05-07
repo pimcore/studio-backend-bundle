@@ -14,23 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request;
 
 use Attribute;
-use OpenApi\Attributes\QueryParameter as OpenApiQueryParameter;
-use OpenApi\Attributes\Schema;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class QueryParameter extends OpenApiQueryParameter
+final class PropertyRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
-            name: 'query',
-            description: 'Query for properties',
-            in: 'query',
-            required: false,
-            schema: new Schema(type: 'string', example: null),
+            required: true,
+            content: new JsonContent(ref: UpdatePredefinedProperty::class)
         );
     }
 }

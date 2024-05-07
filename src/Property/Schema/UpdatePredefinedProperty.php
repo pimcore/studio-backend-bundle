@@ -23,10 +23,10 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'PredefinedProperty',
+    title: 'UpdatePredefinedProperty',
     type: 'object'
 )]
-final readonly class PredefinedProperty
+final readonly class UpdatePredefinedProperty
 {
     public function __construct(
         #[Property(description: 'id', type: 'string', example: 'alpha-numerical-value')]
@@ -45,12 +45,8 @@ final readonly class PredefinedProperty
         private ?string $config,
         #[Property(description: 'ctype', type: 'string', example: 'document')]
         private string $ctype,
-        #[Property(description: 'inheritable', type: 'boolean', example: false)]
+        #[Property(description: 'inheritable', type: 'bool', example: false)]
         private bool $inheritable,
-        #[Property(description: 'Creation date', type: 'integer', example: 221846400)]
-        private int $creationDate,
-        #[Property(description: 'Modification date', type: 'integer', example: 327417600)]
-        private int $modificationDate,
     ) {
     }
 
@@ -97,15 +93,5 @@ final readonly class PredefinedProperty
     public function getInheritable(): bool
     {
         return $this->inheritable;
-    }
-
-    public function getCreationDate(): int
-    {
-        return $this->creationDate;
-    }
-
-    public function getModificationDate(): int
-    {
-        return $this->modificationDate;
     }
 }

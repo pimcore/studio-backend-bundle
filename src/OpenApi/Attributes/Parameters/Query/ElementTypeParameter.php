@@ -24,13 +24,13 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ElementTypeParameter extends QueryParameter
 {
-    public function __construct()
+    public function __construct(bool $required = true, ?string $example = ElementTypes::TYPE_DATA_OBJECT)
     {
         parent::__construct(
             name: 'elementType',
             description: 'Filter elements by matching element type.',
             in: 'query',
-            required: true,
+            required: $required,
             schema: new Schema(
                 type: 'string',
                 enum: [
@@ -38,7 +38,7 @@ final class ElementTypeParameter extends QueryParameter
                     ElementTypes::TYPE_DOCUMENT,
                     ElementTypes::TYPE_DATA_OBJECT,
                 ],
-                example: ElementTypes::TYPE_DATA_OBJECT,
+                example: $example,
             ),
         );
     }

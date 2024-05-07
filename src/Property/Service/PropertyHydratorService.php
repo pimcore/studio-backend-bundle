@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Model\Property\Predefined;
 
 final readonly class PropertyHydratorService implements PropertyHydratorServiceInterface
 {
@@ -32,7 +33,7 @@ final readonly class PropertyHydratorService implements PropertyHydratorServiceI
         private RepositoryInterface $repository,
         private ServiceResolver $serviceResolver,
         private DataPropertyHydratorInterface $dataPropertyHydrator,
-        private PredefinedPropertyHydratorInterface $propertyHydrator,
+        private PredefinedPropertyHydratorInterface $predefinedPropertyHydrator,
     ) {
     }
 
@@ -44,7 +45,7 @@ final readonly class PropertyHydratorService implements PropertyHydratorServiceI
         $properties = $this->repository->listProperties($parameters);
         $hydratedProperties = [];
         foreach ($properties->load() as $property) {
-            $hydratedProperties[] = $this->propertyHydrator->hydrate($property);
+            $hydratedProperties[] = $this->predefinedPropertyHydrator->hydrate($property);
         }
 
         return $hydratedProperties;
@@ -60,6 +61,11 @@ final readonly class PropertyHydratorService implements PropertyHydratorServiceI
             $hydratedProperties[] = $this->dataPropertyHydrator->hydrate($property);
         }
 
-        return $hydratedProperties;
+        return ['items' => $hydratedProperties];
+    }
+
+    public function getHydratedPredefinedProperty(Predefined $predefined): PredefinedProperty
+    {
+       return $this->predefinedPropertyHydrator->hydrate($predefined);
     }
 }

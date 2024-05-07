@@ -24,18 +24,18 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 final readonly class PropertiesParameters
 {
     public function __construct(
-        private string $elementType,
-        private ?string $query = null
+        private ?string $elementType = null,
+        private ?string $filter = null
 
     ) {
     }
 
-    public function getQuery(): ?string
+    public function getFilter(): ?string
     {
-        return $this->query;
+        return $this->filter;
     }
 
-    public function getElementType(): string
+    public function getElementType(): ?string
     {
         if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
             return ElementTypes::TYPE_OBJECT;

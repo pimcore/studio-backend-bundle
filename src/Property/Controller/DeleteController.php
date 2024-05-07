@@ -16,67 +16,58 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Delete;
+use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementTypeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\ItemsJson;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\BadRequestResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
-use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\DataProperty;
+use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class DeleteController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
+        private readonly PropertyServiceInterface $propertyService,
         SerializerInterface $serializer,
-        private readonly PropertyHydratorServiceInterface $hydratorService,
     ) {
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws InvalidQueryTypeException
-     */
-    #[Route('/properties', name: 'pimcore_studio_api_properties', methods: ['GET'])]
+    #[Route('/properties/{id}', name: 'pimcore_studio_api_delete_properties', methods: ['DELETE'])]
     //#[IsGranted('STUDIO_API')]
-    #[Get(
-        path: self::API_PATH . '/properties',
-        operationId: 'getProperties',
-        summary: 'Get all predefined properties. You can filter by type and query',
+    #[Delete(
+        path: self::API_PATH . '/properties/{id}',
+        operationId: 'deleteProperty',
+        summary: 'Delete property with given id',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Properties->name]
     )]
-    #[ElementTypeParameter(false, null)]
-    #[FilterParameter]
+    #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]
     #[SuccessResponse(
-        description: 'Predefined properties filtered based on type and query parameters',
-        content: new ItemsJson(PredefinedProperty::class)
+        description: 'Element Properties data as json',
+        content: new ItemsJson(DataProperty::class)
     )]
-    #[BadRequestResponse]
     #[UnauthorizedResponse]
+    #[NotFoundResponse]
     #[MethodNotAllowedResponse]
     #[UnsupportedMediaTypeResponse]
     #[UnprocessableContentResponse]
-    public function getProperties(#[MapQueryString] PropertiesParameters $parameters = new PropertiesParameters()): JsonResponse
+    public function deleteProperty(string $id): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->hydratorService->getHydratedProperties($parameters)]);
+        $this->propertyService->deletePredefinedProperty($id);
+        return $this->jsonResponse(['id' => $id]);
     }
 }

@@ -16,12 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementTypeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\BadRequestResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
@@ -29,54 +26,44 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unproce
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
+use Pimcore\Bundle\StudioBackendBundle\Property\Factory\PropertyFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * @internal
- */
-final class CollectionController extends AbstractApiController
+final class CreateController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         SerializerInterface $serializer,
+        private readonly PropertyFactoryInterface $propertyFactory,
         private readonly PropertyHydratorServiceInterface $hydratorService,
-    ) {
+    )
+    {
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws InvalidQueryTypeException
-     */
-    #[Route('/properties', name: 'pimcore_studio_api_properties', methods: ['GET'])]
-    //#[IsGranted('STUDIO_API')]
-    #[Get(
-        path: self::API_PATH . '/properties',
-        operationId: 'getProperties',
-        summary: 'Get all predefined properties. You can filter by type and query',
+    #[Route('/property', name: 'pimcore_studio_api_create_property', methods: ['POST'])]
+    #[POST(
+        path: self::API_PATH . '/property',
+        operationId: 'createProperty',
+        summary: 'Creating new property with default values',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Properties->name]
     )]
-    #[ElementTypeParameter(false, null)]
-    #[FilterParameter]
     #[SuccessResponse(
-        description: 'Predefined properties filtered based on type and query parameters',
-        content: new ItemsJson(PredefinedProperty::class)
+        description: 'Element Properties data as json',
+        content: new JsonContent(ref: PredefinedProperty::class, type: 'object')
     )]
     #[BadRequestResponse]
     #[UnauthorizedResponse]
     #[MethodNotAllowedResponse]
     #[UnsupportedMediaTypeResponse]
     #[UnprocessableContentResponse]
-    public function getProperties(#[MapQueryString] PropertiesParameters $parameters = new PropertiesParameters()): JsonResponse
+    public function createProperty(): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->hydratorService->getHydratedProperties($parameters)]);
+        $property = $this->propertyFactory->create();
+        return $this->jsonResponse($this->hydratorService->getHydratedPredefinedProperty($property));
     }
 }
