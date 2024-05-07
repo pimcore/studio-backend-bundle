@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\BadRequestResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
@@ -43,6 +44,9 @@ final class CreateController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws NotWriteableException
+     */
     #[Route('/property', name: 'pimcore_studio_api_create_property', methods: ['POST'])]
     #[POST(
         path: self::API_PATH . '/property',

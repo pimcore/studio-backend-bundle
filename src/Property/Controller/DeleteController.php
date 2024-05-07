@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
@@ -45,6 +46,9 @@ final class DeleteController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws PropertyNotFoundException
+     */
     #[Route('/properties/{id}', name: 'pimcore_studio_api_delete_properties', methods: ['DELETE'])]
     //#[IsGranted('STUDIO_API')]
     #[Delete(

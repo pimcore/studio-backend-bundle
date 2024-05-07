@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Model\Property\Predefined;
@@ -30,11 +31,17 @@ final readonly class PropertyService implements PropertyServiceInterface
 
     }
 
+    /**
+     * @throws PropertyNotFoundException
+     */
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined
     {
         return $this->repository->updatePredefinedProperty($id, $property);
     }
 
+    /**
+     * @throws PropertyNotFoundException
+     */
     public function deletePredefinedProperty(string $id): void
     {
         $this->repository->deletePredefinedProperty($id);

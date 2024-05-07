@@ -16,9 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Factory;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Model\Property\Predefined;
 
 interface PropertyFactoryInterface
 {
+    /**
+     * @throws NotWriteableException
+     */
     public function create(): Predefined;
 }

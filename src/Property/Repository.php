@@ -55,6 +55,9 @@ final readonly class Repository implements RepositoryInterface
         return $list;
     }
 
+    /**
+     * @throws PropertyNotFoundException
+     */
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined
     {
         $predefined = Predefined::getById($id);
@@ -77,6 +80,9 @@ final readonly class Repository implements RepositoryInterface
         return $predefined;
     }
 
+    /**
+     * @throws PropertyNotFoundException
+     */
     public function deletePredefinedProperty(string $id): void
     {
         $predefined = Predefined::getById($id);

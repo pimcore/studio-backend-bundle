@@ -20,6 +20,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\PropertyRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\BadRequestResponse;
@@ -48,6 +49,9 @@ final class PutController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws PropertyNotFoundException
+     */
     #[Route('/property/{id}', name: 'pimcore_studio_api_update_property', methods: ['PUT'])]
     #[Put(
         path: self::API_PATH . '/property/{id}',
