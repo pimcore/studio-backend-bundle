@@ -42,8 +42,7 @@ final class PutController extends AbstractApiController
         SerializerInterface $serializer,
         private readonly PropertyServiceInterface $propertyService,
         private readonly PropertyHydratorServiceInterface $hydratorService,
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -68,6 +67,7 @@ final class PutController extends AbstractApiController
     public function updateProperty(#[MapRequestPayload] UpdatePredefinedProperty $updatePredefinedProperty): JsonResponse
     {
         $property = $this->propertyService->updatePredefinedProperty($updatePredefinedProperty);
+
         return $this->jsonResponse($this->hydratorService->getHydratedPredefinedProperty($property));
     }
 }

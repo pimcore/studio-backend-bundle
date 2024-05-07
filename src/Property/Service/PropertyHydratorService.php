@@ -66,6 +66,6 @@ final readonly class PropertyHydratorService implements PropertyHydratorServiceI
 
     public function getHydratedPredefinedProperty(Predefined $predefined): PredefinedProperty
     {
-       return $this->predefinedPropertyHydrator->hydrate($predefined);
+        return $this->predefinedPropertyHydrator->hydrate($predefined);
     }
 }

@@ -51,7 +51,7 @@ final readonly class Repository implements RepositoryInterface
 
             return true;
         });
-        
+
         return $list;
     }
 

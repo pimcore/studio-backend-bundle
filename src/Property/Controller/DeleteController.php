@@ -68,6 +68,7 @@ final class DeleteController extends AbstractApiController
     public function deleteProperty(string $id): JsonResponse
     {
         $this->propertyService->deletePredefinedProperty($id);
+
         return $this->jsonResponse(['id' => $id]);
     }
 }

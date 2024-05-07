@@ -14,17 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Factory;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property\Predefined;
 
 final class PropertyFactory implements PropertyFactoryInterface
 {
-
     /**
      * @throws NotWriteableException
      */

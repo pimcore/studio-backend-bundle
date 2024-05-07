@@ -39,8 +39,7 @@ final class CreateController extends AbstractApiController
         SerializerInterface $serializer,
         private readonly PropertyFactoryInterface $propertyFactory,
         private readonly PropertyHydratorServiceInterface $hydratorService,
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -64,6 +63,7 @@ final class CreateController extends AbstractApiController
     public function createProperty(): JsonResponse
     {
         $property = $this->propertyFactory->create();
+
         return $this->jsonResponse($this->hydratorService->getHydratedPredefinedProperty($property));
     }
 }

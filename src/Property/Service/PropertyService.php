@@ -30,7 +30,6 @@ final readonly class PropertyService implements PropertyServiceInterface
 
     }
 
-
     public function updatePredefinedProperty(UpdatePredefinedProperty $property): Predefined
     {
         return $this->repository->updatePredefinedProperty($property);
