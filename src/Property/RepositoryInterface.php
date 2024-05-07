@@ -16,8 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
+use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
+use Pimcore\Model\Element\DuplicateFullPathException;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
 
@@ -29,6 +33,15 @@ interface RepositoryInterface
     public function listProperties(PropertiesParameters $parameters): PropertiesListing;
 
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined;
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function updateElementProperties(
+        string $elementType,
+        int $id,
+        UpdateElementProperties $items
+    ): void;
 
     public function deletePredefinedProperty(string $id): void;
 }
