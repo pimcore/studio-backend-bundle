@@ -16,9 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;
 
 /**
@@ -26,9 +30,12 @@ use Pimcore\Model\Property\Predefined;
  */
 final readonly class PropertyService implements PropertyServiceInterface
 {
-    public function __construct(private RepositoryInterface $repository)
-    {
+    use ElementProviderTrait;
 
+    public function __construct(
+        private RepositoryInterface $repository,
+        private ServiceResolver $serviceResolver,
+    ){
     }
 
     /**
@@ -39,6 +46,22 @@ final readonly class PropertyService implements PropertyServiceInterface
         return $this->repository->updatePredefinedProperty($id, $property);
     }
 
+    public function updateElementProperties(string $elementType, int $id, UpdateElementProperties $items): void
+    {
+        $element = $this->getElement($this->serviceResolver, $elementType, $id);
+        $properties = [];
+        foreach($items->getProperties() as $updateProperty) {
+            $property = new Property();
+            $property->setType($updateProperty->getType());
+            $property->setName($updateProperty->getKey());
+            $property->setData($updateProperty->getData());
+            $property->setInheritable($updateProperty->getInheritable());
+            $properties[] = $property;
+        }
+        $element->setProperties($properties);
+        $element->save();
+    }
+
     /**
      * @throws PropertyNotFoundException
      */
@@ -46,4 +69,6 @@ final readonly class PropertyService implements PropertyServiceInterface
     {
         $this->repository->deletePredefinedProperty($id);
     }
+
+
 }

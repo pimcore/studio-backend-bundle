@@ -35,7 +35,11 @@ use OpenApi\Attributes\Tag;
 )]
 #[Tag(
     name: Tags::Properties->name,
-    description: 'Get properties for elements'
+    description: 'Property operations to get/update/create/delete properties'
+)]
+#[Tag(
+    name: Tags::PropertiesForElement->value,
+    description: 'Property operations to get/update properties for an element'
 )]
 #[Tag(
     name: Tags::Translation->name,
@@ -45,12 +49,13 @@ use OpenApi\Attributes\Tag;
     name: Tags::Versions->name,
     description: 'Versions operations to get/list/publish/delete and cleanup versions'
 )]
-enum Tags
+enum Tags: string
 {
-    case Assets;
-    case Authorization;
-    case DataObjects;
-    case Properties;
-    case Translation;
-    case Versions;
+    case Assets = 'Assets';
+    case Authorization = 'Authorization';
+    case DataObjects = 'DataObjects';
+    case Properties = 'Properties';
+    case PropertiesForElement = 'Properties for Element';
+    case Translation = 'Translation';
+    case Versions = 'Versions';
 }

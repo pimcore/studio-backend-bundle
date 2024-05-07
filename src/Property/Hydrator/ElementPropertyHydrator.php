@@ -17,31 +17,31 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Property\Extractor\PropertyDataExtractorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\DataProperty;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Model\Property;
 
 /**
  * @internal
  */
-final readonly class DataPropertyHydrator implements DataPropertyHydratorInterface
+final readonly class ElementPropertyHydrator implements ElementPropertyHydratorInterface
 {
     public function __construct(
         private PropertyDataExtractorInterface $dataExtractor
     ) {
     }
 
-    public function hydrate(Property $property): DataProperty
+    public function hydrate(Property $property): ElementProperty
     {
         $propertyData = $this->dataExtractor->extractData($property);
 
-        return new DataProperty(
+        return new ElementProperty(
             $propertyData['name'],
             $propertyData['modelData'] ?? $propertyData['data'],
             $propertyData['type'],
             $propertyData['inheritable'],
             $propertyData['inherited'],
             $propertyData['config'],
-            $propertyData['predefinedName'],
+            $propertyData['predefinedName'] ?? 'Custom',
             $propertyData['description']
         );
     }

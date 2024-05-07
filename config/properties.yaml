@@ -22,8 +22,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyService
 
-  Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\DataPropertyHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\DataPropertyHydrator
+  Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\ElementPropertyHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\ElementPropertyHydrator
 
   Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PredefinedPropertyHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PredefinedPropertyHydrator

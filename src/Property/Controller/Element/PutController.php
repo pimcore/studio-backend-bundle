@@ -14,12 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller\Element;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\ElementPropertyRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
@@ -28,46 +29,56 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unproce
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\DataProperty;
+use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class GetController extends AbstractApiController
+final class PutController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
+        private readonly PropertyServiceInterface $propertyService,
         private readonly PropertyHydratorServiceInterface $hydratorService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_get_properties', methods: ['GET'])]
+    #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_update_element_properties', methods: ['PUT'])]
     //#[IsGranted('STUDIO_API')]
-    #[Get(
+    #[Put(
         path: self::API_PATH . '/properties/{elementType}/{id}',
-        operationId: 'getPropertiesByTypeAndId',
-        summary: 'Get properties for an element based on the element type and the element id',
+        operationId: 'updatePropertiesForElementByTypeAndId',
+        summary: 'Update properties for an element based on the element type and the element id',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::Properties->name]
+        tags: [Tags::PropertiesForElement->value]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
+    #[ElementPropertyRequestBody]
     #[SuccessResponse(
         description: 'Element Properties data as json',
-        content: new ItemsJson(DataProperty::class)
+        content: new ItemsJson(ElementProperty::class)
     )]
     #[UnauthorizedResponse]
     #[NotFoundResponse]
     #[MethodNotAllowedResponse]
     #[UnsupportedMediaTypeResponse]
     #[UnprocessableContentResponse]
-    public function getProperties(string $elementType, int $id): JsonResponse
+    public function updateProperties(
+        string $elementType,
+        int $id,
+        #[MapRequestPayload] UpdateElementProperties $items
+    ): JsonResponse
     {
+        $this->propertyService->updateElementProperties($elementType, $id, $items);
         return $this->jsonResponse($this->hydratorService->getHydratedPropertyForElement($elementType, $id));
     }
 }

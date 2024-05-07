@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
-use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\DataPropertyHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\ElementPropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PredefinedPropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
@@ -32,7 +32,7 @@ final readonly class PropertyHydratorService implements PropertyHydratorServiceI
     public function __construct(
         private RepositoryInterface $repository,
         private ServiceResolver $serviceResolver,
-        private DataPropertyHydratorInterface $dataPropertyHydrator,
+        private ElementPropertyHydratorInterface $dataPropertyHydrator,
         private PredefinedPropertyHydratorInterface $predefinedPropertyHydrator,
     ) {
     }

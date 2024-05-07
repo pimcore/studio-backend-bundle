@@ -83,7 +83,7 @@ final readonly class UpdatePredefinedProperty
         return $this->ctype;
     }
 
-    public function getInheritable(): bool
+    public function isInheritable(): bool
     {
         return $this->inheritable;
     }

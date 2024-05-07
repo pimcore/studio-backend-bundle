@@ -22,7 +22,7 @@ use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class PropertyRequestBody extends RequestBody
+final class PredefinedPropertyRequestBody extends RequestBody
 {
     public function __construct()
     {

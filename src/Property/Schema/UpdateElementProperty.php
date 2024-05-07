@@ -20,34 +20,26 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 #[Schema(
-    title: 'DataProperty',
+    title: 'UpdateDataProperty',
     type: 'object'
 )]
-final readonly class DataProperty
+final readonly class UpdateElementProperty
 {
     public function __construct(
-        #[Property(description: 'name', type: 'string', example: 'Mister Proper')]
-        private string $name,
+        #[Property(description: 'key', type: 'string', example: 'Mister Proper')]
+        private string $key,
         #[Property(description: 'data', type: 'mixed', example: '123')]
         private mixed $data,
         #[Property(description: 'type', type: 'string', example: 'document')]
         private string $type,
         #[Property(description: 'inheritable', type: 'boolean', example: false)]
         private bool $inheritable,
-        #[Property(description: 'inherited', type: 'boolean', example: false)]
-        private bool $inherited,
-        #[Property(description: 'config', type: 'string', example: 'comma,separated,values')]
-        private ?string $config,
-        #[Property(description: 'predefinedName', type: 'string', example: 'name of the predefined property')]
-        private ?string $predefinedName,
-        #[Property(description: 'description', type: 'string', example: 'Description of the predefined property')]
-        private ?string $description,
     ) {
     }
 
-    public function getName(): string
+    public function getKey(): string
     {
-        return $this->name;
+        return $this->key;
     }
 
     public function getData(): mixed
@@ -60,28 +52,8 @@ final readonly class DataProperty
         return $this->type;
     }
 
-    public function getIsInheritable(): bool
+    public function getInheritable(): bool
     {
         return $this->inheritable;
-    }
-
-    public function getIsInherited(): bool
-    {
-        return $this->inherited;
-    }
-
-    public function getConfig(): ?string
-    {
-        return $this->config;
-    }
-
-    public function getPredefinedName(): ?string
-    {
-        return $this->predefinedName;
-    }
-
-    public function getDescription(): ?string
-    {
-        return $this->description;
     }
 }
