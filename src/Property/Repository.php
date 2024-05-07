@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Element\DuplicateFullPathException;
-use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
@@ -120,6 +119,7 @@ final readonly class Repository implements RepositoryInterface
             $properties[$updateProperty->getKey()] = $property;
         }
         $element->setProperties($properties);
+
         try {
             $element->save();
         } catch (DuplicateFullPathException $e) {
