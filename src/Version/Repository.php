@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
@@ -31,13 +31,13 @@ use Pimcore\Model\Version\Listing as VersionListing;
 /**
  * @internal
  */
-final class Repository implements RepositoryInterface
+final readonly class Repository implements RepositoryInterface
 {
-    use ElementPermissionTrait;
     use ElementProviderTrait;
 
     public function __construct(
-        private readonly VersionResolver $versionResolver
+        private SecurityServiceInterface $securityService,
+        private VersionResolver $versionResolver
     ) {
 
     }
@@ -47,7 +47,12 @@ final class Repository implements RepositoryInterface
         VersionParameters $parameters,
         UserInterface $user
     ): VersionListing {
-        $this->isAllowed($element, $user, Permissions::VERSIONS_PERMISSION);
+        $this->securityService->hasElementPermission(
+            $element,
+            $user,
+            Permissions::VERSIONS_PERMISSION
+        );
+
         $limit = $parameters->getPageSize();
         $page = $parameters->getPage();
         $list = $this->getElementVersionsListing(
@@ -87,7 +92,11 @@ final class Repository implements RepositoryInterface
         UserInterface $user
     ): ElementInterface {
         $element = $version->getData();
-        $this->isAllowed($element, $user, Permissions::VERSIONS_PERMISSION);
+        $this->securityService->hasElementPermission(
+            $element,
+            $user,
+            Permissions::VERSIONS_PERMISSION
+        );
 
         return $element;
     }
