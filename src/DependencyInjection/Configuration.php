@@ -92,9 +92,9 @@ class Configuration implements ConfigurationInterface
                 ->prototype('scalar')->end()
                 ->validate()
                 ->always(
-                    /**
-                     * @throws InvalidHostException
-                     */ function ($hosts) {
+/**
+ * @throws InvalidHostException
+ */ function ($hosts) {
                         foreach ($hosts as $host) {
                             if (!filter_var($host)) {
                                 throw new InvalidHostException(
