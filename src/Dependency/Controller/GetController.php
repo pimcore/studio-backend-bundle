@@ -19,8 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Controller;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
@@ -40,6 +40,7 @@ final class GetController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
+        private readonly DependencyHydratorServiceInterface $hydratorService,
 
     ) {
         parent::__construct($serializer);
@@ -67,6 +68,6 @@ final class GetController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getDependenciesByElementId(string $elementType, int $id): JsonResponse
     {
-        return $this->json([]);
+        return $this->jsonResponse($this->hydratorService->get($elementType, $id));
     }
 }

@@ -17,11 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
-use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\DataPropertyHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PredefinedPropertyHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\RepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 
 final readonly class DependencyHydratorService implements DependencyHydratorServiceInterface
@@ -31,17 +28,20 @@ final readonly class DependencyHydratorService implements DependencyHydratorServ
     public function __construct(
         private RepositoryInterface $repository,
         private ServiceResolver $serviceResolver,
-        private DataPropertyHydratorInterface $dataPropertyHydrator,
+        private DependencyHydrator $dependencyHydrator,
     ) {
     }
 
-    public function getHydratedDependencies(PropertiesParameters $parameters): array
+    public function getHydratedDependenciesForElement(string $elementType, int $elementId): array
     {
+        $element = $this->getElement($this->serviceResolver, $elementType, $elementId);
 
-    }
+        $hydratedProperties = [];
 
-    public function getHydratedPropertyForElement(string $elementType, int $id): array
-    {
+        foreach($element->getDependencies() as $dependency) {
+            $hydratedProperties[] = $this->dependencyHydrator->hydrate($dependency);
+        }
 
+        return ['items' => $hydratedProperties];
     }
 }
