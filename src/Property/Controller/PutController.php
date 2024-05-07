@@ -70,8 +70,7 @@ final class PutController extends AbstractApiController
     public function updateProperty(
         string $id,
         #[MapRequestPayload] UpdatePredefinedProperty $updatePredefinedProperty
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $property = $this->propertyService->updatePredefinedProperty($id, $updatePredefinedProperty);
 
         return $this->jsonResponse($this->hydratorService->getHydratedPredefinedProperty($property));
