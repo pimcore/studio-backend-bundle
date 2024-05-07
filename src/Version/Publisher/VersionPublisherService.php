@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface;
 use Pimcore\Model\UserInterface;
