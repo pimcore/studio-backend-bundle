@@ -1,0 +1,28 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Controller\:
+    resource: '../src/Workflow/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowHydratorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowHydratorService
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\WorkflowDetailsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\WorkflowDetailsService
+
+  # Hydrators
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowDetailsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowDetailsHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydrator

@@ -41,6 +41,10 @@ use OpenApi\Attributes\Tag;
     name: Tags::Versions->name,
     description: 'Versions operations to get/list/publish/delete and cleanup versions'
 )]
+#[Tag(
+    name: Tags::Workflows->name,
+    description: 'Workflows operations to get element workflow details'
+)]
 enum Tags
 {
     case Assets;
@@ -48,4 +52,5 @@ enum Tags
     case DataObjects;
     case Translation;
     case Versions;
+    case Workflows;
 }
