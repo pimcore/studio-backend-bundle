@@ -55,12 +55,12 @@ final readonly class Repository implements RepositoryInterface
         return $list;
     }
 
-    public function updatePredefinedProperty(UpdatePredefinedProperty $property): Predefined
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined
     {
-        $predefined = Predefined::getById($property->getId());
+        $predefined = Predefined::getById($id);
 
         if (!$predefined) {
-            throw new PropertyNotFoundException($property->getId());
+            throw new PropertyNotFoundException($id);
         }
 
         $predefined->setName($property->getName());

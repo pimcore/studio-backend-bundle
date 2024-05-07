@@ -18,7 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
+use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\PropertyRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\BadRequestResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
@@ -46,17 +48,18 @@ final class PutController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/property', name: 'pimcore_studio_api_create_property', methods: ['PUT'])]
+    #[Route('/property/{id}', name: 'pimcore_studio_api_update_property', methods: ['PUT'])]
     #[Put(
-        path: self::API_PATH . '/property',
+        path: self::API_PATH . '/property/{id}',
         operationId: 'updateProperty',
         summary: 'Updating a property',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Properties->name]
     )]
+    #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]
     #[PropertyRequestBody]
     #[SuccessResponse(
-        description: 'Element Properties data as json',
+        description: 'Updated property',
         content: new JsonContent(ref: PredefinedProperty::class, type: 'object')
     )]
     #[BadRequestResponse]
@@ -64,9 +67,12 @@ final class PutController extends AbstractApiController
     #[MethodNotAllowedResponse]
     #[UnsupportedMediaTypeResponse]
     #[UnprocessableContentResponse]
-    public function updateProperty(#[MapRequestPayload] UpdatePredefinedProperty $updatePredefinedProperty): JsonResponse
+    public function updateProperty(
+        string $id,
+        #[MapRequestPayload] UpdatePredefinedProperty $updatePredefinedProperty
+    ): JsonResponse
     {
-        $property = $this->propertyService->updatePredefinedProperty($updatePredefinedProperty);
+        $property = $this->propertyService->updatePredefinedProperty($id, $updatePredefinedProperty);
 
         return $this->jsonResponse($this->hydratorService->getHydratedPredefinedProperty($property));
     }

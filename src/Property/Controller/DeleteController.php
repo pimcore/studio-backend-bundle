@@ -20,6 +20,7 @@ use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
@@ -58,7 +59,7 @@ final class DeleteController extends AbstractApiController
     #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]
     #[SuccessResponse(
         description: 'Element Properties data as json',
-        content: new ItemsJson(DataProperty::class)
+        content: new IdJson('ID of deleted property')
     )]
     #[UnauthorizedResponse]
     #[NotFoundResponse]

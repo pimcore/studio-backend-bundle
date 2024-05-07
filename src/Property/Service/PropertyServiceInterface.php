@@ -24,7 +24,7 @@ use Pimcore\Model\Property\Predefined;
  */
 interface PropertyServiceInterface
 {
-    public function updatePredefinedProperty(UpdatePredefinedProperty $property): Predefined;
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined;
 
     public function deletePredefinedProperty(string $id): void;
 }

@@ -28,7 +28,7 @@ interface RepositoryInterface
 {
     public function listProperties(PropertiesParameters $parameters): PropertiesListing;
 
-    public function updatePredefinedProperty(UpdatePredefinedProperty $property): Predefined;
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined;
 
     public function deletePredefinedProperty(string $id): void;
 }

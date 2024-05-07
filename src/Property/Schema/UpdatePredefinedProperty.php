@@ -29,8 +29,6 @@ use OpenApi\Attributes\Schema;
 final readonly class UpdatePredefinedProperty
 {
     public function __construct(
-        #[Property(description: 'id', type: 'string', example: 'alpha-numerical-value')]
-        private string $id,
         #[Property(description: 'name', type: 'string', example: 'Mister Proper')]
         private string $name,
         #[Property(description: 'description', type: 'string', example: 'Detailed description of the property')]
@@ -48,11 +46,6 @@ final readonly class UpdatePredefinedProperty
         #[Property(description: 'inheritable', type: 'bool', example: false)]
         private bool $inheritable,
     ) {
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
     }
 
     public function getName(): string
