@@ -20,7 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface;
 use Pimcore\Model\UserInterface;
@@ -61,7 +61,7 @@ final class VersionPublisherService implements VersionPublisherServiceInterface
         $this->securityService->hasElementPermission(
             $currentElement,
             $user,
-            Permissions::PUBLISH_PERMISSION
+            ElementPermissions::PUBLISH_PERMISSION
         );
 
         $class = $this->getElementClass($currentElement);
