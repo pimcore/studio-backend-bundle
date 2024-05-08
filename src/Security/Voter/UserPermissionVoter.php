@@ -29,7 +29,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 final class UserPermissionVoter extends Voter
 {
-    private const USER_PERMISSIONS_CACHE_KEY = 'studio_backend_user_permissions4';
+    private const USER_PERMISSIONS_CACHE_KEY = 'studio_backend_user_permissions';
 
     private array $userPermissions;
 
