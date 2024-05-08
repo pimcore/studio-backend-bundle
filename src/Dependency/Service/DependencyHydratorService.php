@@ -16,13 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Service;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\RepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Request\DependencyParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Result\ListingResult;
-use Pimcore\Model\Dependency;
 use Pimcore\Model\UserInterface;
 
 final readonly class DependencyHydratorService implements DependencyHydratorServiceInterface
@@ -31,7 +29,6 @@ final readonly class DependencyHydratorService implements DependencyHydratorServ
 
     public function __construct(
         private RepositoryInterface $repository,
-        private ServiceResolver $serviceResolver,
         private DependencyHydratorInterface $dependencyHydrator,
     ) {
     }

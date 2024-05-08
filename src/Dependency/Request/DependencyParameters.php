@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Request;
 
-use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyMode;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidDependencyMode;
 use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;

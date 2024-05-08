@@ -18,9 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Document;
-use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
