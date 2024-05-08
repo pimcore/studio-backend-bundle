@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
 use Doctrine\DBAL\Exception;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolver;
+use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -34,7 +34,7 @@ final class UserPermissionVoter extends Voter
     private array $userPermissions;
 
     public function __construct(
-        private readonly CacheResolver $cacheResolver,
+        private readonly CacheResolverInterface $cacheResolver,
         private readonly DbResolverInterface $dbResolver,
         private readonly SecurityServiceInterface $securityService
 
