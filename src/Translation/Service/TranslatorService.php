@@ -33,7 +33,7 @@ final class TranslatorService implements TranslatorServiceInterface
     public function __construct(
         TranslatorInterface $translator
     ) {
-        if(!$translator instanceof TranslatorBagInterface) {
+        if (!$translator instanceof TranslatorBagInterface) {
             throw new InvalidArgumentException('Translator must implement TranslatorBagInterface');
         }
 

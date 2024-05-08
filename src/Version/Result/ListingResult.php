@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Result;
 /**
  * @internal
  */
-readonly class ListingResult
+final readonly class ListingResult
 {
     /**
      * @param array $items

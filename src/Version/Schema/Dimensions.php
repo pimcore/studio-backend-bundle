@@ -19,11 +19,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'VersionUser',
     type: 'object'
 )]
-readonly class Dimensions
+final readonly class Dimensions
 {
     public function __construct(
         #[Property(description: 'width', type: 'integer', example: 1920)]
