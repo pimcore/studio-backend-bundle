@@ -34,13 +34,13 @@ final readonly class CustomSettings
         #[Property(
             description: 'fixed custom settings',
             type: FixedCustomSettings::class,
-            example: '{ embeddedMetadata: {foo: bar}, checksum: b3685e8348e7ac4d30d0268f7e58902a }')
+            example: '{ embeddedMetadata: { FileSize: 360 KiB }, checksum: b3685e8348e7ac4d30d0268f7e58902a }')
         ]
         private ?FixedCustomSettings $fixedCustomSettings = null,
         #[Property(
             description: 'dynamic custom settings - can be any key-value pair',
             type: 'array',
-            items: new Items(),
+            items: new Items(ref: '{ imageWidth: 1280, imageHeight: 720 }'),
             example: '{ imageWidth: 1280, imageHeight: 720 }')
         ]
         private array $dynamicCustomSettings = [],

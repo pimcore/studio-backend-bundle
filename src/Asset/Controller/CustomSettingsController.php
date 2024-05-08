@@ -68,7 +68,7 @@ final class CustomSettingsController extends AbstractApiController
     )]
     #[IdParameter(type: 'asset')]
     #[SuccessResponse(
-        description: 'One of asset types',
+        description: 'Array of custom settings',
         content: new JsonContent(
             properties: [
                 new Property(
