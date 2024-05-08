@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
@@ -38,4 +39,13 @@ interface SecurityServiceInterface
      * @throws NotAuthorizedException
      */
     public function getCurrentUser(): UserInterface;
+
+    /**
+     * @throws AccessDeniedException
+     */
+    public function hasElementPermission(
+        ElementInterface $element,
+        UserInterface $user,
+        string $permission
+    ): void;
 }

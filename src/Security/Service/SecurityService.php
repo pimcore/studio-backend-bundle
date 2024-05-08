@@ -16,12 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Pimcore\Security\User\UserProvider;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -34,6 +37,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 final readonly class SecurityService implements SecurityServiceInterface
 {
     public function __construct(
+        private ElementPermissionServiceInterface $elementPermissionService,
         private UserProvider $userProvider,
         private UserResolverInterface $userResolver,
         private UserPasswordHasherInterface $passwordHasher,
@@ -88,5 +92,27 @@ final readonly class SecurityService implements SecurityServiceInterface
         }
 
         return $user;
+    }
+
+    /**
+     * @throws AccessDeniedException
+     */
+    public function hasElementPermission(
+        ElementInterface $element,
+        UserInterface $user,
+        string $permission
+    ): void {
+        /** @var User $user
+         *  Because of isAllowed method in the GDI
+         * */
+        if (!$this->elementPermissionService->isAllowed(
+            $permission,
+            $element,
+            $user
+        )) {
+            throw new AccessDeniedException(
+                sprintf('You dont have %s permission', $permission)
+            );
+        }
     }
 }
