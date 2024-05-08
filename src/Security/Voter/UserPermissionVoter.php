@@ -16,9 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
+use Doctrine\DBAL\Exception;
+use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -27,10 +29,17 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  */
 final class UserPermissionVoter extends Voter
 {
+    private const USER_PERMISSIONS_CACHE_KEY = 'studio_backend_user_permissions4';
+
+    private array $userPermissions;
+
     public function __construct(
+        private readonly CacheResolver $cacheResolver,
+        private readonly DbResolverInterface $dbResolver,
         private readonly SecurityServiceInterface $securityService
 
     ) {
+        $this->getUserPermissions();
     }
 
     /**
@@ -38,7 +47,7 @@ final class UserPermissionVoter extends Voter
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return UserPermissions::tryFrom($attribute) !== null;
+        return in_array($attribute, $this->userPermissions, true);
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
@@ -48,5 +57,39 @@ final class UserPermissionVoter extends Voter
         }
 
         return true;
+    }
+
+    /**
+     * @throws AccessDeniedException
+     */
+    private function getUserPermissions(): void
+    {
+        $userPermissions = $this->cacheResolver->load(self::USER_PERMISSIONS_CACHE_KEY);
+
+        if($userPermissions !== false && is_array($userPermissions)) {
+            $this->userPermissions = $userPermissions;
+            return;
+        }
+
+        $userPermissions = $this->getUserPermissionsFromDataBase();
+
+        $this->cacheResolver->save(
+            $userPermissions,
+            self::USER_PERMISSIONS_CACHE_KEY
+        );
+
+        $this->userPermissions = $userPermissions;
+    }
+
+    private function getUserPermissionsFromDataBase(): array
+    {
+        try {
+            $userPermissions = $this->dbResolver->getConnection()->fetchFirstColumn(
+                'SELECT `key` FROM users_permission_definitions'
+            );
+        } catch (Exception) {
+            throw new AccessDeniedException('Cannot resolve user permissions');
+        }
+        return $userPermissions;
     }
 }
