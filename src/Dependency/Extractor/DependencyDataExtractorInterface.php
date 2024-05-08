@@ -16,9 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor;
 
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
-use Pimcore\Model\Asset;
-
 /**
  * @internal
  */

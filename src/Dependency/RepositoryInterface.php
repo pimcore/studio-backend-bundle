@@ -16,15 +16,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency;
 
-use Pimcore\Model\Dependency;
-
 /**
  * @internal
  */
 interface RepositoryInterface
 {
     public function listRequiresDependencies(string $elementType, int $elementId): array;
+
     public function listRequiresDependenciesTotalCount(string $elementType, int $elementId): int;
+
     public function listRequiredByDependencies(string $elementType, int $elementId): array;
+
     public function listRequiredByDependenciesTotalCount(string $elementType, int $elementId): int;
 }

@@ -25,8 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyMode;
 final class DependencyModeParameter extends QueryParameter
 {
     public function __construct(
-    )
-    {
+    ) {
         parent::__construct(
             name: 'dependencyMode',
             description: 'Dependency mode',
