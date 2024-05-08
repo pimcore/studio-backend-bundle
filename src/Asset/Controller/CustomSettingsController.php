@@ -31,7 +31,9 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unproce
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -48,7 +50,8 @@ final class CustomSettingsController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly CustomSettingsHydratorInterface $hydrator,
-        private readonly ServiceResolverInterface $serviceResolver
+        private readonly SecurityServiceInterface $securityService,
+        private readonly ServiceResolverInterface $serviceResolver,
     ) {
         parent::__construct($serializer);
     }
@@ -85,6 +88,11 @@ final class CustomSettingsController extends AbstractApiController
     {
         /** @var Asset $asset */
         $asset = $this->getElement($this->serviceResolver, ElementTypes::TYPE_ASSET, $id);
+        $this->securityService->hasElementPermission(
+            $asset,
+            $this->securityService->getCurrentUser(),
+            Permissions::VIEW_PERMISSION
+        );
 
         return $this->jsonResponse(
             $this->hydrator->hydrate($asset->getCustomSettings())
