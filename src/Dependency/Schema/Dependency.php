@@ -26,13 +26,41 @@ use OpenApi\Attributes\Schema;
 final readonly class Dependency
 {
     public function __construct(
-        #[Property(description: 'name', type: 'string', example: 'Mister Proper')]
-        private string $name,
+        #[Property(description: 'id', type: 'int')]
+        private int $id,
+        #[Property(description: 'path', type: 'string', example: 'text')]
+        private string $path,
+        #[Property(description: 'type', type: 'string', example: 'asset')]
+        private string $type,
+        #[Property(description: 'subType', type: 'string', example: 'image')]
+        private string $subType,
+        #[Property(description: 'published', type: 'bool', example: 'true')]
+        private bool $published,
     ) {
     }
 
-    public function getName(): string
+    public function getId(): int
     {
-        return $this->name;
+        return $this->id;
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function getSubType(): string
+    {
+        return $this->subType;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->published;
     }
 }

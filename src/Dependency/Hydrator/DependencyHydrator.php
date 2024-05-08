@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor\DependencyDataExtractorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
-use Pimcore\Model\Property;
 
 /**
  * @internal
@@ -25,22 +25,27 @@ use Pimcore\Model\Property;
 final readonly class DependencyHydrator implements DependencyHydratorInterface
 {
     public function __construct(
+        private DependencyDataExtractorInterface $dataExtractor
     ) {
     }
 
-    public function hydrate(Property $property): Dependency
+    public function hydrate(array $dependency): ?Dependency
     {
-//        $propertyData = $this->dataExtractor->extractData($property);
-//
-//        return new Dependency(
-//            $propertyData['name'],
-//            $propertyData['modelData'] ?? $propertyData['data'],
-//            $propertyData['type'],
-//            $propertyData['inheritable'],
-//            $propertyData['inherited'],
-//            $propertyData['config'],
-//            $propertyData['predefinedName'],
-//            $propertyData['description']
-//        );
+        $elementId = $dependency['id'] ?? null;
+        $elementType = $dependency['type'] ?? null;
+
+        if($elementId === null || $elementType === null) {
+            return null;
+        }
+
+        $data = $this->dataExtractor->extractData($elementType, $elementId);
+
+        return new Dependency(
+            $data['id'],
+            $data['path'],
+            $data['type'],
+            $data['subtype'],
+            $data['published']
+        );
     }
 }

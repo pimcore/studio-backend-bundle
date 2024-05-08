@@ -14,14 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator;
-
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 /**
  * @internal
  */
-interface DependencyHydratorInterface
+final class InvalidDependencyMode extends AbstractApiException
 {
-    public function hydrate(array $dependency): ?Dependency;
+    public function __construct(string $message = 'Invalid dependency mode')
+    {
+        parent::__construct(400, $message);
+    }
 }

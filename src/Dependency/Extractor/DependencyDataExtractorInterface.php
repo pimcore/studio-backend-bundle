@@ -14,14 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor;
 
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
+use Pimcore\Model\Asset;
 
 /**
  * @internal
  */
-interface DependencyHydratorInterface
+interface DependencyDataExtractorInterface
 {
-    public function hydrate(array $dependency): ?Dependency;
+    public function extractData(string $elementType, int $elementId): array;
 }

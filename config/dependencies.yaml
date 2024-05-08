@@ -17,11 +17,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyHydratorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyHydratorService
 
-  Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DataPropertyHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DataPropertyHydrator
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator
 
-  Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\PredefinedPropertyHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\PredefinedPropertyHydrator
-
-  Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor\PropertyDataExtractorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor\PropertyDataExtractor
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor\DependencyDataExtractorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor\DependencyDataExtractor

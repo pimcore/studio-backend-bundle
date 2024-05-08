@@ -17,9 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Request\DependencyParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Result\ListingResult;
+use Pimcore\Model\Dependency;
+use Pimcore\Model\UserInterface;
 
 final readonly class DependencyHydratorService implements DependencyHydratorServiceInterface
 {
@@ -28,20 +32,74 @@ final readonly class DependencyHydratorService implements DependencyHydratorServ
     public function __construct(
         private RepositoryInterface $repository,
         private ServiceResolver $serviceResolver,
-        private DependencyHydrator $dependencyHydrator,
+        private DependencyHydratorInterface $dependencyHydrator,
     ) {
     }
-
-    public function getHydratedDependenciesForElement(string $elementType, int $elementId): array
+    public function getHydratedDependencies(
+        DependencyParameters $parameters,
+        UserInterface $user
+    ): ListingResult
     {
-        $element = $this->getElement($this->serviceResolver, $elementType, $elementId);
+        return match ($parameters->getMode()) {
+            DependencyMode::REQUIRES => $this->getHydratedRequiredDependencies($parameters),
+            DependencyMode::REQUIRED_BY => $this->getHydratedRequiredByDependencies($parameters),
+        };
+    }
 
-        $hydratedProperties = [];
+    private function hydrateDependencyCollection(array $dependencies): array
+    {
+        $hydratedDependencies = [];
 
-        foreach($element->getDependencies() as $dependency) {
-            $hydratedProperties[] = $this->dependencyHydrator->hydrate($dependency);
+        foreach($dependencies as $dependency) {
+            $hydratedDependency = $this->dependencyHydrator->hydrate($dependency);
+            if($hydratedDependency) {
+                $hydratedDependencies[] = $hydratedDependency;
+            }
         }
 
-        return ['items' => $hydratedProperties];
+        return $hydratedDependencies;
+    }
+
+    private function getHydratedRequiredDependencies(
+        DependencyParameters $parameters
+    ): ListingResult {
+
+        $dependencies = $this->repository->listRequiresDependencies(
+            $parameters->getElementType(),
+            $parameters->getElementId()
+        );
+
+        $dependencies = $this->hydrateDependencyCollection($dependencies);
+
+        return new ListingResult(
+            $dependencies,
+            $parameters->getPage(),
+            $parameters->getPageSize(),
+            $this->repository->listRequiresDependenciesTotalCount(
+                $parameters->getElementType(),
+                $parameters->getElementId()
+            )
+        );
+    }
+
+    private function getHydratedRequiredByDependencies(
+        DependencyParameters $parameters
+    ): ListingResult {
+        $dependencies = $this->repository->listRequiredByDependencies(
+            $parameters->getElementType(),
+            $parameters->getElementId()
+        );
+
+        $dependencies = $this->hydrateDependencyCollection($dependencies);
+
+        return new ListingResult(
+            $dependencies,
+            $parameters->getPage(),
+            $parameters->getPageSize(),
+            $this->repository->listRequiredByDependenciesTotalCount(
+                $parameters->getElementType(),
+                $parameters->getElementId()
+            )
+        );
     }
 }

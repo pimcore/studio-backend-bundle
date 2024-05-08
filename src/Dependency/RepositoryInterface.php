@@ -23,5 +23,8 @@ use Pimcore\Model\Dependency;
  */
 interface RepositoryInterface
 {
-    public function listDependencies(string $elementType, int $elementId): Dependency;
+    public function listRequiresDependencies(string $elementType, int $elementId): array;
+    public function listRequiresDependenciesTotalCount(string $elementType, int $elementId): int;
+    public function listRequiredByDependencies(string $elementType, int $elementId): array;
+    public function listRequiredByDependenciesTotalCount(string $elementType, int $elementId): int;
 }

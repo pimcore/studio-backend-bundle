@@ -17,9 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Model\Dependency;
 
 /**
  * @internal
@@ -27,15 +25,55 @@ use Pimcore\Model\Dependency;
 final readonly class Repository implements RepositoryInterface
 {
     use ElementProviderTrait;
-    use ElementPermissionTrait;
 
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
     ) {
     }
 
-    public function listDependencies(string $elementType, int $elementId): Dependency
+    public function listRequiresDependencies(string $elementType, int $elementId): array
     {
-        return $this->getElement($this->serviceResolver, $elementType, $elementId)->getDependencies();
+        return $this->getElement(
+            $this->serviceResolver,
+            $elementType,
+            $elementId
+        )
+            ->getDependencies()
+            ->getRequires();
+    }
+
+    public function listRequiresDependenciesTotalCount(string $elementType, int $elementId): int
+    {
+        return
+            $this->getElement(
+                $this->serviceResolver,
+                $elementType,
+                $elementId
+            )
+                ->getDependencies()
+                ->getRequiresTotalCount();
+    }
+
+    public function listRequiredByDependencies(string $elementType, int $elementId): array
+    {
+        return $this->getElement(
+            $this->serviceResolver,
+            $elementType,
+            $elementId
+        )
+            ->getDependencies()
+            ->getRequiredBy();
+    }
+
+    public function listRequiredByDependenciesTotalCount(string $elementType, int $elementId): int
+    {
+        return
+            $this->getElement(
+                $this->serviceResolver,
+                $elementType,
+                $elementId
+            )
+                ->getDependencies()
+                ->getRequiredByTotalCount();
     }
 }
