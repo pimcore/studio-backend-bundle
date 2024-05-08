@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Security;
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
@@ -26,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\Asset;
 use Pimcore\Model\Tool\TmpStore;
 use Pimcore\Model\User as PimcoreUser;
 use Pimcore\Security\User\User;
@@ -117,9 +119,35 @@ final class SecurityServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function mockSecurityService($validPassword = true, bool $withUser = true, bool $withTmpStore = true): SecurityServiceInterface
+    public function testHasElementPermission(): void
     {
+        $securityService = $this->mockSecurityService(
+            true,
+            true,
+            true,
+            false
+        );
+
+        $this->expectException(AccessDeniedException::class);
+        $this->expectExceptionMessage('You dont have speak up permission');
+        $securityService->hasElementPermission(
+            new Asset(),
+            new PimcoreUser(),
+            'speak up'
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function mockSecurityService(
+        $validPassword = true,
+        bool $withUser = true,
+        bool $withTmpStore = true,
+        bool $hasPermission = true
+    ): SecurityServiceInterface {
         return new SecurityService(
+            $this->mockElementPermissionService($hasPermission),
             $withUser ? $this->mockUserProviderWithUser() : $this->mockUserProviderWithOutUser(),
             $this->mockUserResolverService(),
             $this->mockPasswordHasher($validPassword),
@@ -199,5 +227,12 @@ final class SecurityServiceTest extends Unit
         $tmpStore->setData(['username' => 'test']);
 
         return $tmpStore;
+    }
+
+    private function mockElementPermissionService(bool $hasPermission): ElementPermissionServiceInterface
+    {
+        return $this->makeEmpty(ElementPermissionServiceInterface::class, [
+            'isAllowed' => $hasPermission,
+        ]);
     }
 }
