@@ -71,12 +71,12 @@ final class PropertyDataExtractor implements PropertyDataExtractorInterface
     private function extractPredefinedPropertyData(Property $property): array
     {
         $empty = ['config' => null, 'predefinedName' => null, 'description' => null];
-        if(!$property->getName() || !$property->getType()) {
+        if (!$property->getName() || !$property->getType()) {
             return $empty;
         }
 
         $predefinedProperty = Predefined::getByKey($property->getName());
-        if(!$predefinedProperty || $predefinedProperty->getType() !== $property->getType()) {
+        if (!$predefinedProperty || $predefinedProperty->getType() !== $property->getType()) {
             return $empty;
         }
 

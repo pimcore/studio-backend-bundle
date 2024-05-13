@@ -27,8 +27,7 @@ final class PropertyFactory implements PropertyFactoryInterface
      */
     public function create(): Predefined
     {
-
-        if(!(new Predefined())->isWriteable()) {
+        if (!(new Predefined())->isWriteable()) {
             throw new NotWriteableException('Predefined Property');
         }
 
