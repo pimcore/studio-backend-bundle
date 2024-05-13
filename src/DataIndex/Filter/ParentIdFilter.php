@@ -33,7 +33,7 @@ final class ParentIdFilter implements FilterInterface
 
         $parentId = $parameters->getParentId();
 
-        if(!$parentId) {
+        if (!$parentId) {
             return $query;
         }
 

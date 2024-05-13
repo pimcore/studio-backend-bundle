@@ -9,6 +9,10 @@ services:
     tags:
       - { name: security.voter }
 
+  Pimcore\Bundle\StudioBackendBundle\Security\Voter\UserPermissionVoter:
+    tags:
+      - { name: security.voter }
+
   Pimcore\Bundle\StudioBackendBundle\Security\Voter\PublicAuthorizationVoter:
     arguments: [ '@request_stack' ]
     tags:

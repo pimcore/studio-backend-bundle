@@ -24,14 +24,14 @@ final class FilterServiceProvider implements FilterServiceProviderInterface
 
     public function __construct(FilterServiceLoaderInterface $taggedIteratorAdapter)
     {
-        foreach($taggedIteratorAdapter->loadFilterServices() as $filterService) {
+        foreach ($taggedIteratorAdapter->loadFilterServices() as $filterService) {
             $this->filterServices[$filterService->getType()] = $filterService;
         }
     }
 
     public function create(string $type): mixed
     {
-        if(!array_key_exists($type, $this->filterServices)) {
+        if (!array_key_exists($type, $this->filterServices)) {
             throw new InvalidFilterServiceTypeException(400, "Unknown filter type: $type");
         }
 

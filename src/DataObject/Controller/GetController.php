@@ -47,7 +47,7 @@ final class GetController extends AbstractApiController
 
     #[Route('/data-objects/{id}', name: 'pimcore_studio_api_get_data_object', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
-    #[GET(
+    #[Get(
         path: self::API_PATH . '/data-objects/{id}',
         operationId: 'getDataObjectById',
         description: 'Get data object by id by path parameter',

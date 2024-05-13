@@ -33,7 +33,7 @@ final class ClassNameFilter implements FilterInterface
      */
     public function apply(CollectionParametersInterface $parameters, QueryInterface $query): QueryInterface
     {
-        if(
+        if (
             !$parameters instanceof DataObjectParametersInterface ||
             !$query instanceof DataObjectQuery ||
             !$parameters->getClassName()

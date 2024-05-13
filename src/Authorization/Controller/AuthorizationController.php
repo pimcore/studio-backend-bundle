@@ -57,7 +57,7 @@ final class AuthorizationController extends AbstractApiController
      * @throws AccessDeniedException
      */
     #[Route('/login', name: 'pimcore_studio_api_login', methods: ['POST'])]
-    #[POST(
+    #[Post(
         path: self::API_PATH . '/login',
         operationId: 'login',
         summary: 'Login with user credentials and get access token',

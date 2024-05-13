@@ -36,7 +36,7 @@ trait RequestTrait
     private function getAuthToken(Request $request): string
     {
         $authToken = $request->headers->get(self::AUTHORIZATION_HEADER);
-        if($authToken === null) {
+        if ($authToken === null) {
             throw new NotAuthorizedException();
         }
 
@@ -50,7 +50,7 @@ trait RequestTrait
     {
         $request = $requestStack->getCurrentRequest();
 
-        if(!$request) {
+        if (!$request) {
             throw new NoRequestException();
         }
 
