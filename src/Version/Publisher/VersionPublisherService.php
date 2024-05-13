@@ -19,8 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Publisher;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementPermissionTrait;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface;
 use Pimcore\Model\UserInterface;
@@ -31,10 +31,10 @@ use Symfony\Contracts\Service\ServiceProviderInterface;
  */
 final class VersionPublisherService implements VersionPublisherServiceInterface
 {
-    use ElementPermissionTrait;
     use ElementProviderTrait;
 
     public function __construct(
+        private readonly SecurityServiceInterface $securityService,
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly RepositoryInterface $repository,
         private readonly ServiceProviderInterface $versionPublisherLocator
@@ -58,7 +58,12 @@ final class VersionPublisherService implements VersionPublisherServiceInterface
             $elementId,
         );
 
-        $this->isAllowed($currentElement, $user, Permissions::PUBLISH_PERMISSION);
+        $this->securityService->hasElementPermission(
+            $currentElement,
+            $user,
+            ElementPermissions::PUBLISH_PERMISSION
+        );
+
         $class = $this->getElementClass($currentElement);
         if (!$this->versionPublisherLocator->has($class)) {
             throw new InvalidElementTypeException($class);

@@ -32,7 +32,7 @@ final class ExcludeFolderFilter implements FilterInterface
         }
 
         $excludeFolders = $parameters->getExcludeFolders();
-        if(!$excludeFolders) {
+        if (!$excludeFolders) {
             return $query;
         }
 
