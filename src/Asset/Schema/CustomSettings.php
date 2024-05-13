@@ -40,7 +40,7 @@ final readonly class CustomSettings
         #[Property(
             description: 'dynamic custom settings - can be any key-value pair',
             type: 'array',
-            items: new Items(ref: '{ imageWidth: 1280, imageHeight: 720 }'),
+            items: new Items(),
             example: '{ imageWidth: 1280, imageHeight: 720 }')
         ]
         private array $dynamicCustomSettings = [],

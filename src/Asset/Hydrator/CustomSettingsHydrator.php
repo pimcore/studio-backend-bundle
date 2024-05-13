@@ -62,12 +62,9 @@ final class CustomSettingsHydrator implements CustomSettingsHydratorInterface
 
     private function getDynamicCustomSettings(array $customSettings): array
     {
-        foreach (self::FIXED_CUSTOM_SETTINGS_KEYS as $key) {
-            if (isset($customSettings[$key])) {
-                unset($customSettings[$key]);
-            }
-        }
-
-        return $customSettings;
+        return array_diff_key(
+            $customSettings,
+            array_flip(self::FIXED_CUSTOM_SETTINGS_KEYS)
+        );
     }
 }
