@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
@@ -39,7 +40,7 @@ final readonly class Repository implements RepositoryInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private ServiceResolver $serviceResolver,
+        private ServiceResolverInterface $serviceResolver,
         private TranslatorInterface $translator
     ) {
     }
