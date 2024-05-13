@@ -21,7 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidActionTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionSubmissionException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Result\ActionSubmissionResult;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
@@ -66,7 +66,7 @@ final readonly class WorkflowActionService implements WorkflowActionServiceInter
         $this->securityService->hasElementPermission(
             $element,
             $user,
-            Permissions::VIEW_PERMISSION
+            ElementPermissions::VIEW_PERMISSION
         );
 
         try {

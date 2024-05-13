@@ -7,7 +7,7 @@
         "driver": {
           "name": "QDPHP",
           "fullName": "Qodana for PHP",
-          "version": "241.16512.90",
+          "version": "241.16902.111",
           "rules": [],
           "taxa": [
             {
@@ -283,13 +283,13 @@
               ]
             },
             {
-              "id": "PHP/Control flow",
-              "name": "Control flow",
+              "id": "PHP/PHPDoc/Code style",
+              "name": "Code style",
               "relationships": [
                 {
                   "target": {
-                    "id": "PHP",
-                    "index": 0,
+                    "id": "PHP/PHPDoc",
+                    "index": 4,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -301,13 +301,13 @@
               ]
             },
             {
-              "id": "PHP/PHPDoc/Code style",
-              "name": "Code style",
+              "id": "PHP/Control flow",
+              "name": "Control flow",
               "relationships": [
                 {
                   "target": {
-                    "id": "PHP/PHPDoc",
-                    "index": 4,
+                    "id": "PHP",
+                    "index": 0,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -367,13 +367,13 @@
               ]
             },
             {
-              "id": "PHP/Php Inspections (EA Extended)/Code Style",
-              "name": "Code Style",
+              "id": "JavaScript and TypeScript/Data flow",
+              "name": "Data flow",
               "relationships": [
                 {
                   "target": {
-                    "id": "PHP/Php Inspections (EA Extended)",
-                    "index": 1,
+                    "id": "JavaScript and TypeScript",
+                    "index": 10,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -385,13 +385,13 @@
               ]
             },
             {
-              "id": "JavaScript and TypeScript/Data flow",
-              "name": "Data flow",
+              "id": "PHP/Php Inspections (EA Extended)/Code Style",
+              "name": "Code Style",
               "relationships": [
                 {
                   "target": {
-                    "id": "JavaScript and TypeScript",
-                    "index": 10,
+                    "id": "PHP/Php Inspections (EA Extended)",
+                    "index": 1,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -991,13 +991,13 @@
               ]
             },
             {
-              "id": "JavaScript and TypeScript/TypeScript",
-              "name": "TypeScript",
+              "id": "CSS/Probable bugs",
+              "name": "Probable bugs",
               "relationships": [
                 {
                   "target": {
-                    "id": "JavaScript and TypeScript",
-                    "index": 10,
+                    "id": "CSS",
+                    "index": 44,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -1009,13 +1009,13 @@
               ]
             },
             {
-              "id": "CSS/Probable bugs",
-              "name": "Probable bugs",
+              "id": "JavaScript and TypeScript/TypeScript",
+              "name": "TypeScript",
               "relationships": [
                 {
                   "target": {
-                    "id": "CSS",
-                    "index": 44,
+                    "id": "JavaScript and TypeScript",
+                    "index": 10,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -1063,13 +1063,13 @@
               ]
             },
             {
-              "id": "PHP/Php Inspections (EA Extended)/Architecture",
-              "name": "Architecture",
+              "id": "JavaScript and TypeScript/DOM issues",
+              "name": "DOM issues",
               "relationships": [
                 {
                   "target": {
-                    "id": "PHP/Php Inspections (EA Extended)",
-                    "index": 1,
+                    "id": "JavaScript and TypeScript",
+                    "index": 10,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -1081,13 +1081,13 @@
               ]
             },
             {
-              "id": "JavaScript and TypeScript/DOM issues",
-              "name": "DOM issues",
+              "id": "PHP/Php Inspections (EA Extended)/Architecture",
+              "name": "Architecture",
               "relationships": [
                 {
                   "target": {
-                    "id": "JavaScript and TypeScript",
-                    "index": 10,
+                    "id": "PHP/Php Inspections (EA Extended)",
+                    "index": 1,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -1664,7 +1664,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -1697,7 +1697,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -1763,7 +1763,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -1961,7 +1961,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2225,7 +2225,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2258,7 +2258,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2291,7 +2291,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2369,39 +2369,6 @@
                 ]
               },
               {
-                "id": "RedundantElseClauseInspection",
-                "shortDescription": {
-                  "text": "Redundant 'else' keyword"
-                },
-                "fullDescription": {
-                  "text": "Documentation can be found here",
-                  "markdown": "Documentation can be found [here](https://github.com/kalessil/phpinspectionsea/blob/master/docs/control-flow.md#redundant-else-keyword)"
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "RedundantElseClauseInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Php Inspections (EA Extended)/Control Flow",
-                      "index": 17,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "SecurityAdvisoriesInspection",
                 "shortDescription": {
                   "text": "Security advisories for Composer packages"
@@ -2435,6 +2402,39 @@
                 ]
               },
               {
+                "id": "RedundantElseClauseInspection",
+                "shortDescription": {
+                  "text": "Redundant 'else' keyword"
+                },
+                "fullDescription": {
+                  "text": "Documentation can be found here",
+                  "markdown": "Documentation can be found [here](https://github.com/kalessil/phpinspectionsea/blob/master/docs/control-flow.md#redundant-else-keyword)"
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "RedundantElseClauseInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Php Inspections (EA Extended)/Control Flow",
+                      "index": 17,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
                 "id": "UnnecessaryFinalModifierInspection",
                 "shortDescription": {
                   "text": "Unnecessary final modifiers"
@@ -2456,7 +2456,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2522,7 +2522,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2588,7 +2588,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2753,7 +2753,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2819,7 +2819,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Architecture",
-                      "index": 74,
+                      "index": 75,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -3083,7 +3083,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Architecture",
-                      "index": 74,
+                      "index": 75,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -3314,7 +3314,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -3677,7 +3677,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Architecture",
-                      "index": 74,
+                      "index": 75,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -3908,7 +3908,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -3974,7 +3974,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4106,7 +4106,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4139,7 +4139,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Architecture",
-                      "index": 74,
+                      "index": 75,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4238,7 +4238,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4568,7 +4568,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4733,7 +4733,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4766,7 +4766,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4832,7 +4832,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4865,7 +4865,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5030,7 +5030,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5063,7 +5063,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5195,7 +5195,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Architecture",
-                      "index": 74,
+                      "index": 75,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5240,39 +5240,6 @@
                 ]
               },
               {
-                "id": "StrEndsWithCanBeUsedInspection",
-                "shortDescription": {
-                  "text": "'str_ends_with(...)' can be used"
-                },
-                "fullDescription": {
-                  "text": "The inspection reports cases when 'str_ends_with(...)' can be used.",
-                  "markdown": "The inspection reports cases when 'str_ends_with(...)' can be used."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "StrEndsWithCanBeUsedInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Php Inspections (EA Extended)/Language level migration",
-                      "index": 47,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "UnqualifiedReferenceInspection",
                 "shortDescription": {
                   "text": "Unqualified function/constant reference"
@@ -5295,6 +5262,39 @@
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Performance",
                       "index": 42,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "StrEndsWithCanBeUsedInspection",
+                "shortDescription": {
+                  "text": "'str_ends_with(...)' can be used"
+                },
+                "fullDescription": {
+                  "text": "The inspection reports cases when 'str_ends_with(...)' can be used.",
+                  "markdown": "The inspection reports cases when 'str_ends_with(...)' can be used."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "StrEndsWithCanBeUsedInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Php Inspections (EA Extended)/Language level migration",
+                      "index": 47,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5393,7 +5393,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5438,39 +5438,6 @@
                 ]
               },
               {
-                "id": "NullPointerExceptionInspection",
-                "shortDescription": {
-                  "text": "Null reference"
-                },
-                "fullDescription": {
-                  "text": "Documentation can be found here",
-                  "markdown": "Documentation can be found [here](https://github.com/kalessil/phpinspectionsea/blob/master/docs/probable-bugs.md#null-pointer-exceptions-prevention)"
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "NullPointerExceptionInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Php Inspections (EA Extended)/Probable bugs",
-                      "index": 2,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "ObGetCleanCanBeUsedInspection",
                 "shortDescription": {
                   "text": "'ob_get_clean()' can be used"
@@ -5493,6 +5460,39 @@
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Control Flow",
                       "index": 17,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "NullPointerExceptionInspection",
+                "shortDescription": {
+                  "text": "Null reference"
+                },
+                "fullDescription": {
+                  "text": "Documentation can be found here",
+                  "markdown": "Documentation can be found [here](https://github.com/kalessil/phpinspectionsea/blob/master/docs/probable-bugs.md#null-pointer-exceptions-prevention)"
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "NullPointerExceptionInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Php Inspections (EA Extended)/Probable bugs",
+                      "index": 2,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5591,7 +5591,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5888,7 +5888,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -6515,7 +6515,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Architecture",
-                      "index": 74,
+                      "index": 75,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -6713,7 +6713,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -6845,40 +6845,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "StaticLambdaBindingInspection",
-                "shortDescription": {
-                  "text": "Static lambdas binding"
-                },
-                "fullDescription": {
-                  "text": "Reports static closures, referencing '$this' (provokes a fatal error).",
-                  "markdown": "Reports static closures, referencing '$this' (provokes a fatal error)."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "error",
-                  "parameters": {
-                    "suppressToolId": "StaticLambdaBindingInspection",
-                    "ideaSeverity": "ERROR",
-                    "qodanaSeverity": "Critical"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Php Inspections (EA Extended)/Probable bugs",
-                      "index": 2,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -6912,6 +6879,39 @@
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Type compatibility",
                       "index": 83,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "StaticLambdaBindingInspection",
+                "shortDescription": {
+                  "text": "Static lambdas binding"
+                },
+                "fullDescription": {
+                  "text": "Reports static closures, referencing '$this' (provokes a fatal error).",
+                  "markdown": "Reports static closures, referencing '$this' (provokes a fatal error)."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "error",
+                  "parameters": {
+                    "suppressToolId": "StaticLambdaBindingInspection",
+                    "ideaSeverity": "ERROR",
+                    "qodanaSeverity": "Critical"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Php Inspections (EA Extended)/Probable bugs",
+                      "index": 2,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -7043,7 +7043,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -7076,7 +7076,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Architecture",
-                      "index": 74,
+                      "index": 75,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -7109,7 +7109,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Architecture",
-                      "index": 74,
+                      "index": 75,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -7142,7 +7142,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Architecture",
-                      "index": 74,
+                      "index": 75,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -7208,7 +7208,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -7427,7 +7427,7 @@
           },
           {
             "name": "com.jetbrains.php",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "PhpLoopCanBeReplacedWithStrRepeatInspection",
@@ -7826,39 +7826,6 @@
                 ]
               },
               {
-                "id": "PhpWriteAccessToReferencedArrayValueWithoutUnsetInspection",
-                "shortDescription": {
-                  "text": "Write access to referenced array value without 'unset'"
-                },
-                "fullDescription": {
-                  "text": "Reports the write access expressions on variables that are still referencing the array value previously used in a 'foreach' statement. It is recommended to destroy such references by using 'unset'. See foreach (php.net) and unset (php.net) for details.",
-                  "markdown": "Reports the write access expressions on variables that are still referencing the array value previously used in a `foreach` statement.\n\n\nIt is recommended to destroy such references by using `unset`.\n\n\nSee [foreach (php.net)](https://www.php.net/manual/en/control-structures.foreach.php) and [unset (php.net)](https://www.php.net/manual/en/function.unset.php) for details."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "PhpWriteAccessToReferencedArrayValueWithoutUnsetInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Control flow",
-                      "index": 19,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpMissingDocCommentInspection",
                 "shortDescription": {
                   "text": "Missing PHPDoc comment"
@@ -7880,6 +7847,39 @@
                   {
                     "target": {
                       "id": "PHP/PHPDoc/Code style",
+                      "index": 19,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpWriteAccessToReferencedArrayValueWithoutUnsetInspection",
+                "shortDescription": {
+                  "text": "Write access to referenced array value without 'unset'"
+                },
+                "fullDescription": {
+                  "text": "Reports the write access expressions on variables that are still referencing the array value previously used in a 'foreach' statement. It is recommended to destroy such references by using 'unset'. See foreach (php.net) and unset (php.net) for details.",
+                  "markdown": "Reports the write access expressions on variables that are still referencing the array value previously used in a `foreach` statement.\n\n\nIt is recommended to destroy such references by using `unset`.\n\n\nSee [foreach (php.net)](https://www.php.net/manual/en/control-structures.foreach.php) and [unset (php.net)](https://www.php.net/manual/en/function.unset.php) for details."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "PhpWriteAccessToReferencedArrayValueWithoutUnsetInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Control flow",
                       "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
@@ -8540,7 +8540,7 @@
                   {
                     "target": {
                       "id": "PHP/PHPDoc/Code style",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -8969,7 +8969,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -9365,7 +9365,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -9608,39 +9608,6 @@
                 ]
               },
               {
-                "id": "PhpUndefinedVariableInspection",
-                "shortDescription": {
-                  "text": "Undefined variable"
-                },
-                "fullDescription": {
-                  "text": "Produces two types of warnings: Undefined variable: the variable's definition is not found in the project files, configured include paths, or among the PHP predefined variables. Variable might have not been defined: there are one or more paths to reach the line with the variable usage without defining it. Use the options below to customize the inspection: Report that variable is probably undefined: clear the checkbox to disable the Variable might have not been defined warnings. Enable inspection in global space: by default, the inspection is enabled for global space. Clear the checkbox to only report undefined variables from functions' local scope. Search for variable's definition outside the current file: if selected, the IDE reports a global variable as undefined only in case there are no 'include' or 'require' statements in the current file and the variable's definition cannot be found in the project. Note that the IDE does not examine the actual content of included files but only checks the presence of 'include' or 'require' statements. Otherwise, if not selected, the IDE searches for the variable's definition only in the current file and ignores the 'include' or 'require' statements if any.",
-                  "markdown": "Produces two types of warnings:\n\n* *Undefined variable*: the variable's definition is not found in the project files, configured include paths, or among the PHP predefined variables.\n* *Variable might have not been defined*: there are one or more paths to reach the line with the variable usage without defining it.\n\n\nUse the options below to customize the inspection:\n\n* **Report that variable is probably undefined** : clear the checkbox to disable the *Variable might have not been defined* warnings.\n* **Enable inspection in global space**: by default, the inspection is enabled for global space. Clear the checkbox to only report undefined variables from functions' local scope.\n*\n  **Search for variable's definition outside the current file** : if selected, the IDE reports a global variable as undefined only in case there are no `include` or `require` statements in the current file and the variable's definition cannot be found in the project. Note that the IDE does not examine the actual content of included files but only checks the presence of `include` or `require` statements.\n\n\n  Otherwise, if not selected, the IDE searches for the variable's definition only in the current file and ignores the `include` or `require` statements if any."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "error",
-                  "parameters": {
-                    "suppressToolId": "PhpUndefinedVariableInspection",
-                    "ideaSeverity": "ERROR",
-                    "qodanaSeverity": "Critical"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Undefined symbols",
-                      "index": 36,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpUsageOfSilenceOperatorInspection",
                 "shortDescription": {
                   "text": "Usage of a silence operator"
@@ -9663,6 +9630,39 @@
                     "target": {
                       "id": "PHP/Code smell",
                       "index": 3,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpUndefinedVariableInspection",
+                "shortDescription": {
+                  "text": "Undefined variable"
+                },
+                "fullDescription": {
+                  "text": "Produces two types of warnings: Undefined variable: the variable's definition is not found in the project files, configured include paths, or among the PHP predefined variables. Variable might have not been defined: there are one or more paths to reach the line with the variable usage without defining it. Use the options below to customize the inspection: Report that variable is probably undefined: clear the checkbox to disable the Variable might have not been defined warnings. Enable inspection in global space: by default, the inspection is enabled for global space. Clear the checkbox to only report undefined variables from functions' local scope. Search for variable's definition outside the current file: if selected, the IDE reports a global variable as undefined only in case there are no 'include' or 'require' statements in the current file and the variable's definition cannot be found in the project. Note that the IDE does not examine the actual content of included files but only checks the presence of 'include' or 'require' statements. Otherwise, if not selected, the IDE searches for the variable's definition only in the current file and ignores the 'include' or 'require' statements if any.",
+                  "markdown": "Produces two types of warnings:\n\n* *Undefined variable*: the variable's definition is not found in the project files, configured include paths, or among the PHP predefined variables.\n* *Variable might have not been defined*: there are one or more paths to reach the line with the variable usage without defining it.\n\n\nUse the options below to customize the inspection:\n\n* **Report that variable is probably undefined** : clear the checkbox to disable the *Variable might have not been defined* warnings.\n* **Enable inspection in global space**: by default, the inspection is enabled for global space. Clear the checkbox to only report undefined variables from functions' local scope.\n*\n  **Search for variable's definition outside the current file** : if selected, the IDE reports a global variable as undefined only in case there are no `include` or `require` statements in the current file and the variable's definition cannot be found in the project. Note that the IDE does not examine the actual content of included files but only checks the presence of `include` or `require` statements.\n\n\n  Otherwise, if not selected, the IDE searches for the variable's definition only in the current file and ignores the `include` or `require` statements if any."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "error",
+                  "parameters": {
+                    "suppressToolId": "PhpUndefinedVariableInspection",
+                    "ideaSeverity": "ERROR",
+                    "qodanaSeverity": "Critical"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Undefined symbols",
+                      "index": 36,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -9893,7 +9893,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -10091,7 +10091,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -10784,7 +10784,7 @@
                   {
                     "target": {
                       "id": "PHP/PHPDoc/Code style",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -11015,7 +11015,7 @@
                   {
                     "target": {
                       "id": "PHP/PHPDoc/Code style",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -11180,7 +11180,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -11258,39 +11258,6 @@
                 ]
               },
               {
-                "id": "PhpDeprecatedImplodeUsageInspection",
-                "shortDescription": {
-                  "text": "Deprecated 'implode/join' usage"
-                },
-                "fullDescription": {
-                  "text": "Reports deprecated usage of the 'implode' and 'join' functions. Starting from PHP 7.4, using 'implode' and 'join' with an array as the first argument and a string as the second argument is deprecated. See Deprecations for PHP 7.4 (php.net) for details.",
-                  "markdown": "Reports deprecated usage of the `implode` and `join` functions.\n\nStarting from PHP 7.4, using `implode` and `join` with an array as the first argument and a string as the second argument is deprecated.\n\n\nSee [Deprecations for PHP 7.4 (php.net)](https://wiki.php.net/rfc/deprecations_php_7_4#implode_parameter_order_mix) for details."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "PhpDeprecatedImplodeUsageInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/General",
-                      "index": 8,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpDangerousArrayInitializationInspection",
                 "shortDescription": {
                   "text": "Dangerous array initialization"
@@ -11313,6 +11280,39 @@
                     "target": {
                       "id": "PHP/Code style",
                       "index": 5,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpDeprecatedImplodeUsageInspection",
+                "shortDescription": {
+                  "text": "Deprecated 'implode/join' usage"
+                },
+                "fullDescription": {
+                  "text": "Reports deprecated usage of the 'implode' and 'join' functions. Starting from PHP 7.4, using 'implode' and 'join' with an array as the first argument and a string as the second argument is deprecated. See Deprecations for PHP 7.4 (php.net) for details.",
+                  "markdown": "Reports deprecated usage of the `implode` and `join` functions.\n\nStarting from PHP 7.4, using `implode` and `join` with an array as the first argument and a string as the second argument is deprecated.\n\n\nSee [Deprecations for PHP 7.4 (php.net)](https://wiki.php.net/rfc/deprecations_php_7_4#implode_parameter_order_mix) for details."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "PhpDeprecatedImplodeUsageInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/General",
+                      "index": 8,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -11576,7 +11576,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -11720,39 +11720,6 @@
                 ]
               },
               {
-                "id": "PhpUnitUndefinedDataProviderInspection",
-                "shortDescription": {
-                  "text": "Undefined PHPUnit data provider"
-                },
-                "fullDescription": {
-                  "text": "Reports the references to functions/methods in the '@dataProvider' PHPDoc tag that are not resolved. Note that when resolving 'dataProvider', PHPUnit doesn't take 'use' statements into account.",
-                  "markdown": "Reports the references to functions/methods in the `@dataProvider` PHPDoc tag that are not resolved.\n\nNote that when resolving `dataProvider`, PHPUnit doesn't take `use` statements into account."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "PhpUnitUndefinedDataProviderInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/PHPUnit",
-                      "index": 29,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpIncludeInspection",
                 "shortDescription": {
                   "text": "Unresolved include"
@@ -11775,6 +11742,39 @@
                     "target": {
                       "id": "PHP/General",
                       "index": 8,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpUnitUndefinedDataProviderInspection",
+                "shortDescription": {
+                  "text": "Undefined PHPUnit data provider"
+                },
+                "fullDescription": {
+                  "text": "Reports the references to functions/methods in the '@dataProvider' PHPDoc tag that are not resolved. Note that when resolving 'dataProvider', PHPUnit doesn't take 'use' statements into account.",
+                  "markdown": "Reports the references to functions/methods in the `@dataProvider` PHPDoc tag that are not resolved.\n\nNote that when resolving `dataProvider`, PHPUnit doesn't take `use` statements into account."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "PhpUnitUndefinedDataProviderInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/PHPUnit",
+                      "index": 29,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -11984,39 +11984,6 @@
                 ]
               },
               {
-                "id": "PhpIllegalArrayKeyTypeInspection",
-                "shortDescription": {
-                  "text": "Illegal array key type"
-                },
-                "fullDescription": {
-                  "text": "Reports the array keys that are of illegal type, such as objects or arrays. See Arrays (php.net) for details.",
-                  "markdown": "Reports the array keys that are of illegal type, such as objects or arrays.\n\n\nSee [Arrays (php.net)](http://www.php.net/manual/en/language.types.array.php) for details."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "PhpIllegalArrayKeyTypeInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Type compatibility",
-                      "index": 33,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpArrayIsAlwaysEmptyInspection",
                 "shortDescription": {
                   "text": "Array is always empty at the point of access"
@@ -12050,6 +12017,39 @@
                 ]
               },
               {
+                "id": "PhpIllegalArrayKeyTypeInspection",
+                "shortDescription": {
+                  "text": "Illegal array key type"
+                },
+                "fullDescription": {
+                  "text": "Reports the array keys that are of illegal type, such as objects or arrays. See Arrays (php.net) for details.",
+                  "markdown": "Reports the array keys that are of illegal type, such as objects or arrays.\n\n\nSee [Arrays (php.net)](http://www.php.net/manual/en/language.types.array.php) for details."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "PhpIllegalArrayKeyTypeInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Type compatibility",
+                      "index": 33,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
                 "id": "PhpLoopNeverIteratesInspection",
                 "shortDescription": {
                   "text": "Loop does not iterate"
@@ -12071,7 +12071,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -12236,7 +12236,7 @@
                   {
                     "target": {
                       "id": "PHP/PHPDoc/Code style",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -13271,28 +13271,28 @@
                 ]
               },
               {
-                "id": "PhpNamedArgumentUsageInspection",
+                "id": "PhpUnusedFieldDefaultValueInspection",
                 "shortDescription": {
-                  "text": "Argument with name identifier"
+                  "text": "Redundant property initializer"
                 },
                 "fullDescription": {
-                  "text": "Reports arguments with name identifiers.",
-                  "markdown": "Reports arguments with name identifiers."
+                  "text": "Reports the fields with default initializers that are always overwritten in the class constructor.",
+                  "markdown": "Reports the fields with default initializers that are always overwritten in the class constructor."
                 },
                 "defaultConfiguration": {
                   "enabled": true,
                   "level": "note",
                   "parameters": {
-                    "suppressToolId": "PhpNamedArgumentUsageInspection",
-                    "ideaSeverity": "INFORMATION",
-                    "qodanaSeverity": "Info"
+                    "suppressToolId": "PhpUnusedFieldDefaultValueInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
                   }
                 },
                 "relationships": [
                   {
                     "target": {
-                      "id": "PHP/General",
-                      "index": 8,
+                      "id": "PHP/Unused symbols",
+                      "index": 50,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -13337,28 +13337,28 @@
                 ]
               },
               {
-                "id": "PhpUnusedFieldDefaultValueInspection",
+                "id": "PhpNamedArgumentUsageInspection",
                 "shortDescription": {
-                  "text": "Redundant property initializer"
+                  "text": "Argument with name identifier"
                 },
                 "fullDescription": {
-                  "text": "Reports the fields with default initializers that are always overwritten in the class constructor.",
-                  "markdown": "Reports the fields with default initializers that are always overwritten in the class constructor."
+                  "text": "Reports arguments with name identifiers.",
+                  "markdown": "Reports arguments with name identifiers."
                 },
                 "defaultConfiguration": {
                   "enabled": true,
                   "level": "note",
                   "parameters": {
-                    "suppressToolId": "PhpUnusedFieldDefaultValueInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
+                    "suppressToolId": "PhpNamedArgumentUsageInspection",
+                    "ideaSeverity": "INFORMATION",
+                    "qodanaSeverity": "Info"
                   }
                 },
                 "relationships": [
                   {
                     "target": {
-                      "id": "PHP/Unused symbols",
-                      "index": 50,
+                      "id": "PHP/General",
+                      "index": 8,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -13655,40 +13655,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "PhpClassCantBeUsedAsAttributeInspection",
-                "shortDescription": {
-                  "text": "Class cannot be used as attribute"
-                },
-                "fullDescription": {
-                  "text": "Reports the attributes that are resolved to a class not annotated with '#[Attribute]'. See Attributes (php.net) for details.",
-                  "markdown": "Reports the attributes that are resolved to a class not annotated with `#[Attribute]`.\n\n\nSee [Attributes (php.net)](https://wiki.php.net/rfc/attributes_v2) for details."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "PhpClassCantBeUsedAsAttributeInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Attributes",
-                      "index": 61,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -13722,6 +13689,39 @@
                     "target": {
                       "id": "PHP/Code smell",
                       "index": 3,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpClassCantBeUsedAsAttributeInspection",
+                "shortDescription": {
+                  "text": "Class cannot be used as attribute"
+                },
+                "fullDescription": {
+                  "text": "Reports the attributes that are resolved to a class not annotated with '#[Attribute]'. See Attributes (php.net) for details.",
+                  "markdown": "Reports the attributes that are resolved to a class not annotated with `#[Attribute]`.\n\n\nSee [Attributes (php.net)](https://wiki.php.net/rfc/attributes_v2) for details."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "PhpClassCantBeUsedAsAttributeInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Attributes",
+                      "index": 61,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -14414,7 +14414,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -15701,7 +15701,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -15833,7 +15833,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -16109,39 +16109,6 @@
                 ]
               },
               {
-                "id": "PhpGetClassCanBeReplacedWithClassNameLiteralInspection",
-                "shortDescription": {
-                  "text": "'get_class()' call can be replaced with '::class'"
-                },
-                "fullDescription": {
-                  "text": "Reports the 'get_class()' calls and suggests replacing them with '::class' when PHP Language level is set to 8.0 or later. See Allow ::class on objects (php.net) for details.",
-                  "markdown": "Reports the `get_class()` calls and suggests replacing them with `::class` when PHP Language level is set to 8.0 or later.\n\n\nSee [Allow ::class on objects (php.net)](https://wiki.php.net/rfc/class_name_literal_on_object) for details."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "PhpGetClassCanBeReplacedWithClassNameLiteralInspection",
-                    "ideaSeverity": "INFORMATION",
-                    "qodanaSeverity": "Info"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Code style",
-                      "index": 5,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpContinueTargetingSwitchInspection",
                 "shortDescription": {
                   "text": "'continue' is targeting 'switch' statement"
@@ -16164,6 +16131,39 @@
                     "target": {
                       "id": "PHP/Code smell",
                       "index": 3,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpGetClassCanBeReplacedWithClassNameLiteralInspection",
+                "shortDescription": {
+                  "text": "'get_class()' call can be replaced with '::class'"
+                },
+                "fullDescription": {
+                  "text": "Reports the 'get_class()' calls and suggests replacing them with '::class' when PHP Language level is set to 8.0 or later. See Allow ::class on objects (php.net) for details.",
+                  "markdown": "Reports the `get_class()` calls and suggests replacing them with `::class` when PHP Language level is set to 8.0 or later.\n\n\nSee [Allow ::class on objects (php.net)](https://wiki.php.net/rfc/class_name_literal_on_object) for details."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "PhpGetClassCanBeReplacedWithClassNameLiteralInspection",
+                    "ideaSeverity": "INFORMATION",
+                    "qodanaSeverity": "Info"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Code style",
+                      "index": 5,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -17681,7 +17681,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -18506,7 +18506,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -18848,39 +18848,6 @@
                 ]
               },
               {
-                "id": "PhpTooManyParametersInspection",
-                "shortDescription": {
-                  "text": "Too many parameters in function declaration"
-                },
-                "fullDescription": {
-                  "text": "Reports the function/method declarations with the number of parameters exceeding the specified limit.",
-                  "markdown": "Reports the function/method declarations with the number of parameters exceeding the specified limit."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "PhpTooManyParametersInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Code smell",
-                      "index": 3,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpWrongForeachArgumentTypeInspection",
                 "shortDescription": {
                   "text": "Invalid argument supplied for 'foreach()'"
@@ -18903,6 +18870,39 @@
                     "target": {
                       "id": "PHP/Type compatibility",
                       "index": 33,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpTooManyParametersInspection",
+                "shortDescription": {
+                  "text": "Too many parameters in function declaration"
+                },
+                "fullDescription": {
+                  "text": "Reports the function/method declarations with the number of parameters exceeding the specified limit.",
+                  "markdown": "Reports the function/method declarations with the number of parameters exceeding the specified limit."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "PhpTooManyParametersInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Code smell",
+                      "index": 3,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -19121,7 +19121,7 @@
           },
           {
             "name": "com.jetbrains.sh",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "ShellCheck",
@@ -19166,7 +19166,7 @@
           },
           {
             "name": "Karma",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "KarmaConfigFile",
@@ -19211,7 +19211,7 @@
           },
           {
             "name": "com.intellij.database",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "MysqlLoadDataPathInspection",
@@ -19544,39 +19544,6 @@
                 ]
               },
               {
-                "id": "MysqlParsingInspection",
-                "shortDescription": {
-                  "text": "Unsupported syntax in pre-8.0 versions"
-                },
-                "fullDescription": {
-                  "text": "Reports invalid usages of UNION in queries. The inspection works in MySQL versions that are earlier than 8.0. Example (MySQL): 'SELECT * FROM (SELECT 1 UNION (SELECT 1 UNION SELECT 2)) a;'",
-                  "markdown": "Reports invalid usages of UNION in queries.\n\nThe inspection works in MySQL versions that are earlier than 8.0.\n\nExample (MySQL):\n\n\n    SELECT * FROM (SELECT 1 UNION (SELECT 1 UNION SELECT 2)) a;\n"
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "MysqlParsing",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "MySQL",
-                      "index": 13,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "SqlCallNotationInspection",
                 "shortDescription": {
                   "text": "Using of named and positional arguments"
@@ -19599,6 +19566,39 @@
                     "target": {
                       "id": "SQL",
                       "index": 46,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "MysqlParsingInspection",
+                "shortDescription": {
+                  "text": "Unsupported syntax in pre-8.0 versions"
+                },
+                "fullDescription": {
+                  "text": "Reports invalid usages of UNION in queries. The inspection works in MySQL versions that are earlier than 8.0. Example (MySQL): 'SELECT * FROM (SELECT 1 UNION (SELECT 1 UNION SELECT 2)) a;'",
+                  "markdown": "Reports invalid usages of UNION in queries.\n\nThe inspection works in MySQL versions that are earlier than 8.0.\n\nExample (MySQL):\n\n\n    SELECT * FROM (SELECT 1 UNION (SELECT 1 UNION SELECT 2)) a;\n"
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "MysqlParsing",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "MySQL",
+                      "index": 13,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -21434,7 +21434,7 @@
           },
           {
             "name": "fr.adrienbrault.idea.symfony2plugin",
-            "version": "2023.1.271",
+            "version": "2024.1.272",
             "rules": [
               {
                 "id": "TwigExtensionDeprecatedInspection",
@@ -23855,7 +23855,7 @@
           },
           {
             "name": "org.jetbrains.plugins.sass",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "SassScssResolvedByNameOnly",
@@ -23999,7 +23999,7 @@
           },
           {
             "name": "com.intellij",
-            "version": "241.16512.90",
+            "version": "241.16902.111",
             "rules": [
               {
                 "id": "HtmlUnknownBooleanAttribute",
@@ -25784,39 +25784,6 @@
                 ]
               },
               {
-                "id": "RegExpRedundantNestedCharacterClass",
-                "shortDescription": {
-                  "text": "Redundant nested character class"
-                },
-                "fullDescription": {
-                  "text": "Reports unnecessary nested character classes. Example: '[a-c[x-z]]' After the quick-fix is applied: '[a-cx-z]' New in 2020.2",
-                  "markdown": "Reports unnecessary nested character classes.\n\n**Example:**\n\n\n      [a-c[x-z]]\n\nAfter the quick-fix is applied:\n\n\n      [a-cx-z]\n\nNew in 2020.2"
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "RegExpRedundantNestedCharacterClass",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "RegExp",
-                      "index": 65,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "XmlDeprecatedElement",
                 "shortDescription": {
                   "text": "Deprecated symbol"
@@ -25839,6 +25806,39 @@
                     "target": {
                       "id": "XML",
                       "index": 53,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "RegExpRedundantNestedCharacterClass",
+                "shortDescription": {
+                  "text": "Redundant nested character class"
+                },
+                "fullDescription": {
+                  "text": "Reports unnecessary nested character classes. Example: '[a-c[x-z]]' After the quick-fix is applied: '[a-cx-z]' New in 2020.2",
+                  "markdown": "Reports unnecessary nested character classes.\n\n**Example:**\n\n\n      [a-c[x-z]]\n\nAfter the quick-fix is applied:\n\n\n      [a-cx-z]\n\nNew in 2020.2"
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "RegExpRedundantNestedCharacterClass",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "RegExp",
+                      "index": 65,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -26090,7 +26090,7 @@
           },
           {
             "name": "JavaScript",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "JSUnusedAssignment",
@@ -26180,7 +26180,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Data flow",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -26444,7 +26444,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Data flow",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -26807,7 +26807,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -27005,7 +27005,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/DOM issues",
-                      "index": 75,
+                      "index": 74,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -27149,39 +27149,6 @@
                 ]
               },
               {
-                "id": "TextLabelInSwitchStatementJS",
-                "shortDescription": {
-                  "text": "Text label in 'switch' statement"
-                },
-                "fullDescription": {
-                  "text": "Reports a labeled statement inside a 'switch' statement, which often results from a typo. Example: 'switch(x)\n    {\n        case 1:\n        case2:   //typo!\n        case 3:\n            break;\n    }'",
-                  "markdown": "Reports a labeled statement inside a `switch` statement, which often results from a typo.\n\nExample:\n\n\n        switch(x)\n        {\n            case 1:\n            case2:   //typo!\n            case 3:\n                break;\n        }\n"
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "TextLabelInSwitchStatementJS",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "JavaScript and TypeScript/Switch statement issues",
-                      "index": 73,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "ES6PossiblyAsyncFunction",
                 "shortDescription": {
                   "text": "'await' in non-async function"
@@ -27204,6 +27171,39 @@
                     "target": {
                       "id": "JavaScript and TypeScript/Async code and promises",
                       "index": 76,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "TextLabelInSwitchStatementJS",
+                "shortDescription": {
+                  "text": "Text label in 'switch' statement"
+                },
+                "fullDescription": {
+                  "text": "Reports a labeled statement inside a 'switch' statement, which often results from a typo. Example: 'switch(x)\n    {\n        case 1:\n        case2:   //typo!\n        case 3:\n            break;\n    }'",
+                  "markdown": "Reports a labeled statement inside a `switch` statement, which often results from a typo.\n\nExample:\n\n\n        switch(x)\n        {\n            case 1:\n            case2:   //typo!\n            case 3:\n                break;\n        }\n"
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "TextLabelInSwitchStatementJS",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "JavaScript and TypeScript/Switch statement issues",
+                      "index": 73,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -27335,7 +27335,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -27962,7 +27962,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -27995,7 +27995,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28391,7 +28391,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28457,7 +28457,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29051,7 +29051,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/DOM issues",
-                      "index": 75,
+                      "index": 74,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29129,39 +29129,6 @@
                 ]
               },
               {
-                "id": "TypeScriptDuplicateUnionOrIntersectionType",
-                "shortDescription": {
-                  "text": "Duplicate union or intersection type component"
-                },
-                "fullDescription": {
-                  "text": "Reports a duplicate type inside a union or intersection.",
-                  "markdown": "Reports a duplicate type inside a union or intersection."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "TypeScriptDuplicateUnionOrIntersectionType",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "TrivialConditionalJS",
                 "shortDescription": {
                   "text": "Redundant conditional expression"
@@ -29195,19 +29162,19 @@
                 ]
               },
               {
-                "id": "InnerHTMLJS",
+                "id": "TypeScriptDuplicateUnionOrIntersectionType",
                 "shortDescription": {
-                  "text": "Use of 'innerHTML' property"
+                  "text": "Duplicate union or intersection type component"
                 },
                 "fullDescription": {
-                  "text": "Reports a JavaScript access to DOM nodes as text using the 'innerHTML' property. Most usages of 'innerHTML' are performed better with explicit DOM calls, such as 'getElementByID()' and 'createElement()'. Additionally, 'innerHTML' will not work with XML DOMs, including DOMs for XHTML if viewed as XML. This can lead to difficulties in diagnosing bugs.",
-                  "markdown": "Reports a JavaScript access to DOM nodes as text using the `innerHTML` property. Most usages of `innerHTML` are performed better with explicit DOM calls, such as `getElementByID()` and `createElement()`. Additionally, `innerHTML` will not work with XML DOMs, including DOMs for XHTML if viewed as XML. This can lead to difficulties in diagnosing bugs."
+                  "text": "Reports a duplicate type inside a union or intersection.",
+                  "markdown": "Reports a duplicate type inside a union or intersection."
                 },
                 "defaultConfiguration": {
                   "enabled": false,
                   "level": "warning",
                   "parameters": {
-                    "suppressToolId": "InnerHTMLJS",
+                    "suppressToolId": "TypeScriptDuplicateUnionOrIntersectionType",
                     "ideaSeverity": "WARNING",
                     "qodanaSeverity": "High"
                   }
@@ -29215,8 +29182,8 @@
                 "relationships": [
                   {
                     "target": {
-                      "id": "JavaScript and TypeScript/DOM issues",
-                      "index": 75,
+                      "id": "JavaScript and TypeScript/TypeScript",
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29250,6 +29217,39 @@
                     "target": {
                       "id": "JavaScript and TypeScript/Imports and dependencies",
                       "index": 80,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "InnerHTMLJS",
+                "shortDescription": {
+                  "text": "Use of 'innerHTML' property"
+                },
+                "fullDescription": {
+                  "text": "Reports a JavaScript access to DOM nodes as text using the 'innerHTML' property. Most usages of 'innerHTML' are performed better with explicit DOM calls, such as 'getElementByID()' and 'createElement()'. Additionally, 'innerHTML' will not work with XML DOMs, including DOMs for XHTML if viewed as XML. This can lead to difficulties in diagnosing bugs.",
+                  "markdown": "Reports a JavaScript access to DOM nodes as text using the `innerHTML` property. Most usages of `innerHTML` are performed better with explicit DOM calls, such as `getElementByID()` and `createElement()`. Additionally, `innerHTML` will not work with XML DOMs, including DOMs for XHTML if viewed as XML. This can lead to difficulties in diagnosing bugs."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "InnerHTMLJS",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "JavaScript and TypeScript/DOM issues",
+                      "index": 74,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29525,6 +29525,39 @@
                 ]
               },
               {
+                "id": "IfStatementWithTooManyBranchesJS",
+                "shortDescription": {
+                  "text": "'if' statement with too many branches"
+                },
+                "fullDescription": {
+                  "text": "Reports an 'if' statement with too many branches. Such statements may be confusing, and often indicate inadequate levels of design abstraction. Use the field below to specify the maximum number of branches expected.",
+                  "markdown": "Reports an `if` statement with too many branches. Such statements may be confusing, and often indicate inadequate levels of design abstraction.\n\n\nUse the field below to specify the maximum number of branches expected."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "IfStatementWithTooManyBranchesJS",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "JavaScript and TypeScript/Control flow issues",
+                      "index": 54,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
                 "id": "JSValidateJSDoc",
                 "shortDescription": {
                   "text": "Syntax errors and unresolved references in JSDoc"
@@ -29580,39 +29613,6 @@
                     "target": {
                       "id": "JavaScript and TypeScript/Code style issues",
                       "index": 66,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "IfStatementWithTooManyBranchesJS",
-                "shortDescription": {
-                  "text": "'if' statement with too many branches"
-                },
-                "fullDescription": {
-                  "text": "Reports an 'if' statement with too many branches. Such statements may be confusing, and often indicate inadequate levels of design abstraction. Use the field below to specify the maximum number of branches expected.",
-                  "markdown": "Reports an `if` statement with too many branches. Such statements may be confusing, and often indicate inadequate levels of design abstraction.\n\n\nUse the field below to specify the maximum number of branches expected."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "IfStatementWithTooManyBranchesJS",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29810,7 +29810,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29975,7 +29975,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30239,7 +30239,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30899,7 +30899,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30932,7 +30932,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31163,7 +31163,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31493,7 +31493,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/DOM issues",
-                      "index": 75,
+                      "index": 74,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31526,7 +31526,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31559,7 +31559,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31637,21 +31637,21 @@
                 ]
               },
               {
-                "id": "JSUnfilteredForInLoop",
+                "id": "JSAnnotator",
                 "shortDescription": {
-                  "text": "Unfiltered for..in loop"
+                  "text": "ECMAScript specification is not followed"
                 },
                 "fullDescription": {
-                  "text": "Reports unfiltered 'for-in' loops. The use of this construct results in processing not only own properties of an object but properties from its prototype as well. It may be unexpected in some specific cases, for example, in utility methods that copy or modify all properties or when 'Object''s prototype may be incorrectly modified. For example, the following code will print 42 and myMethod: 'Object.prototype.myMethod = function myMethod() {};\nlet a = { foo: 42 };\nfor (let i in a) {\n  console.log(a[i]);\n}' Suggests replacing the whole loop with a 'Object.keys()' method or adding a 'hasOwnProperty()' check. After applying the quick-fix the code looks as follows: 'for (let i in a) {\n  if (a.hasOwnProperty(i)) {\n    console.log(a[i]);\n  }\n}'",
-                  "markdown": "Reports unfiltered `for-in` loops.   \n\nThe use of this construct results in processing not only own properties of an object but properties from its prototype as well. It may be unexpected in some specific cases, for example, in utility methods that copy or modify all properties or when `Object`'s prototype may be incorrectly modified. For example, the following code will print **42** and **myMethod** :   \n\n\n    Object.prototype.myMethod = function myMethod() {};\n    let a = { foo: 42 };\n    for (let i in a) {\n      console.log(a[i]);\n    }\n\nSuggests replacing the whole loop with a `Object.keys()` method or adding a `hasOwnProperty()` check. After applying the quick-fix the code looks as follows:\n\n\n    for (let i in a) {\n      if (a.hasOwnProperty(i)) {\n        console.log(a[i]);\n      }\n    }\n"
+                  "text": "Reports basic syntax issues and inconsistencies with language specification, such as invalid usages of keywords, usages of incompatible numeric format, or multiple parameters to getters/setters. Generally, such errors must always be reported and shouldn't be disabled. But in some cases, such as issues due to the dynamic nature of JavaScript, the use of not yet supported language features, or bugs in IDE's checker, it may be handy to disable reporting these very basic errors.",
+                  "markdown": "Reports basic syntax issues and inconsistencies with language specification, such as invalid usages of keywords, usages of incompatible numeric format, or multiple parameters to getters/setters.   \nGenerally, such errors must always be reported and shouldn't be disabled. But in some cases, such as issues due to the dynamic nature of JavaScript, the use of not yet supported language features, or bugs in IDE's checker, it may be handy to disable reporting these very basic errors."
                 },
                 "defaultConfiguration": {
                   "enabled": false,
-                  "level": "warning",
+                  "level": "error",
                   "parameters": {
-                    "suppressToolId": "JSUnfilteredForInLoop",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
+                    "suppressToolId": "JSAnnotator",
+                    "ideaSeverity": "ERROR",
+                    "qodanaSeverity": "Critical"
                   }
                 },
                 "relationships": [
@@ -31703,21 +31703,21 @@
                 ]
               },
               {
-                "id": "JSAnnotator",
+                "id": "JSUnfilteredForInLoop",
                 "shortDescription": {
-                  "text": "ECMAScript specification is not followed"
+                  "text": "Unfiltered for..in loop"
                 },
                 "fullDescription": {
-                  "text": "Reports basic syntax issues and inconsistencies with language specification, such as invalid usages of keywords, usages of incompatible numeric format, or multiple parameters to getters/setters. Generally, such errors must always be reported and shouldn't be disabled. But in some cases, such as issues due to the dynamic nature of JavaScript, the use of not yet supported language features, or bugs in IDE's checker, it may be handy to disable reporting these very basic errors.",
-                  "markdown": "Reports basic syntax issues and inconsistencies with language specification, such as invalid usages of keywords, usages of incompatible numeric format, or multiple parameters to getters/setters.   \nGenerally, such errors must always be reported and shouldn't be disabled. But in some cases, such as issues due to the dynamic nature of JavaScript, the use of not yet supported language features, or bugs in IDE's checker, it may be handy to disable reporting these very basic errors."
+                  "text": "Reports unfiltered 'for-in' loops. The use of this construct results in processing not only own properties of an object but properties from its prototype as well. It may be unexpected in some specific cases, for example, in utility methods that copy or modify all properties or when 'Object''s prototype may be incorrectly modified. For example, the following code will print 42 and myMethod: 'Object.prototype.myMethod = function myMethod() {};\nlet a = { foo: 42 };\nfor (let i in a) {\n  console.log(a[i]);\n}' Suggests replacing the whole loop with a 'Object.keys()' method or adding a 'hasOwnProperty()' check. After applying the quick-fix the code looks as follows: 'for (let i in a) {\n  if (a.hasOwnProperty(i)) {\n    console.log(a[i]);\n  }\n}'",
+                  "markdown": "Reports unfiltered `for-in` loops.   \n\nThe use of this construct results in processing not only own properties of an object but properties from its prototype as well. It may be unexpected in some specific cases, for example, in utility methods that copy or modify all properties or when `Object`'s prototype may be incorrectly modified. For example, the following code will print **42** and **myMethod** :   \n\n\n    Object.prototype.myMethod = function myMethod() {};\n    let a = { foo: 42 };\n    for (let i in a) {\n      console.log(a[i]);\n    }\n\nSuggests replacing the whole loop with a `Object.keys()` method or adding a `hasOwnProperty()` check. After applying the quick-fix the code looks as follows:\n\n\n    for (let i in a) {\n      if (a.hasOwnProperty(i)) {\n        console.log(a[i]);\n      }\n    }\n"
                 },
                 "defaultConfiguration": {
                   "enabled": false,
-                  "level": "error",
+                  "level": "warning",
                   "parameters": {
-                    "suppressToolId": "JSAnnotator",
-                    "ideaSeverity": "ERROR",
-                    "qodanaSeverity": "Critical"
+                    "suppressToolId": "JSUnfilteredForInLoop",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
                   }
                 },
                 "relationships": [
@@ -32219,7 +32219,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -32330,39 +32330,6 @@
                 ]
               },
               {
-                "id": "ConstantOnLHSOfComparisonJS",
-                "shortDescription": {
-                  "text": "Constant on left side of comparison"
-                },
-                "fullDescription": {
-                  "text": "Reports a comparison operation with a constant value in the left-hand side. According to coding conventions, constants should be in the right-hand side of comparisons.",
-                  "markdown": "Reports a comparison operation with a constant value in the left-hand side. According to coding conventions, constants should be in the right-hand side of comparisons."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "ConstantOnLefSideOfComparisonJS",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "JavaScript and TypeScript/Code style issues",
-                      "index": 66,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "JSCheckFunctionSignatures",
                 "shortDescription": {
                   "text": "Signature mismatch"
@@ -32385,6 +32352,39 @@
                     "target": {
                       "id": "JavaScript and TypeScript/General",
                       "index": 34,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "ConstantOnLHSOfComparisonJS",
+                "shortDescription": {
+                  "text": "Constant on left side of comparison"
+                },
+                "fullDescription": {
+                  "text": "Reports a comparison operation with a constant value in the left-hand side. According to coding conventions, constants should be in the right-hand side of comparisons.",
+                  "markdown": "Reports a comparison operation with a constant value in the left-hand side. According to coding conventions, constants should be in the right-hand side of comparisons."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "ConstantOnLefSideOfComparisonJS",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "JavaScript and TypeScript/Code style issues",
+                      "index": 66,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -32516,7 +32516,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -32747,7 +32747,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -33032,7 +33032,7 @@
           },
           {
             "name": "gherkin",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "GherkinScenarioToScenarioOutline",
@@ -33275,7 +33275,7 @@
           },
           {
             "name": "org.editorconfig.editorconfigjetbrains",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "EditorConfigRootDeclarationUniqueness",
@@ -34244,7 +34244,7 @@
           },
           {
             "name": "org.intellij.plugins.postcss",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "PostCssUnresolvedModuleValueReference",
@@ -34421,7 +34421,7 @@
           },
           {
             "name": "HtmlTools",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "HtmlRequiredAltAttribute",
@@ -34796,7 +34796,7 @@
           },
           {
             "name": "com.intellij.css",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "CssInvalidHtmlTagReference",
@@ -34919,7 +34919,7 @@
                   {
                     "target": {
                       "id": "CSS/Probable bugs",
-                      "index": 71,
+                      "index": 70,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -35183,7 +35183,7 @@
                   {
                     "target": {
                       "id": "CSS/Probable bugs",
-                      "index": 71,
+                      "index": 70,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -35546,7 +35546,7 @@
                   {
                     "target": {
                       "id": "CSS/Probable bugs",
-                      "index": 71,
+                      "index": 70,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -35798,7 +35798,7 @@
           },
           {
             "name": "org.jetbrains.plugins.yaml",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "YAMLSchemaValidation",
@@ -36041,7 +36041,7 @@
           },
           {
             "name": "com.jetbrains.restClient",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "HttpRequestWhitespaceInsideRequestTargetPath",
@@ -36449,7 +36449,7 @@
           },
           {
             "name": "org.jetbrains.plugins.less",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "LessUnresolvedVariable",
@@ -36560,7 +36560,7 @@
           },
           {
             "name": "XPathView",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "XsltUnusedDeclaration",
@@ -37079,7 +37079,7 @@
           },
           {
             "name": "com.jetbrains.php.joomla",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "FileHeaderInspection",
@@ -37157,7 +37157,7 @@
           },
           {
             "name": "com.jetbrains.php.architecture",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "PhpComplexClassInspection",
@@ -37433,7 +37433,7 @@
           },
           {
             "name": "org.intellij.qodana",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "JsCoverageInspection",
@@ -37544,7 +37544,7 @@
           },
           {
             "name": "com.jetbrains.php.behat",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "BehatDocStepCanBeConvertedToAttributeInspection",
@@ -37589,7 +37589,7 @@
           },
           {
             "name": "com.jetbrains.plugins.ini4idea",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "DuplicateSectionInFile",
@@ -37667,7 +37667,7 @@
           },
           {
             "name": "com.intellij.php.psalm",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "PsalmAdvanceCallableParamsInspection",
@@ -37745,7 +37745,7 @@
           },
           {
             "name": "com.intellij.taintAnalysis",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "PhpTaintFunctionInspection",
@@ -37823,7 +37823,7 @@
           },
           {
             "name": "com.jetbrains.php.blade",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "BladeUnpairedParenthesesInStringLiteral",
@@ -37901,7 +37901,7 @@
           },
           {
             "name": "tanvd.grazi",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "LanguageDetectionInspection",
@@ -37979,7 +37979,7 @@
           },
           {
             "name": "com.jetbrains.php.dql",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "PhpDqlBuilderUnknownModelInspection",
@@ -38024,7 +38024,7 @@
           },
           {
             "name": "org.jetbrains.plugins.vue",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "VueMissingComponentImportInspection",
@@ -38234,7 +38234,7 @@
           },
           {
             "name": "com.intellij.plugins.dependencyAnalysis",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "CheckThirdPartySoftwareList",
@@ -38345,7 +38345,7 @@
           },
           {
             "name": "org.intellij.intelliLang",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "InjectedReferences",
@@ -38390,7 +38390,7 @@
           },
           {
             "name": "com.intellij.php.tools.quality.phpstan",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "PhpStanGlobal",
@@ -38435,7 +38435,7 @@
           },
           {
             "name": "intellij.webpack",
-            "version": "241.16512",
+            "version": "241.16902",
             "rules": [
               {
                 "id": "WebpackConfigHighlighting",
@@ -38482,9 +38482,9 @@
       },
       "invocations": [
         {
-          "startTimeUtc": "2024-05-02T07:44:04.334542795Z",
+          "startTimeUtc": "2024-05-13T07:15:23.847694847Z",
           "exitCode": 255,
-          "exitCodeDescription": "Failure condition triggered:\n- Detected 5 problems across all severities, fail threshold: 0",
+          "exitCodeDescription": "Failure condition triggered:\n- Detected 3 problems across all severities, fail threshold: 0",
           "executionSuccessful": true
         }
       ],
@@ -38492,846 +38492,49 @@
       "versionControlProvenance": [
         {
           "repositoryUri": "https://github.com/pimcore/studio-backend-bundle.git",
-          "revisionId": "a31d309c8e4d6cb14a215e6575391d3904e68b59",
-          "branch": "154-versions",
+          "revisionId": "642aa2bc34a2746a460c2652445efb6484fc72e5",
+          "branch": "157-workflow-details",
           "properties": {
             "repoUrl": "https://github.com/pimcore/studio-backend-bundle.git",
-            "lastAuthorName": "lukmzig",
+            "lastAuthorName": "Matthias Schuhmayer",
             "vcsType": "Git",
-            "lastAuthorEmail": "lukas.mzigot@pimcore.com"
+            "lastAuthorEmail": "38959016+mattamon@users.noreply.github.com"
           }
         }
       ],
       "results": [
         {
-          "ruleId": "DuplicatedCode",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Duplicated code",
-            "markdown": "Duplicated code"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/DataIndex/Hydrator/Asset/ArchiveHydrator.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 36,
-                  "startColumn": 13,
-                  "charOffset": 1277,
-                  "charLength": 743,
-                  "snippet": {
-                    "text": "$this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 36,
-                  "startColumn": 1,
-                  "charOffset": 1265,
-                  "charLength": 755,
-                  "snippet": {
-                    "text": "            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            },
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/DataIndex/Hydrator/Asset/AudioHydrator.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 36,
-                  "startColumn": 13,
-                  "charOffset": 1261,
-                  "charLength": 743,
-                  "snippet": {
-                    "text": "$this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 36,
-                  "startColumn": 1,
-                  "charOffset": 1249,
-                  "charLength": 755,
-                  "snippet": {
-                    "text": "            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            },
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/DataIndex/Hydrator/Asset/FolderHydrator.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 36,
-                  "startColumn": 13,
-                  "charOffset": 1269,
-                  "charLength": 743,
-                  "snippet": {
-                    "text": "$this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 36,
-                  "startColumn": 1,
-                  "charOffset": 1257,
-                  "charLength": 755,
-                  "snippet": {
-                    "text": "            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            },
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/DataIndex/Hydrator/Asset/TextHydrator.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 36,
-                  "startColumn": 13,
-                  "charOffset": 1253,
-                  "charLength": 743,
-                  "snippet": {
-                    "text": "$this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 36,
-                  "startColumn": 1,
-                  "charOffset": 1241,
-                  "charLength": 755,
-                  "snippet": {
-                    "text": "            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            },
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/DataIndex/Hydrator/Asset/UnknownHydrator.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 36,
-                  "startColumn": 13,
-                  "charOffset": 1277,
-                  "charLength": 743,
-                  "snippet": {
-                    "text": "$this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 36,
-                  "startColumn": 1,
-                  "charOffset": 1265,
-                  "charLength": 755,
-                  "snippet": {
-                    "text": "            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            },
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/DataIndex/Hydrator/AssetHydrator.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 36,
-                  "startColumn": 13,
-                  "charOffset": 1251,
-                  "charLength": 743,
-                  "snippet": {
-                    "text": "$this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 36,
-                  "startColumn": 1,
-                  "charOffset": 1239,
-                  "charLength": 755,
-                  "snippet": {
-                    "text": "            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),\n            $item->isHasChildren(),\n            $item->getType(),\n            $item->getKey(),\n            $item->getMimeType(),\n            $this->metaDataHydrator->hydrate($item->getMetaData()),\n            $item->isHasWorkflowWithPermissions(),\n            $item->getFullPath(),\n            $item->getId(),\n            $item->getParentId(),\n            $item->getPath(),\n            $item->getUserOwner(),\n            $item->getUserModification(),\n            $item->getLocked(),\n            $item->isLocked(),\n            $item->getCreationDate(),\n            $item->getModificationDate(),\n            $this->permissionsHydrator->hydrate($item->getPermissions())"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "1a48abf43e131b3c",
-            "equalIndicator/v1": "d332e327ffffb913d03b5c1b123366ccfb39379be3645fdac1a4e16298cddeb5"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
           "ruleId": "EfferentObjectCouplingInspection",
           "kind": "fail",
           "level": "note",
           "message": {
-            "text": "[EA] High efferent coupling (30).",
-            "markdown": "\\[EA\\] High efferent coupling (30)."
+            "text": "[EA] High efferent coupling (22).",
+            "markdown": "\\[EA\\] High efferent coupling (22)."
           },
           "locations": [
             {
               "physicalLocation": {
                 "artifactLocation": {
-                  "uri": "src/DataObject/Controller/CollectionController.php",
+                  "uri": "src/Workflow/Controller/DetailsCollectionController.php",
                   "uriBaseId": "SRCROOT"
                 },
                 "region": {
-                  "startLine": 50,
+                  "startLine": 44,
                   "startColumn": 13,
-                  "charOffset": 3025,
-                  "charLength": 20,
+                  "charOffset": 2151,
+                  "charLength": 27,
                   "snippet": {
-                    "text": "CollectionController"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 48,
-                  "startColumn": 1,
-                  "charOffset": 2958,
-                  "charLength": 151,
-                  "snippet": {
-                    "text": "use Symfony\\Component\\Serializer\\SerializerInterface;\n\nfinal class CollectionController extends AbstractApiController\n{\n    use PaginatedResponseTrait;"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "2628b827dadbc43e",
-            "equalIndicator/v1": "4eff5b6887106f38106f3d5e26c162bd2a02157f1c71659dc533c9ec4a13c41c"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Asset/Schema/Asset.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 52,
-                  "startColumn": 11,
-                  "charOffset": 1762,
-                  "charLength": 75,
-                  "snippet": {
-                    "text": "Property(description: 'Workflow permissions', type: 'bool', example: false)"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 50,
-                  "startColumn": 1,
-                  "charOffset": 1699,
-                  "charLength": 291,
-                  "snippet": {
-                    "text": "        )]\n        private readonly array $metaData,\n        #[Property(description: 'Workflow permissions', type: 'bool', example: false)]\n        private readonly bool $hasWorkflowWithPermissions,\n        #[Property(description: 'Full path', type: 'string', example: '/path/to/asset.jpg')]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "c8e54b4ae449ef08",
-            "equalIndicator/v1": "08a9dc4e9b115719de1aeaed732b08c3844bfa0d83ec7ce65f3d70a6998a7355"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Response/Element.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 48,
-                  "startColumn": 11,
-                  "charOffset": 1882,
-                  "charLength": 33,
-                  "snippet": {
-                    "text": "Property(ref: Permissions::class)"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 46,
-                  "startColumn": 1,
-                  "charOffset": 1732,
-                  "charLength": 242,
-                  "snippet": {
-                    "text": "        #[Property(description: 'Modification date', type: 'integer', example: 327417600)]\n        private readonly ?int $modificationDate,\n        #[Property(ref: Permissions::class)]\n        private readonly Permissions $permissions\n    ) {"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "14ab2cf63d196a8d",
-            "equalIndicator/v1": "1519aa442e4b7420e0c7976d0355262e40ecff315029ceb0f77558914cdc8c7e"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Asset/Schema/Asset.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 39,
-                  "startColumn": 11,
-                  "charOffset": 1142,
-                  "charLength": 63,
-                  "snippet": {
-                    "text": "Property(description: 'Type', type: 'string', example: 'image')"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 37,
-                  "startColumn": 1,
-                  "charOffset": 1009,
-                  "charLength": 318,
-                  "snippet": {
-                    "text": "        #[Property(description: 'Has children', type: 'bool', example: false)]\n        private readonly bool $hasChildren,\n        #[Property(description: 'Type', type: 'string', example: 'image')]\n        private readonly string $type,\n        #[Property(description: 'Filename', type: 'string', example: 'cool.jpg')]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "669bc6ac0069bd19",
-            "equalIndicator/v1": "43a80b488985c32dafac3a484c67f89e44977e35238a60da91129ee894458006"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Response/Element.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 46,
-                  "startColumn": 11,
-                  "charOffset": 1742,
-                  "charLength": 79,
-                  "snippet": {
-                    "text": "Property(description: 'Modification date', type: 'integer', example: 327417600)"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 44,
-                  "startColumn": 1,
-                  "charOffset": 1600,
-                  "charLength": 316,
-                  "snippet": {
-                    "text": "        #[Property(description: 'Creation date', type: 'integer', example: 221846400)]\n        private readonly ?int $creationDate,\n        #[Property(description: 'Modification date', type: 'integer', example: 327417600)]\n        private readonly ?int $modificationDate,\n        #[Property(ref: Permissions::class)]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "7bcbe5e0ca1111b0",
-            "equalIndicator/v1": "56ec89239bdfba357459724f1bb84609cec99734a3a9fbc3a0a1cce71f74f674"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Request/CollectionParameters.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 33,
-                  "startColumn": 11,
-                  "charOffset": 905,
-                  "charLength": 8,
-                  "snippet": {
-                    "text": "Positive"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 31,
-                  "startColumn": 1,
-                  "charOffset": 844,
-                  "charLength": 114,
-                  "snippet": {
-                    "text": "        private int $page = 1,\n        #[NotBlank]\n        #[Positive]\n        private int $pageSize = 10,\n    ) {"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "77d6ecc501de5c0c",
-            "equalIndicator/v1": "64afe4fba632fd3636d6943e45b1124b60c35b33bcbcbb3be68e9ad0e99134a3"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Request/CollectionParameters.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 32,
-                  "startColumn": 11,
-                  "charOffset": 885,
-                  "charLength": 8,
-                  "snippet": {
-                    "text": "NotBlank"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 30,
-                  "startColumn": 1,
-                  "charOffset": 824,
-                  "charLength": 126,
-                  "snippet": {
-                    "text": "        #[Positive]\n        private int $page = 1,\n        #[NotBlank]\n        #[Positive]\n        private int $pageSize = 10,"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "ccd5d96bc68b7e1a",
-            "equalIndicator/v1": "70cb41f7fe78e21c7d9dc60728b83fd4fe5e2d7eece4ba89f9a57f4d07018b1c"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Asset/Schema/Asset.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 45,
-                  "startColumn": 11,
-                  "charOffset": 1509,
-                  "charLength": 199,
-                  "snippet": {
-                    "text": "Property(\n            description: 'Metadata',\n            type: 'array',\n            items: new Items(type: 'string', example: 'meta_data_example'),\n            example: 'pimcore_icon_pdf'\n        )"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 43,
-                  "startColumn": 1,
-                  "charOffset": 1371,
-                  "charLength": 467,
-                  "snippet": {
-                    "text": "        #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg')]\n        private readonly ?string $mimeType,\n        #[Property(\n            description: 'Metadata',\n            type: 'array',\n            items: new Items(type: 'string', example: 'meta_data_example'),\n            example: 'pimcore_icon_pdf'\n        )]\n        private readonly array $metaData,\n        #[Property(description: 'Workflow permissions', type: 'bool', example: false)]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "b4c6aa1929d1bf97",
-            "equalIndicator/v1": "7e7fad67b721599df9b4a59f1faf5ae55576773c810fe1f0b11211a03ffdc9fb"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Response/Element.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 34,
-                  "startColumn": 11,
-                  "charOffset": 983,
-                  "charLength": 74,
-                  "snippet": {
-                    "text": "Property(description: 'path', type: 'string', example: '/path/to/element')"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 32,
-                  "startColumn": 1,
-                  "charOffset": 855,
-                  "charLength": 319,
-                  "snippet": {
-                    "text": "        #[Property(description: 'ID of parent', type: 'integer', example: 1)]\n        private readonly int $parentId,\n        #[Property(description: 'path', type: 'string', example: '/path/to/element')]\n        private readonly string $path,\n        #[Property(description: 'ID of owner', type: 'integer', example: 1)]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "dd3f5ea7a9dff674",
-            "equalIndicator/v1": "8126ddc2ba426ea7c6af291056e76b92f38870ecf0967860a9a3bb0fa7933858"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Asset/Schema/Asset.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 54,
-                  "startColumn": 11,
-                  "charOffset": 1908,
-                  "charLength": 81,
-                  "snippet": {
-                    "text": "Property(description: 'Full path', type: 'string', example: '/path/to/asset.jpg')"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 52,
-                  "startColumn": 1,
-                  "charOffset": 1752,
-                  "charLength": 298,
-                  "snippet": {
-                    "text": "        #[Property(description: 'Workflow permissions', type: 'bool', example: false)]\n        private readonly bool $hasWorkflowWithPermissions,\n        #[Property(description: 'Full path', type: 'string', example: '/path/to/asset.jpg')]\n        private readonly string $fullPath,\n        int $id,"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "0b4f2b468ad5fa55",
-            "equalIndicator/v1": "8589169c7dc68ddd3a3ff4ca9c715b43f668e1a9f3d177dae4138d9370b0e4a8"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Response/Element.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 44,
-                  "startColumn": 11,
-                  "charOffset": 1610,
-                  "charLength": 75,
-                  "snippet": {
-                    "text": "Property(description: 'Creation date', type: 'integer', example: 221846400)"
+                    "text": "DetailsCollectionController"
                   },
                   "sourceLanguage": "PHP"
                 },
                 "contextRegion": {
                   "startLine": 42,
                   "startColumn": 1,
-                  "charOffset": 1480,
-                  "charLength": 342,
+                  "charOffset": 2122,
+                  "charLength": 120,
                   "snippet": {
-                    "text": "        #[Property(description: 'Is locked', type: 'boolean', example: false)]\n        private readonly bool $isLocked,\n        #[Property(description: 'Creation date', type: 'integer', example: 221846400)]\n        private readonly ?int $creationDate,\n        #[Property(description: 'Modification date', type: 'integer', example: 327417600)]"
+                    "text": " * @internal\n */\nfinal class DetailsCollectionController extends AbstractApiController\n{\n    use PaginatedResponseTrait;"
                   },
                   "sourceLanguage": "PHP"
                 }
@@ -39345,806 +38548,8 @@
             }
           ],
           "partialFingerprints": {
-            "equalIndicator/v2": "80bfcd5e195caddf",
-            "equalIndicator/v1": "a202732b45abe1c94d18ae6ea5f71ddbbfd1fb71649fbfcec1ec249f16766178"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Response/Element.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 42,
-                  "startColumn": 11,
-                  "charOffset": 1490,
-                  "charLength": 67,
-                  "snippet": {
-                    "text": "Property(description: 'Is locked', type: 'boolean', example: false)"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 40,
-                  "startColumn": 1,
-                  "charOffset": 1360,
-                  "charLength": 326,
-                  "snippet": {
-                    "text": "        #[Property(description: 'Locked', type: 'string', example: 'locked')]\n        private readonly ?string $locked,\n        #[Property(description: 'Is locked', type: 'boolean', example: false)]\n        private readonly bool $isLocked,\n        #[Property(description: 'Creation date', type: 'integer', example: 221846400)]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "2fec47e9fbf8e257",
-            "equalIndicator/v1": "b8d74bf3622ae06c9cab86005a1ab064dc1fea4c53635f2556e00d81b9cddd88"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Request/CollectionParameters.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 30,
-                  "startColumn": 11,
-                  "charOffset": 834,
-                  "charLength": 8,
-                  "snippet": {
-                    "text": "Positive"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 28,
-                  "startColumn": 1,
-                  "charOffset": 771,
-                  "charLength": 123,
-                  "snippet": {
-                    "text": "    public function __construct(\n        #[NotBlank]\n        #[Positive]\n        private int $page = 1,\n        #[NotBlank]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "63721e6ae2ff09e4",
-            "equalIndicator/v1": "cc182978cf2b938bd3cf51d25b8852bdcaefc64d83197c7c517a569e1bed1d79"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Response/Element.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 36,
-                  "startColumn": 11,
-                  "charOffset": 1108,
-                  "charLength": 65,
-                  "snippet": {
-                    "text": "Property(description: 'ID of owner', type: 'integer', example: 1)"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 34,
-                  "startColumn": 1,
-                  "charOffset": 973,
-                  "charLength": 338,
-                  "snippet": {
-                    "text": "        #[Property(description: 'path', type: 'string', example: '/path/to/element')]\n        private readonly string $path,\n        #[Property(description: 'ID of owner', type: 'integer', example: 1)]\n        private readonly int $userOwner,\n        #[Property(description: 'User that modified the element', type: 'integer', example: 1)]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "9c7851323aec72ad",
-            "equalIndicator/v1": "d23051cfd5b754ac82c3b6a0393e6667205ad4a75d4f5eefbeab50b23606d799"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Asset/Schema/Asset.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 43,
-                  "startColumn": 11,
-                  "charOffset": 1381,
-                  "charLength": 72,
-                  "snippet": {
-                    "text": "Property(description: 'Mimetype', type: 'string', example: 'image/jpeg')"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 41,
-                  "startColumn": 1,
-                  "charOffset": 1246,
-                  "charLength": 272,
-                  "snippet": {
-                    "text": "        #[Property(description: 'Filename', type: 'string', example: 'cool.jpg')]\n        private readonly string $filename,\n        #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg')]\n        private readonly ?string $mimeType,\n        #[Property("
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "01e6b1622c1ac541",
-            "equalIndicator/v1": "e1278b582ec78526441db2e368254195614e887186a2c3c98383915ca5fa35fe"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Asset/Schema/Asset.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 41,
-                  "startColumn": 11,
-                  "charOffset": 1256,
-                  "charLength": 70,
-                  "snippet": {
-                    "text": "Property(description: 'Filename', type: 'string', example: 'cool.jpg')"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 39,
-                  "startColumn": 1,
-                  "charOffset": 1132,
-                  "charLength": 322,
-                  "snippet": {
-                    "text": "        #[Property(description: 'Type', type: 'string', example: 'image')]\n        private readonly string $type,\n        #[Property(description: 'Filename', type: 'string', example: 'cool.jpg')]\n        private readonly string $filename,\n        #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg')]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "4265bd53264b2b0c",
-            "equalIndicator/v1": "e6cc6503ffca3f6dd7dce4f92789ac1a3e122d9a7ab44c799f8b7aebf6f514e1"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Request/CollectionParameters.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 29,
-                  "startColumn": 11,
-                  "charOffset": 814,
-                  "charLength": 8,
-                  "snippet": {
-                    "text": "NotBlank"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 27,
-                  "startColumn": 1,
-                  "charOffset": 769,
-                  "charLength": 105,
-                  "snippet": {
-                    "text": "{\n    public function __construct(\n        #[NotBlank]\n        #[Positive]\n        private int $page = 1,"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "b924270e17c10f07",
-            "equalIndicator/v1": "f2c0dc13e7e15ff2d40ef3f389848e6f1605257cc3a55e118392df3632ecdabf"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Response/Element.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 40,
-                  "startColumn": 11,
-                  "charOffset": 1370,
-                  "charLength": 66,
-                  "snippet": {
-                    "text": "Property(description: 'Locked', type: 'string', example: 'locked')"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 38,
-                  "startColumn": 1,
-                  "charOffset": 1216,
-                  "charLength": 342,
-                  "snippet": {
-                    "text": "        #[Property(description: 'User that modified the element', type: 'integer', example: 1)]\n        private readonly int $userModification,\n        #[Property(description: 'Locked', type: 'string', example: 'locked')]\n        private readonly ?string $locked,\n        #[Property(description: 'Is locked', type: 'boolean', example: false)]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "54e2faa7120fdfad",
-            "equalIndicator/v1": "faa3722f6b90434e54f632922c9803f6e391e29984d1a9464086c270b3a0ed41"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Response/Element.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 38,
-                  "startColumn": 11,
-                  "charOffset": 1226,
-                  "charLength": 84,
-                  "snippet": {
-                    "text": "Property(description: 'User that modified the element', type: 'integer', example: 1)"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 36,
-                  "startColumn": 1,
-                  "charOffset": 1098,
-                  "charLength": 339,
-                  "snippet": {
-                    "text": "        #[Property(description: 'ID of owner', type: 'integer', example: 1)]\n        private readonly int $userOwner,\n        #[Property(description: 'User that modified the element', type: 'integer', example: 1)]\n        private readonly int $userModification,\n        #[Property(description: 'Locked', type: 'string', example: 'locked')]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "0d648721bc039127",
-            "equalIndicator/v1": "fe6fc561100aa403c25a9624309cc14e7f1cc862740c652d71d7cc91df967beb"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "EfferentObjectCouplingInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "[EA] High efferent coupling (21).",
-            "markdown": "\\[EA\\] High efferent coupling (21)."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Authorization/Controller/AuthorizationController.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 46,
-                  "startColumn": 13,
-                  "charOffset": 2183,
-                  "charLength": 23,
-                  "snippet": {
-                    "text": "AuthorizationController"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 44,
-                  "startColumn": 1,
-                  "charOffset": 2154,
-                  "charLength": 117,
-                  "snippet": {
-                    "text": " * @internal\n */\nfinal class AuthorizationController extends AbstractApiController\n{\n    public function __construct("
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "af124e8aa2be2d8b",
-            "equalIndicator/v1": "31c95f4bfa8bf741b071ffed051cc58534a0d8fa41131ab271c2271332f08bcd"
-          },
-          "baselineState": "unchanged",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "EfferentObjectCouplingInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "[EA] High efferent coupling (20).",
-            "markdown": "\\[EA\\] High efferent coupling (20)."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Version/Controller/CleanupController.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 42,
-                  "startColumn": 13,
-                  "charOffset": 2021,
-                  "charLength": 17,
-                  "snippet": {
-                    "text": "CleanupController"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 40,
-                  "startColumn": 1,
-                  "charOffset": 1992,
-                  "charLength": 111,
-                  "snippet": {
-                    "text": " * @internal\n */\nfinal class CleanupController extends AbstractApiController\n{\n    public function __construct("
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "ef77395305986867",
-            "equalIndicator/v1": "56fa5cb989107bf6a2500e4f7e4590ecd2a76c4b9c3266968efd6977f85df779"
-          },
-          "baselineState": "new",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "EfferentObjectCouplingInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "[EA] High efferent coupling (30).",
-            "markdown": "\\[EA\\] High efferent coupling (30)."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Asset/Controller/CollectionController.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 53,
-                  "startColumn": 13,
-                  "charOffset": 2996,
-                  "charLength": 20,
-                  "snippet": {
-                    "text": "CollectionController"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 51,
-                  "startColumn": 1,
-                  "charOffset": 2967,
-                  "charLength": 113,
-                  "snippet": {
-                    "text": " * @internal\n */\nfinal class CollectionController extends AbstractApiController\n{\n    use PaginatedResponseTrait;"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "4fb327c4151fd0ef",
-            "equalIndicator/v1": "5c00a4f43cabb4c6181f0353ac0fcab81fe0f6be307800d7899ad041c4d5a7a5"
-          },
-          "baselineState": "new",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "EfferentObjectCouplingInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "[EA] High efferent coupling (24).",
-            "markdown": "\\[EA\\] High efferent coupling (24)."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Version/Controller/CollectionController.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 46,
-                  "startColumn": 13,
-                  "charOffset": 2370,
-                  "charLength": 20,
-                  "snippet": {
-                    "text": "CollectionController"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 44,
-                  "startColumn": 1,
-                  "charOffset": 2341,
-                  "charLength": 113,
-                  "snippet": {
-                    "text": " * @internal\n */\nfinal class CollectionController extends AbstractApiController\n{\n    use PaginatedResponseTrait;"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "92b68947b9449ee1",
-            "equalIndicator/v1": "83f4848e12782b2d396312d0d5597edc0a820ff23ebf26d04fa71f2c2699290d"
-          },
-          "baselineState": "new",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Version/Schema/AssetVersion.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 31,
-                  "startColumn": 11,
-                  "charOffset": 841,
-                  "charLength": 94,
-                  "snippet": {
-                    "text": "Property(description: 'temporary file', type: 'string', example: 'path/to/temporary/file.png')"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 29,
-                  "startColumn": 1,
-                  "charOffset": 707,
-                  "charLength": 277,
-                  "snippet": {
-                    "text": "        #[Property(description: 'file name', type: 'string', example: 'myImageFile.png')]\n        private string $fileName,\n        #[Property(description: 'temporary file', type: 'string', example: 'path/to/temporary/file.png')]\n        private ?string $temporaryFile,\n    ) {"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "7bfd67c49d7be2b0",
-            "equalIndicator/v1": "83d393ce7b6db11f487f3bf93568eb230a861a340839bc61e887115452427af2"
-          },
-          "baselineState": "new",
-          "properties": {
-            "ideaSeverity": "WEAK WARNING",
-            "qodanaSeverity": "Moderate",
-            "tags": [
-              "PHP"
-            ]
-          }
-        },
-        {
-          "ruleId": "PhpAttributeCanBeAddedToOverriddenMemberInspection",
-          "kind": "fail",
-          "level": "note",
-          "message": {
-            "text": "Attribute can be added to overriding parameter",
-            "markdown": "Attribute can be added to overriding parameter"
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "src/Version/Schema/AssetVersion.php",
-                  "uriBaseId": "SRCROOT"
-                },
-                "region": {
-                  "startLine": 29,
-                  "startColumn": 11,
-                  "charOffset": 717,
-                  "charLength": 78,
-                  "snippet": {
-                    "text": "Property(description: 'file name', type: 'string', example: 'myImageFile.png')"
-                  },
-                  "sourceLanguage": "PHP"
-                },
-                "contextRegion": {
-                  "startLine": 27,
-                  "startColumn": 1,
-                  "charOffset": 672,
-                  "charLength": 264,
-                  "snippet": {
-                    "text": "{\n    public function __construct(\n        #[Property(description: 'file name', type: 'string', example: 'myImageFile.png')]\n        private string $fileName,\n        #[Property(description: 'temporary file', type: 'string', example: 'path/to/temporary/file.png')]"
-                  },
-                  "sourceLanguage": "PHP"
-                }
-              },
-              "logicalLocations": [
-                {
-                  "fullyQualifiedName": "project",
-                  "kind": "module"
-                }
-              ]
-            }
-          ],
-          "partialFingerprints": {
-            "equalIndicator/v2": "0e8abf4e52d2d096",
-            "equalIndicator/v1": "c7f9f950add14b3b8752cefaac0435d6bd5bd4cf16f08235dd0e0d337c041994"
+            "equalIndicator/v2": "fa4ebf4ac306df76",
+            "equalIndicator/v1": "8083c47cb18b42e54f1d2f29009159e8d4642e5a34bc97b935e76b576dfc9fd3"
           },
           "baselineState": "new",
           "properties": {
@@ -40157,10 +38562,10 @@
         }
       ],
       "automationDetails": {
-        "id": "project/qodana/2024-05-02",
-        "guid": "49fa9de1-b69c-4473-ac2a-67356ad3532e",
+        "id": "project/qodana/2024-05-13",
+        "guid": "6d26f294-69cc-471d-942f-2b0f8a628d03",
         "properties": {
-          "jobUrl": "https://github.com/pimcore/studio-backend-bundle/actions/runs/8920356407"
+          "jobUrl": "https://github.com/pimcore/studio-backend-bundle/actions/runs/9058760277"
         }
       },
       "newlineSequences": [
@@ -40176,8 +38581,9 @@
         "configProfile": "path",
         "deviceId": "200820300000000-7c33-767c-9695-477d79c87e1c",
         "qodanaNewResultSummary": {
-          "moderate": 5,
-          "total": 5
+          "moderate": 1,
+          "high": 2,
+          "total": 3
         }
       }
     }
