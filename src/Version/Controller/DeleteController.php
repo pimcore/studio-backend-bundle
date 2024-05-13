@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unsuppo
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -74,7 +74,7 @@ final class DeleteController extends AbstractApiController
         $this->securityService->hasElementPermission(
             $version->getData(),
             $user,
-            Permissions::VERSIONS_PERMISSION
+            ElementPermissions::VERSIONS_PERMISSION
         );
         $version->delete();
 
