@@ -10,3 +10,7 @@ services:
     resource: '../src/Asset/Controller'
     public: true
     tags: [ 'controller.service_arguments' ]
+
+  # Hydrators
+  Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydrator
