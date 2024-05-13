@@ -28,7 +28,6 @@ use Pimcore\Model\Property\Predefined;
  */
 interface PropertyServiceInterface
 {
-
     public function createPredefinedProperty(): Predefined;
 
     /**
