@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface;
@@ -35,8 +35,8 @@ final readonly class PropertyService implements PropertyServiceInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private RepositoryInterface       $repository,
-        private ServiceResolver           $serviceResolver,
+        private RepositoryInterface $repository,
+        private ServiceResolverInterface $serviceResolver,
         private PropertyHydratorInterface $propertyHydrator,
     ) {
     }

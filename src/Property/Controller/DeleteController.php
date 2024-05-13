@@ -40,8 +40,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class DeleteController extends AbstractApiController
 {
     public function __construct(
-        private readonly PropertyServiceInterface $propertyService,
         SerializerInterface $serializer,
+        private readonly PropertyServiceInterface $propertyService
     ) {
         parent::__construct($serializer);
     }

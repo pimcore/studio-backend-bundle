@@ -40,7 +40,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class GetController extends AbstractApiController
 {
     public function __construct(
-        SerializerInterface                       $serializer,
+        SerializerInterface $serializer,
         private readonly PropertyServiceInterface $propertyService,
     ) {
         parent::__construct($serializer);
