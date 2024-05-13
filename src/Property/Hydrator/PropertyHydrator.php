@@ -121,5 +121,4 @@ final readonly class PropertyHydrator implements PropertyHydratorInterface
             'description' => $predefinedProperty->getDescription(),
         ];
     }
-
 }
