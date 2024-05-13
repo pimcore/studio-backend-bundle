@@ -61,6 +61,7 @@ final class PropertyExtractorTest extends Unit
         $property->setCtype('document');
         $property->setInheritable(true);
         $property->setInherited(true);
+
         return $property;
     }
 
@@ -71,6 +72,7 @@ final class PropertyExtractorTest extends Unit
         $document->setId(1);
         $document->setType('page');
         $document->setKey('test');
+
         return $document;
     }
 }
