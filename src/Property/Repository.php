@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
@@ -41,6 +41,7 @@ final readonly class Repository implements RepositoryInterface
 
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
+        private PredefinedResolverInterface $predefinedResolver,
         private TranslatorInterface $translator
     ) {
     }
@@ -54,7 +55,7 @@ final readonly class Repository implements RepositoryInterface
             throw new NotWriteableException('Predefined Property');
         }
 
-        $property = Predefined::create();
+        $property = $this->predefinedResolver->create();
         $property->setCtype(ElementTypes::TYPE_DOCUMENT);
         $property->setName('New Property');
         $property->setKey('new_key');
@@ -91,7 +92,7 @@ final readonly class Repository implements RepositoryInterface
      */
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined
     {
-        $predefined = Predefined::getById($id);
+        $predefined = $this->predefinedResolver->getById($id);
 
         if (!$predefined) {
             throw new PropertyNotFoundException($id);
@@ -116,7 +117,7 @@ final readonly class Repository implements RepositoryInterface
      */
     public function deletePredefinedProperty(string $id): void
     {
-        $predefined = Predefined::getById($id);
+        $predefined = $this->predefinedResolver->getById($id);
 
         if (!$predefined) {
             throw new PropertyNotFoundException($id);

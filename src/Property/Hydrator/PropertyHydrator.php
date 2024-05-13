@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Hydrator;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Model\Asset;
@@ -43,6 +44,11 @@ final readonly class PropertyHydrator implements PropertyHydratorInterface
         'cpath',
         'dao',
     ];
+
+    public function __construct(
+        private PredefinedResolverInterface $predefinedResolver
+    ) {
+    }
 
     public function hydratePredefinedProperty(Predefined $property): PredefinedProperty
     {
@@ -110,7 +116,7 @@ final readonly class PropertyHydrator implements PropertyHydratorInterface
             return $empty;
         }
 
-        $predefinedProperty = Predefined::getByKey($property->getName());
+        $predefinedProperty = $this->predefinedResolver->getByKey($property->getName());
         if (!$predefinedProperty || $predefinedProperty->getType() !== $property->getType()) {
             return $empty;
         }
