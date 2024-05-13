@@ -30,8 +30,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unsuppo
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -81,7 +81,7 @@ final class CustomSettingsController extends AbstractApiController
         $this->securityService->hasElementPermission(
             $asset,
             $this->securityService->getCurrentUser(),
-            Permissions::VIEW_PERMISSION
+            ElementPermissions::VIEW_PERMISSION
         );
 
         return $this->jsonResponse(
