@@ -72,7 +72,6 @@ final class PropertyHydratorTest extends Unit
         $this->assertSame('test', $data->getData()['key']);
     }
 
-
     /**
      * @throws Exception
      */
@@ -80,7 +79,6 @@ final class PropertyHydratorTest extends Unit
     {
         return new PropertyHydrator($this->mockPredefinedResolver());
     }
-
 
     /**
      * @throws Exception
@@ -90,7 +88,7 @@ final class PropertyHydratorTest extends Unit
         return $this->makeEmpty(PredefinedResolverInterface::class,
         [
             'getById' => $this->getPredefined(),
-            'getByKey' => $this->getPredefined()
+            'getByKey' => $this->getPredefined(),
         ]);
     }
 
@@ -119,6 +117,7 @@ final class PropertyHydratorTest extends Unit
         $property->setCtype('document');
         $property->setInheritable(true);
         $property->setInherited(true);
+
         return $property;
     }
 
@@ -129,6 +128,7 @@ final class PropertyHydratorTest extends Unit
         $document->setId(1);
         $document->setType('page');
         $document->setKey('test');
+
         return $document;
     }
 }
