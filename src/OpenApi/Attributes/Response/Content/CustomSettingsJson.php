@@ -33,7 +33,7 @@ final class CustomSettingsJson extends JsonContent
                     'customSettings',
                     ref: CustomSettings::class,
                     type: 'object'
-                )
+                ),
             ],
             type: 'object',
         );
