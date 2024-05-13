@@ -79,6 +79,12 @@ final class DetailsCollectionController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getDetails(#[MapQueryString] WorkflowDetailsParameters $parameters): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->hydratorService->hydrateWorkflowDetails($parameters)]);
+        $user = $this->securityService->getCurrentUser();
+        return $this->jsonResponse([
+            'items' => $this->hydratorService->hydrateWorkflowDetails(
+                $parameters,
+                $user
+            )
+        ]);
     }
 }

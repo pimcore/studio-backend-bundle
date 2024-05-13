@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Request\WorkflowDetailsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -29,5 +30,6 @@ interface WorkflowHydratorServiceInterface
      */
     public function hydrateWorkflowDetails(
         WorkflowDetailsParameters $parameters,
+        UserInterface $user
     ): array;
 }

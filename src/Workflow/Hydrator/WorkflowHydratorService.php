@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Request\WorkflowDetailsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
+use Pimcore\Model\UserInterface;
 use Pimcore\Workflow\Manager;
 
 /**
@@ -28,6 +31,7 @@ final readonly class WorkflowHydratorService implements WorkflowHydratorServiceI
 
     public function __construct(
         private Manager $workflowManager,
+        private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private WorkflowDetailsHydratorInterface $workflowDetailsHydrator,
     ) {
@@ -38,12 +42,19 @@ final readonly class WorkflowHydratorService implements WorkflowHydratorServiceI
      */
     public function hydrateWorkflowDetails(
         WorkflowDetailsParameters $parameters,
+        UserInterface $user
     ): array
     {
         $element = $this->getElement(
             $this->serviceResolver,
             $parameters->getElementType(),
             $parameters->getElementId(),
+        );
+
+        $this->securityService->hasElementPermission(
+            $element,
+            $user,
+            ElementPermissions::VIEW_PERMISSION
         );
 
         $details =  [];
