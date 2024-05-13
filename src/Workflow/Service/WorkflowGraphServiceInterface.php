@@ -29,7 +29,6 @@ interface WorkflowGraphServiceInterface
         string $format
     ): string;
 
-
     public function getGraphvizFile(
         WorkflowInterface $workflow,
         ElementInterface $element
