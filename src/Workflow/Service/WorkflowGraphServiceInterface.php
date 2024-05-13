@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Workflow;
+namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -22,24 +22,16 @@ use Symfony\Component\Workflow\WorkflowInterface;
 /**
  * @internal
  */
-interface WorkflowDetailsServiceInterface
+interface WorkflowGraphServiceInterface
 {
-    public function getWorkflowLabel(WorkflowInterface $workflow): string;
+    public function getGraphFromGraphvizFile(
+        string $graphvizFile,
+        string $format
+    ): string;
 
-    public function getStatusInfo(
-        ElementInterface $element,
-        WorkflowInterface $workflow,
-    ): array;
 
-    public function getGraph(WorkflowInterface $workflow): string;
-
-    public function getAllowedTransitions(
+    public function getGraphvizFile(
         WorkflowInterface $workflow,
         ElementInterface $element
-    ): array;
-
-    public function getGlobalActions(
-        WorkflowInterface $workflow,
-        ElementInterface $element
-    ): array;
+    ): string;
 }

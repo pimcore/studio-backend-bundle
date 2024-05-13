@@ -16,27 +16,45 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\AllowedTransitions;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\AllowedTransition;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Folder;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Workflow\Transition;
 
 /**
  * @internal
  */
-final class AllowedTransitionsHydrator implements AllowedTransitionsHydratorInterface
+final readonly class AllowedTransitionsHydrator implements AllowedTransitionsHydratorInterface
 {
+    public function __construct(
+        private WorkflowActionServiceInterface $workflowActionService,
+    )
+    {
+    }
+
     /**
-     * @return AllowedTransitions[]
+     * @return AllowedTransition[]
      */
-    public function hydrate(array $allowedTransitions): array
+    public function hydrate(array $allowedTransitions, ElementInterface $element): array
     {
         $hydrated = [];
+        /** @var Transition $transition */
         foreach ($allowedTransitions as $transition) {
-            $hydrated[] = new AllowedTransitions(
-                $transition['name'],
-                $transition['label'],
-                $transition['iconCls'],
-                $transition['objectLayout'],
-                $transition['notes'],
-                $transition['unsavedChangesBehaviour'],
+            $notes = $transition->getNotes();
+            if (($element instanceof Concrete || $element instanceof Folder) && $notes) {
+                $notes = $this->workflowActionService->enrichActionNotes($element, $notes);
+            }
+            $options = $transition->getOptions();
+
+            $hydrated[] = new AllowedTransition(
+                name: $transition->getName(),
+                label: $transition->getLabel(),
+                iconCls: $transition->getIconClass(),
+                objectLayout: $transition->getObjectLayout(),
+                unsavedChangesBehaviour: $options['unsavedChangesBehaviour'] ?? false,
+                notes: $notes ?? [],
             );
         }
 

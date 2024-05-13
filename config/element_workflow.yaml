@@ -14,8 +14,17 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowHydratorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowHydratorService
 
-  Pimcore\Bundle\StudioBackendBundle\Workflow\WorkflowDetailsServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Workflow\WorkflowDetailsService
+  # Services
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsService
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionService
+    arguments:
+      $actionSubmitterLocator: '@workflow.action_submitter.service_locator'
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowGraphServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowGraphService
 
   # Hydrators
   Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowDetailsHydratorInterface:
@@ -26,3 +35,18 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydrator
+
+  # Submitters
+  Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitter
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\GlobalActionSubmitterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\GlobalActionSubmitter
+
+  #Service Locator
+  workflow.action_submitter.service_locator:
+    class: Symfony\Component\DependencyInjection\ServiceLocator
+    tags: [ 'container.service_locator' ]
+    arguments:
+      - transition: '@Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitterInterface'
+        global: '@Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\GlobalActionSubmitterInterface'

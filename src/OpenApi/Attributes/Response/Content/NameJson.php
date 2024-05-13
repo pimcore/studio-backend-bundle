@@ -14,25 +14,29 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content;
 
-use OpenApi\Attributes\Items;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
 
 /**
  * @internal
  */
-final class WorkflowDetailsCollection extends Property
+final class NameJson extends JsonContent
 {
-    public function __construct()
+    public function __construct(string $description = '')
     {
         parent::__construct(
-            'items',
-            title: 'items',
-            type: 'array',
-            items: new Items(ref: WorkflowDetails::class)
+            properties: [
+                new Property(
+                    'name',
+                    title: 'name',
+                    description: $description,
+                    type: 'string',
+                    example: 'SomeNiceName'
+                ),
+            ],
+            type: 'object',
         );
     }
 }

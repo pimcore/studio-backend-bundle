@@ -16,7 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\AllowedTransitions;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\AllowedTransition;
+use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
@@ -24,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\AllowedTransitions;
 interface AllowedTransitionsHydratorInterface
 {
     /**
-     * @return AllowedTransitions[]
+     * @return AllowedTransition[]
      */
-    public function hydrate(array $allowedTransitions): array;
+    public function hydrate(array $allowedTransitions, ElementInterface $element): array;
 }

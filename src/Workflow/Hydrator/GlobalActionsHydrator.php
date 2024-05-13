@@ -16,26 +16,42 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\GlobalActions;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\GlobalAction;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
+use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Folder;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Workflow\GlobalAction as PimcoreGlobalAction;
 
 /**
  * @internal
  */
-final class GlobalActionsHydrator implements GlobalActionsHydratorInterface
+final readonly class GlobalActionsHydrator implements GlobalActionsHydratorInterface
 {
+    public function __construct(
+        private WorkflowActionServiceInterface $workflowActionService,
+    )
+    {
+    }
+
     /**
-     * @return GlobalActions[]
+     * @return GlobalAction[]
      */
-    public function hydrate(array $globalActionsArray): array
+    public function hydrate(array $globalActionsArray, ElementInterface $element): array
     {
         $hydrated = [];
+        /** @var PimcoreGlobalAction $action */
         foreach ($globalActionsArray as $action) {
-            $hydrated[] = new GlobalActions(
-                $action['name'],
-                $action['label'],
-                $action['iconCls'],
-                $action['objectLayout'],
-                $action['notes'],
+            $notes = $action->getNotes();
+            if (($element instanceof Concrete || $element instanceof Folder) && $notes) {
+                $notes = $this->workflowActionService->enrichActionNotes($element, $notes);
+            }
+            $hydrated[] = new GlobalAction(
+                name: $action->getName(),
+                label: $action->getLabel(),
+                iconCls: $action->getIconClass(),
+                objectLayout: $action->getObjectLayout(),
+                notes: $notes ?? [],
             );
         }
 

@@ -14,25 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request;
 
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
+use Attribute;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 
-/**
- * @internal
- */
-final class WorkflowDetailsCollection extends Property
+#[Attribute(Attribute::TARGET_METHOD)]
+final class WorkflowActionRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
-            'items',
-            title: 'items',
-            type: 'array',
-            items: new Items(ref: WorkflowDetails::class)
+            required: true,
+            content: new JsonContent(ref: SubmitAction::class)
         );
     }
 }

@@ -14,15 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Workflow;
+namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
-use Pimcore\Bundle\AdminBundle\Service\Workflow\ActionsButtonService;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Workflow\Dumper\GraphvizDumper;
-use Pimcore\Workflow\Dumper\StateMachineGraphvizDumper;
 use Pimcore\Workflow\Manager;
-use Symfony\Component\Workflow\Marking;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 /**
@@ -31,10 +27,8 @@ use Symfony\Component\Workflow\WorkflowInterface;
 final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInterface
 {
     public function __construct(
-        private ActionsButtonService $actionsButtonService,
         private Manager $workflowManager,
-        private GraphvizDumper $graphvizDumper,
-        private StateMachineGraphvizDumper $stateMachineGraphvizDumper
+        private WorkflowGraphServiceInterface $workflowGraphService,
     )
     {
     }
@@ -45,8 +39,8 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
     }
     
     public function getStatusInfo(
-        ElementInterface $element,
         WorkflowInterface $workflow,
+        ElementInterface $element,
     ): array
     {
         $marking = $workflow->getMarking($element);
@@ -71,35 +65,13 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         return $statusInfos;
     }
 
-    public function getGraph(WorkflowInterface $workflow): string
-    {
-        $bla = new \Symfony\Component\Workflow\Dumper\GraphvizDumper();
-        $marking = new Marking();
-        $dumper = $this->graphvizDumper;
-        $configuration = $this->workflowManager->getWorkflowConfig($workflow->getName());
-        if ($configuration->getType() === 'state_machine') {
-            $dumper = $this->stateMachineGraphvizDumper;
-        }
-        foreach ($workflow->getDefinition()->getPlaces() as $place) {
-            $marking->mark($place);
-        }
-        return $dumper->dump($workflow->getDefinition(), $marking, ['workflowName' => $workflow->getName()]);
-    }
-
-    public function getAllowedTransitions(
+    public function getGraph(
         WorkflowInterface $workflow,
         ElementInterface $element
-    ): array
+    ): string
     {
-        return $this->actionsButtonService->getAllowedTransitions($workflow, $element);
-    }
+        $graphFile = $this->workflowGraphService->getGraphvizFile($workflow, $element);
 
-    public function getGlobalActions(
-        WorkflowInterface $workflow,
-        ElementInterface $element
-    ): array
-    {
-        return $this->actionsButtonService->getGlobalActions($workflow, $element);
+        return $this->workflowGraphService->getGraphFromGraphvizFile($graphFile, 'svg');
     }
-
 }

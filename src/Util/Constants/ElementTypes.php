@@ -28,4 +28,11 @@ final readonly class ElementTypes
     public const TYPE_ASSET = 'asset';
 
     public const TYPE_DOCUMENT = 'document';
+
+    public const ALLOWED_TYPES = [
+        self::TYPE_DATA_OBJECT,
+        self::TYPE_OBJECT,
+        self::TYPE_ASSET,
+        self::TYPE_DOCUMENT,
+    ];
 }

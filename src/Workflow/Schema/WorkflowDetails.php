@@ -39,19 +39,7 @@ final readonly class WorkflowDetails
         #[Property(
             description: 'workflowStatus',
             type: 'array',
-            items: new Items(
-                anyOf: [
-                    new Schema(
-                        ref: WorkflowStatus::class
-                    ),
-                ]
-            ),
-            example: '[{' .
-            '"name": "start_workflow",'.
-            '"objectLayout": false,' .
-            '"notes": "some notes",' .
-            '"unsavedChangesBehaviour": "warn"' .
-            '}]'
+            items: new Items(ref: WorkflowStatus::class)
         )]
         private array $workflowStatus,
         #[Property(
@@ -63,32 +51,13 @@ final readonly class WorkflowDetails
         #[Property(
             description: 'allowedTransitions',
             type: 'array',
-            items: new Items(
-                anyOf: [
-                    new Schema(
-                        ref: AllowedTransitions::class
-                    ),
-                ]
-            ),
-            example: '[{' .
-            '"name": "start_workflow",'.
-            '"objectLayout": false,' .
-            '"notes": "[some notes]",' .
-            '"unsavedChangesBehaviour": "warn"' .
-            '}]'
+            items: new Items(ref: AllowedTransition::class),
         )]
         private array $allowedTransitions,
         #[Property(
             description: 'globalActions',
             type: 'array',
-            items: new Items(
-                anyOf: [
-                    new Schema(
-                        ref: GlobalActions::class
-                    ),
-                ]
-            ),
-            example: '[]'
+            items: new Items(ref: GlobalAction::class)
         )]
         private array $globalActions,
     ) {

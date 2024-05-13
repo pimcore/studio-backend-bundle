@@ -14,7 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\WorkflowDetailsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
 
@@ -24,6 +25,7 @@ use Symfony\Component\Workflow\WorkflowInterface;
 final readonly class WorkflowDetailsHydrator implements WorkflowDetailsHydratorInterface
 {
     public function __construct(
+        private WorkflowActionServiceInterface $workflowActionService,
         private AllowedTransitionsHydratorInterface $allowedTransitionsHydrator,
         private GlobalActionsHydratorInterface $globalActionsHydrator,
         private WorkflowDetailsServiceInterface $workflowDetailsService,
@@ -37,13 +39,15 @@ final readonly class WorkflowDetailsHydrator implements WorkflowDetailsHydratorI
     ): WorkflowDetails {
         return new WorkflowDetails(
             $this->workflowDetailsService->getWorkflowLabel($workflow),
-            $this->workflowDetailsService->getStatusInfo($element, $workflow),
-            $this->workflowDetailsService->getGraph($workflow),
+            $this->workflowDetailsService->getStatusInfo($workflow, $element),
+            $this->workflowDetailsService->getGraph($workflow, $element),
             $this->allowedTransitionsHydrator->hydrate(
-                $this->workflowDetailsService->getAllowedTransitions($workflow, $element)
+                $workflow->getEnabledTransitions($element),
+                $element
             ),
             $this->globalActionsHydrator->hydrate(
-                $this->workflowDetailsService->getGlobalActions($workflow, $element)
+               $this->workflowActionService->getGlobalActions($workflow, $element),
+                $element
             ),
         );
     }

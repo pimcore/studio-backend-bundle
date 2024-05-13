@@ -14,18 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
-
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\GlobalAction;
-use Pimcore\Model\Element\ElementInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 
 /**
  * @internal
  */
-interface GlobalActionsHydratorInterface
+final readonly class WorkflowActionTypes
 {
-    /**
-     * @return GlobalAction[]
-     */
-    public function hydrate(array $globalActionsArray, ElementInterface $element): array;
+    public const GLOBAL_ACTION = 'global';
+
+    public const TRANSITION_ACTION = 'transition';
+
+    public const ALLOWED_TYPES = [
+        self::GLOBAL_ACTION,
+        self::TRANSITION_ACTION,
+    ];
 }

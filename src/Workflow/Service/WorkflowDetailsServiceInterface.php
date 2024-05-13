@@ -14,18 +14,25 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\GlobalAction;
 use Pimcore\Model\Element\ElementInterface;
+use Symfony\Component\Workflow\WorkflowInterface;
 
 /**
  * @internal
  */
-interface GlobalActionsHydratorInterface
+interface WorkflowDetailsServiceInterface
 {
-    /**
-     * @return GlobalAction[]
-     */
-    public function hydrate(array $globalActionsArray, ElementInterface $element): array;
+    public function getWorkflowLabel(WorkflowInterface $workflow): string;
+
+    public function getStatusInfo(
+        WorkflowInterface $workflow,
+        ElementInterface $element,
+    ): array;
+
+    public function getGraph(
+        WorkflowInterface $workflow,
+        ElementInterface $element
+    ): string;
 }

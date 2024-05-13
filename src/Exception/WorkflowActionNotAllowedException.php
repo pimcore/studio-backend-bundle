@@ -14,18 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
-
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\GlobalAction;
-use Pimcore\Model\Element\ElementInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 /**
  * @internal
  */
-interface GlobalActionsHydratorInterface
+final class WorkflowActionNotAllowedException extends AbstractApiException
 {
-    /**
-     * @return GlobalAction[]
-     */
-    public function hydrate(array $globalActionsArray, ElementInterface $element): array;
+    public function __construct(string $actionName, string $workflowName)
+    {
+        parent::__construct(
+            400,
+            sprintf('Action %s is not allowed for workflow %s',
+                $actionName,
+                $workflowName
+            )
+        );
+    }
 }

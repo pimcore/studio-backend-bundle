@@ -32,31 +32,31 @@ final readonly class WorkflowStatus
         #[Property(
             description: 'backgroundColor',
             type: 'string',
-            example: '#FF0000'
+            example: '#ffa500'
         )]
         private string $backgroundColor,
         #[Property(
             description: 'fontColor',
             type: 'string',
-            example: '#FF0000'
+            example: '#000000'
         )]
         private string $fontColor,
         #[Property(
             description: 'borderColor',
             type: 'string',
-            example: '#FF0000'
+            example: '#ffa500'
         )]
         private string $borderColor,
         #[Property(
             description: 'title',
             type: 'string',
-            example: 'status'
+            example: 'edit_images'
         )]
         private string $title,
         #[Property(
             description: 'label',
             type: 'string',
-            example: 'Status'
+            example: 'Edit Images'
         )]
         private string $label,
     ) {

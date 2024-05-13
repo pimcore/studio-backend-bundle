@@ -24,10 +24,10 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'GlobalActions',
+    title: 'AllowedTransition',
     type: 'object'
 )]
-final readonly class GlobalActions
+final readonly class AllowedTransition
 {
     public function __construct(
         #[Property(description: 'name', type: 'string', example: 'start_workflow')]
@@ -38,13 +38,15 @@ final readonly class GlobalActions
         private string $iconCls,
         #[Property(description: 'objectLayout', type: 'bool', example: false)]
         private bool $objectLayout,
+        #[Property(description: 'unsavedChangesBehaviour', type: 'string', example: 'warn')]
+        private string $unsavedChangesBehaviour,
         #[Property(
             description: 'notes',
             type: 'array',
             items: new Items(),
-            example: '[some notes]')
-        ]
-        private string $notes,
+            example: ['commentEnabled' => true, 'commentRequired' => true],
+        )]
+        private array $notes = [],
     ) {
 
     }
@@ -69,7 +71,12 @@ final readonly class GlobalActions
         return $this->objectLayout;
     }
 
-    public function getNotes(): string
+    public function getUnsavedChangesBehaviour(): string
+    {
+        return $this->unsavedChangesBehaviour;
+    }
+
+    public function getNotes(): ?array
     {
         return $this->notes;
     }
