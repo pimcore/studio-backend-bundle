@@ -31,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
-use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
@@ -46,8 +46,8 @@ final class CollectionController extends AbstractApiController
     use PaginatedResponseTrait;
 
     public function __construct(
-        SerializerInterface $serializer,
-        private readonly PropertyHydratorServiceInterface $hydratorService,
+        SerializerInterface                       $serializer,
+        private readonly PropertyServiceInterface $propertyService,
     ) {
         parent::__construct($serializer);
     }
@@ -78,6 +78,6 @@ final class CollectionController extends AbstractApiController
     public function getProperties(
         #[MapQueryString] PropertiesParameters $parameters = new PropertiesParameters()
     ): JsonResponse {
-        return $this->jsonResponse(['items' => $this->hydratorService->getHydratedProperties($parameters)]);
+        return $this->jsonResponse(['items' => $this->propertyService->getPredefinedProperties($parameters)]);
     }
 }

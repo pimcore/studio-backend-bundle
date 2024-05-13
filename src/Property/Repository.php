@@ -18,10 +18,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Property;
@@ -40,6 +42,25 @@ final readonly class Repository implements RepositoryInterface
         private ServiceResolver $serviceResolver,
         private TranslatorInterface $translator
     ) {
+    }
+
+    /**
+     * @throws NotWriteableException
+     */
+    public function createPredefinedProperty(): Predefined
+    {
+        if (!(new Predefined())->isWriteable()) {
+            throw new NotWriteableException('Predefined Property');
+        }
+
+        $property = Predefined::create();
+        $property->setCtype(ElementTypes::TYPE_DOCUMENT);
+        $property->setName('New Property');
+        $property->setKey('new_key');
+        $property->setType('text');
+        $property->save();
+
+        return $property;
     }
 
     public function listProperties(PropertiesParameters $parameters): PropertiesListing

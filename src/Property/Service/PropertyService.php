@@ -16,9 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\ElementPropertyHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Property\Predefined;
@@ -31,8 +36,44 @@ final readonly class PropertyService implements PropertyServiceInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private RepositoryInterface $repository
+        private RepositoryInterface       $repository,
+        private ServiceResolver           $serviceResolver,
+        private PropertyHydratorInterface $propertyHydrator,
     ) {
+    }
+
+    public function createPredefinedProperty(): Predefined
+    {
+        return $this->repository->createPredefinedProperty();
+    }
+
+    public function getPredefinedProperties(PropertiesParameters $parameters): array
+    {
+        $properties = $this->repository->listProperties($parameters);
+        $hydratedProperties = [];
+        foreach ($properties->load() as $property) {
+            $hydratedProperties[] = $this->propertyHydrator->hydratePredefinedProperty($property);
+        }
+
+        return $hydratedProperties;
+    }
+
+    public function getElementProperties(string $elementType, int $id): array
+    {
+        $element = $this->getElement($this->serviceResolver, $elementType, $id);
+
+        $hydratedProperties = [];
+
+        foreach($element->getProperties() as $property) {
+            $hydratedProperties[] = $this->propertyHydrator->hydrateElementProperty($property);
+        }
+
+        return $hydratedProperties;
+    }
+
+    public function getPredefinedProperty(Predefined $predefined): PredefinedProperty
+    {
+        return $this->propertyHydrator->hydratePredefinedProperty($predefined);
     }
 
     /**

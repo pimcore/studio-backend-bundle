@@ -32,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
-use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -44,7 +43,6 @@ final class PutController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly PropertyServiceInterface $propertyService,
-        private readonly PropertyHydratorServiceInterface $hydratorService,
     ) {
         parent::__construct($serializer);
     }
@@ -75,8 +73,10 @@ final class PutController extends AbstractApiController
         string $id,
         #[MapRequestPayload] UpdatePredefinedProperty $updatePredefinedProperty
     ): JsonResponse {
-        $property = $this->propertyService->updatePredefinedProperty($id, $updatePredefinedProperty);
-
-        return $this->jsonResponse($this->hydratorService->getHydratedPredefinedProperty($property));
+        return $this->jsonResponse(
+            $this->propertyService->getPredefinedProperty(
+                $this->propertyService->updatePredefinedProperty($id, $updatePredefinedProperty)
+            )
+        );
     }
 }

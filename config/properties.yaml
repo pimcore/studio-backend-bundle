@@ -15,23 +15,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Repository
 
-
   Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorService
 
   Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyService
 
-  Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\ElementPropertyHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\ElementPropertyHydrator
-
-  Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PredefinedPropertyHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PredefinedPropertyHydrator
-
-  Pimcore\Bundle\StudioBackendBundle\Property\Extractor\PropertyDataExtractorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Property\Extractor\PropertyDataExtractor
-
-  Pimcore\Bundle\StudioBackendBundle\Property\Factory\PropertyFactoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Property\Factory\PropertyFactory
-
+  Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator
 

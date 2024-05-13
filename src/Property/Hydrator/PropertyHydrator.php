@@ -14,8 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\Extractor;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\Document;
@@ -25,7 +27,7 @@ use Pimcore\Model\Property\Predefined;
 /**
  * @internal
  */
-final class PropertyDataExtractor implements PropertyDataExtractorInterface
+final readonly class PropertyHydrator implements PropertyHydratorInterface
 {
     private const ALLOWED_MODEL_PROPERTIES = [
         'key',
@@ -42,7 +44,40 @@ final class PropertyDataExtractor implements PropertyDataExtractorInterface
         'dao',
     ];
 
-    public function extractData(Property $property): array
+    public function hydratePredefinedProperty(Predefined $property): PredefinedProperty
+    {
+        return new PredefinedProperty(
+            $property->getId(),
+            $property->getName(),
+            $property->getDescription(),
+            $property->getKey(),
+            $property->getType(),
+            $property->getData(),
+            $property->getConfig(),
+            $property->getCtype(),
+            $property->getInheritable(),
+            $property->getCreationDate(),
+            $property->getModificationDate()
+        );
+    }
+
+    public function hydrateElementProperty(Property $property): ElementProperty
+    {
+        $propertyData = $this->extractData($property);
+
+        return new ElementProperty(
+            $propertyData['name'],
+            $propertyData['modelData'] ?? $propertyData['data'],
+            $propertyData['type'],
+            $propertyData['inheritable'],
+            $propertyData['inherited'],
+            $propertyData['config'],
+            $propertyData['predefinedName'] ?? 'Custom',
+            $propertyData['description']
+        );
+    }
+
+    private function extractData(Property $property): array
     {
         $data['modelData'] = match (true) {
             $property->getData() instanceof Document ||
@@ -86,4 +121,5 @@ final class PropertyDataExtractor implements PropertyDataExtractorInterface
             'description' => $predefinedProperty->getDescription(),
         ];
     }
+
 }

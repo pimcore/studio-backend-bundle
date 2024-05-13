@@ -27,9 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unproce
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Property\Factory\PropertyFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
-use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -37,9 +36,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class CreateController extends AbstractApiController
 {
     public function __construct(
-        SerializerInterface $serializer,
-        private readonly PropertyFactoryInterface $propertyFactory,
-        private readonly PropertyHydratorServiceInterface $hydratorService,
+        SerializerInterface                       $serializer,
+        private readonly PropertyServiceInterface $propertyService,
     ) {
         parent::__construct($serializer);
     }
@@ -66,8 +64,10 @@ final class CreateController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function createProperty(): JsonResponse
     {
-        $property = $this->propertyFactory->create();
-
-        return $this->jsonResponse($this->hydratorService->getHydratedPredefinedProperty($property));
+        return $this->jsonResponse(
+            $this->propertyService->getPredefinedProperty(
+                $this->propertyService->createPredefinedProperty()
+            )
+        );
     }
 }

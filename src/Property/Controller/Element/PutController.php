@@ -31,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
-use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -45,8 +44,7 @@ final class PutController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly PropertyServiceInterface $propertyService,
-        private readonly PropertyHydratorServiceInterface $hydratorService,
+        private readonly PropertyServiceInterface $propertyService
     ) {
         parent::__construct($serializer);
     }
@@ -79,6 +77,8 @@ final class PutController extends AbstractApiController
     ): JsonResponse {
         $this->propertyService->updateElementProperties($elementType, $id, $items);
 
-        return $this->jsonResponse($this->hydratorService->getHydratedPropertyForElement($elementType, $id));
+        return $this->jsonResponse(
+            ['items' => $this->propertyService->getElementProperties($elementType, $id)]
+        );
     }
 }

@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unsuppo
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
-use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -40,8 +40,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class GetController extends AbstractApiController
 {
     public function __construct(
-        SerializerInterface $serializer,
-        private readonly PropertyHydratorServiceInterface $hydratorService,
+        SerializerInterface                       $serializer,
+        private readonly PropertyServiceInterface $propertyService,
     ) {
         parent::__construct($serializer);
     }
@@ -68,6 +68,8 @@ final class GetController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getProperties(string $elementType, int $id): JsonResponse
     {
-        return $this->jsonResponse($this->hydratorService->getHydratedPropertyForElement($elementType, $id));
+        return $this->jsonResponse(
+            ['items' => $this->propertyService->getElementProperties($elementType, $id)]
+        );
     }
 }

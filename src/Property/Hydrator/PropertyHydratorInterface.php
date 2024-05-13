@@ -17,12 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Model\Property;
+use Pimcore\Model\Property\Predefined;
 
 /**
  * @internal
  */
-interface ElementPropertyHydratorInterface
+interface PropertyHydratorInterface
 {
-    public function hydrate(Property $property): ElementProperty;
+    public function hydratePredefinedProperty(Predefined $property): PredefinedProperty;
+
+    public function hydrateElementProperty(Property $property): ElementProperty;
 }

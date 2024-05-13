@@ -28,6 +28,8 @@ use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
  */
 interface RepositoryInterface
 {
+    public function createPredefinedProperty(): Predefined;
+
     public function listProperties(PropertiesParameters $parameters): PropertiesListing;
 
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined;
