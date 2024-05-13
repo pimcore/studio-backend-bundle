@@ -15,9 +15,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Repository
 
-  Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyHydratorService
-
   Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyService
 
