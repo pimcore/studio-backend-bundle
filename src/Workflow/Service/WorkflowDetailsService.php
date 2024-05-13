@@ -16,8 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Request\WorkflowDetailsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use Pimcore\Workflow\Manager;
 use Symfony\Component\Workflow\WorkflowInterface;
 
@@ -26,19 +35,78 @@ use Symfony\Component\Workflow\WorkflowInterface;
  */
 final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInterface
 {
+    use ElementProviderTrait;
+    
     public function __construct(
+        private AllowedTransitionsHydratorInterface $allowedTransitionsHydrator,
+        private GlobalActionsHydratorInterface $globalActionsHydrator,
         private Manager $workflowManager,
+        private SecurityServiceInterface $securityService,
+        private ServiceResolverInterface $serviceResolver,
+        private WorkflowActionServiceInterface $workflowActionService,
         private WorkflowGraphServiceInterface $workflowGraphService,
     )
     {
     }
 
-    public function getWorkflowLabel(WorkflowInterface $workflow): string
+    /**
+     * @return WorkflowDetails[]
+     */
+    public function hydrateWorkflowDetails(
+        WorkflowDetailsParameters $parameters,
+        UserInterface $user
+    ): array
+    {
+        $element = $this->getElement(
+            $this->serviceResolver,
+            $parameters->getElementType(),
+            $parameters->getElementId(),
+        );
+
+        $this->securityService->hasElementPermission(
+            $element,
+            $user,
+            ElementPermissions::VIEW_PERMISSION
+        );
+
+        $details =  [];
+        $elementWorkflows = $this->workflowManager->getAllWorkflowsForSubject($element);
+        foreach ($elementWorkflows as $workflow) {
+            $details[] = $this->hydrate(
+                $element,
+                $workflow
+            );
+        }
+
+        return $details;
+    }
+    
+    private function hydrate(
+        ElementInterface $element,
+        WorkflowInterface $workflow
+    ): WorkflowDetails {
+        return new WorkflowDetails(
+            $this->getWorkflowLabel($workflow),
+            $this->getStatusInfo($workflow, $element),
+            $this->getGraph($workflow, $element),
+            $this->allowedTransitionsHydrator->hydrate(
+                $workflow->getEnabledTransitions($element),
+                $element
+            ),
+            $this->globalActionsHydrator->hydrate(
+                $this->workflowActionService->getGlobalActions($workflow, $element),
+                $element
+            ),
+        );
+    }
+
+
+    private function getWorkflowLabel(WorkflowInterface $workflow): string
     {
         return $this->workflowManager->getWorkflowConfig($workflow->getName())->getLabel();
     }
     
-    public function getStatusInfo(
+    private function getStatusInfo(
         WorkflowInterface $workflow,
         ElementInterface $element,
     ): array
@@ -65,13 +133,16 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         return $statusInfos;
     }
 
-    public function getGraph(
+    private function getGraph(
         WorkflowInterface $workflow,
         ElementInterface $element
     ): string
     {
         $graphFile = $this->workflowGraphService->getGraphvizFile($workflow, $element);
 
-        return $this->workflowGraphService->getGraphFromGraphvizFile($graphFile, 'svg');
+        return $this->workflowGraphService->getGraphFromGraphvizFile(
+            $graphFile,
+            'svg'
+        );
     }
 }

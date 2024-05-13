@@ -16,23 +16,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
-use Pimcore\Model\Element\ElementInterface;
-use Symfony\Component\Workflow\WorkflowInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Request\WorkflowDetailsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
 interface WorkflowDetailsServiceInterface
 {
-    public function getWorkflowLabel(WorkflowInterface $workflow): string;
-
-    public function getStatusInfo(
-        WorkflowInterface $workflow,
-        ElementInterface $element,
+    /**
+     * @return WorkflowDetails[]
+     */
+    public function hydrateWorkflowDetails(
+        WorkflowDetailsParameters $parameters,
+        UserInterface $user
     ): array;
-
-    public function getGraph(
-        WorkflowInterface $workflow,
-        ElementInterface $element
-    ): string;
 }

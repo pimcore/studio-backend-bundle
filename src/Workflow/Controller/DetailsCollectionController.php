@@ -31,8 +31,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Request\WorkflowDetailsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
@@ -48,7 +48,7 @@ final class DetailsCollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly SecurityServiceInterface $securityService,
-        private readonly WorkflowHydratorServiceInterface $hydratorService,
+        private readonly WorkflowDetailsServiceInterface $workflowDetailsService,
     ) {
         parent::__construct($serializer);
     }
@@ -81,7 +81,7 @@ final class DetailsCollectionController extends AbstractApiController
     {
         $user = $this->securityService->getCurrentUser();
         return $this->jsonResponse([
-            'items' => $this->hydratorService->hydrateWorkflowDetails(
+            'items' => $this->workflowDetailsService->hydrateWorkflowDetails(
                 $parameters,
                 $user
             )

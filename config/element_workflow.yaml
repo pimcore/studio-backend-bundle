@@ -11,9 +11,6 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowHydratorServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowHydratorService
-
   # Services
   Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsService
@@ -27,8 +24,6 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowGraphService
 
   # Hydrators
-  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowDetailsHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowDetailsHydrator
 
   Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydrator
