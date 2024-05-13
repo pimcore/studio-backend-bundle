@@ -57,7 +57,7 @@ final class CollectionController extends AbstractApiController
 
     #[Route('/versions', name: 'pimcore_studio_api_versions', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
-    #[GET(
+    #[Get(
         path: self::API_PATH . '/versions',
         operationId: 'getVersions',
         description: 'Get paginated versions',

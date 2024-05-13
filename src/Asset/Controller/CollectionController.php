@@ -67,7 +67,8 @@ final class CollectionController extends AbstractApiController
      */
     #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
-    #[GET(
+    //#[IsGranted(UserPermissions::ASSETS->value)]
+    #[Get(
         path: self::API_PATH . '/assets',
         operationId: 'getAssets',
         description: 'Get paginated assets',

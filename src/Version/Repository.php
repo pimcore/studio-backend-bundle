@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version;
 use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
@@ -50,7 +50,7 @@ final readonly class Repository implements RepositoryInterface
         $this->securityService->hasElementPermission(
             $element,
             $user,
-            Permissions::VERSIONS_PERMISSION
+            ElementPermissions::VERSIONS_PERMISSION
         );
 
         $limit = $parameters->getPageSize();
@@ -95,7 +95,7 @@ final readonly class Repository implements RepositoryInterface
         $this->securityService->hasElementPermission(
             $element,
             $user,
-            Permissions::VERSIONS_PERMISSION
+            ElementPermissions::VERSIONS_PERMISSION
         );
 
         return $element;
