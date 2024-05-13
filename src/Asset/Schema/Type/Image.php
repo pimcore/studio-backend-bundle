@@ -38,7 +38,7 @@ final class Image extends Asset
         #[Property(description: 'is animated', type: 'boolean', example: false)]
         private readonly bool $isAnimated,
         #[Property(description: 'path to thumbnail', type: 'string', example: '/path/to/element/hulk-smash.jpg')]
-        private readonly string $thumbnailPath,
+        private readonly string $imageThumbnailPath,
         string $iconName,
         bool $hasChildren,
         string $type,
@@ -80,9 +80,9 @@ final class Image extends Asset
         );
     }
 
-    public function getThumbnailPath(): string
+    public function getImageThumbnailPath(): string
     {
-        return $this->thumbnailPath;
+        return $this->imageThumbnailPath;
     }
 
     public function getFormat(): string

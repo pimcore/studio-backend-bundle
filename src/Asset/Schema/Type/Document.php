@@ -33,7 +33,7 @@ class Document extends Asset
         private readonly ?int $pageCount,
         #[Property(
             description: 'Path to image thumbnail',
-            type: 'integer',
+            type: 'string',
             example: '/path/to/document/imagethumbnail.jpg'
         )]
         private readonly ?string $imageThumbnailPath,
