@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property;
 
 use OpenApi\Attributes\AdditionalProperties;
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 
 /**
