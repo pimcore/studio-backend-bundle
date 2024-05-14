@@ -62,6 +62,11 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
             $parameters->getElementType(),
             $parameters->getElementId(),
         );
+        $element = $this->getLatestVersionForUser(
+            $element,
+            $user
+        );
+        $element->setUserModification($user->getId());
 
         $this->securityService->hasElementPermission(
             $element,
