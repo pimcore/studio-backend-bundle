@@ -98,11 +98,14 @@ final readonly class WorkflowActionService implements WorkflowActionServiceInter
         array $notes
     ): array
     {
+        if (empty($notes)) {
+            return $notes;
+        }
+
+        $notes['commentPrefill'] = '';
         if (!empty($notes['commentGetterFn'])) {
             $commentGetterFn = $notes['commentGetterFn'];
             $notes['commentPrefill'] = $object->$commentGetterFn();
-        } elseif (!empty($notes)) {
-            $notes['commentPrefill'] = '';
         }
 
         return $notes;

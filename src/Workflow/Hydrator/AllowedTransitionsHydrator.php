@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\WorkflowUnsavedBehaviorTypes;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\AllowedTransition;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
 use Pimcore\Model\DataObject\Concrete;
@@ -53,7 +54,8 @@ final readonly class AllowedTransitionsHydrator implements AllowedTransitionsHyd
                 label: $transition->getLabel(),
                 iconCls: $transition->getIconClass(),
                 objectLayout: $transition->getObjectLayout(),
-                unsavedChangesBehaviour: $options['unsavedChangesBehaviour'] ?? false,
+                unsavedChangesBehaviour:
+                    $options['unsavedChangesBehaviour'] ?? WorkflowUnsavedBehaviorTypes::TYPE_WARN,
                 notes: $notes ?? [],
             );
         }

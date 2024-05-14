@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\WorkflowUnsavedBehaviorTypes;
 
 /**
  * @internal
@@ -38,7 +39,11 @@ final readonly class AllowedTransition
         private string $iconCls,
         #[Property(description: 'objectLayout', type: 'bool', example: false)]
         private bool $objectLayout,
-        #[Property(description: 'unsavedChangesBehaviour', type: 'string', example: 'warn')]
+        #[Property(
+            description: 'unsavedChangesBehaviour',
+            type: 'string',
+            example: WorkflowUnsavedBehaviorTypes::TYPE_WARN
+        )]
         private string $unsavedChangesBehaviour,
         #[Property(
             description: 'notes',

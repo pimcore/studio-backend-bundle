@@ -14,20 +14,16 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 
 /**
  * @internal
  */
-final class InvalidActionTypeException extends AbstractApiException
+final readonly class WorkflowUnsavedBehaviorTypes
 {
-    public function __construct(string $actionType)
-    {
-        parent::__construct(
-            400,
-            sprintf('Invalid workflow action type: %s',
-                $actionType,
-            )
-        );
-    }
+    public const TYPE_WARN = 'warn';
+
+    public const TYPE_SAVE = 'save';
+
+    public const TYPE_IGNORE = 'ignore';
 }
