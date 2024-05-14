@@ -16,12 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowDependencyMissingException;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Workflow\Dumper\GraphvizDumper;
-use Pimcore\Workflow\Dumper\StateMachineGraphvizDumper;
-use Pimcore\Workflow\Manager;
+use Pimcore\Tool\Console;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Workflow\Marking;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 /**
@@ -29,52 +27,45 @@ use Symfony\Component\Workflow\WorkflowInterface;
  */
 final readonly class WorkflowGraphService implements WorkflowGraphServiceInterface
 {
-    public function __construct(
-        private Manager $workflowManager,
-        private GraphvizDumper $graphvizDumper,
-        private StateMachineGraphvizDumper $stateMachineGraphvizDumper
-    )
-    {
-    }
+    private const PHP_EXECUTABLE = 'php';
 
-    public function getGraphFromGraphvizFile(
-        string $graphvizFile,
+    private const DOT_EXECUTABLE = 'dot';
+
+    public function getGraph(
+        ElementInterface $element,
+        WorkflowInterface $workflow,
         string $format
     ): string
     {
-        $process = Process::fromShellCommandline("dot -T$format");
-        $process->setInput($graphvizFile);
-        $process->run();
+        $marking = $workflow->getMarking($element);
+
+        $params = [
+            'NAME' => $workflow->getName(),
+            'PLACES' => implode(' ', array_keys($marking->getPlaces())),
+            'DOT' => $this->getExecutable(self::DOT_EXECUTABLE),
+        ];
+
+        $cmd = $this->getExecutable(self::PHP_EXECUTABLE) . ' ' .
+            PIMCORE_PROJECT_ROOT .
+            '/bin/console pimcore:workflow:dump ${NAME} ${PLACES} | ${DOT} -T'.$format;
+
+        Console::addLowProcessPriority($cmd);
+        $process = Process::fromShellCommandline($cmd);
+        $process->run(null, $params);
 
         return $process->getOutput();
     }
 
-
-    public function getGraphvizFile(
-        WorkflowInterface $workflow,
-        ElementInterface $element
-    ): string
+    private function getExecutable(string $executable): string
     {
-        $dumper = $this->graphvizDumper;
-        $configuration = $this->workflowManager->getWorkflowConfig($workflow->getName());
-        if ($configuration->getType() === 'state_machine') {
-            $dumper = $this->stateMachineGraphvizDumper;
+        $consoleExecutable = Console::getExecutable($executable);
+
+        if (!$consoleExecutable) {
+            throw new WorkflowDependencyMissingException(
+                $executable
+            );
         }
-        $marking = $this->markGraphPlaces(array_keys($workflow->getMarking($element)->getPlaces()));
 
-        return $dumper->dump(
-            $workflow->getDefinition(),
-            $marking,
-            ['workflowName' => $workflow->getName()]
-        );
+        return $consoleExecutable;
     }
-
-    private function markGraphPlaces(array $places): Marking {
-        $marking = new Marking();
-        foreach ($places as $place) {
-            $marking->mark($place);
-        }
-        return $marking;
-    }
-
 }

@@ -17,9 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Hydrator;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\WorkflowUnsavedBehaviorTypes;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydrator;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\AllowedTransition;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydrator;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\GlobalAction;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Workflow\Transition;
@@ -27,13 +26,13 @@ use Pimcore\Workflow\Transition;
 /**
  * @internal
  */
-final class AllowedTransitionsHydratorTest extends Unit
+final class GlobalActionsHydratorTest extends Unit
 {
-    private AllowedTransitionsHydrator $hydrator;
+    private GlobalActionsHydrator $hydrator;
 
     public function _before(): void
     {
-        $this->hydrator = new AllowedTransitionsHydrator(
+        $this->hydrator = new GlobalActionsHydrator(
             $this->makeEmpty(WorkflowActionServiceInterface::class)
 
         );
@@ -55,13 +54,9 @@ final class AllowedTransitionsHydratorTest extends Unit
 
         $asset = new Asset();
         $hydratedTransitions = $this->hydrator->hydrate([$transition], $asset);
-        $this->assertInstanceOf(AllowedTransition::class, $hydratedTransitions[0]);
+        $this->assertInstanceOf(GlobalAction::class, $hydratedTransitions[0]);
         $this->assertEquals($transition->getName(), $hydratedTransitions[0]->getName());
         $this->assertEquals($transition->getLabel(), $hydratedTransitions[0]->getLabel());
-        $this->assertEquals(
-            WorkflowUnsavedBehaviorTypes::TYPE_WARN,
-            $hydratedTransitions[0]->getUnsavedChangesBehaviour()
-        );
     }
 
     public function testHydrateWithNotes(): void
@@ -81,13 +76,9 @@ final class AllowedTransitionsHydratorTest extends Unit
 
         $asset = new Asset();
         $hydratedTransitions = $this->hydrator->hydrate([$transition], $asset);
-        $this->assertInstanceOf(AllowedTransition::class, $hydratedTransitions[0]);
+        $this->assertInstanceOf(GlobalAction::class, $hydratedTransitions[0]);
         $this->assertEquals($transition->getName(), $hydratedTransitions[0]->getName());
         $this->assertEquals($transition->getLabel(), $hydratedTransitions[0]->getLabel());
-        $this->assertEquals(
-            WorkflowUnsavedBehaviorTypes::TYPE_WARN,
-            $hydratedTransitions[0]->getUnsavedChangesBehaviour()
-        );
         $this->assertEquals('testNote', $hydratedTransitions[0]->getNotes()['myTestNote']);
     }
 }

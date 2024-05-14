@@ -14,19 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
-
-use Pimcore\Model\Element\ElementInterface;
-use Symfony\Component\Workflow\WorkflowInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 /**
  * @internal
  */
-interface WorkflowGraphServiceInterface
+final class WorkflowDependencyMissingException extends AbstractApiException
 {
-    public function getGraph(
-        ElementInterface $element,
-        WorkflowInterface $workflow,
-        string $format
-    ): string;
+    public function __construct(string $executable)
+    {
+        parent::__construct(400, sprintf(
+            'Please install the "%s" console executable on the server to render the workflow graph.',
+            $executable
+        ));
+    }
 }

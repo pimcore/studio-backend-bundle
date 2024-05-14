@@ -88,7 +88,11 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         return new WorkflowDetails(
             $this->getWorkflowLabel($workflow),
             $this->getStatusInfo($workflow, $element),
-            $this->getGraph($workflow, $element),
+            $this->workflowGraphService->getGraph(
+                $element,
+                $workflow,
+                'svg'
+            ),
             $this->allowedTransitionsHydrator->hydrate(
                 $workflow->getEnabledTransitions($element),
                 $element
@@ -131,18 +135,5 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         }
 
         return $statusInfos;
-    }
-
-    private function getGraph(
-        WorkflowInterface $workflow,
-        ElementInterface $element
-    ): string
-    {
-        $graphFile = $this->workflowGraphService->getGraphvizFile($workflow, $element);
-
-        return $this->workflowGraphService->getGraphFromGraphvizFile(
-            $graphFile,
-            'svg'
-        );
     }
 }
