@@ -19,6 +19,3 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator
-
-  Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor\DependencyDataExtractorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor\DependencyDataExtractor

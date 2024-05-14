@@ -16,17 +16,21 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Extractor\DependencyDataExtractorInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 
 /**
  * @internal
  */
 final readonly class DependencyHydrator implements DependencyHydratorInterface
 {
+    use ElementProviderTrait;
+
     public function __construct(
-        private DependencyDataExtractorInterface $dataExtractor
+        private ServiceResolverInterface $serviceResolver,
     ) {
+
     }
 
     public function hydrate(array $dependency): ?Dependency
@@ -38,7 +42,7 @@ final readonly class DependencyHydrator implements DependencyHydratorInterface
             return null;
         }
 
-        $data = $this->dataExtractor->extractData($elementType, $elementId);
+        $data = $this->extractData($elementType, $elementId);
 
         return new Dependency(
             $data['id'],
@@ -47,5 +51,18 @@ final readonly class DependencyHydrator implements DependencyHydratorInterface
             $data['subtype'],
             $data['published']
         );
+    }
+
+    private function extractData(string $elementType, int $elementId): array
+    {
+        $element = $this->getElement($this->serviceResolver, $elementType, $elementId);
+
+        return [
+            'id' => $element->getId(),
+            'type' => $this->serviceResolver->getElementType($element),
+            'subtype' => $element->getType(),
+            'published' => $this->serviceResolver->isPublished($element),
+            'path' => $element->getRealFullPath(),
+        ];
     }
 }
