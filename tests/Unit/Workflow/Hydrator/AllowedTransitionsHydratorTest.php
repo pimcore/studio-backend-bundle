@@ -73,7 +73,7 @@ final class AllowedTransitionsHydratorTest extends Unit
                     'commentEnabled' => true,
                     'myTestNote' => 'testNote',
                 ],
-                'objectLayout' => null
+                'objectLayout' => null,
             ]
         );
 

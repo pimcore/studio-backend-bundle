@@ -53,6 +53,7 @@ final class SubmitActionTest extends Unit
             workflowOptions: []
         );
     }
+
     public function testSubmitActionParameters(): void
     {
         $parameters = new SubmitAction(
