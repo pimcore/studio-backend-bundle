@@ -41,7 +41,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class TextPreviewController extends AbstractApiController
+final class TextController extends AbstractApiController
 {
     use ElementProviderTrait;
 
@@ -54,12 +54,12 @@ final class TextPreviewController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/{id}/text-preview', name: 'pimcore_studio_api_get_asset_data_text_preview', methods: ['GET'])]
+    #[Route('/assets/{id}/text', name: 'pimcore_studio_api_get_asset_data_text', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
         //#[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/text-preview',
-        operationId: 'getAssetDataTextPreviewById',
+        path: self::API_PATH . '/assets/{id}/text',
+        operationId: 'getAssetDataTextById',
         summary: 'Get asset data in text UTF8 representation by id',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
