@@ -14,16 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Encoder;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\MaxFileSizeExceededException;
-use Pimcore\Model\Element\ElementInterface;
-
-interface TextEncoderInterface
+/**
+ * @internal
+ */
+final class MaxFileSizeExceededException extends AbstractApiException
 {
-    /**
-     * @throws InvalidElementTypeException|MaxFileSizeExceededException
-     */
-    public function encodeUTF8(ElementInterface $element): string;
+    public function __construct(int|float $maxFileSize)
+    {
+        parent::__construct(
+            413,
+            sprintf('Max file size of %d bytes exceeded', $maxFileSize)
+        );
+    }
 }

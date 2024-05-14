@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Encoder;
 
 use ForceUTF8\Encoding;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\MaxFileSizeExceededException;
 use Pimcore\Model\Asset\Text;
 use Pimcore\Model\Element\ElementInterface;
 
@@ -25,6 +26,9 @@ final class TextEncoder implements TextEncoderInterface
 {
     private const MAX_FILE_SIZE = 2000000;
 
+    /**
+     * @throws InvalidElementTypeException|MaxFileSizeExceededException
+     */
     public function encodeUTF8(ElementInterface $element): string
     {
         if (!$element instanceof Text) {
@@ -32,7 +36,7 @@ final class TextEncoder implements TextEncoderInterface
         }
 
         if ($element->getFileSize() < self::MAX_FILE_SIZE) {
-            return '';
+            throw new MaxFileSizeExceededException(self::MAX_FILE_SIZE);
         }
 
         return Encoding::toUTF8($element->getData());
