@@ -38,19 +38,18 @@ trait ElementProviderTrait
     private function getElement(
         ServiceResolverInterface $serviceResolver,
         string $type,
-        int $id,
-        ?UserInterface $user = null,
+        int $id
     ): ElementInterface {
         $element = $serviceResolver->getElementById($type, $id);
         if ($element === null) {
             throw new ElementNotFoundException($id);
         }
 
-        return $this->getLatestVersionForUser($element, $user);
+        return $element;
     }
 
     private function getLatestVersionForUser(
-        Asset|Document|Concrete $element,
+        Asset|Document\PageSnippet|Concrete $element,
         ?UserInterface $user
     ): ElementInterface {
         // check for latest version
