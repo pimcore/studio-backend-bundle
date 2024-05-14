@@ -35,7 +35,7 @@ final class TextEncoder implements TextEncoderInterface
             throw new InvalidElementTypeException('Element must be an instance of Text');
         }
 
-        if ($element->getFileSize() < self::MAX_FILE_SIZE) {
+        if ($element->getFileSize() > self::MAX_FILE_SIZE) {
             throw new MaxFileSizeExceededException(self::MAX_FILE_SIZE);
         }
 
