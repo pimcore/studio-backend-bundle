@@ -107,10 +107,9 @@ final class PropertyServiceTest extends Unit
     private function getServiceResolver(): ServiceResolverInterface
     {
         return $this->makeEmpty(ServiceResolverInterface::class, [
-            'getElementById' => $this->getDocumentElement()
+            'getElementById' => $this->getDocumentElement(),
         ]);
     }
-
 
     /**
      * @throws Exception
@@ -152,7 +151,7 @@ final class PropertyServiceTest extends Unit
                     true,
                     time(),
                     time()
-                )
+                ),
             ]
         );
     }
@@ -181,7 +180,7 @@ final class PropertyServiceTest extends Unit
         return $this->makeEmpty(Document::class,
             [
                 'getProperties' => $this->getProperties(),
-                'getId' => 1
+                'getId' => 1,
             ]
         );
     }
@@ -202,7 +201,7 @@ final class PropertyServiceTest extends Unit
 
         return [
             $property,
-            $propertyTwo
+            $propertyTwo,
         ];
     }
 
