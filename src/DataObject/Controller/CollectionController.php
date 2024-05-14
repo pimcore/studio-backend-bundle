@@ -64,7 +64,7 @@ final class CollectionController extends AbstractApiController
      */
     #[Route('/data-objects', name: 'pimcore_studio_api_data_objects', methods: ['GET'])]
     //#[IsGranted(self::VOTER_STUDIO_API)]
-    #[GET(
+    #[Get(
         path: self::API_PATH . '/data-objects',
         operationId: 'getDataObjects',
         description: 'Get paginated data objects',

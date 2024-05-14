@@ -48,7 +48,7 @@ final class PublishController extends AbstractApiController
 
     #[Route('/versions/{id}', name: 'pimcore_studio_api_publish_version', methods: ['POST'])]
     //#[IsGranted('STUDIO_API')]
-    #[POST(
+    #[Post(
         path: self::API_PATH . '/versions/{id}',
         operationId: 'publishVersion',
         description: 'Publish element based on the version ID',

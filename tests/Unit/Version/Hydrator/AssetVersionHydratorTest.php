@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Version\Hydrator;
 
 use Codeception\Test\Unit;
-use JetBrains\PhpStorm\NoReturn;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\AssetVersionHydrator;
 use Pimcore\Model\Asset\Document;
@@ -27,7 +26,6 @@ use Pimcore\Model\Asset\Document;
  */
 final class AssetVersionHydratorTest extends Unit
 {
-    #[NoReturn]
     public function testGetHydratedVersionData(): void
     {
         $asset = new Document();
