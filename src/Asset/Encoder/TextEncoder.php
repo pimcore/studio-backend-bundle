@@ -1,5 +1,18 @@
 <?php
 
+/**
+ * Pimcore
+ *
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
+ * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ */
+
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Encoder;
 
 use ForceUTF8\Encoding;
@@ -10,9 +23,10 @@ use Pimcore\Model\Element\ElementInterface;
 final class TextEncoder implements TextEncoderInterface
 {
     private const MAX_FILE_SIZE = 2000000;
+
     public function encodeUTF8(ElementInterface $element): string
     {
-        if(!$element instanceof Text) {
+        if (!$element instanceof Text) {
             throw new InvalidElementTypeException('Element must be an instance of Text');
         }
 
