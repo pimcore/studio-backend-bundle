@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowDependencyMissingException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Tool\Console;
@@ -58,14 +59,21 @@ final readonly class WorkflowGraphService implements WorkflowGraphServiceInterfa
 
     private function getExecutable(string $executable): string
     {
-        $consoleExecutable = Console::getExecutable($executable);
+        try {
+            $consoleExecutable = Console::getExecutable($executable);
 
-        if (!$consoleExecutable) {
+            if (!$consoleExecutable) {
+                throw new WorkflowDependencyMissingException(
+                    $executable
+                );
+            }
+
+            return $consoleExecutable;
+        } catch (Exception) {
             throw new WorkflowDependencyMissingException(
                 $executable
             );
         }
 
-        return $consoleExecutable;
     }
 }
