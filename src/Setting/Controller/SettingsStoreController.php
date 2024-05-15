@@ -16,20 +16,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Controller;
 
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\SettingsRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\SettingsStoreJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\SettingsStoreRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\SettingsStoreResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property\KeyValueArray;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Request\SettingsRequest;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Request\SettingsStoreRequest;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -38,44 +38,46 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class SettingsController extends AbstractApiController
+final class SettingsStoreController extends AbstractApiController
 {
-    private const ROUTE = '/settings';
+    private const ROUTE = '/settings-store';
+
+    private const PROPERTY_NAME = 'settings';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly SettingsProviderInterface $settingsProvider
+        private readonly SettingsServiceInterface $settingsService
     )
     {
         parent::__construct($serializer);
     }
 
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_settings', methods: ['POST'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_settings_store', methods: ['POST'])]
 
     #[POST(
         path: self::API_PATH . self::ROUTE,
-        operationId: 'getSettings',
+        operationId: 'getSettingsStoreSettings',
         description: 'Get settings from backend',
         summary: 'Get settings from backend based on parameter',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Settings->name]
     )]
-    #[SettingsRequestBody]
+    #[SettingsStoreRequestBody]
     #[SuccessResponse(
         description: 'Key value pairs for given keys',
-        content: new JsonContent(
-            properties: [
-                new KeyValueArray()
-            ]
-        )
+        content: new SettingsStoreResponse()
     )]
     #[NotFoundResponse]
     #[UnauthorizedResponse]
     #[MethodNotAllowedResponse]
     #[UnsupportedMediaTypeResponse]
     #[UnprocessableContentResponse]
-    public function getSettings(#[MapRequestPayload] SettingsRequest $settingsRequest): JsonResponse
+    public function getSettings(#[MapRequestPayload] SettingsStoreRequest $settingsRequest): JsonResponse
     {
-        return $this->jsonResponse(['parameters' => $this->settingsProvider->getParameters($settingsRequest)]);
+        return $this->jsonResponse(
+            [
+                self::PROPERTY_NAME => $this->settingsService->getSettingsStoreSettings($settingsRequest)
+            ]
+        );
     }
 }

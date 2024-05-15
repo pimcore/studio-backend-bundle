@@ -19,19 +19,19 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Request\SettingsRequest;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Request\SettingsStoreRequest;
 
 /**
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class SettingsRequestBody extends RequestBody
+final class SettingsStoreRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
             required: true,
-            content: new JsonContent(ref: SettingsRequest::class)
+            content: new JsonContent(ref: SettingsStoreRequest::class)
         );
     }
 }

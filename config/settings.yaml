@@ -11,5 +11,11 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProvider
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsService
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SymfonySettingsProviderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SymfonySettingsProvider
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsStoreSettingsProviderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsStoreSettingsProvider

@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property;
 
 use OpenApi\Attributes\AdditionalProperties;
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
@@ -29,7 +31,13 @@ final class KeyValueArray extends Property
         parent::__construct(
             property: $propertyName,
             type: 'object',
-            additionalProperties: new AdditionalProperties(type: 'string')
+            additionalProperties: new AdditionalProperties(anyOf: [
+                new Schema(type: 'string'),
+                new Schema(type: 'number'),
+                new Schema(type: 'boolean'),
+                new Schema(type: 'object'),
+                new Schema(type: 'array', items: new Items()),
+            ])
         );
     }
 }

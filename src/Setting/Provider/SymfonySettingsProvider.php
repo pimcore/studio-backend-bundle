@@ -16,15 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\ParameterNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Request\SettingsRequest;
+use Pimcore\Bundle\StudioBackendBundle\Exception\SettingNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Request\SymfonySettingsRequest;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use UnitEnum;
 
 /**
  * @internal
  */
-final class SettingsProvider implements SettingsProviderInterface
+final class SymfonySettingsProvider implements SymfonySettingsProviderInterface
 {
     private const BLACKLIST_PATTERN = [
         'firewalls',
@@ -37,40 +37,40 @@ final class SettingsProvider implements SettingsProviderInterface
     public function __construct(private readonly ParameterBagInterface $parameters) {
     }
 
-    public function getParameters(SettingsRequest $settingsRequest): array
+    public function getSettings(SymfonySettingsRequest $settingsRequest): array
     {
         return array_combine(
-            $settingsRequest->getParameters(),
+            $settingsRequest->getSettings(),
             array_map(
-                fn($parameterKey) => $this->getParameter($parameterKey),
-                $settingsRequest->getParameters()
+                fn($settingsKey) => $this->getSetting($settingsKey),
+                $settingsRequest->getSettings()
             )
         );
     }
 
     /**
-     * @throws ParameterNotFoundException
+     * @throws SettingNotFoundException
      */
-    protected function getParameter(string $parameterKey): array|bool|float|int|null|string|UnitEnum
+    private function getSetting(string $settingsKey): array|bool|float|int|null|string|UnitEnum
     {
-        $this->isValidParameter($parameterKey);
+        $this->isValidSetting($settingsKey);
 
-        return $this->parameters->get($parameterKey);
+        return $this->parameters->get($settingsKey);
     }
 
     /**
-     * @throws ParameterNotFoundException
+     * @throws SettingNotFoundException
      */
-    private function isValidParameter(string $parameterName): void
+    private function isValidSetting(string $settingsKey): void
     {
         foreach(self::BLACKLIST_PATTERN as $pattern) {
-            if (str_contains($parameterName, $pattern)) {
-                throw new ParameterNotFoundException($parameterName);
+            if (str_contains($settingsKey, $pattern)) {
+                throw new SettingNotFoundException($settingsKey);
             }
         }
 
-        if(!$this->parameters->has($parameterName)) {
-            throw new ParameterNotFoundException($parameterName);
+        if(!$this->parameters->has($settingsKey)) {
+            throw new SettingNotFoundException($settingsKey);
         }
     }
 }

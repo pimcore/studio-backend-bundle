@@ -14,18 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
-
-use Pimcore\Bundle\StudioBackendBundle\Exception\ParameterNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Setting\Request\SettingsRequest;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 /**
  * @internal
  */
-interface SettingsProviderInterface
+final class SettingNotFoundException extends AbstractApiException
 {
-    /**
-     * @throws ParameterNotFoundException
-     */
-    public function getParameters(SettingsRequest $settingsRequest): array;
+    public function __construct(string $name)
+    {
+        parent::__construct(404, sprintf('Setting %s not found',
+            $name,
+        ));
+    }
 }

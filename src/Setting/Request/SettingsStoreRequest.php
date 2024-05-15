@@ -24,23 +24,27 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    schema: 'SettingsRequest',
-    title: 'SettingsRequest',
-    description: 'SettingsRequest Scheme for API',
+    schema: 'SettingsStoreRequest',
+    title: 'SettingsStoreRequest',
+    description: 'SettingsStoreRequest Scheme for API',
     type: 'object'
 )]
-final readonly class SettingsRequest
+final class SettingsStoreRequest
 {
+    private array $settings;
     public function __construct(
-        #[Property(description: 'parameters', type: 'array', items: new Items(
-            type: 'string', example: 'not_your_typical_key'
+        #[Property(description: 'settings', type: 'array', items: new Items(
+            ref: SettingsStoreContent::class
         ))]
-        private array $parameters = []
+        array $settings = []
     ) {
+        foreach($settings as $setting) {
+            $this->settings[] = new SettingsStoreContent($setting['id'], $setting['scope']);
+        }
     }
 
-    public function getParameters(): array
+    public function getSettings(): array
     {
-        return $this->parameters;
+        return $this->settings;
     }
 }
