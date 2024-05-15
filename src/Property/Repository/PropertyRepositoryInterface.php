@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
@@ -26,7 +26,7 @@ use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
 /**
  * @internal
  */
-interface RepositoryInterface
+interface PropertyRepositoryInterface
 {
     public function createPredefinedProperty(): Predefined;
 

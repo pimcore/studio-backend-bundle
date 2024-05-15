@@ -20,7 +20,7 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyService;
@@ -114,10 +114,10 @@ final class PropertyServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function getRepository(): RepositoryInterface
+    private function getRepository(): PropertyRepositoryInterface
     {
         return $this->makeEmpty(
-            RepositoryInterface::class,
+            PropertyRepositoryInterface::class,
             ['createPredefinedProperty' => $this->getPredefinedProperty()]
         );
     }

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
@@ -35,7 +35,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * @internal
  */
-final readonly class Repository implements RepositoryInterface
+final readonly class PropertyRepository implements PropertyRepositoryInterface
 {
     use ElementProviderTrait;
 

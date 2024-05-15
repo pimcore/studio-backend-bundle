@@ -14,71 +14,65 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller\Element;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
+use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\ElementPropertyRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\PredefinedPropertyRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\BadRequestResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * @internal
- */
-final class PutController extends AbstractApiController
+final class UpdateController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly PropertyServiceInterface $propertyService
+        private readonly PropertyServiceInterface $propertyService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_update_element_properties', methods: ['PUT'])]
-    //#[IsGranted('STUDIO_API')]
+    /**
+     * @throws PropertyNotFoundException
+     */
+    #[Route('/properties/{id}', name: 'pimcore_studio_api_update_property', methods: ['PUT'])]
     #[Put(
-        path: self::API_PATH . '/properties/{elementType}/{id}',
-        operationId: 'updatePropertiesForElementByTypeAndId',
-        summary: 'Update properties for an element based on the element type and the element id',
+        path: self::API_PATH . '/properties/{id}',
+        operationId: 'updateProperty',
+        summary: 'Updating a property',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::PropertiesForElement->value]
+        tags: [Tags::Properties->name]
     )]
-    #[ElementTypeParameter]
-    #[IdParameter(type: 'element')]
-    #[ElementPropertyRequestBody]
+    #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]
+    #[PredefinedPropertyRequestBody]
     #[SuccessResponse(
-        description: 'Element Properties data as json',
-        content: new ItemsJson(ElementProperty::class)
+        description: 'Updated property',
+        content: new JsonContent(ref: PredefinedProperty::class, type: 'object')
     )]
+    #[BadRequestResponse]
     #[UnauthorizedResponse]
-    #[NotFoundResponse]
     #[MethodNotAllowedResponse]
     #[UnsupportedMediaTypeResponse]
     #[UnprocessableContentResponse]
-    public function updateProperties(
-        string $elementType,
-        int $id,
-        #[MapRequestPayload] UpdateElementProperties $items
+    public function updateProperty(
+        string $id,
+        #[MapRequestPayload] UpdatePredefinedProperty $updatePredefinedProperty
     ): JsonResponse {
-        $this->propertyService->updateElementProperties($elementType, $id, $items);
-
-        return $this->jsonResponse(
-            ['items' => $this->propertyService->getElementProperties($elementType, $id)]
-        );
+        return $this->jsonResponse($this->propertyService->updatePredefinedProperty($id, $updatePredefinedProperty));
     }
 }

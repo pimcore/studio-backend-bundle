@@ -64,10 +64,6 @@ final class CreateController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function createProperty(): JsonResponse
     {
-        return $this->jsonResponse(
-            $this->propertyService->getPredefinedProperty(
-                $this->propertyService->createPredefinedProperty()
-            )
-        );
+        return $this->jsonResponse($this->propertyService->createPredefinedProperty());
     }
 }

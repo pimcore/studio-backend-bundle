@@ -12,8 +12,8 @@ services:
     tags: [ 'controller.service_arguments' ]
 
 
-  Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Property\Repository
+  Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepository
 
   Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyService

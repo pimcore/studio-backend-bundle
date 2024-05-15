@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Model\Property\Predefined;
@@ -28,13 +29,16 @@ use Pimcore\Model\Property\Predefined;
  */
 interface PropertyServiceInterface
 {
-    public function createPredefinedProperty(): Predefined;
+    public function createPredefinedProperty(): PredefinedProperty;
 
     /**
-     * @return PredefinedProperty[]
+     * @return array<int, PredefinedProperty>
      */
     public function getPredefinedProperties(PropertiesParameters $parameters): array;
 
+    /**
+     * @return array<int, ElementProperty>
+     */
     public function getElementProperties(string $elementType, int $id): array;
 
     public function getPredefinedProperty(Predefined $predefined): PredefinedProperty;
@@ -42,7 +46,7 @@ interface PropertyServiceInterface
     /**
      * @throws PropertyNotFoundException
      */
-    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined;
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): PredefinedProperty;
 
     public function updateElementProperties(string $elementType, int $id, UpdateElementProperties $items): void;
 

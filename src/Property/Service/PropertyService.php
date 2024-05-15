@@ -19,9 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Property\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -35,17 +36,22 @@ final readonly class PropertyService implements PropertyServiceInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private RepositoryInterface $repository,
-        private ServiceResolverInterface $serviceResolver,
-        private PropertyHydratorInterface $propertyHydrator,
+        private PropertyRepositoryInterface $repository,
+        private ServiceResolverInterface    $serviceResolver,
+        private PropertyHydratorInterface   $propertyHydrator,
     ) {
     }
 
-    public function createPredefinedProperty(): Predefined
+    public function createPredefinedProperty(): PredefinedProperty
     {
-        return $this->repository->createPredefinedProperty();
+        return $this->getPredefinedProperty(
+            $this->repository->createPredefinedProperty()
+        );
     }
 
+    /**
+     * @return array<int, PredefinedProperty>
+     */
     public function getPredefinedProperties(PropertiesParameters $parameters): array
     {
         $properties = $this->repository->listProperties($parameters);
@@ -57,6 +63,9 @@ final readonly class PropertyService implements PropertyServiceInterface
         return $hydratedProperties;
     }
 
+    /**
+     * @return array<int, ElementProperty>
+     */
     public function getElementProperties(string $elementType, int $id): array
     {
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
@@ -78,9 +87,9 @@ final readonly class PropertyService implements PropertyServiceInterface
     /**
      * @throws PropertyNotFoundException
      */
-    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): PredefinedProperty
     {
-        return $this->repository->updatePredefinedProperty($id, $property);
+        return $this->getPredefinedProperty($this->repository->updatePredefinedProperty($id, $property));
     }
 
     public function updateElementProperties(string $elementType, int $id, UpdateElementProperties $items): void
