@@ -38,6 +38,9 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 final class UpdateController extends AbstractApiController
 {
     public function __construct(

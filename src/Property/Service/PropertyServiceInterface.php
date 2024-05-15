@@ -41,8 +41,6 @@ interface PropertyServiceInterface
      */
     public function getElementProperties(string $elementType, int $id): array;
 
-    public function getPredefinedProperty(Predefined $predefined): PredefinedProperty;
-
     /**
      * @throws PropertyNotFoundException
      */

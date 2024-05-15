@@ -44,7 +44,7 @@ final readonly class PropertyService implements PropertyServiceInterface
 
     public function createPredefinedProperty(): PredefinedProperty
     {
-        return $this->getPredefinedProperty(
+        return $this->propertyHydrator->hydratePredefinedProperty(
             $this->repository->createPredefinedProperty()
         );
     }
@@ -79,17 +79,14 @@ final readonly class PropertyService implements PropertyServiceInterface
         return $hydratedProperties;
     }
 
-    public function getPredefinedProperty(Predefined $predefined): PredefinedProperty
-    {
-        return $this->propertyHydrator->hydratePredefinedProperty($predefined);
-    }
-
     /**
      * @throws PropertyNotFoundException
      */
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): PredefinedProperty
     {
-        return $this->getPredefinedProperty($this->repository->updatePredefinedProperty($id, $property));
+        return $this->propertyHydrator->hydratePredefinedProperty(
+            $this->repository->updatePredefinedProperty($id, $property)
+        );
     }
 
     public function updateElementProperties(string $elementType, int $id, UpdateElementProperties $items): void

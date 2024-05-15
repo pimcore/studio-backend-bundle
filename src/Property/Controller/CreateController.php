@@ -33,6 +33,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
+/**
+ * @internal
+ */
 final class CreateController extends AbstractApiController
 {
     public function __construct(

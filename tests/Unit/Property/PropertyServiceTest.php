@@ -71,27 +71,6 @@ final class PropertyServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testPredefinedListing(): void
-    {
-        $service = $this->getService();
-        $predefinedProperty = $service->getPredefinedProperty($this->getPredefinedProperty());
-
-        $this->assertSame('new_id', $predefinedProperty->getId());
-        $this->assertSame('New Property', $predefinedProperty->getName());
-        $this->assertSame('New Description', $predefinedProperty->getDescription());
-        $this->assertSame('new_key', $predefinedProperty->getKey());
-        $this->assertSame('text', $predefinedProperty->getType());
-        $this->assertNull($predefinedProperty->getData());
-        $this->assertNull($predefinedProperty->getConfig());
-        $this->assertSame('document', $predefinedProperty->getCtype());
-        $this->assertTrue($predefinedProperty->isInheritable());
-        $this->assertNotNull($predefinedProperty->getCreationDate());
-        $this->assertNotNull($predefinedProperty->getModificationDate());
-    }
-
-    /**
-     * @throws Exception
-     */
     private function getService(): PropertyServiceInterface
     {
         return new PropertyService(
