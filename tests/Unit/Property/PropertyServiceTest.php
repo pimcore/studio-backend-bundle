@@ -63,7 +63,7 @@ final class PropertyServiceTest extends Unit
         $this->assertSame('New Property', $property->getName());
         $this->assertSame('new_key', $property->getKey());
         $this->assertSame('New Description', $property->getDescription());
-        $this->assertTrue($property->getInheritable());
+        $this->assertTrue($property->isInheritable());
         $this->assertNotNull($property->getCreationDate());
         $this->assertNotNull($property->getModificationDate());
     }
