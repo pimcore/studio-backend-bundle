@@ -32,13 +32,14 @@ use OpenApi\Attributes\Schema;
 final class SettingsStoreRequest
 {
     private array $settings;
+
     public function __construct(
         #[Property(description: 'settings', type: 'array', items: new Items(
             ref: SettingsStoreContent::class
         ))]
         array $settings = []
     ) {
-        foreach($settings as $setting) {
+        foreach ($settings as $setting) {
             $this->settings[] = new SettingsStoreContent($setting['id'], $setting['scope']);
         }
     }

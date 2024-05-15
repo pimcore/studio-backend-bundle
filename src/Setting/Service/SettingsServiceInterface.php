@@ -31,5 +31,4 @@ interface SettingsServiceInterface
     public function getSymfonySettings(SymfonySettingsRequest $settingsRequest): array;
 
     public function getSettingsStoreSettings(SettingsStoreRequest $settingsRequest): array;
-
 }
