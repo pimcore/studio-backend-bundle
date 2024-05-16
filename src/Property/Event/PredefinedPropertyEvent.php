@@ -36,4 +36,9 @@ final class PredefinedPropertyEvent extends AbstractPreResponseEvent
     {
         return $this->predefinedProperty;
     }
+
+    public function getEventName(): string
+    {
+        return self::EVENT_NAME;
+    }
 }

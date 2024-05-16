@@ -1,0 +1,8 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Pimcore\Bundle\StudioBackendBundle\Event\Service\EventDispatchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Event\Service\EventDispatchService

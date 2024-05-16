@@ -18,8 +18,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Event\PreResponseEventInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Event\PredefinedPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 /**
  * @internal
@@ -28,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
     title: 'PredefinedProperty',
     type: 'object'
 )]
-final class PredefinedProperty implements AdditionalAttributesInterface
+final class PredefinedProperty implements AdditionalAttributesInterface, PreResponseEventInterface
 {
     use AdditionalAttributesTrait;
 
@@ -111,5 +114,11 @@ final class PredefinedProperty implements AdditionalAttributesInterface
     public function getModificationDate(): int
     {
         return $this->modificationDate;
+    }
+
+    #[Ignore]
+    public function getEventClass(): string
+    {
+        return PredefinedPropertyEvent::class;
     }
 }

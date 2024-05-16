@@ -17,9 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Event\Service\EventDispatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Property\Event\ElementPropertyEvent;
-use Pimcore\Bundle\StudioBackendBundle\Property\Event\PredefinedPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
@@ -28,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -41,7 +39,7 @@ final readonly class PropertyService implements PropertyServiceInterface
         private PropertyRepositoryInterface $repository,
         private PropertyHydratorInterface $propertyHydrator,
         private ServiceResolverInterface $serviceResolver,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatchServiceInterface $dispatchService
     ) {
     }
 
@@ -54,7 +52,6 @@ final readonly class PropertyService implements PropertyServiceInterface
 
     /**
      * @return array<int, PredefinedProperty>
-     * @throws \Exception
      */
     public function getPredefinedProperties(PropertiesParameters $parameters): array
     {
@@ -64,10 +61,7 @@ final readonly class PropertyService implements PropertyServiceInterface
 
             $predefinedProperty = $this->propertyHydrator->hydratePredefinedProperty($property);
 
-            $this->eventDispatcher->dispatch(
-                new PredefinedPropertyEvent($predefinedProperty),
-                PredefinedPropertyEvent::EVENT_NAME
-            );
+            $this->dispatchService->dispatch($predefinedProperty);
 
             $hydratedProperties[] = $predefinedProperty;
         }
@@ -87,10 +81,7 @@ final readonly class PropertyService implements PropertyServiceInterface
 
             $elementProperty = $this->propertyHydrator->hydrateElementProperty($property);
 
-            $this->eventDispatcher->dispatch(
-                new ElementPropertyEvent($elementProperty),
-                ElementPropertyEvent::EVENT_NAME
-            );
+            $this->dispatchService->dispatch($elementProperty);
 
             $hydratedProperties[] = $elementProperty;
         }

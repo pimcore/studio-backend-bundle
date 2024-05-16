@@ -28,6 +28,8 @@ abstract class AbstractPreResponseEvent extends Event
     {
     }
 
+    abstract public function getEventName(): string;
+
     public function hasAdditionalAttribute(string $key): bool {
         return $this->responseObject->hasAdditionalAttribute($key);
     }

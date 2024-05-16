@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 final class ElementPropertyEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.element_property';
+
     public function __construct(
         private readonly ElementProperty $elementProperty
     )
@@ -36,5 +37,10 @@ final class ElementPropertyEvent extends AbstractPreResponseEvent
     public function getElementProperty(): ElementProperty
     {
         return $this->elementProperty;
+    }
+
+    public function getEventName(): string
+    {
+        return self::EVENT_NAME;
     }
 }

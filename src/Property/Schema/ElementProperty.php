@@ -18,8 +18,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Event\PreResponseEventInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\Event\ElementPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 /**
  * @internal
@@ -28,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
     title: 'DataProperty',
     type: 'object'
 )]
-final class ElementProperty implements AdditionalAttributesInterface
+final class ElementProperty implements AdditionalAttributesInterface, PreResponseEventInterface
 {
     use AdditionalAttributesTrait;
 
@@ -90,5 +93,11 @@ final class ElementProperty implements AdditionalAttributesInterface
     public function getDescription(): ?string
     {
         return $this->description;
+    }
+
+    #[Ignore]
+    public function getEventClass(): string
+    {
+        return ElementPropertyEvent::class;
     }
 }
