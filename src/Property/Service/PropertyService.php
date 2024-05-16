@@ -53,9 +53,16 @@ final readonly class PropertyService implements PropertyServiceInterface
 
     public function getPredefinedProperty(string $id): PredefinedProperty
     {
-        return $this->propertyHydrator->hydratePredefinedProperty(
+        $predefinedProperty = $this->propertyHydrator->hydratePredefinedProperty(
             $this->propertyRepository->getPredefinedProperty($id)
         );
+
+        $this->eventDispatcher->dispatch(
+            new PredefinedPropertyEvent($predefinedProperty),
+            PredefinedPropertyEvent::EVENT_NAME
+        );
+
+        return $predefinedProperty;
     }
 
     /**
