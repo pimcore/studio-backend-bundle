@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Property;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Event\Service\EventDispatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
@@ -95,9 +96,9 @@ final class PropertyServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function getEventDispatcher(): EventDispatcherInterface
+    private function getEventDispatcher(): EventDispatchServiceInterface
     {
-        return $this->makeEmpty(EventDispatcherInterface::class);
+        return $this->makeEmpty(EventDispatchServiceInterface::class);
     }
 
     /**
