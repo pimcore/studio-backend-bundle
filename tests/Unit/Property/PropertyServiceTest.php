@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface
 use Pimcore\Model\Document;
 use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 final class PropertyServiceTest extends Unit
 {
@@ -75,8 +76,9 @@ final class PropertyServiceTest extends Unit
     {
         return new PropertyService(
             $this->getRepository(),
+            $this->getPropertyHydrator(),
             $this->getServiceResolver(),
-            $this->getPropertyHydrator()
+            $this->getEventDispatcher(),
         );
     }
 
@@ -89,6 +91,15 @@ final class PropertyServiceTest extends Unit
             'getElementById' => $this->getDocumentElement(),
         ]);
     }
+
+    /**
+     * @throws Exception
+     */
+    private function getEventDispatcher(): EventDispatcherInterface
+    {
+        return $this->makeEmpty(EventDispatcherInterface::class);
+    }
+
 
     /**
      * @throws Exception

@@ -54,7 +54,6 @@ final readonly class PropertyService implements PropertyServiceInterface
 
     /**
      * @return array<int, PredefinedProperty>
-     * @throws \Exception
      */
     public function getPredefinedProperties(PropertiesParameters $parameters): array
     {
