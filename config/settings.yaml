@@ -10,3 +10,16 @@ services:
     resource: '../src/Setting/Controller'
     public: true
     tags: [ 'controller.service_arguments' ]
+
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingProviderLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader\TaggedIteratorAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsService
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Provider\ConfigSettingsProvider:
+    tags: [ 'pimcore.studio_api.settings_provider' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider:
+    tags: [ 'pimcore.studio_api.settings_provider' ]

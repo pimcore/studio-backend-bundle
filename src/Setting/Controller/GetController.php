@@ -18,12 +18,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Controller;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
+use Pimcore\Bundle\AdminBundle\System\AdminConfig;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface;
+use Pimcore\Config;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -34,11 +37,11 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class GetController extends AbstractApiController
 {
-    private const ROUTE = '/system-settings';
+    private const ROUTE = '/settings';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly SystemSettingsConfig $systemSettingsConfig
+        private readonly SettingsServiceInterface $settingsService,
     ) {
         parent::__construct($serializer);
     }
@@ -61,6 +64,6 @@ final class GetController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getSystemSettings(): JsonResponse
     {
-        return $this->jsonResponse($this->systemSettingsConfig->getSystemSettingsConfig());
+        return $this->jsonResponse($this->settingsService->getSettings());
     }
 }
