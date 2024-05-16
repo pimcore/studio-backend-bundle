@@ -39,7 +39,6 @@ trait AdditionalAttributesTrait
             ]
         )
     )]
-
     private array $additionalAttributes = [];
 
     public function hasAdditionalAttribute(string $key): bool
