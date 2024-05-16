@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Event;
 
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 
 final class ElementPropertyEvent extends AbstractPreResponseEvent
 {
