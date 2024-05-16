@@ -38,7 +38,7 @@ final readonly class PropertyService implements PropertyServiceInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private PropertyRepositoryInterface $repository,
+        private PropertyRepositoryInterface $propertyRepository,
         private PropertyHydratorInterface $propertyHydrator,
         private ServiceResolverInterface $serviceResolver,
         private EventDispatcherInterface $eventDispatcher
@@ -47,8 +47,14 @@ final readonly class PropertyService implements PropertyServiceInterface
 
     public function createPredefinedProperty(): PredefinedProperty
     {
+        $predefined = $this->propertyRepository->createPredefinedProperty();
+        return $this->getPredefinedProperty($predefined->getId());
+    }
+
+    public function getPredefinedProperty(string $id): PredefinedProperty
+    {
         return $this->propertyHydrator->hydratePredefinedProperty(
-            $this->repository->createPredefinedProperty()
+            $this->propertyRepository->getPredefinedProperty($id)
         );
     }
 
@@ -57,7 +63,7 @@ final readonly class PropertyService implements PropertyServiceInterface
      */
     public function getPredefinedProperties(PropertiesParameters $parameters): array
     {
-        $properties = $this->repository->listProperties($parameters);
+        $properties = $this->propertyRepository->listProperties($parameters);
         $hydratedProperties = [];
         foreach ($properties->load() as $property) {
 
@@ -100,18 +106,14 @@ final readonly class PropertyService implements PropertyServiceInterface
     /**
      * @throws PropertyNotFoundException
      */
-    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): PredefinedProperty
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void
     {
-
-        return $this->propertyHydrator->hydratePredefinedProperty(
-
-            $this->repository->updatePredefinedProperty($id, $property)
-        );
+        $this->propertyRepository->updatePredefinedProperty($id, $property);
     }
 
     public function updateElementProperties(string $elementType, int $id, UpdateElementProperties $items): void
     {
-        $this->repository->updateElementProperties($elementType, $id, $items);
+        $this->propertyRepository->updateElementProperties($elementType, $id, $items);
     }
 
     /**
@@ -119,6 +121,6 @@ final readonly class PropertyService implements PropertyServiceInterface
      */
     public function deletePredefinedProperty(string $id): void
     {
-        $this->repository->deletePredefinedProperty($id);
+        $this->propertyRepository->deletePredefinedProperty($id);
     }
 }

@@ -30,9 +30,11 @@ interface PropertyRepositoryInterface
 {
     public function createPredefinedProperty(): Predefined;
 
+    public function getPredefinedProperty(string $id): Predefined;
+
     public function listProperties(PropertiesParameters $parameters): PropertiesListing;
 
-    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): Predefined;
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void;
 
     /**
      * @throws ElementSavingFailedException

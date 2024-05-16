@@ -30,6 +30,8 @@ interface PropertyServiceInterface
 {
     public function createPredefinedProperty(): PredefinedProperty;
 
+    public function getPredefinedProperty(string $id): PredefinedProperty;
+
     /**
      * @return array<int, PredefinedProperty>
      */
@@ -43,7 +45,7 @@ interface PropertyServiceInterface
     /**
      * @throws PropertyNotFoundException
      */
-    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): PredefinedProperty;
+    public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void;
 
     public function updateElementProperties(string $elementType, int $id, UpdateElementProperties $items): void;
 

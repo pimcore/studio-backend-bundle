@@ -14,21 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Request;
 
 use Attribute;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdateElementProperty;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class ElementPropertyRequestBody extends RequestBody
+final class PredefinedPropertyRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
             required: true,
-            content: new ItemsJson(UpdateElementProperty::class)
+            content: new JsonContent(ref: UpdatePredefinedProperty::class)
         );
     }
 }

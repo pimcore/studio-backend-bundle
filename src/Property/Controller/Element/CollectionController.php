@@ -37,7 +37,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetController extends AbstractApiController
+final class CollectionController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
