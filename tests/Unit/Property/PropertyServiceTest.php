@@ -100,7 +100,6 @@ final class PropertyServiceTest extends Unit
         return $this->makeEmpty(EventDispatcherInterface::class);
     }
 
-
     /**
      * @throws Exception
      */
