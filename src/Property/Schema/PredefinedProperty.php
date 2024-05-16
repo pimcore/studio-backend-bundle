@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -26,31 +28,33 @@ use OpenApi\Attributes\Schema;
     title: 'PredefinedProperty',
     type: 'object'
 )]
-final readonly class PredefinedProperty
+final class PredefinedProperty implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'id', type: 'string', example: 'alpha-numerical-value')]
-        private string $id,
+        private readonly string $id,
         #[Property(description: 'name', type: 'string', example: 'Mister Proper')]
-        private string $name,
+        private readonly string $name,
         #[Property(description: 'description', type: 'string', example: 'Detailed description of the property')]
-        private ?string $description,
+        private readonly ?string $description,
         #[Property(description: 'key', type: 'string', example: 'Key for referencing')]
-        private string $key,
+        private readonly string $key,
         #[Property(description: 'type', type: 'string', example: 'text')]
-        private string $type,
+        private readonly string $type,
         #[Property(description: 'data', type: 'string', example: 'test')]
-        private ?string $data,
+        private readonly ?string $data,
         #[Property(description: 'config', type: 'string', example: 'comma,separated,values')]
-        private ?string $config,
+        private readonly ?string $config,
         #[Property(description: 'ctype', type: 'string', example: 'document')]
-        private string $ctype,
+        private readonly string $ctype,
         #[Property(description: 'inheritable', type: 'boolean', example: false)]
-        private bool $inheritable,
+        private readonly bool $inheritable,
         #[Property(description: 'Creation date', type: 'integer', example: 221846400)]
-        private int $creationDate,
+        private readonly int $creationDate,
         #[Property(description: 'Modification date', type: 'integer', example: 327417600)]
-        private int $modificationDate,
+        private readonly int $modificationDate,
     ) {
     }
 

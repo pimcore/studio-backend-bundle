@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -26,25 +28,27 @@ use OpenApi\Attributes\Schema;
     title: 'DataProperty',
     type: 'object'
 )]
-final readonly class ElementProperty
+final class ElementProperty implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'key', type: 'string', example: 'key_of_the_property')]
-        private string $key,
+        private readonly string $key,
         #[Property(description: 'data', type: 'mixed', example: '123')]
-        private mixed $data,
+        private readonly mixed $data,
         #[Property(description: 'type', type: 'string', example: 'document')]
-        private string $type,
+        private readonly string $type,
         #[Property(description: 'inheritable', type: 'boolean', example: false)]
-        private bool $inheritable,
+        private readonly bool $inheritable,
         #[Property(description: 'inherited', type: 'boolean', example: false)]
-        private bool $inherited,
+        private readonly bool $inherited,
         #[Property(description: 'config', type: 'string', example: 'comma,separated,values')]
-        private ?string $config,
+        private readonly ?string $config,
         #[Property(description: 'predefinedName', type: 'string', example: 'name of the predefined property')]
-        private ?string $predefinedName,
+        private readonly ?string $predefinedName,
         #[Property(description: 'description', type: 'string', example: 'Description of the predefined property')]
-        private ?string $description,
+        private readonly ?string $description,
     ) {
     }
 

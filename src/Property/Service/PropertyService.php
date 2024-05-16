@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Property\Event\ElementPropertyEvent;
+use Pimcore\Bundle\StudioBackendBundle\Property\Event\PredefinedPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
@@ -26,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -36,8 +39,9 @@ final readonly class PropertyService implements PropertyServiceInterface
 
     public function __construct(
         private PropertyRepositoryInterface $repository,
-        private ServiceResolverInterface    $serviceResolver,
-        private PropertyHydratorInterface   $propertyHydrator,
+        private PropertyHydratorInterface $propertyHydrator,
+        private ServiceResolverInterface $serviceResolver,
+        private EventDispatcherInterface $eventDispatcher
     ) {
     }
 
@@ -50,15 +54,23 @@ final readonly class PropertyService implements PropertyServiceInterface
 
     /**
      * @return array<int, PredefinedProperty>
+     * @throws \Exception
      */
     public function getPredefinedProperties(PropertiesParameters $parameters): array
     {
         $properties = $this->repository->listProperties($parameters);
         $hydratedProperties = [];
         foreach ($properties->load() as $property) {
-            $hydratedProperties[] = $this->propertyHydrator->hydratePredefinedProperty($property);
-        }
 
+            $predefinedProperty = $this->propertyHydrator->hydratePredefinedProperty($property);
+
+            $this->eventDispatcher->dispatch(
+                new PredefinedPropertyEvent($predefinedProperty),
+                PredefinedPropertyEvent::EVENT_NAME
+            );
+
+            $hydratedProperties[] = $predefinedProperty;
+        }
         return $hydratedProperties;
     }
 
@@ -72,7 +84,15 @@ final readonly class PropertyService implements PropertyServiceInterface
         $hydratedProperties = [];
 
         foreach($element->getProperties() as $property) {
-            $hydratedProperties[] = $this->propertyHydrator->hydrateElementProperty($property);
+
+            $elementProperty = $this->propertyHydrator->hydrateElementProperty($property);
+
+            $this->eventDispatcher->dispatch(
+                new ElementPropertyEvent($elementProperty),
+                ElementPropertyEvent::EVENT_NAME
+            );
+
+            $hydratedProperties[] = $elementProperty;
         }
 
         return $hydratedProperties;
@@ -83,7 +103,9 @@ final readonly class PropertyService implements PropertyServiceInterface
      */
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): PredefinedProperty
     {
+
         return $this->propertyHydrator->hydratePredefinedProperty(
+
             $this->repository->updatePredefinedProperty($id, $property)
         );
     }
