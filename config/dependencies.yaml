@@ -11,11 +11,11 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Dependency\RepositoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Repository
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepository
 
-  Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyHydratorServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyHydratorService
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyService
 
   Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator

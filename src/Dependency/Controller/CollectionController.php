@@ -18,9 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Attributes\Parameters\Query\DependencyModeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Attributes\Response\Property\DependencyCollection;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Request\DependencyParameters;
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyHydratorServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\DependencyModeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
@@ -31,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodN
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property\DependencyCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -51,14 +51,14 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly SecurityServiceInterface $securityService,
-        private readonly DependencyHydratorServiceInterface $hydratorService,
+        private readonly DependencyServiceInterface $hydratorService,
     ) {
         parent::__construct($serializer);
     }
 
     #[Route('/dependencies', name: 'pimcore_studio_api_dependencies', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
-    #[GET(
+    #[Get(
         path: self::API_PATH . '/dependencies',
         operationId: 'getDependencies',
         description: 'Get paginated dependencies. 
@@ -84,7 +84,7 @@ final class CollectionController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getDependencies(#[MapQueryString] DependencyParameters $parameters): JsonResponse
     {
-        $result = $this->hydratorService->getHydratedDependencies(
+        $result = $this->hydratorService->getDependencies(
             $parameters,
             $this->securityService->getCurrentUser()
         );

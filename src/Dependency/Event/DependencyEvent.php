@@ -14,27 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Event;
 
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 
-final class PredefinedPropertyEvent extends AbstractPreResponseEvent
+final class DependencyEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.predefined_property';
+    public const EVENT_NAME = 'pre_response.dependency';
 
     public function __construct(
-        private readonly PredefinedProperty $predefinedProperty
+        private readonly Dependency $dependency
     )
     {
-        parent::__construct($predefinedProperty);
+        parent::__construct($dependency);
     }
 
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getPredefinedProperty(): PredefinedProperty
+    public function getDependency(): Dependency
     {
-        return $this->predefinedProperty;
+        return $this->dependency;
     }
 }

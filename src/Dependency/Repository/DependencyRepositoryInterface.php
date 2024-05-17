@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Dependency;
+namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Repository;
 
 /**
  * @internal
  */
-interface RepositoryInterface
+interface DependencyRepositoryInterface
 {
     public function listRequiresDependencies(string $elementType, int $elementId): array;
 

@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Attributes\Response\Property;
 
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Version;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
 
 /**
  * @internal
@@ -34,7 +34,7 @@ final class DependencyCollection extends Property
             type: 'array',
             items: new Items(
                 anyOf: [
-                    new Schema(ref: Version::class),
+                    new Schema(ref: Dependency::class),
                 ]
             )
         );

@@ -16,84 +16,91 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Event\DependencyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Dependency\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Request\DependencyParameters;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Result\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Result\ListingResult;
 use Pimcore\Model\UserInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-final readonly class DependencyHydratorService implements DependencyHydratorServiceInterface
+final readonly class DependencyService implements DependencyServiceInterface
 {
     use ElementProviderTrait;
 
     public function __construct(
-        private RepositoryInterface $repository,
+        private DependencyRepositoryInterface $dependencyRepository,
         private DependencyHydratorInterface $dependencyHydrator,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
-    public function getHydratedDependencies(
+    public function getDependencies(
         DependencyParameters $parameters,
         UserInterface $user
-    ): ListingResult
+    ): Collection
     {
         return match ($parameters->getMode()) {
-            DependencyMode::REQUIRES => $this->getHydratedRequiredDependencies($parameters),
-            DependencyMode::REQUIRED_BY => $this->getHydratedRequiredByDependencies($parameters),
+            DependencyMode::REQUIRES => $this->getRequiredDependencies($parameters),
+            DependencyMode::REQUIRED_BY => $this->getRequiredByDependencies($parameters),
         };
     }
 
-    private function hydrateDependencyCollection(array $dependencies): array
+    private function getDependencyCollection(array $dependencies): array
     {
         $hydratedDependencies = [];
 
         foreach($dependencies as $dependency) {
-            $hydratedDependency = $this->dependencyHydrator->hydrate($dependency);
-            if($hydratedDependency) {
-                $hydratedDependencies[] = $hydratedDependency;
+            $dependency = $this->dependencyHydrator->hydrate($dependency);
+            if($dependency) {
+                $this->eventDispatcher->dispatch(
+                    new DependencyEvent($dependency),
+                    DependencyEvent::EVENT_NAME
+                );
+                $hydratedDependencies[] = $dependency;
             }
         }
 
         return $hydratedDependencies;
     }
 
-    private function getHydratedRequiredDependencies(
+    private function getRequiredDependencies(
         DependencyParameters $parameters
-    ): ListingResult {
+    ): Collection {
 
-        $dependencies = $this->repository->listRequiresDependencies(
+        $dependencies = $this->dependencyRepository->listRequiresDependencies(
             $parameters->getElementType(),
             $parameters->getElementId()
         );
 
-        $dependencies = $this->hydrateDependencyCollection($dependencies);
+        $dependencies = $this->getDependencyCollection($dependencies);
 
-        return new ListingResult(
+        return new Collection(
             $dependencies,
             $parameters->getPage(),
             $parameters->getPageSize(),
-            $this->repository->listRequiresDependenciesTotalCount(
+            $this->dependencyRepository->listRequiresDependenciesTotalCount(
                 $parameters->getElementType(),
                 $parameters->getElementId()
             )
         );
     }
 
-    private function getHydratedRequiredByDependencies(
+    private function getRequiredByDependencies(
         DependencyParameters $parameters
-    ): ListingResult {
-        $dependencies = $this->repository->listRequiredByDependencies(
+    ): Collection {
+        $dependencies = $this->dependencyRepository->listRequiredByDependencies(
             $parameters->getElementType(),
             $parameters->getElementId()
         );
 
-        $dependencies = $this->hydrateDependencyCollection($dependencies);
+        $dependencies = $this->getDependencyCollection($dependencies);
 
-        return new ListingResult(
+        return new Collection(
             $dependencies,
             $parameters->getPage(),
             $parameters->getPageSize(),
-            $this->repository->listRequiredByDependenciesTotalCount(
+            $this->dependencyRepository->listRequiredByDependenciesTotalCount(
                 $parameters->getElementType(),
                 $parameters->getElementId()
             )

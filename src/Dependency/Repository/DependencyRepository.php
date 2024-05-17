@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Dependency;
+namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 /**
  * @internal
  */
-final readonly class Repository implements RepositoryInterface
+final readonly class DependencyRepository implements DependencyRepositoryInterface
 {
     use ElementProviderTrait;
 

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query;
+namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Attributes\Parameters\Query;
 
 use Attribute;
 use OpenApi\Attributes\QueryParameter;
@@ -34,7 +34,7 @@ final class DependencyModeParameter extends QueryParameter
             schema: new Schema(
                 type: 'string',
                 enum: DependencyMode::cases(),
-                example: null
+                example: DependencyMode::REQUIRED_BY->value
             ),
         );
     }

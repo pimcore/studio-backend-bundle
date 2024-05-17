@@ -18,24 +18,28 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'Dependency',
     type: 'object'
 )]
-final readonly class Dependency
+final class Dependency implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'id', type: 'int')]
-        private int $id,
+        private readonly int $id,
         #[Property(description: 'path', type: 'string', example: 'text')]
-        private string $path,
+        private readonly string $path,
         #[Property(description: 'type', type: 'string', example: 'asset')]
-        private string $type,
+        private readonly string $type,
         #[Property(description: 'subType', type: 'string', example: 'image')]
-        private string $subType,
+        private readonly string $subType,
         #[Property(description: 'published', type: 'bool', example: 'true')]
-        private bool $published,
+        private readonly bool $published,
     ) {
     }
 
