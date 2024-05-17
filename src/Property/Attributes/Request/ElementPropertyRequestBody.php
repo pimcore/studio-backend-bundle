@@ -14,23 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Request;
 
 use Attribute;
-use OpenApi\Attributes\PathParameter;
-use OpenApi\Attributes\Schema;
+use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
+use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdateElementProperty;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class IdParameter extends PathParameter
+final class ElementPropertyRequestBody extends RequestBody
 {
-    public function __construct(string $type = 'element', Schema $schema = new Schema(type: 'integer', example: 83))
+    public function __construct()
     {
         parent::__construct(
-            name: 'id',
-            description: 'ID of the ' . $type,
-            in: 'path',
             required: true,
-            schema: $schema,
+            content: new ItemsJson(UpdateElementProperty::class)
         );
     }
 }

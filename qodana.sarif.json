@@ -283,24 +283,6 @@
               ]
             },
             {
-              "id": "PHP/PHPDoc/Code style",
-              "name": "Code style",
-              "relationships": [
-                {
-                  "target": {
-                    "id": "PHP/PHPDoc",
-                    "index": 4,
-                    "toolComponent": {
-                      "name": "QDPHP"
-                    }
-                  },
-                  "kinds": [
-                    "superset"
-                  ]
-                }
-              ]
-            },
-            {
               "id": "PHP/Control flow",
               "name": "Control flow",
               "relationships": [
@@ -319,16 +301,30 @@
               ]
             },
             {
+              "id": "PHP/PHPDoc/Code style",
+              "name": "Code style",
+              "relationships": [
+                {
+                  "target": {
+                    "id": "PHP/PHPDoc",
+                    "index": 4,
+                    "toolComponent": {
+                      "name": "QDPHP"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
               "id": "Sass_SCSS",
               "name": "Sass/SCSS"
             },
             {
               "id": "HTML",
               "name": "HTML"
-            },
-            {
-              "id": "Cucumber",
-              "name": "Cucumber"
             },
             {
               "id": "JavaScript and TypeScript/Unused symbols",
@@ -349,26 +345,12 @@
               ]
             },
             {
-              "id": "JavaScript and TypeScript/Flow type checker",
-              "name": "Flow type checker",
-              "relationships": [
-                {
-                  "target": {
-                    "id": "JavaScript and TypeScript",
-                    "index": 10,
-                    "toolComponent": {
-                      "name": "QDPHP"
-                    }
-                  },
-                  "kinds": [
-                    "superset"
-                  ]
-                }
-              ]
+              "id": "Cucumber",
+              "name": "Cucumber"
             },
             {
-              "id": "JavaScript and TypeScript/Data flow",
-              "name": "Data flow",
+              "id": "JavaScript and TypeScript/Flow type checker",
+              "name": "Flow type checker",
               "relationships": [
                 {
                   "target": {
@@ -392,6 +374,24 @@
                   "target": {
                     "id": "PHP/Php Inspections (EA Extended)",
                     "index": 1,
+                    "toolComponent": {
+                      "name": "QDPHP"
+                    }
+                  },
+                  "kinds": [
+                    "superset"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "JavaScript and TypeScript/Data flow",
+              "name": "Data flow",
+              "relationships": [
+                {
+                  "target": {
+                    "id": "JavaScript and TypeScript",
+                    "index": 10,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -755,6 +755,10 @@
               ]
             },
             {
+              "id": "XML",
+              "name": "XML"
+            },
+            {
               "id": "JavaScript and TypeScript/Control flow issues",
               "name": "Control flow issues",
               "relationships": [
@@ -771,10 +775,6 @@
                   ]
                 }
               ]
-            },
-            {
-              "id": "XML",
-              "name": "XML"
             },
             {
               "id": "JavaScript and TypeScript/Potentially undesirable code constructs",
@@ -991,13 +991,13 @@
               ]
             },
             {
-              "id": "JavaScript and TypeScript/TypeScript",
-              "name": "TypeScript",
+              "id": "CSS/Probable bugs",
+              "name": "Probable bugs",
               "relationships": [
                 {
                   "target": {
-                    "id": "JavaScript and TypeScript",
-                    "index": 10,
+                    "id": "CSS",
+                    "index": 44,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -1009,13 +1009,13 @@
               ]
             },
             {
-              "id": "CSS/Probable bugs",
-              "name": "Probable bugs",
+              "id": "JavaScript and TypeScript/TypeScript",
+              "name": "TypeScript",
               "relationships": [
                 {
                   "target": {
-                    "id": "CSS",
-                    "index": 44,
+                    "id": "JavaScript and TypeScript",
+                    "index": 10,
                     "toolComponent": {
                       "name": "QDPHP"
                     }
@@ -1664,7 +1664,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -1697,7 +1697,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -1763,7 +1763,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -1961,7 +1961,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2225,7 +2225,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2258,7 +2258,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2291,7 +2291,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2456,7 +2456,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2522,7 +2522,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2588,7 +2588,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -2753,7 +2753,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -3314,7 +3314,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -3908,7 +3908,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -3974,7 +3974,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4106,7 +4106,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4238,7 +4238,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4568,7 +4568,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4733,7 +4733,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4766,7 +4766,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4832,7 +4832,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -4865,7 +4865,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5030,7 +5030,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5063,7 +5063,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5240,39 +5240,6 @@
                 ]
               },
               {
-                "id": "UnqualifiedReferenceInspection",
-                "shortDescription": {
-                  "text": "Unqualified function/constant reference"
-                },
-                "fullDescription": {
-                  "text": "Using fully-qualified function calls is faster, details and benchmarks are here.",
-                  "markdown": "Using fully-qualified function calls is faster, details and benchmarks [are here](https://github.com/Roave/FunctionFQNReplacer)."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "UnqualifiedReferenceInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Php Inspections (EA Extended)/Performance",
-                      "index": 42,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "StrEndsWithCanBeUsedInspection",
                 "shortDescription": {
                   "text": "'str_ends_with(...)' can be used"
@@ -5295,6 +5262,39 @@
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Language level migration",
                       "index": 47,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "UnqualifiedReferenceInspection",
+                "shortDescription": {
+                  "text": "Unqualified function/constant reference"
+                },
+                "fullDescription": {
+                  "text": "Using fully-qualified function calls is faster, details and benchmarks are here.",
+                  "markdown": "Using fully-qualified function calls is faster, details and benchmarks [are here](https://github.com/Roave/FunctionFQNReplacer)."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "UnqualifiedReferenceInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Php Inspections (EA Extended)/Performance",
+                      "index": 42,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5393,7 +5393,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5438,39 +5438,6 @@
                 ]
               },
               {
-                "id": "ObGetCleanCanBeUsedInspection",
-                "shortDescription": {
-                  "text": "'ob_get_clean()' can be used"
-                },
-                "fullDescription": {
-                  "text": "Documentation can be found here",
-                  "markdown": "Documentation can be found [here](https://github.com/kalessil/phpinspectionsea/blob/master/docs/control-flow.md#ob_get_clean-can-be-used)"
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "ObGetCleanCanBeUsedInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Php Inspections (EA Extended)/Control Flow",
-                      "index": 17,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "NullPointerExceptionInspection",
                 "shortDescription": {
                   "text": "Null reference"
@@ -5493,6 +5460,39 @@
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Probable bugs",
                       "index": 2,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "ObGetCleanCanBeUsedInspection",
+                "shortDescription": {
+                  "text": "'ob_get_clean()' can be used"
+                },
+                "fullDescription": {
+                  "text": "Documentation can be found here",
+                  "markdown": "Documentation can be found [here](https://github.com/kalessil/phpinspectionsea/blob/master/docs/control-flow.md#ob_get_clean-can-be-used)"
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "ObGetCleanCanBeUsedInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Php Inspections (EA Extended)/Control Flow",
+                      "index": 17,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5591,7 +5591,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -5888,7 +5888,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -6560,39 +6560,6 @@
                 ]
               },
               {
-                "id": "AliasFunctionsUsageInspection",
-                "shortDescription": {
-                  "text": "Alias functions usage"
-                },
-                "fullDescription": {
-                  "text": "Documentation can be found here",
-                  "markdown": "Documentation can be found [here](https://github.com/kalessil/phpinspectionsea/blob/master/docs/language-level-migration.md#alias-functions-usage)"
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "AliasFunctionsUsageInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Php Inspections (EA Extended)/Language level migration",
-                      "index": 47,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "ArrayUniqueCanBeUsedInspection",
                 "shortDescription": {
                   "text": "'array_unique(...)' can be used"
@@ -6615,6 +6582,39 @@
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Control Flow",
                       "index": 17,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "AliasFunctionsUsageInspection",
+                "shortDescription": {
+                  "text": "Alias functions usage"
+                },
+                "fullDescription": {
+                  "text": "Documentation can be found here",
+                  "markdown": "Documentation can be found [here](https://github.com/kalessil/phpinspectionsea/blob/master/docs/language-level-migration.md#alias-functions-usage)"
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "AliasFunctionsUsageInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Php Inspections (EA Extended)/Language level migration",
+                      "index": 47,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -6713,7 +6713,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -6845,40 +6845,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "StaticLambdaBindingInspection",
-                "shortDescription": {
-                  "text": "Static lambdas binding"
-                },
-                "fullDescription": {
-                  "text": "Reports static closures, referencing '$this' (provokes a fatal error).",
-                  "markdown": "Reports static closures, referencing '$this' (provokes a fatal error)."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "error",
-                  "parameters": {
-                    "suppressToolId": "StaticLambdaBindingInspection",
-                    "ideaSeverity": "ERROR",
-                    "qodanaSeverity": "Critical"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Php Inspections (EA Extended)/Probable bugs",
-                      "index": 2,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -6912,6 +6879,39 @@
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Type compatibility",
                       "index": 83,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "StaticLambdaBindingInspection",
+                "shortDescription": {
+                  "text": "Static lambdas binding"
+                },
+                "fullDescription": {
+                  "text": "Reports static closures, referencing '$this' (provokes a fatal error).",
+                  "markdown": "Reports static closures, referencing '$this' (provokes a fatal error)."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "error",
+                  "parameters": {
+                    "suppressToolId": "StaticLambdaBindingInspection",
+                    "ideaSeverity": "ERROR",
+                    "qodanaSeverity": "Critical"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Php Inspections (EA Extended)/Probable bugs",
+                      "index": 2,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -7043,7 +7043,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -7208,7 +7208,7 @@
                   {
                     "target": {
                       "id": "PHP/Php Inspections (EA Extended)/Code Style",
-                      "index": 27,
+                      "index": 26,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -7826,39 +7826,6 @@
                 ]
               },
               {
-                "id": "PhpMissingDocCommentInspection",
-                "shortDescription": {
-                  "text": "Missing PHPDoc comment"
-                },
-                "fullDescription": {
-                  "text": "Reports non-fully typed elements without a PHPDoc comment or with a PHPDoc comment only containing the '@noinspection' tag. You can use the Enforce PHPDoc Comment inspection to report fully typed elements.",
-                  "markdown": "Reports non-fully typed elements without a PHPDoc comment or with a PHPDoc comment only containing the `@noinspection` tag.\n\nYou can use the *Enforce PHPDoc Comment* inspection to report fully typed elements."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "PhpMissingDocCommentInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/PHPDoc/Code style",
-                      "index": 19,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpWriteAccessToReferencedArrayValueWithoutUnsetInspection",
                 "shortDescription": {
                   "text": "Write access to referenced array value without 'unset'"
@@ -7880,6 +7847,39 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
+                      "index": 19,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpMissingDocCommentInspection",
+                "shortDescription": {
+                  "text": "Missing PHPDoc comment"
+                },
+                "fullDescription": {
+                  "text": "Reports non-fully typed elements without a PHPDoc comment or with a PHPDoc comment only containing the '@noinspection' tag. You can use the Enforce PHPDoc Comment inspection to report fully typed elements.",
+                  "markdown": "Reports non-fully typed elements without a PHPDoc comment or with a PHPDoc comment only containing the `@noinspection` tag.\n\nYou can use the *Enforce PHPDoc Comment* inspection to report fully typed elements."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "PhpMissingDocCommentInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/PHPDoc/Code style",
                       "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
@@ -8540,7 +8540,7 @@
                   {
                     "target": {
                       "id": "PHP/PHPDoc/Code style",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -8969,7 +8969,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -9278,39 +9278,6 @@
                 ]
               },
               {
-                "id": "PhpRedundantArrayCallInForeachIteratedValueInspection",
-                "shortDescription": {
-                  "text": "Redundant 'array_values' call on a value iterated in 'foreach'"
-                },
-                "fullDescription": {
-                  "text": "Reports the 'array_values()' calls inside 'foreach' loops in which the iterated value is used without a key. Such calls are redundant and can be safely removed.",
-                  "markdown": "Reports the `array_values()` calls inside `foreach` loops in which the iterated value is used without a key. Such calls are redundant and can be safely removed."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "PhpRedundantArrayCallInForeachIteratedValueInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Code smell",
-                      "index": 3,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpClosureCanBeConvertedToFirstClassCallableInspection",
                 "shortDescription": {
                   "text": "'Closure::fromCallable()' can be converted to the first-class callable syntax"
@@ -9344,6 +9311,39 @@
                 ]
               },
               {
+                "id": "PhpRedundantArrayCallInForeachIteratedValueInspection",
+                "shortDescription": {
+                  "text": "Redundant 'array_values' call on a value iterated in 'foreach'"
+                },
+                "fullDescription": {
+                  "text": "Reports the 'array_values()' calls inside 'foreach' loops in which the iterated value is used without a key. Such calls are redundant and can be safely removed.",
+                  "markdown": "Reports the `array_values()` calls inside `foreach` loops in which the iterated value is used without a key. Such calls are redundant and can be safely removed."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "PhpRedundantArrayCallInForeachIteratedValueInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Code smell",
+                      "index": 3,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
                 "id": "PhpExpressionAlwaysNullInspection",
                 "shortDescription": {
                   "text": "Expression is always 'null'"
@@ -9365,40 +9365,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "PhpDefineConstantNameStartsWithLeadingSlashInspection",
-                "shortDescription": {
-                  "text": "Constant name defined with a leading slash"
-                },
-                "fullDescription": {
-                  "text": "Reports the 'define' constructs in which the constant's FQN starts with a leading slash. Such constants will not be correctly registered by PHP.",
-                  "markdown": "Reports the `define` constructs in which the constant's FQN starts with a leading slash. Such constants will not be correctly registered by PHP."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "PhpDefineConstantNameStartsWithLeadingSlashInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Code smell",
-                      "index": 3,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -9432,6 +9399,39 @@
                     "target": {
                       "id": "PHP/PHPUnit",
                       "index": 29,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpDefineConstantNameStartsWithLeadingSlashInspection",
+                "shortDescription": {
+                  "text": "Constant name defined with a leading slash"
+                },
+                "fullDescription": {
+                  "text": "Reports the 'define' constructs in which the constant's FQN starts with a leading slash. Such constants will not be correctly registered by PHP.",
+                  "markdown": "Reports the `define` constructs in which the constant's FQN starts with a leading slash. Such constants will not be correctly registered by PHP."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "PhpDefineConstantNameStartsWithLeadingSlashInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Code smell",
+                      "index": 3,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -9893,7 +9893,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -10091,7 +10091,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -10433,39 +10433,6 @@
                 ]
               },
               {
-                "id": "PhpToStringMayProduceExceptionInspection",
-                "shortDescription": {
-                  "text": "'__toString' may throw an exception"
-                },
-                "fullDescription": {
-                  "text": "Reports the usages of '__toString' that may throw an exception, which is not allowed for PHP language level lower than 7.4.",
-                  "markdown": "Reports the usages of `__toString` that may throw an exception, which is not allowed for PHP language level lower than 7.4."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "PhpToStringMayProduceExceptionInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Code smell",
-                      "index": 3,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpForeachArrayIsUsedAsValueInspection",
                 "shortDescription": {
                   "text": "Foreach array is used as value"
@@ -10488,6 +10455,39 @@
                     "target": {
                       "id": "PHP/Probable bugs",
                       "index": 12,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpToStringMayProduceExceptionInspection",
+                "shortDescription": {
+                  "text": "'__toString' may throw an exception"
+                },
+                "fullDescription": {
+                  "text": "Reports the usages of '__toString' that may throw an exception, which is not allowed for PHP language level lower than 7.4.",
+                  "markdown": "Reports the usages of `__toString` that may throw an exception, which is not allowed for PHP language level lower than 7.4."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "PhpToStringMayProduceExceptionInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Code smell",
+                      "index": 3,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -10784,7 +10784,7 @@
                   {
                     "target": {
                       "id": "PHP/PHPDoc/Code style",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -10982,7 +10982,7 @@
                   {
                     "target": {
                       "id": "PHP/PHPDoc/Code style",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -11180,7 +11180,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -11576,7 +11576,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -12071,7 +12071,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -12236,7 +12236,7 @@
                   {
                     "target": {
                       "id": "PHP/PHPDoc/Code style",
-                      "index": 19,
+                      "index": 20,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -12842,39 +12842,6 @@
                 ]
               },
               {
-                "id": "PhpDeprecationInspection",
-                "shortDescription": {
-                  "text": "Deprecated"
-                },
-                "fullDescription": {
-                  "text": "Reports the usages of deprecated entities. In most cases, such usages should be removed or replaced with other constructs.",
-                  "markdown": "Reports the usages of deprecated entities.\n\n\nIn most cases, such usages should be removed or replaced with other constructs."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "PhpDeprecationInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/General",
-                      "index": 8,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "MessDetectorValidationInspection",
                 "shortDescription": {
                   "text": "PHP Mess Detector validation"
@@ -12897,6 +12864,39 @@
                     "target": {
                       "id": "PHP/Quality tools",
                       "index": 92,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpDeprecationInspection",
+                "shortDescription": {
+                  "text": "Deprecated"
+                },
+                "fullDescription": {
+                  "text": "Reports the usages of deprecated entities. In most cases, such usages should be removed or replaced with other constructs.",
+                  "markdown": "Reports the usages of deprecated entities.\n\n\nIn most cases, such usages should be removed or replaced with other constructs."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "PhpDeprecationInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/General",
+                      "index": 8,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -13271,39 +13271,6 @@
                 ]
               },
               {
-                "id": "PhpNamedArgumentUsageInspection",
-                "shortDescription": {
-                  "text": "Argument with name identifier"
-                },
-                "fullDescription": {
-                  "text": "Reports arguments with name identifiers.",
-                  "markdown": "Reports arguments with name identifiers."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "PhpNamedArgumentUsageInspection",
-                    "ideaSeverity": "INFORMATION",
-                    "qodanaSeverity": "Info"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/General",
-                      "index": 8,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpUnusedFieldDefaultValueInspection",
                 "shortDescription": {
                   "text": "Redundant property initializer"
@@ -13326,6 +13293,39 @@
                     "target": {
                       "id": "PHP/Unused symbols",
                       "index": 50,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpNamedArgumentUsageInspection",
+                "shortDescription": {
+                  "text": "Argument with name identifier"
+                },
+                "fullDescription": {
+                  "text": "Reports arguments with name identifiers.",
+                  "markdown": "Reports arguments with name identifiers."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "PhpNamedArgumentUsageInspection",
+                    "ideaSeverity": "INFORMATION",
+                    "qodanaSeverity": "Info"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/General",
+                      "index": 8,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -13655,40 +13655,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "PhpReturnValueOfMethodIsNeverUsedInspection",
-                "shortDescription": {
-                  "text": "Method's return value is never used"
-                },
-                "fullDescription": {
-                  "text": "Reports the private methods returning the values that are not used.",
-                  "markdown": "Reports the private methods returning the values that are not used."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "PhpReturnValueOfMethodIsNeverUsedInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Code smell",
-                      "index": 3,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -13722,6 +13689,39 @@
                     "target": {
                       "id": "PHP/Attributes",
                       "index": 61,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpReturnValueOfMethodIsNeverUsedInspection",
+                "shortDescription": {
+                  "text": "Method's return value is never used"
+                },
+                "fullDescription": {
+                  "text": "Reports the private methods returning the values that are not used.",
+                  "markdown": "Reports the private methods returning the values that are not used."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "PhpReturnValueOfMethodIsNeverUsedInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Code smell",
+                      "index": 3,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -13931,39 +13931,6 @@
                 ]
               },
               {
-                "id": "PhpStrFunctionsInspection",
-                "shortDescription": {
-                  "text": "'str*()' calls can be replaced with PHP 8 'str_*()' calls"
-                },
-                "fullDescription": {
-                  "text": "Reports the 'strpos' and 'substr' functions calls that can be replaced with the 'str_*' functions calls (introduced in PHP 8.0). See str_contains (php.net) and str_starts_with and str_ends_with functions (php.net) for details.",
-                  "markdown": "Reports the `strpos` and `substr` functions calls that can be replaced with the `str_*` functions calls (introduced in PHP 8.0).\n\n\nSee [str_contains (php.net)](https://wiki.php.net/rfc/str_contains) and [str_starts_with and str_ends_with functions (php.net)](https://wiki.php.net/rfc/add_str_starts_with_and_ends_with_functions) for details."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "PhpStrFunctionsInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Code style",
-                      "index": 5,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpDocRedundantThrowsInspection",
                 "shortDescription": {
                   "text": "Redundant @throws tag(s)"
@@ -13986,6 +13953,39 @@
                     "target": {
                       "id": "PHP/PHPDoc",
                       "index": 4,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpStrFunctionsInspection",
+                "shortDescription": {
+                  "text": "'str*()' calls can be replaced with PHP 8 'str_*()' calls"
+                },
+                "fullDescription": {
+                  "text": "Reports the 'strpos' and 'substr' functions calls that can be replaced with the 'str_*' functions calls (introduced in PHP 8.0). See str_contains (php.net) and str_starts_with and str_ends_with functions (php.net) for details.",
+                  "markdown": "Reports the `strpos` and `substr` functions calls that can be replaced with the `str_*` functions calls (introduced in PHP 8.0).\n\n\nSee [str_contains (php.net)](https://wiki.php.net/rfc/str_contains) and [str_starts_with and str_ends_with functions (php.net)](https://wiki.php.net/rfc/add_str_starts_with_and_ends_with_functions) for details."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "PhpStrFunctionsInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Code style",
+                      "index": 5,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -14414,7 +14414,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -15449,39 +15449,6 @@
                 ]
               },
               {
-                "id": "PhpUnitMisorderedAssertEqualsArgumentsInspection",
-                "shortDescription": {
-                  "text": "Misordered PHPUnit equality assertion method arguments"
-                },
-                "fullDescription": {
-                  "text": "Reports the calls to PHPUnit equality assertion methods (such as 'assertEquals()', 'assertNotEquals()', 'assertSame()', and so on) that have a non-literal as the expected result argument and a literal as the actual result argument. Such calls will behave fine for assertions that pass, but may produce confusing error reports if their expected and actual arguments differ. See assertEquals for details.",
-                  "markdown": "Reports the calls to PHPUnit equality assertion methods (such as `assertEquals()`, `assertNotEquals()`, `assertSame()`, and so on) that have a non-literal as the expected result argument and a literal as the actual result argument. Such calls will behave fine for assertions that pass, but may produce confusing error reports if their expected and actual arguments differ.\n\n\nSee [assertEquals](https://phpunit.readthedocs.io/en/stable/assertions.html#assertequals) for details."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "PhpUnitMisorderedAssertEqualsArgumentsInspection",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/PHPUnit",
-                      "index": 29,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PhpUnused",
                 "shortDescription": {
                   "text": "Unused declaration"
@@ -15504,6 +15471,39 @@
                     "target": {
                       "id": "PHP/Unused symbols",
                       "index": 50,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "PhpUnitMisorderedAssertEqualsArgumentsInspection",
+                "shortDescription": {
+                  "text": "Misordered PHPUnit equality assertion method arguments"
+                },
+                "fullDescription": {
+                  "text": "Reports the calls to PHPUnit equality assertion methods (such as 'assertEquals()', 'assertNotEquals()', 'assertSame()', and so on) that have a non-literal as the expected result argument and a literal as the actual result argument. Such calls will behave fine for assertions that pass, but may produce confusing error reports if their expected and actual arguments differ. See assertEquals for details.",
+                  "markdown": "Reports the calls to PHPUnit equality assertion methods (such as `assertEquals()`, `assertNotEquals()`, `assertSame()`, and so on) that have a non-literal as the expected result argument and a literal as the actual result argument. Such calls will behave fine for assertions that pass, but may produce confusing error reports if their expected and actual arguments differ.\n\n\nSee [assertEquals](https://phpunit.readthedocs.io/en/stable/assertions.html#assertequals) for details."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "PhpUnitMisorderedAssertEqualsArgumentsInspection",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/PHPUnit",
+                      "index": 29,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -15701,7 +15701,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -15833,7 +15833,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -17681,7 +17681,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -18506,7 +18506,7 @@
                   {
                     "target": {
                       "id": "PHP/Control flow",
-                      "index": 20,
+                      "index": 19,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -18815,6 +18815,39 @@
                 ]
               },
               {
+                "id": "PhpWrongForeachArgumentTypeInspection",
+                "shortDescription": {
+                  "text": "Invalid argument supplied for 'foreach()'"
+                },
+                "fullDescription": {
+                  "text": "Reports the 'foreach' constructs used on variables of the 'string', 'float', 'int', or 'boolean' type. See foreach (php.net) for details.",
+                  "markdown": "Reports the `foreach` constructs used on variables of the `string`, `float`, `int`, or `boolean` type.\n\n\nSee [foreach (php.net)](http://www.php.net/manual/en/control-structures.foreach.php) for details."
+                },
+                "defaultConfiguration": {
+                  "enabled": true,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "PhpWrongForeachArgumentTypeInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "PHP/Type compatibility",
+                      "index": 33,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
                 "id": "PhpTooManyParametersInspection",
                 "shortDescription": {
                   "text": "Too many parameters in function declaration"
@@ -18870,39 +18903,6 @@
                     "target": {
                       "id": "PHP/Probable bugs",
                       "index": 12,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "PhpWrongForeachArgumentTypeInspection",
-                "shortDescription": {
-                  "text": "Invalid argument supplied for 'foreach()'"
-                },
-                "fullDescription": {
-                  "text": "Reports the 'foreach' constructs used on variables of the 'string', 'float', 'int', or 'boolean' type. See foreach (php.net) for details.",
-                  "markdown": "Reports the `foreach` constructs used on variables of the `string`, `float`, `int`, or `boolean` type.\n\n\nSee [foreach (php.net)](http://www.php.net/manual/en/control-structures.foreach.php) for details."
-                },
-                "defaultConfiguration": {
-                  "enabled": true,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "PhpWrongForeachArgumentTypeInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "PHP/Type compatibility",
-                      "index": 33,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -19544,39 +19544,6 @@
                 ]
               },
               {
-                "id": "SqlCallNotationInspection",
-                "shortDescription": {
-                  "text": "Using of named and positional arguments"
-                },
-                "fullDescription": {
-                  "text": "Reports calls in which positional arguments go after the named ones. Works in PostgreSQL, Oracle, and Db2. Example (In PostgreSQL): 'CREATE FUNCTION foo(a int, b int, c int) RETURNS int\n    LANGUAGE plpgsql AS\n$$\nBEGIN\n    RETURN a + b + c;\nEND\n$$;\nSELECT foo(a => 1, b => 2, c => 3);\n  -- `3` goes after the named argument\nSELECT foo(1, b => 2, 3);\n  -- `1` and `3` go after the named argument\nSELECT foo(b => 2, 1, 3);'",
-                  "markdown": "Reports calls in which positional arguments go after the named ones. Works in PostgreSQL, Oracle, and Db2.\n\nExample (In PostgreSQL):\n\n    CREATE FUNCTION foo(a int, b int, c int) RETURNS int\n        LANGUAGE plpgsql AS\n    $$\n    BEGIN\n        RETURN a + b + c;\n    END\n    $$;\n    SELECT foo(a => 1, b => 2, c => 3);\n      -- `3` goes after the named argument\n    SELECT foo(1, b => 2, 3);\n      -- `1` and `3` go after the named argument\n    SELECT foo(b => 2, 1, 3);\n"
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "error",
-                  "parameters": {
-                    "suppressToolId": "SqlCallNotation",
-                    "ideaSeverity": "ERROR",
-                    "qodanaSeverity": "Critical"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "SQL",
-                      "index": 46,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "MysqlParsingInspection",
                 "shortDescription": {
                   "text": "Unsupported syntax in pre-8.0 versions"
@@ -19599,6 +19566,39 @@
                     "target": {
                       "id": "MySQL",
                       "index": 13,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "SqlCallNotationInspection",
+                "shortDescription": {
+                  "text": "Using of named and positional arguments"
+                },
+                "fullDescription": {
+                  "text": "Reports calls in which positional arguments go after the named ones. Works in PostgreSQL, Oracle, and Db2. Example (In PostgreSQL): 'CREATE FUNCTION foo(a int, b int, c int) RETURNS int\n    LANGUAGE plpgsql AS\n$$\nBEGIN\n    RETURN a + b + c;\nEND\n$$;\nSELECT foo(a => 1, b => 2, c => 3);\n  -- `3` goes after the named argument\nSELECT foo(1, b => 2, 3);\n  -- `1` and `3` go after the named argument\nSELECT foo(b => 2, 1, 3);'",
+                  "markdown": "Reports calls in which positional arguments go after the named ones. Works in PostgreSQL, Oracle, and Db2.\n\nExample (In PostgreSQL):\n\n    CREATE FUNCTION foo(a int, b int, c int) RETURNS int\n        LANGUAGE plpgsql AS\n    $$\n    BEGIN\n        RETURN a + b + c;\n    END\n    $$;\n    SELECT foo(a => 1, b => 2, c => 3);\n      -- `3` goes after the named argument\n    SELECT foo(1, b => 2, 3);\n      -- `1` and `3` go after the named argument\n    SELECT foo(b => 2, 1, 3);\n"
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "error",
+                  "parameters": {
+                    "suppressToolId": "SqlCallNotation",
+                    "ideaSeverity": "ERROR",
+                    "qodanaSeverity": "Critical"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "SQL",
+                      "index": 46,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -24254,7 +24254,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -24518,7 +24518,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -24617,7 +24617,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -24650,7 +24650,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -24716,7 +24716,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -24782,7 +24782,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -24914,7 +24914,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -25079,7 +25079,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -25178,7 +25178,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -25541,7 +25541,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -25673,7 +25673,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -25805,7 +25805,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -25970,7 +25970,7 @@
                   {
                     "target": {
                       "id": "XML",
-                      "index": 54,
+                      "index": 53,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -26089,249 +26089,6 @@
             "isComprehensive": false
           },
           {
-            "name": "gherkin",
-            "version": "241.16902",
-            "rules": [
-              {
-                "id": "GherkinScenarioToScenarioOutline",
-                "shortDescription": {
-                  "text": "Scenario with Examples section"
-                },
-                "fullDescription": {
-                  "text": "Reports Gherkin scenarios that contain an 'Examples' section. Use the quick-fix to convert 'Scenario' to 'Scenario Outline'.",
-                  "markdown": "Reports Gherkin scenarios that contain an `Examples` section.\n\nUse the quick-fix to convert `Scenario` to `Scenario Outline`."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "error",
-                  "parameters": {
-                    "suppressToolId": "GherkinScenarioToScenarioOutline",
-                    "ideaSeverity": "ERROR",
-                    "qodanaSeverity": "Critical"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "Cucumber",
-                      "index": 23,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "CucumberTableInspection",
-                "shortDescription": {
-                  "text": "Unused or missing columns in Cucumber tables"
-                },
-                "fullDescription": {
-                  "text": "Reports tables in 'Examples' sections in Cucumber .feature files with unused or missing columns.",
-                  "markdown": "Reports tables in `Examples` sections in Cucumber .feature files with unused or missing columns."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "CucumberTableInspection",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "Cucumber",
-                      "index": 23,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "GherkinBrokenTableInspection",
-                "shortDescription": {
-                  "text": "Gherkin table is broken"
-                },
-                "fullDescription": {
-                  "text": "Reports a table if there is at least one row with the number of cells different from the number of cells in the table header.",
-                  "markdown": "Reports a table if there is at least one row with the number of cells different from the number of cells in the table header."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "error",
-                  "parameters": {
-                    "suppressToolId": "GherkinBrokenTableInspection",
-                    "ideaSeverity": "ERROR",
-                    "qodanaSeverity": "Critical"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "Cucumber",
-                      "index": 23,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "GherkinMisplacedBackground",
-                "shortDescription": {
-                  "text": "Misplaced background section"
-                },
-                "fullDescription": {
-                  "text": "Reports 'Background' sections that are located incorrectly. The 'Background' section must be located before the 'Scenario' section.",
-                  "markdown": "Reports `Background` sections that are located incorrectly. The `Background` section must be located before the `Scenario` section."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "error",
-                  "parameters": {
-                    "suppressToolId": "GherkinMisplacedBackground",
-                    "ideaSeverity": "ERROR",
-                    "qodanaSeverity": "Critical"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "Cucumber",
-                      "index": 23,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "CucumberMissedExamples",
-                "shortDescription": {
-                  "text": "Missing examples section"
-                },
-                "fullDescription": {
-                  "text": "Reports scenario outlines in Cucumber .feature files that do not have the 'Examples' section. Use the quick-fix to automatically create the 'Examples' section with a pre-filled table header.",
-                  "markdown": "Reports scenario outlines in Cucumber .feature files that do not have the `Examples` section.\n\nUse the quick-fix to automatically create the `Examples` section with a pre-filled table header."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "error",
-                  "parameters": {
-                    "suppressToolId": "CucumberMissedExamples",
-                    "ideaSeverity": "ERROR",
-                    "qodanaSeverity": "Critical"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "Cucumber",
-                      "index": 23,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "CucumberUndefinedStep",
-                "shortDescription": {
-                  "text": "Undefined step"
-                },
-                "fullDescription": {
-                  "text": "Reports steps in Cucumber (or some other Gherkin) .feature files that do not have matching step definitions. Use the quick-fix to automatically create a new step definition.",
-                  "markdown": "Reports steps in Cucumber (or some other Gherkin) .feature files that do not have matching step definitions.\n\nUse the quick-fix to automatically create a new step definition."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "CucumberUndefinedStep",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "Cucumber",
-                      "index": 23,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "CucumberExamplesColon",
-                "shortDescription": {
-                  "text": "Missing ':' after examples keyword"
-                },
-                "fullDescription": {
-                  "text": "Reports 'Examples' sections in Cucumber .feature files if they do not have ':' after the 'Examples' keyword.",
-                  "markdown": "Reports `Examples` sections in Cucumber .feature files if they do not have ':' after the `Examples` keyword."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "error",
-                  "parameters": {
-                    "suppressToolId": "CucumberExamplesColon",
-                    "ideaSeverity": "ERROR",
-                    "qodanaSeverity": "Critical"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "Cucumber",
-                      "index": 23,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              }
-            ],
-            "language": "en-US",
-            "contents": [
-              "localizedData",
-              "nonLocalizedData"
-            ],
-            "isComprehensive": false
-          },
-          {
             "name": "JavaScript",
             "version": "241.16902",
             "rules": [
@@ -26357,7 +26114,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Unused symbols",
-                      "index": 24,
+                      "index": 23,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -26423,7 +26180,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Data flow",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -26687,7 +26444,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Data flow",
-                      "index": 26,
+                      "index": 27,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -26786,7 +26543,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -27050,7 +26807,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -27182,7 +26939,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Unused symbols",
-                      "index": 24,
+                      "index": 23,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -27578,7 +27335,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -27887,39 +27644,6 @@
                 ]
               },
               {
-                "id": "EmptyTryBlockJS",
-                "shortDescription": {
-                  "text": "Empty 'try' block"
-                },
-                "fullDescription": {
-                  "text": "Reports an empty 'try' block, which usually indicates an error.",
-                  "markdown": "Reports an empty `try` block, which usually indicates an error."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "EmptyTryBlockJS",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "JavaScript and TypeScript/Try statement issues",
-                      "index": 48,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "ES6ClassMemberInitializationOrder",
                 "shortDescription": {
                   "text": "Use of possibly unassigned property in a static initializer"
@@ -27942,6 +27666,39 @@
                     "target": {
                       "id": "JavaScript and TypeScript/General",
                       "index": 34,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "EmptyTryBlockJS",
+                "shortDescription": {
+                  "text": "Empty 'try' block"
+                },
+                "fullDescription": {
+                  "text": "Reports an empty 'try' block, which usually indicates an error.",
+                  "markdown": "Reports an empty `try` block, which usually indicates an error."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "EmptyTryBlockJS",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "JavaScript and TypeScript/Try statement issues",
+                      "index": 48,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28073,7 +27830,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28139,7 +27896,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28205,7 +27962,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28238,7 +27995,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28271,7 +28028,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28370,7 +28127,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28634,7 +28391,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28700,7 +28457,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28964,7 +28721,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -28997,7 +28754,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29129,7 +28886,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29240,39 +28997,6 @@
                 ]
               },
               {
-                "id": "IfStatementWithIdenticalBranchesJS",
-                "shortDescription": {
-                  "text": "'if' statement with identical branches"
-                },
-                "fullDescription": {
-                  "text": "Reports an 'if' statement with identical 'then' and 'else' branches. Such statements are almost certainly an error.",
-                  "markdown": "Reports an `if` statement with identical `then` and `else` branches. Such statements are almost certainly an error."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "IfStatementWithIdenticalBranchesJS",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "PlatformDetectionJS",
                 "shortDescription": {
                   "text": "Inaccurate platform detection"
@@ -29295,6 +29019,39 @@
                     "target": {
                       "id": "JavaScript and TypeScript/DOM issues",
                       "index": 75,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "IfStatementWithIdenticalBranchesJS",
+                "shortDescription": {
+                  "text": "'if' statement with identical branches"
+                },
+                "fullDescription": {
+                  "text": "Reports an 'if' statement with identical 'then' and 'else' branches. Such statements are almost certainly an error.",
+                  "markdown": "Reports an `if` statement with identical `then` and `else` branches. Such statements are almost certainly an error."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "IfStatementWithIdenticalBranchesJS",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "JavaScript and TypeScript/Control flow issues",
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29393,7 +29150,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29426,7 +29183,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29591,7 +29348,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29723,7 +29480,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29757,6 +29514,39 @@
                     "target": {
                       "id": "JavaScript and TypeScript/Unit testing",
                       "index": 11,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "JSValidateJSDoc",
+                "shortDescription": {
+                  "text": "Syntax errors and unresolved references in JSDoc"
+                },
+                "fullDescription": {
+                  "text": "Reports a syntax discrepancy in a documentation comment.",
+                  "markdown": "Reports a syntax discrepancy in a documentation comment."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "JSValidateJSDoc",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "JavaScript and TypeScript/General",
+                      "index": 34,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -29822,40 +29612,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "JSValidateJSDoc",
-                "shortDescription": {
-                  "text": "Syntax errors and unresolved references in JSDoc"
-                },
-                "fullDescription": {
-                  "text": "Reports a syntax discrepancy in a documentation comment.",
-                  "markdown": "Reports a syntax discrepancy in a documentation comment."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "JSValidateJSDoc",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "JavaScript and TypeScript/General",
-                      "index": 34,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30020,7 +29777,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30053,7 +29810,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30218,7 +29975,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30251,7 +30008,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30482,7 +30239,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30647,7 +30404,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30779,7 +30536,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -30923,39 +30680,6 @@
                 ]
               },
               {
-                "id": "NpmUsedModulesInstalled",
-                "shortDescription": {
-                  "text": "Missing module dependency"
-                },
-                "fullDescription": {
-                  "text": "Reports a module from a 'require()' call or an 'import' statement that is not installed or is not listed in package.json dependencies. Suggests installing the module and/or including it into package.json. For 'require()' calls, works only in the files from the scope of Node.js Core JavaScript library.",
-                  "markdown": "Reports a module from a `require()` call or an `import` statement that is not installed or is not listed in package.json dependencies.\n\nSuggests installing the module and/or including it into package.json.\n\nFor `require()` calls, works only in the files from the scope of *Node.js Core* JavaScript library."
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "note",
-                  "parameters": {
-                    "suppressToolId": "NpmUsedModulesInstalled",
-                    "ideaSeverity": "WEAK WARNING",
-                    "qodanaSeverity": "Moderate"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "JavaScript and TypeScript/Imports and dependencies",
-                      "index": 80,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
                 "id": "UnusedCatchParameterJS",
                 "shortDescription": {
                   "text": "Unused 'catch' parameter"
@@ -30978,6 +30702,39 @@
                     "target": {
                       "id": "JavaScript and TypeScript/Try statement issues",
                       "index": 48,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "NpmUsedModulesInstalled",
+                "shortDescription": {
+                  "text": "Missing module dependency"
+                },
+                "fullDescription": {
+                  "text": "Reports a module from a 'require()' call or an 'import' statement that is not installed or is not listed in package.json dependencies. Suggests installing the module and/or including it into package.json. For 'require()' calls, works only in the files from the scope of Node.js Core JavaScript library.",
+                  "markdown": "Reports a module from a `require()` call or an `import` statement that is not installed or is not listed in package.json dependencies.\n\nSuggests installing the module and/or including it into package.json.\n\nFor `require()` calls, works only in the files from the scope of *Node.js Core* JavaScript library."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "note",
+                  "parameters": {
+                    "suppressToolId": "NpmUsedModulesInstalled",
+                    "ideaSeverity": "WEAK WARNING",
+                    "qodanaSeverity": "Moderate"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "JavaScript and TypeScript/Imports and dependencies",
+                      "index": 80,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31142,7 +30899,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31175,7 +30932,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31406,7 +31163,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31769,7 +31526,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31802,7 +31559,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31868,40 +31625,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
-                      "toolComponent": {
-                        "name": "QDPHP"
-                      }
-                    },
-                    "kinds": [
-                      "superset"
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "JSUnfilteredForInLoop",
-                "shortDescription": {
-                  "text": "Unfiltered for..in loop"
-                },
-                "fullDescription": {
-                  "text": "Reports unfiltered 'for-in' loops. The use of this construct results in processing not only own properties of an object but properties from its prototype as well. It may be unexpected in some specific cases, for example, in utility methods that copy or modify all properties or when 'Object''s prototype may be incorrectly modified. For example, the following code will print 42 and myMethod: 'Object.prototype.myMethod = function myMethod() {};\nlet a = { foo: 42 };\nfor (let i in a) {\n  console.log(a[i]);\n}' Suggests replacing the whole loop with a 'Object.keys()' method or adding a 'hasOwnProperty()' check. After applying the quick-fix the code looks as follows: 'for (let i in a) {\n  if (a.hasOwnProperty(i)) {\n    console.log(a[i]);\n  }\n}'",
-                  "markdown": "Reports unfiltered `for-in` loops.   \n\nThe use of this construct results in processing not only own properties of an object but properties from its prototype as well. It may be unexpected in some specific cases, for example, in utility methods that copy or modify all properties or when `Object`'s prototype may be incorrectly modified. For example, the following code will print **42** and **myMethod** :   \n\n\n    Object.prototype.myMethod = function myMethod() {};\n    let a = { foo: 42 };\n    for (let i in a) {\n      console.log(a[i]);\n    }\n\nSuggests replacing the whole loop with a `Object.keys()` method or adding a `hasOwnProperty()` check. After applying the quick-fix the code looks as follows:\n\n\n    for (let i in a) {\n      if (a.hasOwnProperty(i)) {\n        console.log(a[i]);\n      }\n    }\n"
-                },
-                "defaultConfiguration": {
-                  "enabled": false,
-                  "level": "warning",
-                  "parameters": {
-                    "suppressToolId": "JSUnfilteredForInLoop",
-                    "ideaSeverity": "WARNING",
-                    "qodanaSeverity": "High"
-                  }
-                },
-                "relationships": [
-                  {
-                    "target": {
-                      "id": "JavaScript and TypeScript/General",
-                      "index": 34,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -31935,6 +31659,39 @@
                     "target": {
                       "id": "JavaScript and TypeScript/Probable bugs",
                       "index": 60,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "JSUnfilteredForInLoop",
+                "shortDescription": {
+                  "text": "Unfiltered for..in loop"
+                },
+                "fullDescription": {
+                  "text": "Reports unfiltered 'for-in' loops. The use of this construct results in processing not only own properties of an object but properties from its prototype as well. It may be unexpected in some specific cases, for example, in utility methods that copy or modify all properties or when 'Object''s prototype may be incorrectly modified. For example, the following code will print 42 and myMethod: 'Object.prototype.myMethod = function myMethod() {};\nlet a = { foo: 42 };\nfor (let i in a) {\n  console.log(a[i]);\n}' Suggests replacing the whole loop with a 'Object.keys()' method or adding a 'hasOwnProperty()' check. After applying the quick-fix the code looks as follows: 'for (let i in a) {\n  if (a.hasOwnProperty(i)) {\n    console.log(a[i]);\n  }\n}'",
+                  "markdown": "Reports unfiltered `for-in` loops.   \n\nThe use of this construct results in processing not only own properties of an object but properties from its prototype as well. It may be unexpected in some specific cases, for example, in utility methods that copy or modify all properties or when `Object`'s prototype may be incorrectly modified. For example, the following code will print **42** and **myMethod** :   \n\n\n    Object.prototype.myMethod = function myMethod() {};\n    let a = { foo: 42 };\n    for (let i in a) {\n      console.log(a[i]);\n    }\n\nSuggests replacing the whole loop with a `Object.keys()` method or adding a `hasOwnProperty()` check. After applying the quick-fix the code looks as follows:\n\n\n    for (let i in a) {\n      if (a.hasOwnProperty(i)) {\n        console.log(a[i]);\n      }\n    }\n"
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "JSUnfilteredForInLoop",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "JavaScript and TypeScript/General",
+                      "index": 34,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -32462,7 +32219,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -32759,7 +32516,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -32990,7 +32747,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/TypeScript",
-                      "index": 70,
+                      "index": 71,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -33155,7 +32912,7 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Control flow issues",
-                      "index": 53,
+                      "index": 54,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -33254,6 +33011,249 @@
                   {
                     "target": {
                       "id": "JavaScript and TypeScript/Unused symbols",
+                      "index": 23,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "language": "en-US",
+            "contents": [
+              "localizedData",
+              "nonLocalizedData"
+            ],
+            "isComprehensive": false
+          },
+          {
+            "name": "gherkin",
+            "version": "241.16902",
+            "rules": [
+              {
+                "id": "GherkinScenarioToScenarioOutline",
+                "shortDescription": {
+                  "text": "Scenario with Examples section"
+                },
+                "fullDescription": {
+                  "text": "Reports Gherkin scenarios that contain an 'Examples' section. Use the quick-fix to convert 'Scenario' to 'Scenario Outline'.",
+                  "markdown": "Reports Gherkin scenarios that contain an `Examples` section.\n\nUse the quick-fix to convert `Scenario` to `Scenario Outline`."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "error",
+                  "parameters": {
+                    "suppressToolId": "GherkinScenarioToScenarioOutline",
+                    "ideaSeverity": "ERROR",
+                    "qodanaSeverity": "Critical"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "Cucumber",
+                      "index": 24,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "CucumberTableInspection",
+                "shortDescription": {
+                  "text": "Unused or missing columns in Cucumber tables"
+                },
+                "fullDescription": {
+                  "text": "Reports tables in 'Examples' sections in Cucumber .feature files with unused or missing columns.",
+                  "markdown": "Reports tables in `Examples` sections in Cucumber .feature files with unused or missing columns."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "CucumberTableInspection",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "Cucumber",
+                      "index": 24,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GherkinBrokenTableInspection",
+                "shortDescription": {
+                  "text": "Gherkin table is broken"
+                },
+                "fullDescription": {
+                  "text": "Reports a table if there is at least one row with the number of cells different from the number of cells in the table header.",
+                  "markdown": "Reports a table if there is at least one row with the number of cells different from the number of cells in the table header."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "error",
+                  "parameters": {
+                    "suppressToolId": "GherkinBrokenTableInspection",
+                    "ideaSeverity": "ERROR",
+                    "qodanaSeverity": "Critical"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "Cucumber",
+                      "index": 24,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "GherkinMisplacedBackground",
+                "shortDescription": {
+                  "text": "Misplaced background section"
+                },
+                "fullDescription": {
+                  "text": "Reports 'Background' sections that are located incorrectly. The 'Background' section must be located before the 'Scenario' section.",
+                  "markdown": "Reports `Background` sections that are located incorrectly. The `Background` section must be located before the `Scenario` section."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "error",
+                  "parameters": {
+                    "suppressToolId": "GherkinMisplacedBackground",
+                    "ideaSeverity": "ERROR",
+                    "qodanaSeverity": "Critical"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "Cucumber",
+                      "index": 24,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "CucumberMissedExamples",
+                "shortDescription": {
+                  "text": "Missing examples section"
+                },
+                "fullDescription": {
+                  "text": "Reports scenario outlines in Cucumber .feature files that do not have the 'Examples' section. Use the quick-fix to automatically create the 'Examples' section with a pre-filled table header.",
+                  "markdown": "Reports scenario outlines in Cucumber .feature files that do not have the `Examples` section.\n\nUse the quick-fix to automatically create the `Examples` section with a pre-filled table header."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "error",
+                  "parameters": {
+                    "suppressToolId": "CucumberMissedExamples",
+                    "ideaSeverity": "ERROR",
+                    "qodanaSeverity": "Critical"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "Cucumber",
+                      "index": 24,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "CucumberUndefinedStep",
+                "shortDescription": {
+                  "text": "Undefined step"
+                },
+                "fullDescription": {
+                  "text": "Reports steps in Cucumber (or some other Gherkin) .feature files that do not have matching step definitions. Use the quick-fix to automatically create a new step definition.",
+                  "markdown": "Reports steps in Cucumber (or some other Gherkin) .feature files that do not have matching step definitions.\n\nUse the quick-fix to automatically create a new step definition."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "warning",
+                  "parameters": {
+                    "suppressToolId": "CucumberUndefinedStep",
+                    "ideaSeverity": "WARNING",
+                    "qodanaSeverity": "High"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "Cucumber",
+                      "index": 24,
+                      "toolComponent": {
+                        "name": "QDPHP"
+                      }
+                    },
+                    "kinds": [
+                      "superset"
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "CucumberExamplesColon",
+                "shortDescription": {
+                  "text": "Missing ':' after examples keyword"
+                },
+                "fullDescription": {
+                  "text": "Reports 'Examples' sections in Cucumber .feature files if they do not have ':' after the 'Examples' keyword.",
+                  "markdown": "Reports `Examples` sections in Cucumber .feature files if they do not have ':' after the `Examples` keyword."
+                },
+                "defaultConfiguration": {
+                  "enabled": false,
+                  "level": "error",
+                  "parameters": {
+                    "suppressToolId": "CucumberExamplesColon",
+                    "ideaSeverity": "ERROR",
+                    "qodanaSeverity": "Critical"
+                  }
+                },
+                "relationships": [
+                  {
+                    "target": {
+                      "id": "Cucumber",
                       "index": 24,
                       "toolComponent": {
                         "name": "QDPHP"
@@ -34919,7 +34919,7 @@
                   {
                     "target": {
                       "id": "CSS/Probable bugs",
-                      "index": 71,
+                      "index": 70,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -35183,7 +35183,7 @@
                   {
                     "target": {
                       "id": "CSS/Probable bugs",
-                      "index": 71,
+                      "index": 70,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -35546,7 +35546,7 @@
                   {
                     "target": {
                       "id": "CSS/Probable bugs",
-                      "index": 71,
+                      "index": 70,
                       "toolComponent": {
                         "name": "QDPHP"
                       }
@@ -38482,9 +38482,9 @@
       },
       "invocations": [
         {
-          "startTimeUtc": "2024-05-13T11:31:43.619168085Z",
+          "startTimeUtc": "2024-05-16T15:07:02.938101012Z",
           "exitCode": 255,
-          "exitCodeDescription": "Failure condition triggered:\n- Detected 26 problems across all severities, fail threshold: 0",
+          "exitCodeDescription": "Failure condition triggered:\n- Detected 3 problems across all severities, fail threshold: 0",
           "executionSuccessful": true
         }
       ],
@@ -38492,13 +38492,13 @@
       "versionControlProvenance": [
         {
           "repositoryUri": "https://github.com/pimcore/studio-backend-bundle.git",
-          "revisionId": "4c3dd0749eafb132b84178828c6eaa17bcde84d4",
-          "branch": "1.x",
+          "revisionId": "fce8204d0ed85197896667b47f846557332dd39b",
+          "branch": "182-properties",
           "properties": {
             "repoUrl": "https://github.com/pimcore/studio-backend-bundle.git",
-            "lastAuthorName": "lukmzig",
+            "lastAuthorName": "mattamon",
             "vcsType": "Git",
-            "lastAuthorEmail": "30526586+lukmzig@users.noreply.github.com"
+            "lastAuthorEmail": "matthias.schuhmayer@pimcore.com"
           }
         }
       ],
@@ -38778,7 +38778,7 @@
             "equalIndicator/v2": "1a48abf43e131b3c",
             "equalIndicator/v1": "d332e327ffffb913d03b5c1b123366ccfb39379be3645fdac1a4e16298cddeb5"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -38835,7 +38835,7 @@
             "equalIndicator/v2": "af124e8aa2be2d8b",
             "equalIndicator/v1": "31c95f4bfa8bf741b071ffed051cc58534a0d8fa41131ab271c2271332f08bcd"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -38892,7 +38892,7 @@
             "equalIndicator/v2": "2628b827dadbc43e",
             "equalIndicator/v1": "4eff5b6887106f38106f3d5e26c162bd2a02157f1c71659dc533c9ec4a13c41c"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -38949,7 +38949,7 @@
             "equalIndicator/v2": "ef77395305986867",
             "equalIndicator/v1": "56fa5cb989107bf6a2500e4f7e4590ecd2a76c4b9c3266968efd6977f85df779"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39006,7 +39006,7 @@
             "equalIndicator/v2": "4fb327c4151fd0ef",
             "equalIndicator/v1": "5c00a4f43cabb4c6181f0353ac0fcab81fe0f6be307800d7899ad041c4d5a7a5"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39063,7 +39063,7 @@
             "equalIndicator/v2": "92b68947b9449ee1",
             "equalIndicator/v1": "83f4848e12782b2d396312d0d5597edc0a820ff23ebf26d04fa71f2c2699290d"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39120,7 +39120,7 @@
             "equalIndicator/v2": "c8e54b4ae449ef08",
             "equalIndicator/v1": "08a9dc4e9b115719de1aeaed732b08c3844bfa0d83ec7ce65f3d70a6998a7355"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39177,7 +39177,7 @@
             "equalIndicator/v2": "14ab2cf63d196a8d",
             "equalIndicator/v1": "1519aa442e4b7420e0c7976d0355262e40ecff315029ceb0f77558914cdc8c7e"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39234,7 +39234,7 @@
             "equalIndicator/v2": "84178e08c07824ca",
             "equalIndicator/v1": "40378ee9c96fbd740fa85b6951c8a29bdf4466e8f7534633fd0f233505230f64"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39291,7 +39291,7 @@
             "equalIndicator/v2": "669bc6ac0069bd19",
             "equalIndicator/v1": "43a80b488985c32dafac3a484c67f89e44977e35238a60da91129ee894458006"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39348,7 +39348,7 @@
             "equalIndicator/v2": "402d16b5748c1803",
             "equalIndicator/v1": "4d0f4b8b25bda5952fb05a5f1ae26ef53b28dc776cb6c9b419e6ea833fdcdf52"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39405,7 +39405,7 @@
             "equalIndicator/v2": "7bcbe5e0ca1111b0",
             "equalIndicator/v1": "56ec89239bdfba357459724f1bb84609cec99734a3a9fbc3a0a1cce71f74f674"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39462,7 +39462,7 @@
             "equalIndicator/v2": "77d6ecc501de5c0c",
             "equalIndicator/v1": "64afe4fba632fd3636d6943e45b1124b60c35b33bcbcbb3be68e9ad0e99134a3"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39519,7 +39519,7 @@
             "equalIndicator/v2": "ccd5d96bc68b7e1a",
             "equalIndicator/v1": "70cb41f7fe78e21c7d9dc60728b83fd4fe5e2d7eece4ba89f9a57f4d07018b1c"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39576,7 +39576,7 @@
             "equalIndicator/v2": "b4c6aa1929d1bf97",
             "equalIndicator/v1": "7e7fad67b721599df9b4a59f1faf5ae55576773c810fe1f0b11211a03ffdc9fb"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39633,7 +39633,7 @@
             "equalIndicator/v2": "dd3f5ea7a9dff674",
             "equalIndicator/v1": "8126ddc2ba426ea7c6af291056e76b92f38870ecf0967860a9a3bb0fa7933858"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39690,7 +39690,7 @@
             "equalIndicator/v2": "0b4f2b468ad5fa55",
             "equalIndicator/v1": "8589169c7dc68ddd3a3ff4ca9c715b43f668e1a9f3d177dae4138d9370b0e4a8"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39747,7 +39747,7 @@
             "equalIndicator/v2": "80bfcd5e195caddf",
             "equalIndicator/v1": "a202732b45abe1c94d18ae6ea5f71ddbbfd1fb71649fbfcec1ec249f16766178"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39804,7 +39804,7 @@
             "equalIndicator/v2": "2fec47e9fbf8e257",
             "equalIndicator/v1": "b8d74bf3622ae06c9cab86005a1ab064dc1fea4c53635f2556e00d81b9cddd88"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39861,7 +39861,7 @@
             "equalIndicator/v2": "63721e6ae2ff09e4",
             "equalIndicator/v1": "cc182978cf2b938bd3cf51d25b8852bdcaefc64d83197c7c517a569e1bed1d79"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39918,7 +39918,7 @@
             "equalIndicator/v2": "9c7851323aec72ad",
             "equalIndicator/v1": "d23051cfd5b754ac82c3b6a0393e6667205ad4a75d4f5eefbeab50b23606d799"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -39975,7 +39975,7 @@
             "equalIndicator/v2": "01e6b1622c1ac541",
             "equalIndicator/v1": "e1278b582ec78526441db2e368254195614e887186a2c3c98383915ca5fa35fe"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -40032,7 +40032,7 @@
             "equalIndicator/v2": "4265bd53264b2b0c",
             "equalIndicator/v1": "e6cc6503ffca3f6dd7dce4f92789ac1a3e122d9a7ab44c799f8b7aebf6f514e1"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -40089,7 +40089,7 @@
             "equalIndicator/v2": "b924270e17c10f07",
             "equalIndicator/v1": "f2c0dc13e7e15ff2d40ef3f389848e6f1605257cc3a55e118392df3632ecdabf"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -40146,7 +40146,7 @@
             "equalIndicator/v2": "54e2faa7120fdfad",
             "equalIndicator/v1": "faa3722f6b90434e54f632922c9803f6e391e29984d1a9464086c270b3a0ed41"
           },
-          "baselineState": "new",
+          "baselineState": "unchanged",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
             "qodanaSeverity": "Moderate",
@@ -40203,6 +40203,405 @@
             "equalIndicator/v2": "0d648721bc039127",
             "equalIndicator/v1": "fe6fc561100aa403c25a9624309cc14e7f1cc862740c652d71d7cc91df967beb"
           },
+          "baselineState": "unchanged",
+          "properties": {
+            "ideaSeverity": "WEAK WARNING",
+            "qodanaSeverity": "Moderate",
+            "tags": [
+              "PHP"
+            ]
+          }
+        },
+        {
+          "ruleId": "EfferentObjectCouplingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "[EA] High efferent coupling (21).",
+            "markdown": "\\[EA\\] High efferent coupling (21)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/Property/Controller/CollectionController.php",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 44,
+                  "startColumn": 13,
+                  "charOffset": 2160,
+                  "charLength": 20,
+                  "snippet": {
+                    "text": "CollectionController"
+                  },
+                  "sourceLanguage": "PHP"
+                },
+                "contextRegion": {
+                  "startLine": 42,
+                  "startColumn": 1,
+                  "charOffset": 2131,
+                  "charLength": 113,
+                  "snippet": {
+                    "text": " * @internal\n */\nfinal class CollectionController extends AbstractApiController\n{\n    use PaginatedResponseTrait;"
+                  },
+                  "sourceLanguage": "PHP"
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "project",
+                  "kind": "module"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "equalIndicator/v2": "a1162108b11fced8",
+            "equalIndicator/v1": "686a6533fb7f3eb66b60047a900ff083c4787bd4bd4b32ace419a622a369936d"
+          },
+          "baselineState": "unchanged",
+          "properties": {
+            "ideaSeverity": "WEAK WARNING",
+            "qodanaSeverity": "Moderate",
+            "tags": [
+              "PHP"
+            ]
+          }
+        },
+        {
+          "ruleId": "PhpUnusedPrivateMethodInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Unused private method 'getLatestVersionForUser'",
+            "markdown": "Unused private method 'getLatestVersionForUser'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/Util/Traits/ElementProviderTrait.php",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 51,
+                  "startColumn": 22,
+                  "charOffset": 1450,
+                  "charLength": 23,
+                  "snippet": {
+                    "text": "getLatestVersionForUser"
+                  },
+                  "sourceLanguage": "PHP"
+                },
+                "contextRegion": {
+                  "startLine": 49,
+                  "startColumn": 1,
+                  "charOffset": 1422,
+                  "charLength": 135,
+                  "snippet": {
+                    "text": "    }\n\n    private function getLatestVersionForUser(\n        Asset|Document\\PageSnippet|Concrete $element,\n        ?UserInterface $user"
+                  },
+                  "sourceLanguage": "PHP"
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "project",
+                  "kind": "module"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "equalIndicator/v2": "bfd52ccc33bdf9f8",
+            "equalIndicator/v1": "295728d99e3a5dcb0efd0d158f8b5f684869670bb2bddd29968e10e6e47ffe22"
+          },
+          "baselineState": "unchanged",
+          "properties": {
+            "ideaSeverity": "WEAK WARNING",
+            "qodanaSeverity": "Moderate",
+            "tags": [
+              "PHP"
+            ]
+          }
+        },
+        {
+          "ruleId": "EfferentObjectCouplingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "[EA] High efferent coupling (22).",
+            "markdown": "\\[EA\\] High efferent coupling (22)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/Property/Controller/UpdateController.php",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 44,
+                  "startColumn": 13,
+                  "charOffset": 2077,
+                  "charLength": 16,
+                  "snippet": {
+                    "text": "UpdateController"
+                  },
+                  "sourceLanguage": "PHP"
+                },
+                "contextRegion": {
+                  "startLine": 42,
+                  "startColumn": 1,
+                  "charOffset": 2048,
+                  "charLength": 110,
+                  "snippet": {
+                    "text": " * @internal\n */\nfinal class UpdateController extends AbstractApiController\n{\n    public function __construct("
+                  },
+                  "sourceLanguage": "PHP"
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "project",
+                  "kind": "module"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "equalIndicator/v2": "cc30109889285c34",
+            "equalIndicator/v1": "341f72b7a05cc112d36ecbeb0620f8e1323e502c1a8e0d94186d9a2f29accb0f"
+          },
+          "baselineState": "unchanged",
+          "properties": {
+            "ideaSeverity": "WEAK WARNING",
+            "qodanaSeverity": "Moderate",
+            "tags": [
+              "PHP"
+            ]
+          }
+        },
+        {
+          "ruleId": "EfferentObjectCouplingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "[EA] High efferent coupling (20).",
+            "markdown": "\\[EA\\] High efferent coupling (20)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/Property/Controller/Element/CollectionController.php",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 40,
+                  "startColumn": 13,
+                  "charOffset": 1869,
+                  "charLength": 20,
+                  "snippet": {
+                    "text": "CollectionController"
+                  },
+                  "sourceLanguage": "PHP"
+                },
+                "contextRegion": {
+                  "startLine": 38,
+                  "startColumn": 1,
+                  "charOffset": 1840,
+                  "charLength": 114,
+                  "snippet": {
+                    "text": " * @internal\n */\nfinal class CollectionController extends AbstractApiController\n{\n    public function __construct("
+                  },
+                  "sourceLanguage": "PHP"
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "project",
+                  "kind": "module"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "equalIndicator/v2": "f1f19cd3c9b7872f",
+            "equalIndicator/v1": "660d5ca670ab0fd528593863c3c5e76b1e99d5b8dd9e7b0ee4de4bfe5db68e6e"
+          },
+          "baselineState": "new",
+          "properties": {
+            "ideaSeverity": "WEAK WARNING",
+            "qodanaSeverity": "Moderate",
+            "tags": [
+              "PHP"
+            ]
+          }
+        },
+        {
+          "ruleId": "EfferentObjectCouplingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "[EA] High efferent coupling (23).",
+            "markdown": "\\[EA\\] High efferent coupling (23)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/Property/Controller/Element/UpdateController.php",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 43,
+                  "startColumn": 13,
+                  "charOffset": 2107,
+                  "charLength": 16,
+                  "snippet": {
+                    "text": "UpdateController"
+                  },
+                  "sourceLanguage": "PHP"
+                },
+                "contextRegion": {
+                  "startLine": 41,
+                  "startColumn": 1,
+                  "charOffset": 2078,
+                  "charLength": 110,
+                  "snippet": {
+                    "text": " * @internal\n */\nfinal class UpdateController extends AbstractApiController\n{\n    public function __construct("
+                  },
+                  "sourceLanguage": "PHP"
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "project",
+                  "kind": "module"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "equalIndicator/v2": "45874f215741c0d2",
+            "equalIndicator/v1": "91ceea34e0aca77ee9e75d42d1674c9203a8a95adedb9a1117b879f8f845df42"
+          },
+          "baselineState": "unchanged",
+          "properties": {
+            "ideaSeverity": "WEAK WARNING",
+            "qodanaSeverity": "Moderate",
+            "tags": [
+              "PHP"
+            ]
+          }
+        },
+        {
+          "ruleId": "LongInheritanceChainInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "[EA] Class has 3 parent classes, consider using appropriate design patterns.",
+            "markdown": "\\[EA\\] Class has 3 parent classes, consider using appropriate design patterns."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/Property/Attributes/Request/PredefinedPropertyRequestBody.php",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 13,
+                  "charOffset": 753,
+                  "charLength": 29,
+                  "snippet": {
+                    "text": "PredefinedPropertyRequestBody"
+                  },
+                  "sourceLanguage": "PHP"
+                },
+                "contextRegion": {
+                  "startLine": 23,
+                  "startColumn": 1,
+                  "charOffset": 701,
+                  "charLength": 137,
+                  "snippet": {
+                    "text": "\n#[Attribute(Attribute::TARGET_METHOD)]\nfinal class PredefinedPropertyRequestBody extends RequestBody\n{\n    public function __construct()"
+                  },
+                  "sourceLanguage": "PHP"
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "project",
+                  "kind": "module"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "equalIndicator/v2": "0f6c1858595af6ed",
+            "equalIndicator/v1": "9a2e03681f116de615f949dba300e280938521cbee12263ad61337d3fc735818"
+          },
+          "baselineState": "new",
+          "properties": {
+            "ideaSeverity": "WEAK WARNING",
+            "qodanaSeverity": "Moderate",
+            "tags": [
+              "PHP"
+            ]
+          }
+        },
+        {
+          "ruleId": "LongInheritanceChainInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "[EA] Class has 3 parent classes, consider using appropriate design patterns.",
+            "markdown": "\\[EA\\] Class has 3 parent classes, consider using appropriate design patterns."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/Property/Attributes/Request/ElementPropertyRequestBody.php",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 13,
+                  "charOffset": 791,
+                  "charLength": 26,
+                  "snippet": {
+                    "text": "ElementPropertyRequestBody"
+                  },
+                  "sourceLanguage": "PHP"
+                },
+                "contextRegion": {
+                  "startLine": 23,
+                  "startColumn": 1,
+                  "charOffset": 739,
+                  "charLength": 134,
+                  "snippet": {
+                    "text": "\n#[Attribute(Attribute::TARGET_METHOD)]\nfinal class ElementPropertyRequestBody extends RequestBody\n{\n    public function __construct()"
+                  },
+                  "sourceLanguage": "PHP"
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "project",
+                  "kind": "module"
+                }
+              ]
+            }
+          ],
+          "partialFingerprints": {
+            "equalIndicator/v2": "952cdaedba577771",
+            "equalIndicator/v1": "efa881f809aa9b51baa0f9649613db3e73246ba0a4f74904195d8a6c6a1dfe48"
+          },
           "baselineState": "new",
           "properties": {
             "ideaSeverity": "WEAK WARNING",
@@ -40214,10 +40613,10 @@
         }
       ],
       "automationDetails": {
-        "id": "project/qodana/2024-05-13",
-        "guid": "55167e2f-5460-4a55-9b54-f1ad705fa0a1",
+        "id": "project/qodana/2024-05-16",
+        "guid": "990d78c7-f6f3-4b29-8f75-6d65c42dbc43",
         "properties": {
-          "jobUrl": "https://github.com/pimcore/studio-backend-bundle/actions/runs/9062100886"
+          "jobUrl": "https://github.com/pimcore/studio-backend-bundle/actions/runs/9114692268"
         }
       },
       "newlineSequences": [
@@ -40233,8 +40632,8 @@
         "configProfile": "path",
         "deviceId": "200820300000000-7c33-767c-9695-477d79c87e1c",
         "qodanaNewResultSummary": {
-          "moderate": 26,
-          "total": 26
+          "moderate": 3,
+          "total": 3
         }
       }
     }

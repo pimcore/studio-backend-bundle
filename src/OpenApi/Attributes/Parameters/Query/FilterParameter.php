@@ -14,23 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query;
 
 use Attribute;
-use OpenApi\Attributes\PathParameter;
+use OpenApi\Attributes\QueryParameter as OpenApiQueryParameter;
 use OpenApi\Attributes\Schema;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class IdParameter extends PathParameter
+final class FilterParameter extends OpenApiQueryParameter
 {
-    public function __construct(string $type = 'element', Schema $schema = new Schema(type: 'integer', example: 83))
+    public function __construct()
     {
         parent::__construct(
-            name: 'id',
-            description: 'ID of the ' . $type,
-            in: 'path',
-            required: true,
-            schema: $schema,
+            name: 'filter',
+            description: 'Filter for properties',
+            in: 'filter',
+            required: false,
+            schema: new Schema(type: 'string', example: null),
         );
     }
 }
