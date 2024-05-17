@@ -38,15 +38,15 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Version\Publisher\DocumentVersionPublisher
 
   # Services
-  Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionHydratorServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionHydratorService
-    arguments:
-      $versionHydratorLocator: '@listing.version_hydrator.service_locator'
-
-  Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionPublisherServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionPublisherService
+  Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionService
     arguments:
       $versionPublisherLocator: '@version.element_publisher.service_locator'
+
+  Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailService
+    arguments:
+      $versionHydratorLocator: '@listing.version_hydrator.service_locator'
 
   #Service Locator
   listing.version_hydrator.service_locator:

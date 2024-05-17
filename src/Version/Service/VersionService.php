@@ -17,18 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Version\Event\ImageVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\VersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Result\ListingResult;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -37,7 +35,7 @@ use Symfony\Contracts\Service\ServiceProviderInterface;
 /**
  * @internal
  */
-final readonly class VersionHydratorService implements VersionHydratorServiceInterface
+final readonly class VersionService implements VersionServiceInterface
 {
     use ElementProviderTrait;
 
@@ -45,8 +43,9 @@ final readonly class VersionHydratorService implements VersionHydratorServiceInt
         private EventDispatcherInterface $eventDispatcher,
         private VersionRepositoryInterface $repository,
         private ServiceResolverInterface $serviceResolver,
-        private ServiceProviderInterface $versionHydratorLocator,
+        private ServiceProviderInterface $versionPublisherLocator,
         private VersionHydratorInterface $versionHydrator,
+        private SecurityServiceInterface $securityService
     ) {
     }
 
@@ -84,28 +83,53 @@ final readonly class VersionHydratorService implements VersionHydratorServiceInt
         );
     }
 
-    public function getHydratedVersionData(
-        int $id,
+    public function publishVersion(
+        int $versionId,
         UserInterface $user
-    ): AssetVersion|ImageVersion|DataObjectVersion|DocumentVersion {
-        $version = $this->repository->getVersionById($id);
-        $element = $this->repository->getElementFromVersion($version, $user);
-
-        return $this->hydrate(
-            $element,
-            $this->getElementClass($element)
+    ): int {
+        $version = $this->repository->getVersionById($versionId);
+        $element = $this->repository->getElementFromVersion(
+            $version,
+            $user
         );
-    }
+        $elementId = $element->getId();
 
-    private function hydrate(
-        ElementInterface $element,
-        string $class
-    ): AssetVersion|ImageVersion|DocumentVersion|DataObjectVersion {
-        if ($this->versionHydratorLocator->has($class)) {
-            return $this->versionHydratorLocator->get($class)->hydrate($element);
+        $currentElement = $this->getElement(
+            $this->serviceResolver,
+            $element->getType(),
+            $elementId,
+        );
+
+        $this->securityService->hasElementPermission(
+            $currentElement,
+            $user,
+            ElementPermissions::PUBLISH_PERMISSION
+        );
+
+        $class = $this->getElementClass($currentElement);
+        if (!$this->versionPublisherLocator->has($class)) {
+            throw new InvalidElementTypeException($class);
         }
 
-        throw new InvalidElementTypeException($class);
+        $this->versionPublisherLocator->get($class)->publish(
+            $element,
+            $user
+        );
+
+        $lastVersion = $this->repository->getLastVersion(
+            $elementId,
+            $element->getType(),
+            $user
+        );
+
+        if (!$lastVersion) {
+            throw new ElementPublishingFailedException(
+                $elementId,
+                'No last version was found'
+            );
+        }
+
+        return $lastVersion->getId();
     }
 
     private function getScheduledTasks(ElementInterface $element): array

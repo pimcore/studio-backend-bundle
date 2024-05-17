@@ -34,7 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Attributes\Response\Property\VersionCollection;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
@@ -50,7 +50,7 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly SecurityServiceInterface $securityService,
-        private readonly VersionHydratorServiceInterface $hydratorService,
+        private readonly VersionServiceInterface $hydratorService,
     ) {
         parent::__construct($serializer);
     }

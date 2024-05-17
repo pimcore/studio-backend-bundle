@@ -16,8 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Result\ListingResult;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
@@ -27,13 +25,8 @@ use Pimcore\Model\UserInterface;
 /**
  * @internal
  */
-interface VersionHydratorServiceInterface
+interface VersionDetailServiceInterface
 {
-    public function getHydratedVersions(
-        VersionParameters $parameters,
-        UserInterface $user
-    ): ListingResult;
-
     public function getHydratedVersionData(
         int $id,
         UserInterface $user

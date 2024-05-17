@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unsuppo
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionPublisherServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -41,7 +41,7 @@ final class PublishController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly SecurityServiceInterface $securityService,
-        private readonly VersionPublisherServiceInterface $publisher
+        private readonly VersionServiceInterface $versionService
     ) {
         parent::__construct($serializer);
     }
@@ -71,7 +71,7 @@ final class PublishController extends AbstractApiController
         $user = $this->securityService->getCurrentUser();
 
         return $this->jsonResponse([
-            'id' => $this->publisher->publishVersion($id, $user),
+            'id' => $this->versionService->publishVersion($id, $user),
         ]);
     }
 }

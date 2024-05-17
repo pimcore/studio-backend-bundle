@@ -16,13 +16,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\Result\ListingResult;
 use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-interface VersionPublisherServiceInterface
+interface VersionServiceInterface
 {
+    public function getHydratedVersions(
+        VersionParameters $parameters,
+        UserInterface $user
+    ): ListingResult;
+
     public function publishVersion(
         int $versionId,
         UserInterface $user
