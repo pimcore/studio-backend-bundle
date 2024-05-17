@@ -19,18 +19,27 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path;
 use Attribute;
 use OpenApi\Attributes\PathParameter;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class IdParameter extends PathParameter
+final class ElementTypeParameter extends PathParameter
 {
-    public function __construct(string $type = 'element', Schema $schema = new Schema(type: 'integer', example: 83))
+    public function __construct()
     {
         parent::__construct(
-            name: 'id',
-            description: 'ID of the ' . $type,
+            name: 'elementType',
+            description: 'Filter elements by matching element type.',
             in: 'path',
             required: true,
-            schema: $schema,
+            schema: new Schema(
+                type: 'string',
+                enum: [
+                    ElementTypes::TYPE_ASSET,
+                    ElementTypes::TYPE_DOCUMENT,
+                    ElementTypes::TYPE_DATA_OBJECT,
+                ],
+                example: ElementTypes::TYPE_DATA_OBJECT,
+            ),
         );
     }
 }
