@@ -59,7 +59,6 @@ final readonly class VersionHydratorService implements VersionHydratorServiceInt
         $versionObjects = $list->load();
         foreach ($versionObjects as $versionObject) {
             $versions[] = $this->versionHydrator->hydrate($versionObject, $scheduledTasks);
-
         }
 
         return new ListingResult(
