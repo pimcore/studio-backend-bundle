@@ -26,10 +26,10 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schema\DevError;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schema\Error;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetType\ImageVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 
 /**
  * @internal

@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetType;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -28,26 +28,36 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
     title: 'ImageVersion',
     type: 'object'
 )]
-final readonly class ImageVersion extends AssetVersion
+final class ImageVersion implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
-        string $fileName,
-        ?string $temporaryFile,
+        #[Property(description: 'file name', type: 'string', example: 'myImageFile.png')]
+        private readonly string $fileName,
+        #[Property(description: 'temporary file', type: 'string', example: 'path/to/temporary/file.png')]
+        private readonly ?string $temporaryFile,
         #[Property(description: 'creation date', type: 'integer', example: 1707312457)]
-        private int $creationDate,
+        private readonly int $creationDate,
         #[Property(description: 'modification date', type: 'integer', example: 1707312457)]
-        private ?int $modificationDate,
+        private readonly ?int $modificationDate,
         #[Property(description: 'file size', type: 'integer', example: 41862)]
-        private int $fileSize,
+        private readonly int $fileSize,
         #[Property(description: 'mime type', type: 'string', example: 'image/png')]
-        private string $mimeType,
+        private readonly string $mimeType,
         #[Property(description: 'dimensions', type: Dimensions::class, example: '{"width":1920,"height":1080}')]
-        private ?Dimensions $dimensions = null,
+        private readonly ?Dimensions $dimensions = null,
     ) {
-        parent::__construct(
-            $fileName,
-            $temporaryFile
-        );
+    }
+
+    public function getFileName(): string
+    {
+        return $this->fileName;
+    }
+
+    public function getTemporaryFile(): string
+    {
+        return $this->temporaryFile;
     }
 
     public function getDimensions(): ?Dimensions

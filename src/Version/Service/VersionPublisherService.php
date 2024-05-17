@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Publisher;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
@@ -36,7 +36,7 @@ final class VersionPublisherService implements VersionPublisherServiceInterface
     public function __construct(
         private readonly SecurityServiceInterface $securityService,
         private readonly ServiceResolverInterface $serviceResolver,
-        private readonly RepositoryInterface $repository,
+        private readonly VersionRepositoryInterface $repository,
         private readonly ServiceProviderInterface $versionPublisherLocator
     ) {
     }

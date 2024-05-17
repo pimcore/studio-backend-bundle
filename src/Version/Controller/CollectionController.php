@@ -28,13 +28,13 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodN
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property\VersionCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Attributes\Response\Property\VersionCollection;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionHydratorServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;

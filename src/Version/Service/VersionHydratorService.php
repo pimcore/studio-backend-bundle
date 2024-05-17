@@ -14,19 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Event\ImageVersionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Version\Event\VersionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Result\ListingResult;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
 /**
@@ -37,7 +42,8 @@ final readonly class VersionHydratorService implements VersionHydratorServiceInt
     use ElementProviderTrait;
 
     public function __construct(
-        private RepositoryInterface $repository,
+        private EventDispatcherInterface $eventDispatcher,
+        private VersionRepositoryInterface $repository,
         private ServiceResolverInterface $serviceResolver,
         private ServiceProviderInterface $versionHydratorLocator,
         private VersionHydratorInterface $versionHydrator,
@@ -58,7 +64,16 @@ final readonly class VersionHydratorService implements VersionHydratorServiceInt
         $versions = [];
         $versionObjects = $list->load();
         foreach ($versionObjects as $versionObject) {
-            $versions[] = $this->versionHydrator->hydrate($versionObject, $scheduledTasks);
+            $hydratedVersion = $this->versionHydrator->hydrate($versionObject, $scheduledTasks);
+
+            $this->eventDispatcher->dispatch(
+                new VersionEvent(
+                    $hydratedVersion
+                ),
+                VersionEvent::EVENT_NAME
+            );
+
+            $versions[] = $hydratedVersion;
         }
 
         return new ListingResult(
@@ -72,7 +87,7 @@ final readonly class VersionHydratorService implements VersionHydratorServiceInt
     public function getHydratedVersionData(
         int $id,
         UserInterface $user
-    ): AssetVersion|DataObjectVersion|DocumentVersion {
+    ): AssetVersion|ImageVersion|DataObjectVersion|DocumentVersion {
         $version = $this->repository->getVersionById($id);
         $element = $this->repository->getElementFromVersion($version, $user);
 
@@ -85,7 +100,7 @@ final readonly class VersionHydratorService implements VersionHydratorServiceInt
     private function hydrate(
         ElementInterface $element,
         string $class
-    ): AssetVersion|DocumentVersion|DataObjectVersion {
+    ): AssetVersion|ImageVersion|DocumentVersion|DataObjectVersion {
         if ($this->versionHydratorLocator->has($class)) {
             return $this->versionHydratorLocator->get($class)->hydrate($element);
         }

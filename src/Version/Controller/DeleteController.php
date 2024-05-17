@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -42,7 +42,7 @@ final class DeleteController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly SecurityServiceInterface $securityService,
-        private readonly RepositoryInterface $repository
+        private readonly VersionRepositoryInterface $repository
     ) {
         parent::__construct($serializer);
     }

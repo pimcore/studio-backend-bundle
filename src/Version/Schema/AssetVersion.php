@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -26,13 +28,15 @@ use OpenApi\Attributes\Schema;
     title: 'AssetVersion',
     type: 'object'
 )]
-readonly class AssetVersion
+final class AssetVersion implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'file name', type: 'string', example: 'myImageFile.png')]
-        private string $fileName,
+        private readonly string $fileName,
         #[Property(description: 'temporary file', type: 'string', example: 'path/to/temporary/file.png')]
-        private ?string $temporaryFile,
+        private readonly ?string $temporaryFile,
     ) {
     }
 

@@ -11,8 +11,8 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Version\Repository
+  Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepository
 
   Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydrator
@@ -38,13 +38,13 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Version\Publisher\DocumentVersionPublisher
 
   # Services
-  Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorService
+  Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionHydratorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionHydratorService
     arguments:
       $versionHydratorLocator: '@listing.version_hydrator.service_locator'
 
-  Pimcore\Bundle\StudioBackendBundle\Version\Publisher\VersionPublisherServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Version\Publisher\VersionPublisherService
+  Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionPublisherServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionPublisherService
     arguments:
       $versionPublisherLocator: '@version.element_publisher.service_locator'
 

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
@@ -26,7 +26,7 @@ use Pimcore\Model\Version\Listing as VersionListing;
 /**
  * @internal
  */
-interface RepositoryInterface
+interface VersionRepositoryInterface
 {
     public function listVersions(
         ElementInterface $element,
