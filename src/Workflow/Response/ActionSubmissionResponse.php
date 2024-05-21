@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Result;
+namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Response;
 
 /**
  * @internal
  */
-final readonly class ActionSubmissionResult
+final readonly class ActionSubmissionResponse
 {
     public function __construct(
         private string $workflowName,

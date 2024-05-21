@@ -28,7 +28,7 @@ interface WorkflowDetailsServiceInterface
     /**
      * @return WorkflowDetails[]
      */
-    public function hydrateWorkflowDetails(
+    public function getWorkflowDetails(
         WorkflowDetailsParameters $parameters,
         UserInterface $user
     ): array;

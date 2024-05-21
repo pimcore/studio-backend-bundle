@@ -43,7 +43,7 @@ final class WorkflowDetailsServiceTest extends Unit
         $workflowDetailsService = $this->getWorkflowDetailsService();
         $this->expectExceptionMessage('Element with ID 1 not found');
         $this->expectException(ElementNotFoundException::class);
-        $workflowDetailsService->hydrateWorkflowDetails(
+        $workflowDetailsService->getWorkflowDetails(
             $parameters,
             $this->makeEmpty(UserInterface::class)
         );

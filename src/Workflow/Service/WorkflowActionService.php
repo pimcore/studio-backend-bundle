@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionSubmissionExcepti
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Result\ActionSubmissionResult;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Response\ActionSubmissionResponse;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Folder;
@@ -55,7 +55,7 @@ final readonly class WorkflowActionService implements WorkflowActionServiceInter
     public function submitAction(
         UserInterface $user,
         SubmitAction $parameters
-    ): ActionSubmissionResult
+    ): ActionSubmissionResponse
     {
         $element = $this->getElement(
             $this->serviceResolver,

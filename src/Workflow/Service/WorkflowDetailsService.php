@@ -52,7 +52,7 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
     /**
      * @return WorkflowDetails[]
      */
-    public function hydrateWorkflowDetails(
+    public function getWorkflowDetails(
         WorkflowDetailsParameters $parameters,
         UserInterface $user
     ): array

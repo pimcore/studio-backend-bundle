@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter;
 
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Result\ActionSubmissionResult;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Response\ActionSubmissionResponse;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -30,5 +30,5 @@ interface TransitionActionSubmitterInterface
         ElementInterface $element,
         WorkflowInterface $workflow,
         SubmitAction $parameters,
-    ): ActionSubmissionResult;
+    ): ActionSubmissionResponse;
 }

@@ -26,11 +26,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodN
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property\WorkflowDetailsCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Attributes\Response\Property\WorkflowDetailsCollection;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Request\WorkflowDetailsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -55,7 +55,7 @@ final class DetailsCollectionController extends AbstractApiController
 
     #[Route('/workflows/details', name: 'pimcore_studio_api_element_workflows_details', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
-    #[GET(
+    #[Get(
         path: self::API_PATH . '/workflows/details',
         operationId: 'getWorkflowsDetails',
         description: 'Get details of the element workflows',
@@ -81,7 +81,7 @@ final class DetailsCollectionController extends AbstractApiController
     {
         $user = $this->securityService->getCurrentUser();
         return $this->jsonResponse([
-            'items' => $this->workflowDetailsService->hydrateWorkflowDetails(
+            'items' => $this->workflowDetailsService->getWorkflowDetails(
                 $parameters,
                 $user
             )

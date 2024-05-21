@@ -20,7 +20,7 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionNotAllowedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionSubmissionException;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Result\ActionSubmissionResult;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Response\ActionSubmissionResponse;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\Concrete;
@@ -44,7 +44,7 @@ final readonly class TransitionActionSubmitter implements TransitionActionSubmit
         ElementInterface $element,
         WorkflowInterface $workflow,
         SubmitAction $parameters,
-    ): ActionSubmissionResult
+    ): ActionSubmissionResponse
     {
         $element = $this->validateElementType($element);
         $transitionName = $parameters->getTransition();
@@ -63,7 +63,7 @@ final readonly class TransitionActionSubmitter implements TransitionActionSubmit
                 $parameters->getWorkflowOptions()
             );
 
-            return new ActionSubmissionResult(
+            return new ActionSubmissionResponse(
                 $parameters->getWorkflowName(),
                 $transitionName,
                 $parameters->getActionType()

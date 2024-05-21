@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionSubmissionException;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Result\ActionSubmissionResult;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Response\ActionSubmissionResponse;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Workflow\Manager;
@@ -40,7 +40,7 @@ final readonly class GlobalActionSubmitter implements GlobalActionSubmitterInter
         ElementInterface $element,
         WorkflowInterface $workflow,
         SubmitAction $parameters
-    ): ActionSubmissionResult
+    ): ActionSubmissionResponse
     {
         $workflowName = $parameters->getWorkflowName();
         $actionName = $parameters->getTransition();
@@ -65,7 +65,7 @@ final readonly class GlobalActionSubmitter implements GlobalActionSubmitterInter
                 $globalAction->getSaveSubject()
             );
 
-            return new ActionSubmissionResult(
+            return new ActionSubmissionResponse(
                 $workflowName,
                 $actionName,
                 $parameters->getActionType()

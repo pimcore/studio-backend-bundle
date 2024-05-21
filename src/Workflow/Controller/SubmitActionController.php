@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\WorkflowActionRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\WorkflowActionSubmissionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
@@ -28,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unsuppo
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Attributes\Response\Content\WorkflowActionSubmissionJson;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -54,7 +54,7 @@ final class SubmitActionController extends AbstractApiController
         methods: ['POST']
     )]
     //#[IsGranted('STUDIO_API')]
-    #[POST(
+    #[Post(
         path: self::API_PATH . '/workflows/action',
         operationId: 'submitWorkflowAction',
         description: 'Submit action based on the workflow name, action name and action type',

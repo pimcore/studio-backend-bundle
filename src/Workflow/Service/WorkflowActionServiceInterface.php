@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Result\ActionSubmissionResult;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Response\ActionSubmissionResponse;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Folder;
@@ -33,7 +33,7 @@ interface WorkflowActionServiceInterface
     public function submitAction(
         UserInterface $user,
         SubmitAction $parameters
-    ): ActionSubmissionResult;
+    ): ActionSubmissionResponse;
 
     public function enrichActionNotes(
         Concrete|Folder $object,
