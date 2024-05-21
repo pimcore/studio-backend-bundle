@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Publisher;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
@@ -22,23 +22,65 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Event\VersionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
 /**
  * @internal
  */
-final class VersionPublisherService implements VersionPublisherServiceInterface
+final readonly class VersionService implements VersionServiceInterface
 {
     use ElementProviderTrait;
 
     public function __construct(
-        private readonly SecurityServiceInterface $securityService,
-        private readonly ServiceResolverInterface $serviceResolver,
-        private readonly RepositoryInterface $repository,
-        private readonly ServiceProviderInterface $versionPublisherLocator
+        private EventDispatcherInterface $eventDispatcher,
+        private VersionRepositoryInterface $repository,
+        private ServiceResolverInterface $serviceResolver,
+        private ServiceProviderInterface $versionPublisherLocator,
+        private VersionHydratorInterface $versionHydrator,
+        private SecurityServiceInterface $securityService
     ) {
+    }
+
+    public function getVersions(
+        VersionParameters $parameters,
+        UserInterface $user
+    ): Collection {
+        $element = $this->getElement(
+            $this->serviceResolver,
+            $parameters->getElementType(),
+            $parameters->getElementId(),
+        );
+        $scheduledTasks = $this->getScheduledTasks($element);
+        $list = $this->repository->listVersions($element, $parameters, $user);
+        $versions = [];
+        $versionObjects = $list->load();
+        foreach ($versionObjects as $versionObject) {
+            $hydratedVersion = $this->versionHydrator->hydrate($versionObject, $scheduledTasks);
+
+            $this->eventDispatcher->dispatch(
+                new VersionEvent(
+                    $hydratedVersion
+                ),
+                VersionEvent::EVENT_NAME
+            );
+
+            $versions[] = $hydratedVersion;
+        }
+
+        return new Collection(
+            $versions,
+            $parameters->getPage(),
+            $parameters->getPageSize(),
+            $list->getTotalCount()
+        );
     }
 
     public function publishVersion(
@@ -88,5 +130,18 @@ final class VersionPublisherService implements VersionPublisherServiceInterface
         }
 
         return $lastVersion->getId();
+    }
+
+    private function getScheduledTasks(ElementInterface $element): array
+    {
+        $scheduledTasks = $element->getScheduledTasks();
+        $schedules = [];
+        foreach ($scheduledTasks as $task) {
+            if ($task->getActive()) {
+                $schedules[$task->getVersion()] = $task->getDate();
+            }
+        }
+
+        return $schedules;
     }
 }

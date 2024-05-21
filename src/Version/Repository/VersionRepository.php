@@ -14,9 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Repository;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolver;
+use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
@@ -31,13 +31,13 @@ use Pimcore\Model\Version\Listing as VersionListing;
 /**
  * @internal
  */
-final readonly class Repository implements RepositoryInterface
+final readonly class VersionRepository implements VersionRepositoryInterface
 {
     use ElementProviderTrait;
 
     public function __construct(
         private SecurityServiceInterface $securityService,
-        private VersionResolver $versionResolver
+        private VersionResolverInterface $versionResolver
     ) {
 
     }

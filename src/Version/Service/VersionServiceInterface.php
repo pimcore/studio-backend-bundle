@@ -14,27 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Result\ListingResult;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
 use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-interface VersionHydratorServiceInterface
+interface VersionServiceInterface
 {
-    public function getHydratedVersions(
+    public function getVersions(
         VersionParameters $parameters,
         UserInterface $user
-    ): ListingResult;
+    ): Collection;
 
-    public function getHydratedVersionData(
-        int $id,
+    public function publishVersion(
+        int $versionId,
         UserInterface $user
-    ): AssetVersion|DataObjectVersion|DocumentVersion;
+    ): int;
 }

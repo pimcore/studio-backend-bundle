@@ -19,17 +19,25 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementUnsafeException;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetType\ImageVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Version\Event\ImageVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
  */
-final class AssetVersionHydrator implements AssetVersionHydratorInterface
+final readonly class AssetVersionHydrator implements AssetVersionHydratorInterface
 {
+    public function __construct(
+        private EventDispatcherInterface $eventDispatcher,
+    ) {
+    }
+
     /**
      * @throws Exception
      */
@@ -45,15 +53,22 @@ final class AssetVersionHydrator implements AssetVersionHydratorInterface
             return $this->hydrateImage($asset);
         }
 
-        return new AssetVersion(
+        $hydratedAsset = new AssetVersion(
             $asset->getFilename(),
             $this->getTemporaryFile($asset),
         );
+
+        $this->eventDispatcher->dispatch(
+            new AssetVersionEvent($hydratedAsset),
+            AssetVersionEvent::EVENT_NAME
+        );
+
+        return $hydratedAsset;
     }
 
     private function hydrateImage(Image $image): ImageVersion
     {
-        return new ImageVersion(
+        $hydratedImage = new ImageVersion(
             $image->getFilename(),
             $this->getTemporaryFile($image),
             $image->getCreationDate(),
@@ -62,6 +77,13 @@ final class AssetVersionHydrator implements AssetVersionHydratorInterface
             $image->getMimeType(),
             $this->getImageDimensions($image)
         );
+
+        $this->eventDispatcher->dispatch(
+            new ImageVersionEvent($hydratedImage),
+            ImageVersionEvent::EVENT_NAME
+        );
+
+        return $hydratedImage;
     }
 
     private function getImageDimensions(Image $image): Dimensions

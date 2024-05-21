@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -26,29 +28,31 @@ use OpenApi\Attributes\Schema;
     title: 'Version',
     type: 'object'
 )]
-final readonly class Version
+final class Version implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'version ID', type: 'integer', example: 2)]
-        private int $id,
+        private readonly int $id,
         #[Property(description: 'element ID', type: 'integer', example: 10)]
-        private int $cid,
+        private readonly int $cid,
         #[Property(description: 'element type', type: 'string', example: 'object')]
-        private string $ctype,
+        private readonly string $ctype,
         #[Property(description: 'note', type: 'string', example: 'some note')]
-        private string $note,
+        private readonly string $note,
         #[Property(description: 'date', type: 'integer', example: 1712823182)]
-        private int $date,
+        private readonly int $date,
         #[Property(description: 'public', type: 'bool', example: false)]
-        private bool $public,
+        private readonly bool $public,
         #[Property(description: 'version count', type: 'integer', example: 10)]
-        private int $versionCount,
+        private readonly int $versionCount,
         #[Property(description: 'autosave', type: 'bool', example: false)]
-        private bool $autosave,
+        private readonly bool $autosave,
         #[Property(description: 'user', type: User::class, example: '{"id":2,"name":"John Doe"}')]
-        private User $user,
+        private readonly User $user,
         #[Property(description: 'scheduled', type: 'integer', example: null)]
-        private ?int $scheduled
+        private readonly ?int $scheduled
     ) {
 
     }

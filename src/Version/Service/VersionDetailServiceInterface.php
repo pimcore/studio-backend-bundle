@@ -14,17 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Publisher;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-interface VersionPublisherServiceInterface
+interface VersionDetailServiceInterface
 {
-    public function publishVersion(
-        int $versionId,
+    public function getVersionData(
+        int $id,
         UserInterface $user
-    ): int;
+    ): AssetVersion|ImageVersion|DataObjectVersion|DocumentVersion;
 }
