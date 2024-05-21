@@ -14,24 +14,28 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content;
 
 use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Response\Schemas;
+use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
 
 /**
  * @internal
  */
-final class OneOfAssetJson extends JsonContent
+final class CustomSettingsJson extends JsonContent
 {
     public function __construct()
     {
         parent::__construct(
+            properties: [
+                new Property(
+                    'customSettings',
+                    ref: CustomSettings::class,
+                    type: 'object'
+                ),
+            ],
             type: 'object',
-            oneOf: array_map(static function ($class) {
-                return new Schema(ref: $class);
-            }, Schemas::ASSETS),
         );
     }
 }
