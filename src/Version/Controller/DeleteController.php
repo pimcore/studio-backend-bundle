@@ -70,12 +70,15 @@ final class DeleteController extends AbstractApiController
     public function deleteVersion(int $id): JsonResponse
     {
         $user = $this->securityService->getCurrentUser();
+
         $version = $this->repository->getVersionById($id);
+
         $this->securityService->hasElementPermission(
             $version->getData(),
             $user,
             ElementPermissions::VERSIONS_PERMISSION
         );
+
         $version->delete();
 
         return $this->jsonResponse(['id' => $id]);

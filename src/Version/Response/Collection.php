@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Result;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Response;
 
 /**
  * @internal
  */
-final readonly class ListingResult
+final readonly class Collection
 {
     /**
      * @param array $items

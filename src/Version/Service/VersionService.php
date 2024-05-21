@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Event\VersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Result\ListingResult;
+use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -52,7 +52,7 @@ final readonly class VersionService implements VersionServiceInterface
     public function getVersions(
         VersionParameters $parameters,
         UserInterface $user
-    ): ListingResult {
+    ): Collection {
         $element = $this->getElement(
             $this->serviceResolver,
             $parameters->getElementType(),
@@ -75,7 +75,7 @@ final readonly class VersionService implements VersionServiceInterface
             $versions[] = $hydratedVersion;
         }
 
-        return new ListingResult(
+        return new Collection(
             $versions,
             $parameters->getPage(),
             $parameters->getPageSize(),

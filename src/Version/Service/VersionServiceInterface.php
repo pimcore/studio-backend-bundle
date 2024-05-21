@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Result\ListingResult;
+use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -28,7 +28,7 @@ interface VersionServiceInterface
     public function getVersions(
         VersionParameters $parameters,
         UserInterface $user
-    ): ListingResult;
+    ): Collection;
 
     public function publishVersion(
         int $versionId,

@@ -80,15 +80,15 @@ final class CollectionController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getVersions(#[MapQueryString] VersionParameters $parameters): JsonResponse
     {
-        $result = $this->hydratorService->getVersions(
+        $collection = $this->hydratorService->getVersions(
             $parameters,
             $this->securityService->getCurrentUser()
         );
 
         return $this->getPaginatedCollection(
             $this->serializer,
-            $result->getItems(),
-            $result->getTotalItems(),
+            $collection->getItems(),
+            $collection->getTotalItems(),
         );
     }
 }
