@@ -1,0 +1,25 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Note\Controller\:
+    resource: '../src/Note/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  # Hydrators
+  Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Note\Extractor\NoteDataExtractorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Note\Extractor\NoteDataExtractor
+
+  Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteService
