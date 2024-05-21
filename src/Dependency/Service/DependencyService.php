@@ -20,7 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Dependency\Event\DependencyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Request\DependencyParameters;
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Result\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;

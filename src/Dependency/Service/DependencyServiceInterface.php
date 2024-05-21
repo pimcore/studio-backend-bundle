@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Request\DependencyParameters;
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Result\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Response\Collection;
 use Pimcore\Model\UserInterface;
 
 interface DependencyServiceInterface
