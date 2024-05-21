@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Get;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Property\AnyOfAsset;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
@@ -37,7 +38,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodN
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Property\AnyOfAsset;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;

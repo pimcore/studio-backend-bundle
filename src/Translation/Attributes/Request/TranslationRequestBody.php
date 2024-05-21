@@ -14,21 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Translation\Attributes\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class CredentialsRequestBody extends RequestBody
+final class TranslationRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
             required: true,
-            content: new JsonContent(ref: Credentials::class)
+            content: new JsonContent(ref: Translation::class)
         );
     }
 }
