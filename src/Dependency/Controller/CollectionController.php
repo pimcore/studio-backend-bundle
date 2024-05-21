@@ -84,15 +84,15 @@ final class CollectionController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getDependencies(#[MapQueryString] DependencyParameters $parameters): JsonResponse
     {
-        $result = $this->hydratorService->getDependencies(
+        $collection = $this->hydratorService->getDependencies(
             $parameters,
             $this->securityService->getCurrentUser()
         );
 
         return $this->getPaginatedCollection(
             $this->serializer,
-            $result->getItems(),
-            $result->getTotalItems(),
+            $collection->getItems(),
+            $collection->getTotalItems(),
         );
     }
 }
