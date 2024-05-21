@@ -1,0 +1,21 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Controller\:
+    resource: '../src/Dependency/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyService
+
+  Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator

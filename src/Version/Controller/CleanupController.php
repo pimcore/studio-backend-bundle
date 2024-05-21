@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unproce
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Version\RepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
@@ -42,7 +42,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class CleanupController extends AbstractApiController
 {
     public function __construct(
-        private readonly RepositoryInterface $repository,
+        private readonly VersionRepositoryInterface $repository,
         SerializerInterface $serializer,
     ) {
         parent::__construct($serializer);

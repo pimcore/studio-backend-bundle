@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Model\Asset;
 
 /**
@@ -26,5 +27,5 @@ interface AssetVersionHydratorInterface
 {
     public function hydrate(
         Asset $asset
-    ): AssetVersion;
+    ): ImageVersion|AssetVersion;
 }

@@ -20,6 +20,7 @@ use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\AssetVersionHydrator;
 use Pimcore\Model\Asset\Document;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -33,7 +34,9 @@ final class AssetVersionHydratorTest extends Unit
         $asset->setMimeType('application/pdf');
         $asset->setFilename('test.pdf');
 
-        $assetVersionHydrator = new AssetVersionHydrator();
+        $assetVersionHydrator = new AssetVersionHydrator(
+            $this->makeEmpty(EventDispatcherInterface::class)
+        );
 
         // Status is not set properly
         $this->expectException(ElementProcessingNotCompletedException::class);
