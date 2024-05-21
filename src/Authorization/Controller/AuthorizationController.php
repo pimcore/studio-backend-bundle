@@ -18,14 +18,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\CredentialsRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\TokenRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Refresh;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Token;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\CredentialsRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\TokenRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
