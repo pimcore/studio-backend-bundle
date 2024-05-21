@@ -42,7 +42,6 @@ final class DependencyHydratorTest extends Unit
         $this->assertEmpty($dependency->getAdditionalAttributes());
     }
 
-
     /**
      * @throws Exception
      */
