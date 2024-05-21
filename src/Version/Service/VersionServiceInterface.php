@@ -25,7 +25,7 @@ use Pimcore\Model\UserInterface;
  */
 interface VersionServiceInterface
 {
-    public function getHydratedVersions(
+    public function getVersions(
         VersionParameters $parameters,
         UserInterface $user
     ): ListingResult;

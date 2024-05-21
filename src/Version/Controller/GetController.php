@@ -69,7 +69,7 @@ final class GetController extends AbstractApiController
     public function getVersions(int $id): JsonResponse
     {
         return $this->jsonResponse(
-            $this->versionDetailService->getHydratedVersionData(
+            $this->versionDetailService->getVersionData(
                 $id,
                 $this->securityService->getCurrentUser()
             )

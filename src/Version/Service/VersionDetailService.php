@@ -40,7 +40,7 @@ final class VersionDetailService implements VersionDetailServiceInterface
     ) {
     }
 
-    public function getHydratedVersionData(
+    public function getVersionData(
         int $id,
         UserInterface $user
     ): AssetVersion|ImageVersion|DataObjectVersion|DocumentVersion {

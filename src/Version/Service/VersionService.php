@@ -49,7 +49,7 @@ final readonly class VersionService implements VersionServiceInterface
     ) {
     }
 
-    public function getHydratedVersions(
+    public function getVersions(
         VersionParameters $parameters,
         UserInterface $user
     ): ListingResult {

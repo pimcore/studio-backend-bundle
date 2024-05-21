@@ -27,7 +27,7 @@ use Pimcore\Model\UserInterface;
  */
 interface VersionDetailServiceInterface
 {
-    public function getHydratedVersionData(
+    public function getVersionData(
         int $id,
         UserInterface $user
     ): AssetVersion|ImageVersion|DataObjectVersion|DocumentVersion;
