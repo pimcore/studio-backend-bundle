@@ -34,6 +34,10 @@ use OpenApi\Attributes\Tag;
     description: 'DataObject operations to get/update/create/delete data objects'
 )]
 #[Tag(
+    name: Tags::Tags->name,
+    description: 'Tag operations to get/list/create/update/delete tags'
+)]
+#[Tag(
     name: Tags::Properties->name,
     description: 'Property operations to get/update/create/delete properties'
 )]
@@ -56,6 +60,7 @@ enum Tags: string
     case DataObjects = 'DataObjects';
     case Properties = 'Properties';
     case PropertiesForElement = 'Properties for Element';
+    case Tags = 'Tags';
     case Translation = 'Translation';
     case Versions = 'Versions';
 }
