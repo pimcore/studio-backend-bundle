@@ -27,9 +27,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdPara
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -46,6 +48,7 @@ final class CreateController extends AbstractApiController
     }
 
     #[Route('/notes/{elementType}/{id}', name: 'pimcore_studio_api_create_element_note', methods: ['POST'])]
+    #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Post(
         path: self::API_PATH . '/notes/{elementType}/{id}',
         operationId: 'createNoteForElement',

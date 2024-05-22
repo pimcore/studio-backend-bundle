@@ -32,10 +32,12 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -54,6 +56,7 @@ final class CollectionController extends AbstractApiController
     }
 
     #[Route('/notes/{elementType}/{id}', name: 'pimcore_studio_api_get_element_notes', methods: ['GET'])]
+    #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Get(
         path: self::API_PATH . '/notes/{elementType}/{id}',
         operationId: 'getNotesForElementByTypeAndId',
