@@ -30,6 +30,8 @@ interface NoteRepositoryInterface
 {
     public function createNote(NoteElement $noteElement, CreateNote $createNote): Note;
 
+    public function getNote(int $id): Note;
+
     public function listNotes(NoteElement $noteElement, NoteParameters $parameters): NoteListing;
 
     /**
