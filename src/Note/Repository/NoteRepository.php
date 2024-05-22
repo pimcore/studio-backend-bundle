@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Repository;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\NoteResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
@@ -27,6 +28,10 @@ use Pimcore\Model\Element\Note\Listing as NoteListing;
  */
 final readonly class NoteRepository implements NoteRepositoryInterface
 {
+    public function __construct(private NoteResolverInterface $noteResolver)
+    {
+    }
+
     public function createNote(NoteElement $noteElement, CreateNote $createNote): Note
     {
         $note = new Note();
@@ -44,7 +49,7 @@ final readonly class NoteRepository implements NoteRepositoryInterface
 
     public function getNote(int $id): Note
     {
-        return Note::getById($id);
+        return $this->noteResolver->getById($id);
     }
 
     public function listNotes(NoteElement $noteElement, NoteParameters $parameters): NoteListing
