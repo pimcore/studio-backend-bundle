@@ -21,8 +21,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception;
  */
 final class ElementNotFoundException extends AbstractApiException
 {
-    public function __construct(int $id)
+    public function __construct(int $id, string $type = 'Element')
     {
-        parent::__construct(404, 'Element with ID ' . $id . ' not found');
+        parent::__construct(404, sprintf('%s with ID %d not found', $type, $id));
     }
 }

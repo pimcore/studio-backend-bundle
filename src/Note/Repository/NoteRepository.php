@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\NoteResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
@@ -86,5 +87,17 @@ final readonly class NoteRepository implements NoteRepositoryInterface
         }
 
         return $list;
+    }
+
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function deleteNote(int $id): void
+    {
+        $note = $this->noteResolver->getById($id);
+        if(!$note) {
+            throw new ElementNotFoundException($id, 'Note');
+        }
+        $note->delete();
     }
 }

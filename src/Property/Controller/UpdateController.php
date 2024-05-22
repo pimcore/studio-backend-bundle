@@ -64,7 +64,7 @@ final class UpdateController extends AbstractApiController
     #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]
     #[PredefinedPropertyRequestBody]
     #[SuccessResponse(
-        description: 'Updated property',
+        description: 'Updated predefined property',
         content: new JsonContent(ref: PredefinedProperty::class, type: 'object')
     )]
     #[BadRequestResponse]

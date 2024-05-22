@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
@@ -58,6 +59,14 @@ final class NoteService implements NoteServiceInterface
             $parameters->getPageSize(),
             $noteListing->getTotalCount()
         );
+    }
+
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function deleteNote(int $id): void
+    {
+        $this->noteRepository->deleteNote($id);
     }
 
     private function getNote(int $id): Note

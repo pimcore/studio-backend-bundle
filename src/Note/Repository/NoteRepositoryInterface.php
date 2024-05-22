@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
@@ -30,4 +31,9 @@ interface NoteRepositoryInterface
     public function createNote(NoteElement $noteElement, CreateNote $createNote): Note;
 
     public function listNotes(NoteElement $noteElement, NoteParameters $parameters): NoteListing;
+
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function deleteNote(int $id): void;
 }
