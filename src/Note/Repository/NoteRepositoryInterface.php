@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
@@ -28,6 +29,9 @@ use Pimcore\Model\Element\Note\Listing as NoteListing;
  */
 interface NoteRepositoryInterface
 {
+    /**
+     * @throws ElementSavingFailedException
+     */
     public function createNote(NoteElement $noteElement, CreateNote $createNote): Note;
 
     public function getNote(int $id): Note;

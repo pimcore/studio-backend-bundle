@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Controller;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
@@ -44,6 +45,9 @@ final class DeleteController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws ElementNotFoundException
+     */
     #[Route('/notes/{id}', name: 'pimcore_studio_api_delete_note', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Delete(

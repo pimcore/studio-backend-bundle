@@ -17,10 +17,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
-use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
@@ -29,16 +29,19 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
 /**
  * @internal
  */
-final class NoteService implements NoteServiceInterface
+final readonly class NoteService implements NoteServiceInterface
 {
 
     public function __construct(
-        private readonly NoteRepositoryInterface $noteRepository,
-        private readonly NoteHydratorInterface $noteHydrator
+        private NoteRepositoryInterface $noteRepository,
+        private NoteHydratorInterface $noteHydrator
     )
     {
     }
 
+    /**
+     * @throws ElementSavingFailedException
+     */
     public function createNote(NoteElement $noteElement, CreateNote $createNote): Note
     {
         $note = $this->noteRepository->createNote($noteElement, $createNote);

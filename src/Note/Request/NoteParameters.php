@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Request;
 
 use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**
  * @internal
