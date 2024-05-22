@@ -57,7 +57,7 @@ final class DefaultResponses extends Response
         $errorCodes = array_merge($this->defaultErrorCodes, $errorCodes);
 
         // Sort the array of enums by http status code
-        usort($errorCodes, static function($a, $b) {
+        usort($errorCodes, static function ($a, $b) {
             return $a->value <=> $b->value;
         });
 
@@ -69,7 +69,8 @@ final class DefaultResponses extends Response
         return implode('<br>', $errorCodes);
     }
 
-    private function generateNiceName(string $name): string {
+    private function generateNiceName(string $name): string
+    {
         return ucwords(str_replace('_', ' ', strtolower($name)));
     }
 }
