@@ -43,27 +43,18 @@ class PimcoreStudioBackendExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
+        $configPath = __DIR__ . '/../../config';
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
         // Load services and configuration
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader = new YamlFileLoader($container, new FileLocator($configPath));
 
-        $loader->load('assets.yaml');
-        $loader->load('authorization.yaml');
-        $loader->load('data_index.yaml');
-        $loader->load('data_index_filters.yaml');
-        $loader->load('data_objects.yaml');
-        $loader->load('event_subscribers.yaml');
-        $loader->load('factories.yaml');
-        $loader->load('filters.yaml');
-        $loader->load('icon.yaml');
-        $loader->load('open_api.yaml');
-        $loader->load('properties.yaml');
-        $loader->load('security.yaml');
-        $loader->load('services.yaml');
-        $loader->load('translation.yaml');
-        $loader->load('versions.yaml');
+        $files = glob(__DIR__ . '/../../config/*.yaml');
+
+        foreach ($files as $file) {
+            $loader->load(basename($file));
+        }
 
         $definition = $container->getDefinition(TokenServiceInterface::class);
         $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
