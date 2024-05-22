@@ -105,7 +105,7 @@ final readonly class NoteRepository implements NoteRepositoryInterface
     public function deleteNote(int $id): void
     {
         $note = $this->noteResolver->getById($id);
-        if(!$note) {
+        if (!$note) {
             throw new ElementNotFoundException($id, 'Note');
         }
         $note->delete();

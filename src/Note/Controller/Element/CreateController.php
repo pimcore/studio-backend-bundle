@@ -69,7 +69,8 @@ final class CreateController extends AbstractApiController
     public function createNote(
         string $elementType,
         int $id,
-        #[MapRequestPayload] CreateNote $createNote): JsonResponse
+        #[MapRequestPayload] CreateNote $createNote
+    ): JsonResponse
     {
         $note = $this->noteService->createNote(new NoteElement($elementType, $id), $createNote);
         return $this->jsonResponse(['id' => $note->getId()]);

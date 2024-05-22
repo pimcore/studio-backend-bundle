@@ -51,13 +51,13 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
     public function extractUserData(CoreNote $note) : NoteUser
     {
         $emptyUser = new NoteUser();
-        if(!$note->getUser()) {
+        if (!$note->getUser()) {
             return $emptyUser;
         }
 
         $user = $this->userResolver->getById($note->getUser());
 
-        if(!$user) {
+        if (!$user) {
             return $emptyUser;
         }
 
