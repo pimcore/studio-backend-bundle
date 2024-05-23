@@ -29,12 +29,12 @@ final readonly class NoteElement
     {
     }
 
-    public function getType(): string
+    public function getType(): ?string
     {
         return $this->type;
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

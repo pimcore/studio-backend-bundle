@@ -39,7 +39,11 @@ use OpenApi\Attributes\Tag;
 )]
 #[Tag(
     name: Tags::Notes->name,
-    description: 'Note operations to get/list/delete notes for an element'
+    description: 'Note operations to list/delete notes'
+)]
+#[Tag(
+    name: Tags::NotesForElement->name,
+    description: 'Note operations to create/list notes for an element'
 )]
 #[Tag(
     name: Tags::Properties->name,
@@ -64,6 +68,8 @@ enum Tags: string
     case DataObjects = 'DataObjects';
     case Dependencies = 'Dependencies';
     case Notes = 'Notes';
+
+    case NotesForElement = 'Notes for Element';
     case Properties = 'Properties';
     case PropertiesForElement = 'Properties for Element';
     case Translation = 'Translation';

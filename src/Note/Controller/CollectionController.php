@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Controller\Element;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -22,8 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Response\Property\NoteCol
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
@@ -55,17 +53,15 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/notes/{elementType}/{id}', name: 'pimcore_studio_api_get_element_notes', methods: ['GET'])]
+    #[Route('/notes', name: 'pimcore_studio_api_get_notes', methods: ['GET'])]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Get(
-        path: self::API_PATH . '/notes/{elementType}/{id}',
-        operationId: 'getNotesForElementByTypeAndId',
-        summary: 'Get notes for an element',
+        path: self::API_PATH . '/notes',
+        operationId: 'getNotes',
+        summary: 'Get notes',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::NotesForElement->name]
+        tags: [Tags::Notes->name]
     )]
-    #[ElementTypeParameter]
-    #[IdParameter(type: 'element')]
     #[PageParameter]
     #[PageSizeParameter(50)]
     #[FilterParameter('notes')]
@@ -77,12 +73,10 @@ final class CollectionController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED
     ])]
     public function getNotes(
-        string $elementType,
-        int $id,
         #[MapQueryString] NoteParameters $parameters = new NoteParameters()
     ): JsonResponse
     {
-        $collection = $this->noteService->listNotes(new NoteElement($elementType, $id), $parameters);
+        $collection = $this->noteService->listNotes(new NoteElement(), $parameters);
 
         return $this->getPaginatedCollection(
             $this->serializer,

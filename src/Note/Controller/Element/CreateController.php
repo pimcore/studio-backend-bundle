@@ -58,7 +58,7 @@ final class CreateController extends AbstractApiController
         operationId: 'createNoteForElement',
         summary: 'Creating new note for element',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::Notes->name]
+        tags: [Tags::NotesForElement->name]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
