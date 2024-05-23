@@ -58,6 +58,10 @@ use OpenApi\Attributes\Tag;
     description: 'Get translations either for a single key or multiple keys'
 )]
 #[Tag(
+    name: Tags::Settings->name,
+    description: 'Get Settings'
+)]
+#[Tag(
     name: Tags::Versions->name,
     description: 'Versions operations to get/list/publish/delete and cleanup versions'
 )]
@@ -72,6 +76,7 @@ enum Tags: string
     case NotesForElement = 'Notes for Element';
     case Properties = 'Properties';
     case PropertiesForElement = 'Properties for Element';
+    case Settings = 'Settings';
     case Translation = 'Translation';
     case Versions = 'Versions';
 }
