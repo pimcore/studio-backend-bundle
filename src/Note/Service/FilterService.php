@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
@@ -41,7 +40,7 @@ final class FilterService implements FilterServiceInterface
     public function applyFieldFilters(NoteListing $list, NoteParameters $parameters): void
     {
         try {
-            if(!$parameters->getFieldFilters() || empty($parameters->getFieldFilters())) {
+            if (!$parameters->getFieldFilters() || empty($parameters->getFieldFilters())) {
                 return;
             }
 
@@ -90,17 +89,16 @@ final class FilterService implements FilterServiceInterface
 
     private function prepareValue(string $type, string $operator, string $value): mixed
     {
-        return match($type) {
+        return match ($type) {
             'date' => strtotime($value),
             default => $this->matchValueOperator($operator, $value)
         };
     }
 
-
     private function matchValueOperator(string $operator, mixed $value): mixed
     {
-        return match($operator) {
-           'boolean' => (int)$value,
+        return match ($operator) {
+            'boolean' => (int)$value,
             default => $value
         };
     }
@@ -116,10 +114,9 @@ final class FilterService implements FilterServiceInterface
             . ')';
     }
 
-
     private function findOperator(string $type, string $operator): string
     {
-        return match($type) {
+        return match ($type) {
             'string' => 'LIKE',
             'numeric', 'date' => $this->matchNumericOperator($operator),
             default => '='
@@ -128,7 +125,7 @@ final class FilterService implements FilterServiceInterface
 
     private function matchNumericOperator(string $operator): string
     {
-        return match($operator) {
+        return match ($operator) {
             'lt' => '<',
             'lte' => '<=',
             'gt' => '>',
