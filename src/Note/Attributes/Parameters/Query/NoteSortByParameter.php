@@ -41,7 +41,7 @@ final class NoteSortByParameter extends QueryParameter
                     'date',
                     'title',
                     'description',
-                    'locked'
+                    'locked',
                 ],
                 example: null,
             ),

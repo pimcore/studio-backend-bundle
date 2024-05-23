@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query
 use Attribute;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class SortOrderParameter extends QueryParameter
