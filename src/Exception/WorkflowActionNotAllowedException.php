@@ -25,7 +25,8 @@ final class WorkflowActionNotAllowedException extends AbstractApiException
     {
         parent::__construct(
             400,
-            sprintf('Action %s is not allowed for workflow %s',
+            sprintf(
+                'Action %s is not allowed for workflow %s',
                 $actionName,
                 $workflowName
             )

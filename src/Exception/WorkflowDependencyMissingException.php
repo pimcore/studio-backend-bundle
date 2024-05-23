@@ -23,9 +23,11 @@ final class WorkflowDependencyMissingException extends AbstractApiException
 {
     public function __construct(string $executable)
     {
-        parent::__construct(400, sprintf(
-            'Please install the "%s" console executable on the server to render the workflow graph.',
-            $executable
-        ));
+        parent::__construct(400,
+            sprintf(
+                'Please install the "%s" console executable on the server to render the workflow graph.',
+                $executable
+            )
+        );
     }
 }

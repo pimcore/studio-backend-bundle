@@ -25,7 +25,8 @@ final class WorkflowActionNotFoundException extends AbstractApiException
     {
         parent::__construct(
             404,
-            sprintf('Action %s was not found in workflow %s.',
+            sprintf(
+                'Action %s was not found in workflow %s.',
                 $actionName,
                 $workflowName
             )

@@ -25,7 +25,8 @@ final class WorkflowActionSubmissionException extends AbstractApiException
     {
         parent::__construct(
             400,
-            sprintf('Submitting action %s failed: %s',
+            sprintf(
+                'Submitting action %s failed: %s',
                 $actionName,
                 $message
             )

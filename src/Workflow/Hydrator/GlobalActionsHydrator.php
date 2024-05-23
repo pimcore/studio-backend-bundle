@@ -57,5 +57,4 @@ final readonly class GlobalActionsHydrator implements GlobalActionsHydratorInter
 
         return $hydrated;
     }
-
 }
