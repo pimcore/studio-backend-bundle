@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
@@ -25,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -34,7 +36,8 @@ final readonly class NoteService implements NoteServiceInterface
 
     public function __construct(
         private NoteRepositoryInterface $noteRepository,
-        private NoteHydratorInterface $noteHydrator
+        private NoteHydratorInterface $noteHydrator,
+        private EventDispatcherInterface $eventDispatcher
     )
     {
     }
@@ -53,7 +56,15 @@ final readonly class NoteService implements NoteServiceInterface
         $noteListing = $this->noteRepository->listNotes($noteElement, $parameters);
         $notes = [];
         foreach ($noteListing as $note) {
-            $notes[] = $this->noteHydrator->hydrate($note);
+
+            $note = $this->noteHydrator->hydrate($note);
+
+            $this->eventDispatcher->dispatch(
+                new NoteEvent($note),
+                NoteEvent::EVENT_NAME
+            );
+
+            $notes[] = $note;
         }
 
         return new Collection(
@@ -74,6 +85,13 @@ final readonly class NoteService implements NoteServiceInterface
 
     private function getNote(int $id): Note
     {
-        return $this->noteHydrator->hydrate($this->noteRepository->getNote($id));
+        $note =  $this->noteHydrator->hydrate($this->noteRepository->getNote($id));
+
+        $this->eventDispatcher->dispatch(
+            new NoteEvent($note),
+            NoteEvent::EVENT_NAME
+        );
+
+        return $note;
     }
 }
