@@ -87,7 +87,7 @@ final class FilterService implements FilterServiceInterface
         }
     }
 
-    private function prepareValue(string $type, string $operator, string $value): mixed
+    private function prepareValue(string $type, string $operator, mixed $value): mixed
     {
         return match ($type) {
             'date' => strtotime($value),
