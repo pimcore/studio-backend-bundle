@@ -40,7 +40,7 @@ final class FilterService implements FilterServiceInterface
     public function applyFieldFilters(NoteListing $list, NoteParameters $parameters): void
     {
         try {
-            if (!$parameters->getFieldFilters() || empty($parameters->getFieldFilters())) {
+            if (empty($parameters->getFieldFilters())) {
                 return;
             }
 
