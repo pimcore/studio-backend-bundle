@@ -17,13 +17,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
 use Pimcore\SystemSettingsConfig;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
 /**
  * @internal
  */
-final class SystemSettingsProvider implements SettingsProviderInterface
+#[AsTaggedItem('pimcore.studio_backend.settings_provider')]
+final readonly class SystemSettingsProvider implements SettingsProviderInterface
 {
-    private readonly array $systemSettings;
+    private array $systemSettings;
 
     public function __construct(
         SystemSettingsConfig $systemSettingsConfig,

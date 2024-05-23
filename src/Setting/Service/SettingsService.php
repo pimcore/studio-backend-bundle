@@ -19,10 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 /**
  * @internal
  */
-final class SettingsService implements SettingsServiceInterface
+final readonly class SettingsService implements SettingsServiceInterface
 {
     public function __construct(
-        private readonly SettingProviderLoaderInterface $settingProviderLoader
+        private SettingProviderLoaderInterface $settingProviderLoader
     )
     {
     }
@@ -30,7 +30,7 @@ final class SettingsService implements SettingsServiceInterface
     public function getSettings(): array
     {
         $settings = [];
-        foreach($this->settingProviderLoader->loadSettingProviders() as $settingProvider) {
+        foreach ($this->settingProviderLoader->loadSettingProviders() as $settingProvider) {
             $settings = [
                 ... $settings,
                 ... $settingProvider->getSettings()

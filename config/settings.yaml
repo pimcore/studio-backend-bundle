@@ -19,7 +19,7 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsService
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Provider\ConfigSettingsProvider:
-    tags: [ 'pimcore.studio_api.settings_provider' ]
+    tags: [ 'pimcore.studio_backend.settings_provider' ]
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider:
-    tags: [ 'pimcore.studio_api.settings_provider' ]
+    tags: [ 'pimcore.studio_backend.settings_provider' ]

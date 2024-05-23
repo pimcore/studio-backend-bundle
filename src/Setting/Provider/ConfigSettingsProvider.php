@@ -17,14 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
 use Pimcore\Config;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
 /**
  * @internal
  */
-final class ConfigSettingsProvider implements SettingsProviderInterface
+#[AsTaggedItem('pimcore.studio_backend.settings_provider')]
+final readonly class ConfigSettingsProvider implements SettingsProviderInterface
 {
     public function __construct(
-        private readonly Config $config
+        private Config $config
     )
     {
 

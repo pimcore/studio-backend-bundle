@@ -24,7 +24,7 @@ use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
  */
 final class TaggedIteratorAdapter implements SettingProviderLoaderInterface
 {
-    public const SETTINGS_PROVIDER_TAG = 'pimcore.studio_api.settings_provider';
+    public const SETTINGS_PROVIDER_TAG = 'pimcore.studio_backend.settings_provider';
 
     public function __construct(
         #[TaggedIterator(self::SETTINGS_PROVIDER_TAG)]
