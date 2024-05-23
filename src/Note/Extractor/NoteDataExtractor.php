@@ -95,7 +95,7 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
 
     private function extractElementData(?ElementInterface $element): array
     {
-        if(!$element) {
+        if (!$element) {
             return [];
         }
 
