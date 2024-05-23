@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
+use Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterServiceInterface;
 use Pimcore\Model\Element\Note;
 use Pimcore\Model\Element\Note\Listing as NoteListing;
 
@@ -31,7 +32,10 @@ use Pimcore\Model\Element\Note\Listing as NoteListing;
  */
 final readonly class NoteRepository implements NoteRepositoryInterface
 {
-    public function __construct(private NoteResolverInterface $noteResolver)
+    public function __construct(
+        private NoteResolverInterface $noteResolver,
+        private FilterServiceInterface $filterService
+    )
     {
     }
 
@@ -78,23 +82,11 @@ final readonly class NoteRepository implements NoteRepositoryInterface
             $list->setOrder($parameters->getSortOrder());
         }
 
-        if ($parameters->getFilter()) {
-            $condition = '('
-                . '`title` LIKE :filter'
-                . ' OR `description` LIKE :filter'
-                . ' OR `type` LIKE :filter'
-                . ' OR `user` IN (SELECT `id` FROM `users` WHERE `name` LIKE :filter)'
-                . " OR DATE_FORMAT(FROM_UNIXTIME(`date`), '%Y-%m-%d') LIKE :filter"
-                . ')';
-            $list->addConditionParam($condition, ['filter' => '%' . $parameters->getFilter() . '%']);
-        }
+        $this->filterService->applyFilter($list, $parameters);
 
-        if ($noteElement->getId() && $noteElement->getType()) {
-            $list->addConditionParam(
-                '(cid = :id AND ctype = :type)',
-                ['id' => $noteElement->getId(), 'type' => $noteElement->getType()]
-            );
-        }
+        $this->filterService->applyFieldFilters($list, $parameters);
+
+        $this->filterService->applyElementFilter($list, $noteElement);
 
         return $list;
     }

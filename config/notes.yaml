@@ -23,3 +23,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteService
+
+  Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterService

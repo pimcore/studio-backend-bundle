@@ -18,19 +18,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query
 
 use Attribute;
 use OpenApi\Attributes\QueryParameter as OpenApiQueryParameter;
-use OpenApi\Attributes\Schema;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class FilterParameter extends OpenApiQueryParameter
+final class FieldFilterParameter extends OpenApiQueryParameter
 {
-    public function __construct(string $filterFor = 'properties')
+    public function __construct()
     {
         parent::__construct(
-            name: 'filter',
-            description: 'Filter for ' . $filterFor,
+            name: 'fieldFilters',
+            description: 'Filter for specific fields, will be json decoded to an array.',
             in: 'query',
             required: false,
-            schema: new Schema(type: 'string', example: null),
+            example: '[{"operator":"like","value":"John","field":"name","type":"string"}, {"operator":"eq","value":"10","property":"count","type":"numeric"} ]'
         );
     }
 }

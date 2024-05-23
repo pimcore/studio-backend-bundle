@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Response\Property\NoteCol
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FieldFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
@@ -65,6 +66,7 @@ final class CollectionController extends AbstractApiController
     #[PageParameter]
     #[PageSizeParameter(50)]
     #[FilterParameter('notes')]
+    #[FieldFilterParameter]
     #[SuccessResponse(
         description: 'Paginated assets with total count as header param',
         content: new CollectionJson(new NoteCollection())
