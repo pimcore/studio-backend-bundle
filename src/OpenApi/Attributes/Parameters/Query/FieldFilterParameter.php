@@ -30,8 +30,8 @@ final class FieldFilterParameter extends OpenApiQueryParameter
             in: 'query',
             required: false,
             example: '[
-                {"operator":"like","value":"John","field":"name","type":"string"}, 
-                {"operator":"eq","value":"10","property":"count","type":"numeric"} 
+                {"operator":"like","value":"John","field":"name","type":"string"},
+                {"operator":"eq","value":"10","property":"count","type":"numeric"}
             ]'
         );
     }
