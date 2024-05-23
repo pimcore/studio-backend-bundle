@@ -29,7 +29,10 @@ final class FieldFilterParameter extends OpenApiQueryParameter
             description: 'Filter for specific fields, will be json decoded to an array.',
             in: 'query',
             required: false,
-            example: '[{"operator":"like","value":"John","field":"name","type":"string"}, {"operator":"eq","value":"10","property":"count","type":"numeric"} ]'
+            example: '[
+                {"operator":"like","value":"John","field":"name","type":"string"}, 
+                {"operator":"eq","value":"10","property":"count","type":"numeric"} 
+            ]'
         );
     }
 }

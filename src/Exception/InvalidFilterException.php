@@ -23,9 +23,9 @@ final class InvalidFilterException extends AbstractApiException
 {
     public function __construct(string $filter)
     {
-        parent::__construct(400, sprintf(
-            'Invalid filter: %s',
-            $filter)
+        parent::__construct(
+            400,
+            sprintf('Invalid filter: %s', $filter)
         );
     }
 }

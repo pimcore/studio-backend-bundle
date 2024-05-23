@@ -31,7 +31,7 @@ final class FilterService implements FilterServiceInterface
     {
         if ($parameters->getFilter()) {
             $list->addConditionParam(
-                $this->createFilterCondition($parameters->getFilter()),
+                $this->createFilterCondition(),
                 ['filter' => '%' . $parameters->getFilter() . '%']
             );
         }
@@ -103,7 +103,7 @@ final class FilterService implements FilterServiceInterface
         };
     }
 
-    private function createFilterCondition(string $filter): string
+    private function createFilterCondition(): string
     {
         return '('
             . '`title` LIKE :filter'
