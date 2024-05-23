@@ -14,15 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\Extractor;
+
+use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteUser;
+use Pimcore\Model\Element\Note as CoreNote;
 
 /**
  * @internal
  */
-final class ElementNotFoundException extends AbstractApiException
+interface NoteDataExtractorInterface
 {
-    public function __construct(int $id, string $type = 'Element')
-    {
-        parent::__construct(404, sprintf('%s with ID %d not found', $type, $id));
-    }
+    public function extractUserData(CoreNote $note): NoteUser;
+
+    public function extractCPath(CoreNote $note): string;
+
+    public function extractData(CoreNote $note): array;
 }

@@ -14,15 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Response\Property;
+
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
 
 /**
  * @internal
  */
-final class ElementNotFoundException extends AbstractApiException
+final class NoteCollection extends Property
 {
-    public function __construct(int $id, string $type = 'Element')
+    public function __construct()
     {
-        parent::__construct(404, sprintf('%s with ID %d not found', $type, $id));
+        parent::__construct(
+            'items',
+            title: 'items',
+            type: 'array',
+            items: new Items(ref: Note::class)
+        );
     }
 }

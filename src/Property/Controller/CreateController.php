@@ -57,7 +57,7 @@ final class CreateController extends AbstractApiController
         tags: [Tags::Properties->name]
     )]
     #[SuccessResponse(
-        description: 'Element Properties data as json',
+        description: 'Created predefined property',
         content: new JsonContent(ref: PredefinedProperty::class, type: 'object')
     )]
     #[BadRequestResponse]
