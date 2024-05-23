@@ -44,7 +44,7 @@ final readonly class ScheduleService implements ScheduleServiceInterface
 
         $schedules = [];
 
-        foreach($tasks as $task) {
+        foreach ($tasks as $task) {
             $schedule = $this->scheduleHydrator->hydrate($task);
 
             $this->eventDispatcher->dispatch(
