@@ -1,0 +1,47 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Controller\:
+    resource: '../src/Workflow/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  # Services
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsService
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionService
+    arguments:
+      $actionSubmitterLocator: '@workflow.action_submitter.service_locator'
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowGraphServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowGraphService
+
+  # Hydrators
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydrator
+
+  # Submitters
+  Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitter
+
+  Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\GlobalActionSubmitterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\GlobalActionSubmitter
+
+  #Service Locator
+  workflow.action_submitter.service_locator:
+    class: Symfony\Component\DependencyInjection\ServiceLocator
+    tags: [ 'container.service_locator' ]
+    arguments:
+      - transition: '@Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\TransitionActionSubmitterInterface'
+        global: '@Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter\GlobalActionSubmitterInterface'

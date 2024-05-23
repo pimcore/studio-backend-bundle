@@ -23,12 +23,12 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class FilterParameter extends OpenApiQueryParameter
 {
-    public function __construct()
+    public function __construct(string $filterFor = 'properties')
     {
         parent::__construct(
             name: 'filter',
-            description: 'Filter for properties',
-            in: 'filter',
+            description: 'Filter for ' . $filterFor,
+            in: 'query',
             required: false,
             schema: new Schema(type: 'string', example: null),
         );

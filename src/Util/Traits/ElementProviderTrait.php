@@ -49,12 +49,18 @@ trait ElementProviderTrait
     }
 
     private function getLatestVersionForUser(
-        Asset|Document\PageSnippet|Concrete $element,
+        ElementInterface $element,
         ?UserInterface $user
     ): ElementInterface {
+        if (!$element instanceof Asset &&
+            !$element instanceof Document\PageSnippet &&
+            !$element instanceof Concrete
+        ) {
+            return $element;
+        }
+
         // check for latest version
         $version = $element->getLatestVersion($user?->getId());
-
         if ($version) {
             return $version->getData();
         }
