@@ -17,20 +17,28 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query;
 
 use Attribute;
-use OpenApi\Attributes\QueryParameter as OpenApiQueryParameter;
+use OpenApi\Attributes\QueryParameter;
+use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class FieldFilterParameter extends OpenApiQueryParameter
+final class SortOrderParameter extends QueryParameter
 {
     public function __construct()
     {
         parent::__construct(
-            name: 'fieldFilters',
-            description: 'Filter for specific fields, will be json decoded to an array. e.g.
-            [{"operator":"like","value":"John","field":"name","type":"string"}]',
+            name: 'sortOrder',
+            description: 'Sort order (asc or desc).',
             in: 'query',
             required: false,
-            example: ''
+            schema: new Schema(
+                type: 'string',
+                enum: [
+                    'ASC',
+                    'DESC',
+                ],
+                example: null,
+            ),
         );
     }
 }

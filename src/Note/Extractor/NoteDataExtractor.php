@@ -93,8 +93,12 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
         return $keyValues;
     }
 
-    private function extractElementData(ElementInterface $element): array
+    private function extractElementData(?ElementInterface $element): array
     {
+        if(!$element) {
+            return [];
+        }
+
         return [
             'id' => $element->getId(),
             'path' => $element->getRealFullPath(),
