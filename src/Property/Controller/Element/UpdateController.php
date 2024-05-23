@@ -62,7 +62,7 @@ final class UpdateController extends AbstractApiController
     #[IdParameter(type: 'element')]
     #[ElementPropertyRequestBody]
     #[SuccessResponse(
-        description: 'Element Properties data as json',
+        description: 'Updated Element Properties data as json',
         content: new ItemsJson(ElementProperty::class)
     )]
     #[UnauthorizedResponse]

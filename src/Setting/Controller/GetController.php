@@ -14,21 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Controller;
 
+use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\BadRequestResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnprocessableContentResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
-use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -36,37 +32,35 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CreateController extends AbstractApiController
+final class GetController extends AbstractApiController
 {
+    private const ROUTE = '/settings';
+
     public function __construct(
         SerializerInterface $serializer,
-        private readonly PropertyServiceInterface $propertyService,
+        private readonly SettingsServiceInterface $settingsService,
     ) {
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws NotWriteableException
-     */
-    #[Route('/property', name: 'pimcore_studio_api_create_property', methods: ['POST'])]
-    #[POST(
-        path: self::API_PATH . '/property',
-        operationId: 'createProperty',
-        summary: 'Creating new property with default values',
+    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_settings', methods: ['GET'])]
+    #[Get(
+        path: self::API_PATH . self::ROUTE,
+        operationId: 'getSystemSettings',
+        description: 'Get system settings',
+        summary: 'Get system settings',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::Properties->name]
+        tags: [Tags::Settings->name]
     )]
     #[SuccessResponse(
-        description: 'Created predefined property',
-        content: new JsonContent(ref: PredefinedProperty::class, type: 'object')
+        description: 'System settings',
+        content: new JsonContent(type: 'object', additionalProperties: true)
     )]
-    #[BadRequestResponse]
-    #[UnauthorizedResponse]
     #[MethodNotAllowedResponse]
     #[UnsupportedMediaTypeResponse]
     #[UnprocessableContentResponse]
-    public function createProperty(): JsonResponse
+    public function getSystemSettings(): JsonResponse
     {
-        return $this->jsonResponse($this->propertyService->createPredefinedProperty());
+        return $this->jsonResponse($this->settingsService->getSettings());
     }
 }

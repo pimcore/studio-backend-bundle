@@ -46,6 +46,11 @@ readonly class CollectionParameters implements CollectionParametersInterface
         return $this->pageSize;
     }
 
+    public function getOffset(): int
+    {
+        return ($this->page - 1) * $this->pageSize;
+    }
+
     private function validate(): void
     {
         new PositiveInteger($this->page);

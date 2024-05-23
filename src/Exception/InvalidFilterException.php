@@ -19,10 +19,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 /**
  * @internal
  */
-final class ElementNotFoundException extends AbstractApiException
+final class InvalidFilterException extends AbstractApiException
 {
-    public function __construct(int $id, string $type = 'Element')
+    public function __construct(string $filter)
     {
-        parent::__construct(404, sprintf('%s with ID %d not found', $type, $id));
+        parent::__construct(
+            400,
+            sprintf('Invalid filter: %s', $filter)
+        );
     }
 }

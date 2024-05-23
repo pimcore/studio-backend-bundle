@@ -38,6 +38,14 @@ use OpenApi\Attributes\Tag;
     description: 'Get dependencies for a single element.'
 )]
 #[Tag(
+    name: Tags::Notes->name,
+    description: 'Note operations to list/delete notes'
+)]
+#[Tag(
+    name: Tags::NotesForElement->name,
+    description: 'Note operations to create/list notes for an element'
+)]
+#[Tag(
     name: Tags::Properties->name,
     description: 'Property operations to get/update/create/delete properties'
 )]
@@ -48,6 +56,10 @@ use OpenApi\Attributes\Tag;
 #[Tag(
     name: Tags::Translation->name,
     description: 'Get translations either for a single key or multiple keys'
+)]
+#[Tag(
+    name: Tags::Settings->name,
+    description: 'Get Settings'
 )]
 #[Tag(
     name: Tags::Versions->name,
@@ -63,8 +75,12 @@ enum Tags: string
     case Authorization = 'Authorization';
     case DataObjects = 'DataObjects';
     case Dependencies = 'Dependencies';
+    case Notes = 'Notes';
+
+    case NotesForElement = 'Notes for Element';
     case Properties = 'Properties';
     case PropertiesForElement = 'Properties for Element';
+    case Settings = 'Settings';
     case Translation = 'Translation';
     case Versions = 'Versions';
     case Workflows = 'Workflows';

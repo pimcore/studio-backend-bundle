@@ -60,7 +60,7 @@ final class DeleteController extends AbstractApiController
     )]
     #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]
     #[SuccessResponse(
-        description: 'Element Properties data as json',
+        description: 'Id of deleted property',
         content: new IdJson('ID of deleted property')
     )]
     #[UnauthorizedResponse]

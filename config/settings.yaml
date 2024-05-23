@@ -1,0 +1,25 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Setting\Controller\:
+    resource: '../src/Setting/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingProviderLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader\TaggedIteratorAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsService
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Provider\ConfigSettingsProvider:
+    tags: [ 'pimcore.studio_backend.settings_provider' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider:
+    tags: [ 'pimcore.studio_backend.settings_provider' ]

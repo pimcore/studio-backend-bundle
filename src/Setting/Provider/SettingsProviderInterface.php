@@ -14,15 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
 /**
  * @internal
  */
-final class ElementNotFoundException extends AbstractApiException
+interface SettingsProviderInterface
 {
-    public function __construct(int $id, string $type = 'Element')
-    {
-        parent::__construct(404, sprintf('%s with ID %d not found', $type, $id));
-    }
+    public function getSettings(): array;
 }

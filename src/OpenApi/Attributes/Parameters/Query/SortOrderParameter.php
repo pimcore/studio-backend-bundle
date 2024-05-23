@@ -17,20 +17,27 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query;
 
 use Attribute;
-use OpenApi\Attributes\QueryParameter as OpenApiQueryParameter;
+use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class FilterParameter extends OpenApiQueryParameter
+final class SortOrderParameter extends QueryParameter
 {
-    public function __construct(string $filterFor = 'properties')
+    public function __construct()
     {
         parent::__construct(
-            name: 'filter',
-            description: 'Filter for ' . $filterFor,
+            name: 'sortOrder',
+            description: 'Sort order (asc or desc).',
             in: 'query',
             required: false,
-            schema: new Schema(type: 'string', example: null),
+            schema: new Schema(
+                type: 'string',
+                enum: [
+                    'ASC',
+                    'DESC',
+                ],
+                example: null,
+            ),
         );
     }
 }

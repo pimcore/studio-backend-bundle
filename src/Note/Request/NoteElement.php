@@ -14,15 +14,28 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\Request;
 
 /**
  * @internal
  */
-final class ElementNotFoundException extends AbstractApiException
+final readonly class NoteElement
 {
-    public function __construct(int $id, string $type = 'Element')
+    public function __construct(
+        private ?string $type = null,
+        private ?int $id = null,
+
+    )
     {
-        parent::__construct(404, sprintf('%s with ID %d not found', $type, $id));
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 }
