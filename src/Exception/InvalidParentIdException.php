@@ -23,9 +23,6 @@ final class InvalidParentIdException extends AbstractApiException
 {
     public function __construct(int $parentId)
     {
-        parent::__construct(400, sprintf(
-            'Invalid parent id: %s',
-            $parentId
-        ));
+        parent::__construct(400, sprintf('Invalid parent id: %s', $parentId));
     }
 }

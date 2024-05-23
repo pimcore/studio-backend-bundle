@@ -16,7 +16,8 @@ final readonly class TagHydrator implements TagHydratorInterface
     {
     }
 
-    public function hydrate(ElementTag $tag): Tag {
+    public function hydrate(ElementTag $tag): Tag
+    {
         return new Tag(
             id: $tag->getId(),
             parentId: $tag->getParentId(),
@@ -27,7 +28,8 @@ final readonly class TagHydrator implements TagHydratorInterface
         );
     }
 
-    public function hydrateRecursive(ElementTag $tag): Tag {
+    public function hydrateRecursive(ElementTag $tag): Tag
+    {
         $children = [];
         foreach ($tag->getChildren() as $child) {
             $children[] = $this->hydrateRecursive($child);
@@ -42,7 +44,8 @@ final readonly class TagHydrator implements TagHydratorInterface
      * @param array<int, ElementTag> $tags
      * @return array<int, Tag>
      */
-    public function hydrateNestedList(array $tags): array {
+    public function hydrateNestedList(array $tags): array
+    {
         $tagMap = [];
         $nestedTags = [];
 

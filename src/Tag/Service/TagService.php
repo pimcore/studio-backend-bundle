@@ -49,8 +49,6 @@ final readonly class TagService implements TagServiceInterface
 
     public function updateTag(int $id, UpdateTagParameters $parameters): Tag
     {
-        $tag = $this->tagRepository->getTagById($id);
-
         return $this->tagHydrator->hydrate($this->tagRepository->updateTag($id, $parameters));
     }
 }

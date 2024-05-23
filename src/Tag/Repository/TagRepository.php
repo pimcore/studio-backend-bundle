@@ -39,7 +39,8 @@ final readonly class TagRepository implements TagRepositoryInterface
     ) {
     }
 
-    public function getTagById(int $id): Tag {
+    public function getTagById(int $id): Tag
+    {
         $tag = $this->tagResolver->getById($id);
         if (!$tag) {
             throw new ElementNotFoundException($id);
