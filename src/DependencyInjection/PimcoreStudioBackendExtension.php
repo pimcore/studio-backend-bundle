@@ -63,6 +63,7 @@ class PimcoreStudioBackendExtension extends Extension
         $loader->load('notes.yaml');
         $loader->load('open_api.yaml');
         $loader->load('properties.yaml');
+        $loader->load('schedules.yaml');
         $loader->load('security.yaml');
         $loader->load('services.yaml');
         $loader->load('settings.yaml');

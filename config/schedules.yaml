@@ -1,0 +1,22 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Schedule\Controller\:
+    resource: '../src/Schedule/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleService
+
+  Pimcore\Bundle\StudioBackendBundle\Schedule\Repository\ScheduleRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Schedule\Repository\ScheduleRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Schedule\Hydrator\ScheduleHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Schedule\Hydrator\ScheduleHydrator
+
