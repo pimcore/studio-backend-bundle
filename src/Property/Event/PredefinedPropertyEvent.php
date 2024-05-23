@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 final class PredefinedPropertyEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.predefined_property';
+
     public function __construct(
         private readonly PredefinedProperty $predefinedProperty
     )

@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\OneOfVersionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\NotFoundResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
@@ -28,7 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unsuppo
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Attributes\Response\Content\OneOfVersionJson;
+use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -41,7 +41,7 @@ final class GetController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly SecurityServiceInterface $securityService,
-        private readonly VersionHydratorServiceInterface $hydratorService,
+        private readonly VersionDetailServiceInterface $versionDetailService,
     ) {
         parent::__construct($serializer);
     }
@@ -69,7 +69,7 @@ final class GetController extends AbstractApiController
     public function getVersions(int $id): JsonResponse
     {
         return $this->jsonResponse(
-            $this->hydratorService->getHydratedVersionData(
+            $this->versionDetailService->getVersionData(
                 $id,
                 $this->securityService->getCurrentUser()
             )

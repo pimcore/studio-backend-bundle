@@ -38,6 +38,10 @@ use OpenApi\Attributes\Tag;
     description: 'Tag operations to get/list/create/update/delete tags'
 )]
 #[Tag(
+    name: Tags::Dependencies->name,
+    description: 'Get dependencies for a single element.'
+)]
+#[Tag(
     name: Tags::Properties->name,
     description: 'Property operations to get/update/create/delete properties'
 )]
@@ -58,6 +62,7 @@ enum Tags: string
     case Assets = 'Assets';
     case Authorization = 'Authorization';
     case DataObjects = 'DataObjects';
+    case Dependencies = 'Dependencies';
     case Properties = 'Properties';
     case PropertiesForElement = 'Properties for Element';
     case Tags = 'Tags';

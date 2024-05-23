@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -26,15 +28,17 @@ use OpenApi\Attributes\Schema;
     title: 'DocumentVersion',
     type: 'object'
 )]
-final readonly class DocumentVersion
+final class DocumentVersion implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'modification date', type: 'integer', example: 1712823182)]
-        private int $modificationDate,
+        private readonly int $modificationDate,
         #[Property(description: 'path', type: 'string', example: '/path/to/object')]
-        private string $path,
+        private readonly string $path,
         #[Property(description: 'published', type: 'bool', example: true)]
-        private bool $published
+        private readonly bool $published
     ) {
 
     }

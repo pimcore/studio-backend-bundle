@@ -16,14 +16,21 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Version\Event\DataObjectVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Model\DataObject;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
  */
-final class DataObjectVersionHydrator implements DataObjectVersionHydratorInterface
+final readonly class DataObjectVersionHydrator implements DataObjectVersionHydratorInterface
 {
+    public function __construct(
+        private EventDispatcherInterface $eventDispatcher,
+    ) {
+    }
+
     public function hydrate(
         DataObject $dataObject
     ): DataObjectVersion {
@@ -32,10 +39,17 @@ final class DataObjectVersionHydrator implements DataObjectVersionHydratorInterf
             $published = $dataObject->isPublished();
         }
 
-        return new DataObjectVersion(
+        $hydratedDataObject =  new DataObjectVersion(
             $dataObject->getModificationDate(),
             $dataObject->getRealFullPath(),
             $published,
         );
+
+        $this->eventDispatcher->dispatch(
+            new DataObjectVersionEvent($hydratedDataObject),
+            DataObjectVersionEvent::EVENT_NAME
+        );
+
+        return $hydratedDataObject;
     }
 }

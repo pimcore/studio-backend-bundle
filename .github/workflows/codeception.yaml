@@ -21,10 +21,7 @@ env:
 
 jobs:
     codeception-tests:
-        uses: pimcore/workflows-collection-public/.github/workflows/reusable-codeception-tests-8-2-only.yaml@main
+        uses: pimcore/workflows-collection-public/.github/workflows/reusable-codeception-tests-8-2-only-public.yaml@main
         with:
             APP_ENV: test
             PIMCORE_TEST: 1
-        secrets:
-            COMPOSER_PIMCORE_REPO_PACKAGIST_TOKEN: ${{ secrets.COMPOSER_PIMCORE_REPO_PACKAGIST_TOKEN }}
-            SSH_PRIVATE_KEY_PIMCORE_DEPLOYMENTS_USER: ${{ secrets.SSH_PRIVATE_KEY_PIMCORE_DEPLOYMENTS_USER }}

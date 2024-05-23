@@ -27,7 +27,7 @@ final class IdSearchTermParameter extends QueryParameter
     {
         parent::__construct(
             name: 'idSearchTerm',
-            description: 'Filter assets by matching ids. As a wildcard * can be used',
+            description: 'Filter assets/data-objects by matching ids. As a wildcard * can be used',
             in: 'query',
             required: false,
             schema: new Schema(type: 'string', example: null),
