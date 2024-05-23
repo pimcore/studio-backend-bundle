@@ -65,6 +65,10 @@ use OpenApi\Attributes\Tag;
     name: Tags::Versions->name,
     description: 'Versions operations to get/list/publish/delete and cleanup versions'
 )]
+#[Tag(
+    name: Tags::Workflows->name,
+    description: 'Workflows operations to get element workflow details'
+)]
 enum Tags: string
 {
     case Assets = 'Assets';
@@ -79,4 +83,5 @@ enum Tags: string
     case Settings = 'Settings';
     case Translation = 'Translation';
     case Versions = 'Versions';
+    case Workflows = 'Workflows';
 }

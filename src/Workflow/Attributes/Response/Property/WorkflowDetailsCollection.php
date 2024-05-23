@@ -14,19 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Attributes\Response\Property;
+
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
 
 /**
  * @internal
  */
-final class ElementPublishingFailedException extends AbstractApiException
+final class WorkflowDetailsCollection extends Property
 {
-    public function __construct(int $id, ?string $error = null)
+    public function __construct()
     {
-        parent::__construct(400, sprintf(
-            'Failed to publish element with ID %s: %s',
-            $id,
-            $error ?? 'Unknown error'
-        ));
+        parent::__construct(
+            'items',
+            title: 'items',
+            type: 'array',
+            items: new Items(ref: WorkflowDetails::class)
+        );
     }
 }

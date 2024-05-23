@@ -14,25 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
+namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
+
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\AllowedTransition;
+use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
-final readonly class ElementTypes
+interface AllowedTransitionsHydratorInterface
 {
-    public const TYPE_DATA_OBJECT = 'dataObject';
-
-    public const TYPE_OBJECT = 'object';
-
-    public const TYPE_ASSET = 'asset';
-
-    public const TYPE_DOCUMENT = 'document';
-
-    public const ALLOWED_TYPES = [
-        self::TYPE_DATA_OBJECT,
-        self::TYPE_OBJECT,
-        self::TYPE_ASSET,
-        self::TYPE_DOCUMENT,
-    ];
+    /**
+     * @return AllowedTransition[]
+     */
+    public function hydrate(array $allowedTransitions, ElementInterface $element): array;
 }

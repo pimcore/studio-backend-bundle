@@ -14,25 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 /**
  * @internal
  */
-final readonly class ElementTypes
+final class WorkflowActionNotFoundException extends AbstractApiException
 {
-    public const TYPE_DATA_OBJECT = 'dataObject';
-
-    public const TYPE_OBJECT = 'object';
-
-    public const TYPE_ASSET = 'asset';
-
-    public const TYPE_DOCUMENT = 'document';
-
-    public const ALLOWED_TYPES = [
-        self::TYPE_DATA_OBJECT,
-        self::TYPE_OBJECT,
-        self::TYPE_ASSET,
-        self::TYPE_DOCUMENT,
-    ];
+    public function __construct(string $actionName, string $workflowName)
+    {
+        parent::__construct(
+            404,
+            sprintf(
+                'Action %s was not found in workflow %s.',
+                $actionName,
+                $workflowName
+            )
+        );
+    }
 }

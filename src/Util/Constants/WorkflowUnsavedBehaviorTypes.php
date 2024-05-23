@@ -19,20 +19,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 /**
  * @internal
  */
-final readonly class ElementTypes
+final readonly class WorkflowUnsavedBehaviorTypes
 {
-    public const TYPE_DATA_OBJECT = 'dataObject';
+    public const TYPE_WARN = 'warn';
 
-    public const TYPE_OBJECT = 'object';
+    public const TYPE_SAVE = 'save';
 
-    public const TYPE_ASSET = 'asset';
-
-    public const TYPE_DOCUMENT = 'document';
-
-    public const ALLOWED_TYPES = [
-        self::TYPE_DATA_OBJECT,
-        self::TYPE_OBJECT,
-        self::TYPE_ASSET,
-        self::TYPE_DOCUMENT,
-    ];
+    public const TYPE_IGNORE = 'ignore';
 }

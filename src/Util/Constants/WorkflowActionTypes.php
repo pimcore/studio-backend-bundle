@@ -19,20 +19,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 /**
  * @internal
  */
-final readonly class ElementTypes
+final readonly class WorkflowActionTypes
 {
-    public const TYPE_DATA_OBJECT = 'dataObject';
+    public const GLOBAL_ACTION = 'global';
 
-    public const TYPE_OBJECT = 'object';
-
-    public const TYPE_ASSET = 'asset';
-
-    public const TYPE_DOCUMENT = 'document';
+    public const TRANSITION_ACTION = 'transition';
 
     public const ALLOWED_TYPES = [
-        self::TYPE_DATA_OBJECT,
-        self::TYPE_OBJECT,
-        self::TYPE_ASSET,
-        self::TYPE_DOCUMENT,
+        self::GLOBAL_ACTION,
+        self::TRANSITION_ACTION,
     ];
 }

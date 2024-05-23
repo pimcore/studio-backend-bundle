@@ -14,25 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
+namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
+
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Request\WorkflowDetailsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-final readonly class ElementTypes
+interface WorkflowDetailsServiceInterface
 {
-    public const TYPE_DATA_OBJECT = 'dataObject';
-
-    public const TYPE_OBJECT = 'object';
-
-    public const TYPE_ASSET = 'asset';
-
-    public const TYPE_DOCUMENT = 'document';
-
-    public const ALLOWED_TYPES = [
-        self::TYPE_DATA_OBJECT,
-        self::TYPE_OBJECT,
-        self::TYPE_ASSET,
-        self::TYPE_DOCUMENT,
-    ];
+    /**
+     * @return WorkflowDetails[]
+     */
+    public function getWorkflowDetails(
+        WorkflowDetailsParameters $parameters,
+        UserInterface $user
+    ): array;
 }
