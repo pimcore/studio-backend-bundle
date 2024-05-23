@@ -24,4 +24,5 @@ enum UserPermissions: string
     case ASSETS = 'assets';
     case DOCUMENTS = 'documents';
     case OBJECTS = 'objects';
+    case NOTES_EVENTS = 'notes_events';
 }
