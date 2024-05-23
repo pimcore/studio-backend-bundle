@@ -27,6 +27,7 @@ use Pimcore\Model\Element\Note\Listing as NoteListing;
 final class FilterServiceTest extends Unit
 {
     private FilterServiceInterface $filterService;
+
     public function _before(): void
     {
         $this->filterService = new FilterService();
@@ -44,7 +45,7 @@ final class FilterServiceTest extends Unit
             "((`title` LIKE :filter OR `description` LIKE :filter OR `type` LIKE :filter OR `user` IN (SELECT `id` FROM `users` WHERE `name` LIKE :filter) OR DATE_FORMAT(FROM_UNIXTIME(`date`), '%Y-%m-%d') LIKE :filter)) ",
             $noteListing->getCondition());
 
-           $this->assertSame(
+        $this->assertSame(
                 ['filter' => '%test%'],
                 $noteListing->getConditionVariables()
            );
@@ -62,17 +63,17 @@ final class FilterServiceTest extends Unit
                     'field' => 'date',
                     'type' => 'date',
                     'operator' => 'eq',
-                    'value' => '05/04/2024'
-                ]
+                    'value' => '05/04/2024',
+                ],
             ], JSON_THROW_ON_ERROR)
         );
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
-        $this->assertSame("(`date`  BETWEEN :minTime AND :maxTime) ", $noteListing->getCondition());
+        $this->assertSame('(`date`  BETWEEN :minTime AND :maxTime) ', $noteListing->getCondition());
         $this->assertSame(
             [
                 'minTime' => 1714780800,
-                'maxTime' => 1714867199
+                'maxTime' => 1714867199,
             ],
             $noteListing->getConditionVariables()
         );
@@ -90,16 +91,16 @@ final class FilterServiceTest extends Unit
                     'field' => 'numeric',
                     'type' => 'numeric',
                     'operator' => 'eq',
-                    'value' => 10
-                ]
+                    'value' => 10,
+                ],
             ], JSON_THROW_ON_ERROR)
         );
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
-        $this->assertSame("(`numeric` = :numeric) ", $noteListing->getCondition());
+        $this->assertSame('(`numeric` = :numeric) ', $noteListing->getCondition());
         $this->assertSame(
             [
-                'numeric' => 10
+                'numeric' => 10,
             ],
             $noteListing->getConditionVariables()
         );
@@ -117,16 +118,16 @@ final class FilterServiceTest extends Unit
                     'field' => 'boolean',
                     'type' => 'boolean',
                     'operator' => 'boolean',
-                    'value' => true
-                ]
+                    'value' => true,
+                ],
             ], JSON_THROW_ON_ERROR)
         );
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
-        $this->assertSame("(`boolean` = :boolean) ", $noteListing->getCondition());
+        $this->assertSame('(`boolean` = :boolean) ', $noteListing->getCondition());
         $this->assertSame(
             [
-                'boolean' => 1
+                'boolean' => 1,
             ],
             $noteListing->getConditionVariables()
         );
@@ -144,16 +145,16 @@ final class FilterServiceTest extends Unit
                     'field' => 'list',
                     'type' => 'list',
                     'operator' => 'list',
-                    'value' => 'list'
-                ]
+                    'value' => 'list',
+                ],
             ], JSON_THROW_ON_ERROR)
         );
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
-        $this->assertSame("(`list` = :list) ", $noteListing->getCondition());
+        $this->assertSame('(`list` = :list) ', $noteListing->getCondition());
         $this->assertSame(
             [
-                'list' => 'list'
+                'list' => 'list',
             ],
             $noteListing->getConditionVariables()
         );
@@ -171,19 +172,19 @@ final class FilterServiceTest extends Unit
                     'field' => 'user',
                     'type' => 'user',
                     'operator' => 'user',
-                    'value' => 'admin'
-                ]
+                    'value' => 'admin',
+                ],
             ], JSON_THROW_ON_ERROR)
         );
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
         $this->assertSame(
-            "(`user` IN (SELECT `id` FROM `users` WHERE `name` = :user))  AND (`user` = :user) ",
+            '(`user` IN (SELECT `id` FROM `users` WHERE `name` = :user))  AND (`user` = :user) ',
             $noteListing->getCondition()
         );
         $this->assertSame(
             [
-                'user' => 'admin'
+                'user' => 'admin',
             ],
             $noteListing->getConditionVariables()
         );
@@ -209,6 +210,4 @@ final class FilterServiceTest extends Unit
     {
         return new NoteListing();
     }
-
-
 }
