@@ -76,7 +76,7 @@ final class CollectionController extends AbstractApiController
     #[FilterParameter('notes')]
     #[FieldFilterParameter]
     #[SuccessResponse(
-        description: 'Paginated assets with total count as header param',
+        description: 'Paginated notes with total count as header param',
         content: new CollectionJson(new NoteCollection())
     )]
     #[DefaultResponses([
