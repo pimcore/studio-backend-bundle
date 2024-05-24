@@ -17,8 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Data;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\DataJson;
@@ -40,8 +39,7 @@ final class TextController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ServiceResolverInterface $serviceResolver,
-        private readonly TextEncoderInterface $textEncoder,
+        private readonly DataServiceInterface $dataService
 
     ) {
         parent::__construct($serializer);
@@ -68,8 +66,6 @@ final class TextController extends AbstractApiController
     ])]
     public function getTextData(int $id): JsonResponse
     {
-        $element = $this->getElement($this->serviceResolver, 'asset', $id);
-
-        return $this->jsonResponse(['data' => $this->textEncoder->encodeUTF8($element)]);
+        return $this->jsonResponse(['data' => $this->dataService->getUTF8EncodedData($id)]);
     }
 }

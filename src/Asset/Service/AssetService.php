@@ -17,27 +17,36 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\AssetEvent;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Folder;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
-use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
  */
-final class AssetService implements AssetServiceInterface
+final readonly class AssetService implements AssetServiceInterface
 {
     public function __construct(
-        private readonly AssetSearchServiceInterface $assetSearchService,
-        private readonly FilterServiceProviderInterface $filterServiceProvider,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private AssetSearchServiceInterface $assetSearchService,
+        private FilterServiceProviderInterface $filterServiceProvider,
+        private EventDispatcherInterface $eventDispatcher
     )
     {
-
     }
 
 
@@ -63,5 +72,17 @@ final class AssetService implements AssetServiceInterface
         }
 
         return new Collection($result->getTotalItems(), $items);
+    }
+
+    public function getAsset(int $id):  Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
+    {
+        $asset = $this->assetSearchService->getAssetById($id);
+
+        $this->eventDispatcher->dispatch(
+            new AssetEvent($asset),
+            AssetEvent::EVENT_NAME
+        );
+
+        return $asset;
     }
 }

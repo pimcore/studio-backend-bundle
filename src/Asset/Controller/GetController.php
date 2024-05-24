@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\OneOfAssetJson;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -36,7 +36,7 @@ final class GetController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly AssetSearchServiceInterface $assetSearchService,
+        private readonly AssetServiceInterface $assetService,
     ) {
         parent::__construct($serializer);
     }
@@ -63,6 +63,6 @@ final class GetController extends AbstractApiController
     ])]
     public function getAssetById(int $id): JsonResponse
     {
-        return $this->jsonResponse($this->assetSearchService->getAssetById($id));
+        return $this->jsonResponse($this->assetService->getAsset($id));
     }
 }
