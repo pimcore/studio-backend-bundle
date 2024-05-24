@@ -54,7 +54,7 @@ final class AssetService implements AssetServiceInterface
 
         $items = $result->getItems();
 
-        foreach($items as $item) {
+        foreach ($items as $item) {
             $this->eventDispatcher->dispatch(
                 new AssetEvent($item),
                 AssetEvent::EVENT_NAME
