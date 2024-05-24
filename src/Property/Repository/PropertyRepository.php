@@ -65,9 +65,16 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
         return $property;
     }
 
+    /**
+     * @throws PropertyNotFoundException
+     */
     public function getPredefinedProperty(string $id): Predefined
     {
-        return $this->predefinedResolver->getById($id);
+        $predefined = $this->predefinedResolver->getById($id);
+        if (!$predefined) {
+            throw new PropertyNotFoundException($id);
+        }
+        return $predefined;
     }
 
     public function listProperties(PropertiesParameters $parameters): PropertiesListing
@@ -97,11 +104,7 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
      */
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void
     {
-        $predefined = $this->predefinedResolver->getById($id);
-
-        if (!$predefined) {
-            throw new PropertyNotFoundException($id);
-        }
+        $predefined = $this->getPredefinedProperty($id);
 
         $predefined->setName($property->getName());
         $predefined->setDescription($property->getDescription());
@@ -120,11 +123,7 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
      */
     public function deletePredefinedProperty(string $id): void
     {
-        $predefined = $this->predefinedResolver->getById($id);
-
-        if (!$predefined) {
-            throw new PropertyNotFoundException($id);
-        }
+        $predefined = $this->getPredefinedProperty($id);
 
         $predefined->delete();
     }

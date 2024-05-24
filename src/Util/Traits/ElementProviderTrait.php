@@ -33,7 +33,7 @@ use Pimcore\Model\UserInterface;
 trait ElementProviderTrait
 {
     /**
-     * @throws InvalidArgumentException
+     * @throws ElementNotFoundException
      */
     private function getElement(
         ServiceResolverInterface $serviceResolver,
@@ -68,6 +68,9 @@ trait ElementProviderTrait
         return $element;
     }
 
+    /**
+     * @throws InvalidElementTypeException
+     */
     private function getElementClass(ElementInterface $element): string
     {
         return match (true) {
