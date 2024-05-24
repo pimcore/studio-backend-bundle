@@ -18,3 +18,12 @@ services:
   # Encoder
   Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetService
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\CustomSettingsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\CustomSettingsService
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\DataServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\DataService

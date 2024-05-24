@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Property\AnyOfAsset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
@@ -53,8 +54,7 @@ final class CollectionController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly AssetSearchServiceInterface $assetSearchService,
-        private readonly FilterServiceProviderInterface $filterServiceProvider
+        private readonly AssetServiceInterface $assetService,
     ) {
         parent::__construct($serializer);
     }
@@ -90,19 +90,12 @@ final class CollectionController extends AbstractApiController
     ])]
     public function getAssets(#[MapQueryString] ElementParameters $parameters): JsonResponse
     {
-        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
-
-        $assetQuery = $filterService->applyFilters(
-            $parameters,
-            ElementTypes::TYPE_ASSET
-        );
-
-        $result = $this->assetSearchService->searchAssets($assetQuery);
+        $collection = $this->assetService->getAssets($parameters);
 
         return $this->getPaginatedCollection(
             $this->serializer,
-            $result->getItems(),
-            $result->getTotalItems()
+            $collection->getItems(),
+            $collection->getTotalItems()
         );
     }
 }
