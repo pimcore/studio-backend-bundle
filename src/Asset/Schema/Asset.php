@@ -21,6 +21,8 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -29,8 +31,10 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Element;
     title: 'Asset',
     type: 'object'
 )]
-class Asset extends Element
+class Asset extends Element implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'IconName', type: 'string', example: 'pimcore_icon_pdf')]
         private readonly string $iconName,
