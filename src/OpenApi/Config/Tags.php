@@ -91,6 +91,7 @@ enum Tags: string
     case Schedule = 'Schedule';
     case Settings = 'Settings';
     case Tags = 'Tags';
+    case TagsForElement = 'Tags for Element';
     case Translation = 'Translation';
     case Versions = 'Versions';
     case Workflows = 'Workflows';

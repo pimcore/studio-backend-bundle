@@ -16,22 +16,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller;
 
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Put;
+use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\UpdateTagRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -39,36 +36,39 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class UpdateController extends AbstractApiController
+final class DeleteController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly TagServiceInterface $tagService,
+        private readonly TagServiceInterface $tagService
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/tags/{id}', name: 'pimcore_studio_api_update_tag', methods: ['PUT'])]
-    #[Put(
+    /**
+     * @throws PropertyNotFoundException
+     */
+    #[Route('/tags/{id}', name: 'pimcore_studio_api_delete_tags', methods: ['DELETE'])]
+    #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
+    #[Delete(
         path: self::API_PATH . '/tags/{id}',
-        operationId: 'updateTag',
-        summary: 'Update a tag',
+        operationId: 'deleteTag',
+        summary: 'Delete a tag with a given id',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Tags->name]
     )]
-    #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[IdParameter(type: 'tag', schema: new Schema(type: 'integer', example: 10))]
-    #[UpdateTagRequestBody]
     #[SuccessResponse(
-        description: 'Updated tag data as json',
-        content: new JsonContent(ref: Tag::class, type: 'object')
+        description: 'Id of deleted tag',
+        content: new IdJson('ID of deleted tag')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function updateTag(int $id, #[MapRequestPayload] UpdateTagParameters $parameters): JsonResponse
+    public function deleteTag(int $id): JsonResponse
     {
-        return $this->jsonResponse($this->tagService->updateTag($id, $parameters));
+        $this->tagService->deleteTag($id);
+        return $this->jsonResponse(['id' => $id]);
     }
 }

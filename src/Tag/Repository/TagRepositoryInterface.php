@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
@@ -27,11 +29,23 @@ use Pimcore\Model\Element\Tag\Listing as TagListing;
  */
 interface TagRepositoryInterface
 {
+    /**
+     * @throws ElementNotFoundException
+     */
     public function getTagById(int $id): Tag;
 
     public function listTags(TagsParameters $parameters): TagListing;
 
     public function addTag(CreateTagParameters $params): Tag;
 
+    /**
+     * @throws ElementNotFoundException
+     */
     public function updateTag(int $id, UpdateTagParameters $params): Tag;
+
+    /**
+     * @throws ElementDeletingFailedException
+     * @throws ElementNotFoundException
+     */
+    public function deleteTag(int $id): void;
 }

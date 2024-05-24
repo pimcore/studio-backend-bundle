@@ -16,8 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidParentIdException;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 
 /**
@@ -25,9 +29,27 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
  */
 interface TagServiceInterface
 {
+    /**
+     * @throws ElementNotFoundException
+     */
     public function getTag(int $id): Tag;
 
     public function listTags(TagsParameters $parameters): array;
 
+    /**
+     * @throws InvalidParentIdException
+     * @throws ElementNotFoundException
+     */
     public function createTag(CreateTagParameters $tag): Tag;
+
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function updateTag(int $id, UpdateTagParameters $parameters): Tag;
+
+    /**
+     * @throws ElementDeletingFailedException
+     * @throws ElementNotFoundException
+     */
+    public function deleteTag(int $id): int;
 }

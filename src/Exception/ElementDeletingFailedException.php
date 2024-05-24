@@ -14,18 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 /**
  * @internal
  */
-enum UserPermissions: string
+final class ElementDeletingFailedException extends AbstractApiException
 {
-    case ASSETS = 'assets';
-    case DOCUMENTS = 'documents';
-    case OBJECTS = 'objects';
-    case NOTES_EVENTS = 'notes_events';
-    case TAGS_CONFIGURATION = 'tags_configuration';
-    case TAGS_ASSIGNMENT = 'tags_assignment';
-    case TAGS_SEARCH = 'tags_search';
+    public function __construct(int $id, ?string $error = null)
+    {
+        parent::__construct(
+            500,
+            sprintf('Failed to delete element with ID %s: %s', $id, $error ?? 'Unknown error')
+        );
+    }
 }

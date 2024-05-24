@@ -14,17 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tag\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\Event;
 
+use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
-use Pimcore\Model\Element\Tag as ElementTag;
 
-/**
- * @internal
- */
-interface TagHydratorInterface
+final class TagEvent extends AbstractPreResponseEvent
 {
-    public function hydrate(ElementTag $tag): Tag;
+    public const EVENT_NAME = 'pre_response.tag';
+    public function __construct(
+        private readonly Tag $tag
+    )
+    {
+        parent::__construct($tag);
+    }
 
-    public function hydrateRecursive(ElementTag $tag): Tag;
+    /**
+     * Use this to get additional infos out of the response object
+     */
+    public function getTag(): Tag
+    {
+        return $this->tag;
+    }
 }

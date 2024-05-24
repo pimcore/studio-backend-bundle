@@ -31,9 +31,11 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\CreateTagRequestBo
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -59,6 +61,7 @@ final class CreateController extends AbstractApiController
         security: self::SECURITY_SCHEME,
         tags: [Tags::Tags->name]
     )]
+    #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[CreateTagRequestBody]
     #[SuccessResponse(
         description: 'Tag data as json',
@@ -71,7 +74,6 @@ final class CreateController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function createTag(#[MapRequestPayload] CreateTagParameters $parameters): JsonResponse
     {
-
         return $this->jsonResponse($this->tagService->createTag($parameters));
     }
 }

@@ -33,7 +33,20 @@ final class Tag implements AdditionalAttributesInterface
         private readonly bool $hasChildren,
         #[Property(description: 'IconName', type: 'string', example: 'pimcore_icon_pdf')]
         private readonly string $iconName,
-        #[Property(description: 'children', type: 'array', items: new Items(type: Tag::class, example: new Tag(id: 3, parentId: 0, text: 'Tag 2', path: '/test/2', hasChildren: false, iconName: 'pimcore_icon_pdf')))]
+        #[Property(
+            description: 'children',
+            type: 'array',
+            items: new Items(
+                type: Tag::class,
+                example: new Tag(
+                    id: 3,
+                    parentId: 0,
+                    text: 'Tag 2',
+                    path: '/test/2',
+                    hasChildren: false,
+                    iconName: 'pimcore_icon_pdf')
+            )
+        )]
         private array $children = [],
     ) {
 

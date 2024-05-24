@@ -55,9 +55,6 @@ final class GetController extends AbstractApiController
     #[UnprocessableContentResponse]
     public function getTags(int $id): JsonResponse
     {
-        return $this->jsonResponse(
-            $this->tagService->getTag($id)
-
-        );
+        return $this->jsonResponse($this->tagService->getTag($id));
     }
 }

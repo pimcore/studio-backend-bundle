@@ -12,7 +12,7 @@ use Pimcore\Model\Element\Tag as ElementTag;
  */
 final readonly class TagHydrator implements TagHydratorInterface
 {
-    public function __construct(private readonly IconServiceInterface $iconService)
+    public function __construct(private IconServiceInterface $iconService)
     {
     }
 
@@ -30,36 +30,14 @@ final readonly class TagHydrator implements TagHydratorInterface
 
     public function hydrateRecursive(ElementTag $tag): Tag
     {
+        $result = $this->hydrate($tag);
+
         $children = [];
         foreach ($tag->getChildren() as $child) {
             $children[] = $this->hydrateRecursive($child);
         }
 
-        $result = $this->hydrate($tag);
         $result->setChildren($children);
         return $result;
-    }
-
-    /**
-     * @param array<int, ElementTag> $tags
-     * @return array<int, Tag>
-     */
-    public function hydrateNestedList(array $tags): array
-    {
-        $tagMap = [];
-        $nestedTags = [];
-
-        foreach ($tags as $tag) {
-            $tagMap[$tag->getId()] = $this->hydrate($tag);
-        }
-
-        foreach ($tagMap as $tag) {
-            if ($tag->getParentId() === 0 || !array_key_exists($tag->getParentId(), $tagMap)) {
-                $nestedTags[] = $tag;
-                continue;
-            }
-            $tagMap[$tag->getParentId()]->addChild($tag);
-        }
-        return $nestedTags;
     }
 }

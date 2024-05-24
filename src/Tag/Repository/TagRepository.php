@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Tag\TagResolver;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
@@ -39,6 +40,9 @@ final readonly class TagRepository implements TagRepositoryInterface
     ) {
     }
 
+    /**
+     * @throws ElementNotFoundException
+     */
     public function getTagById(int $id): Tag
     {
         $tag = $this->tagResolver->getById($id);
@@ -98,6 +102,9 @@ final readonly class TagRepository implements TagRepositoryInterface
         return $new;
     }
 
+    /**
+     * @throws ElementNotFoundException
+     */
     public function updateTag(int $id, UpdateTagParameters $params): Tag
     {
         $tag = $this->getTagById($id);
@@ -111,5 +118,19 @@ final readonly class TagRepository implements TagRepositoryInterface
         }
         $tag->save();
         return $tag;
+    }
+
+    /**
+     * @throws ElementDeletingFailedException
+     * @throws ElementNotFoundException
+     */
+    public function deleteTag(int $id): void
+    {
+        $tag = $this->getTagById($id);
+        try {
+            $tag->delete();
+        } catch (\Exception $e) {
+            throw new ElementDeletingFailedException($id, $e->getMessage());
+        }
     }
 }
