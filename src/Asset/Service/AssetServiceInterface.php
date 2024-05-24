@@ -35,5 +35,5 @@ interface AssetServiceInterface
 {
     public function getAssets(ElementParameters $parameters): Collection;
 
-    public function getAsset(int $id):  Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video;
+    public function getAsset(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video;
 }
