@@ -53,6 +53,6 @@ final class IconService implements IconServiceInterface
 
     public function getIconForTag(): string
     {
-        return 'pimcore_icon_element_tags';
+        return 'tag-02';
     }
 }
