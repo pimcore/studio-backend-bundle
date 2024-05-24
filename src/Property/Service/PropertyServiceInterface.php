@@ -48,6 +48,7 @@ interface PropertyServiceInterface
 
     /**
      * @throws ElementNotFoundException
+     *
      * @return array<int, ElementProperty>
      */
     public function getElementProperties(string $elementType, int $id): array;
