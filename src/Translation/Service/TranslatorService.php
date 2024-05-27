@@ -58,7 +58,6 @@ final class TranslatorService implements TranslatorServiceInterface
         );
     }
 
-
     /**
      * @throws InvalidLocaleException
      */
