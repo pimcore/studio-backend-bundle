@@ -19,4 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Repository;
 interface ScheduleRepositoryInterface
 {
     public function listSchedules(string $elementType, int $id): array;
+
+    public function delete(int $id): void;
 }
