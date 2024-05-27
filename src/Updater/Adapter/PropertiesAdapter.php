@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property;
 
@@ -43,5 +44,14 @@ final class PropertiesAdapter implements UpdateAdapterInterface
     public function getDataIndex(): string
     {
         return self::DATA_INDEX;
+    }
+
+    public function supportedElementTypes(): array
+    {
+        return [
+            ElementTypes::TYPE_ASSET,
+            ElementTypes::TYPE_DOCUMENT,
+            ElementTypes::TYPE_OBJECT,
+        ];
     }
 }

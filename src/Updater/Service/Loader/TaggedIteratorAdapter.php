@@ -37,8 +37,13 @@ final class TaggedIteratorAdapter implements AdapterLoaderInterface
     /**
      * @return array<int, UpdateAdapterInterface>
      */
-    public function loadAdapters(): array
+    public function loadAdapters(string $elementType): array
     {
-        return [...$this->taggedAdapter];
+        return array_filter(
+            [...$this->taggedAdapter],
+            static function(UpdateAdapterInterface $adapter) use ($elementType) {
+                return in_array($elementType, $adapter->supportedElementTypes(), true);
+            }
+        );
     }
 }

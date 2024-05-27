@@ -26,5 +26,5 @@ interface AdapterLoaderInterface
     /**
      * @return array<int, UpdateAdapterInterface>
      */
-    public function loadAdapters(): array;
+    public function loadAdapters(string $elementType): array;
 }

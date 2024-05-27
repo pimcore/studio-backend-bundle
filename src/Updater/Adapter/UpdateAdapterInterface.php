@@ -23,4 +23,9 @@ interface UpdateAdapterInterface
     public function update(ElementInterface $element, array $data): void;
 
     public function getDataIndex(): string;
+
+    /**
+     * @return array<string>
+     */
+    public function supportedElementTypes(): array;
 }

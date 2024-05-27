@@ -43,11 +43,12 @@ final class UpdateService implements UpdateServiceInterface
     {
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
 
-        foreach ($this->adapterLoader->loadAdapters() as $adapter) {
+        foreach ($this->adapterLoader->loadAdapters($elementType) as $adapter) {
             if (array_key_exists($adapter->getDataIndex(), $data)) {
                 $adapter->update($element, $data);
             }
         }
+
         try {
             $element->save();
         } catch (DuplicateFullPathException $e) {
