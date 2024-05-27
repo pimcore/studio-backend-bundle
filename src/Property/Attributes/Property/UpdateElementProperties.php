@@ -14,21 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Property;
 
-use Attribute;
-use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdateElementProperty;
 
-#[Attribute(Attribute::TARGET_METHOD)]
-final class ElementPropertyRequestBody extends RequestBody
+/**
+ * @internal
+ */
+final class UpdateElementProperties extends Property
 {
     public function __construct()
     {
         parent::__construct(
-            required: true,
-            content: new ItemsJson(UpdateElementProperty::class)
+            'properties',
+            type: 'array',
+            items: new Items(ref: UpdateElementProperty::class),
+            nullable: true,
         );
     }
 }

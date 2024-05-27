@@ -16,12 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
 
@@ -30,6 +29,8 @@ use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
  */
 interface PropertyRepositoryInterface
 {
+    public const INDEX_KEY = 'properties';
+
     /**
      * @throws NotWriteableException
      */
@@ -42,19 +43,12 @@ interface PropertyRepositoryInterface
 
     public function listProperties(PropertiesParameters $parameters): PropertiesListing;
 
+    public function updateElementProperties(ElementInterface $element, array $data): void;
+
     /**
      * @throws PropertyNotFoundException
      */
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void;
-
-    /**
-     * @throws ElementSavingFailedException
-     */
-    public function updateElementProperties(
-        string $elementType,
-        int $id,
-        UpdateElementProperties $items
-    ): void;
 
     /**
      * @throws PropertyNotFoundException

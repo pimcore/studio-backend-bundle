@@ -16,17 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Model\Element\DuplicateFullPathException;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
@@ -40,7 +37,6 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private ServiceResolverInterface $serviceResolver,
         private PredefinedResolverInterface $predefinedResolver,
         private TranslatorInterface $translator
     ) {
@@ -99,6 +95,20 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
         return $list;
     }
 
+    public function updateElementProperties(ElementInterface $element, array $data): void
+    {
+        $properties = [];
+        foreach ($data['properties'] as $propertyData) {
+            $property = new Property();
+            $property->setType($propertyData['type']);
+            $property->setName($propertyData['key']);
+            $property->setData($propertyData['data']);
+            $property->setInheritable($propertyData['inheritable']);
+            $properties[$propertyData['key']] = $property;
+        }
+        $element->setProperties($properties);
+    }
+
     /**
      * @throws PropertyNotFoundException
      */
@@ -126,29 +136,5 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
         $predefined = $this->getPredefinedProperty($id);
 
         $predefined->delete();
-    }
-
-    /**
-     * @throws ElementSavingFailedException
-     */
-    public function updateElementProperties(string $elementType, int $id, UpdateElementProperties $items): void
-    {
-        $element = $this->getElement($this->serviceResolver, $elementType, $id);
-        $properties = [];
-        foreach($items->getProperties() as $updateProperty) {
-            $property = new Property();
-            $property->setType($updateProperty->getType());
-            $property->setName($updateProperty->getKey());
-            $property->setData($updateProperty->getData());
-            $property->setInheritable($updateProperty->getInheritable());
-            $properties[$updateProperty->getKey()] = $property;
-        }
-        $element->setProperties($properties);
-
-        try {
-            $element->save();
-        } catch (DuplicateFullPathException $e) {
-            throw new ElementSavingFailedException($id, $e->getMessage());
-        }
     }
 }
