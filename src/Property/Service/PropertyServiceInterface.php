@@ -17,11 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
