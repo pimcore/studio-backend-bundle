@@ -14,23 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidLocaleException;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 
 /**
  * @internal
  */
-interface TranslatorServiceInterface
+interface CustomSettingsServiceInterface
 {
     /**
-     * @throws InvalidLocaleException
+     * @throws AccessDeniedException
      */
-    public function getAllTranslations(string $locale): Translation;
-
-    /**
-     * @throws InvalidLocaleException
-     */
-    public function getTranslationsForKeys(string $locale, array $keys): Translation;
+    public function getCustomSettings(int $id): CustomSettings;
 }

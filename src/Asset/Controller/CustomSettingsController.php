@@ -17,20 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\CustomSettingsJson;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\CustomSettingsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -44,13 +40,14 @@ final class CustomSettingsController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomSettingsHydratorInterface $hydrator,
-        private readonly SecurityServiceInterface $securityService,
-        private readonly ServiceResolverInterface $serviceResolver,
+        private readonly CustomSettingsServiceInterface $customSettingsService
     ) {
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws AccessDeniedException
+     */
     #[Route('/assets/{id}/custom-settings', name: 'pimcore_studio_api_get_asset_custom_settings', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[GET(
@@ -72,16 +69,6 @@ final class CustomSettingsController extends AbstractApiController
     ])]
     public function getAssetCustomSettingsById(int $id): JsonResponse
     {
-        /** @var Asset $asset */
-        $asset = $this->getElement($this->serviceResolver, ElementTypes::TYPE_ASSET, $id);
-        $this->securityService->hasElementPermission(
-            $asset,
-            $this->securityService->getCurrentUser(),
-            ElementPermissions::VIEW_PERMISSION
-        );
-
-        return $this->jsonResponse(
-            $this->hydrator->hydrate($asset->getCustomSettings())
-        );
+        return $this->jsonResponse($this->customSettingsService->getCustomSettings($id));
     }
 }

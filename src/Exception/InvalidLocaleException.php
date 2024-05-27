@@ -14,14 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Filter\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterServiceTypeException;
-
-interface FilterServiceProviderInterface
+/**
+ * @internal
+ */
+final class InvalidLocaleException extends AbstractApiException
 {
-    /**
-     * @throws InvalidFilterServiceTypeException
-     */
-    public function create(string $type): mixed;
+    public function __construct(string $locale)
+    {
+        parent::__construct(
+            400,
+            sprintf('Invalid locale "%s"', $locale)
+        );
+    }
 }

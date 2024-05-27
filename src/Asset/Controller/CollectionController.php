@@ -18,11 +18,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Property\AnyOfAsset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterServiceTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\IdSearchTermParameter;
@@ -53,14 +57,13 @@ final class CollectionController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly AssetSearchServiceInterface $assetSearchService,
-        private readonly FilterServiceProviderInterface $filterServiceProvider
+        private readonly AssetServiceInterface $assetService,
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws InvalidQueryTypeException
+     * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
      */
     #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
@@ -90,19 +93,12 @@ final class CollectionController extends AbstractApiController
     ])]
     public function getAssets(#[MapQueryString] ElementParameters $parameters): JsonResponse
     {
-        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
-
-        $assetQuery = $filterService->applyFilters(
-            $parameters,
-            ElementTypes::TYPE_ASSET
-        );
-
-        $result = $this->assetSearchService->searchAssets($assetQuery);
+        $collection = $this->assetService->getAssets($parameters);
 
         return $this->getPaginatedCollection(
             $this->serializer,
-            $result->getItems(),
-            $result->getTotalItems()
+            $collection->getItems(),
+            $collection->getTotalItems()
         );
     }
 }

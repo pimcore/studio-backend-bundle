@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FilterParameter;
@@ -49,9 +48,7 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws InvalidQueryTypeException
-     */
+
     #[Route('/properties', name: 'pimcore_studio_api_properties', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[Get(

@@ -50,6 +50,9 @@ final class UserPermissionVoter extends Voter
         return in_array($attribute, $this->userPermissions, true);
     }
 
+    /**
+     * @throws AccessDeniedException
+     */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         if (!$this->securityService->getCurrentUser()->isAllowed($attribute)) {
@@ -81,6 +84,9 @@ final class UserPermissionVoter extends Voter
         $this->userPermissions = $userPermissions;
     }
 
+    /**
+     * @throws AccessDeniedException
+     */
     private function getUserPermissionsFromDataBase(): array
     {
         try {

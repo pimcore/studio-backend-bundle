@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
-use InvalidArgumentException;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
@@ -33,7 +32,7 @@ use Pimcore\Model\UserInterface;
 trait ElementProviderTrait
 {
     /**
-     * @throws InvalidArgumentException
+     * @throws ElementNotFoundException
      */
     private function getElement(
         ServiceResolverInterface $serviceResolver,
@@ -68,6 +67,9 @@ trait ElementProviderTrait
         return $element;
     }
 
+    /**
+     * @throws InvalidElementTypeException
+     */
     private function getElementClass(ElementInterface $element): string
     {
         return match (true) {
