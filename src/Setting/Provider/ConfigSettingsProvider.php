@@ -17,12 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
 
 use Pimcore\Config;
-use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
-#[AsTaggedItem('pimcore.studio_backend.settings_provider')]
+#[AutoconfigureTag('pimcore.studio_backend.settings_provider')]
 final readonly class ConfigSettingsProvider implements SettingsProviderInterface
 {
     public function __construct(

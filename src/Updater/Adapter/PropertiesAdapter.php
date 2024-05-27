@@ -19,10 +19,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
+#[AutoconfigureTag('pimcore.studio_backend.update_adapter')]
 final class PropertiesAdapter implements UpdateAdapterInterface
 {
     private const DATA_INDEX = 'properties';
