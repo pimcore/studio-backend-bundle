@@ -29,6 +29,9 @@ final class FilterServiceProvider implements FilterServiceProviderInterface
         }
     }
 
+    /**
+     * @throws InvalidFilterServiceTypeException
+     */
     public function create(string $type): mixed
     {
         if (!array_key_exists($type, $this->filterServices)) {

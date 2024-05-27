@@ -16,7 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Filter\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterServiceTypeException;
+
 interface FilterServiceProviderInterface
 {
+    /**
+     * @throws InvalidFilterServiceTypeException
+     */
     public function create(string $type): mixed;
 }

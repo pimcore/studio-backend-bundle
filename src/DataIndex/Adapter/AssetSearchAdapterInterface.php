@@ -19,10 +19,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
 
 interface AssetSearchAdapterInterface
 {
+    /**
+     * @throws SearchException
+     */
     public function searchAssets(QueryInterface $assetQuery): AssetSearchResult;
 
+    /**
+     * @throws SearchException|ElementNotFoundException
+     */
     public function getAssetById(int $id): Asset;
 }

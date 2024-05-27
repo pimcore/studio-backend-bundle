@@ -16,10 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\MaxFileSizeExceededException;
+
 /**
  * @internal
  */
 interface DataServiceInterface
 {
+    /**
+     * @throws ElementNotFoundException|InvalidElementTypeException|MaxFileSizeExceededException
+     */
     public function getUTF8EncodedData(int $id): string;
 }

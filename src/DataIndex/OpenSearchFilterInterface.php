@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParametersInterface;
 
@@ -28,7 +29,7 @@ interface OpenSearchFilterInterface
     public const SERVICE_TYPE = 'open_search_filter';
 
     /**
-     * @throws InvalidQueryTypeException
+     * @throws InvalidQueryTypeException|InvalidFilterTypeException
      */
     public function applyFilters(CollectionParametersInterface $parameters, string $type): QueryInterface;
 }
