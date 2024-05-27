@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Controller;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -45,6 +46,9 @@ final class TranslationController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws InvalidLocaleException
+     */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_translations', methods: ['POST'])]
     //#[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
     #[POST(

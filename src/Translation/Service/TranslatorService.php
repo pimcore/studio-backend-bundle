@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -40,19 +41,38 @@ final class TranslatorService implements TranslatorServiceInterface
         $this->translator = $translator;
     }
 
+    /**
+     * @throws InvalidLocaleException
+     */
     public function getAllTranslations(string $locale): Translation
     {
+        try {
+            $catalogue = $this->translator->getCatalogue($locale)->all(self::DOMAIN);
+        } catch (InvalidArgumentException) {
+            throw new InvalidLocaleException($locale);
+        }
+
         return new Translation(
             $locale,
-            $this->translator->getCatalogue($locale)->all(self::DOMAIN)
+            $catalogue
         );
     }
 
+    /**
+     * @throws InvalidLocaleException
+     */
     public function getTranslationsForKeys(string $locale, array $keys): Translation
     {
+        try {
+            $catalogue = $this->translator->getCatalogue($locale);
+        } catch (InvalidArgumentException) {
+            throw new InvalidLocaleException($locale);
+        }
+
         $translations = [];
+
         foreach ($keys as $key) {
-            $translations[$key] = $this->translator->getCatalogue($locale)->get($key, self::DOMAIN);
+            $translations[$key] = $catalogue->get($key, self::DOMAIN);
         }
 
         return new Translation($locale, $translations);

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\ElementPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\PredefinedPropertyEvent;
@@ -45,12 +46,18 @@ final readonly class PropertyService implements PropertyServiceInterface
     ) {
     }
 
+    /**
+     * @throws NotWriteableException
+     */
     public function createPredefinedProperty(): PredefinedProperty
     {
         $predefined = $this->propertyRepository->createPredefinedProperty();
         return $this->getPredefinedProperty($predefined->getId());
     }
 
+    /**
+     * @throws PropertyNotFoundException
+     */
     public function getPredefinedProperty(string $id): PredefinedProperty
     {
         $predefinedProperty = $this->propertyHydrator->hydratePredefinedProperty(
@@ -87,6 +94,7 @@ final readonly class PropertyService implements PropertyServiceInterface
     }
 
     /**
+     * @throws PropertyNotFoundException
      * @return array<int, ElementProperty>
      */
     public function getElementProperties(string $elementType, int $id): array

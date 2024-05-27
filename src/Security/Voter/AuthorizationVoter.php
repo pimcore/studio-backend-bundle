@@ -46,8 +46,7 @@ final class AuthorizationVoter extends Voter
     }
 
     /**
-     * @throws NoRequestException
-     * @throws NotAuthorizedException
+     * @throws NoRequestException|NotAuthorizedException
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {

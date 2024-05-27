@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller\Element;
 
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
@@ -46,6 +47,9 @@ final class UpdateController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws ElementNotFoundException
+     */
     #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_update_element_properties', methods: ['PUT'])]
     //#[IsGranted('STUDIO_API')]
     #[Put(

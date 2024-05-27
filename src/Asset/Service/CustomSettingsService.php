@@ -20,6 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\CustomSettingsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -41,6 +42,10 @@ final readonly class CustomSettingsService implements CustomSettingsServiceInter
         private EventDispatcherInterface $eventDispatcher
     ) {
     }
+
+    /**
+     * @throws AccessDeniedException
+     */
     public function getCustomSettings(int $id): CustomSettings
     {
         /** @var Asset $asset */

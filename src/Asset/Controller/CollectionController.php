@@ -23,7 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterServiceTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\IdSearchTermParameter;
@@ -60,7 +63,7 @@ final class CollectionController extends AbstractApiController
     }
 
     /**
-     * @throws InvalidQueryTypeException
+     * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
      */
     #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]

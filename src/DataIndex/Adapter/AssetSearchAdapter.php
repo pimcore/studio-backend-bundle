@@ -17,12 +17,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\OpenSearch\SearchFailedException;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
 
 final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 {
@@ -33,11 +36,16 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     }
 
     /**
-     * @throws Exception
+     * @throws SearchException
      */
     public function searchAssets(QueryInterface $assetQuery): AssetSearchResult
     {
-        $searchResult = $this->searchService->search($assetQuery->getSearch());
+        try {
+            $searchResult = $this->searchService->search($assetQuery->getSearch());
+        } catch (AssetSearchException) {
+            throw new SearchException('assets');
+        }
+
         $result = [];
         foreach ($searchResult->getItems() as $item) {
             $result[] = $this->assetHydratorService->hydrate($item);
@@ -52,11 +60,15 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     }
 
     /**
-     * @throws Exception
+     * @throws SearchFailedException|ElementNotFoundException
      */
     public function getAssetById(int $id): Asset
     {
-        $asset = $this->searchService->byId($id);
+        try {
+            $asset = $this->searchService->byId($id);
+        } catch (AssetSearchException) {
+            throw new SearchException(sprintf('asset with id %s', $id));
+        }
 
         if (!$asset) {
             throw new ElementNotFoundException($id);

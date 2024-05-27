@@ -26,6 +26,11 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterServiceTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
@@ -33,7 +38,13 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
  */
 interface AssetServiceInterface
 {
+    /**
+     * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
+     */
     public function getAssets(ElementParameters $parameters): Collection;
 
+    /**
+     * @throws SearchException|ElementNotFoundException
+     */
     public function getAsset(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video;
 }

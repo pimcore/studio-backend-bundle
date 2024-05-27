@@ -19,6 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Data;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\MaxFileSizeExceededException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\DataJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -45,6 +48,9 @@ final class TextController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws ElementNotFoundException|InvalidElementTypeException|MaxFileSizeExceededException
+     */
     #[Route('/assets/{id}/text', name: 'pimcore_studio_api_get_asset_data_text', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     //#[IsGranted(UserPermissions::ASSETS->value)]

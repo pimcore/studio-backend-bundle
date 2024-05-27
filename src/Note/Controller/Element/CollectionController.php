@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Controller\Element;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Parameters\Query\NoteSortByParameter;
 use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Response\Property\NoteCollection;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
@@ -58,6 +59,9 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws InvalidFilterException
+     */
     #[Route('/notes/{elementType}/{id}', name: 'pimcore_studio_api_get_element_notes', methods: ['GET'])]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Get(
