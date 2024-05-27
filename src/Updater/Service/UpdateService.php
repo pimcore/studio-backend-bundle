@@ -15,7 +15,6 @@ final class UpdateService implements UpdateServiceInterface
 {
     use ElementProviderTrait;
 
-    private array $updateAdapters;
     public function __construct(
         private readonly AdapterLoaderInterface $adapterLoader,
         private readonly ServiceResolver $serviceResolver
@@ -30,8 +29,8 @@ final class UpdateService implements UpdateServiceInterface
     {
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
 
-        foreach($this->adapterLoader->loadAdapters() as $adapter) {
-            if(array_key_exists($adapter->getDataIndex(), $data)) {
+        foreach ($this->adapterLoader->loadAdapters() as $adapter) {
+            if (array_key_exists($adapter->getDataIndex(), $data)) {
                 $adapter->update($element, $data);
             }
         }
