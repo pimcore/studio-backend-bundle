@@ -53,8 +53,7 @@ final class PublicAuthorizationVoter extends Voter
     }
 
     /**
-     * @throws NoRequestException
-     * @throws NonPublicTranslationException
+     * @throws NoRequestException|NonPublicTranslationException
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
