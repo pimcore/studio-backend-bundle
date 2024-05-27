@@ -16,18 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Model\Element\DuplicateFullPathException;
-use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -40,7 +35,6 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private ServiceResolverInterface $serviceResolver,
         private PredefinedResolverInterface $predefinedResolver,
         private TranslatorInterface $translator
     ) {
