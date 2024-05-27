@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 
 /**
@@ -23,7 +24,13 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
  */
 interface TranslatorServiceInterface
 {
+    /**
+     * @throws InvalidLocaleException
+     */
     public function getAllTranslations(string $locale): Translation;
 
+    /**
+     * @throws InvalidLocaleException
+     */
     public function getTranslationsForKeys(string $locale, array $keys): Translation;
 }
