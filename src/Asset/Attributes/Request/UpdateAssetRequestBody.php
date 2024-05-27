@@ -39,7 +39,7 @@ final class UpdateAssetRequestBody extends RequestBody
                             new UpdateElementProperties(),
                         ],
                         type: 'object',
-                    )
+                    ),
                 ],
                 type: 'object',
             ),
