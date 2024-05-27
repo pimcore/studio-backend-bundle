@@ -44,7 +44,7 @@ final class UpdateService implements UpdateServiceInterface
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
 
         foreach ($this->adapterLoader->loadAdapters($elementType) as $adapter) {
-            if (array_key_exists($adapter->getDataIndex(), $data)) {
+            if (array_key_exists($adapter->getIndexKey(), $data)) {
                 $adapter->update($element, $data);
             }
         }

@@ -22,7 +22,7 @@ interface UpdateAdapterInterface
 {
     public function update(ElementInterface $element, array $data): void;
 
-    public function getDataIndex(): string;
+    public function getIndexKey(): string;
 
     /**
      * @return array<string>

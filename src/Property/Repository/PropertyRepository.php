@@ -23,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -91,6 +93,20 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
         });
 
         return $list;
+    }
+
+    public function updateElementProperties(ElementInterface $element, array $data): void
+    {
+        $properties = [];
+        foreach ($data['properties'] as $propertyData) {
+            $property = new Property();
+            $property->setType($propertyData['type']);
+            $property->setName($propertyData['key']);
+            $property->setData($propertyData['data']);
+            $property->setInheritable($propertyData['inheritable']);
+            $properties[$propertyData['key']] = $property;
+        }
+        $element->setProperties($properties);
     }
 
     /**

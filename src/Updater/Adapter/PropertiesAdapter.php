@@ -16,36 +16,29 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\Property;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
 #[AutoconfigureTag('pimcore.studio_backend.update_adapter')]
-final class PropertiesAdapter implements UpdateAdapterInterface
+final readonly class PropertiesAdapter implements UpdateAdapterInterface
 {
-    private const DATA_INDEX = 'properties';
+    public function __construct(private PropertyRepositoryInterface $propertyRepository)
+    {
+    }
 
     public function update(ElementInterface $element, array $data): void
     {
-        $properties = [];
-        foreach ($data[self::DATA_INDEX] as $propertyData) {
-            $property = new Property();
-            $property->setType($propertyData['type']);
-            $property->setName($propertyData['key']);
-            $property->setData($propertyData['data']);
-            $property->setInheritable($propertyData['inheritable']);
-            $properties[$propertyData['key']] = $property;
-        }
-        $element->setProperties($properties);
+        $this->propertyRepository->updateElementProperties($element, $data);
     }
 
-    public function getDataIndex(): string
+    public function getIndexKey(): string
     {
-        return self::DATA_INDEX;
+        return PropertyRepositoryInterface::INDEX_KEY;
     }
 
     public function supportedElementTypes(): array
