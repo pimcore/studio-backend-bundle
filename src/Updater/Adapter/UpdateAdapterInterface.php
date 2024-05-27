@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 /**
  * Pimcore
  *
@@ -13,13 +13,13 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\UpdateAdapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 
 use Pimcore\Model\Element\ElementInterface;
 
 interface UpdateAdapterInterface
 {
-    public function update(ElementInterface $element, array $data);
+    public function update(ElementInterface $element, array $data): void;
 
     public function getDataIndex(): string;
 }

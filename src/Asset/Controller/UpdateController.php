@@ -16,18 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
-use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\UpdateAssetRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\OneOfAssetJson;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Request\UpdateAsset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -59,12 +58,7 @@ final class UpdateController extends AbstractApiController
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]
-    #[RequestBody(
-        description: 'Asset data',
-        required: true,
-        content: new JsonContent()
-
-    )]
+    #[UpdateAssetRequestBody]
     #[SuccessResponse(
         description: 'One of asset types',
         content: new OneOfAssetJson()

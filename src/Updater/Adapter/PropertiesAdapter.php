@@ -1,5 +1,5 @@
 <?php
-
+declare(strict_types=1);
 /**
  * Pimcore
  *
@@ -13,19 +13,22 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\UpdateAdapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property;
 
-final class PropertiesUpdateAdapter implements UpdateAdapterInterface
+/**
+ * @internal
+ */
+final class PropertiesAdapter implements UpdateAdapterInterface
 {
     private const DATA_INDEX = 'properties';
 
     public function update(ElementInterface $element, array $data): void
     {
         $properties = [];
-        foreach ($data as $propertyData) {
+        foreach ($data[self::DATA_INDEX] as $propertyData) {
             $property = new Property();
             $property->setType($propertyData['type']);
             $property->setName($propertyData['key']);

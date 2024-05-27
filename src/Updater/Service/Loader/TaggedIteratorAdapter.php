@@ -14,26 +14,31 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Filter\Service\Loader;
+namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 /**
  * @internal
  */
-final class TaggedIteratorAdapter implements FilterServiceLoaderInterface
+final class TaggedIteratorAdapter implements AdapterLoaderInterface
 {
-    public const FILTER_SERVICE_TAG = 'pimcore.studio_backend.filter_service';
+    public const ADAPTER_TAG = 'pimcore.studio_backend.update_adapter';
 
     public function __construct(
-        #[TaggedIterator(self::FILTER_SERVICE_TAG)]
-        private readonly iterable $taggedFilterServices,
+        #[TaggedIterator(self::ADAPTER_TAG)]
+        private readonly iterable $taggedAdapter,
     ) {
     }
 
-    public function loadFilterServices(): array
+    /**
+     * @return array<int, UpdateAdapterInterface>
+     */
+    public function loadAdapters(): array
     {
-        return [...$this->taggedFilterServices];
+        return [...$this->taggedAdapter];
     }
 }

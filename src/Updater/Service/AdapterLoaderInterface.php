@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -13,8 +14,17 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
-interface UpdateServiceInterface
+use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
+
+/**
+ * @internal
+ */
+interface AdapterLoaderInterface
 {
+    /**
+     * @return array<int, UpdateAdapterInterface>
+     */
+    public function loadAdapters(): array;
 }
