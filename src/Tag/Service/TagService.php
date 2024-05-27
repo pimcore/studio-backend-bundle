@@ -10,6 +10,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\Event\TagEvent;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Hydrator\TagHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Repository\TagRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
@@ -37,6 +38,22 @@ final readonly class TagService implements TagServiceInterface
         return $tag;
     }
 
+    /**
+     * @return array<int, Tag>
+     */
+    public function getTagsForElement(TagElement $tagElement): array
+    {
+        $result = [];
+        foreach ($this->tagRepository->getTagsForElement($tagElement) as $tag) {
+            $result[$tag->getId()] = $this->tagHydrator->hydrate($tag);
+            $this->dispatchTagEvent($result[$tag->getId()]);
+        }
+        return $result;
+    }
+
+    /**
+     * @return array<int, Tag>
+     */
     public function listTags(TagsParameters $parameters): array
     {
         $tags = $this->tagRepository->listTags($parameters);

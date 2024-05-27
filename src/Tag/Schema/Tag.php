@@ -44,7 +44,8 @@ final class Tag implements AdditionalAttributesInterface
                     text: 'Tag 2',
                     path: '/test/2',
                     hasChildren: false,
-                    iconName: 'pimcore_icon_pdf')
+                    iconName: 'pimcore_icon_pdf'
+                )
             )
         )]
         private array $children = [],

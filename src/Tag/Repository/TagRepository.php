@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -39,6 +40,16 @@ final readonly class TagRepository implements TagRepositoryInterface
         private TagResolver $tagResolver
     ) {
     }
+
+    /**
+     * @return array<int, Tag>
+     */
+    public function getTagsForElement(TagElement $tagElement): array
+    {
+        return $this->tagResolver->getTagsForElement($tagElement->getType(), $tagElement->getId());
+    }
+
+
 
     /**
      * @throws ElementNotFoundException

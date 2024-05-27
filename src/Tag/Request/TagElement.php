@@ -16,29 +16,25 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Request;
 
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
-
 /**
  * @internal
  */
-final readonly class TagsParameters extends CollectionParameters
+final readonly class TagElement
 {
     public function __construct(
-        int $page = 1,
-        int $pageSize = 50,
-        private ?int $parentId = null,
-        private ?string $filter = null,
-    ) {
-        parent::__construct($page, $pageSize);
+        private ?string $type = null,
+        private ?int $id = null
+    )
+    {
     }
 
-    public function getParentId(): ?int
+    public function getType(): ?string
     {
-        return $this->parentId;
+        return $this->type;
     }
 
-    public function getFilter(): ?string
+    public function getId(): ?int
     {
-        return $this->filter;
+        return $this->id;
     }
 }

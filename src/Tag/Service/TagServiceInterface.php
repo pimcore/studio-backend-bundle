@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidParentIdException;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
@@ -34,6 +35,14 @@ interface TagServiceInterface
      */
     public function getTag(int $id): Tag;
 
+    /**
+     * @return array<int, Tag>
+     */
+    public function getTagsForElement(TagElement $tagElement): array;
+
+    /**
+     * @return array<int, Tag>
+     */
     public function listTags(TagsParameters $parameters): array;
 
     /**

@@ -34,10 +34,6 @@ use OpenApi\Attributes\Tag;
     description: 'DataObject operations to get/update/create/delete data objects'
 )]
 #[Tag(
-    name: Tags::Tags->name,
-    description: 'Tag operations to get/list/create/update/delete tags'
-)]
-#[Tag(
     name: Tags::Dependencies->name,
     description: 'Get dependencies for a single element.'
 )]
@@ -56,6 +52,14 @@ use OpenApi\Attributes\Tag;
 #[Tag(
     name: Tags::PropertiesForElement->value,
     description: 'Property operations to get/update properties for an element'
+)]
+#[Tag(
+    name: Tags::Tags->name,
+    description: 'Tag operations to get/list/create/update/delete tags'
+)]
+#[Tag(
+    name: Tags::TagsForElement->value,
+    description: 'Tag operations to get tags for an element'
 )]
 #[Tag(
     name: Tags::Translation->name,
