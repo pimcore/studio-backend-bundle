@@ -127,28 +127,4 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
 
         $predefined->delete();
     }
-
-    /**
-     * @throws ElementSavingFailedException
-     */
-    public function updateElementProperties(string $elementType, int $id, UpdateElementProperties $items): void
-    {
-        $element = $this->getElement($this->serviceResolver, $elementType, $id);
-        $properties = [];
-        foreach($items->getProperties() as $updateProperty) {
-            $property = new Property();
-            $property->setType($updateProperty->getType());
-            $property->setName($updateProperty->getKey());
-            $property->setData($updateProperty->getData());
-            $property->setInheritable($updateProperty->getInheritable());
-            $properties[$updateProperty->getKey()] = $property;
-        }
-        $element->setProperties($properties);
-
-        try {
-            $element->save();
-        } catch (DuplicateFullPathException $e) {
-            throw new ElementSavingFailedException($id, $e->getMessage());
-        }
-    }
 }

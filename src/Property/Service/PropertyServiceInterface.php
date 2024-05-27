@@ -59,11 +59,6 @@ interface PropertyServiceInterface
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void;
 
     /**
-     * @throws ElementSavingFailedException
-     */
-    public function updateElementProperties(string $elementType, int $id, UpdateElementProperties $items): void;
-
-    /**
      * @throws PropertyNotFoundException
      */
     public function deletePredefinedProperty(string $id): void;
