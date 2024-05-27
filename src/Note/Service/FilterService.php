@@ -37,6 +37,9 @@ final class FilterService implements FilterServiceInterface
         }
     }
 
+    /**
+     * @throws InvalidFilterException
+     */
     public function applyFieldFilters(NoteListing $list, NoteParameters $parameters): void
     {
         try {

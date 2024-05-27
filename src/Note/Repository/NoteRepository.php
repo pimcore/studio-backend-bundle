@@ -20,6 +20,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\NoteResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
 use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
@@ -62,11 +63,23 @@ final readonly class NoteRepository implements NoteRepositoryInterface
         return $note;
     }
 
+    /**
+     * @throws ElementNotFoundException
+     */
     public function getNote(int $id): Note
     {
-        return $this->noteResolver->getById($id);
+        $note = $this->noteResolver->getById($id);
+
+        if (!$note) {
+            throw new ElementNotFoundException($id, 'Note');
+        }
+
+        return $note;
     }
 
+    /**
+     * @throws InvalidFilterException
+     */
     public function listNotes(NoteElement $noteElement, NoteParameters $parameters): NoteListing
     {
         $list = new NoteListing();

@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
@@ -43,7 +44,7 @@ final readonly class NoteService implements NoteServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException
+     * @throws ElementSavingFailedException|ElementNotFoundException
      */
     public function createNote(NoteElement $noteElement, CreateNote $createNote): Note
     {
@@ -51,6 +52,9 @@ final readonly class NoteService implements NoteServiceInterface
         return $this->getNote($note->getId());
     }
 
+    /**
+     * @throws InvalidFilterException
+     */
     public function listNotes(NoteElement $noteElement, NoteParameters $parameters): Collection
     {
         $noteListing = $this->noteRepository->listNotes($noteElement, $parameters);
@@ -83,9 +87,14 @@ final readonly class NoteService implements NoteServiceInterface
         $this->noteRepository->deleteNote($id);
     }
 
+    /**
+     * @throws ElementNotFoundException
+     */
     private function getNote(int $id): Note
     {
-        $note =  $this->noteHydrator->hydrate($this->noteRepository->getNote($id));
+        $note = $this->noteHydrator->hydrate(
+            $this->noteRepository->getNote($id)
+        );
 
         $this->eventDispatcher->dispatch(
             new NoteEvent($note),
