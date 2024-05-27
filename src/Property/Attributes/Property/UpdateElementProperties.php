@@ -30,7 +30,8 @@ final class UpdateElementProperties extends Property
         parent::__construct(
             'properties',
             type: 'array',
-            items: new Items(ref: UpdateElementProperty::class)
+            items: new Items(ref: UpdateElementProperty::class),
+            nullable: true,
         );
     }
 }
