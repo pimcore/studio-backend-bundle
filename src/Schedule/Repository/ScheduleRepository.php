@@ -84,7 +84,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         foreach ($schedules as $schedule) {
             $task = $this->taskResolver->getById($schedule->getId());
 
-            if(!$task) {
+            if (!$task) {
                 continue;
             }
 
@@ -110,7 +110,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         $task = $this->taskResolver->getById($id);
 
         if (!$task) {
-            throw new ElementNotFoundException( $id, 'Task');
+            throw new ElementNotFoundException($id, 'Task');
         }
 
         $queryBuilder = $this->dbResolver->get()->createQueryBuilder();
