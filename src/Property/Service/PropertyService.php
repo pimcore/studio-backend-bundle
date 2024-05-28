@@ -126,11 +126,6 @@ final readonly class PropertyService implements PropertyServiceInterface
         $this->propertyRepository->updatePredefinedProperty($id, $property);
     }
 
-    public function updateElementProperties(string $elementType, int $id, UpdateElementProperties $items): void
-    {
-        $this->propertyRepository->updateElementProperties($elementType, $id, $items);
-    }
-
     /**
      * @throws PropertyNotFoundException
      */
