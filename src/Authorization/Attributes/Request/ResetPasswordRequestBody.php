@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\ResetPassword;
 
