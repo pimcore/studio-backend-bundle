@@ -54,11 +54,5 @@
         "Pimcore\\Bundle\\StudioBackendBundle\\PimcoreStudioBackendBundle"
       ]
     }
-  },
-  "repositories": {
-    "private-packagist": {
-      "type": "composer",
-      "url": "https://repo.pimcore.com/pimcore-developers/"
-    }
   }
 }
