@@ -90,9 +90,4 @@ final readonly class ScheduleService implements ScheduleServiceInterface
     {
         $this->scheduleRepository->delete($id);
     }
-
-    private function getSchedule(int $id): Schedule
-    {
-
-    }
 }
