@@ -54,7 +54,7 @@ final class DeleteController extends AbstractApiController
         operationId: 'deleteSchedule',
         summary: 'Delete schedule with given id',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::Properties->name]
+        tags: [Tags::Schedule->name]
     )]
     #[IdParameter(type: 'schedule', schema: new Schema(type: 'integer', example: 123))]
     #[SuccessResponse(
@@ -65,9 +65,9 @@ final class DeleteController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteProperty(string $id): JsonResponse
+    public function deleteSchedule(int $id): JsonResponse
     {
-        $this->scheduleService->delete($id);
+        $this->scheduleService->deleteSchedule($id);
 
         return $this->jsonResponse(['id' => $id]);
     }

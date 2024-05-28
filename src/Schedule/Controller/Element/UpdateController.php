@@ -16,28 +16,30 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Controller\Element;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Response\Property\NoteCollection;
+use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Attributes\Request\ElementScheduleRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class UpdateController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
@@ -49,16 +51,20 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_get_element_schedules', methods: ['GET'])]
-    #[Get(
+    /**
+     * @throws DatabaseException
+     */
+    #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_update_schedules', methods: ['PUT'])]
+    #[Put(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
-        operationId: 'getSchedulesForElementByTypeAndId',
-        summary: 'Get schedules for an element',
+        operationId: 'updateSchedulesForElementByTypeAndId',
+        summary: 'Update schedules for an element',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
+    #[ElementScheduleRequestBody]
     #[SuccessResponse(
         description: 'Paginated schedules',
         content: new ItemsJson(Schedule::class)
@@ -67,11 +73,14 @@ final class CollectionController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND
     ])]
-    public function getSchedules(
+    public function updateSchedules(
         string $elementType,
-        int $id
+        int $id,
+        #[MapRequestPayload] UpdateElementSchedules $updateElementSchedules
     ): JsonResponse
     {
+        $this->scheduleService->updateSchedules($elementType, $id, $updateElementSchedules);
+
         return $this->jsonResponse(['items' => $this->scheduleService->listSchedules($elementType, $id)]);
     }
 }

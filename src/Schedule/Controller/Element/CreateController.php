@@ -16,20 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Controller\Element;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Response\Property\NoteCollection;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -37,41 +34,35 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class CreateController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly ScheduleServiceInterface $scheduleService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_get_element_schedules', methods: ['GET'])]
-    #[Get(
+    #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_create_schedule', methods: ['POST'])]
+    //#[IsGranted('STUDIO_API')]
+    #[POST(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
-        operationId: 'getSchedulesForElementByTypeAndId',
-        summary: 'Get schedules for an element',
+        operationId: 'createSchedule',
+        summary: 'Create schedule for element',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
     #[SuccessResponse(
-        description: 'Paginated schedules',
-        content: new ItemsJson(Schedule::class)
+        description: 'Created schedule',
+        content: new JsonContent(ref: Schedule::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND
     ])]
-    public function getSchedules(
-        string $elementType,
-        int $id
-    ): JsonResponse
+    public function createSchedule(string $elementType, int $id): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->scheduleService->listSchedules($elementType, $id)]);
+        return $this->jsonResponse($this->scheduleService->createSchedule($elementType, $id));
     }
 }

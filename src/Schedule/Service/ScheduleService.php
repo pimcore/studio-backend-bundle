@@ -16,9 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Event\ScheduleEvent;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Hydrator\ScheduleHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Repository\ScheduleRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -33,6 +35,20 @@ final readonly class ScheduleService implements ScheduleServiceInterface
         private EventDispatcherInterface $eventDispatcher
     )
     {
+    }
+
+    public function createSchedule(string $elementType, int $id): Schedule
+    {
+        $task = $this->scheduleRepository->createSchedule($elementType, $id);
+
+        $schedule = $this->scheduleHydrator->hydrate($task);
+
+        $this->eventDispatcher->dispatch(
+            new ScheduleEvent($schedule),
+            ScheduleEvent::EVENT_NAME
+        );
+
+        return $schedule;
     }
 
     /**
@@ -58,8 +74,25 @@ final readonly class ScheduleService implements ScheduleServiceInterface
         return $schedules;
     }
 
-    public function delete(int $id): void
+    /**
+     * @throws DatabaseException
+     */
+    public function updateSchedules(
+        string $elementType,
+        int $id,
+        UpdateElementSchedules $updateElementSchedules
+    ): void
+    {
+       $this->scheduleRepository->updateSchedules($elementType, $id, $updateElementSchedules);
+    }
+
+    public function deleteSchedule(int $id): void
     {
         $this->scheduleRepository->delete($id);
+    }
+
+    private function getSchedule(int $id): Schedule
+    {
+
     }
 }
