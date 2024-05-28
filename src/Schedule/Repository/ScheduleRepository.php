@@ -105,7 +105,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
     /**
      * @throws ElementNotFoundException|DatabaseException
      */
-    public function delete(int $id): void
+    public function deleteSchedule(int $id): void
     {
         $task = $this->taskResolver->getById($id);
 

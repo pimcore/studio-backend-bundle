@@ -42,5 +42,5 @@ interface ScheduleRepositoryInterface
     /**
      * @throws ElementNotFoundException|DatabaseException
      */
-    public function delete(int $id): void;
+    public function deleteSchedule(int $id): void;
 }
