@@ -15,3 +15,13 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenService
+
+  Pimcore\Bundle\StudioBackendBundle\Authorization\RateLimiter\RateLimiterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Authorization\RateLimiter\RateLimiter
+
+  Pimcore\Bundle\StudioBackendBundle\Authorization\Service\UserServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Authorization\Service\UserService
+
+  Pimcore\Bundle\StudioBackendBundle\Authorization\Service\MailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Authorization\Service\MailService
+    arguments: ['@Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider']
