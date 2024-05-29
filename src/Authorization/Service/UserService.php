@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Service;
 
-use JetBrains\PhpStorm\ArrayShape;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\RateLimiter\RateLimiterInterface;
@@ -53,7 +52,7 @@ final readonly class UserService implements UserServiceInterface
 
         $userChecks = $this->userChecks($user);
 
-        if(!$user || !$userChecks['success']) {
+        if (!$user || !$userChecks['success']) {
             $this->pimcoreLogger->error('Reset password failed', ['error' => $userChecks['error']]);
             return;
         }
@@ -69,7 +68,9 @@ final readonly class UserService implements UserServiceInterface
 
     }
 
-    #[ArrayShape(['success' => 'boolean', 'error' => 'string'])]
+    /**
+     * @return array<string, bool|string>
+     */
     private function userChecks(?UserInterface $user): array
     {
         if (!$user) {

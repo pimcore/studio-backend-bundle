@@ -51,8 +51,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class ResetPasswordController extends AbstractApiController
 {
     public function __construct(
-       private readonly UserServiceInterface $userService,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        private readonly UserServiceInterface $userService
     ) {
         parent::__construct($serializer);
     }

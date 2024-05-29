@@ -76,7 +76,13 @@ final readonly class MailService implements MailServiceInterface
             try {
                 $mail = $this->toolResolver->getMail([$user->getEmail()], 'Pimcore lost password service');
                 $mail->setIgnoreDebugMode(true);
-                $mail->text("Login to pimcore and change your password using the following link. This temporary login link will expire in 24 hours: \r\n\r\n" . $loginUrl);
+                $mail->text(
+                    sprintf(
+                    "Login to pimcore and change your password using the following link. 
+                           This temporary login link will expire in 24 hours: \r\n\r\n %s",
+                    $loginUrl
+                    )
+                );
                 $mail->send();
             } catch (Exception $e) {
                throw new SendMailException();
