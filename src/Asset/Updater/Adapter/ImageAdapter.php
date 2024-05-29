@@ -30,10 +30,6 @@ final readonly class ImageAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'image';
 
-    public function __construct()
-    {
-    }
-
     public function update(ElementInterface $element, array $data): void
     {
         if (!$element instanceof Image) {
@@ -68,6 +64,6 @@ final readonly class ImageAdapter implements UpdateAdapterInterface
         }
 
         $image->setCustomSetting('focalPointX', $data[self::INDEX_KEY]['focalPoint']['x']);
-        $image->setCustomSetting('focalPointY',$data[self::INDEX_KEY]['focalPoint']['y']);
+        $image->setCustomSetting('focalPointY', $data[self::INDEX_KEY]['focalPoint']['y']);
     }
 }
