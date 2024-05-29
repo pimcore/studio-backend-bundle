@@ -25,28 +25,22 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
-    title: 'Schedule',
+    title: 'UpdateSchedule',
     type: 'object'
 )]
-final class Schedule implements AdditionalAttributesInterface
+final readonly class UpdateSchedule
 {
-    use AdditionalAttributesTrait;
-
     public function __construct(
         #[Property(description: 'id', type: 'integer', example: 666)]
-        private readonly int $id,
-        #[Property(description: 'ctype', type: 'string', example: 'Type of element')]
-        private readonly string $ctype,
+        private int $id,
         #[Property(description: 'Date of schedule', type: 'integer', example: 1634025600)]
-        private readonly int $date,
+        private int $date,
         #[Property(description: 'Action', type: 'string', enum: ['publish-version', 'delete'])]
-        private readonly ?string $action,
+        private ?string $action,
         #[Property(description: 'Version ID', type: 'integer', example: 987)]
-        private readonly ?int $version,
+        private ?int $version,
         #[Property(description: 'Active', type: 'boolean', example: true)]
-        private readonly bool $active,
-        #[Property(description: 'User ID', type: 'integer', example: 999)]
-        private readonly int $userId
+        private bool $active,
     ) {
 
     }
@@ -54,11 +48,6 @@ final class Schedule implements AdditionalAttributesInterface
     public function getId(): int
     {
         return $this->id;
-    }
-
-    public function getCtype(): string
-    {
-        return $this->ctype;
     }
 
     public function getDate(): int
@@ -79,10 +68,5 @@ final class Schedule implements AdditionalAttributesInterface
     public function isActive(): bool
     {
         return $this->active;
-    }
-
-    public function getUserId(): int
-    {
-        return $this->userId;
     }
 }
