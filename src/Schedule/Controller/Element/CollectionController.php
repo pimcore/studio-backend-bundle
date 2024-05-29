@@ -18,11 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Controller\Element;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Response\Property\NoteCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -60,7 +58,7 @@ final class CollectionController extends AbstractApiController
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
     #[SuccessResponse(
-        description: 'Paginated schedules',
+        description: 'List of schedules',
         content: new ItemsJson(Schedule::class)
     )]
     #[DefaultResponses([

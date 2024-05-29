@@ -66,7 +66,7 @@ final class UpdateController extends AbstractApiController
     #[IdParameter(type: 'element')]
     #[ElementScheduleRequestBody]
     #[SuccessResponse(
-        description: 'Paginated schedules',
+        description: 'List of schedules',
         content: new ItemsJson(Schedule::class)
     )]
     #[DefaultResponses([

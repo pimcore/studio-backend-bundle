@@ -19,13 +19,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Controller;
 use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -45,7 +45,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws ElementNotFoundException|DatabaseException
      */
     #[Route('/schedules/{id}', name: 'pimcore_studio_api_delete_schedule', methods: ['DELETE'])]
     //#[IsGranted('STUDIO_API')]

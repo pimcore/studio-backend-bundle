@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Controller\Element;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -43,6 +45,9 @@ final class CreateController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws NotAuthorizedException|ElementNotFoundException
+     */
     #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_create_schedule', methods: ['POST'])]
     //#[IsGranted('STUDIO_API')]
     #[POST(

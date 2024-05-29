@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Model\Schedule\Task;
 
@@ -26,7 +27,15 @@ use Pimcore\Model\Schedule\Task;
  */
 interface ScheduleRepositoryInterface
 {
+    /**
+     * @throws NotAuthorizedException
+     */
     public function createSchedule(string $elementType, int $id): Task;
+
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function getSchedule(int $id): Task;
 
     public function listSchedules(string $elementType, int $id): array;
 

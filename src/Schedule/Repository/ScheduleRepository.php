@@ -24,6 +24,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Schedule\TaskResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -45,6 +46,9 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
     {
     }
 
+    /**
+     * @throws NotAuthorizedException
+     */
     public function createSchedule(string $elementType, int $id): Task
     {
         $user = $this->securityService->getCurrentUser();
@@ -56,6 +60,20 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         $task->setActive(true);
         $task->setUserId($user->getId());
         $task->save();
+
+        return $task;
+    }
+
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function getSchedule(int $id): Task
+    {
+        $task = $this->taskResolver->getById($id);
+
+        if (!$task) {
+            throw new ElementNotFoundException($id, 'Task');
+        }
 
         return $task;
     }
@@ -107,17 +125,13 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
      */
     public function deleteSchedule(int $id): void
     {
-        $task = $this->taskResolver->getById($id);
-
-        if (!$task) {
-            throw new ElementNotFoundException($id, 'Task');
-        }
+        $task = $this->getSchedule($id);
 
         $queryBuilder = $this->dbResolver->get()->createQueryBuilder();
 
         $queryBuilder->delete('schedule_tasks')
             ->where('id = :id')
-            ->setParameter('id', $id);
+            ->setParameter('id', $task->getId());
 
         try {
             $queryBuilder->executeStatement();

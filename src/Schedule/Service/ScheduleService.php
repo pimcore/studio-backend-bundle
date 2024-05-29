@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Event\ScheduleEvent;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Hydrator\ScheduleHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Repository\ScheduleRepositoryInterface;
@@ -37,18 +39,14 @@ final readonly class ScheduleService implements ScheduleServiceInterface
     {
     }
 
+    /**
+     * @throws NotAuthorizedException|ElementNotFoundException
+     */
     public function createSchedule(string $elementType, int $id): Schedule
     {
         $task = $this->scheduleRepository->createSchedule($elementType, $id);
 
-        $schedule = $this->scheduleHydrator->hydrate($task);
-
-        $this->eventDispatcher->dispatch(
-            new ScheduleEvent($schedule),
-            ScheduleEvent::EVENT_NAME
-        );
-
-        return $schedule;
+        return $this->getSchedule($task->getId());
     }
 
     /**
@@ -86,8 +84,25 @@ final readonly class ScheduleService implements ScheduleServiceInterface
        $this->scheduleRepository->updateSchedules($elementType, $id, $updateElementSchedules);
     }
 
+    /**
+     * @throws ElementNotFoundException|DatabaseException
+     */
     public function deleteSchedule(int $id): void
     {
         $this->scheduleRepository->deleteSchedule($id);
+    }
+
+    private function getSchedule(int $id): Schedule
+    {
+        $task = $this->scheduleRepository->getSchedule($id);
+
+        $schedule = $this->scheduleHydrator->hydrate($task);
+
+        $this->eventDispatcher->dispatch(
+            new ScheduleEvent($schedule),
+            ScheduleEvent::EVENT_NAME
+        );
+
+        return $schedule;
     }
 }
