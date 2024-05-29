@@ -27,3 +27,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\DataServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\DataService
+
+
+

@@ -14,22 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller\Element;
+namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Controller\Element;
 
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Request\ElementPropertyRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\UpdateElementProperties;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
-use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Attributes\Request\ElementScheduleRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
+use Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -40,45 +41,46 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class UpdateController extends AbstractApiController
 {
+    use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
-        private readonly PropertyServiceInterface $propertyService
-    ) {
+        private readonly ScheduleServiceInterface $scheduleService
+    )
+    {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws ElementNotFoundException
+     * @throws DatabaseException
      */
-    #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_update_element_properties', methods: ['PUT'])]
-    //#[IsGranted('STUDIO_API')]
+    #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_update_schedules', methods: ['PUT'])]
     #[Put(
-        path: self::API_PATH . '/properties/{elementType}/{id}',
-        operationId: 'updatePropertiesForElementByTypeAndId',
-        summary: 'Update properties for an element based on the element type and the element id',
+        path: self::API_PATH . '/schedules/{elementType}/{id}',
+        operationId: 'updateSchedulesForElementByTypeAndId',
+        summary: 'Update schedules for an element',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::PropertiesForElement->value]
+        tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
-    #[ElementPropertyRequestBody]
+    #[ElementScheduleRequestBody]
     #[SuccessResponse(
-        description: 'Updated Element Properties data as json',
-        content: new ItemsJson(ElementProperty::class)
+        description: 'List of schedules',
+        content: new ItemsJson(Schedule::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::NOT_FOUND
     ])]
-    public function updateProperties(
+    public function updateSchedules(
         string $elementType,
         int $id,
-        #[MapRequestPayload] UpdateElementProperties $items
-    ): JsonResponse {
-        $this->propertyService->updateElementProperties($elementType, $id, $items);
+        #[MapRequestPayload] UpdateElementSchedules $updateElementSchedules
+    ): JsonResponse
+    {
+        $this->scheduleService->updateSchedules($elementType, $id, $updateElementSchedules);
 
-        return $this->jsonResponse(
-            ['items' => $this->propertyService->getElementProperties($elementType, $id)]
-        );
+        return $this->jsonResponse(['items' => $this->scheduleService->listSchedules($elementType, $id)]);
     }
 }
