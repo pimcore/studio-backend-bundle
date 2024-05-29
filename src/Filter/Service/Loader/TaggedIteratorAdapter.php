@@ -24,7 +24,7 @@ use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
  */
 final class TaggedIteratorAdapter implements FilterServiceLoaderInterface
 {
-    public const FILTER_SERVICE_TAG = 'pimcore.studio_api.filter_service';
+    public const FILTER_SERVICE_TAG = 'pimcore.studio_backend.filter_service';
 
     public function __construct(
         #[TaggedIterator(self::FILTER_SERVICE_TAG)]

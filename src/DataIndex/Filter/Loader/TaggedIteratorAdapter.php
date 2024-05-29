@@ -25,13 +25,13 @@ use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
  */
 final class TaggedIteratorAdapter implements FilterLoaderInterface
 {
-    public const FILTER_TAG = 'pimcore.studio_api.open_search.filter';
+    public const FILTER_TAG = 'pimcore.studio_backend.open_search.filter';
 
-    public const FILTER_ASSET_TAG = 'pimcore.studio_api.open_search.asset.filter';
+    public const FILTER_ASSET_TAG = 'pimcore.studio_backend.open_search.asset.filter';
 
-    public const FILTER_DATA_OBJECT_TAG = 'pimcore.studio_api.open_search.data_object.filter';
+    public const FILTER_DATA_OBJECT_TAG = 'pimcore.studio_backend.open_search.data_object.filter';
 
-    public const FILTER_DOCUMENT_TAG = 'pimcore.studio_api.open_search.document.filter';
+    public const FILTER_DOCUMENT_TAG = 'pimcore.studio_backend.open_search.document.filter';
 
     public function __construct(
         #[TaggedIterator(self::FILTER_TAG)]

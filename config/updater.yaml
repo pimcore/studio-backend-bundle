@@ -1,0 +1,14 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Updater\Service\Loader\TaggedIteratorAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateService
+
+  Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\PropertiesAdapter:
+    tags : ['pimcore.studio_backend.update_adapter']

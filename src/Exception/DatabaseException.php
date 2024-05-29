@@ -14,21 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Attribute;
-use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
-use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdateElementProperty;
-
-#[Attribute(Attribute::TARGET_METHOD)]
-final class ElementPropertyRequestBody extends RequestBody
+/**
+ * @internal
+ */
+final class DatabaseException extends AbstractApiException
 {
     public function __construct()
     {
         parent::__construct(
-            required: true,
-            content: new ItemsJson(UpdateElementProperty::class)
+            500,
+            'A database error occurred.'
         );
     }
 }
