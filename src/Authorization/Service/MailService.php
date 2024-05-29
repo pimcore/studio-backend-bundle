@@ -33,6 +33,8 @@ use Symfony\Component\Routing\RouterInterface;
  */
 final readonly class MailService implements MailServiceInterface
 {
+    private const RESET_MAIL_TEXT = "Login to pimcore and change your password using the following link.
+                               This temporary login link will expire in 24 hours: \r\n\r\n %s";
     private string $domain;
 
     public function __construct(
@@ -76,16 +78,10 @@ final readonly class MailService implements MailServiceInterface
             try {
                 $mail = $this->toolResolver->getMail([$user->getEmail()], 'Pimcore lost password service');
                 $mail->setIgnoreDebugMode(true);
-                $mail->text(
-                    sprintf(
-                       "Login to pimcore and change your password using the following link.
-                       This temporary login link will expire in 24 hours: \r\n\r\n %s",
-                    $loginUrl
-                    )
-                );
+                $mail->text(sprintf(self::RESET_MAIL_TEXT, $loginUrl));
                 $mail->send();
-            } catch (Exception $e) {
-               throw new SendMailException();
+            } catch (Exception $exception) {
+               throw new SendMailException($exception->getMessage());
             }
         }
     }

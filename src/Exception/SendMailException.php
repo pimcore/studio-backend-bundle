@@ -16,16 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Throwable;
+
 /**
  * @internal
  */
 final class SendMailException extends AbstractApiException
 {
-    public function __construct()
+    public function __construct(string $originalMessage)
     {
         parent::__construct(
             500,
-            'Failed to send reset password mail'
+            sprintf('Failed to send reset password mail: %s', $originalMessage),
         );
     }
 }
