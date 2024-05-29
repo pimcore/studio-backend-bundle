@@ -20,10 +20,12 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Tag\TagResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollection;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\ElementTagIdCollection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Element\Tag;
 use Pimcore\Model\Element\Tag\Listing as TagListing;
@@ -49,7 +51,41 @@ final readonly class TagRepository implements TagRepositoryInterface
         return $this->tagResolver->getTagsForElement($tagElement->getType(), $tagElement->getId());
     }
 
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function assignTagToElement(TagElement $tagElement, int $tagId): void
+    {
+        $tag = $this->getTagById($tagId);
+        $this->tagResolver->assignTagToElement($tagElement->getType(), $tagElement->getId(), $tag);
+    }
 
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function unassignTagFromElement(TagElement $tagElement, int $tagId): void
+    {
+        $tag = $this->getTagById($tagId);
+        $this->tagResolver->unassignTagFromElement($tagElement->getType(), $tagElement->getId(), $tag);
+    }
+
+    public function batchAssignTagsToElements(BatchCollection $collection): void
+    {
+        $this->tagResolver->batchAssignTagsToElements(
+            $collection->getType(),
+            $collection->getElementIds(),
+            $collection->getTagIds()
+        );
+    }
+
+    public function batchReplaceTagsToElements(BatchCollection $collection): void
+    {
+        $this->tagResolver->batchReplaceTagsForElements(
+            $collection->getType(),
+            $collection->getElementIds(),
+            $collection->getTagIds()
+        );
+    }
 
     /**
      * @throws ElementNotFoundException

@@ -9,6 +9,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidParentIdException;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Event\TagEvent;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Hydrator\TagHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Repository\TagRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollection;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
@@ -49,6 +50,24 @@ final readonly class TagService implements TagServiceInterface
             $this->dispatchTagEvent($result[$tag->getId()]);
         }
         return $result;
+    }
+
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function assignTagToElement(TagElement $tagElement, int $tagId): void
+    {
+        $this->tagRepository->assignTagToElement($tagElement, $tagId);
+    }
+
+    public function batchAssignTagsToElements(BatchCollection $collection): void
+    {
+        $this->tagRepository->batchAssignTagsToElements($collection);
+    }
+
+    public function batchReplaceTagsToElements(BatchCollection $collection): void
+    {
+        $this->tagRepository->batchReplaceTagsToElements($collection);
     }
 
     /**
@@ -114,5 +133,10 @@ final readonly class TagService implements TagServiceInterface
     private function dispatchTagEvent(Tag $tag): void
     {
         $this->eventDispatcher->dispatch(new TagEvent($tag), TagEvent::EVENT_NAME);
+    }
+
+    public function unassignTagFromElement(TagElement $tagElement, int $tagId): void
+    {
+        $this->tagRepository->unassignTagFromElement($tagElement, $tagId);
     }
 }

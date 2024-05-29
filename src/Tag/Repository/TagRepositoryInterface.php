@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollection;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
@@ -39,6 +40,20 @@ interface TagRepositoryInterface
      * @return array<int, Tag>
      */
     public function getTagsForElement(TagElement $tagElement): array;
+
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function assignTagToElement(TagElement $tagElement, int $tagId): void;
+
+    /**
+     * @throws ElementNotFoundException
+     */
+    public function unassignTagFromElement(TagElement $tagElement, int $tagId): void;
+
+    public function batchAssignTagsToElements(BatchCollection $collection): void;
+
+    public function batchReplaceTagsToElements(BatchCollection $collection): void;
 
     public function listTags(TagsParameters $parameters): TagListing;
 
