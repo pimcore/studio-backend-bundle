@@ -78,8 +78,8 @@ final readonly class MailService implements MailServiceInterface
                 $mail->setIgnoreDebugMode(true);
                 $mail->text(
                     sprintf(
-                    "Login to pimcore and change your password using the following link. 
-                           This temporary login link will expire in 24 hours: \r\n\r\n %s",
+                        "Login to pimcore and change your password using the following link.
+                                                   This temporary login link will expire in 24 hours: \r\n\r\n %s",
                     $loginUrl
                     )
                 );
