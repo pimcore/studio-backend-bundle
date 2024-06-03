@@ -30,9 +30,19 @@ use OpenApi\Attributes\Schema;
 final readonly class ElementTagIdCollection
 {
     public function __construct(
-        #[Property(description: 'element ids', type: 'array', items: new Items(type: 'integer', example: 1), example: [1,2,3])]
+        #[Property(
+            description: 'element ids',
+            type: 'array',
+            items: new Items(type: 'integer', example: 1),
+            example: [1,2,3]
+        )]
         private array $elementIds,
-        #[Property(description: 'tag ids', type: 'array', items: new Items(type: 'integer', example: 1), example: [1,2,3])]
+        #[Property(
+            description: 'tag ids',
+            type: 'array',
+            items: new Items(type: 'integer', example: 1),
+            example: [1,2,3]
+        )]
         private array $tagIds,
     )
     {

@@ -51,7 +51,11 @@ final class BatchReplaceController extends AbstractApiController
     /**
      * @throws ElementSavingFailedException|ElementNotFoundException
      */
-    #[Route('/tags/batch/replace/{elementType}', name: 'pimcore_studio_api_batch_replace_elements_tags', methods: ['POST'])]
+    #[Route(
+        '/tags/batch/replace/{elementType}',
+        name: 'pimcore_studio_api_batch_replace_elements_tags',
+        methods: ['POST']
+    )]
     //#[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Post(
         path: self::API_PATH . '/tags/batch/replace/{elementType}',
