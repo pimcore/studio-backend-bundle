@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Event\PredefinedPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
-use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
