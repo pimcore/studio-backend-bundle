@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\ElementTag;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\TagId;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ElementTagRequestBody extends RequestBody
@@ -28,7 +28,7 @@ final class ElementTagRequestBody extends RequestBody
     {
         parent::__construct(
             required: true,
-            content: new JsonContent(ref: ElementTag::class)
+            content: new JsonContent(ref: TagId::class)
         );
     }
 }

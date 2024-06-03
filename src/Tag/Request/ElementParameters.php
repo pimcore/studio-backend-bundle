@@ -14,30 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tag\Schema;
-
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\Request;
 
 /**
  * @internal
  */
-#[Schema(
-    title: 'ElementTag',
-    type: 'object'
-)]
-final readonly class ElementTag
+final readonly class ElementParameters
 {
     public function __construct(
-        #[Property(description: 'tag id', type: 'integer', example: 0)]
-        private int $tagId,
+        private ?string $type = null,
+        private ?int $id = null
     )
     {
     }
 
-    public function getTagId(): int
+    public function getType(): ?string
     {
-        return $this->tagId;
+        return $this->type;
     }
 
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 }

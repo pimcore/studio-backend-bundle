@@ -25,8 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdPara
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\ElementTagRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\ElementTag;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\TagId;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -70,10 +70,10 @@ final class AssignController extends AbstractApiController
     public function assignTag(
         string $elementType,
         int $id,
-        #[MapRequestPayload] ElementTag $assignTag
+        #[MapRequestPayload] TagId $assignTag
     ): JsonResponse
     {
-        $this->tagService->assignTagToElement(new TagElement($elementType, $id), $assignTag->getTagId());
+        $this->tagService->assignTagToElement(new ElementParameters($elementType, $id), $assignTag->getTagId());
         return $this->jsonResponse(['id' => $id]);
     }
 }

@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\Elemen
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\ElementsTagsCollectionRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollection;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\ElementTagIdCollection;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
@@ -75,7 +75,7 @@ final class BatchReplaceController extends AbstractApiController
     ): JsonResponse
     {
         $this->tagService->batchReplaceTagsToElements(
-            new BatchCollection(
+            new BatchCollectionParameters(
                 $elementType,
                 $elementTagCollection->getElementIds(),
                 $elementTagCollection->getTagsIds()

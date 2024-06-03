@@ -20,9 +20,9 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Tag\TagResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollection;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\ElementTagIdCollection;
@@ -46,7 +46,7 @@ final readonly class TagRepository implements TagRepositoryInterface
     /**
      * @return array<int, Tag>
      */
-    public function getTagsForElement(TagElement $tagElement): array
+    public function getTagsForElement(ElementParameters $tagElement): array
     {
         return $this->tagResolver->getTagsForElement($tagElement->getType(), $tagElement->getId());
     }
@@ -54,7 +54,7 @@ final readonly class TagRepository implements TagRepositoryInterface
     /**
      * @throws ElementNotFoundException
      */
-    public function assignTagToElement(TagElement $tagElement, int $tagId): void
+    public function assignTagToElement(ElementParameters $tagElement, int $tagId): void
     {
         $tag = $this->getTagById($tagId);
         $this->tagResolver->assignTagToElement($tagElement->getType(), $tagElement->getId(), $tag);
@@ -63,13 +63,13 @@ final readonly class TagRepository implements TagRepositoryInterface
     /**
      * @throws ElementNotFoundException
      */
-    public function unassignTagFromElement(TagElement $tagElement, int $tagId): void
+    public function unassignTagFromElement(ElementParameters $tagElement, int $tagId): void
     {
         $tag = $this->getTagById($tagId);
         $this->tagResolver->unassignTagFromElement($tagElement->getType(), $tagElement->getId(), $tag);
     }
 
-    public function batchAssignTagsToElements(BatchCollection $collection): void
+    public function batchAssignTagsToElements(BatchCollectionParameters $collection): void
     {
         $this->tagResolver->batchAssignTagsToElements(
             $collection->getType(),
@@ -78,7 +78,7 @@ final readonly class TagRepository implements TagRepositoryInterface
         );
     }
 
-    public function batchReplaceTagsToElements(BatchCollection $collection): void
+    public function batchReplaceTagsToElements(BatchCollectionParameters $collection): void
     {
         $this->tagResolver->batchReplaceTagsForElements(
             $collection->getType(),

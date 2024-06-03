@@ -19,11 +19,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Request;
 /**
  * @internal
  */
-final readonly class TagElement
+final readonly class BatchCollectionParameters
 {
     public function __construct(
-        private ?string $type = null,
-        private ?int $id = null
+        private string $type,
+        private array $elementIds = [],
+        private array $tagIds = []
     )
     {
     }
@@ -32,9 +33,13 @@ final readonly class TagElement
     {
         return $this->type;
     }
-
-    public function getId(): ?int
+    public function getElementIds(): array
     {
-        return $this->id;
+        return $this->elementIds;
+    }
+
+    public function getTagIds(): array
+    {
+        return $this->tagIds;
     }
 }

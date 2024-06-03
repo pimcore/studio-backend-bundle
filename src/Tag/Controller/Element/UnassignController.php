@@ -25,8 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdPara
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\ElementTagRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\ElementTag;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\TagId;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -70,10 +70,10 @@ final class UnassignController extends AbstractApiController
     public function unassignTag(
         string $elementType,
         int $id,
-        #[MapRequestPayload] ElementTag $unassignTag
+        #[MapRequestPayload] TagId $unassignTag
     ): JsonResponse
     {
-        $this->tagService->unassignTagFromElement(new TagElement($elementType, $id), $unassignTag->getTagId());
+        $this->tagService->unassignTagFromElement(new ElementParameters($elementType, $id), $unassignTag->getTagId());
         return $this->jsonResponse(['id' => $id]);
     }
 }

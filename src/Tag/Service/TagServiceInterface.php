@@ -19,9 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidParentIdException;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollection;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
@@ -39,21 +39,21 @@ interface TagServiceInterface
     /**
      * @return array<int, Tag>
      */
-    public function getTagsForElement(TagElement $tagElement): array;
+    public function getTagsForElement(ElementParameters $tagElement): array;
 
     /**
      * @throws ElementNotFoundException
      */
-    public function assignTagToElement(TagElement $tagElement, int $tagId): void;
+    public function assignTagToElement(ElementParameters $tagElement, int $tagId): void;
 
-    public function batchAssignTagsToElements(BatchCollection $collection): void;
+    public function batchAssignTagsToElements(BatchCollectionParameters $collection): void;
 
-    public function batchReplaceTagsToElements(BatchCollection $collection): void;
+    public function batchReplaceTagsToElements(BatchCollectionParameters $collection): void;
 
     /**
      * @throws ElementNotFoundException
      */
-    public function unassignTagFromElement(TagElement $tagElement, int $tagId): void;
+    public function unassignTagFromElement(ElementParameters $tagElement, int $tagId): void;
 
     /**
      * @return array<int, Tag>

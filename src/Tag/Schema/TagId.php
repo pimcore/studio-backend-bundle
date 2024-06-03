@@ -14,32 +14,30 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tag\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\Schema;
+
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-final readonly class BatchCollection
+#[Schema(
+    title: 'ElementTag',
+    type: 'object'
+)]
+final readonly class TagId
 {
     public function __construct(
-        private string $type,
-        private array $elementIds = [],
-        private array $tagIds = []
+        #[Property(description: 'tag id', type: 'integer', example: 0)]
+        private int $tagId,
     )
     {
     }
 
-    public function getType(): ?string
+    public function getTagId(): int
     {
-        return $this->type;
-    }
-    public function getElementIds(): array
-    {
-        return $this->elementIds;
+        return $this->tagId;
     }
 
-    public function getTagIds(): array
-    {
-        return $this->tagIds;
-    }
 }

@@ -30,7 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Response\Property\TagCollection;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagElement;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
@@ -82,7 +82,7 @@ final class CollectionController extends AbstractApiController
         #[MapQueryString] TagsParameters $parameters = new TagsParameters()
     ): JsonResponse
     {
-        $collection = $this->tagService->getTagsForElement(new TagElement($elementType, $id));
+        $collection = $this->tagService->getTagsForElement(new ElementParameters($elementType, $id));
 
         return $this->getPaginatedCollection(
             $this->serializer,
