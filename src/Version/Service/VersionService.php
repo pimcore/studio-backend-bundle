@@ -19,12 +19,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\VersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
 use Pimcore\Model\Element\ElementInterface;
@@ -50,16 +53,19 @@ final readonly class VersionService implements VersionServiceInterface
     }
 
     public function getVersions(
-        VersionParameters $parameters,
+        ElementParameters $elementParameters,
+        CollectionParameters $parameters,
         UserInterface $user
     ): Collection {
         $element = $this->getElement(
             $this->serviceResolver,
-            $parameters->getElementType(),
-            $parameters->getElementId(),
+            $elementParameters->getType(),
+            $elementParameters->getId(),
         );
         $scheduledTasks = $this->getScheduledTasks($element);
-        $list = $this->repository->listVersions($element, $parameters, $user);
+
+        $list = $this->repository->listVersions($element, $elementParameters->getType(), $parameters, $user);
+
         $versions = [];
         $versionObjects = $list->load();
         foreach ($versionObjects as $versionObject) {
@@ -143,5 +149,13 @@ final readonly class VersionService implements VersionServiceInterface
         }
 
         return $schedules;
+    }
+
+    public function cleanupVersions(
+        ElementParameters $elementParameters,
+        VersionCleanupParameters $parameters
+    ): array
+    {
+        return $this->repository->cleanupVersions($elementParameters, $parameters);
     }
 }

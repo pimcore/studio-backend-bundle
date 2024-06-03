@@ -30,9 +30,7 @@ final readonly class DependencyParameters extends CollectionParameters
     public function __construct(
         int $page,
         int $pageSize,
-        string $dependencyMode,
-        private int $elementId,
-        private string $elementType
+        string $dependencyMode
     ) {
         $this->mode = $this->getDependencyMode($dependencyMode);
         parent::__construct($page, $pageSize);
@@ -41,20 +39,6 @@ final readonly class DependencyParameters extends CollectionParameters
     public function getMode(): DependencyMode
     {
         return $this->mode;
-    }
-
-    public function getElementId(): int
-    {
-        return $this->elementId;
-    }
-
-    public function getElementType(): string
-    {
-        if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
-            return ElementTypes::TYPE_OBJECT;
-        }
-
-        return $this->elementType;
     }
 
     private function getDependencyMode(string $mode): DependencyMode {
