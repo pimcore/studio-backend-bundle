@@ -18,10 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Request;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\ValueObject\Integer\PositiveInteger;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
-use ValueError;
 
 /**
  * @internal
@@ -52,14 +50,12 @@ final readonly class ElementParameters
     }
 
     /**
-     * @throws InvalidElementTypeException|ValueError
+     * @throws InvalidElementTypeException
      */
     private function validate(): void
     {
         if (!in_array($this->type, ElementTypes::ALLOWED_TYPES)) {
             throw new InvalidElementTypeException($this->type);
         }
-
-        new PositiveInteger($this->id);
     }
 }
