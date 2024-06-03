@@ -30,7 +30,7 @@ final class CustomSettingsJson extends JsonContent
         parent::__construct(
             properties: [
                 new Property(
-                    'customSettings',
+                    'items',
                     ref: CustomSettings::class,
                     type: 'object'
                 ),
