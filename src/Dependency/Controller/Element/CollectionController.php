@@ -59,8 +59,8 @@ final class CollectionController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/dependencies/{elementType}/{id}',
         operationId: 'getDependencies',
-        description: 'Get paginated dependencies. 
-        Pass dependency mode to get either all elements that depend on the provided element 
+        description: 'Get paginated dependencies.
+        Pass dependency mode to get either all elements that depend on the provided element
         or all dependencies for the provided element.',
         summary: 'Get all dependencies for provided element.',
         security: self::SECURITY_SCHEME,

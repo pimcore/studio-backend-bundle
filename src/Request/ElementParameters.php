@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\ValueObject\Integer\PositiveInteger;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
+use ValueError;
 
 /**
  * @internal
@@ -50,12 +51,15 @@ final readonly class ElementParameters
         return $this->id;
     }
 
-
+    /**
+     * @throws InvalidElementTypeException|ValueError
+     */
     private function validate(): void
     {
-        if (!in_array($this->type, ElementTypes::ALLOWED_TYPES)){
+        if (!in_array($this->type, ElementTypes::ALLOWED_TYPES)) {
             throw new InvalidElementTypeException($this->type);
         }
+
         new PositiveInteger($this->id);
     }
 }
