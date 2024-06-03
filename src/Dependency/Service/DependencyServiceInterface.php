@@ -18,11 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Request\DependencyParameters;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Request\ElementParameters;
 use Pimcore\Model\UserInterface;
 
 interface DependencyServiceInterface
 {
     public function getDependencies(
+        ElementParameters $elementParameters,
         DependencyParameters $parameters,
         UserInterface $user
     ): Collection;

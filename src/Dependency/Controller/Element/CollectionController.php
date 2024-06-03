@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Controller\Element;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -22,14 +22,15 @@ use Pimcore\Bundle\StudioBackendBundle\Dependency\Attributes\Parameters\Query\De
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Attributes\Response\Property\DependencyCollection;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Request\DependencyParameters;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementTypeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
@@ -48,15 +49,15 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly SecurityServiceInterface $securityService,
-        private readonly DependencyServiceInterface $hydratorService,
+        private readonly DependencyServiceInterface $dependencyService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/dependencies', name: 'pimcore_studio_api_dependencies', methods: ['GET'])]
+    #[Route('/dependencies/{elementType}/{id}', name: 'pimcore_studio_api_dependencies', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[Get(
-        path: self::API_PATH . '/dependencies',
+        path: self::API_PATH . '/dependencies/{elementType}/{id}',
         operationId: 'getDependencies',
         description: 'Get paginated dependencies. 
         Pass dependency mode to get either all elements that depend on the provided element 
@@ -65,11 +66,11 @@ final class CollectionController extends AbstractApiController
         security: self::SECURITY_SCHEME,
         tags: [Tags::Dependencies->name]
     )]
+    #[ElementTypeParameter]
+    #[IdParameter('element')]
     #[PageParameter]
     #[PageSizeParameter]
-    #[IdParameter('ID of the element', 'element')]
     #[DependencyModeParameter]
-    #[ElementTypeParameter]
     #[SuccessResponse(
         description: 'Paginated dependencies with total count as header param',
         content: new CollectionJson(new DependencyCollection())
@@ -78,9 +79,14 @@ final class CollectionController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getDependencies(#[MapQueryString] DependencyParameters $parameters): JsonResponse
+    public function getDependencies(
+        string $elementType,
+        int $id,
+        #[MapQueryString] DependencyParameters $parameters
+    ): JsonResponse
     {
-        $collection = $this->hydratorService->getDependencies(
+        $collection = $this->dependencyService->getDependencies(
+            new ElementParameters($elementType, $id),
             $parameters,
             $this->securityService->getCurrentUser()
         );

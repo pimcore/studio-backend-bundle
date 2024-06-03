@@ -14,23 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller\Element;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementTypeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Attributes\Response\Property\VersionCollection;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
@@ -46,26 +47,26 @@ final class CollectionController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly SecurityServiceInterface $securityService,
-        private readonly VersionServiceInterface $hydratorService,
+        private readonly VersionServiceInterface $versionService,
+        private readonly SecurityServiceInterface $securityService
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/versions', name: 'pimcore_studio_api_versions', methods: ['GET'])]
+    #[Route('/versions/{elementType}/{id}', name: 'pimcore_studio_api_versions', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[Get(
-        path: self::API_PATH . '/versions',
+        path: self::API_PATH . '/versions/{elementType}/{id}',
         operationId: 'getVersions',
         description: 'Get paginated versions',
         summary: 'Get all versions of element',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
+    #[ElementTypeParameter]
+    #[IdParameter('element')]
     #[PageParameter]
     #[PageSizeParameter]
-    #[IdParameter('ID of the element', 'element')]
-    #[ElementTypeParameter]
     #[SuccessResponse(
         description: 'Paginated versions with total count as header param',
         content: new CollectionJson(new VersionCollection())
@@ -74,9 +75,13 @@ final class CollectionController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getVersions(#[MapQueryString] VersionParameters $parameters): JsonResponse
+    public function getVersions(
+        string $elementType,
+        int $id,
+        #[MapQueryString] CollectionParameters $parameters): JsonResponse
     {
-        $collection = $this->hydratorService->getVersions(
+        $collection = $this->versionService->getVersions(
+            new ElementParameters($elementType, $id),
             $parameters,
             $this->securityService->getCurrentUser()
         );
