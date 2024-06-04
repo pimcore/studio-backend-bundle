@@ -16,8 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
@@ -30,7 +31,8 @@ interface VersionRepositoryInterface
 {
     public function listVersions(
         ElementInterface $element,
-        VersionParameters $parameters,
+        string $originalType,
+        CollectionParameters $parameters,
         UserInterface $user
     ): VersionListing;
 
@@ -50,6 +52,7 @@ interface VersionRepositoryInterface
     ): Version;
 
     public function cleanupVersions(
-        VersionCleanupParameters $parameters,
+        ElementParameters $elementParameters,
+        VersionCleanupParameters $parameters
     ): array;
 }

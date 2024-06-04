@@ -14,24 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Controller\Element;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementTypeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Attributes\Parameters\Query\DependencyModeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Attributes\Response\Property\DependencyCollection;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Request\DependencyParameters;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Pimcore\Bundle\StudioBackendBundle\Version\Attributes\Response\Property\VersionCollection;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
@@ -47,36 +49,44 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly SecurityServiceInterface $securityService,
-        private readonly VersionServiceInterface $hydratorService,
+        private readonly DependencyServiceInterface $dependencyService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/versions', name: 'pimcore_studio_api_versions', methods: ['GET'])]
+    #[Route('/dependencies/{elementType}/{id}', name: 'pimcore_studio_api_dependencies', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[Get(
-        path: self::API_PATH . '/versions',
-        operationId: 'getVersions',
-        description: 'Get paginated versions',
-        summary: 'Get all versions of element',
+        path: self::API_PATH . '/dependencies/{elementType}/{id}',
+        operationId: 'getDependencies',
+        description: 'Get paginated dependencies.
+        Pass dependency mode to get either all elements that depend on the provided element
+        or all dependencies for the provided element.',
+        summary: 'Get all dependencies for provided element.',
         security: self::SECURITY_SCHEME,
-        tags: [Tags::Versions->name]
+        tags: [Tags::Dependencies->name]
     )]
+    #[ElementTypeParameter]
+    #[IdParameter('element')]
     #[PageParameter]
     #[PageSizeParameter]
-    #[IdParameter('ID of the element', 'element')]
-    #[ElementTypeParameter]
+    #[DependencyModeParameter]
     #[SuccessResponse(
-        description: 'Paginated versions with total count as header param',
-        content: new CollectionJson(new VersionCollection())
+        description: 'Paginated dependencies with total count as header param',
+        content: new CollectionJson(new DependencyCollection())
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getVersions(#[MapQueryString] VersionParameters $parameters): JsonResponse
+    public function getDependencies(
+        string $elementType,
+        int $id,
+        #[MapQueryString] DependencyParameters $parameters
+    ): JsonResponse
     {
-        $collection = $this->hydratorService->getVersions(
+        $collection = $this->dependencyService->getDependencies(
+            new ElementParameters($elementType, $id),
             $parameters,
             $this->securityService->getCurrentUser()
         );
