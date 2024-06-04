@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
 /**
  * @internal
  */
-final readonly class UpdateAsset
+final readonly class UpdateAssetParameter
 {
     public function __construct(
         private array $data

@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Request\WorkflowDetailsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\MappedParameter\WorkflowDetailsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 use Pimcore\Model\Element\ElementInterface;

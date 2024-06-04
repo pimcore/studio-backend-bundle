@@ -26,8 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\Colle
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;

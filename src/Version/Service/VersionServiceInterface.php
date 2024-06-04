@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Request\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\VersionCleanupParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
 use Pimcore\Model\UserInterface;
 

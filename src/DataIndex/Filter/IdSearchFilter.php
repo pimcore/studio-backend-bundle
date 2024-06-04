@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParametersInterface;
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 
 /**
  * @internal
