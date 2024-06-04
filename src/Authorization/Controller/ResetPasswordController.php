@@ -16,32 +16,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\CredentialsRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\ResetPasswordRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\TokenRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Refresh;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Token;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\ResetPassword;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Pimcore\Security\User\User;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Symfony\Component\RateLimiter\LimiterInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -72,9 +60,9 @@ final class ResetPasswordController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::TOO_MANY_REQUESTS
     ])]
-    public function resetPassword(#[MapRequestPayload] ResetPassword $resetPassword): JsonResponse
+    public function resetPassword(#[MapRequestPayload] ResetPassword $resetPassword): Response
     {
         $this->userService->resetPassword($resetPassword);
-        return new JsonResponse();
+        return new Response();
     }
 }
