@@ -24,15 +24,13 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\Elemen
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\ElementsTagsCollectionRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\ElementTagIdCollection;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**

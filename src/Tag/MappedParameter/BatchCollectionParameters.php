@@ -14,16 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tag\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter;
 
 /**
  * @internal
  */
-final readonly class ElementParameters
+final readonly class BatchCollectionParameters
 {
     public function __construct(
-        private ?string $type = null,
-        private ?int $id = null
+        private string $type,
+        private array $elementIds = [],
+        private array $tagIds = []
     )
     {
     }
@@ -32,9 +33,13 @@ final readonly class ElementParameters
     {
         return $this->type;
     }
-
-    public function getId(): ?int
+    public function getElementIds(): array
     {
-        return $this->id;
+        return $this->elementIds;
+    }
+
+    public function getTagIds(): array
+    {
+        return $this->tagIds;
     }
 }

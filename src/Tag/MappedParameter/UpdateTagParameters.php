@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tag\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -23,26 +23,26 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'Create Tag Parameters',
-    description: 'Parameters for creating a new tag',
+    title: 'Change Tag Parameters',
+    description: 'Parameters for changing a tag',
     type: 'object'
 )]
-final readonly class CreateTagParameters
+final readonly class UpdateTagParameters
 {
     public function __construct(
         #[Property(description: 'Parent id', type: 'int', example: 0)]
-        private int $parentId,
+        private ?int $parentId,
         #[Property(description: 'Tag name', type: 'string', example: 'tag 1')]
-        private string $name,
+        private ?string $name,
     ) {
     }
 
-    public function getParentId(): int
+    public function getParentId(): ?int
     {
         return $this->parentId;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }

@@ -32,7 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unproce
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnsupportedMediaTypeResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;

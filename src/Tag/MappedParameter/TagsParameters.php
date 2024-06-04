@@ -14,9 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tag\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
+
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 
 /**
  * @internal

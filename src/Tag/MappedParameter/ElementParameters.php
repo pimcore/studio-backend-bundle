@@ -14,21 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter;
 
-use Attribute;
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\TagId;
-
-#[Attribute(Attribute::TARGET_METHOD)]
-final class ElementTagRequestBody extends RequestBody
+/**
+ * @internal
+ */
+final readonly class ElementParameters
 {
-    public function __construct()
+    public function __construct(
+        private ?string $type = null,
+        private ?int $id = null
+    )
     {
-        parent::__construct(
-            required: true,
-            content: new JsonContent(ref: TagId::class)
-        );
+    }
+
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 }

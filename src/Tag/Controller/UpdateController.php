@@ -18,14 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
-use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\UpdateTagRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
@@ -57,7 +56,7 @@ final class UpdateController extends AbstractApiController
         tags: [Tags::Tags->name]
     )]
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
-    #[IdParameter(type: 'tag', schema: new Schema(type: 'integer', example: 10))]
+    #[IdParameter(type: 'tag')]
     #[UpdateTagRequestBody]
     #[SuccessResponse(
         description: 'Updated tag data as json',

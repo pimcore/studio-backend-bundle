@@ -18,11 +18,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\CreateTagParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\UpdateTagParameters;
 use Pimcore\Model\Element\Tag;
 use Pimcore\Model\Element\Tag\Listing as TagListing;
 

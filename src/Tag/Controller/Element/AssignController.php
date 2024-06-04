@@ -24,16 +24,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\Elemen
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\ElementTagRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\TagId;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -52,10 +47,10 @@ final class AssignController extends AbstractApiController
     /**
      * @throws ElementSavingFailedException|ElementNotFoundException
      */
-    #[Route('/tags/{elementType}/{id}', name: 'pimcore_studio_api_assign_element_tag', methods: ['POST'])]
+    #[Route('/tags/{elementType}/{id}/{tagId}', name: 'pimcore_studio_api_assign_element_tag', methods: ['POST'])]
     //#[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Post(
-        path: self::API_PATH . '/tags/{elementType}/{id}',
+        path: self::API_PATH . '/tags/{elementType}/{id}/{tagId}',
         operationId: 'assignTagForElement',
         summary: 'Assign tag for element',
         security: self::SECURITY_SCHEME,
@@ -63,17 +58,17 @@ final class AssignController extends AbstractApiController
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
-    #[ElementTagRequestBody]
+    #[IdParameter(type: 'tag', name: 'tagId')]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED
     ])]
     public function assignTag(
         string $elementType,
         int $id,
-        #[MapRequestPayload] TagId $assignTag
+        int $tagId
     ): JsonResponse
     {
-        $this->tagService->assignTagToElement(new ElementParameters($elementType, $id), $assignTag->getTagId());
+        $this->tagService->assignTagToElement(new ElementParameters($elementType, $id), $tagId);
         return $this->jsonResponse(['id' => $id]);
     }
 }

@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\Unsuppo
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\CreateTagRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;

@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\UpdateTagParameters;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class UpdateTagRequestBody extends RequestBody

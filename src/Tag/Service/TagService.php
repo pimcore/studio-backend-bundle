@@ -8,12 +8,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidParentIdException;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Event\TagEvent;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Hydrator\TagHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\CreateTagParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Repository\TagRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\BatchCollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\CreateTagParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\TagsParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Request\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
