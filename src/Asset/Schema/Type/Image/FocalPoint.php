@@ -14,32 +14,36 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
+
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-final readonly class VersionCleanupParameters
+#[Schema(
+    title: 'FocalPoint',
+    type: 'object'
+)]
+final readonly class FocalPoint
 {
+
     public function __construct(
-        private int $elementId,
-        private string $elementType,
-        private int $elementModificationDate
+        #[Property(description: 'x', type: 'integer', example: 50)]
+        private int $x,
+        #[Property(description: 'y', type: 'integer', example: 50)]
+        private int $y,
     ) {
     }
 
-    public function getElementId(): int
+    public function getX(): int
     {
-        return $this->elementId;
+        return $this->x;
     }
 
-    public function getElementType(): string
+    public function getY(): int
     {
-        return $this->elementType;
-    }
-
-    public function getElementModificationDate(): int
-    {
-        return $this->elementModificationDate;
+        return $this->y;
     }
 }

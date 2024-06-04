@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter;
 
 use JsonException;
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 
 /**
  * @internal

@@ -14,32 +14,28 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-final readonly class WorkflowDetailsParameters
+#[Schema(
+    title: 'ImageData',
+    type: 'object'
+)]
+final readonly class ImageData
 {
     public function __construct(
-        private int $elementId,
-        private string $elementType
+        #[Property(ref: FocalPoint::class, description: 'focalPoint', type: 'object')]
+        private array $focalPoint,
     ) {
     }
 
-    public function getElementId(): int
+    public function getFocalPoint(): array
     {
-        return $this->elementId;
-    }
-
-    public function getElementType(): string
-    {
-        if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
-            return ElementTypes::TYPE_OBJECT;
-        }
-
-        return $this->elementType;
+        return $this->focalPoint;
     }
 }

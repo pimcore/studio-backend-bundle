@@ -14,10 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
@@ -25,31 +26,44 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag('pimcore.studio_backend.update_adapter')]
-final readonly class PropertiesAdapter implements UpdateAdapterInterface
+final readonly class ImageAdapter implements UpdateAdapterInterface
 {
-    public function __construct(private PropertyRepositoryInterface $propertyRepository)
-    {
-    }
+    private const INDEX_KEY = 'image';
 
     public function update(ElementInterface $element, array $data): void
     {
-        if (!array_key_exists($this->getIndexKey(), $data)) {
+        if (!$element instanceof Image) {
             return;
         }
-        $this->propertyRepository->updateElementProperties($element, $data);
+
+        $this->checkFocalPoint($element, $data);
+
     }
 
     public function getIndexKey(): string
     {
-        return PropertyRepositoryInterface::INDEX_KEY;
+        return self::INDEX_KEY;
     }
 
     public function supportedElementTypes(): array
     {
         return [
             ElementTypes::TYPE_ASSET,
-            ElementTypes::TYPE_DOCUMENT,
-            ElementTypes::TYPE_OBJECT,
         ];
+    }
+
+    private function checkFocalPoint(Image $image, array $data): void
+    {
+        if (
+            !array_key_exists(self::INDEX_KEY, $data) ||
+            !array_key_exists('focalPoint', $data[self::INDEX_KEY])
+        ) {
+            $image->removeCustomSetting('focalPointX');
+            $image->removeCustomSetting('focalPointY');
+            return;
+        }
+
+        $image->setCustomSetting('focalPointX', $data[self::INDEX_KEY]['focalPoint']['x']);
+        $image->setCustomSetting('focalPointY', $data[self::INDEX_KEY]['focalPoint']['y']);
     }
 }

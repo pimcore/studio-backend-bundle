@@ -28,5 +28,5 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\DataServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\DataService
 
-
-
+  Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\ImageAdapter:
+    tags: [ 'pimcore.studio_backend.update_adapter' ]

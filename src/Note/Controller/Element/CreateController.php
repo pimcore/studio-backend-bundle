@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Request\CreateNoteRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
+use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
@@ -73,7 +73,7 @@ final class CreateController extends AbstractApiController
         #[MapRequestPayload] CreateNote $createNote
     ): JsonResponse
     {
-        $note = $this->noteService->createNote(new NoteElement($elementType, $id), $createNote);
+        $note = $this->noteService->createNote(new NoteElementParameters($elementType, $id), $createNote);
         return $this->jsonResponse(['id' => $note->getId()]);
     }
 }

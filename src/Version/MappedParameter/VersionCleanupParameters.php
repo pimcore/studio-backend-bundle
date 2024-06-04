@@ -14,18 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
-
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter;
 
 /**
  * @internal
  */
-final class PageFilter implements FilterInterface
+final readonly class VersionCleanupParameters
 {
-    public function apply(CollectionParametersInterface $parameters, QueryInterface $query): QueryInterface
+    public function __construct(
+        private int $elementModificationDate
+    ) {
+    }
+
+    public function getElementModificationDate(): int
     {
-        return $query->setPage($parameters->getPage());
+        return $this->elementModificationDate;
     }
 }

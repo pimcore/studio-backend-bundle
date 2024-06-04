@@ -14,31 +14,28 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**
  * @internal
  */
-final readonly class VersionParameters extends CollectionParameters
+final readonly class PropertiesParameters
 {
     public function __construct(
-        int $page,
-        int $pageSize,
-        private int $elementId,
-        private string $elementType
+        private ?string $elementType = null,
+        private ?string $filter = null
+
     ) {
-        parent::__construct($page, $pageSize);
     }
 
-    public function getElementId(): int
+    public function getFilter(): ?string
     {
-        return $this->elementId;
+        return $this->filter;
     }
 
-    public function getElementType(): string
+    public function getElementType(): ?string
     {
         if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
             return ElementTypes::TYPE_OBJECT;

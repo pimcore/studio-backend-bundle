@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\UpdateAssetRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\OneOfAssetJson;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Request\UpdateAsset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\UpdateAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
@@ -67,7 +67,7 @@ final class UpdateController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function updateAsset(int $id, #[MapRequestPayload] UpdateAsset $updateAsset): JsonResponse
+    public function updateAsset(int $id, #[MapRequestPayload] UpdateAssetParameter $updateAsset): JsonResponse
     {
         $this->updateService->update('asset', $id, $updateAsset->getData());
         return $this->jsonResponse($this->assetService->getAsset($id));

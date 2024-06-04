@@ -69,6 +69,6 @@ final class CustomSettingsController extends AbstractApiController
     ])]
     public function getAssetCustomSettingsById(int $id): JsonResponse
     {
-        return $this->jsonResponse($this->customSettingsService->getCustomSettings($id));
+        return $this->jsonResponse(['items' => $this->customSettingsService->getCustomSettings($id)]);
     }
 }

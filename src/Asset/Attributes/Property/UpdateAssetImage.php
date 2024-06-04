@@ -14,18 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
+use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image\ImageData;
 
 /**
  * @internal
  */
-final class PageFilter implements FilterInterface
+final class UpdateAssetImage extends Property
 {
-    public function apply(CollectionParametersInterface $parameters, QueryInterface $query): QueryInterface
+    public function __construct()
     {
-        return $query->setPage($parameters->getPage());
+        parent::__construct(
+            'image',
+            ref: ImageData::class,
+            type: 'object',
+            nullable: true,
+        );
     }
 }
