@@ -41,10 +41,11 @@ final readonly class DependencyParameters extends CollectionParameters
         return $this->mode;
     }
 
-    private function getDependencyMode(string $mode): DependencyMode {
+    private function getDependencyMode(string $mode): DependencyMode
+    {
         $dependencyMode = DependencyMode::tryFrom($mode);
 
-        if(!$dependencyMode) {
+        if (!$dependencyMode) {
             throw new InvalidDependencyMode('Invalid dependency mode: ' . $mode);
         }
 
