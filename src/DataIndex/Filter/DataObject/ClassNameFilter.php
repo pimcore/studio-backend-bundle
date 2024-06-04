@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParametersInterface;
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 
 /**
  * @internal

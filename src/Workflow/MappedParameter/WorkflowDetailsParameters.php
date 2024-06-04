@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Workflow\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 

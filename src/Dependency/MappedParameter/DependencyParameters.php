@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyMode;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidDependencyMode;
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**

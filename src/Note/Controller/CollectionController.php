@@ -21,8 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Parameters\Query\NoteSortByParameter;
 use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Response\Property\NoteCollection;
-use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
-use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FieldFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FilterParameter;
@@ -86,7 +86,7 @@ final class CollectionController extends AbstractApiController
         #[MapQueryString] NoteParameters $parameters = new NoteParameters()
     ): JsonResponse
     {
-        $collection = $this->noteService->listNotes(new NoteElement(), $parameters);
+        $collection = $this->noteService->listNotes(new NoteElementParameters(), $parameters);
 
         return $this->getPaginatedCollection(
             $this->serializer,
