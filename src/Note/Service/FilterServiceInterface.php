@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
-use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
-use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Model\Element\Note\Listing as NoteListing;
 
 /**
@@ -33,5 +33,5 @@ interface FilterServiceInterface
      */
     public function applyFieldFilters(NoteListing $list, NoteParameters $parameters): void;
 
-    public function applyElementFilter(NoteListing $list, NoteElement $noteElement): void;
+    public function applyElementFilter(NoteListing $list, NoteElementParameters $noteElement): void;
 }

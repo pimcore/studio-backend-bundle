@@ -18,13 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\VersionCleanupParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\VersionParameters;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;

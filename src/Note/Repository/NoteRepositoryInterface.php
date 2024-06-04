@@ -19,8 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Repository;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
-use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
-use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Model\Element\Note;
 use Pimcore\Model\Element\Note\Listing as NoteListing;
@@ -33,7 +33,7 @@ interface NoteRepositoryInterface
     /**
      * @throws ElementSavingFailedException
      */
-    public function createNote(NoteElement $noteElement, CreateNote $createNote): Note;
+    public function createNote(NoteElementParameters $noteElement, CreateNote $createNote): Note;
 
     /**
      * @throws ElementNotFoundException
@@ -43,7 +43,7 @@ interface NoteRepositoryInterface
     /**
      * @throws InvalidFilterException
      */
-    public function listNotes(NoteElement $noteElement, NoteParameters $parameters): NoteListing;
+    public function listNotes(NoteElementParameters $noteElement, NoteParameters $parameters): NoteListing;
 
     /**
      * @throws ElementNotFoundException

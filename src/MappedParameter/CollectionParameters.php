@@ -14,48 +14,46 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\ValueObject\Integer\PositiveInteger;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
 
 /**
  * @internal
  */
-final readonly class ElementParameters
+readonly class CollectionParameters implements CollectionParametersInterface
 {
     public function __construct(
         #[NotBlank]
-        private string $type,
+        #[Positive]
+        private int $page = 1,
         #[NotBlank]
         #[Positive]
-        private int    $id,
+        private int $pageSize = 10,
     ) {
         $this->validate();
     }
 
-    public function getType(): string
+    public function getPage(): int
     {
-        if ($this->type === ElementTypes::TYPE_DATA_OBJECT) {
-            return ElementTypes::TYPE_OBJECT;
-        }
-        return $this->type;
+        return $this->page;
     }
 
-    public function getId(): int
+    public function getPageSize(): int
     {
-        return $this->id;
+        return $this->pageSize;
     }
 
-    /**
-     * @throws InvalidElementTypeException
-     */
+    public function getOffset(): int
+    {
+        return ($this->page - 1) * $this->pageSize;
+    }
+
     private function validate(): void
     {
-        if (!in_array($this->type, ElementTypes::ALLOWED_TYPES)) {
-            throw new InvalidElementTypeException($this->type);
-        }
+        new PositiveInteger($this->page);
+        new PositiveInteger($this->pageSize);
     }
 }

@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 
 /**
  * @internal

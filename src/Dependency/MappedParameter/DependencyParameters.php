@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyMode;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidDependencyMode;
-use Pimcore\Bundle\StudioBackendBundle\Request\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**
@@ -41,10 +41,11 @@ final readonly class DependencyParameters extends CollectionParameters
         return $this->mode;
     }
 
-    private function getDependencyMode(string $mode): DependencyMode {
+    private function getDependencyMode(string $mode): DependencyMode
+    {
         $dependencyMode = DependencyMode::tryFrom($mode);
 
-        if(!$dependencyMode) {
+        if (!$dependencyMode) {
             throw new InvalidDependencyMode('Invalid dependency mode: ' . $mode);
         }
 

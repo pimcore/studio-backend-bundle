@@ -25,10 +25,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdsJs
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\VersionCleanupParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
