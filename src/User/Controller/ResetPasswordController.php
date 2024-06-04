@@ -14,12 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\ResetPasswordRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\ResetPassword;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\RateLimitException;
@@ -27,6 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\User\Attributes\Request\ResetPasswordRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -48,12 +48,12 @@ final class ResetPasswordController extends AbstractApiController
     /**
      * @throws RateLimitException|DomainConfigurationException|SendMailException
      */
-    #[Route('/reset-password', name: 'pimcore_studio_api_reset_password', methods: ['POST'])]
+    #[Route('/user/reset-password', name: 'pimcore_studio_api_user_reset_password', methods: ['POST'])]
     #[Post(
-        path: self::API_PATH . '/reset-password',
-        operationId: 'rest-password',
+        path: self::API_PATH . '/user/reset-password',
+        operationId: 'reset-password',
         summary: 'Sending username to reset password',
-        tags: [Tags::Authorization->name]
+        tags: [Tags::User->value]
     )]
     #[ResetPasswordRequestBody]
     #[SuccessResponse]

@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Attributes\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\ResetPassword;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ResetPasswordRequestBody extends RequestBody

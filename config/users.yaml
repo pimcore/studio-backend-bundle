@@ -1,0 +1,22 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\User\Controller\:
+    resource: '../src/User/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiter
+
+  Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserService
+
+  Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\MailService
+    arguments: [ '@Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider' ]

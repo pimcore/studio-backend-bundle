@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Model\UserInterface;
 
