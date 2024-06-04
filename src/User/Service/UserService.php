@@ -14,15 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\RateLimiter\RateLimiterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\Exception\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 

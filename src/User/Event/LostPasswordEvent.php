@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Event;
 
 use Pimcore\Model\User;
 use Symfony\Contracts\EventDispatcher\Event;

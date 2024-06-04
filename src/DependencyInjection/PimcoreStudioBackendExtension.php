@@ -69,6 +69,7 @@ class PimcoreStudioBackendExtension extends Extension
         $loader->load('settings.yaml');
         $loader->load('translation.yaml');
         $loader->load('updater.yaml');
+        $loader->load('users.yaml');
         $loader->load('versions.yaml');
 
         $definition = $container->getDefinition(TokenServiceInterface::class);
