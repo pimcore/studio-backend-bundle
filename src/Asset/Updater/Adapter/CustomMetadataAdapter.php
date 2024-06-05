@@ -16,11 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundByPathException;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -32,12 +29,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'metadata';
-
-    use ElementProviderTrait;
-
-    public function __construct(private ServiceResolverInterface $serviceResolver)
-    {
-    }
 
     public function update(ElementInterface $element, array $data): void
     {

@@ -101,11 +101,6 @@ final readonly class PropertyHydrator implements PropertyHydratorInterface
         ];
     }
 
-    private function extractDataFromModel(Document|Asset|AbstractObject $data): array
-    {
-        return array_intersect_key($data->getObjectVars(), array_flip(self::ALLOWED_MODEL_PROPERTIES));
-    }
-
     private function excludeProperties(array $values): array
     {
         return array_diff_key($values, array_flip(self::EXCLUDED_PROPERTIES));
