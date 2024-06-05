@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 use Exception;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -73,6 +74,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $loader->load('users.yaml');
         $loader->load('versions.yaml');
 
+        $this->checkValidOpenApiScanPaths($config['open_api_scan_paths']);
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
         $definition->setArgument('$openApiScanPaths', $config['open_api_scan_paths']);
 
@@ -85,6 +87,20 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         if (!$container->hasParameter('pimcore_studio_backend.firewall_settings')) {
             $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
             $container->setParameter('pimcore_studio_backend.firewall_settings', $containerConfig['security_firewall']);
+        }
+    }
+
+    private function checkValidOpenApiScanPaths(array $config): void
+    {
+        foreach ($config as $path) {
+            if (!is_dir($path)) {
+                throw new InvalidPathException(
+                    sprintf(
+                        'The path "%s" is not a valid directory.',
+                        $path
+                    )
+                );
+            }
         }
     }
 }

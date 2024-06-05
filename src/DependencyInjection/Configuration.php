@@ -53,21 +53,6 @@ class Configuration implements ConfigurationInterface
         $node->children()
             ->arrayNode('open_api_scan_paths')
                ->prototype('scalar')->end()
-               ->always(
-                   function ($paths) {
-                       foreach ($paths as $path) {
-                           if (!is_dir($path)) {
-                               throw new InvalidPathException(
-                                   sprintf(
-                                       'The path "%s" is not a valid directory.',
-                                       $path
-                                   )
-                               );
-                           }
-                       }
-
-                       return $paths;
-                   })
                ->end()
            ->end();
     }
