@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 
 use Exception;
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Response\LogoutSuccessful;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;

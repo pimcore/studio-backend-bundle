@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\CredentialsRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Response\InvalidCredentials;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\LoginSuccess;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -27,7 +28,6 @@ use Pimcore\Security\User\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Response\InvalidCredentials;
 
 /**
  * @internal
@@ -51,7 +51,7 @@ final class LoginController extends AbstractApiController
     {
         return $this->jsonResponse([
             'username' => $user->getUserIdentifier(),
-            'roles' => $user->getRoles()
+            'roles' => $user->getRoles(),
         ]);
     }
 }
