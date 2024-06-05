@@ -33,7 +33,11 @@ final readonly class LoginSuccess
     public function __construct(
         #[Property(description: 'Username', type: 'string', example: 'admin')]
         private string $username,
-        #[Property(description: 'Roles', type: 'array', items: new Items(type: 'string', example: 'ROLE_PIMCORE_ADMIN'))]
+        #[Property(
+            description: 'Roles',
+            type: 'array',
+            items: new Items(type: 'string', example: 'ROLE_PIMCORE_ADMIN')
+        )]
         private array $roles,
     ) {
     }
