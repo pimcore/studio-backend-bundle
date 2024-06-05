@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundByPathException;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -75,8 +76,12 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
        };
     }
 
-    private function resolveElement(string $type, string $path)
+    private function resolveElement(string $type, string $path): ?int
     {
-        return $this->getElementByPath($this->serviceResolver, $type, $path)->getId();
+        try {
+            return $this->getElementByPath($this->serviceResolver, $type, $path)->getId();
+        } catch (ElementNotFoundByPathException) {
+            return null;
+        }
     }
 }
