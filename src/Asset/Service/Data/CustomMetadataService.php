@@ -64,7 +64,7 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
 
         $originalCustomMetadata = $asset->getMetadata();
 
-        foreach($originalCustomMetadata as $metadata) {
+        foreach ($originalCustomMetadata as $metadata) {
             $metadata = $this->hydrator->hydrate($metadata);
 
             $this->eventDispatcher->dispatch(

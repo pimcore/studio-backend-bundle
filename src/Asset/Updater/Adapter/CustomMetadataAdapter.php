@@ -47,7 +47,7 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
 
         $metadataValues = [];
 
-        foreach ($data[$this->getIndexKey()] as  $metadata) {
+        foreach ($data[$this->getIndexKey()] as $metadata) {
             $md = $metadata;
             $md['data'] = $this->resolveData($metadata['type'], $metadata['data']);
             $metadataValues[] = $md;
