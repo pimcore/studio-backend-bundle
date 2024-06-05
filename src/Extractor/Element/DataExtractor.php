@@ -15,7 +15,7 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Extractor\Element;
 
-use Pimcore\Model\AbstractModel;
+use Pimcore\Model\Element\AbstractElement;
 use Pimcore\Model\Element\ElementInterface;
 
 class DataExtractor implements DataExtractorInterface
@@ -31,7 +31,7 @@ class DataExtractor implements DataExtractorInterface
     public function extractData(ElementInterface $element): array
     {
         /**
-         * @var AbstractModel $element
+         * @var AbstractElement $element
          */
         $data = array_intersect_key(
             $element->getObjectVars(),

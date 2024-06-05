@@ -31,14 +31,6 @@ use Pimcore\Model\Property\Predefined;
  */
 final readonly class PropertyHydrator implements PropertyHydratorInterface
 {
-    private const ALLOWED_MODEL_PROPERTIES = [
-        'key',
-        'filename',
-        'path',
-        'id',
-        'type',
-    ];
-
     private const EXCLUDED_PROPERTIES = [
         'cid',
         'ctype',

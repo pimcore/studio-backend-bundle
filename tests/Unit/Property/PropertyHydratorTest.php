@@ -86,11 +86,13 @@ final class PropertyHydratorTest extends Unit
      */
     private function mockPredefinedResolver(): PredefinedResolverInterface
     {
-        return $this->makeEmpty(PredefinedResolverInterface::class,
-        [
-            'getById' => $this->getPredefined(),
-            'getByKey' => $this->getPredefined(),
-        ]);
+        return $this->makeEmpty(
+            PredefinedResolverInterface::class,
+            [
+                'getById' => $this->getPredefined(),
+                'getByKey' => $this->getPredefined(),
+            ]
+        );
     }
 
     /**
@@ -98,7 +100,17 @@ final class PropertyHydratorTest extends Unit
      */
     private function mockDataExtractor(): DataExtractorInterface
     {
-        return $this->makeEmpty(DataExtractorInterface::class);
+        return $this->makeEmpty(
+            DataExtractorInterface::class,
+            [
+                'extractData' => [
+                    'path' => '/test',
+                    'id' => 1,
+                    'type' => 'page',
+                    'key' => 'test',
+                ]
+            ]
+        );
     }
 
     private function getPredefined(): Predefined
