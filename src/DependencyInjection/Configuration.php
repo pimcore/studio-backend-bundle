@@ -43,6 +43,7 @@ class Configuration implements ConfigurationInterface
         $this->addOpenApiScanPathsNode($rootNode);
         $this->addApiTokenNode($rootNode);
         $this->addAllowedHostsForCorsNode($rootNode);
+        $this->addSecurityFirewall($rootNode);
 
         return $treeBuilder;
     }
@@ -52,7 +53,6 @@ class Configuration implements ConfigurationInterface
         $node->children()
             ->arrayNode('open_api_scan_paths')
                ->prototype('scalar')->end()
-               ->validate()
                ->always(
                    function ($paths) {
                        foreach ($paths as $path) {
@@ -109,6 +109,14 @@ class Configuration implements ConfigurationInterface
     return $hosts;
 })
                 ->end()
+            ->end();
+    }
+
+    public function addSecurityFirewall(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->variableNode('security_firewall')->end()
             ->end();
     }
 }

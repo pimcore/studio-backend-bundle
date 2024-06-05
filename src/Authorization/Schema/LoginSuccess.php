@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Schema;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
@@ -27,28 +28,20 @@ use OpenApi\Attributes\Schema;
     description: 'Token Scheme for API',
     type: 'object'
 )]
-final readonly class Token
+final readonly class LoginSuccess
 {
     public function __construct(
-        #[Property(description: 'Token', type: 'string', example: 'This could be your token')]
-        private string $token,
-        #[Property(description: 'Lifetime in seconds', type: 'integer', format: 'int', example: 3600)]
-        private int $lifetime,
-        #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
-        private string $username
+        #[Property(description: 'Username', type: 'string', example: 'admin')]
+        private string $username,
+        #[Property(description: 'Roles', type: 'array', items: new Items(type: 'string', example: 'ROLE_PIMCORE_ADMIN'))]
+        private array $roles,
     ) {
     }
 
-    public function getToken(): string
+    public function getRoles(): array
     {
-        return $this->token;
+        return $this->roles;
     }
-
-    public function getLifetime(): int
-    {
-        return $this->lifetime;
-    }
-
     public function getUsername(): string
     {
         return $this->username;

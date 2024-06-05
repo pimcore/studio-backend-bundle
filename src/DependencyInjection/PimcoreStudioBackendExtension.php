@@ -17,11 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
+use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
@@ -34,7 +35,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 /**
  * @internal
  */
-class PimcoreStudioBackendExtension extends Extension
+class PimcoreStudioBackendExtension extends Extension implements PrependExtensionInterface
 {
     /**
      * {@inheritdoc}
@@ -71,13 +72,18 @@ class PimcoreStudioBackendExtension extends Extension
         $loader->load('updater.yaml');
         $loader->load('versions.yaml');
 
-        $definition = $container->getDefinition(TokenServiceInterface::class);
-        $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
-
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
         $definition->setArgument('$openApiScanPaths', $config['open_api_scan_paths']);
 
         $definition = $container->getDefinition(CorsSubscriber::class);
         $definition->setArgument('$allowedHosts', $config['allowed_hosts_for_cors']);
+    }
+
+    public function prepend(ContainerBuilder $container): void
+    {
+        if (!$container->hasParameter('pimcore_studio_backend.firewall_settings')) {
+            $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
+            $container->setParameter('pimcore_studio_backend.firewall_settings', $containerConfig['security_firewall']);
+        }
     }
 }
