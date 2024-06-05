@@ -108,7 +108,7 @@ final class PropertyHydratorTest extends Unit
                     'id' => 1,
                     'type' => 'page',
                     'key' => 'test',
-                ]
+                ],
             ]
         );
     }
