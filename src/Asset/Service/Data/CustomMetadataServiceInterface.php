@@ -26,6 +26,7 @@ interface CustomMetadataServiceInterface
 {
     /**
      * @throws AccessDeniedException
+     *
      * @return array<int, CustomMetadata>
      */
     public function getCustomMetadata(int $id): array;

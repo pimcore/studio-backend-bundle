@@ -24,7 +24,6 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final class CustomMetadataHydrator implements CustomMetadataHydratorInterface
 {
-
     public function hydrate(array $customMetadata): CustomMetadata
     {
         return new CustomMetadata(
@@ -40,7 +39,7 @@ final class CustomMetadataHydrator implements CustomMetadataHydratorInterface
 
     private function resolveData(mixed $data, string $type): string|bool
     {
-        return match(true) {
+        return match (true) {
             $data instanceof ElementInterface => $data->getFullPath(),
             $type === 'checkbox' => (bool)$data,
             default => $data,
