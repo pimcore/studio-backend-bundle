@@ -60,7 +60,6 @@ final class CollectionController extends AbstractApiController
         operationId: 'getVersions',
         description: 'Get paginated versions',
         summary: 'Get all versions of element',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[ElementTypeParameter]

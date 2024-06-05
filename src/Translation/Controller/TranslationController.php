@@ -56,7 +56,6 @@ final class TranslationController extends AbstractApiController
         operationId: 'getTranslations',
         description: 'Get translations for given keys and locale',
         summary: 'Get translations',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Translation->name]
     )]
     #[TranslationRequestBody]

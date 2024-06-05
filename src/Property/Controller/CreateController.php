@@ -50,7 +50,6 @@ final class CreateController extends AbstractApiController
         path: self::API_PATH . '/property',
         operationId: 'createProperty',
         summary: 'Creating new property with default values',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Properties->name]
     )]
     #[SuccessResponse(

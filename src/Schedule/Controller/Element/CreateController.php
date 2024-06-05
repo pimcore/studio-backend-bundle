@@ -54,7 +54,6 @@ final class CreateController extends AbstractApiController
         path: self::API_PATH . '/schedules/{elementType}/{id}',
         operationId: 'createSchedule',
         summary: 'Create schedule for element',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]

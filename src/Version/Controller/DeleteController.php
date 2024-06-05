@@ -51,7 +51,6 @@ final class DeleteController extends AbstractApiController
         operationId: 'deleteVersion',
         description: 'Delete version based on the version ID',
         summary: 'Delete version',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]

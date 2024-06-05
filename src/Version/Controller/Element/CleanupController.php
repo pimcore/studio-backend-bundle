@@ -54,7 +54,6 @@ final class CleanupController extends AbstractApiController
         operationId: 'cleanupVersion',
         description: 'Cleanup versions based on the provided parameters',
         summary: 'Cleanup versions',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[ElementTypeParameter]

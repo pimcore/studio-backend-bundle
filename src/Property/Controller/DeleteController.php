@@ -52,7 +52,6 @@ final class DeleteController extends AbstractApiController
         path: self::API_PATH . '/properties/{id}',
         operationId: 'deleteProperty',
         summary: 'Delete property with given id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Properties->name]
     )]
     #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]

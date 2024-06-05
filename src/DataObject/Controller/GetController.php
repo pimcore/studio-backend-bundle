@@ -49,7 +49,6 @@ final class GetController extends AbstractApiController
         operationId: 'getDataObjectById',
         description: 'Get data object by id by path parameter',
         summary: 'Get data object by id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::DataObjects->name]
     )]
     #[IdParameter(type: 'data-object')]

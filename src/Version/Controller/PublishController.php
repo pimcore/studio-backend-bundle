@@ -50,7 +50,6 @@ final class PublishController extends AbstractApiController
         operationId: 'publishVersion',
         description: 'Publish element based on the version ID',
         summary: 'Publish version',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]

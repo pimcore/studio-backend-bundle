@@ -53,7 +53,6 @@ final class CollectionController extends AbstractApiController
         path: self::API_PATH . '/properties/{elementType}/{id}',
         operationId: 'getPropertiesForElementByTypeAndId',
         summary: 'Get properties for an element based on the element type and the element id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::PropertiesForElement->value]
     )]
     #[ElementTypeParameter]

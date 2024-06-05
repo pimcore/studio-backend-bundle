@@ -52,7 +52,6 @@ final class CollectionController extends AbstractApiController
         path: self::API_PATH . '/schedules/{elementType}/{id}',
         operationId: 'getSchedulesForElementByTypeAndId',
         summary: 'Get schedules for an element',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]
