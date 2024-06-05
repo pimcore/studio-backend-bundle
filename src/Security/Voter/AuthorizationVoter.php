@@ -41,7 +41,7 @@ final class AuthorizationVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        if($attribute !== self::SUPPORTED_ATTRIBUTE) {
+        if ($attribute !== self::SUPPORTED_ATTRIBUTE) {
             return false;
         }
 
