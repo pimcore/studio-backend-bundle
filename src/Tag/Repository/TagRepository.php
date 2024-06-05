@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Tag\TagResolver;
+use Pimcore\Bundle\StaticResolverBundle\Models\Tag\TagResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -38,7 +39,7 @@ final readonly class TagRepository implements TagRepositoryInterface
 
     public function __construct(
         private SecurityServiceInterface $securityService,
-        private TagResolver $tagResolver
+        private TagResolverInterface $tagResolver
     ) {
     }
 
