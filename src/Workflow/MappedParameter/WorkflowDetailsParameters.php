@@ -14,28 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Workflow\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**
  * @internal
  */
-final readonly class PropertiesParameters
+final readonly class WorkflowDetailsParameters
 {
     public function __construct(
-        private ?string $elementType = null,
-        private ?string $filter = null
-
+        private int $elementId,
+        private string $elementType
     ) {
     }
 
-    public function getFilter(): ?string
+    public function getElementId(): int
     {
-        return $this->filter;
+        return $this->elementId;
     }
 
-    public function getElementType(): ?string
+    public function getElementType(): string
     {
         if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
             return ElementTypes::TYPE_OBJECT;

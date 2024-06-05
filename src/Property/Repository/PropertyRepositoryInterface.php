@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
+use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property\Predefined;

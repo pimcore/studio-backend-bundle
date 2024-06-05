@@ -18,11 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionCleanupParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\Request\VersionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\VersionCleanupParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\VersionParameters;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
@@ -33,8 +35,6 @@ use Pimcore\Model\Version\Listing as VersionListing;
  */
 final readonly class VersionRepository implements VersionRepositoryInterface
 {
-    use ElementProviderTrait;
-
     public function __construct(
         private SecurityServiceInterface $securityService,
         private VersionResolverInterface $versionResolver
@@ -44,7 +44,8 @@ final readonly class VersionRepository implements VersionRepositoryInterface
 
     public function listVersions(
         ElementInterface $element,
-        VersionParameters $parameters,
+        string $originalType,
+        CollectionParameters $parameters,
         UserInterface $user
     ): VersionListing {
         $this->securityService->hasElementPermission(
@@ -56,8 +57,8 @@ final readonly class VersionRepository implements VersionRepositoryInterface
         $limit = $parameters->getPageSize();
         $page = $parameters->getPage();
         $list = $this->getElementVersionsListing(
-            $parameters->getElementId(),
-            $parameters->getElementType(),
+            $element->getId(),
+            $originalType,
             $user->getId()
         );
         $paginatedList = $list;
@@ -113,14 +114,15 @@ final readonly class VersionRepository implements VersionRepositoryInterface
     }
 
     public function cleanupVersions(
+        ElementParameters $elementParameters,
         VersionCleanupParameters $parameters
     ): array {
         $deletedVersions = [];
         $list = $this->getVersionListing(
             'cid = ? AND ctype = ? AND date <> ?',
             [
-                $parameters->getElementId(),
-                $parameters->getElementType(),
+                $elementParameters->getId(),
+                $elementParameters->getType(),
                 $parameters->getElementModificationDate(),
             ]
         );

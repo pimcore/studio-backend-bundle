@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\Filte
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Property\Request\PropertiesParameters;
+use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;

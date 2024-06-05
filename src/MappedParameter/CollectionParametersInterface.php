@@ -14,28 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
 /**
  * @internal
  */
-final readonly class NoteElement
+interface CollectionParametersInterface
 {
-    public function __construct(
-        private ?string $type = null,
-        private ?int $id = null,
+    public function getPage(): int;
 
-    )
-    {
-    }
-
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getPageSize(): int;
 }

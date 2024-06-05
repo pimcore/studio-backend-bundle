@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'DataObjectVersion',
+    required: ['modificationDate', 'path', 'published'],
     type: 'object'
 )]
 final class DataObjectVersion implements AdditionalAttributesInterface

@@ -30,4 +30,5 @@ enum HttpResponseCodes: int
     case METHOD_NOT_ALLOWED = 405;
     case UNSUPPORTED_MEDIA_TYPE = 415;
     case UNPROCESSABLE_CONTENT = 422;
+    case TOO_MANY_REQUESTS = 429;
 }

@@ -27,6 +27,7 @@ final class CollectionJson extends JsonContent
     public function __construct(Property $collection)
     {
         parent::__construct(
+            required: ['totalItems', $collection->property],
             properties: [
                 new Property('totalItems', title: 'totalItems', type: 'integer', example: 666),
                 $collection,

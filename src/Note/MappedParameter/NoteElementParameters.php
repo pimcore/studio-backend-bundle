@@ -14,32 +14,28 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Request;
-
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter;
 
 /**
  * @internal
  */
-final readonly class WorkflowDetailsParameters
+final readonly class NoteElementParameters
 {
     public function __construct(
-        private int $elementId,
-        private string $elementType
-    ) {
+        private ?string $type = null,
+        private ?int $id = null,
+
+    )
+    {
     }
 
-    public function getElementId(): int
+    public function getType(): ?string
     {
-        return $this->elementId;
+        return $this->type;
     }
 
-    public function getElementType(): string
+    public function getId(): ?int
     {
-        if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
-            return ElementTypes::TYPE_OBJECT;
-        }
-
-        return $this->elementType;
+        return $this->id;
     }
 }

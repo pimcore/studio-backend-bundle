@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'Version',
+    required: ['id', 'cid', 'ctype', 'note', 'date', 'public', 'versionCount', 'autosave', 'user'],
     type: 'object'
 )]
 final class Version implements AdditionalAttributesInterface

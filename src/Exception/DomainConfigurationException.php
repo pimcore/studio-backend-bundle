@@ -14,14 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 /**
  * @internal
  */
-interface CollectionParametersInterface
+final class DomainConfigurationException extends AbstractApiException
 {
-    public function getPage(): int;
-
-    public function getPageSize(): int;
+    public function __construct()
+    {
+        parent::__construct(
+            500,
+            'No main domain set in system settings, unable to generate reset password link'
+        );
+    }
 }

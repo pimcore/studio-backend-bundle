@@ -22,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteElement;
-use Pimcore\Bundle\StudioBackendBundle\Note\Request\NoteParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
@@ -46,7 +46,7 @@ final readonly class NoteService implements NoteServiceInterface
     /**
      * @throws ElementSavingFailedException|ElementNotFoundException
      */
-    public function createNote(NoteElement $noteElement, CreateNote $createNote): Note
+    public function createNote(NoteElementParameters $noteElement, CreateNote $createNote): Note
     {
         $note = $this->noteRepository->createNote($noteElement, $createNote);
         return $this->getNote($note->getId());
@@ -55,7 +55,7 @@ final readonly class NoteService implements NoteServiceInterface
     /**
      * @throws InvalidFilterException
      */
-    public function listNotes(NoteElement $noteElement, NoteParameters $parameters): Collection
+    public function listNotes(NoteElementParameters $noteElement, NoteParameters $parameters): Collection
     {
         $noteListing = $this->noteRepository->listNotes($noteElement, $parameters);
         $notes = [];

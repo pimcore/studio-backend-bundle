@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Request\WorkflowDetailsParameters;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\MappedParameter\WorkflowDetailsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
 use Pimcore\Model\UserInterface;
 

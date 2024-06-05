@@ -14,32 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
 /**
  * @internal
  */
-final readonly class VersionCleanupParameters
+final readonly class UpdateAssetParameter
 {
     public function __construct(
-        private int $elementId,
-        private string $elementType,
-        private int $elementModificationDate
-    ) {
+        private array $data
+    )
+    {
     }
 
-    public function getElementId(): int
+    public function getData(): array
     {
-        return $this->elementId;
-    }
-
-    public function getElementType(): string
-    {
-        return $this->elementType;
-    }
-
-    public function getElementModificationDate(): int
-    {
-        return $this->elementModificationDate;
+        return $this->data;
     }
 }

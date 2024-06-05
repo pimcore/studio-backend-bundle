@@ -19,8 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Service;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Event\DependencyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Request\DependencyParameters;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyParameters;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -36,13 +37,14 @@ final readonly class DependencyService implements DependencyServiceInterface
     ) {
     }
     public function getDependencies(
+        ElementParameters $elementParameters,
         DependencyParameters $parameters,
         UserInterface $user
     ): Collection
     {
         return match ($parameters->getMode()) {
-            DependencyMode::REQUIRES => $this->getRequiredDependencies($parameters),
-            DependencyMode::REQUIRED_BY => $this->getRequiredByDependencies($parameters),
+            DependencyMode::REQUIRES => $this->getRequiredDependencies($elementParameters, $parameters),
+            DependencyMode::REQUIRED_BY => $this->getRequiredByDependencies($elementParameters, $parameters),
         };
     }
 
@@ -65,12 +67,13 @@ final readonly class DependencyService implements DependencyServiceInterface
     }
 
     private function getRequiredDependencies(
+        ElementParameters $elementParameters,
         DependencyParameters $parameters
     ): Collection {
 
         $dependencies = $this->dependencyRepository->listRequiresDependencies(
-            $parameters->getElementType(),
-            $parameters->getElementId()
+            $elementParameters->getType(),
+            $elementParameters->getId()
         );
 
         $dependencies = $this->getDependencyCollection($dependencies);
@@ -80,18 +83,19 @@ final readonly class DependencyService implements DependencyServiceInterface
             $parameters->getPage(),
             $parameters->getPageSize(),
             $this->dependencyRepository->listRequiresDependenciesTotalCount(
-                $parameters->getElementType(),
-                $parameters->getElementId()
+                $elementParameters->getType(),
+                $elementParameters->getId()
             )
         );
     }
 
     private function getRequiredByDependencies(
+        ElementParameters $elementParameters,
         DependencyParameters $parameters
     ): Collection {
         $dependencies = $this->dependencyRepository->listRequiredByDependencies(
-            $parameters->getElementType(),
-            $parameters->getElementId()
+            $elementParameters->getType(),
+            $elementParameters->getId()
         );
 
         $dependencies = $this->getDependencyCollection($dependencies);
@@ -101,8 +105,8 @@ final readonly class DependencyService implements DependencyServiceInterface
             $parameters->getPage(),
             $parameters->getPageSize(),
             $this->dependencyRepository->listRequiredByDependenciesTotalCount(
-                $parameters->getElementType(),
-                $parameters->getElementId()
+                $elementParameters->getType(),
+                $elementParameters->getId()
             )
         );
     }

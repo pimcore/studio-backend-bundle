@@ -14,21 +14,29 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
+
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-final readonly class UpdateAsset
+#[Schema(
+    title: 'ResetPassword',
+    description: 'Username',
+    type: 'object'
+)]
+final readonly class ResetPassword
 {
     public function __construct(
-        private array $data
-    )
-    {
+        #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
+        private string $username
+    ) {
     }
 
-    public function getData(): array
+    public function getUsername(): string
     {
-        return $this->data;
+        return $this->username;
     }
 }

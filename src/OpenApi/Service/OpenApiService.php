@@ -27,6 +27,12 @@ final readonly class OpenApiService implements OpenApiServiceInterface
 
     public function getConfig(): OpenApi
     {
-        return Generator::scan([...$this->openApiScanPaths]);
+        $config = Generator::scan([...$this->openApiScanPaths]);
+
+        if ($config) {
+            asort($config->components->schemas);
+        }
+
+        return $config;
     }
 }
