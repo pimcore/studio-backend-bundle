@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'DocumentVersion',
+    required: ['modificationDate', 'path', 'published'],
     type: 'object'
 )]
 final class DocumentVersion implements AdditionalAttributesInterface

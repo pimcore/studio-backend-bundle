@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'AssetVersion',
+    required: ['fileName'],
     type: 'object'
 )]
 final class AssetVersion implements AdditionalAttributesInterface
