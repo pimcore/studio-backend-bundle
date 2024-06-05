@@ -17,13 +17,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Extractor\Element\DataExtractorInterface;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
-final class CustomMetadataHydrator implements CustomMetadataHydratorInterface
+final readonly class CustomMetadataHydrator implements CustomMetadataHydratorInterface
 {
+    public function __construct(private DataExtractorInterface $dataExtractor)
+    {
+    }
+
     public function hydrate(array $customMetadata): CustomMetadata
     {
         return new CustomMetadata(
@@ -37,10 +42,10 @@ final class CustomMetadataHydrator implements CustomMetadataHydratorInterface
         );
     }
 
-    private function resolveData(mixed $data, string $type): string|bool
+    private function resolveData(mixed $data, string $type): mixed
     {
         return match (true) {
-            $data instanceof ElementInterface => $data->getFullPath(),
+            $data instanceof ElementInterface => $this->dataExtractor->extractData($data),
             $type === 'checkbox' => (bool)$data,
             default => $data,
         };

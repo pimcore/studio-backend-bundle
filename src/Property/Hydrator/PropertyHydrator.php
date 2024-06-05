@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Hydrator;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Extractor\Element\DataExtractorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Model\Asset;
@@ -46,7 +47,8 @@ final readonly class PropertyHydrator implements PropertyHydratorInterface
     ];
 
     public function __construct(
-        private PredefinedResolverInterface $predefinedResolver
+        private PredefinedResolverInterface $predefinedResolver,
+        private DataExtractorInterface $dataExtractor
     ) {
     }
 
@@ -88,7 +90,7 @@ final readonly class PropertyHydrator implements PropertyHydratorInterface
         $data['modelData'] = match (true) {
             $property->getData() instanceof Document ||
             $property->getData() instanceof Asset ||
-            $property->getData() instanceof AbstractObject => $this->extractDataFromModel($property->getData()),
+            $property->getData() instanceof AbstractObject => $this->dataExtractor->extractData($property->getData()),
             default => null,
         };
 

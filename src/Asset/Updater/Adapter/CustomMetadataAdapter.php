@@ -45,15 +45,7 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
             return;
         }
 
-        $metadataValues = [];
-
-        foreach ($data[$this->getIndexKey()] as $metadata) {
-            $md = $metadata;
-            $md['data'] = $this->resolveData($metadata['type'], $metadata['data']);
-            $metadataValues[] = $md;
-        }
-
-        $element->setMetadata($metadataValues);
+        $element->setMetadata($data[$this->getIndexKey()]);
     }
 
     public function getIndexKey(): string
@@ -66,22 +58,5 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
         return [
             ElementTypes::TYPE_ASSET,
         ];
-    }
-
-    private function resolveData(string $type, mixed $data): mixed
-    {
-       return match($type) {
-           'asset', 'document', 'object' => $this->resolveElement($type, $data),
-           default => $data,
-       };
-    }
-
-    private function resolveElement(string $type, string $path): ?int
-    {
-        try {
-            return $this->getElementByPath($this->serviceResolver, $type, $path)->getId();
-        } catch (ElementNotFoundByPathException) {
-            return null;
-        }
     }
 }

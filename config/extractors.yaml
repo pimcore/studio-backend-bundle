@@ -1,0 +1,8 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Pimcore\Bundle\StudioBackendBundle\Extractor\Element\DataExtractorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Extractor\Element\DataExtractor
