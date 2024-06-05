@@ -14,13 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Data;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\CustomSettingsJson;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\CustomSettingsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -34,13 +35,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CustomSettingsController extends AbstractApiController
+final class CustomMetadataController extends AbstractApiController
 {
     use ElementProviderTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomSettingsServiceInterface $customSettingsService
+        private readonly CustomMetadataServiceInterface $customMetadataService
     ) {
         parent::__construct($serializer);
     }
@@ -48,20 +49,20 @@ final class CustomSettingsController extends AbstractApiController
     /**
      * @throws AccessDeniedException
      */
-    #[Route('/assets/{id}/custom-settings', name: 'pimcore_studio_api_get_asset_custom_settings', methods: ['GET'])]
+    #[Route('/assets/{id}/custom-metadata', name: 'pimcore_studio_api_get_asset_custom_metadata', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[GET(
-        path: self::API_PATH . '/assets/{id}/custom-settings',
-        operationId: 'getAssetCustomSettingsById',
-        description: 'Get custom settings of an asset by its id by path parameter',
-        summary: 'Get custom settings of an asset by id',
+        path: self::API_PATH . '/assets/{id}/custom-metadata',
+        operationId: 'getAssetCustomMetadataById',
+        description: 'Get custom metadata of an asset by its id by path parameter',
+        summary: 'Get custom metadata of an asset by id',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]
     #[SuccessResponse(
-        description: 'Array of custom settings',
-        content: new CustomSettingsJson()
+        description: 'Array of custom metadata',
+        content: new ItemsJson(CustomMetadata::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -69,6 +70,6 @@ final class CustomSettingsController extends AbstractApiController
     ])]
     public function getAssetCustomSettingsById(int $id): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->customSettingsService->getCustomSettings($id)]);
+        return $this->jsonResponse(['items' => $this->customMetadataService->getCustomMetadata($id)]);
     }
 }

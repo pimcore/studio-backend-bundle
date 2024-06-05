@@ -14,19 +14,36 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MaxFileSizeExceededException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 
 /**
  * @internal
  */
-interface DataServiceInterface
+final class TextService implements TextServiceInterface
 {
+    use ElementProviderTrait;
+
+    public function __construct(
+        private readonly ServiceResolverInterface $serviceResolver,
+        private readonly TextEncoderInterface $textEncoder,
+    )
+    {
+    }
+
     /**
      * @throws ElementNotFoundException|InvalidElementTypeException|MaxFileSizeExceededException
      */
-    public function getUTF8EncodedData(int $id): string;
+    public function getUTF8EncodedData(int $id): string
+    {
+        $element = $this->getElement($this->serviceResolver, 'asset', $id);
+
+        return $this->textEncoder->encodeUTF8($element);
+    }
 }
