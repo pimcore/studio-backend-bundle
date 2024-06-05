@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 
-use Exception;
+use RuntimeException;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -40,6 +40,6 @@ final class LogoutController extends AbstractApiController
     )]
     public function logout(): void
     {
-        throw new Exception('Should not be called. Handled by symfony.');
+        throw new RuntimeException('Should not be called. Handled by symfony.');
     }
 }
