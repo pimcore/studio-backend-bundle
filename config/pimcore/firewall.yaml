@@ -9,6 +9,6 @@ pimcore_studio_backend:
       max_attempts: 3
       interval: '5 minutes'
     logout:
-      path: /studio/api/logout
+      path: pimcore_studio_api_logout
     json_login:
-      check_path: /studio/api/login
+      check_path: pimcore_studio_api_login
