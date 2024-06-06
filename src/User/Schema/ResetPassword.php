@@ -25,6 +25,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'ResetPassword',
     description: 'Username',
+    required: ['username'],
     type: 'object'
 )]
 final readonly class ResetPassword

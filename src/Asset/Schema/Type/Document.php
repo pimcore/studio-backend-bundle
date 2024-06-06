@@ -22,6 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 
 #[Schema(
     title: 'Document',
+    required: [
+        'pageCount',
+        'imageThumbnailPath'
+    ],
     type: 'object'
 )]
 class Document extends Asset
