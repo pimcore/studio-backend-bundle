@@ -38,3 +38,17 @@ bin/console pimcore:bundle:install PimcoreStudioBackendBundle
 Pimcore Studio Backend also requires the installation and setup of the generic data index. 
 The bundle is required by default and also automatically enabled in the bundles.
 To install the generic data index refer to [Generic-Data-Index](https://github.com/pimcore/generic-data-index-bundle?tab=readme-ov-file)
+
+## Enable Firewall settings
+
+To enable the firewall settings, add the following configuration to your `config/packages/security.yaml` file:
+
+```yaml
+security:
+    firewalls: 
+        pimcore_studio: '%pimcore_studio_backend.firewall_settings%'
+    access_control:
+        - { path: ^/studio/api/docs$, roles: PUBLIC_ACCESS }
+        - { path: ^/studio/api/docs.json$, roles: PUBLIC_ACCESS }
+        - { path: ^/studio, roles: ROLE_PIMCORE_USER }
+```
