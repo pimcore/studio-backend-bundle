@@ -58,7 +58,7 @@ final class CreateController extends AbstractApiController
         path: self::API_PATH . '/notes/{elementType}/{id}',
         operationId: 'createNoteForElement',
         summary: 'Creating new note for element',
-        tags: [Tags::NotesForElement->name]
+        tags: [Tags::Notes->name]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
