@@ -24,30 +24,19 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'Login Success',
-    description: 'Login Success Response Schema for Pimcore Admin',
+    title: 'Invalid Credentials',
+    description: 'Invalid credentials after login attempt',
     type: 'object'
 )]
-final readonly class LoginSuccess
+final readonly class InvalidCredentials
 {
     public function __construct(
-        #[Property(description: 'Username', type: 'string', example: 'admin')]
-        private string $username,
-        #[Property(
-            description: 'Roles',
-            type: 'array',
-            items: new Items(type: 'string', example: 'ROLE_PIMCORE_ADMIN')
-        )]
-        private array $roles,
+        #[Property(description: 'Error', type: 'string', example: 'Invalid credentials')]
+        private string $error,
     ) {
     }
-
-    public function getRoles(): array
+    public function getError(): string
     {
-        return $this->roles;
-    }
-    public function getUsername(): string
-    {
-        return $this->username;
+        return $this->error;
     }
 }

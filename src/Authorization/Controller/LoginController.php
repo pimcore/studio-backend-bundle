@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\CredentialsRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Response\InvalidCredentials;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Response\InvalidCredentialsResponse;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\LoginSuccess;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -47,7 +47,7 @@ final class LoginController extends AbstractApiController
         description: 'Login successful',
         content: new JsonContent(ref: LoginSuccess::class)
     )]
-    #[InvalidCredentials]
+    #[InvalidCredentialsResponse]
     #[DefaultResponses]
     public function login(#[CurrentUser] User $user): JsonResponse
     {

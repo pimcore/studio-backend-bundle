@@ -17,19 +17,22 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Response;
 
 use Attribute;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Response;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\InvalidCredentials;
 
 /**
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class InvalidCredentials extends Response
+final class InvalidCredentialsResponse extends Response
 {
     public function __construct()
     {
         parent::__construct(
             response: 401,
             description: 'Invalid credentials Response',
+            content: new JsonContent(ref: InvalidCredentials::class)
         );
     }
 }
