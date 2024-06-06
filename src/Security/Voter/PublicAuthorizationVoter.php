@@ -42,7 +42,6 @@ final class PublicAuthorizationVoter extends Voter
 
     public function __construct(
         private readonly RequestStack $requestStack,
-        private readonly SecurityServiceInterface $securityService
     ) {
     }
 
