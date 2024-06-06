@@ -24,7 +24,6 @@ use OpenApi\Attributes\Schema;
  */
 final class ContentDisposition extends Header
 {
-
     public function __construct()
     {
         parent::__construct(
@@ -32,6 +31,5 @@ final class ContentDisposition extends Header
             description: 'Content-Disposition header',
             schema: new Schema(type: 'string', example: 'attachment; filename="example.jpg"'),
         );
-
     }
 }

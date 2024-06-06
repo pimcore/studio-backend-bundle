@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\ResizeModes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
