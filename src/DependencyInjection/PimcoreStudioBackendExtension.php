@@ -90,6 +90,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         }
     }
 
+    /**
+     * @throws InvalidPathException
+     */
     private function checkValidOpenApiScanPaths(array $config): void
     {
         foreach ($config as $path) {
