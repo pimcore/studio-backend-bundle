@@ -14,21 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Attribute;
-use OpenApi\Attributes\Response;
-
-#[Attribute(Attribute::TARGET_METHOD)]
-final class SuccessResponse extends Response
+/**
+ * @internal
+ */
+final class ElementStreamResourceNotFoundException extends AbstractApiException
 {
-    public function __construct(string $description = 'Success', mixed $content = null, ?array $headers = null)
+    public function __construct(int $id, string $type = 'Element')
     {
         parent::__construct(
-            response: 200,
-            description: $description,
-            headers: $headers,
-            content: $content
+            404,
+            sprintf('Unable to get resource for %s with ID %d', $type, $id)
         );
     }
 }

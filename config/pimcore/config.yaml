@@ -6,3 +6,22 @@ pimcore:
 pimcore_studio_backend:
     open_api_scan_paths:
         - "%kernel.project_dir%/vendor/pimcore/studio-backend-bundle/src"
+    asset_default_formats:
+        web:
+            resize_mode: "scaleByWidth"
+            width: 3500
+            dpi: 72
+            format: "JPEG"
+            quality: 85
+        print:
+            resize_mode: "scaleByWidth"
+            width: 6000
+            dpi: 300
+            format: "JPEG"
+            quality: 95
+        office:
+            resize_mode: "scaleByWidth"
+            width: 1190
+            dpi: 144
+            format: "JPEG"
+            quality: 90

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\AssetEvent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
@@ -37,19 +38,27 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 /**
  * @internal
  */
 final readonly class AssetService implements AssetServiceInterface
 {
+    use ElementProviderTrait;
+    
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
         private FilterServiceProviderInterface $filterServiceProvider,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private SecurityServiceInterface $securityService,
+        private ServiceResolverInterface $serviceResolver,
     )
     {
     }
@@ -93,6 +102,20 @@ final readonly class AssetService implements AssetServiceInterface
             new AssetEvent($asset),
             AssetEvent::EVENT_NAME
         );
+
+        return $asset;
+    }
+
+    /**
+     * @throws AccessDeniedException|ElementNotFoundException
+     */
+    public function getAssetElement(
+        UserInterface $user,
+        int $assetId,
+    ): ElementInterface
+    {
+        $asset = $this->getElement($this->serviceResolver, ElementTypes::TYPE_ASSET, $assetId);
+        $this->securityService->hasElementPermission($asset, $user, ElementPermissions::VIEW_PERMISSION);
 
         return $asset;
     }

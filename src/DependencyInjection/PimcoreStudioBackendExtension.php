@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
@@ -80,5 +81,8 @@ class PimcoreStudioBackendExtension extends Extension
 
         $definition = $container->getDefinition(CorsSubscriber::class);
         $definition->setArgument('$allowedHosts', $config['allowed_hosts_for_cors']);
+
+        $definition = $container->getDefinition(DownloadServiceInterface::class);
+        $definition->setArgument('$defaultFormats', $config['asset_default_formats']);
     }
 }

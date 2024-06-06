@@ -14,21 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header;
 
-use Attribute;
-use OpenApi\Attributes\Response;
+use OpenApi\Attributes\Header;
+use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_METHOD)]
-final class SuccessResponse extends Response
+/**
+ * @internal
+ */
+final class ContentDisposition extends Header
 {
-    public function __construct(string $description = 'Success', mixed $content = null, ?array $headers = null)
+
+    public function __construct()
     {
         parent::__construct(
-            response: 200,
-            description: $description,
-            headers: $headers,
-            content: $content
+            header: 'Content-Disposition',
+            description: 'Content-Disposition header',
+            schema: new Schema(type: 'string', example: 'attachment; filename="example.jpg"'),
         );
+
     }
 }

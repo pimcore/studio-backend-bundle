@@ -14,20 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content;
+
+use OpenApi\Attributes\MediaType;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-final class WorkflowDependencyMissingException extends AbstractApiException
+final class AssetMediaType extends MediaType
 {
-    public function __construct(string $executable)
+    public function __construct($mimeType = 'application/*')
     {
         parent::__construct(
-            400,
-            sprintf(
-                'Please install the "%s" console executable on the server to render the workflow graph.',
-                $executable
+            mediaType: $mimeType,
+            schema: new Schema(
+                type: 'string',
+                format: 'binary'
             )
         );
     }

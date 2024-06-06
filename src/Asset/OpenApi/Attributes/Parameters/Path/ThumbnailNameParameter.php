@@ -14,21 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Path;
 
 use Attribute;
-use OpenApi\Attributes\Response;
+use OpenApi\Attributes\PathParameter;
+use OpenApi\Attributes\Schema;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class SuccessResponse extends Response
+final class ThumbnailNameParameter extends PathParameter
 {
-    public function __construct(string $description = 'Success', mixed $content = null, ?array $headers = null)
+    public function __construct()
     {
         parent::__construct(
-            response: 200,
-            description: $description,
-            headers: $headers,
-            content: $content
+            name: 'thumbnailName',
+            description: 'Find asset by matching thumbnail name.',
+            in: 'path',
+            required: true,
+            schema: new Schema(
+                type: 'string',
+                example: 'my-thumbnail-name',
+            ),
         );
     }
 }
