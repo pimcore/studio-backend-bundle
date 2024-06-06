@@ -13,13 +13,14 @@ declare(strict_types=1);
  *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
+
 namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\Thumbnail;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailCollection;
 use Pimcore\Model\Asset\Image\Thumbnail\Config;
-use Pimcore\Model\Asset\Video\Thumbnail\Config\Listing as VideoThumbnailListing;
 use Pimcore\Model\Asset\Image\Thumbnail\Config\Listing as ImageThumbnailListing;
+use Pimcore\Model\Asset\Video\Thumbnail\Config\Listing as VideoThumbnailListing;
 
 /**
  * @internal
@@ -31,9 +32,7 @@ final class ThumbnailRepository implements ThumbnailRepositoryInterface
     private const DEFAULT_IMAGE_THUMBNAIL_TEXT = 'original';
 
     public function listVideoThumbnails(
-    ): ThumbnailCollection
-    {
-
+    ): ThumbnailCollection {
         $thumbnailListing = new VideoThumbnailListing();
         $thumbnails = $thumbnailListing->getThumbnails();
 
@@ -43,14 +42,13 @@ final class ThumbnailRepository implements ThumbnailRepositoryInterface
                 new Thumbnail(
                     self::DEFAULT_VIDEO_THUMBNAIL_ID,
                     self::DEFAULT_IMAGE_THUMBNAIL_TEXT
-                )
+                ),
             ]
         );
     }
 
     public function listImageThumbnails(
-    ): ThumbnailCollection
-    {
+    ): ThumbnailCollection {
         $thumbnailListing = new ImageThumbnailListing();
         $thumbnailListing->setFilter(function (Config $config) {
             return $config->isDownloadable();
@@ -65,8 +63,7 @@ final class ThumbnailRepository implements ThumbnailRepositoryInterface
     private function getThumbnailCollection(
         array $thumbnails,
         array $items = []
-    ): ThumbnailCollection
-    {
+    ): ThumbnailCollection {
         foreach ($thumbnails as $thumbnail) {
             $items[] = new Thumbnail(
                 $thumbnail->getName(),
@@ -78,5 +75,4 @@ final class ThumbnailRepository implements ThumbnailRepositoryInterface
             $items
         );
     }
-
 }
