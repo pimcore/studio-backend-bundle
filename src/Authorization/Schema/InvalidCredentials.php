@@ -26,6 +26,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'Invalid Credentials',
     description: 'Invalid credentials after login attempt',
+    required: ['error'],
     type: 'object'
 )]
 final readonly class InvalidCredentials

@@ -26,6 +26,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'Login Success',
     description: 'Login Success Response Schema for Pimcore Admin',
+    required: ['username', 'roles'],
     type: 'object'
 )]
 final readonly class LoginSuccess
