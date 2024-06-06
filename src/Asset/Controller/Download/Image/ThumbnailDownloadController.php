@@ -53,7 +53,11 @@ final class ThumbnailDownloadController extends AbstractApiController
     /**
      * @throws ElementNotFoundException|SearchException
      */
-    #[Route('/assets/{id}/image/download/{thumbnailName}', name: 'pimcore_studio_api_download_image_thumbnail', methods: ['GET'])]
+    #[Route(
+        '/assets/{id}/image/download/{thumbnailName}',
+        name: 'pimcore_studio_api_download_image_thumbnail',
+        methods: ['GET']
+    )]
     //#[IsGranted('STUDIO_API')]
     //#[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(

@@ -52,7 +52,11 @@ final class FormatDownloadController extends AbstractApiController
     /**
      * @throws ElementNotFoundException|SearchException
      */
-    #[Route('/assets/{id}/image/download/{format}', name: 'pimcore_studio_api_download_image_format', methods: ['GET'])]
+    #[Route(
+        '/assets/{id}/image/download/{format}',
+        name: 'pimcore_studio_api_download_image_format',
+        methods: ['GET']
+    )]
     //#[IsGranted('STUDIO_API')]
     //#[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(

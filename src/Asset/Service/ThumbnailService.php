@@ -84,7 +84,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         $thumbnailConfig->setFormat($parameters->getMimeType());
         $quality = $parameters->getQuality();
 
-        if ($quality !== null && $quality > 0 && $quality <= 100 ) {
+        if ($quality !== null && $quality > 0 && $quality <= 100) {
             $thumbnailConfig->setQuality($quality);
         }
 

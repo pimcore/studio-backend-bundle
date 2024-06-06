@@ -23,9 +23,12 @@ final class ThumbnailResizingFailedException extends AbstractApiException
 {
     public function __construct(string $message)
     {
-        parent::__construct(400, sprintf(
-            'Thumbnail resizing failed: %s',
-            $message
-        ));
+        parent::__construct(
+            400,
+            sprintf(
+                'Thumbnail resizing failed: %s',
+                $message
+            )
+        );
     }
 }

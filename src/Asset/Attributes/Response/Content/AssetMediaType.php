@@ -24,7 +24,7 @@ use OpenApi\Attributes\Schema;
  */
 final class AssetMediaType extends MediaType
 {
-    public function __construct($mimeType = 'application/*')
+    public function __construct(string $mimeType = 'application/*')
     {
         parent::__construct(
             mediaType: $mimeType,
