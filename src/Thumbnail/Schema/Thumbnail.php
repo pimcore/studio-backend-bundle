@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -23,27 +23,28 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'VersionDimensions',
+    title: 'Thumbnail',
+    required: ['id', 'text'],
     type: 'object'
 )]
-final readonly class Dimensions
+final readonly class Thumbnail
 {
     public function __construct(
-        #[Property(description: 'width', type: 'integer', example: 1920)]
-        private ?int $width = null,
-        #[Property(description: 'height', type: 'integer', example: 1080)]
-        private ?int $height = null,
+        #[Property(description: 'id', type: 'string', example: 'pimcore_system_treepreview')]
+        private string $id,
+        #[Property(description: 'text', type: 'string', example: 'original')]
+        private string $text,
     ) {
 
     }
 
-    public function getWidth(): ?int
+    public function getId(): string
     {
-        return $this->width;
+        return $this->id;
     }
 
-    public function getHeight(): ?int
+    public function getText(): string
     {
-        return $this->height;
+        return $this->text;
     }
 }

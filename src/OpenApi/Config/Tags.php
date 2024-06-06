@@ -84,14 +84,13 @@ enum Tags: string
     case DataObjects = 'DataObjects';
     case Dependencies = 'Dependencies';
     case Notes = 'Notes';
-
     case NotesForElement = 'Notes for Element';
     case Properties = 'Properties';
     case PropertiesForElement = 'Properties for Element';
     case Schedule = 'Schedule';
     case Settings = 'Settings';
     case Translation = 'Translation';
-
+    case Thumbnails = 'Thumbnails';
     case User = 'User Management';
     case Versions = 'Versions';
     case Workflows = 'Workflows';
