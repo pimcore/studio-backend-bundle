@@ -30,16 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 #[Schema(
     title: 'Asset',
     required: [
-        'id',
-        'parentId',
-        'path',
-        'userOwner',
-        'userModification',
-        'locked',
-        'isLocked',
-        'creationDate',
-        'modificationDate',
-        'permissions',
         'iconName',
         'hasChildren',
         'type',
