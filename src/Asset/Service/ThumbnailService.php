@@ -36,6 +36,9 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
 {
     use ConsoleExecutableTrait;
 
+    /**
+     * @throws ThumbnailResizingFailedException
+     */
     public function getThumbnailFromConfiguration(
         Image $image,
         ImageDownloadConfigParameter $parameters
@@ -133,6 +136,9 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         return $thumbnailConfig;
     }
 
+    /**
+     * @throws ThumbnailResizingFailedException
+     */
     private function resizeThumbnailFile(
         ThumbnailInterface $thumbnail,
         int $dpi

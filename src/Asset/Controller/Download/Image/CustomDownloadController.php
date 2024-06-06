@@ -26,8 +26,10 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -54,7 +56,10 @@ final class CustomDownloadController extends AbstractApiController
     }
 
     /**
-     * @throws ElementNotFoundException|SearchException
+     * @throws AccessDeniedException
+     * @throws ElementNotFoundException
+     * @throws InvalidElementTypeException
+     * @throws ThumbnailResizingFailedException
      */
     #[Route(
         '/assets/{id}/image/download/custom',

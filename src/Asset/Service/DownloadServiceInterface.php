@@ -17,6 +17,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidAssetFormatTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -26,20 +30,32 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 interface DownloadServiceInterface
 {
+    /**
+     * @throws InvalidElementTypeException|ElementStreamResourceNotFoundException
+     */
     public function downloadAsset(
         ElementInterface $asset
     ): StreamedResponse;
 
+    /**
+     * @throws InvalidElementTypeException|ThumbnailResizingFailedException
+     */
     public function downloadCustomImage(
         ElementInterface $image,
         ImageDownloadConfigParameter $parameters
     ): BinaryFileResponse;
 
+    /**
+     * @throws InvalidElementTypeException|InvalidAssetFormatTypeException|ThumbnailResizingFailedException
+     */
     public function downloadImageByFormat(
         ElementInterface $image,
         string $format
     ): BinaryFileResponse;
 
+    /**
+     * @throws InvalidElementTypeException
+     */
     public function downloadImageByThumbnail(
         ElementInterface $image,
         string $thumbnailName

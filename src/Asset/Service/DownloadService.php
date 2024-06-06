@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfig
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
@@ -39,6 +40,9 @@ final readonly class DownloadService implements DownloadServiceInterface
     {
     }
 
+    /**
+     * @throws InvalidElementTypeException|ElementStreamResourceNotFoundException
+     */
     public function downloadAsset(
         ElementInterface $asset
     ): StreamedResponse
@@ -64,6 +68,9 @@ final readonly class DownloadService implements DownloadServiceInterface
         ]);
     }
 
+    /**
+     * @throws InvalidElementTypeException|ThumbnailResizingFailedException
+     */
     public function downloadCustomImage(
         ElementInterface $image,
         ImageDownloadConfigParameter $parameters
@@ -79,6 +86,9 @@ final readonly class DownloadService implements DownloadServiceInterface
         );
     }
 
+    /**
+     * @throws InvalidElementTypeException|InvalidAssetFormatTypeException|ThumbnailResizingFailedException
+     */
     public function downloadImageByFormat(ElementInterface $image, string $format): BinaryFileResponse
     {
         if (!$image instanceof Image) {
@@ -107,6 +117,9 @@ final readonly class DownloadService implements DownloadServiceInterface
         );
     }
 
+    /**
+     * @throws InvalidElementTypeException
+     */
     public function downloadImageByThumbnail(
         ElementInterface $image,
         string $thumbnailName

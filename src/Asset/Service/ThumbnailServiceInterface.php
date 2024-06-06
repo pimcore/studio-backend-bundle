@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Image\ThumbnailInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -26,6 +27,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 interface ThumbnailServiceInterface
 {
+    /**
+     * @throws ThumbnailResizingFailedException
+     */
     public function getThumbnailFromConfiguration(
         Image $image,
         ImageDownloadConfigParameter $parameters
