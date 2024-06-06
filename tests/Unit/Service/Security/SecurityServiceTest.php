@@ -20,83 +20,22 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Asset;
-use Pimcore\Model\Tool\TmpStore;
 use Pimcore\Model\User as PimcoreUser;
-use Pimcore\Security\User\User;
-use Pimcore\Security\User\UserProvider;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 final class SecurityServiceTest extends Unit
 {
-    /**
-     * @throws Exception
-     */
-    public function testSecurityService(): void
-    {
-        $securityService = $this->mockSecurityService();
-        $user = $securityService->authenticateUser(new Credentials('test', 'test'));
-
-        $this->assertInstanceOf(User::class, $user);
-        $this->assertSame('test', $user->getPassword());
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testInvalidPassword(): void
-    {
-        $securityService = $this->mockSecurityService(false);
-
-        $this->expectException(AccessDeniedException::class);
-        $this->expectExceptionMessage('Bad credentials');
-        $securityService->authenticateUser(new Credentials('test', 'test'));
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testUserNotFound(): void
-    {
-        $securityService = $this->mockSecurityService(false, false);
-
-        $this->expectException(AccessDeniedException::class);
-        $this->expectExceptionMessage('Bad credentials');
-        $securityService->authenticateUser(new Credentials('test', 'test'));
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testTokenAllowedTrue(): void
-    {
-        $securityService = $this->mockSecurityService(false, false);
-
-        $this->assertTrue($securityService->checkAuthToken('test'));
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testTokenAllowedFalse(): void
-    {
-        $securityService = $this->mockSecurityService(false, false, false);
-
-        $this->assertFalse($securityService->checkAuthToken('test'));
-    }
 
     /**
      * @throws Exception
      */
     public function testGetCurrentUserWithOutValidUser(): void
     {
-        $securityService = $this->mockSecurityService(false, false, false);
+        $securityService = $this->mockSecurityService(false, false);
 
         $this->expectException(UserNotFoundException::class);
         $securityService->getCurrentUser();
@@ -107,7 +46,7 @@ final class SecurityServiceTest extends Unit
      */
     public function testGetCurrentUserWithValidUser(): void
     {
-        $securityService = $this->mockSecurityService(false, true, false);
+        $securityService = $this->mockSecurityService(true, false);
 
         $user = $securityService->getCurrentUser();
 
@@ -121,8 +60,6 @@ final class SecurityServiceTest extends Unit
     public function testHasElementPermission(): void
     {
         $securityService = $this->mockSecurityService(
-            true,
-            true,
             true,
             false
         );
@@ -140,71 +77,13 @@ final class SecurityServiceTest extends Unit
      * @throws Exception
      */
     private function mockSecurityService(
-        $validPassword = true,
         bool $withUser = true,
-        bool $withTmpStore = true,
         bool $hasPermission = true,
     ): SecurityServiceInterface {
         return new SecurityService(
             $this->mockElementPermissionService($hasPermission),
-            $withUser ? $this->mockUserProviderWithUser() : $this->mockUserProviderWithOutUser(),
-            $this->mockPasswordHasher($validPassword),
-            $this->mockTmpStoreResolver($withTmpStore),
             $this->mockAuthenticationResolver($withUser)
         );
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function mockUserProviderWithUser(): UserProvider
-    {
-        return $this->makeEmpty(UserProvider::class, [
-            'loadUserByIdentifier' => function () {
-                return $this->makeEmpty(User::class, [
-                    'getPassword' => 'test',
-                ]);
-            },
-        ]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function mockUserProviderWithOutUser(): UserProvider
-    {
-        return $this->makeEmpty(UserProvider::class, [
-            'loadUserByIdentifier' => fn () => throw new UserNotFoundException('User not found'),
-        ]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function mockPasswordHasher($validPassword = true): UserPasswordHasherInterface
-    {
-        return $this->makeEmpty(UserPasswordHasherInterface::class, [
-            'isPasswordValid' => $validPassword,
-        ]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function mockTmpStoreResolver($withTmpStore = true): TmpStoreResolverInterface
-    {
-        return $this->makeEmpty(TmpStoreResolverInterface::class, [
-            'get' => $withTmpStore ? $this->mockTmpStore() : null,
-        ]);
-    }
-
-    private function mockTmpStore(): TmpStore
-    {
-        $tmpStore = new TmpStore();
-        $tmpStore->setId('test');
-        $tmpStore->setData(['username' => 'test']);
-
-        return $tmpStore;
     }
 
     private function mockElementPermissionService(bool $hasPermission): ElementPermissionServiceInterface

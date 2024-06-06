@@ -36,39 +36,8 @@ final readonly class SecurityService implements SecurityServiceInterface
 {
     public function __construct(
         private ElementPermissionServiceInterface $elementPermissionService,
-        private UserProvider $userProvider,
-        private UserPasswordHasherInterface $passwordHasher,
-        private TmpStoreResolverInterface $tmpStoreResolver,
         private AuthenticationResolverInterface $authenticationResolver,
     ) {
-    }
-
-    /**
-     * @throws AccessDeniedException
-     */
-    public function authenticateUser(Credentials $credentials): PasswordAuthenticatedUserInterface
-    {
-        try {
-            $user = $this->userProvider->loadUserByIdentifier($credentials->getUsername());
-        } catch (UserNotFoundException) {
-            throw new AccessDeniedException();
-        }
-
-        if(
-            !$user instanceof PasswordAuthenticatedUserInterface ||
-            !$this->passwordHasher->isPasswordValid($user, $credentials->getPassword())
-        ) {
-            throw new AccessDeniedException();
-        }
-
-        return $user;
-    }
-
-    public function checkAuthToken(string $token): bool
-    {
-        $entry = $this->tmpStoreResolver->get($token);
-
-        return  $entry !== null && $entry->getId() === $token;
     }
 
     /**
