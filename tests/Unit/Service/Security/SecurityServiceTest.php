@@ -29,7 +29,6 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 final class SecurityServiceTest extends Unit
 {
-
     /**
      * @throws Exception
      */
