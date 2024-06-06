@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\EventListener;
+namespace Pimcore\Bundle\StudioBackendBundle\Authorization\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,7 +23,7 @@ use Symfony\Component\Security\Http\Event\LogoutEvent;
 /**
  * @internal
  */
-final class LogoutListener implements EventSubscriberInterface
+final class LogoutSubscriber implements EventSubscriberInterface
 {
     public static function getSubscribedEvents(): array
     {

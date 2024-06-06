@@ -13,6 +13,6 @@ services:
     tags: [ 'controller.service_arguments' ]
 
 
-  Pimcore\Bundle\StudioBackendBundle\Authorization\EventListener\LogoutListener:
+  Pimcore\Bundle\StudioBackendBundle\Authorization\EventSubscriber\LogoutSubscriber:
     tags:
       - { name: 'kernel.event_subscriber', dispatcher: 'security.event_dispatcher.pimcore_studio' }
