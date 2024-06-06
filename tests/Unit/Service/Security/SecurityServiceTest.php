@@ -19,12 +19,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Security;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Asset;
@@ -96,24 +95,25 @@ final class SecurityServiceTest extends Unit
     /**
      * @throws Exception
      */
-    public function testGetCurrentUserWithInvalidToken(): void
+    public function testGetCurrentUserWithOutValidUser(): void
     {
         $securityService = $this->mockSecurityService(false, false, false);
 
-        $this->expectException(NotAuthorizedException::class);
+        $this->expectException(UserNotFoundException::class);
         $securityService->getCurrentUser();
     }
 
     /**
      * @throws Exception
      */
-    public function testGetCurrentUserWithValidToken(): void
+    public function testGetCurrentUserWithValidUser(): void
     {
-        $securityService = $this->mockSecurityService();
+        $securityService = $this->mockSecurityService(false, true, false);
 
         $user = $securityService->getCurrentUser();
 
         $this->assertInstanceOf(PimcoreUser::class, $user);
+        $this->assertSame('test', $user->getUsername());
     }
 
     /**
@@ -144,15 +144,14 @@ final class SecurityServiceTest extends Unit
         $validPassword = true,
         bool $withUser = true,
         bool $withTmpStore = true,
-        bool $hasPermission = true
+        bool $hasPermission = true,
     ): SecurityServiceInterface {
         return new SecurityService(
             $this->mockElementPermissionService($hasPermission),
             $withUser ? $this->mockUserProviderWithUser() : $this->mockUserProviderWithOutUser(),
-            $this->mockUserResolverService(),
             $this->mockPasswordHasher($validPassword),
             $this->mockTmpStoreResolver($withTmpStore),
-            $this->mockTokenService(),
+            $this->mockAuthenticationResolver($withUser)
         );
     }
 
@@ -177,26 +176,6 @@ final class SecurityServiceTest extends Unit
     {
         return $this->makeEmpty(UserProvider::class, [
             'loadUserByIdentifier' => fn () => throw new UserNotFoundException('User not found'),
-        ]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function mockUserResolverService(): UserResolverInterface
-    {
-        return $this->makeEmpty(UserResolverInterface::class, [
-            'getByName' => new PimcoreUser(),
-        ]);
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function mockTokenService(): TokenServiceInterface
-    {
-        return $this->makeEmpty(TokenServiceInterface::class, [
-            'getCurrentToken' => 'test',
         ]);
     }
 
@@ -233,6 +212,16 @@ final class SecurityServiceTest extends Unit
     {
         return $this->makeEmpty(ElementPermissionServiceInterface::class, [
             'isAllowed' => $hasPermission,
+        ]);
+    }
+
+    private function mockAuthenticationResolver(bool $withUser): AuthenticationResolverInterface
+    {
+        $user = new PimcoreUser();
+        $user->setUsername('test');
+
+        return $this->makeEmpty(AuthenticationResolverInterface::class, [
+            'authenticateSession' => $withUser ? $user : null,
         ]);
     }
 }
