@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\UnreachableException;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\UnreachableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Symfony\Component\Routing\Attribute\Route;
