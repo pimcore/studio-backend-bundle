@@ -48,7 +48,6 @@ security:
     firewalls: 
         pimcore_studio: '%pimcore_studio_backend.firewall_settings%'
     access_control:
-        - { path: ^/studio/api/docs$, roles: PUBLIC_ACCESS }
-        - { path: ^/studio/api/docs.json$, roles: PUBLIC_ACCESS }
-        - { path: ^/studio, roles: ROLE_PIMCORE_USER }
+      - { path: ^/studio/api/(docs|docs.json|translations)$, roles: PUBLIC_ACCESS }
+      - { path: ^/studio, roles: ROLE_PIMCORE_USER }
 ```
