@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\Credenti
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Response\InvalidCredentials;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\LoginSuccess;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Security\User\User;
@@ -47,6 +48,7 @@ final class LoginController extends AbstractApiController
         content: new JsonContent(ref: LoginSuccess::class)
     )]
     #[InvalidCredentials]
+    #[DefaultResponses]
     public function login(#[CurrentUser] User $user): JsonResponse
     {
         return $this->jsonResponse([
