@@ -22,7 +22,6 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionSe
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
