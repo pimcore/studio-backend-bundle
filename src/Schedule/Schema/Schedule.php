@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'Schedule',
+    required: ['id', 'ctype', 'date', 'active', 'userId'],
     type: 'object'
 )]
 final class Schedule implements AdditionalAttributesInterface

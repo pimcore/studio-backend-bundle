@@ -24,6 +24,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'UpdatePredefinedProperty',
+    required: ['name', 'key', 'type', 'ctype', 'inheritable'],
     type: 'object'
 )]
 final readonly class UpdatePredefinedProperty
