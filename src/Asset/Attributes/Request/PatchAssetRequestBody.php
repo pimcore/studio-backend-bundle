@@ -22,10 +22,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\CustomMetaData;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateAssetImage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateCustomMetaData;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\PatchCustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Property\UpdateElementProperties;
 
 /**
  * @internal

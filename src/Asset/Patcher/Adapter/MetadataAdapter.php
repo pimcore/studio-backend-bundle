@@ -35,7 +35,7 @@ final class MetadataAdapter implements PatchAdapterInterface
 
     public function patch(ElementInterface $element, array $data): void
     {
-        if(!$element instanceof Asset || !isset($data[self::INDEX_KEY])) {
+        if (!$element instanceof Asset || !isset($data[self::INDEX_KEY])) {
             return;
         }
 
@@ -43,16 +43,17 @@ final class MetadataAdapter implements PatchAdapterInterface
         $currentMetadata = $element->getMetadata();
         $patchedMetadata = [];
 
-        foreach($currentMetadata as $metadata) {
+        foreach ($currentMetadata as $metadata) {
             $index = array_search($metadata['name'], array_column($metadataForPatch, 'name'), true);
 
             if ($index === false) {
                 $patchedMetadata[] = $metadata;
+
                 continue;
             }
 
             // check for every single metadata if it is in the patch data
-            foreach(self::PATCHABLE_KEYS as $patchKeys) {
+            foreach (self::PATCHABLE_KEYS as $patchKeys) {
                 if (array_key_exists($patchKeys, $metadataForPatch[$index])) {
                     $metadata[$patchKeys] = $metadataForPatch[$index][$patchKeys];
                 }

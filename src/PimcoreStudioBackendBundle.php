@@ -69,7 +69,6 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new PatchAdapterPass());
         $container->addCompilerPass(new UpdateAdapterPass());
         $container->addCompilerPass(new SettingsProviderPass());
-
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void
