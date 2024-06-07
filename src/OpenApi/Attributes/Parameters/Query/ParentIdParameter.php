@@ -23,13 +23,13 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ParentIdParameter extends QueryParameter
 {
-    public function __construct()
+    public function __construct(string $description, bool $required = false)
     {
         parent::__construct(
             name: 'parentId',
-            description: 'Filter assets by parent id.',
+            description: $description,
             in: 'query',
-            required: false,
+            required: $required,
             schema: new Schema(type: 'integer', example: null),
         );
     }

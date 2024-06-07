@@ -71,7 +71,9 @@ final class CollectionController extends AbstractApiController
     )]
     #[PageParameter]
     #[PageSizeParameter]
-    #[ParentIdParameter]
+    #[ParentIdParameter(
+        description: 'Filter data objects by parent id.'
+    )]
     #[IdSearchTermParameter]
     #[ExcludeFoldersParameter]
     #[PathParameter]
