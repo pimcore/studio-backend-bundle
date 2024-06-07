@@ -14,10 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service\Loader;
+namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader;
 
-use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 /**
@@ -25,7 +24,7 @@ use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
  */
 final class TaggedIteratorAdapter implements AdapterLoaderInterface
 {
-    public const ADAPTER_TAG = 'pimcore.studio_backend.update_adapter';
+    public const ADAPTER_TAG = 'pimcore.studio_backend.patch_adapter';
 
     public function __construct(
         #[TaggedIterator(self::ADAPTER_TAG)]
@@ -34,13 +33,13 @@ final class TaggedIteratorAdapter implements AdapterLoaderInterface
     }
 
     /**
-     * @return array<int, UpdateAdapterInterface>
+     * @return array<int, PatchAdapterInterface>
      */
     public function loadAdapters(string $elementType): array
     {
         return array_filter(
             [...$this->taggedAdapter],
-            static function (UpdateAdapterInterface $adapter) use ($elementType) {
+            static function (PatchAdapterInterface $adapter) use ($elementType) {
                 return in_array($elementType, $adapter->supportedElementTypes(), true);
             }
         );

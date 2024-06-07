@@ -18,8 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
  * @internal
@@ -41,5 +43,13 @@ abstract class AbstractApiController extends AbstractController
     protected function jsonResponse(mixed $data, array $headers = []): JsonResponse
     {
         return new JsonResponse($this->serializer->serialize($data, 'json'), 200, $headers, true);
+    }
+
+    protected function patchResponse(array $errors = [], array $headers = []): Response
+    {
+        if (!empty($errors)) {
+            return new JsonResponse($this->serializer->serialize($errors, 'json'), 200, $headers, true);
+        }
+        return new Response();
     }
 }
