@@ -23,6 +23,7 @@ enum HttpResponseCodes: int
 {
     case SUCCESS = 200;
     case NOT_COMPLETED = 202;
+    case MULTI_STATUS = 207;
     case BAD_REQUEST = 400;
     case UNAUTHORIZED = 401;
     case FORBIDDEN = 403;
