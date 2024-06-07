@@ -24,6 +24,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'WorkflowStatus',
+    required: ['backgroundColor', 'fontColor', 'borderColor', 'title', 'label'],
     type: 'object'
 )]
 final readonly class WorkflowStatus

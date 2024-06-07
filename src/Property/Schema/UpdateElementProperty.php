@@ -24,6 +24,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'UpdateDataProperty',
+    required: ['key', 'data', 'type', 'inheritable'],
     type: 'object'
 )]
 final readonly class UpdateElementProperty

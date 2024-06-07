@@ -25,6 +25,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'GlobalAction',
+    required: ['name', 'label', 'iconCls', 'objectLayout', 'notes'],
     type: 'object'
 )]
 final readonly class GlobalAction

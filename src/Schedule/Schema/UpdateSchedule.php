@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'UpdateSchedule',
+    required: ['id', 'date', 'active'],
     type: 'object'
 )]
 final readonly class UpdateSchedule
