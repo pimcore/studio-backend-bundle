@@ -36,7 +36,8 @@ final class PatchAssetRequestBody extends RequestBody
             required: true,
             content: new JsonContent(
                 properties: [
-                    new Property('data',
+                    new Property(
+                        property: 'data',
                         type: 'array',
                         items: new Items(
                             properties: [

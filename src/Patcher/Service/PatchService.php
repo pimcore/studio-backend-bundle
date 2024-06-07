@@ -43,12 +43,12 @@ final class PatchService implements PatchServiceInterface
     {
        $adapters = $this->adapterLoader->loadAdapters($elementType);
 
-        $error = [];
+       $error = [];
 
-       foreach($patchData as $data) {
+       foreach ($patchData as $data) {
            try {
                $element  = $this->getElement($this->serviceResolver, $elementType, $data['id']);
-               foreach($adapters as $adapter) {
+               foreach ($adapters as $adapter) {
                    $adapter->patch($element, $data);
                }
 
