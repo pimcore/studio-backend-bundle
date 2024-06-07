@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
 use Pimcore\Model\User\Listing as UserListing;
+
 /**
  * @internal
  */
