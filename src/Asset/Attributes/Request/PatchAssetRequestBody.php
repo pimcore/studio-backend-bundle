@@ -35,11 +35,13 @@ final class PatchAssetRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
+                required: ['data'],
                 properties: [
                     new Property(
                         property: 'data',
                         type: 'array',
                         items: new Items(
+                            required: ['id'],
                             properties: [
                                 new Property(property: 'id', description: 'Asset ID', type: 'integer', example: 83),
                                 new CustomMetaData(PatchCustomMetadata::class),
