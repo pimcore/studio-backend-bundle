@@ -48,7 +48,6 @@ final class MetadataAdapter implements PatchAdapterInterface
 
             if ($index === false) {
                 $patchedMetadata[] = $metadata;
-
                 continue;
             }
 

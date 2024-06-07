@@ -18,14 +18,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response;
 
 use Attribute;
 use OpenApi\Attributes\Response;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class PatchSuccessResponseWithErrors extends Response
 {
-    public function __construct(string $description = 'Success with errors', mixed $content = null)
+    public function __construct(string $description = 'Partial success with errors', mixed $content = null)
     {
         parent::__construct(
-            response: 202,
+            response: HttpResponseCodes::MULTI_STATUS->value,
             description: $description,
             content: $content
         );
