@@ -10,5 +10,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService
 
-  Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter\MetadataAdapter:
+  Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\ParentIdAdapter:
     tags : ['pimcore.studio_backend.patch_adapter']
+
