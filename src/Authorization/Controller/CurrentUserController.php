@@ -16,10 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 
+use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\CredentialsRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Response\InvalidCredentialsResponse;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\UserInformation;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -33,21 +31,19 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 /**
  * @internal
  */
-final class LoginController extends AbstractApiController
+final class CurrentUserController extends AbstractApiController
 {
-    #[Route('/login', name: 'pimcore_studio_api_login', methods: ['POST'])]
-    #[Post(
-        path: self::API_PATH . '/login',
-        operationId: 'login',
-        summary: 'Login with user credentials and get access token',
+    #[Route('/current-user', name: 'pimcore_studio_api_current_user', methods: ['GET'])]
+    #[Get(
+        path: self::API_PATH . '/current-user',
+        operationId: 'current-user',
+        summary: 'Retrieve informations about the current logged in user.',
         tags: [Tags::Authorization->name]
     )]
-    #[CredentialsRequestBody]
     #[SuccessResponse(
-        description: 'Login successful',
+        description: 'Current user informations.',
         content: new JsonContent(ref: UserInformation::class)
     )]
-    #[InvalidCredentialsResponse]
     #[DefaultResponses]
     public function login(#[CurrentUser] User $user): JsonResponse
     {

@@ -29,7 +29,7 @@ use OpenApi\Attributes\Schema;
     required: ['username', 'roles'],
     type: 'object'
 )]
-final readonly class LoginSuccess
+final readonly class UserInformation
 {
     public function __construct(
         #[Property(description: 'Username', type: 'string', example: 'admin')]
