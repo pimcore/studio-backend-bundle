@@ -14,15 +14,16 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\UserInformation;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Security\User\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -33,18 +34,20 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
  */
 final class CurrentUserController extends AbstractApiController
 {
-    #[Route('/current-user', name: 'pimcore_studio_api_current_user', methods: ['GET'])]
+    #[Route('/user/current-user-information', name: 'pimcore_studio_api_current_user', methods: ['GET'])]
     #[Get(
-        path: self::API_PATH . '/current-user',
-        operationId: 'current-user',
+        path: self::API_PATH . '/user/current-user-information',
+        operationId: 'current-user-information',
         summary: 'Retrieve informations about the current logged in user.',
-        tags: [Tags::Authorization->name]
+        tags: [Tags::User->value]
     )]
     #[SuccessResponse(
         description: 'Current user informations.',
         content: new JsonContent(ref: UserInformation::class)
     )]
-    #[DefaultResponses]
+    #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED
+    ])]
     public function login(#[CurrentUser] User $user): JsonResponse
     {
         return $this->jsonResponse([

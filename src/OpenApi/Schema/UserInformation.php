@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema;
 
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
@@ -24,8 +24,8 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'Login Success',
-    description: 'Login Success Response Schema for Pimcore Admin',
+    title: 'User Informations',
+    description: 'Informations about the user with username and roles',
     required: ['username', 'roles'],
     type: 'object'
 )]
