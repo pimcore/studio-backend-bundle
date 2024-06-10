@@ -46,7 +46,7 @@ final class CurrentUserController extends AbstractApiController
         content: new JsonContent(ref: UserInformation::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function login(#[CurrentUser] User $user): JsonResponse
     {
