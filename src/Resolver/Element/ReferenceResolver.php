@@ -32,7 +32,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
 
     public function resolve(ElementInterface $element): array
     {
-        if($this->cache[$element->getId()] ?? false) {
+        if ($this->cache[$element->getId()] ?? false) {
             return $this->cache[$element->getId()];
         }
 
