@@ -18,16 +18,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Model\User;
+use Pimcore\Model\User\Folder;
 
 /**
  * @internal
  */
 final class UserTreeNodeHydrator implements UserTreeNodeHydratorInterface
 {
-    public function hydrate(User|User\Folder $user): UserTreeNode
+    public function hydrate(User|Folder $user): UserTreeNode
     {
         $hasChildren = false;
-        if ($user instanceof User\Folder) {
+        if ($user instanceof Folder) {
             $hasChildren = $user->hasChildren();
         }
 
