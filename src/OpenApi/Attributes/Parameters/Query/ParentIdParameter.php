@@ -30,7 +30,7 @@ final class ParentIdParameter extends QueryParameter
             description: $description,
             in: 'query',
             required: $required,
-            schema: new Schema(type: 'integer', example: null),
+            schema: new Schema(type: 'integer', minimum: 0, example: 0),
         );
     }
 }
