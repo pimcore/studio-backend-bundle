@@ -57,7 +57,9 @@ final class CollectionController extends AbstractApiController
     )]
     #[ParentIdParameter(
         description: 'Filter users by parent id.',
-        required: true
+        required: true,
+        minimum: 0,
+        example: 0
     )]
     #[SuccessResponse(
         description: 'Collection of users including folders for the given parent id.',
