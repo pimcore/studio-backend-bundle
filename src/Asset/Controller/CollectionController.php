@@ -79,7 +79,8 @@ final class CollectionController extends AbstractApiController
     #[PageParameter]
     #[PageSizeParameter]
     #[ParentIdParameter(
-        description: 'Filter assets by parent id.'
+        description: 'Filter assets by parent id.',
+        example: null,
     )]
     #[IdSearchTermParameter]
     #[ExcludeFoldersParameter]
@@ -91,7 +92,8 @@ final class CollectionController extends AbstractApiController
         content: new CollectionJson(new AnyOfAsset())
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getAssets(#[MapQueryString] ElementParameters $parameters): JsonResponse
     {

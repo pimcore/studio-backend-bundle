@@ -30,7 +30,7 @@ final class PageParameter extends QueryParameter
             description: 'Page number',
             in: 'query',
             required: true,
-            schema: new Schema(type: 'integer', example: 1),
+            schema: new Schema(type: 'integer', minimum: 1, example: 1),
         );
     }
 }

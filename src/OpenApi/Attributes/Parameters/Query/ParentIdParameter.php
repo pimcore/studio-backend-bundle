@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ParentIdParameter extends QueryParameter
 {
-    public function __construct(string $description, bool $required = false, int $minimum = 1, int $example = 1)
+    public function __construct(string $description, bool $required = false, int $minimum = 1, ?int $example = 1)
     {
         parent::__construct(
             name: 'parentId',
