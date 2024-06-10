@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error;
 
 use Attribute;
 use OpenApi\Attributes\Response;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class UnprocessableContentResponse extends Response
@@ -25,7 +26,7 @@ final class UnprocessableContentResponse extends Response
     public function __construct()
     {
         parent::__construct(
-            response: 422,
+            response: HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
             description: 'Unprocessable Content',
         );
     }

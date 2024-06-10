@@ -14,21 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Attributes\Response\Property;
 
-use Attribute;
-use OpenApi\Attributes\Response;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 
-#[Attribute(Attribute::TARGET_METHOD)]
-final class SuccessResponse extends Response
+final class UserTreeNodeCollection extends Property
 {
-    public function __construct(string $description = 'Success', mixed $content = null)
+    public function __construct()
     {
         parent::__construct(
-            response: HttpResponseCodes::SUCCESS->value,
-            description: $description,
-            content: $content
+            'items',
+            title: 'items',
+            type: 'array',
+            items: new Items(ref: UserTreeNode::class)
         );
     }
 }
