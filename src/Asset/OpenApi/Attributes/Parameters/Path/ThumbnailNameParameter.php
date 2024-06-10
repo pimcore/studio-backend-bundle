@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters
 use Attribute;
 use OpenApi\Attributes\PathParameter;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\Thumbnails;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ThumbnailNameParameter extends PathParameter
@@ -32,7 +33,7 @@ final class ThumbnailNameParameter extends PathParameter
             required: true,
             schema: new Schema(
                 type: 'string',
-                example: 'my-thumbnail-name',
+                example: Thumbnails::DEFAULT_THUMBNAIL_ID,
             ),
         );
     }

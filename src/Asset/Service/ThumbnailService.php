@@ -17,14 +17,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Video\Thumbnail\ConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\ResizeModes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ConsoleExecutableTrait;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Image\ThumbnailInterface;
-use Pimcore\Model\Asset\Image\Thumbnail\Config;
+use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageThumbnailConfig;
+use Pimcore\Model\Asset\Video\Thumbnail\Config;
+use Pimcore\Model\Asset\Video\Thumbnail\Config as VideoThumbnailConfig;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Process\Process;
@@ -36,6 +40,13 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
 {
     use ConsoleExecutableTrait;
 
+    public function __construct(
+        private ConfigResolverInterface $configResolver,
+    )
+    {
+
+    }
+
     /**
      * @throws ThumbnailResizingFailedException
      */
@@ -44,7 +55,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         ImageDownloadConfigParameter $parameters
     ): ThumbnailInterface
     {
-        $thumbnailConfig = $this->getThumbnailConfig($image, $parameters);
+        $thumbnailConfig = $this->getImageThumbnailConfig($image, $parameters);
         $thumbnail = $image->getThumbnail($thumbnailConfig);
         $dpi = $parameters->getDpi();
         if ($dpi && $thumbnailConfig->getFormat() === MimeTypes::JPEG) {
@@ -76,12 +87,32 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         return $response;
     }
 
-    private function getThumbnailConfig(
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getVideoThumbnailConfig(
+        string $thumbnailName
+    ): VideoThumbnailConfig
+    {
+        try {
+            $config = $this->configResolver->getByName($thumbnailName);
+        } catch (Exception) {
+            throw new InvalidThumbnailException($thumbnailName);
+        }
+
+        if (!$config instanceof VideoThumbnailConfig) {
+            $config = $this->configResolver->getPreviewConfig();
+        }
+
+        return $config;
+    }
+
+    private function getImageThumbnailConfig(
         Image $image,
         ImageDownloadConfigParameter $parameters
-    ): Config
+    ): ImageThumbnailConfig
     {
-        $thumbnailConfig = new Config();
+        $thumbnailConfig = new ImageThumbnailConfig();
         $thumbnailConfig->setName('pimcore-download-' . $image->getId() . '-' . md5(serialize($parameters)));
         $thumbnailConfig = $this->setThumbnailConfigResizeParameters($parameters, $thumbnailConfig);
         $thumbnailConfig->setFormat($parameters->getMimeType());
@@ -105,8 +136,8 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
 
     private function setThumbnailConfigResizeParameters(
         ImageDownloadConfigParameter $parameters,
-        Config $thumbnailConfig
-    ): Config
+        ImageThumbnailConfig $thumbnailConfig
+    ): ImageThumbnailConfig
     {
         $resizeWidth = $parameters->getWidth();
         $resizeHeight = $parameters->getHeight();

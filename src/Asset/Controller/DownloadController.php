@@ -14,34 +14,32 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download\Image;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\AssetMediaType;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header\ContentDisposition;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Path\FormatTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidAssetFormatTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class FormatDownloadController extends AbstractApiController
+final class DownloadController extends AbstractApiController
 {
     public function __construct(
         private readonly AssetServiceInterface $assetService,
@@ -54,44 +52,38 @@ final class FormatDownloadController extends AbstractApiController
 
     /**
      * @throws AccessDeniedException
+     * @throws ElementStreamResourceNotFoundException
      * @throws ElementNotFoundException
-     * @throws InvalidAssetFormatTypeException
      * @throws InvalidElementTypeException
-     * @throws ThumbnailResizingFailedException
      */
-    #[Route(
-        '/assets/{id}/image/download/{format}',
-        name: 'pimcore_studio_api_download_image_format',
-        methods: ['GET']
-    )]
+    #[Route('/assets/{id}/download', name: 'pimcore_studio_api_download_asset', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     //#[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/image/download/{format}',
-        operationId: 'downloadImageByFormat',
-        description: 'Download image by id and format by path parameters',
-        summary: 'Download image by id and format',
+        path: self::API_PATH . '/assets/{id}/download',
+        operationId: 'downloadAssetById',
+        description: 'Download assets by id by path parameters',
+        summary: 'Download asset by id',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]
-    #[FormatTypeParameter]
     #[SuccessResponse(
-        description: 'Image based on format',
-        content: new AssetMediaType('image/jpeg'),
+        description: 'Original asset',
+        content: new AssetMediaType(),
         headers: [new ContentDisposition()]
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function downloadImageByFormat(int $id, string $format): BinaryFileResponse
+    public function downloadAssetById(int $id): StreamedResponse
     {
         $asset = $this->assetService->getAssetElement(
             $this->securityService->getCurrentUser(),
             $id
         );
 
-        return $this->downloadService->downloadImageByFormat($asset, $format);
+        return $this->downloadService->downloadAsset($asset);
     }
 }
