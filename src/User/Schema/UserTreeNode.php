@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -27,17 +29,20 @@ use OpenApi\Attributes\Schema;
     description: 'One node in the user tree',
     type: 'object'
 )]
-final readonly class UserTreeNode
+final class UserTreeNode implements AdditionalAttributesInterface
 {
+
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'Unique Identifier', type: 'integer', example: '1')]
-        private int $id,
+        private readonly int $id,
         #[Property(description: 'Name of Folder or User', type: 'string', example: 'admin')]
-        private string $name,
+        private readonly string $name,
         #[Property(description: 'Is ether user or folder', type: 'string', example: 'user')]
-        private string $type,
+        private readonly string $type,
         #[Property(description: 'If a folder has sub items', type: 'bool', example: true)]
-        private bool $hasChildren,
+        private readonly bool $hasChildren,
     ) {
     }
 
