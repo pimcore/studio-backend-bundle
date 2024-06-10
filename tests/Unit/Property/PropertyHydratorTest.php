@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Property;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Extractor\Element\DataExtractorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Extractor\Element\ReferenceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -98,10 +98,10 @@ final class PropertyHydratorTest extends Unit
     /**
      * @throws Exception
      */
-    private function mockDataExtractor(): DataExtractorInterface
+    private function mockDataExtractor(): ReferenceResolverInterface
     {
         return $this->makeEmpty(
-            DataExtractorInterface::class,
+            ReferenceResolverInterface::class,
             [
                 'extractData' => [
                     'path' => '/test',

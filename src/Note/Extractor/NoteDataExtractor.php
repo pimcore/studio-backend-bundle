@@ -39,6 +39,7 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
         if (!$note->getCid() || !$note->getCtype()) {
             return '';
         }
+
         $element = $this->serviceResolver->getElementById($note->getCtype(), $note->getCid());
 
         if (!$element) {

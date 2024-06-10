@@ -13,11 +13,11 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Extractor\Element;
+namespace Pimcore\Bundle\StudioBackendBundle\Resolver\Element;
 
 use Pimcore\Model\Element\ElementInterface;
 
-interface DataExtractorInterface
+interface ReferenceResolverInterface
 {
-    public function extractData(ElementInterface $element): array;
+    public function resolve(ElementInterface $element): array;
 }

@@ -13,12 +13,12 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Extractor\Element;
+namespace Pimcore\Bundle\StudioBackendBundle\Resolver\Element;
 
 use Pimcore\Model\Element\AbstractElement;
 use Pimcore\Model\Element\ElementInterface;
 
-class DataExtractor implements DataExtractorInterface
+final class ReferenceResolver implements ReferenceResolverInterface
 {
     private const ALLOWED_MODEL_PROPERTIES = [
         'key',
@@ -28,8 +28,14 @@ class DataExtractor implements DataExtractorInterface
         'type',
     ];
 
-    public function extractData(ElementInterface $element): array
+    private array $cache = [];
+
+    public function resolve(ElementInterface $element): array
     {
+        if($this->cache[$element->getId()] ?? false) {
+            return $this->cache[$element->getId()];
+        }
+
         /**
          * @var AbstractElement $element
          */
@@ -39,6 +45,8 @@ class DataExtractor implements DataExtractorInterface
         );
 
         $data['fullPath'] = $element->getFullPath();
+
+        $this->cache[$element->getId()] = $data;
 
         return $data;
     }

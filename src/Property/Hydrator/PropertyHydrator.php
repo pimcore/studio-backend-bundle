@@ -17,9 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Hydrator;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Extractor\Element\DataExtractorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
+use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\Document;
@@ -40,7 +40,7 @@ final readonly class PropertyHydrator implements PropertyHydratorInterface
 
     public function __construct(
         private PredefinedResolverInterface $predefinedResolver,
-        private DataExtractorInterface $dataExtractor
+        private ReferenceResolverInterface $referenceResolver
     ) {
     }
 
@@ -63,7 +63,7 @@ final readonly class PropertyHydrator implements PropertyHydratorInterface
 
     public function hydrateElementProperty(Property $property): ElementProperty
     {
-        $propertyData = $this->extractData($property);
+        $propertyData = $this->resolveData($property);
 
         return new ElementProperty(
             $propertyData['name'],
@@ -77,19 +77,19 @@ final readonly class PropertyHydrator implements PropertyHydratorInterface
         );
     }
 
-    private function extractData(Property $property): array
+    private function resolveData(Property $property): array
     {
         $data['modelData'] = match (true) {
             $property->getData() instanceof Document ||
             $property->getData() instanceof Asset ||
-            $property->getData() instanceof AbstractObject => $this->dataExtractor->extractData($property->getData()),
+            $property->getData() instanceof AbstractObject => $this->referenceResolver->resolve($property->getData()),
             default => null,
         };
 
         return [
             ... $this->excludeProperties($property->getObjectVars()),
             ... $data,
-            ... $this->extractPredefinedPropertyData($property),
+            ... $this->resolvePredefinedPropertyData($property),
         ];
     }
 
@@ -98,7 +98,7 @@ final readonly class PropertyHydrator implements PropertyHydratorInterface
         return array_diff_key($values, array_flip(self::EXCLUDED_PROPERTIES));
     }
 
-    private function extractPredefinedPropertyData(Property $property): array
+    private function resolvePredefinedPropertyData(Property $property): array
     {
         $empty = ['config' => null, 'predefinedName' => null, 'description' => null];
         if (!$property->getName() || !$property->getType()) {

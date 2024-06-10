@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\Extractor\Element\DataExtractorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -25,7 +25,7 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final readonly class CustomMetadataHydrator implements CustomMetadataHydratorInterface
 {
-    public function __construct(private DataExtractorInterface $dataExtractor)
+    public function __construct(private ReferenceResolverInterface $referenceResolver)
     {
     }
 
@@ -45,7 +45,7 @@ final readonly class CustomMetadataHydrator implements CustomMetadataHydratorInt
     private function resolveData(mixed $data, string $type): mixed
     {
         return match (true) {
-            $data instanceof ElementInterface => $this->dataExtractor->extractData($data),
+            $data instanceof ElementInterface => $this->referenceResolver->resolve($data),
             $type === 'checkbox' => (bool)$data,
             default => $data,
         };
