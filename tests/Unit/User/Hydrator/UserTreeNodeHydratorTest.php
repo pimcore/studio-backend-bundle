@@ -32,7 +32,6 @@ final class UserTreeNodeHydratorTest extends Unit
         $user->setName('User XYZ');
         $user->setType('user Type');
 
-
         $hydrator = new UserTreeNodeHydrator();
         $userTreeNode = $hydrator->hydrate($user);
 
@@ -58,5 +57,4 @@ final class UserTreeNodeHydratorTest extends Unit
         $this->assertSame('folder Type', $userTreeNode->getType());
         $this->assertTrue($userTreeNode->hasChildren());
     }
-
 }
