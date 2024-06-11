@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'ImageVersion',
+    required: ['fileName', 'creationDate', 'fileSize', 'mimeType'],
     type: 'object'
 )]
 final class ImageVersion implements AdditionalAttributesInterface

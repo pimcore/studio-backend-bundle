@@ -21,6 +21,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Response;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schemas;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class MethodNotAllowedResponse extends Response
@@ -28,7 +29,7 @@ final class MethodNotAllowedResponse extends Response
     public function __construct()
     {
         parent::__construct(
-            response: 405,
+            response: HttpResponseCodes::METHOD_NOT_ALLOWED->value,
             description: 'Method Not Allowed',
             content: new JsonContent(
                 oneOf: array_map(static function ($class) {

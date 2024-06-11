@@ -20,3 +20,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\MailService
     arguments: [ '@Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider' ]
+
+  Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository

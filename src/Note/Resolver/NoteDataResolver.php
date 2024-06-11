@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Extractor;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\Resolver;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
@@ -25,17 +25,27 @@ use Pimcore\Model\Element\Note as CoreNote;
 /**
  * @internal
  */
-final readonly class NoteDataExtractor implements NoteDataExtractorInterface
+final class NoteDataResolver implements NoteDataResolverInterface
 {
+    /** @var array<int, string>  */
+    private array $elementCache = [];
+
+    /** @var array<int, NoteUser>  */
+    private array $userCache = [];
+
     public function __construct(
-        private ServiceResolverInterface $serviceResolver,
-        private UserResolverInterface $userResolver
+        private readonly ServiceResolverInterface $serviceResolver,
+        private readonly UserResolverInterface $userResolver
     )
     {
     }
 
     public function extractCPath(CoreNote $note) : string
     {
+        if (isset($this->elementCache[$note->getCid()])) {
+            return $this->elementCache[$note->getCid()];
+        }
+
         if (!$note->getCid() || !$note->getCtype()) {
             return '';
         }
@@ -46,29 +56,36 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
             return '';
         }
 
-        return $element->getRealFullPath();
+        $this->elementCache[$note->getCid()] = $element->getFullPath();
+
+        return $this->elementCache[$note->getCid()];
     }
 
-    public function extractUserData(CoreNote $note) : NoteUser
+    public function resolveUserData(CoreNote $note) : NoteUser
     {
-        $emptyUser = new NoteUser();
         if (!$note->getUser()) {
-            return $emptyUser;
+            return new NoteUser();
+        }
+
+        if (isset($this->userCache[$note->getUser()])) {
+            return $this->userCache[$note->getUser()];
         }
 
         $user = $this->userResolver->getById($note->getUser());
 
         if (!$user) {
-            return $emptyUser;
+            return new NoteUser();
         }
 
-        return new NoteUser(
+        $this->userCache[$note->getUser()] =  new NoteUser(
             $user->getId(),
             $user->getName(),
         );
+
+       return $this->userCache[$note->getUser()];
     }
 
-    public function extractData(CoreNote $note): array
+    public function resolveData(CoreNote $note): array
     {
         // prepare key-values
         $keyValues = [];
@@ -77,7 +94,7 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
             $type = $d['type'];
 
             $data = match($type) {
-                'document', 'object', 'asset' => $this->extractElementData($d['data']),
+                'document', 'object', 'asset' => $this->resolveElementData($d['data']),
                 'date' => is_object($d['data']) ? $d['data']->getTimestamp() : $d['data'],
                 default => $d['data'],
             };
@@ -94,7 +111,7 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
         return $keyValues;
     }
 
-    private function extractElementData(?ElementInterface $element): array
+    private function resolveElementData(?ElementInterface $element): array
     {
         if (!$element) {
             return [];
