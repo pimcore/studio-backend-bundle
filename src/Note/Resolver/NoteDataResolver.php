@@ -27,8 +27,10 @@ use Pimcore\Model\Element\Note as CoreNote;
  */
 final class NoteDataResolver implements NoteDataResolverInterface
 {
+    /** @var array<int, string>  */
     private array $elementCache = [];
 
+    /** @var array<int, NoteUser>  */
     private array $userCache = [];
 
     public function __construct(
