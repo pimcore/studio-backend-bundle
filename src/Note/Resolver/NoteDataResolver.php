@@ -29,7 +29,7 @@ final readonly class NoteDataResolver implements NoteDataResolverInterface
 {
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
-        private UserResolverInterface    $userResolver
+        private UserResolverInterface $userResolver
     )
     {
     }
