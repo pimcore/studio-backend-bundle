@@ -25,27 +25,17 @@ use Pimcore\Model\Element\Note as CoreNote;
 /**
  * @internal
  */
-final class NoteDataResolver implements NoteDataResolverInterface
+final readonly class NoteDataResolver implements NoteDataResolverInterface
 {
-    /** @var array<int, string>  */
-    private array $elementCache = [];
-
-    /** @var array<int, NoteUser>  */
-    private array $userCache = [];
-
     public function __construct(
-        private readonly ServiceResolverInterface $serviceResolver,
-        private readonly UserResolverInterface $userResolver
+        private ServiceResolverInterface $serviceResolver,
+        private UserResolverInterface    $userResolver
     )
     {
     }
 
     public function extractCPath(CoreNote $note) : string
     {
-        if (isset($this->elementCache[$note->getCid()])) {
-            return $this->elementCache[$note->getCid()];
-        }
-
         if (!$note->getCid() || !$note->getCtype()) {
             return '';
         }
@@ -56,9 +46,7 @@ final class NoteDataResolver implements NoteDataResolverInterface
             return '';
         }
 
-        $this->elementCache[$note->getCid()] = $element->getFullPath();
-
-        return $this->elementCache[$note->getCid()];
+        return $element->getFullPath();
     }
 
     public function resolveUserData(CoreNote $note) : NoteUser
@@ -67,25 +55,19 @@ final class NoteDataResolver implements NoteDataResolverInterface
             return new NoteUser();
         }
 
-        if (isset($this->userCache[$note->getUser()])) {
-            return $this->userCache[$note->getUser()];
-        }
-
         $user = $this->userResolver->getById($note->getUser());
 
         if (!$user) {
             return new NoteUser();
         }
 
-        $this->userCache[$note->getUser()] =  new NoteUser(
+        return new NoteUser(
             $user->getId(),
             $user->getName(),
         );
-
-       return $this->userCache[$note->getUser()];
     }
 
-    public function resolveData(CoreNote $note): array
+    public function resolveNoteData(CoreNote $note): array
     {
         // prepare key-values
         $keyValues = [];
