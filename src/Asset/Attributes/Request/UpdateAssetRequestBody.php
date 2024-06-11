@@ -39,8 +39,8 @@ final class UpdateAssetRequestBody extends RequestBody
                 properties: [
                     new Property('data',
                         properties: [
-                            new UpdateCustomMetaData(),
                             new UpdateParentId(),
+                            new UpdateCustomMetaData(),
                             new UpdateElementProperties(),
                             new UpdateAssetImage(),
                         ],
