@@ -28,11 +28,14 @@ final class ReferenceResolver implements ReferenceResolverInterface
         'type',
     ];
 
+    /**
+     * @var array<int, array>
+     */
     private array $cache = [];
 
     public function resolve(ElementInterface $element): array
     {
-        if ($this->cache[$element->getId()] ?? false) {
+        if (isset($this->cache[$element->getId()])) {
             return $this->cache[$element->getId()];
         }
 
