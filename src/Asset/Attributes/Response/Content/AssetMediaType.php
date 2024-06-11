@@ -14,19 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Extractor;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content;
 
-use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteUser;
-use Pimcore\Model\Element\Note as CoreNote;
+use OpenApi\Attributes\MediaType;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-interface NoteDataExtractorInterface
+final class AssetMediaType extends MediaType
 {
-    public function extractUserData(CoreNote $note): NoteUser;
-
-    public function extractCPath(CoreNote $note): string;
-
-    public function extractData(CoreNote $note): array;
+    public function __construct(string $mimeType = 'application/*')
+    {
+        parent::__construct(
+            mediaType: $mimeType,
+            schema: new Schema(
+                type: 'string',
+                format: 'binary'
+            )
+        );
+    }
 }

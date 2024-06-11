@@ -14,20 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\Resolver;
+
+use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteUser;
+use Pimcore\Model\Element\Note as CoreNote;
 
 /**
  * @internal
  */
-final readonly class VersionCleanupParameters
+interface NoteDataResolverInterface
 {
-    public function __construct(
-        private int $elementModificationDate
-    ) {
-    }
+    public function resolveUserData(CoreNote $note): NoteUser;
 
-    public function getElementModificationDate(): int
-    {
-        return $this->elementModificationDate;
-    }
+    public function extractCPath(CoreNote $note): string;
+
+    public function resolveNoteData(CoreNote $note): array;
 }

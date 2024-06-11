@@ -16,25 +16,30 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @internal
  */
-interface VersionDetailServiceInterface
+interface VersionBinaryServiceInterface
 {
     /**
      * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException
      */
-    public function getVersionData(
+    public function downloadAsset(
         int $id,
         UserInterface $user
-    ): AssetVersion|ImageVersion|DataObjectVersion|DocumentVersion;
+    ): StreamedResponse;
+
+    /**
+     * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException
+     */
+    public function streamImage(
+        int $id,
+        UserInterface $user
+    ): StreamedResponse;
 }

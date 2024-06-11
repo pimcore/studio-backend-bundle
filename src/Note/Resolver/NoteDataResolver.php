@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Extractor;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\Resolver;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
@@ -25,7 +25,7 @@ use Pimcore\Model\Element\Note as CoreNote;
 /**
  * @internal
  */
-final readonly class NoteDataExtractor implements NoteDataExtractorInterface
+final readonly class NoteDataResolver implements NoteDataResolverInterface
 {
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
@@ -39,26 +39,26 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
         if (!$note->getCid() || !$note->getCtype()) {
             return '';
         }
+
         $element = $this->serviceResolver->getElementById($note->getCtype(), $note->getCid());
 
         if (!$element) {
             return '';
         }
 
-        return $element->getRealFullPath();
+        return $element->getFullPath();
     }
 
-    public function extractUserData(CoreNote $note) : NoteUser
+    public function resolveUserData(CoreNote $note) : NoteUser
     {
-        $emptyUser = new NoteUser();
         if (!$note->getUser()) {
-            return $emptyUser;
+            return new NoteUser();
         }
 
         $user = $this->userResolver->getById($note->getUser());
 
         if (!$user) {
-            return $emptyUser;
+            return new NoteUser();
         }
 
         return new NoteUser(
@@ -67,7 +67,7 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
         );
     }
 
-    public function extractData(CoreNote $note): array
+    public function resolveNoteData(CoreNote $note): array
     {
         // prepare key-values
         $keyValues = [];
@@ -76,7 +76,7 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
             $type = $d['type'];
 
             $data = match($type) {
-                'document', 'object', 'asset' => $this->extractElementData($d['data']),
+                'document', 'object', 'asset' => $this->resolveElementData($d['data']),
                 'date' => is_object($d['data']) ? $d['data']->getTimestamp() : $d['data'],
                 default => $d['data'],
             };
@@ -93,7 +93,7 @@ final readonly class NoteDataExtractor implements NoteDataExtractorInterface
         return $keyValues;
     }
 
-    private function extractElementData(?ElementInterface $element): array
+    private function resolveElementData(?ElementInterface $element): array
     {
         if (!$element) {
             return [];

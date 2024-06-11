@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
@@ -29,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -42,7 +44,8 @@ final readonly class UserService implements UserServiceInterface
         private RateLimiterInterface $rateLimiter,
         private LoggerInterface $pimcoreLogger,
         private UserRepositoryInterface $userRepository,
-        private UserTreeNodeHydratorInterface $userTreeNodeHydrator
+        private UserTreeNodeHydratorInterface $userTreeNodeHydrator,
+        private EventDispatcherInterface $eventDispatcher
     )
     {
     }
@@ -84,7 +87,14 @@ final readonly class UserService implements UserServiceInterface
                 continue;
             }
 
-            $users[] = $this->userTreeNodeHydrator->hydrate($user);
+            $userTreeNode = $this->userTreeNodeHydrator->hydrate($user);
+
+            $this->eventDispatcher->dispatch(
+                new UserTreeNodeEvent($userTreeNode),
+                UserTreeNodeEvent::EVENT_NAME
+            );
+
+            $users[] = $userTreeNode;
         }
 
         return new Collection(

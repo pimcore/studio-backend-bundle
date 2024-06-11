@@ -18,6 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -26,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -43,18 +48,25 @@ final class PublishController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws AccessDeniedException
+     * @throws ElementNotFoundException
+     * @throws ElementPublishingFailedException
+     * @throws InvalidElementTypeException
+     * @throws NotAuthorizedException
+     */
     #[Route('/versions/{id}', name: 'pimcore_studio_api_publish_version', methods: ['POST'])]
     //#[IsGranted('STUDIO_API')]
     #[Post(
         path: self::API_PATH . '/versions/{id}',
         operationId: 'publishVersion',
-        description: 'Publish element based on the version ID',
-        summary: 'Publish version',
+        description: 'Publish element version data based on the version ID',
+        summary: 'Publish version data',
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
     #[SuccessResponse(
-        description: 'ID of published version',
+        description: 'ID of latest published version',
         content: new IdJson('ID of published version')
     )]
     #[DefaultResponses([
