@@ -16,21 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
-use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
-use Pimcore\Model\Asset\Video;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Tool\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -135,45 +131,5 @@ final readonly class DownloadService implements DownloadServiceInterface
             $image,
             false
         );
-    }
-
-    /**
-     * @throws InvalidElementTypeException|InvalidThumbnailException|FilesystemException
-     */
-    public function downloadVideoByThumbnail(
-        ElementInterface $video,
-        string $thumbnailName,
-        string $headerType = 'attachment'
-    ): StreamedResponse
-    {
-        if (!$video instanceof Video) {
-            throw new InvalidElementTypeException($video->getType());
-        }
-
-        $configuration = $this->thumbnailService->getVideoThumbnailConfig($thumbnailName);
-        $thumbnail = $video->getThumbnail($configuration, ['mp4']);
-        if (!$thumbnail) {
-            throw new InvalidThumbnailException($thumbnailName);
-        }
-        $storagePath = $video->getRealPath() . '/' .
-            preg_replace(
-                '@^' . preg_quote($video->getPath(), '@') .
-                '@', '', urldecode($thumbnail['formats']['mp4'])
-            );
-
-        $storage = Storage::get('thumbnail');
-        if (!$storage->fileExists($storagePath)) {
-            throw new InvalidThumbnailException($thumbnailName);
-        }
-        $stream = $storage->readStream($storagePath);
-
-        return new StreamedResponse(function () use ($stream) {
-            fpassthru($stream);
-        }, 200, [
-            'Content-Type' => 'video/mp4',
-            'Content-Length' => $storage->fileSize($storagePath),
-            'Content-Disposition' => sprintf($headerType . '; filename="%s"', $video->getFilename()),
-            'Accept-Ranges' => 'bytes',
-        ]);
     }
 }

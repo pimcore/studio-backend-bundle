@@ -22,11 +22,13 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\AssetMe
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Path\ThumbnailNameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\BinaryServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -44,14 +46,20 @@ final class ThumbnailStreamController extends AbstractApiController
 {
     public function __construct(
         private readonly AssetServiceInterface $assetService,
-        private readonly DownloadServiceInterface $downloadService,
+        private readonly BinaryServiceInterface $binaryService,
         private readonly SecurityServiceInterface $securityService,
         SerializerInterface $serializer
     ) {
         parent::__construct($serializer);
     }
+
     /**
-     * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException|FilesystemException
+     * @throws AccessDeniedException
+     * @throws ElementNotFoundException
+     * @throws ElementProcessingNotCompletedException
+     * @throws InvalidElementTypeException
+     * @throws InvalidThumbnailException
+     * @throws FilesystemException
      */
     #[Route(
         '/assets/{id}/video/stream/{thumbnailName}',
@@ -86,10 +94,9 @@ final class ThumbnailStreamController extends AbstractApiController
             $id
         );
 
-        return $this->downloadService->downloadVideoByThumbnail(
+        return $this->binaryService->streamVideoByThumbnail(
             $asset,
             $thumbnailName,
-            'inline'
         );
     }
 }

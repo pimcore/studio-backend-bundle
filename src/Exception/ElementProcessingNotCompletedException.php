@@ -21,11 +21,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception;
  */
 final class ElementProcessingNotCompletedException extends AbstractApiException
 {
-    public function __construct(int $id)
+    public function __construct(int $id, string $type = 'Element')
     {
         parent::__construct(
             202,
-            sprintf('Element with ID %d was not processed yet', $id)
+            sprintf('%s with ID %d was not processed yet', $type, $id)
         );
     }
 }

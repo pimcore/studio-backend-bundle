@@ -16,12 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
-use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -62,13 +60,4 @@ interface DownloadServiceInterface
         ElementInterface $image,
         string $thumbnailName
     ): BinaryFileResponse;
-
-    /**
-     * @throws InvalidElementTypeException|InvalidThumbnailException|FilesystemException
-     */
-    public function downloadVideoByThumbnail(
-        ElementInterface $video,
-        string $thumbnailName,
-        string $headerType = 'attachment'
-    ): StreamedResponse;
 }
