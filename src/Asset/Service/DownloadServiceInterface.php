@@ -68,6 +68,7 @@ interface DownloadServiceInterface
      */
     public function downloadVideoByThumbnail(
         ElementInterface $video,
-        string $thumbnailName
+        string $thumbnailName,
+        string $headerType = 'attachment'
     ): StreamedResponse;
 }

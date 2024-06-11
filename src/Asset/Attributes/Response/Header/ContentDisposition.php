@@ -24,12 +24,12 @@ use OpenApi\Attributes\Schema;
  */
 final class ContentDisposition extends Header
 {
-    public function __construct()
+    public function __construct($contentType = 'attachment')
     {
         parent::__construct(
             header: 'Content-Disposition',
             description: 'Content-Disposition header',
-            schema: new Schema(type: 'string', example: 'attachment; filename="example.jpg"'),
+            schema: new Schema(type: 'string', example: $contentType . '; filename="example.jpg"'),
         );
     }
 }

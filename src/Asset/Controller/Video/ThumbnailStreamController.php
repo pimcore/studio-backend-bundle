@@ -40,7 +40,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ThumbnailDownloadController extends AbstractApiController
+final class ThumbnailStreamController extends AbstractApiController
 {
     public function __construct(
         private readonly AssetServiceInterface $assetService,
@@ -54,32 +54,32 @@ final class ThumbnailDownloadController extends AbstractApiController
      * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException|FilesystemException
      */
     #[Route(
-        '/assets/{id}/video/download/{thumbnailName}',
-        name: 'pimcore_studio_api_download_video_thumbnail',
+        '/assets/{id}/video/stream/{thumbnailName}',
+        name: 'pimcore_studio_api_stream_video_thumbnail',
         methods: ['GET']
     )]
     //#[IsGranted('STUDIO_API')]
     //#[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/video/download/{thumbnailName}',
-        operationId: 'downloadVideoByThumbnail',
-        description: 'Download video by id and thumbnail name by path parameter',
-        summary: 'Download video by id and thumbnail name',
+        path: self::API_PATH . '/assets/{id}/video/stream/{thumbnailName}',
+        operationId: 'streamVideoByThumbnail',
+        description: 'Get video stream by id and thumbnail name by path parameter',
+        summary: 'Get video stream by id and thumbnail name',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'video')]
     #[ThumbnailNameParameter]
     #[SuccessResponse(
-        description: 'Video based on thumbnail name',
+        description: 'Video stream based on thumbnail name',
         content: new AssetMediaType('video/mp4'),
-        headers: [new ContentDisposition()]
+        headers: [new ContentDisposition('inline')]
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function downloadVideoByThumbnail(int $id, string $thumbnailName): StreamedResponse
+    public function streamVideoByThumbnail(int $id, string $thumbnailName): StreamedResponse
     {
         $asset = $this->assetService->getAssetElement(
             $this->securityService->getCurrentUser(),
@@ -88,7 +88,8 @@ final class ThumbnailDownloadController extends AbstractApiController
 
         return $this->downloadService->downloadVideoByThumbnail(
             $asset,
-            $thumbnailName
+            $thumbnailName,
+            'inline'
         );
     }
 }

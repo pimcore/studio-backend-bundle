@@ -152,7 +152,8 @@ final readonly class DownloadService implements DownloadServiceInterface
      */
     public function downloadVideoByThumbnail(
         ElementInterface $video,
-        string $thumbnailName
+        string $thumbnailName,
+        string $headerType = 'attachment'
     ): StreamedResponse
     {
         if (!$video instanceof Video) {
@@ -181,7 +182,7 @@ final readonly class DownloadService implements DownloadServiceInterface
         }, 200, [
             'Content-Type' => 'video/mp4',
             'Content-Length' => $storage->fileSize($storagePath),
-            //'Content-Disposition' => sprintf('attachment; filename="%s"', $video->getFilename()),
+            'Content-Disposition' => sprintf($headerType . '; filename="%s"', $video->getFilename()),
             'Accept-Ranges' => 'bytes',
         ]);
     }
