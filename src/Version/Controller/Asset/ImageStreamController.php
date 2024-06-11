@@ -59,7 +59,6 @@ final class ImageStreamController extends AbstractApiController
         operationId: 'streamImageVersionById',
         description: 'Get image version stream based on the version ID',
         summary: 'Get image version stream by ID',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
