@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response;
 
 use Attribute;
 use OpenApi\Attributes\Response;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class SuccessResponse extends Response
@@ -25,7 +26,7 @@ final class SuccessResponse extends Response
     public function __construct(string $description = 'Success', mixed $content = null, ?array $headers = null)
     {
         parent::__construct(
-            response: 200,
+            response: HttpResponseCodes::SUCCESS->value,
             description: $description,
             headers: $headers,
             content: $content

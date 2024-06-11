@@ -18,18 +18,19 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header;
 
 use OpenApi\Attributes\Header;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 
 /**
  * @internal
  */
 final class ContentDisposition extends Header
 {
-    public function __construct()
+    public function __construct(string $headerType = HttpResponseHeaders::ATTACHMENT_TYPE->value)
     {
         parent::__construct(
-            header: 'Content-Disposition',
+            header: HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value,
             description: 'Content-Disposition header',
-            schema: new Schema(type: 'string', example: 'attachment; filename="example.jpg"'),
+            schema: new Schema(type: 'string', example: $headerType . '; filename="example.jpg"'),
         );
     }
 }

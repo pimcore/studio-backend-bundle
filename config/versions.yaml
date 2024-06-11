@@ -48,6 +48,9 @@ services:
     arguments:
       $versionHydratorLocator: '@listing.version_hydrator.service_locator'
 
+  Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionBinaryServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionBinaryService
+
   #Service Locator
   listing.version_hydrator.service_locator:
     class: Symfony\Component\DependencyInjection\ServiceLocator

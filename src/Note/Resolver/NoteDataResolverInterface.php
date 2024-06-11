@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Extractor;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\Resolver;
 
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteUser;
 use Pimcore\Model\Element\Note as CoreNote;
@@ -22,11 +22,11 @@ use Pimcore\Model\Element\Note as CoreNote;
 /**
  * @internal
  */
-interface NoteDataExtractorInterface
+interface NoteDataResolverInterface
 {
-    public function extractUserData(CoreNote $note): NoteUser;
+    public function resolveUserData(CoreNote $note): NoteUser;
 
     public function extractCPath(CoreNote $note): string;
 
-    public function extractData(CoreNote $note): array;
+    public function resolveData(CoreNote $note): array;
 }
