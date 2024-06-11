@@ -20,6 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundByPathException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
@@ -94,6 +95,19 @@ trait ElementProviderTrait
             $element instanceof Document => Document::class,
             $element instanceof DataObject => DataObject::class,
             default => throw new InvalidElementTypeException(get_class($element))
+        };
+    }
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    private function getElementType(ElementInterface $element): string
+    {
+        return match (true) {
+            $element instanceof Asset => ElementTypes::TYPE_ASSET,
+            $element instanceof Document => ElementTypes::TYPE_DOCUMENT,
+            $element instanceof DataObject => ElementTypes::TYPE_DATA_OBJECT,
+            default => throw new InvalidElementTypeException($element->getType())
         };
     }
 }

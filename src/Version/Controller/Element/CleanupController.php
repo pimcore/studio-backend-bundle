@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller\Element;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\TimestampParameter;
@@ -26,10 +28,12 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\VersionCleanupParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
@@ -42,11 +46,15 @@ final class CleanupController extends AbstractApiController
 {
     public function __construct(
         private readonly VersionServiceInterface $versionService,
+        private readonly SecurityServiceInterface $securityService,
         SerializerInterface $serializer,
     ) {
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws AccessDeniedException|ElementNotFoundException|NotAuthorizedException
+     */
     #[Route('/versions/{elementType}/{id}', name: 'pimcore_studio_api_cleanup_versions', methods: ['DELETE'])]
     //#[IsGranted('STUDIO_API')]
     #[Delete(
@@ -54,12 +62,10 @@ final class CleanupController extends AbstractApiController
         operationId: 'cleanupVersion',
         description: 'Cleanup versions based on the provided parameters',
         summary: 'Cleanup versions',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[ElementTypeParameter]
     #[IdParameter('ID of the element')]
-    #[TimestampParameter('elementModificationDate', 'Modification timestamp of the element', true)]
     #[SuccessResponse(
         description: 'IDs of deleted versions',
         content: new IdsJson('IDs of deleted versions')
@@ -70,12 +76,14 @@ final class CleanupController extends AbstractApiController
     ])]
     public function cleanupVersions(
         string $elementType,
-        int $id,
-        #[MapQueryString] VersionCleanupParameters $parameters
+        int $id
     ): JsonResponse
     {
         return $this->jsonResponse(
-            ['ids' => $this->versionService->cleanupVersions(new ElementParameters($elementType, $id), $parameters)]
+            ['ids' => $this->versionService->cleanupVersions(
+                new ElementParameters($elementType, $id),
+                $this->securityService->getCurrentUser()
+            )]
         );
     }
 }

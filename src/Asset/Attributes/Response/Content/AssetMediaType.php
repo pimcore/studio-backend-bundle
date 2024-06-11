@@ -14,29 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content;
 
-use OpenApi\Attributes\Property;
+use OpenApi\Attributes\MediaType;
 use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-#[Schema(
-    title: 'Refresh',
-    description: 'Token that needs to be refresh',
-    type: 'object'
-)]
-final readonly class Refresh
+final class AssetMediaType extends MediaType
 {
-    public function __construct(
-        #[Property(description: 'Token', type: 'string', example: 'Who you gonna call? Refresh token!')]
-        private string $token
-    ) {
-    }
-
-    public function getToken(): string
+    public function __construct(string $mimeType = 'application/*')
     {
-        return $this->token;
+        parent::__construct(
+            mediaType: $mimeType,
+            schema: new Schema(
+                type: 'string',
+                format: 'binary'
+            )
+        );
     }
 }

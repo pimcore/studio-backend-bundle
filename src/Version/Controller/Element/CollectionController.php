@@ -18,6 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller\Element;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
@@ -53,6 +56,9 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws AccessDeniedException|ElementNotFoundException|NotAuthorizedException
+     */
     #[Route('/versions/{elementType}/{id}', name: 'pimcore_studio_api_versions', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[Get(
@@ -60,7 +66,6 @@ final class CollectionController extends AbstractApiController
         operationId: 'getVersions',
         description: 'Get paginated versions',
         summary: 'Get all versions of element',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[ElementTypeParameter]

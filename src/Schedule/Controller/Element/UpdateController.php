@@ -59,7 +59,6 @@ final class UpdateController extends AbstractApiController
         path: self::API_PATH . '/schedules/{elementType}/{id}',
         operationId: 'updateSchedulesForElementByTypeAndId',
         summary: 'Update schedules for an element',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]

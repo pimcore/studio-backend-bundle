@@ -14,16 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dto\Token;
+namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
-use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Refresh;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 
-final class RefreshTest extends Unit
+/**
+ * @internal
+ */
+interface PatchServiceInterface
 {
-    public function testTokenRefresh(): void
-    {
-        $refresh = new Refresh('token');
-        $this->assertSame('token', $refresh->getToken());
-    }
+    /**
+     * @throws ElementSavingFailedException|ElementNotFoundException
+     */
+    public function patch(string $elementType, array $patchData): array;
 }

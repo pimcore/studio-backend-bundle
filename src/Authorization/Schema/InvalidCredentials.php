@@ -14,20 +14,30 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Schema;
+
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-final readonly class VersionCleanupParameters
+#[Schema(
+    title: 'Invalid Credentials',
+    description: 'Invalid credentials after login attempt',
+    required: ['error'],
+    type: 'object'
+)]
+final readonly class InvalidCredentials
 {
     public function __construct(
-        private int $elementModificationDate
+        #[Property(description: 'Error', type: 'string', example: 'Invalid credentials')]
+        private string $error,
     ) {
     }
-
-    public function getElementModificationDate(): int
+    public function getError(): string
     {
-        return $this->elementModificationDate;
+        return $this->error;
     }
 }

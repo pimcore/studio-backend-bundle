@@ -28,5 +28,5 @@ interface NoteDataResolverInterface
 
     public function extractCPath(CoreNote $note): string;
 
-    public function resolveData(CoreNote $note): array;
+    public function resolveNoteData(CoreNote $note): array;
 }

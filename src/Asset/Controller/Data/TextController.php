@@ -58,7 +58,6 @@ final class TextController extends AbstractApiController
         path: self::API_PATH . '/assets/{id}/text',
         operationId: 'getAssetDataTextById',
         summary: 'Get asset data in text UTF8 representation by id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]

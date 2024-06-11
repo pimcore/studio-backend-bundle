@@ -23,11 +23,12 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class SuccessResponse extends Response
 {
-    public function __construct(string $description = 'Success', mixed $content = null)
+    public function __construct(string $description = 'Success', mixed $content = null, ?array $headers = null)
     {
         parent::__construct(
             response: HttpResponseCodes::SUCCESS->value,
             description: $description,
+            headers: $headers,
             content: $content
         );
     }

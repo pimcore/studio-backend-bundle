@@ -14,21 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response;
 
 use Attribute;
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Refresh;
+use OpenApi\Attributes\Response;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class TokenRequestBody extends RequestBody
+final class PatchSuccessResponseWithErrors extends Response
 {
-    public function __construct()
+    public function __construct(string $description = 'Partial success with errors', mixed $content = null)
     {
         parent::__construct(
-            required: true,
-            content: new JsonContent(ref: Refresh::class)
+            response: HttpResponseCodes::MULTI_STATUS->value,
+            description: $description,
+            content: $content
         );
     }
 }

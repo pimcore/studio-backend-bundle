@@ -54,8 +54,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
         }
 
         $hydratedAsset = new AssetVersion(
-            $asset->getFilename(),
-            $this->getTemporaryFile($asset),
+            $asset->getFilename()
         );
 
         $this->eventDispatcher->dispatch(
@@ -70,7 +69,6 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
     {
         $hydratedImage = new ImageVersion(
             $image->getFilename(),
-            $this->getTemporaryFile($image),
             $image->getCreationDate(),
             $image->getModificationDate(),
             $image->getFileSize(),
@@ -102,17 +100,6 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
             $assetDimensions['width'],
             $assetDimensions['height']
         );
-    }
-
-    private function getTemporaryFile(Asset $asset): ?string
-    {
-        try {
-            $temporaryFile = $asset->getTemporaryFile();
-        } catch (Exception) {
-            return null;
-        }
-
-        return $temporaryFile;
     }
 
     private function validatePdfStatus(Asset\Document $pdf): void

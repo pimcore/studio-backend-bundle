@@ -14,24 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Config;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property;
 
-use OpenApi\Attributes\SecurityScheme;
+use OpenApi\Attributes\Property;
 
 /**
  * @internal
- * This class exists to document the public api
  */
-#[SecurityScheme(
-    securityScheme: 'auth_token',
-    type: 'http',
-    description: 'Bearer token for authentication',
-    name: 'auth_token',
-    scheme: 'bearer'
-)]
-final class Security
+final class UpdateParentId extends Property
 {
-    private function __construct()
+    public function __construct()
     {
+        parent::__construct(
+            'parentId',
+            type: 'integer',
+            nullable: true,
+        );
     }
 }
