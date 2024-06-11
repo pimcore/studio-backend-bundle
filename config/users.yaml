@@ -17,6 +17,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\UserCloneServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserCloneService
+
+  Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\MailService
     arguments: [ '@Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider' ]

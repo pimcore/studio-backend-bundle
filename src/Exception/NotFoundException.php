@@ -19,13 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 /**
  * @internal
  */
-final class DatabaseException extends AbstractApiException
+final class NotFoundException extends AbstractApiException
 {
-    public function __construct(string $message = 'A database error occurred.')
+    public function __construct(string $message)
     {
-        parent::__construct(
-            500,
-            $message
-        );
+        parent::__construct(404, $message);
     }
 }
