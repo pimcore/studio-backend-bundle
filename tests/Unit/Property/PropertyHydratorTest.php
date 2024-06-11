@@ -103,7 +103,7 @@ final class PropertyHydratorTest extends Unit
         return $this->makeEmpty(
             ReferenceResolverInterface::class,
             [
-                'extractData' => [
+                'resolve' => [
                     'path' => '/test',
                     'id' => 1,
                     'type' => 'page',
