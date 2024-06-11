@@ -87,8 +87,7 @@ trait StreamedResponseTrait
         string $filename,
         string $contentDisposition,
         array $additionalHeaders = []
-    ): array
-    {
+    ): array {
         return array_merge($additionalHeaders, [
             HttpResponseHeaders::HEADER_CONTENT_TYPE->value => $mimeType,
             HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value => sprintf(

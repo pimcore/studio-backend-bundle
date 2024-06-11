@@ -28,8 +28,7 @@ final class BinaryConfigParameter extends QueryParameter
         string $description = '',
         mixed $defaultValue = null,
         string $type = 'integer',
-    )
-    {
+    ) {
         parent::__construct(
             name: $name,
             description: ucfirst($name) . $description,
