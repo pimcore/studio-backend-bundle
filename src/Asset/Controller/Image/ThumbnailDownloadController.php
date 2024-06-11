@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download\Image;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Image;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\AssetMediaType;
@@ -54,14 +54,14 @@ final class ThumbnailDownloadController extends AbstractApiController
      * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException|SearchException
      */
     #[Route(
-        '/assets/{id}/image/download/{thumbnailName}',
+        '/assets/{id}/image/download/thumbnail/{thumbnailName}',
         name: 'pimcore_studio_api_download_image_thumbnail',
         methods: ['GET']
     )]
     //#[IsGranted('STUDIO_API')]
     //#[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/image/download/{thumbnailName}',
+        path: self::API_PATH . '/assets/{id}/image/download/thumbnail/{thumbnailName}',
         operationId: 'downloadImageByThumbnail',
         description: 'Download image by id and thumbnail name by path parameter',
         summary: 'Download image by id and thumbnail name',

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -27,13 +28,19 @@ trait StreamedResponseTrait
 {
     protected function getStreamedResponse(
         Asset $element,
-        string $contentDisposition = HttpResponseHeaders::ATTACHMENT_TYPE->value
+        string $contentDisposition = HttpResponseHeaders::ATTACHMENT_TYPE->value,
+        array $additionalHeaders = []
     ): StreamedResponse {
         $stream = $element->getStream();
 
-        return new StreamedResponse(function () use ($stream) {
-            fpassthru($stream);
-        }, 200, [
+        if (!is_resource($stream)) {
+            throw new ElementStreamResourceNotFoundException(
+                $element->getId(),
+                $element->getType()
+            );
+        }
+
+        $headers = array_merge($additionalHeaders, [
             HttpResponseHeaders::HEADER_CONTENT_TYPE->value => $element->getMimeType(),
             HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value => sprintf(
                 '%s; filename="%s"',
@@ -42,5 +49,9 @@ trait StreamedResponseTrait
             ),
             HttpResponseHeaders::HEADER_CONTENT_LENGTH->value => $element->getFileSize(),
         ]);
+
+        return new StreamedResponse(function () use ($stream) {
+            fpassthru($stream);
+        }, 200, $headers);
     }
 }
