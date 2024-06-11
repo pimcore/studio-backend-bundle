@@ -14,20 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content;
+
+use OpenApi\Attributes\MediaType;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-final readonly class VersionCleanupParameters
+final class AssetMediaType extends MediaType
 {
-    public function __construct(
-        private int $elementModificationDate
-    ) {
-    }
-
-    public function getElementModificationDate(): int
+    public function __construct(string $mimeType = 'application/*')
     {
-        return $this->elementModificationDate;
+        parent::__construct(
+            mediaType: $mimeType,
+            schema: new Schema(
+                type: 'string',
+                format: 'binary'
+            )
+        );
     }
 }

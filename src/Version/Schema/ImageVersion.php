@@ -36,8 +36,6 @@ final class ImageVersion implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'file name', type: 'string', example: 'myImageFile.png')]
         private readonly string $fileName,
-        #[Property(description: 'temporary file', type: 'string', example: 'path/to/temporary/file.png')]
-        private readonly ?string $temporaryFile,
         #[Property(description: 'creation date', type: 'integer', example: 1707312457)]
         private readonly int $creationDate,
         #[Property(description: 'modification date', type: 'integer', example: 1707312457)]
@@ -54,11 +52,6 @@ final class ImageVersion implements AdditionalAttributesInterface
     public function getFileName(): string
     {
         return $this->fileName;
-    }
-
-    public function getTemporaryFile(): string
-    {
-        return $this->temporaryFile;
     }
 
     public function getDimensions(): ?Dimensions
