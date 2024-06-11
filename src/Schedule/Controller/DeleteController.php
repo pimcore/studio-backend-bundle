@@ -53,7 +53,6 @@ final class DeleteController extends AbstractApiController
         path: self::API_PATH . '/schedules/{id}',
         operationId: 'deleteSchedule',
         summary: 'Delete schedule with given id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Schedule->name]
     )]
     #[IdParameter(type: 'schedule', schema: new Schema(type: 'integer', example: 123))]

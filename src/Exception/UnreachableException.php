@@ -14,17 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dto\Token;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Info;
-
-final class InfoTest extends Unit
+/**
+ * @internal
+ */
+final class UnreachableException extends AbstractApiException
 {
-    public function testTokenInfo(): void
+    public function __construct(string $message)
     {
-        $info = new Info('token', 'test');
-        $this->assertSame('token', $info->getToken());
-        $this->assertSame('test', $info->getUsername());
+        parent::__construct(500, $message);
     }
 }

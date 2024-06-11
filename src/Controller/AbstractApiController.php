@@ -33,8 +33,6 @@ abstract class AbstractApiController extends AbstractController
 
     public const API_PATH = '/studio/api';
 
-    public const SECURITY_SCHEME = [['auth_token' => []]];
-
     public function __construct(protected readonly SerializerInterface $serializer)
     {
 

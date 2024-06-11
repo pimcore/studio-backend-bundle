@@ -54,7 +54,6 @@ final class UpdateController extends AbstractApiController
         operationId: 'updateAssetById',
         description: 'Update assets by id',
         summary: 'Update asset',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]

@@ -54,7 +54,6 @@ final class GetController extends AbstractApiController
         operationId: 'getAssetById',
         description: 'Get assets by id by path parameter',
         summary: 'Get assets by id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]

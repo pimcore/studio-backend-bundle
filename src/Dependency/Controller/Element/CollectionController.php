@@ -63,7 +63,6 @@ final class CollectionController extends AbstractApiController
         Pass dependency mode to get either all elements that depend on the provided element
         or all dependencies for the provided element.',
         summary: 'Get all dependencies for provided element.',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Dependencies->name]
     )]
     #[ElementTypeParameter]

@@ -73,7 +73,6 @@ final class CollectionController extends AbstractApiController
         operationId: 'getAssets',
         description: 'Get paginated assets',
         summary: 'Get all assets',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[PageParameter]

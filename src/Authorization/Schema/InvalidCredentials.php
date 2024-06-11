@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Schema;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
@@ -23,20 +24,20 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'Refresh',
-    description: 'Token that needs to be refresh',
+    title: 'Invalid Credentials',
+    description: 'Invalid credentials after login attempt',
+    required: ['error'],
     type: 'object'
 )]
-final readonly class Refresh
+final readonly class InvalidCredentials
 {
     public function __construct(
-        #[Property(description: 'Token', type: 'string', example: 'Who you gonna call? Refresh token!')]
-        private string $token
+        #[Property(description: 'Error', type: 'string', example: 'Invalid credentials')]
+        private string $error,
     ) {
     }
-
-    public function getToken(): string
+    public function getError(): string
     {
-        return $this->token;
+        return $this->error;
     }
 }

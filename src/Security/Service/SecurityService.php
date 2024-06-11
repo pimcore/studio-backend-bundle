@@ -17,12 +17,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\TmpStoreResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
@@ -38,60 +36,21 @@ final readonly class SecurityService implements SecurityServiceInterface
 {
     public function __construct(
         private ElementPermissionServiceInterface $elementPermissionService,
-        private UserProvider $userProvider,
-        private UserResolverInterface $userResolver,
-        private UserPasswordHasherInterface $passwordHasher,
-        private TmpStoreResolverInterface $tmpStoreResolver,
-        private TokenServiceInterface $tokenService,
+        private AuthenticationResolverInterface $authenticationResolver,
     ) {
     }
 
     /**
-     * @throws AccessDeniedException
-     */
-    public function authenticateUser(Credentials $credentials): PasswordAuthenticatedUserInterface
-    {
-        try {
-            $user = $this->userProvider->loadUserByIdentifier($credentials->getUsername());
-        } catch (UserNotFoundException) {
-            throw new AccessDeniedException();
-        }
-
-        if(
-            !$user instanceof PasswordAuthenticatedUserInterface ||
-            !$this->passwordHasher->isPasswordValid($user, $credentials->getPassword())
-        ) {
-            throw new AccessDeniedException();
-        }
-
-        return $user;
-    }
-
-    public function checkAuthToken(string $token): bool
-    {
-        $entry = $this->tmpStoreResolver->get($token);
-
-        return  $entry !== null && $entry->getId() === $token;
-    }
-
-    /**
-     * @throws NotAuthorizedException
+     * @throws UserNotFoundException
      */
     public function getCurrentUser(): UserInterface
     {
-        $entry = $this->tmpStoreResolver->get($this->tokenService->getCurrentToken());
-
-        if($entry === null || !is_array($entry->getData()) || !isset($entry->getData()['username'])) {
-            throw new NotAuthorizedException();
+        $pimcoreUser = $this->authenticationResolver->authenticateSession();
+        if (!$pimcoreUser instanceof User) {
+            throw new UserNotFoundException('No pimcore user found');
         }
 
-        $user = $this->userResolver->getByName($entry->getData()['username']);
-
-        if(!$user) {
-            throw new NotAuthorizedException();
-        }
-
-        return $user;
+        return $pimcoreUser;
     }
 
     /**
