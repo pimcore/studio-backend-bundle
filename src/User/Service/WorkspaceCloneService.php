@@ -59,7 +59,9 @@ final class WorkspaceCloneService implements WorkspaceCloneServiceInterface
     /**
      * @throws Exception
      */
-    private function applyObjectVars(AssetWorkspace|DocumentWorkspace|DataObjectWorkspace $workspace, array $objectVars): AssetWorkspace|DocumentWorkspace|DataObjectWorkspace
+    private function applyObjectVars(
+        AssetWorkspace|DocumentWorkspace|DataObjectWorkspace $workspace, array $objectVars
+    ): AssetWorkspace|DocumentWorkspace|DataObjectWorkspace
     {
         foreach ($objectVars as $key => $value) {
             $workspace->setObjectVar($key, $value);

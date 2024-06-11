@@ -33,7 +33,8 @@ final class SingleParameterRequestBody extends RequestBody
             required: true,
             content: new JsonContent(
                 properties: [
-                    new Property($parameterName,
+                    new Property(
+                        $parameterName,
                         type: 'string',
                         example: $example,
                     ),
