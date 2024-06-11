@@ -56,7 +56,6 @@ final class CustomMetadataController extends AbstractApiController
         operationId: 'getAssetCustomMetadataById',
         description: 'Get custom metadata of an asset by its id by path parameter',
         summary: 'Get custom metadata of an asset by id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]
