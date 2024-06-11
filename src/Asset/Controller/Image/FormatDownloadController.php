@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -60,14 +61,15 @@ final class FormatDownloadController extends AbstractApiController
      * @throws ThumbnailResizingFailedException
      */
     #[Route(
-        '/assets/{id}/image/download/{format}',
+        '/assets/{id}/image/download/format/{format}',
         name: 'pimcore_studio_api_download_image_format',
+        requirements: ['format' => FormatTypes::WEB . '|' . FormatTypes::PRINT . '|' . FormatTypes::OFFICE],
         methods: ['GET']
     )]
     //#[IsGranted('STUDIO_API')]
     //#[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/image/download/{format}',
+        path: self::API_PATH . '/assets/{id}/image/download/format/{format}',
         operationId: 'downloadImageByFormat',
         description: 'Download image by id and format by path parameters',
         summary: 'Download image by id and format',

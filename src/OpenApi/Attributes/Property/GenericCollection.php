@@ -14,20 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property;
+
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\Property;
 
 /**
  * @internal
  */
-final readonly class VersionCleanupParameters
+final class GenericCollection extends Property
 {
-    public function __construct(
-        private int $elementModificationDate
-    ) {
-    }
-
-    public function getElementModificationDate(): int
+    /**
+     * @param class-string $class
+     */
+    public function __construct(string $class)
     {
-        return $this->elementModificationDate;
+        parent::__construct(
+            'items',
+            title: 'items',
+            type: 'array',
+            items: new Items(ref: $class)
+        );
     }
 }

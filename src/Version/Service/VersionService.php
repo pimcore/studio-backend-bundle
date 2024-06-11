@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
@@ -27,8 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\VersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\VersionCleanupParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\VersionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -52,6 +52,9 @@ final readonly class VersionService implements VersionServiceInterface
     ) {
     }
 
+    /**
+     * @throws AccessDeniedException|ElementNotFoundException
+     */
     public function getVersions(
         ElementParameters $elementParameters,
         CollectionParameters $parameters,
@@ -89,6 +92,12 @@ final readonly class VersionService implements VersionServiceInterface
         );
     }
 
+    /**
+     * @throws AccessDeniedException
+     * @throws ElementNotFoundException
+     * @throws InvalidElementTypeException
+     * @throws ElementPublishingFailedException
+     */
     public function publishVersion(
         int $versionId,
         UserInterface $user
@@ -102,7 +111,7 @@ final readonly class VersionService implements VersionServiceInterface
 
         $currentElement = $this->getElement(
             $this->serviceResolver,
-            $element->getType(),
+            $this->getElementType($element),
             $elementId,
         );
 
@@ -124,7 +133,7 @@ final readonly class VersionService implements VersionServiceInterface
 
         $lastVersion = $this->repository->getLastVersion(
             $elementId,
-            $element->getType(),
+            $this->getElementType($element),
             $user
         );
 
@@ -151,11 +160,29 @@ final readonly class VersionService implements VersionServiceInterface
         return $schedules;
     }
 
+    /**
+     * @throws AccessDeniedException|ElementNotFoundException
+     */
     public function cleanupVersions(
         ElementParameters $elementParameters,
-        VersionCleanupParameters $parameters
+        UserInterface $user
     ): array
     {
-        return $this->repository->cleanupVersions($elementParameters, $parameters);
+        $element = $this->getElement(
+            $this->serviceResolver,
+            $elementParameters->getType(),
+            $elementParameters->getId()
+        );
+
+        $this->securityService->hasElementPermission(
+            $element,
+            $user,
+            ElementPermissions::PUBLISH_PERMISSION
+        );
+
+        return $this->repository->cleanupVersions(
+            $elementParameters,
+            $element->getModificationDate()
+        );
     }
 }

@@ -21,10 +21,16 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
+use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -36,7 +42,10 @@ final readonly class UserService implements UserServiceInterface
         private UserResolverInterface $userResolver,
         private MailServiceInterface $mailService,
         private RateLimiterInterface $rateLimiter,
-        private LoggerInterface $pimcoreLogger
+        private LoggerInterface $pimcoreLogger,
+        private UserRepositoryInterface $userRepository,
+        private UserTreeNodeHydratorInterface $userTreeNodeHydrator,
+        private EventDispatcherInterface $eventDispatcher
     )
     {
     }
@@ -66,6 +75,32 @@ final readonly class UserService implements UserServiceInterface
             throw $exception;
         }
 
+    }
+
+    public function getUserTreeListing(UserListParameter $userListParameter): Collection
+    {
+        $userListing = $this->userRepository->getUserListingByParentId($userListParameter->getParentId());
+        $users = [];
+
+        foreach ($userListing->getUsers() as $user) {
+            if ($user->getName() === 'system') {
+                continue;
+            }
+
+            $userTreeNode = $this->userTreeNodeHydrator->hydrate($user);
+
+            $this->eventDispatcher->dispatch(
+                new UserTreeNodeEvent($userTreeNode),
+                UserTreeNodeEvent::EVENT_NAME
+            );
+
+            $users[] = $userTreeNode;
+        }
+
+        return new Collection(
+            totalItems: $userListing->getTotalCount(),
+            items: $users
+        );
     }
 
     /**

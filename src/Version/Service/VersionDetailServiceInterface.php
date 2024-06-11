@@ -16,17 +16,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Model\UserInterface;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 /**
  * @internal
  */
 interface VersionDetailServiceInterface
 {
+    /**
+     * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException
+     */
     public function getVersionData(
         int $id,
         UserInterface $user

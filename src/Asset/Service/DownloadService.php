@@ -24,6 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Video;
@@ -37,6 +39,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 final readonly class DownloadService implements DownloadServiceInterface
 {
+    use StreamedResponseTrait;
+
     public function __construct(
         private ThumbnailServiceInterface $thumbnailService,
         private array $defaultFormats,
@@ -55,21 +59,7 @@ final readonly class DownloadService implements DownloadServiceInterface
             throw new InvalidElementTypeException($asset->getType());
         }
 
-        $stream = $asset->getStream();
-        if (!is_resource($stream)) {
-            throw new ElementStreamResourceNotFoundException(
-                $asset->getId(),
-                'Asset'
-            );
-        }
-
-        return new StreamedResponse(function () use ($stream) {
-            fpassthru($stream);
-        }, 200, [
-            'Content-Type' => $asset->getMimeType(),
-            'Content-Disposition' => sprintf('attachment; filename="%s"', $asset->getFilename()),
-            'Content-Length' => $asset->getFileSize(),
-        ]);
+        return $this->getStreamedResponse($asset, HttpResponseHeaders::ATTACHMENT_TYPE->value);
     }
 
     /**
@@ -107,12 +97,12 @@ final readonly class DownloadService implements DownloadServiceInterface
             throw new InvalidAssetFormatTypeException($format);
         }
         $parameters = new ImageDownloadConfigParameter(
-            $configuration['mimeType'],
-            $configuration['resizeMode'],
-            $configuration['width'],
-            $configuration['height'],
-            $configuration['quality'],
-            $configuration['dpi']
+            mimeType: $configuration['format'],
+            resizeMode: $configuration['resize_mode'],
+            width: $configuration['width'] ?? null,
+            height: $configuration['height'] ?? null,
+            quality: $configuration['quality'] ?? null,
+            dpi: $configuration['dpi'] ?? null
         );
 
         return $this->thumbnailService->getBinaryResponseFromThumbnail(
