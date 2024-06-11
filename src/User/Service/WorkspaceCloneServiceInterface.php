@@ -14,13 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Exception;
 use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
-use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
+use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 
 /**
  * @internal

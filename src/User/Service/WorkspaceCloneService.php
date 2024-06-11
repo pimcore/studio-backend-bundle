@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Exception;
@@ -27,7 +26,6 @@ use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
  */
 final class WorkspaceCloneService implements WorkspaceCloneServiceInterface
 {
-
     /**
      * @throws Exception
      */
@@ -61,8 +59,7 @@ final class WorkspaceCloneService implements WorkspaceCloneServiceInterface
     /**
      * @throws Exception
      */
-    private function applyObjectVars(AssetWorkspace|DocumentWorkspace|DataObjectWorkspace $workspace, array $objectVars)
-    : AssetWorkspace|DocumentWorkspace|DataObjectWorkspace
+    private function applyObjectVars(AssetWorkspace|DocumentWorkspace|DataObjectWorkspace $workspace, array $objectVars): AssetWorkspace|DocumentWorkspace|DataObjectWorkspace
     {
         foreach ($objectVars as $key => $value) {
             $workspace->setObjectVar($key, $value);

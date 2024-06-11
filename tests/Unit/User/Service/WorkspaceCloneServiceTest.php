@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService;
-use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
+use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 
 /**
  * @internal
