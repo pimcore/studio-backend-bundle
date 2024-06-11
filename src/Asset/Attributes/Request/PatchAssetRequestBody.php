@@ -17,32 +17,39 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request;
 
 use Attribute;
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateAssetImage;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateParentId;
-use Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Property\UpdateElementProperties;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\CustomMetaData;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\PatchCustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\ParentId;
 
 /**
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class UpdateAssetRequestBody extends RequestBody
+final class PatchAssetRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
             required: true,
             content: new JsonContent(
+                required: ['data'],
                 properties: [
-                    new Property('data',
-                        properties: [
-                            new UpdateParentId(),
-                            new UpdateElementProperties(),
-                            new UpdateAssetImage(),
-                        ],
-                        type: 'object',
+                    new Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new Items(
+                            required: ['id'],
+                            properties: [
+                                new Property(property: 'id', description: 'Asset ID', type: 'integer', example: 83),
+                                new ParentId(),
+                                new CustomMetaData(PatchCustomMetadata::class),
+                            ],
+                            type: 'object',
+                        ),
                     ),
                 ],
                 type: 'object',
