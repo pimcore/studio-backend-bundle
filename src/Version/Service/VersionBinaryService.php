@@ -16,59 +16,59 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Asset;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
-use Symfony\Contracts\Service\ServiceProviderInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @internal
  */
-final class VersionDetailService implements VersionDetailServiceInterface
+final class VersionBinaryService implements VersionBinaryServiceInterface
 {
     use ElementProviderTrait;
+    use StreamedResponseTrait;
 
     public function __construct(
-        private readonly VersionRepositoryInterface $repository,
-        private readonly ServiceProviderInterface $versionHydratorLocator
+        private readonly VersionRepositoryInterface $repository
     ) {
     }
 
     /**
      * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException
      */
-    public function getVersionData(
+    public function downloadAsset(
         int $id,
         UserInterface $user
-    ): AssetVersion|ImageVersion|DataObjectVersion|DocumentVersion {
+    ): StreamedResponse {
         $version = $this->repository->getVersionById($id);
         $element = $this->repository->getElementFromVersion($version, $user);
+        if (!$element instanceof Asset) {
+            throw new InvalidElementTypeException($element->getType());
+        }
 
-        return $this->hydrate(
-            $element,
-            $this->getElementClass($element)
-        );
+        return $this->getStreamedResponse($element);
     }
 
     /**
-     * @throws InvalidElementTypeException
+     * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException
      */
-    private function hydrate(
-        ElementInterface $element,
-        string $class
-    ): AssetVersion|ImageVersion|DocumentVersion|DataObjectVersion {
-        if ($this->versionHydratorLocator->has($class)) {
-            return $this->versionHydratorLocator->get($class)->hydrate($element);
+    public function streamImage(
+        int $id,
+        UserInterface $user
+    ): StreamedResponse {
+        $version = $this->repository->getVersionById($id);
+        $element = $this->repository->getElementFromVersion($version, $user);
+        if (!$element instanceof Asset\Image) {
+            throw new InvalidElementTypeException($element->getType());
         }
 
-        throw new InvalidElementTypeException($class);
+        return $this->getStreamedResponse($element, HttpResponseHeaders::INLINE_TYPE->value);
     }
 }

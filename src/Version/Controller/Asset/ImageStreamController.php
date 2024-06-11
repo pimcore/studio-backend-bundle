@@ -14,72 +14,69 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller\Asset;
 
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Get;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\AssetMediaType;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
+use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionBinaryServiceInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class PublishController extends AbstractApiController
+final class ImageStreamController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
         private readonly SecurityServiceInterface $securityService,
-        private readonly VersionServiceInterface $versionService
+        private readonly VersionBinaryServiceInterface $versionBinaryService,
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws AccessDeniedException
-     * @throws ElementNotFoundException
-     * @throws ElementPublishingFailedException
-     * @throws InvalidElementTypeException
-     * @throws NotAuthorizedException
+     * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException|NotAuthorizedException
      */
-    #[Route('/versions/{id}', name: 'pimcore_studio_api_publish_version', methods: ['POST'])]
+    #[Route('/versions/{id}/image/stream', name: 'pimcore_studio_api_stream_iamge_version', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
-    #[Post(
-        path: self::API_PATH . '/versions/{id}',
-        operationId: 'publishVersion',
-        description: 'Publish element version data based on the version ID',
-        summary: 'Publish version data',
+    #[Get(
+        path: self::API_PATH . '/versions/{id}/image/stream',
+        operationId: 'streamImageVersionById',
+        description: 'Get image version stream based on the version ID',
+        summary: 'Get image version stream by ID',
         security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
     #[SuccessResponse(
-        description: 'ID of latest published version',
-        content: new IdJson('ID of published version')
+        description: 'Image version stream',
+        content: new AssetMediaType('image/*'),
+        headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function publishVersion(int $id): JsonResponse
+    public function getVersions(int $id): StreamedResponse
     {
-        $user = $this->securityService->getCurrentUser();
-
-        return $this->jsonResponse([
-            'id' => $this->versionService->publishVersion($id, $user),
-        ]);
+        return $this->versionBinaryService->streamImage(
+            $id,
+            $this->securityService->getCurrentUser()
+        );
     }
 }
