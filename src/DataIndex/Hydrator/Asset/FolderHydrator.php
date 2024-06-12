@@ -25,7 +25,6 @@ final readonly class FolderHydrator implements FolderHydratorInterface
 {
     public function __construct(
         private IconServiceInterface $iconService,
-        private MetaDataHydratorInterface $metaDataHydrator,
         private PermissionsHydratorInterface $permissionsHydrator
     ) {
     }
@@ -38,7 +37,7 @@ final readonly class FolderHydrator implements FolderHydratorInterface
             $item->getType(),
             $item->getKey(),
             $item->getMimeType(),
-            $this->metaDataHydrator->hydrate($item->getMetaData()),
+            !empty($item->getMetaData()),
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
             $item->getId(),

@@ -27,6 +27,7 @@ final class DataJson extends JsonContent
     public function __construct(string $description = '')
     {
         parent::__construct(
+            required: ['data'],
             properties: [
                 new Property(
                     'data',

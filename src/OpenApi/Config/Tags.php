@@ -26,8 +26,12 @@ use OpenApi\Attributes\Tag;
     description: 'Asset operations to get/update/create/delete assets'
 )]
 #[Tag(
+    name: Tags::Thumbnails->name,
+    description: 'List thumbnails for assets like videos and images'
+)]
+#[Tag(
     name: Tags::Authorization->name,
-    description: 'Login via username and password to get a token or refresh the token'
+    description: 'Session-based login via username and password or logout and invalidate the session'
 )]
 #[Tag(
     name: Tags::DataObjects->name,
@@ -80,7 +84,7 @@ enum Tags: string
     case Schedule = 'Schedule';
     case Settings = 'Settings';
     case Translation = 'Translation';
-
+    case Thumbnails = 'Thumbnails';
     case User = 'User Management';
     case Versions = 'Versions';
     case Workflows = 'Workflows';

@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'Dependency',
+    required: ['id', 'path', 'type', 'subType', 'published'],
     type: 'object'
 )]
 final class Dependency implements AdditionalAttributesInterface

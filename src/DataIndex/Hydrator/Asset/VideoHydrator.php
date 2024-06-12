@@ -25,7 +25,6 @@ final readonly class VideoHydrator implements VideoHydratorInterface
 {
     public function __construct(
         private IconServiceInterface $iconService,
-        private MetaDataHydratorInterface $metaDataHydrator,
         private PermissionsHydratorInterface $permissionsHydrator
     ) {
     }
@@ -42,7 +41,7 @@ final readonly class VideoHydrator implements VideoHydratorInterface
             $item->getType(),
             $item->getKey(),
             $item->getMimeType(),
-            $this->metaDataHydrator->hydrate($item->getMetaData()),
+            !empty($item->getMetaData()),
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
             $item->getId(),

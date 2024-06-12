@@ -14,26 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Event;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\Thumbnail;
 
-final class CustomSettingsEvent extends AbstractPreResponseEvent
+final class ThumbnailEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.asset_custom_settings';
+    public const EVENT_NAME = 'pre_response.list_thumbnail';
+
     public function __construct(
-        private readonly CustomSettings $customSettings
+        private readonly Thumbnail $thumbnail
     )
     {
-        parent::__construct($customSettings);
+        parent::__construct($this->thumbnail);
     }
 
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getCustomSettings(): CustomSettings
+    public function getVersion(): Thumbnail
     {
-        return $this->customSettings;
+        return $this->thumbnail;
     }
 }

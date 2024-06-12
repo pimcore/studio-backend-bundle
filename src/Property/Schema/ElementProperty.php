@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'DataProperty',
+    required: ['key', 'data', 'type', 'inheritable', 'inherited'],
     type: 'object'
 )]
 final class ElementProperty implements AdditionalAttributesInterface

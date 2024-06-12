@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\PublicTranslations;
     schema: 'Translation',
     title: 'Translation',
     description: 'Translation Scheme for API',
+    required: ['locale', 'keys'],
     type: 'object'
 )]
 final readonly class Translation

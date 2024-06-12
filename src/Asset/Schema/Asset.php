@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
 
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
@@ -29,6 +28,16 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'Asset',
+    required: [
+        'iconName',
+        'hasChildren',
+        'type',
+        'filename',
+        'mimeType',
+        'metaData',
+        'hasWorkflowWithPermissions',
+        'fullPath'
+    ],
     type: 'object'
 )]
 class Asset extends Element implements AdditionalAttributesInterface
@@ -46,13 +55,8 @@ class Asset extends Element implements AdditionalAttributesInterface
         private readonly string $filename,
         #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg')]
         private readonly ?string $mimeType,
-        #[Property(
-            description: 'Metadata',
-            type: 'array',
-            items: new Items(type: 'string', example: 'meta_data_example'),
-            example: 'pimcore_icon_pdf'
-        )]
-        private readonly array $metaData,
+        #[Property(description: 'Has metadata', type: 'bool', example: false)]
+        private readonly bool $hasMetaData,
         #[Property(description: 'Workflow permissions', type: 'bool', example: false)]
         private readonly bool $hasWorkflowWithPermissions,
         #[Property(description: 'Full path', type: 'string', example: '/path/to/asset.jpg')]
@@ -112,14 +116,9 @@ class Asset extends Element implements AdditionalAttributesInterface
         return $this->mimeType;
     }
 
-    public function getMetadata(): array
-    {
-        return $this->metaData;
-    }
-
     public function getHasMetaData(): bool
     {
-        return count($this->metaData) > 0;
+        return $this->hasMetaData;
     }
 
     public function getFullPath(): string

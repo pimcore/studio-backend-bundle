@@ -18,14 +18,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\MetaDataHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
 final readonly class AssetHydrator implements AssetHydratorInterface
 {
     public function __construct(
         private IconServiceInterface $iconService,
-        private MetaDataHydratorInterface $metaDataHydrator,
         private PermissionsHydratorInterface $permissionsHydrator
     ) {
     }
@@ -38,7 +36,7 @@ final readonly class AssetHydrator implements AssetHydratorInterface
             $item->getType(),
             $item->getKey(),
             $item->getMimeType(),
-            $this->metaDataHydrator->hydrate($item->getMetaData()),
+            !empty($item->getMetaData()),
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
             $item->getId(),

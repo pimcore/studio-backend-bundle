@@ -14,17 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetMetaData;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\MetaData;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailCollection;
 
-interface MetaDataHydratorInterface
+/**
+ * @internal
+ */
+interface ThumbnailRepositoryInterface
 {
-    /**
-     * @param array<int, AssetMetaData> $metaData
-     *
-     * @return array<int, MetaData>
-     */
-    public function hydrate(array $metaData): array;
+    public function listVideoThumbnails(
+    ): ThumbnailCollection;
+
+    public function listImageThumbnails(
+    ): ThumbnailCollection;
 }
