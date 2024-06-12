@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
