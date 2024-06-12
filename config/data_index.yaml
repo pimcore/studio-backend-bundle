@@ -21,8 +21,6 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\UnknownHydrator
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydrator
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\MetaDataHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\MetaDataHydrator
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydrator

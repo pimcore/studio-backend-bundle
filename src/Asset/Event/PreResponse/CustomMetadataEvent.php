@@ -14,26 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
-final class AssetEvent extends AbstractPreResponseEvent
+final class CustomMetadataEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.asset';
+    public const EVENT_NAME = 'pre_response.asset_custom_metadata';
+
     public function __construct(
-        private readonly Asset $asset
+        private readonly CustomMetadata $customMetadata
     )
     {
-        parent::__construct($asset);
+        parent::__construct($customMetadata);
     }
 
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getAsset(): Asset
+    public function getCustomMetadata(): CustomMetadata
     {
-        return $this->asset;
+        return $this->customMetadata;
     }
 }

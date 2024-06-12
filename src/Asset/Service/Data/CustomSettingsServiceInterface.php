@@ -14,19 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\MaxFileSizeExceededException;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 
 /**
  * @internal
  */
-interface DataServiceInterface
+interface CustomSettingsServiceInterface
 {
     /**
-     * @throws ElementNotFoundException|InvalidElementTypeException|MaxFileSizeExceededException
+     * @throws AccessDeniedException
      */
-    public function getUTF8EncodedData(int $id): string;
+    public function getCustomSettings(int $id): CustomSettings;
 }

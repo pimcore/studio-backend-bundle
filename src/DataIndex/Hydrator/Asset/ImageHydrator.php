@@ -25,7 +25,6 @@ final readonly class ImageHydrator implements ImageHydratorInterface
 {
     public function __construct(
         private IconServiceInterface $iconService,
-        private MetaDataHydratorInterface $metaDataHydrator,
         private PermissionsHydratorInterface $permissionsHydrator
     ) {
     }
@@ -44,7 +43,7 @@ final readonly class ImageHydrator implements ImageHydratorInterface
             $item->getType(),
             $item->getKey(),
             $item->getMimeType(),
-            $this->metaDataHydrator->hydrate($item->getMetaData()),
+            !empty($item->getMetaData()),
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
             $item->getId(),

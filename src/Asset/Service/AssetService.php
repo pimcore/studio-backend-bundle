@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\AssetEvent;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Event\AssetEvent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
@@ -52,7 +52,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class AssetService implements AssetServiceInterface
 {
     use ElementProviderTrait;
-    
+
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
         private FilterServiceProviderInterface $filterServiceProvider,

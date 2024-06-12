@@ -15,6 +15,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetadataHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetadataHydrator
+
   # Encoder
   Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder
@@ -22,11 +25,14 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetService
 
-  Pimcore\Bundle\StudioBackendBundle\Asset\Service\CustomSettingsServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\CustomSettingsService
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomSettingsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomSettingsService
 
-  Pimcore\Bundle\StudioBackendBundle\Asset\Service\DataServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\DataService
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataService
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\TextServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\TextService
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadService
@@ -35,6 +41,9 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ThumbnailService
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\ImageAdapter:
+    tags: [ 'pimcore.studio_backend.update_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\CustomMetadataAdapter:
     tags: [ 'pimcore.studio_backend.update_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter\MetadataAdapter:

@@ -1,0 +1,8 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolver

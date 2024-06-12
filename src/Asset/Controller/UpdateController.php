@@ -28,9 +28,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -47,8 +49,7 @@ final class UpdateController extends AbstractApiController
     }
 
     #[Route('/assets/{id}', name: 'pimcore_studio_api_update_asset', methods: ['PUT'])]
-    //#[IsGranted('STUDIO_API')]
-        //#[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::ASSETS->value)]
     #[Put(
         path: self::API_PATH . '/assets/{id}',
         operationId: 'updateAssetById',

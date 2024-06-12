@@ -67,6 +67,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $loader->load('open_api.yaml');
         $loader->load('patcher.yaml');
         $loader->load('properties.yaml');
+        $loader->load('resolver.yaml');
         $loader->load('schedules.yaml');
         $loader->load('security.yaml');
         $loader->load('services.yaml');
