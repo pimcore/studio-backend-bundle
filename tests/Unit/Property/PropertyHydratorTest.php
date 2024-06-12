@@ -21,6 +21,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Document;
 use Pimcore\Model\Property;
@@ -77,7 +78,7 @@ final class PropertyHydratorTest extends Unit
      */
     private function getHydrator(): PropertyHydratorInterface
     {
-        return new PropertyHydrator($this->mockPredefinedResolver());
+        return new PropertyHydrator($this->mockPredefinedResolver(), $this->mockDataResolver());
     }
 
     /**
@@ -85,11 +86,31 @@ final class PropertyHydratorTest extends Unit
      */
     private function mockPredefinedResolver(): PredefinedResolverInterface
     {
-        return $this->makeEmpty(PredefinedResolverInterface::class,
-        [
-            'getById' => $this->getPredefined(),
-            'getByKey' => $this->getPredefined(),
-        ]);
+        return $this->makeEmpty(
+            PredefinedResolverInterface::class,
+            [
+                'getById' => $this->getPredefined(),
+                'getByKey' => $this->getPredefined(),
+            ]
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function mockDataResolver(): ReferenceResolverInterface
+    {
+        return $this->makeEmpty(
+            ReferenceResolverInterface::class,
+            [
+                'resolve' => [
+                    'path' => '/test',
+                    'id' => 1,
+                    'type' => 'page',
+                    'key' => 'test',
+                ],
+            ]
+        );
     }
 
     private function getPredefined(): Predefined

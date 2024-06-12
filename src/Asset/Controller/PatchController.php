@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 use OpenApi\Attributes\Patch;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\PatchAssetRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchAssetParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\PatchErrorJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -28,9 +27,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -46,8 +47,7 @@ final class PatchController extends AbstractApiController
     }
 
     #[Route('/assets', name: 'pimcore_studio_api_patch_asset', methods: ['PATCH'])]
-    //#[IsGranted('STUDIO_API')]
-        //#[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::ASSETS->value)]
     #[Patch(
         path: self::API_PATH . '/assets',
         operationId: 'patchAssetById',

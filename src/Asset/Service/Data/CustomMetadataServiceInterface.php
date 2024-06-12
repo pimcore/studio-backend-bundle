@@ -14,18 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
 
 /**
  * @internal
  */
-interface CustomSettingsServiceInterface
+interface CustomMetadataServiceInterface
 {
     /**
      * @throws AccessDeniedException
+     *
+     * @return array<int, CustomMetadata>
      */
-    public function getCustomSettings(int $id): CustomSettings;
+    public function getCustomMetadata(int $id): array;
 }
