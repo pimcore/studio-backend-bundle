@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
-use Pimcore\Model\User;
 use Pimcore\Model\User\Listing as UserListing;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -31,10 +31,10 @@ interface UserRepositoryInterface
     /**
      * @throws NotFoundException
      */
-    public function getUserById(int $userId): User;
+    public function getUserById(int $userId): UserInterface;
 
     /**
      * @throws Exception
      */
-    public function deleteUser(User $user): void;
+    public function deleteUser(UserInterface $user): void;
 }

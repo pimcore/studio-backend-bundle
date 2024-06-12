@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing as UserListing;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -48,7 +49,7 @@ final readonly class UserRepository implements UserRepositoryInterface
     /**
      * @throws NotFoundException
      */
-    public function getUserById(int $userId): User
+    public function getUserById(int $userId): UserInterface
     {
         $user = $this->userResolver->getById($userId);
 
@@ -62,7 +63,7 @@ final readonly class UserRepository implements UserRepositoryInterface
     /**
      * @throws Exception
      */
-    public function deleteUser(User $user): void
+    public function deleteUser(UserInterface $user): void
     {
         $user->delete();
     }
