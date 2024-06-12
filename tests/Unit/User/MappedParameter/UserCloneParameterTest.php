@@ -14,18 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\MappedParameter;
+
+use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserCloneParameter;
 
 /**
  * @internal
  */
-final class DatabaseException extends AbstractApiException
+final class UserCloneParameterTest extends Unit
 {
-    public function __construct(string $message = 'A database error occurred.')
+    public function testGetName(): void
     {
-        parent::__construct(
-            500,
-            $message
-        );
+        $parameter = new UserCloneParameter('test');
+
+        self::assertSame('test', $parameter->getName());
     }
 }

@@ -14,18 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\User\MappedParameter;
+
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
  * @internal
  */
-final class DatabaseException extends AbstractApiException
+final readonly class UserCloneParameter
 {
-    public function __construct(string $message = 'A database error occurred.')
+    public function __construct(
+        #[NotBlank]
+        private string $name
+    ) {
+    }
+
+    public function getName(): string
     {
-        parent::__construct(
-            500,
-            $message
-        );
+        return $this->name;
     }
 }
