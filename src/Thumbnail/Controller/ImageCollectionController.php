@@ -24,10 +24,12 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Attributes\Response\Content\ThumbnailsJson;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ThumbnailRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -48,8 +50,8 @@ final class ImageCollectionController extends AbstractApiController
      * @throws UserNotFoundException
      */
     #[Route('/thumbnails/image', name: 'pimcore_studio_api_thumbnails_image', methods: ['GET'])]
-    //#[IsGranted('STUDIO_API')]
-    //#[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::THUMBNAILS->value)]
     #[Get(
         path: self::API_PATH . '/thumbnails/image',
         operationId: 'getImageThumbnails',
