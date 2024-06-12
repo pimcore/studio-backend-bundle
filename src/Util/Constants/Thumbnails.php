@@ -19,11 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 /**
  * @internal
  */
-enum UserPermissions: string
+enum Thumbnails: string
 {
-    case ASSETS = 'assets';
-    case DOCUMENTS = 'documents';
-    case OBJECTS = 'objects';
-    case NOTES_EVENTS = 'notes_events';
-    case THUMBNAILS = 'thumbnails';
+    case DEFAULT_THUMBNAIL_ID = 'pimcore-system-treepreview';
+    case DEFAULT_THUMBNAIL_TEXT = 'original';
 }

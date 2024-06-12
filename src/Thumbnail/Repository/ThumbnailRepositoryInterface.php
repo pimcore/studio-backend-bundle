@@ -14,16 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
+namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
+
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailCollection;
 
 /**
  * @internal
  */
-enum UserPermissions: string
+interface ThumbnailRepositoryInterface
 {
-    case ASSETS = 'assets';
-    case DOCUMENTS = 'documents';
-    case OBJECTS = 'objects';
-    case NOTES_EVENTS = 'notes_events';
-    case THUMBNAILS = 'thumbnails';
+    public function listVideoThumbnails(
+    ): ThumbnailCollection;
+
+    public function listImageThumbnails(
+    ): ThumbnailCollection;
 }
