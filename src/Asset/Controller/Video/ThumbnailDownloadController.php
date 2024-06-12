@@ -37,6 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -57,9 +58,10 @@ final class ThumbnailDownloadController extends AbstractApiController
      * @throws AccessDeniedException
      * @throws ElementNotFoundException
      * @throws ElementProcessingNotCompletedException
+     * @throws FilesystemException
      * @throws InvalidElementTypeException
      * @throws InvalidThumbnailException
-     * @throws FilesystemException
+     * @throws UserNotFoundException
      */
     #[Route(
         '/assets/{id}/video/download/{thumbnailName}',

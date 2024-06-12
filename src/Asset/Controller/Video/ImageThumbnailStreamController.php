@@ -42,6 +42,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -63,6 +64,7 @@ final class ImageThumbnailStreamController extends AbstractApiController
      * @throws ElementNotFoundException
      * @throws InvalidElementTypeException
      * @throws ThumbnailResizingFailedException
+     * @throws UserNotFoundException
      */
     #[Route(
         '/assets/{id}/video/stream/imageThumbnail',
@@ -76,7 +78,6 @@ final class ImageThumbnailStreamController extends AbstractApiController
         operationId: 'getVideoImageThumbnail',
         description: 'Get video image thumbnail by configuration and by id path parameter',
         summary: 'Get video image thumbnail by configuration',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'video')]
