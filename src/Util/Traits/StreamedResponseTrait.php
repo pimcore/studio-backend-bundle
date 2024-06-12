@@ -33,7 +33,7 @@ trait StreamedResponseTrait
      * @throws ElementStreamResourceNotFoundException
      */
     protected function getStreamedResponse(
-        Asset $element,
+        Asset|Video\ImageThumbnailInterface $element,
         string $contentDisposition = HttpResponseHeaders::ATTACHMENT_TYPE->value,
         array $additionalHeaders = []
     ): StreamedResponse {
@@ -46,15 +46,19 @@ trait StreamedResponseTrait
             );
         }
 
-        return new StreamedResponse(function () use ($stream) {
-            fpassthru($stream);
-        }, 200, $this->getResponseHeaders(
-            mimeType: $element->getMimeType(),
-            fileSize: $element->getFileSize(),
-            filename: $element->getFilename(),
-            contentDisposition: $contentDisposition,
-            additionalHeaders: $additionalHeaders
-        ));
+        return new StreamedResponse(
+            function () use ($stream) {
+                fpassthru($stream);
+            },
+            200,
+            $this->getResponseHeaders(
+                mimeType: $element->getMimeType(),
+                fileSize: $element->getFileSize(),
+                filename: $element->getFilename(),
+                contentDisposition: $contentDisposition,
+                additionalHeaders: $additionalHeaders
+            )
+        );
     }
 
     /**
@@ -68,17 +72,21 @@ trait StreamedResponseTrait
     ): StreamedResponse {
         $stream = $storage->readStream($storagePath);
 
-        return new StreamedResponse(function () use ($stream) {
-            fpassthru($stream);
-        }, 200, $this->getResponseHeaders(
-            mimeType: 'video/mp4',
-            fileSize: $storage->fileSize($storagePath),
-            filename: $video->getFilename(),
-            contentDisposition: $contentDisposition,
-            additionalHeaders: [
-                HttpResponseHeaders::HEADER_ACCEPT_RANGES->value => 'bytes',
-            ]
-        ));
+        return new StreamedResponse(
+            function () use ($stream) {
+                fpassthru($stream);
+            },
+            200,
+            $this->getResponseHeaders(
+                mimeType: 'video/mp4',
+                fileSize: $storage->fileSize($storagePath),
+                filename: $video->getFilename(),
+                contentDisposition: $contentDisposition,
+                additionalHeaders: [
+                    HttpResponseHeaders::HEADER_ACCEPT_RANGES->value => 'bytes',
+                ]
+            )
+        );
     }
 
     private function getResponseHeaders(

@@ -75,7 +75,6 @@ final class ThumbnailDownloadController extends AbstractApiController
         operationId: 'downloadVideoByThumbnail',
         description: 'Download video by id and thumbnail name by path parameter',
         summary: 'Download video by id and thumbnail name',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'video')]

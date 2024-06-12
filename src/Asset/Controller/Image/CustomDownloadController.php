@@ -20,7 +20,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\AssetMediaType;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\BinaryConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\ImageConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\MimeTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\ResizeModeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
@@ -80,10 +80,10 @@ final class CustomDownloadController extends AbstractApiController
     #[IdParameter(type: 'image')]
     #[MimeTypeParameter]
     #[ResizeModeParameter]
-    #[BinaryConfigParameter('width', ' of downloaded image', 140)]
-    #[BinaryConfigParameter('height', ' of downloaded image')]
-    #[BinaryConfigParameter('quality', ' of downloaded image')]
-    #[BinaryConfigParameter('dpi', ' of downloaded image')]
+    #[ImageConfigParameter('width', 140)]
+    #[ImageConfigParameter('height')]
+    #[ImageConfigParameter('quality')]
+    #[ImageConfigParameter('dpi')]
     #[SuccessResponse(
         description: 'Custom image',
         content: [new AssetMediaType('image/jpeg'), new AssetMediaType('image/png')],

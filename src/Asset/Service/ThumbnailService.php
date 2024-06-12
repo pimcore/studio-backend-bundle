@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Video\Thumbnail\ConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
@@ -105,6 +107,25 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         }
 
         return $config;
+    }
+
+    /**
+     * @throws InvalidThumbnailConfigurationException
+     */
+    public function validateCustomVideoThumbnailConfig(
+        VideoImageStreamConfigParameter $imageConfig
+    ): void
+    {
+        if ($imageConfig->getFrame() && (!$imageConfig->getWidth() || !$imageConfig->getHeight())) {
+            throw new InvalidThumbnailConfigurationException(
+                'Width and height must be set for frame configuration'
+            );
+        }
+        if ($imageConfig->getAspectRatio() && !$imageConfig->getWidth()) {
+            throw new InvalidThumbnailConfigurationException(
+                'Width must be set for aspect ratio configuration'
+            );
+        }
     }
 
     private function getImageThumbnailConfig(

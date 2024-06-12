@@ -21,12 +21,16 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamCon
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
+use Pimcore\Messenger\AssetPreviewImageMessage;
 use Pimcore\Model\Asset\Video;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Tool\Storage;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -37,6 +41,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     use StreamedResponseTrait;
 
     public function __construct(
+        private EventDispatcherInterface $eventDispatcher,
         private ThumbnailServiceInterface $thumbnailService,
         private Storage $storageTool
     )
@@ -81,6 +86,8 @@ final readonly class BinaryService implements BinaryServiceInterface
 
     /**
      * @throws ElementStreamResourceNotFoundException
+     * @throws InvalidElementTypeException
+     * @throws InvalidThumbnailConfigurationException
      * @throws InvalidThumbnailException
      */
     public function streamVideoImageThumbnail(
@@ -91,6 +98,7 @@ final readonly class BinaryService implements BinaryServiceInterface
         if (!$video instanceof Video) {
             throw new InvalidElementTypeException($video->getType());
         }
+        $this->thumbnailService->validateCustomVideoThumbnailConfig($imageConfig);
 
         $imageParameters = [];
         if ($imageConfig->getWidth()) {
@@ -108,8 +116,20 @@ final readonly class BinaryService implements BinaryServiceInterface
 
         $image = $video->getImageThumbnail($imageParameters);
 
+        if ($imageConfig->getAsync() && !$image->exists()) {
+            $this->eventDispatcher->dispatch(
+                new AssetPreviewImageMessage($video->getId())
+            );
+
+            throw new ElementStreamResourceNotFoundException(
+                $video->getId(),
+                'video image thumbnail for video'
+            );
+        }
+
         return $this->getStreamedResponse(
-            $image
+            $image,
+            HttpResponseHeaders::INLINE_TYPE->value
         );
     }
 
@@ -132,11 +152,12 @@ final readonly class BinaryService implements BinaryServiceInterface
 
         $storagePath = $video->getRealPath() . '/' .
             preg_replace(
-                '@^' . preg_quote($video->getPath(), '@') .
-                '@', '', urldecode($thumbnail['formats']['mp4'])
+                '@^' . preg_quote($video->getPath(), '@') . '@',
+                '',
+                urldecode($thumbnail['formats']['mp4'])
             );
 
-        $storage = $this->storageTool->getStorage('thumbnail');//Storage::get('thumbnail');
+        $storage = $this->storageTool->getStorage('thumbnail');
         if (!$storage->fileExists($storagePath)) {
             throw new InvalidThumbnailException($thumbnailName);
         }

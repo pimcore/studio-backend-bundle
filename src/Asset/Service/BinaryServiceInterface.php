@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamCon
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -54,6 +55,8 @@ interface BinaryServiceInterface
 
     /**
      * @throws ElementStreamResourceNotFoundException
+     * @throws InvalidElementTypeException
+     * @throws InvalidThumbnailConfigurationException
      * @throws InvalidThumbnailException
      */
     public function streamVideoImageThumbnail(

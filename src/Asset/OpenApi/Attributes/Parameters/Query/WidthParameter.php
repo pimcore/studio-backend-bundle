@@ -20,20 +20,16 @@ use Attribute;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class BinaryConfigParameter extends QueryParameter
+#[Attribute(Attribute::TARGET_METHOD)]
+final class WidthParameter extends QueryParameter
 {
-    public function __construct(
-        string $name,
-        string $description = '',
-        mixed $defaultValue = null,
-        string $type = 'integer',
-    ) {
+    public function __construct(string $description = 'Width', mixed $defaultValue = null)
+    {
         parent::__construct(
-            name: $name,
-            description: ucfirst($name) . $description,
+            name: 'width',
+            description: $description,
             in: 'query',
-            schema: new Schema(type: $type, example: $defaultValue),
+            schema: new Schema(type: 'integer', example: $defaultValue),
         );
     }
 }

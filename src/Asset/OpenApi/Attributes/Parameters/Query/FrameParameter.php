@@ -14,26 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query;
 
 use Attribute;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class TimestampParameter extends QueryParameter
+#[Attribute(Attribute::TARGET_METHOD)]
+final class FrameParameter extends QueryParameter
 {
-    public function __construct(
-        string $name,
-        string $description,
-        bool $required = true
-    ) {
+    public function __construct(string $description = 'Frame', mixed $defaultValue = null)
+    {
         parent::__construct(
-            name: $name,
+            name: 'frame',
             description: $description,
             in: 'query',
-            required: $required,
-            schema: new Schema(type: 'integer', example: null),
+            schema: new Schema(type: 'boolean', example: $defaultValue),
         );
     }
 }

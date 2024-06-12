@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Model\Asset\Image;
@@ -49,4 +51,11 @@ interface ThumbnailServiceInterface
     public function getVideoThumbnailConfig(
         string $thumbnailName
     ): VideoThumbnailConfig;
+
+    /**
+     * @throws InvalidThumbnailConfigurationException
+     */
+    public function validateCustomVideoThumbnailConfig(
+        VideoImageStreamConfigParameter $imageConfig
+    ): void;
 }

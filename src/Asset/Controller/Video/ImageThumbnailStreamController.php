@@ -19,26 +19,27 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Video;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\AssetMediaType;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header\ContentDisposition;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\BinaryConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\MimeTypeParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\ResizeModeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\AspectRatioParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\AsyncGenerationParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\FrameParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\HeightParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\WidthParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\BinaryServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailConfigurationException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
@@ -61,9 +62,10 @@ final class ImageThumbnailStreamController extends AbstractApiController
 
     /**
      * @throws AccessDeniedException
-     * @throws ElementNotFoundException
+     * @throws ElementStreamResourceNotFoundException
      * @throws InvalidElementTypeException
-     * @throws ThumbnailResizingFailedException
+     * @throws InvalidThumbnailConfigurationException
+     * @throws InvalidThumbnailException
      * @throws UserNotFoundException
      */
     #[Route(
@@ -81,16 +83,15 @@ final class ImageThumbnailStreamController extends AbstractApiController
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'video')]
-    #[MimeTypeParameter]
-    #[ResizeModeParameter]
-    #[BinaryConfigParameter('width', 'of video image thumbnail', 265)]
-    #[BinaryConfigParameter('height', 'of video image thumbnail')]
-    #[BinaryConfigParameter('aspectRatio', ' of downloaded image', false, 'boolean')]
-    #[BinaryConfigParameter('frame', ' of downloaded image', false, 'boolean')]
+    #[WidthParameter('Width of the video image thumbnail', 265)]
+    #[HeightParameter('Height of the video image thumbnail')]
+    #[AspectRatioParameter]
+    #[FrameParameter]
+    #[AsyncGenerationParameter]
     #[SuccessResponse(
-        description: 'Custom image',
-        content: [new AssetMediaType('image/jpeg'), new AssetMediaType('image/png')],
-        headers: [new ContentDisposition()]
+        description: 'Streamed video image thumbnail',
+        content: [new AssetMediaType('image/*')],
+        headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -98,13 +99,16 @@ final class ImageThumbnailStreamController extends AbstractApiController
     ])]
     public function getVideoImageThumbnail(
         int $id,
-        #[MapQueryString] VideoImageStreamConfigParameter $imageConfig
+        #[MapQueryString] ?VideoImageStreamConfigParameter $imageConfig
     ): StreamedResponse
     {
         $asset = $this->assetService->getAssetElement(
             $this->securityService->getCurrentUser(),
             $id
         );
+        if (!$imageConfig) {
+            $imageConfig = new VideoImageStreamConfigParameter();
+        }
 
         return $this->binaryService->streamVideoImageThumbnail($asset, $imageConfig);
     }
