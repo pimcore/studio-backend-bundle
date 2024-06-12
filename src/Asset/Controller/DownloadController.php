@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -55,6 +56,7 @@ final class DownloadController extends AbstractApiController
      * @throws ElementStreamResourceNotFoundException
      * @throws ElementNotFoundException
      * @throws InvalidElementTypeException
+     * @throws UserNotFoundException
      */
     #[Route('/assets/{id}/download', name: 'pimcore_studio_api_download_asset', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]

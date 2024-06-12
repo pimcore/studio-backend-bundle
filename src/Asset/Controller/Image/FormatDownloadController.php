@@ -37,6 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -59,6 +60,7 @@ final class FormatDownloadController extends AbstractApiController
      * @throws InvalidAssetFormatTypeException
      * @throws InvalidElementTypeException
      * @throws ThumbnailResizingFailedException
+     * @throws UserNotFoundException
      */
     #[Route(
         '/assets/{id}/image/download/format/{format}',
