@@ -31,7 +31,7 @@ use OpenApi\Attributes\Tag;
 )]
 #[Tag(
     name: Tags::Authorization->name,
-    description: 'Login via username and password'
+    description: 'Session-based login via username and password or logout and invalidate the session'
 )]
 #[Tag(
     name: Tags::DataObjects->name,
