@@ -16,10 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
+
 /**
  * @internal
  */
 interface UserFolderServiceInterface
 {
+    /**
+     * @throws ForbiddenException|NotFoundException|DatabaseException
+     */
     public function deleteUserFolderById(int $folderId): void;
 }

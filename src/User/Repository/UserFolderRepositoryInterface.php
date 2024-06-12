@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
 use Pimcore\Model\User\Folder;
 
 /**
@@ -28,4 +29,9 @@ interface UserFolderRepositoryInterface
      * @throws Exception
      */
     public function deleteUserFolder(Folder $folder): void;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getUserFolderById(int $folderId): Folder;
 }

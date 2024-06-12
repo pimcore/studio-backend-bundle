@@ -35,7 +35,7 @@ final readonly class UserFolderService implements UserFolderServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * @throws ForbiddenException|NotFoundException|DatabaseException
      */
     public function deleteUserFolderById(int $folderId): void
     {
@@ -43,11 +43,7 @@ final readonly class UserFolderService implements UserFolderServiceInterface
             throw new ForbiddenException('Only admin users are allowed to delete user folders');
         }
 
-        $folder = Folder::getById($folderId);
-
-        if (!$folder instanceof Folder) {
-            throw new NotFoundException(sprintf('User folder with id %s not found', $folderId));
-        }
+        $folder = $this->userFolderRepository->getUserFolderById($folderId);
 
         try {
             $this->userFolderRepository->deleteUserFolder($folder);
