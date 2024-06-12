@@ -57,7 +57,6 @@ final class DetailsCollectionController extends AbstractApiController
         operationId: 'getWorkflowsDetails',
         description: 'Get details of the element workflows',
         summary: 'Get all workflow details of an element',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Workflows->name]
     )]
     #[IdParameter('ID of the element', 'element')]

@@ -1,0 +1,14 @@
+pimcore_studio_backend:
+  security_firewall:
+    pattern: ^/studio/api(/.*)?$
+    user_checker: Pimcore\Security\User\UserChecker
+    context: pimcore_admin
+    provider: pimcore_studio_backend
+    stateless: false
+    login_throttling:
+      max_attempts: 3
+      interval: '5 minutes'
+    logout:
+      path: pimcore_studio_api_logout
+    json_login:
+      check_path: pimcore_studio_api_login

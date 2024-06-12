@@ -67,7 +67,6 @@ final class CollectionController extends AbstractApiController
         path: self::API_PATH . '/notes',
         operationId: 'getNotes',
         summary: 'Get notes',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Notes->name]
     )]
     #[PageParameter]

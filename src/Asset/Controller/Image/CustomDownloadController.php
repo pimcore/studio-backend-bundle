@@ -39,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -60,6 +61,7 @@ final class CustomDownloadController extends AbstractApiController
      * @throws ElementNotFoundException
      * @throws InvalidElementTypeException
      * @throws ThumbnailResizingFailedException
+     * @throws UserNotFoundException
      */
     #[Route(
         '/assets/{id}/image/download/custom',
@@ -73,7 +75,6 @@ final class CustomDownloadController extends AbstractApiController
         operationId: 'downloadCustomImage',
         description: 'Download custom image by configuration',
         summary: 'Download custom image by configuration',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'image')]

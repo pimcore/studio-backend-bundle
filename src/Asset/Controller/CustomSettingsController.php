@@ -55,7 +55,6 @@ final class CustomSettingsController extends AbstractApiController
         operationId: 'getAssetCustomSettingsById',
         description: 'Get custom settings of an asset by its id by path parameter',
         summary: 'Get custom settings of an asset by id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]

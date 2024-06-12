@@ -14,29 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\UpdateCustomMetadata as UpdateCustomMetadataSchema;
 
 /**
  * @internal
  */
-#[Schema(
-    title: 'Refresh',
-    description: 'Token that needs to be refresh',
-    type: 'object'
-)]
-final readonly class Refresh
+final class UpdateCustomMetaData extends Property
 {
-    public function __construct(
-        #[Property(description: 'Token', type: 'string', example: 'Who you gonna call? Refresh token!')]
-        private string $token
-    ) {
-    }
-
-    public function getToken(): string
+    public function __construct()
     {
-        return $this->token;
+        parent::__construct(
+            'metadata',
+            type: 'array',
+            items: new Items(ref: UpdateCustomMetadataSchema::class),
+            nullable: true,
+        );
     }
 }

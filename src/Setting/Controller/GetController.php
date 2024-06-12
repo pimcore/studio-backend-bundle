@@ -47,7 +47,6 @@ final class GetController extends AbstractApiController
         operationId: 'getSystemSettings',
         description: 'Get system settings',
         summary: 'Get system settings',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Settings->name]
     )]
     #[SuccessResponse(

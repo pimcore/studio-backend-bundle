@@ -58,7 +58,6 @@ final class DownloadController extends AbstractApiController
         operationId: 'downloadAssetVersionById',
         description: 'Download asset version based on the version ID',
         summary: 'Download asset version by ID',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]

@@ -14,17 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dto\Token;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
-
-final class CreateTest extends Unit
+/**
+ * @internal
+ */
+final class UnreachableException extends AbstractApiException
 {
-    public function testTokenCreate(): void
+    public function __construct(string $message)
     {
-        $create = new Credentials('token', 'test');
-        $this->assertSame('token', $create->getUsername());
-        $this->assertSame('test', $create->getPassword());
+        parent::__construct(500, $message);
     }
 }

@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle;
 use Pimcore\Bundle\GenericDataIndexBundle\PimcoreGenericDataIndexBundle;
 use Pimcore\Bundle\StaticResolverBundle\PimcoreStaticResolverBundle;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\FilterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PatchAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\UpdateAdapterPass;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
@@ -65,8 +66,9 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
     public function build(ContainerBuilder $container): void
     {
         $container->addCompilerPass(new FilterPass());
-        $container->addCompilerPass(new SettingsProviderPass());
+        $container->addCompilerPass(new PatchAdapterPass());
         $container->addCompilerPass(new UpdateAdapterPass());
+        $container->addCompilerPass(new SettingsProviderPass());
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void
