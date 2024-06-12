@@ -20,6 +20,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
@@ -34,7 +35,8 @@ final class UserCloneService implements UserCloneServiceInterface
     public function __construct(
         private readonly WorkspaceCloneServiceInterface $workspaceCloneService,
         private readonly UserTreeNodeHydratorInterface $userTreeNodeHydrator,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly SecurityServiceInterface $securityService
     )
     {
     }
@@ -57,8 +59,9 @@ final class UserCloneService implements UserCloneServiceInterface
         $this->setUserProperties($userName);
 
         try {
-            $this->user->save();
+            $this->user->save(); // save user to get id
             $this->cloneAndAssignWorkspaces();
+            $this->user->save(); // save user with workspaces
         } catch (Exception $e) {
             throw new DatabaseException("Could not save user: " . $e->getMessage());
         }
@@ -85,7 +88,10 @@ final class UserCloneService implements UserCloneServiceInterface
         $this->user->setActive($this->userToClone->getActive());
         $this->user->setPerspectives($this->userToClone->getPerspectives());
         $this->user->setPermissions($this->userToClone->getPermissions());
-        $this->user->setAdmin($this->userToClone->isAdmin());
+        $this->user->setAdmin(false);
+        if ($this->securityService->getCurrentUser()) {
+            $this->user->setAdmin($this->userToClone->isAdmin());
+        }
         $this->user->setRoles($this->userToClone->getRoles());
         $this->user->setWelcomeScreen($this->userToClone->getWelcomescreen());
         $this->user->setMemorizeTabs($this->userToClone->getMemorizeTabs());
@@ -110,7 +116,6 @@ final class UserCloneService implements UserCloneServiceInterface
         $this->cloneAndAssignAssetWorkspace();
         $this->cloneAndAssignDocumentWorkspace();
         $this->cloneAndAssignDataObjectWorkspace();
-        $this->user->save();
     }
 
     /**
