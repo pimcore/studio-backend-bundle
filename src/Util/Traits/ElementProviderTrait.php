@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundByPathException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -44,22 +43,6 @@ trait ElementProviderTrait
         $element = $serviceResolver->getElementById($type, $id);
         if ($element === null) {
             throw new ElementNotFoundException($id);
-        }
-
-        return $element;
-    }
-
-    /**
-     * @throws ElementNotFoundByPathException
-     */
-    private function getElementByPath(
-        ServiceResolverInterface $serviceResolver,
-        string $type,
-        string $path
-    ): ElementInterface {
-        $element = $serviceResolver->getElementByPath($type, $path);
-        if ($element === null) {
-            throw new ElementNotFoundByPathException($path);
         }
 
         return $element;

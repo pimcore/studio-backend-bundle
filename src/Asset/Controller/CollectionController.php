@@ -46,6 +46,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -66,7 +67,7 @@ final class CollectionController extends AbstractApiController
      * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
      */
     #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
-    //#[IsGranted('STUDIO_API')]
+    #[IsGranted('ROLE_PIMCORE_ADMIN')]
     //#[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets',
