@@ -35,9 +35,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -68,8 +70,7 @@ final class ThumbnailStreamController extends AbstractApiController
         name: 'pimcore_studio_api_stream_video_thumbnail',
         methods: ['GET']
     )]
-    //#[IsGranted('STUDIO_API')]
-    //#[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}/video/stream/{thumbnailName}',
         operationId: 'streamVideoByThumbnail',
