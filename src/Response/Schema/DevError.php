@@ -26,6 +26,7 @@ use OpenApi\Attributes\Schema;
     schema: 'DevError',
     title: 'DevError',
     description: 'Error with details for developers',
+    required: ['message', 'details'],
     type: 'object'
 )]
 final readonly class DevError

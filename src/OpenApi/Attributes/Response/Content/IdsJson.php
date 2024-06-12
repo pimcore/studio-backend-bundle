@@ -28,6 +28,7 @@ final class IdsJson extends JsonContent
     public function __construct(string $description = '')
     {
         parent::__construct(
+            required: ['ids'],
             properties: [
                 new Property(
                     'ids',

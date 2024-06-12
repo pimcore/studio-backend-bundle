@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'Note',
+    required: ['id', 'type', 'cId', 'cType', 'cPath', 'date', 'title', 'description', 'locked', 'data'],
     type: 'object'
 )]
 final class Note implements AdditionalAttributesInterface

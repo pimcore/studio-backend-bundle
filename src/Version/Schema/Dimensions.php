@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'VersionUser',
+    title: 'VersionDimensions',
     type: 'object'
 )]
 final readonly class Dimensions

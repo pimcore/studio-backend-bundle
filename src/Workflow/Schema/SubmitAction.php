@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\WorkflowActionTypes;
 #[Schema(
     title: 'SubmitAction',
     description: 'Schema for submission of workflow action',
+    required: ['actionType', 'elementId', 'elementType', 'workflowName', 'transition', 'workflowOptions'],
     type: 'object'
 )]
 final readonly class SubmitAction

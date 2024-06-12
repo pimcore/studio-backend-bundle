@@ -22,6 +22,14 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 
 #[Schema(
     title: 'Image',
+    required: [
+        'format',
+        'width',
+        'height',
+        'isVectorGraphic',
+        'isAnimated',
+        'imageThumbnailPath'
+    ],
     type: 'object'
 )]
 final class Image extends Asset
