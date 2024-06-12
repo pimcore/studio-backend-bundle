@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -43,6 +44,9 @@ final class ImageCollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws UserNotFoundException
+     */
     #[Route('/thumbnails/image', name: 'pimcore_studio_api_thumbnails_image', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     //#[IsGranted(UserPermissions::ASSETS->value)]
