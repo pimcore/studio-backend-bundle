@@ -21,6 +21,7 @@ use OpenApi\Attributes\Schema;
 
 #[Schema(
     title: 'DataObject',
+    required: ['id', 'className'],
     type: 'object'
 )]
 readonly class DataObject

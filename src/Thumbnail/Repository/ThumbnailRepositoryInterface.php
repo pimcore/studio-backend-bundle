@@ -14,20 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Version;
-use Pimcore\Model\Version as PimcoreVersion;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailCollection;
 
 /**
  * @internal
  */
-interface VersionHydratorInterface
+interface ThumbnailRepositoryInterface
 {
-    public function hydrate(
-        PimcoreVersion $version,
-        array $scheduledTasks,
-        int $elementVersionCount,
-        ?int $elementModificationDate
-    ): Version;
+    public function listVideoThumbnails(
+    ): ThumbnailCollection;
+
+    public function listImageThumbnails(
+    ): ThumbnailCollection;
 }

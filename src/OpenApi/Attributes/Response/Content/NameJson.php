@@ -27,6 +27,7 @@ final class NameJson extends JsonContent
     public function __construct(string $description = '')
     {
         parent::__construct(
+            required: ['name'],
             properties: [
                 new Property(
                     'name',

@@ -35,6 +35,7 @@ final class UpdateAssetRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
+                required: ['data'],
                 properties: [
                     new Property('data',
                         properties: [

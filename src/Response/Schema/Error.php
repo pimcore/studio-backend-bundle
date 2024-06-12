@@ -26,6 +26,7 @@ use OpenApi\Attributes\Schema;
     schema: 'Error',
     title: 'Error',
     description: 'Bad credentials or missing token, bad request, method not allowed, etc.',
+    required: ['message'],
     type: 'object'
 )]
 final readonly class Error

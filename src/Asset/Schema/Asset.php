@@ -29,6 +29,16 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'Asset',
+    required: [
+        'iconName',
+        'hasChildren',
+        'type',
+        'filename',
+        'mimeType',
+        'metaData',
+        'hasWorkflowWithPermissions',
+        'fullPath'
+    ],
     type: 'object'
 )]
 class Asset extends Element implements AdditionalAttributesInterface

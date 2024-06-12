@@ -14,27 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content;
+namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Attributes\Response\Content;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\Thumbnail;
 
 /**
  * @internal
  */
-final class DataJson extends JsonContent
+final class ThumbnailsJson extends JsonContent
 {
-    public function __construct(string $description = '')
+    public function __construct()
     {
         parent::__construct(
-            required: ['data'],
+            required: ['items'],
             properties: [
                 new Property(
-                    'data',
-                    title: 'data',
-                    description: $description,
-                    type: 'string',
-                    example: 'Test content'
+                    'items',
+                    ref: Thumbnail::class,
+                    type: 'object'
                 ),
             ],
             type: 'object',

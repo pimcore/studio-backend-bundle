@@ -24,6 +24,11 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'CreateNote',
+    required: [
+        'title',
+        'description',
+        'type'
+    ],
     type: 'object'
 )]
 final readonly class CreateNote
