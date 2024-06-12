@@ -71,14 +71,14 @@ final class ThumbnailRepository implements ThumbnailRepositoryInterface
         /** @var Config $thumbnailConfig */
         foreach ($thumbnails as $thumbnailConfig) {
             $thumbnail = new Thumbnail(
-                 $thumbnailConfig->getName(),
-                 $thumbnailConfig->getName()
-             );
+                $thumbnailConfig->getName(),
+                $thumbnailConfig->getName()
+            );
 
             $this->eventDispatcher->dispatch(
-                 new ThumbnailEvent($thumbnail),
-                 ThumbnailEvent::EVENT_NAME
-             );
+                new ThumbnailEvent($thumbnail),
+                ThumbnailEvent::EVENT_NAME
+            );
 
             $items[] = $thumbnail;
         }
