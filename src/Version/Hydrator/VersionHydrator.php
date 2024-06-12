@@ -28,8 +28,8 @@ final class VersionHydrator implements VersionHydratorInterface
     public function hydrate(
         PimcoreVersion $version,
         array $scheduledTasks,
-        int $versionCount,
-        int $versionDate,
+        int $elementVersionCount,
+        ?int $elementModificationDate
     ): Version {
         $user = new User();
         if ($version->getUser()) {
@@ -38,9 +38,12 @@ final class VersionHydrator implements VersionHydratorInterface
                 $version->getUser()->getName()
             );
         }
+
         $versionId = $version->getId();
+        $versionCount = $version->getVersionCount();
+        $versionDate = $version->getDate();
         $isPublished = false;
-        if ($versionCount === $version->getVersionCount() && $versionDate === $version->getDate()) {
+        if ($elementVersionCount === $versionCount && $elementModificationDate === $versionDate) {
             $isPublished = true;
         }
 
@@ -49,10 +52,10 @@ final class VersionHydrator implements VersionHydratorInterface
             cid: $version->getCid(),
             ctype: $version->getCtype(),
             note: $version->getNote(),
-            date: $version->getDate(),
+            date: $versionDate,
             public: $version->isPublic(),
             isPublished: $isPublished,
-            versionCount: $version->getVersionCount(),
+            versionCount: $versionCount,
             autosave: $version->isAutoSave(),
             user: $user,
             scheduled: $scheduledTasks[$versionId] ?? null

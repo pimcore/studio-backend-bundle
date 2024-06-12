@@ -27,7 +27,7 @@ interface VersionHydratorInterface
     public function hydrate(
         PimcoreVersion $version,
         array $scheduledTasks,
-        int $versionCount,
-        int $versionDate,
+        int $elementVersionCount,
+        ?int $elementModificationDate
     ): Version;
 }
