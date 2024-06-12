@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Note\Extractor\NoteDataExtractorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Note\Resolver\NoteDataResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
 use Pimcore\Model\Element\Note as CoreNote;
 
@@ -25,25 +25,25 @@ use Pimcore\Model\Element\Note as CoreNote;
  */
 final readonly class NoteHydrator implements NoteHydratorInterface
 {
-    public function __construct(private NoteDataExtractorInterface $extractor)
+    public function __construct(private NoteDataResolverInterface $noteDataResolver)
     {
     }
 
     public function hydrate(CoreNote $note): Note
     {
-        $noteUser = $this->extractor->extractUserData($note);
+        $noteUser = $this->noteDataResolver->resolveUserData($note);
 
         return new Note(
             $note->getId(),
             $note->getType(),
             $note->getCid(),
             $note->getCtype(),
-            $this->extractor->extractCPath($note),
+            $this->noteDataResolver->extractCPath($note),
             $note->getDate(),
             $note->getTitle(),
             $note->getDescription(),
             $note->getLocked(),
-            $this->extractor->extractData($note),
+            $this->noteDataResolver->resolveNoteData($note),
             $noteUser->getId(),
             $noteUser->getName(),
         );

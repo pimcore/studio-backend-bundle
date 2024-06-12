@@ -16,9 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\VersionCleanupParameters;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
@@ -29,6 +30,9 @@ use Pimcore\Model\Version\Listing as VersionListing;
  */
 interface VersionRepositoryInterface
 {
+    /**
+     * @throws AccessDeniedException
+     */
     public function listVersions(
         ElementInterface $element,
         string $originalType,
@@ -42,17 +46,23 @@ interface VersionRepositoryInterface
         UserInterface $user
     ): ?Version;
 
+    /**
+     * @throws AccessDeniedException
+     */
     public function getElementFromVersion(
         Version $version,
         UserInterface $user
     ): ElementInterface;
 
+    /**
+     * @throws ElementNotFoundException
+     */
     public function getVersionById(
         int $id
     ): Version;
 
     public function cleanupVersions(
         ElementParameters $elementParameters,
-        VersionCleanupParameters $parameters
+        ?int $modificationDate,
     ): array;
 }

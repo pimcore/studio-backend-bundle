@@ -25,6 +25,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'Credentials',
     description: 'Credentials for authentication',
+    required: ['username', 'password'],
     type: 'object'
 )]
 final readonly class Credentials

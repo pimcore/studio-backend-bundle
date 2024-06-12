@@ -66,12 +66,13 @@ final class CollectionController extends AbstractApiController
         operationId: 'getDataObjects',
         description: 'Get paginated data objects',
         summary: 'Get all DataObjects',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::DataObjects->name],
     )]
     #[PageParameter]
     #[PageSizeParameter]
-    #[ParentIdParameter]
+    #[ParentIdParameter(
+        description: 'Filter data objects by parent id.'
+    )]
     #[IdSearchTermParameter]
     #[ExcludeFoldersParameter]
     #[PathParameter]

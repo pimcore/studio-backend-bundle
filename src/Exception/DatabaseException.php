@@ -21,11 +21,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception;
  */
 final class DatabaseException extends AbstractApiException
 {
-    public function __construct()
+    public function __construct(string $message = 'A database error occurred.')
     {
         parent::__construct(
             500,
-            'A database error occurred.'
+            $message
         );
     }
 }

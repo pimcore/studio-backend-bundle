@@ -46,6 +46,8 @@ final class Version implements AdditionalAttributesInterface
         private readonly int $date,
         #[Property(description: 'public', type: 'bool', example: false)]
         private readonly bool $public,
+        #[Property(description: 'isPublished', type: 'bool', example: false)]
+        private readonly bool $isPublished,
         #[Property(description: 'version count', type: 'integer', example: 10)]
         private readonly int $versionCount,
         #[Property(description: 'autosave', type: 'bool', example: false)]
@@ -86,6 +88,11 @@ final class Version implements AdditionalAttributesInterface
     public function isPublic(): bool
     {
         return $this->public;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->isPublished;
     }
 
     public function getVersionCount(): int

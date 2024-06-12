@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
@@ -25,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
 /**
@@ -40,6 +42,9 @@ final class VersionDetailService implements VersionDetailServiceInterface
     ) {
     }
 
+    /**
+     * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException
+     */
     public function getVersionData(
         int $id,
         UserInterface $user
@@ -53,6 +58,9 @@ final class VersionDetailService implements VersionDetailServiceInterface
         );
     }
 
+    /**
+     * @throws InvalidElementTypeException
+     */
     private function hydrate(
         ElementInterface $element,
         string $class
