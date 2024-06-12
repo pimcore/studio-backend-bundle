@@ -23,7 +23,6 @@ use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateAssetImage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateCustomMetaData;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateCustomSettingsData;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\UpdateCustomSettings;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateParentId;
 use Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Property\UpdateElementProperties;
 
