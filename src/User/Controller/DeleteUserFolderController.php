@@ -16,22 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\SingleParameterRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserCloneParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserCloneServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -39,40 +34,33 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CloneController extends AbstractApiController
+final class DeleteUserFolderController extends AbstractApiController
 {
     use PaginatedResponseTrait;
     public function __construct(
         SerializerInterface $serializer,
-        private readonly UserCloneServiceInterface $userCloneService
+        private readonly UserFolderServiceInterface $userFolderService
     ) {
         parent::__construct($serializer);
     }
 
 
-    #[Route('/user/clone/{id}', name: 'pimcore_studio_api_user_clone', methods: ['POST'])]
-    #[Post(
-        path: self::API_PATH . '/user/clone/{id}',
-        operationId: 'cloneUser',
-        summary: 'Clone a specific user.',
+    #[Route('/user/folder/{id}', name: 'pimcore_studio_api_user_folder_delete', methods: ['DELETE'])]
+    #[Delete(
+        path: self::API_PATH . '/user/folder/{id}',
+        operationId: 'deleteUserFolder',
+        summary: 'Delete a specific user folder with all users in this folder.',
         tags: [Tags::User->value]
     )]
-    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
-    #[SuccessResponse(
-        description: 'Node of the cloned user.',
-        content: new JsonContent(ref: UserTreeNode::class)
-    )]
-    #[IdParameter(type: 'user')]
-    #[SingleParameterRequestBody(
-        parameterName: 'name',
-        example: 'Cloned User'
-    )]
+    #[IsGranted(UserPermissions::PIMCORE_ADMIN->value)]
+    #[SuccessResponse]
+    #[IdParameter(type: 'user-folder')]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND
     ])]
-    public function cloneUser(int $id, #[MapRequestPayload] UserCloneParameter $userClone): JsonResponse
+    public function deleteUserFolder(int $id): Response
     {
-        $userNode = $this->userCloneService->cloneUser($id, $userClone->getName());
-        return $this->jsonResponse($userNode);
+        $this->userFolderService->deleteUserFolderById($id);
+        return new Response();
     }
 }

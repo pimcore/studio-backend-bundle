@@ -17,6 +17,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserCloneServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserCloneService
 
@@ -32,3 +35,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository
+
+  Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository

@@ -17,24 +17,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
-use Pimcore\Model\User;
-use Pimcore\Model\User\Listing as UserListing;
+use Pimcore\Model\User\Folder;
 
 /**
  * @internal
  */
-interface UserRepositoryInterface
+interface UserFolderRepositoryInterface
 {
-    public function getUserListingByParentId(int $parentId): UserListing;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getUserById(int $userId): User;
-
     /**
      * @throws Exception
      */
-    public function deleteUser(User $user): void;
+    public function deleteUserFolder(Folder $folder): void;
 }
