@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -43,6 +44,9 @@ final class VideoCollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws UserNotFoundException
+     */
     #[Route('/thumbnails/video', name: 'pimcore_studio_api_thumbnails_video', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     //#[IsGranted(UserPermissions::ASSETS->value)]
@@ -51,7 +55,6 @@ final class VideoCollectionController extends AbstractApiController
         operationId: 'getVideoThumbnails',
         description: 'Get video thumbnails',
         summary: 'Get all video thumbnails',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Thumbnails->name]
     )]
     #[SuccessResponse(

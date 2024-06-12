@@ -39,7 +39,7 @@ final class LoginController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/login',
         operationId: 'login',
-        summary: 'Login with user credentials and get access token',
+        summary: 'Login with user credentials',
         tags: [Tags::Authorization->name]
     )]
     #[CredentialsRequestBody]

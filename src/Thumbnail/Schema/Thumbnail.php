@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -27,13 +29,15 @@ use OpenApi\Attributes\Schema;
     required: ['id', 'text'],
     type: 'object'
 )]
-final readonly class Thumbnail
+final class Thumbnail implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'id', type: 'string', example: 'pimcore_system_treepreview')]
-        private string $id,
+        private readonly string $id,
         #[Property(description: 'text', type: 'string', example: 'original')]
-        private string $text,
+        private readonly string $text,
     ) {
 
     }

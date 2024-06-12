@@ -51,7 +51,6 @@ final class ImageCollectionController extends AbstractApiController
         operationId: 'getImageThumbnails',
         description: 'Get image thumbnails',
         summary: 'Get all downloadable image thumbnails',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Thumbnails->name]
     )]
     #[SuccessResponse(

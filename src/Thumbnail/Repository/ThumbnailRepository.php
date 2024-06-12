@@ -16,21 +16,25 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Event\ThumbnailEvent;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\Thumbnail;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailCollection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Thumbnails;
 use Pimcore\Model\Asset\Image\Thumbnail\Config;
 use Pimcore\Model\Asset\Image\Thumbnail\Config\Listing as ImageThumbnailListing;
 use Pimcore\Model\Asset\Video\Thumbnail\Config\Listing as VideoThumbnailListing;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
  */
 final class ThumbnailRepository implements ThumbnailRepositoryInterface
 {
-    private const DEFAULT_VIDEO_THUMBNAIL_ID = 'pimcore_system_treepreview';
-
-    private const DEFAULT_IMAGE_THUMBNAIL_TEXT = 'original';
-
+    public function __construct(
+        private EventDispatcherInterface $eventDispatcher,
+    ) {
+    }
+    
     public function listVideoThumbnails(
     ): ThumbnailCollection {
         $thumbnailListing = new VideoThumbnailListing();
@@ -40,8 +44,8 @@ final class ThumbnailRepository implements ThumbnailRepositoryInterface
             $thumbnails,
             [
                 new Thumbnail(
-                    self::DEFAULT_VIDEO_THUMBNAIL_ID,
-                    self::DEFAULT_IMAGE_THUMBNAIL_TEXT
+                    Thumbnails::DEFAULT_THUMBNAIL_ID->value,
+                    Thumbnails::DEFAULT_THUMBNAIL_TEXT->value
                 ),
             ]
         );
@@ -64,11 +68,19 @@ final class ThumbnailRepository implements ThumbnailRepositoryInterface
         array $thumbnails,
         array $items = []
     ): ThumbnailCollection {
-        foreach ($thumbnails as $thumbnail) {
-            $items[] = new Thumbnail(
-                $thumbnail->getName(),
-                $thumbnail->getName()
-            );
+        /** @var Config $thumbnailConfig */
+        foreach ($thumbnails as $thumbnailConfig) {
+             $thumbnail = new Thumbnail(
+                 $thumbnailConfig->getName(),
+                 $thumbnailConfig->getName()
+             );
+
+             $this->eventDispatcher->dispatch(
+                 new ThumbnailEvent($thumbnail),
+                 ThumbnailEvent::EVENT_NAME
+             );
+
+             $items[] = $thumbnail;
         }
 
         return new ThumbnailCollection(
