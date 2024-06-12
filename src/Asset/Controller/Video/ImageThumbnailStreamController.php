@@ -71,13 +71,13 @@ final class ImageThumbnailStreamController extends AbstractApiController
      * @throws UserNotFoundException
      */
     #[Route(
-        '/assets/{id}/video/stream/imageThumbnail',
+        '/assets/{id}/video/stream/image-thumbnail',
         name: 'pimcore_studio_api_stream_video_image_thumbnail',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/video/stream/imageThumbnail',
+        path: self::API_PATH . '/assets/{id}/video/stream/image-thumbnail',
         operationId: 'getVideoImageThumbnail',
         description: 'Get video image thumbnail by configuration and by id path parameter',
         summary: 'Get video image thumbnail by configuration',
