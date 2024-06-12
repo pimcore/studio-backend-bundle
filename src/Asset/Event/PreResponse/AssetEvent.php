@@ -14,26 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
-final class CustomSettingsEvent extends AbstractPreResponseEvent
+final class AssetEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.asset_custom_settings';
+    public const EVENT_NAME = 'pre_response.asset';
     public function __construct(
-        private readonly CustomSettings $customSettings
+        private readonly Asset $asset
     )
     {
-        parent::__construct($customSettings);
+        parent::__construct($asset);
     }
 
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getCustomSettings(): CustomSettings
+    public function getAsset(): Asset
     {
-        return $this->customSettings;
+        return $this->asset;
     }
 }

@@ -14,27 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
-final class CustomMetadataEvent extends AbstractPreResponseEvent
+final class CustomSettingsEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.asset_custom_metadata';
-
+    public const EVENT_NAME = 'pre_response.asset_custom_settings';
     public function __construct(
-        private readonly CustomMetadata $customMetadata
+        private readonly CustomSettings $customSettings
     )
     {
-        parent::__construct($customMetadata);
+        parent::__construct($customSettings);
     }
 
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getCustomMetadata(): CustomMetadata
+    public function getCustomSettings(): CustomSettings
     {
-        return $this->customMetadata;
+        return $this->customSettings;
     }
 }

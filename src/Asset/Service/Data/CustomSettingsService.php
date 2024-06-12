@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Event\CustomSettingsEvent;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\CustomSettingsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
 use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;

@@ -16,11 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreSet\CustomMetadataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -30,13 +32,24 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'metadata';
 
+    public function __construct(
+        private EventDispatcherInterface $eventDispatcher
+    )
+    {
+    }
+
+
     public function update(ElementInterface $element, array $data): void
     {
         if (!$element instanceof Asset || !array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
 
-        $element->setMetadata($data[$this->getIndexKey()]);
+        $metadataEvent = new CustomMetadataEvent($element->getId(), $data[$this->getIndexKey()]);
+
+        $this->eventDispatcher->dispatch($metadataEvent, CustomMetadataEvent::EVENT_NAME);
+
+        $element->setMetadata($metadataEvent->getCustomMetadata());
     }
 
     public function getIndexKey(): string
