@@ -26,8 +26,6 @@ use Pimcore\Model\User\Listing as UserListing;
  */
 final class UserRepository implements UserRepositoryInterface
 {
-
-
     public function getUserListingByParentId(int $parentId): UserListing
     {
         $listing = new UserListing();
@@ -47,7 +45,7 @@ final class UserRepository implements UserRepositoryInterface
         $user = User::getById($userId);
 
         if (!$user instanceof User) {
-            throw new NotFoundException("User not found");
+            throw new NotFoundException('User not found');
         }
 
         return $user;
