@@ -89,7 +89,7 @@ final class UserCloneService implements UserCloneServiceInterface
         $this->user->setPerspectives($this->userToClone->getPerspectives());
         $this->user->setPermissions($this->userToClone->getPermissions());
         $this->user->setAdmin(false);
-        if ($this->securityService->getCurrentUser()) {
+        if ($this->securityService->getCurrentUser()->isAdmin()) {
             $this->user->setAdmin($this->userToClone->isAdmin());
         }
         $this->user->setRoles($this->userToClone->getRoles());
