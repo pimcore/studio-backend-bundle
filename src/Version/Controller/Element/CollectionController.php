@@ -39,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -57,7 +58,7 @@ final class CollectionController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|ElementNotFoundException|NotAuthorizedException
+     * @throws AccessDeniedException|ElementNotFoundException|UserNotFoundException
      */
     #[Route('/versions/{elementType}/{id}', name: 'pimcore_studio_api_versions', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]

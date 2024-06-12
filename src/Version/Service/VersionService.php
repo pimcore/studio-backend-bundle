@@ -72,7 +72,12 @@ final readonly class VersionService implements VersionServiceInterface
         $versions = [];
         $versionObjects = $list->load();
         foreach ($versionObjects as $versionObject) {
-            $hydratedVersion = $this->versionHydrator->hydrate($versionObject, $scheduledTasks);
+            $hydratedVersion = $this->versionHydrator->hydrate(
+                $versionObject,
+                $scheduledTasks,
+                $element->getVersionCount(),
+                $element->getModificationDate()
+            );
 
             $this->eventDispatcher->dispatch(
                 new VersionEvent(
