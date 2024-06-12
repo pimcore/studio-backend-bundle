@@ -34,7 +34,7 @@ final class ThumbnailRepository implements ThumbnailRepositoryInterface
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
-    
+
     public function listVideoThumbnails(
     ): ThumbnailCollection {
         $thumbnailListing = new VideoThumbnailListing();
@@ -70,17 +70,17 @@ final class ThumbnailRepository implements ThumbnailRepositoryInterface
     ): ThumbnailCollection {
         /** @var Config $thumbnailConfig */
         foreach ($thumbnails as $thumbnailConfig) {
-             $thumbnail = new Thumbnail(
+            $thumbnail = new Thumbnail(
                  $thumbnailConfig->getName(),
                  $thumbnailConfig->getName()
              );
 
-             $this->eventDispatcher->dispatch(
+            $this->eventDispatcher->dispatch(
                  new ThumbnailEvent($thumbnail),
                  ThumbnailEvent::EVENT_NAME
              );
 
-             $items[] = $thumbnail;
+            $items[] = $thumbnail;
         }
 
         return new ThumbnailCollection(
