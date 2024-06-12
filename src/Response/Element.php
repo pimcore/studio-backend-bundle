@@ -22,6 +22,18 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
 
 #[Schema(
     title: 'Element',
+    required: [
+        'id',
+        'parentId',
+        'path',
+        'userOwner',
+        'userModification',
+        'locked',
+        'isLocked',
+        'creationDate',
+        'modificationDate',
+        'permissions'
+    ],
     type: 'object'
 )]
 class Element

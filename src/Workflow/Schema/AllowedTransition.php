@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\WorkflowUnsavedBehaviorTyp
  */
 #[Schema(
     title: 'AllowedTransition',
+    required: ['name', 'label', 'iconCls', 'objectLayout', 'unsavedChangesBehaviour', 'notes'],
     type: 'object'
 )]
 final readonly class AllowedTransition

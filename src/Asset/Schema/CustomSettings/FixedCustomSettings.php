@@ -25,6 +25,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'FixedCustomSettings',
+    required: ['embeddedMetaData', 'embeddedMetaDataExtracted'],
     type: 'object'
 )]
 final readonly class FixedCustomSettings

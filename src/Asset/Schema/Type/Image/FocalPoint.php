@@ -24,6 +24,10 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'FocalPoint',
+    required: [
+        'x',
+        'y'
+    ],
     type: 'object'
 )]
 final readonly class FocalPoint
