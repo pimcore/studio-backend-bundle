@@ -53,7 +53,7 @@ final class UserServiceTest extends Unit
 
         $userService = $this->getUserService($securityServiceMock, $userRepositoryMock);
 
-        $this->expectExceptionMessage("Only admins can delete other admins");
+        $this->expectExceptionMessage('Only admins can delete other admins');
         $this->expectException(ForbiddenException::class);
         $userService->deleteUser(1);
     }
@@ -70,13 +70,13 @@ final class UserServiceTest extends Unit
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
             'getUserById' => $userToDelete,
             'deleteUser' => function (User $user) {
-                throw new Exception("Database error");
-            }
+                throw new Exception('Database error');
+            },
         ]);
 
         $userService = $this->getUserService($securityServiceMock, $userRepositoryMock);
 
-        $this->expectExceptionMessage("Error deleting user with id 1: Database error");
+        $this->expectExceptionMessage('Error deleting user with id 1: Database error');
         $this->expectException(DatabaseException::class);
         $userService->deleteUser(1);
     }
@@ -92,7 +92,7 @@ final class UserServiceTest extends Unit
 
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
             'getUserById' => $userToDelete,
-            'deleteUser' => Expected::once()
+            'deleteUser' => Expected::once(),
         ]);
 
         $userService = $this->getUserService($securityServiceMock, $userRepositoryMock);
@@ -102,9 +102,8 @@ final class UserServiceTest extends Unit
 
     private function getUserService(
         SecurityServiceInterface $securityServiceMock,
-        UserRepositoryInterface  $userRepositoryMock
-    ): UserService
-    {
+        UserRepositoryInterface $userRepositoryMock
+    ): UserService {
         $loggerMock = $this->makeEmpty(LoggerInterface::class);
         $authenticationResolverMock = $this->makeEmpty(AuthenticationResolverInterface::class);
         $userResolverMock = $this->makeEmpty(UserResolverInterface::class);

@@ -32,7 +32,7 @@ final class UserFolderRepositoryTest extends Unit
     {
         $folderResolverMock = $this->makeEmpty(FolderResolverInterface::class);
         $folderMock =  $this->makeEmpty(Folder::class, [
-            'delete' => Expected::once()
+            'delete' => Expected::once(),
         ]);
 
         $folderRepository = new UserFolderRepository($folderResolverMock);
@@ -44,7 +44,7 @@ final class UserFolderRepositoryTest extends Unit
     {
         $folderId = 1;
         $folderResolverMock = $this->makeEmpty(FolderResolverInterface::class, [
-            'getById' => null
+            'getById' => null,
         ]);
 
         $folderRepository = new UserFolderRepository($folderResolverMock);
@@ -61,7 +61,7 @@ final class UserFolderRepositoryTest extends Unit
         $folder->setId($folderId);
 
         $folderResolverMock = $this->makeEmpty(FolderResolverInterface::class, [
-            'getById' => $folder
+            'getById' => $folder,
         ]);
         $folderRepository = new UserFolderRepository($folderResolverMock);
 

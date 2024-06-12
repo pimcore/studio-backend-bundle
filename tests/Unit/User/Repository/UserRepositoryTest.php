@@ -32,7 +32,7 @@ final class UserRepositoryTest extends Unit
     public function testGetUserByIdNoUserFound(): void
     {
         $userResolverMock = $this->makeEmpty(UserResolverInterface::class, [
-            'getById' => null
+            'getById' => null,
         ]);
 
         $userRepository = new UserRepository($userResolverMock);
@@ -48,7 +48,7 @@ final class UserRepositoryTest extends Unit
         $user = new User();
         $user->setId($userId);
         $userResolverMock = $this->makeEmpty(UserResolverInterface::class, [
-            'getById' => $user
+            'getById' => $user,
         ]);
 
         $userRepository = new UserRepository($userResolverMock);
@@ -61,7 +61,7 @@ final class UserRepositoryTest extends Unit
         $userResolverMock = $this->makeEmpty(UserResolverInterface::class);
 
         $userMock = $this->makeEmpty(UserInterface::class, [
-            'delete' => Expected::once()
+            'delete' => Expected::once(),
         ]);
 
         $userRepository = new UserRepository($userResolverMock);

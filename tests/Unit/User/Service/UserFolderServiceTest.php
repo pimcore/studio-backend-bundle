@@ -38,10 +38,10 @@ final class UserFolderServiceTest extends Unit
             'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
         ]);
         $userFolderRepository = $this->makeEmpty(UserFolderRepositoryInterface::class);
-        
+
         $userFolderService = new UserFolderService($securityService, $userFolderRepository);
 
-        $this->expectExceptionMessage("Only admin users are allowed to delete user folders");
+        $this->expectExceptionMessage('Only admin users are allowed to delete user folders');
         $this->expectException(ForbiddenException::class);
         $userFolderService->deleteUserFolderById(1);
     }
@@ -52,19 +52,17 @@ final class UserFolderServiceTest extends Unit
             'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => true]),
         ]);
 
-
         $userFolderRepository = $this->makeEmpty(UserFolderRepositoryInterface::class, [
             'getUserFolderById' => new Folder(),
             'deleteUserFolder' => function (Folder $folder) {
-                throw new Exception("Database error");
-            }
+                throw new Exception('Database error');
+            },
         ]);
 
         $userFolderService = new UserFolderService($securityService, $userFolderRepository);
 
-
         $this->expectException(DatabaseException::class);
-        $this->expectExceptionMessage("Failed to delete user folder with id 1: Database error");
+        $this->expectExceptionMessage('Failed to delete user folder with id 1: Database error');
         $userFolderService->deleteUserFolderById(1);
     }
 
@@ -76,11 +74,10 @@ final class UserFolderServiceTest extends Unit
 
         $userFolderRepository = $this->makeEmpty(UserFolderRepositoryInterface::class, [
             'getUserFolderById' => new Folder(),
-            'deleteUserFolder' => Expected::once()
+            'deleteUserFolder' => Expected::once(),
         ]);
 
         $userFolderService = new UserFolderService($securityService, $userFolderRepository);
         $userFolderService->deleteUserFolderById(1);
     }
-
 }
