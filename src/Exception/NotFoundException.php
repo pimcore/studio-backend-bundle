@@ -14,16 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dto\Token;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Refresh;
-
-final class RefreshTest extends Unit
+/**
+ * @internal
+ */
+final class NotFoundException extends AbstractApiException
 {
-    public function testTokenRefresh(): void
+    public function __construct(string $message)
     {
-        $refresh = new Refresh('token');
-        $this->assertSame('token', $refresh->getToken());
+        parent::__construct(404, $message);
     }
 }

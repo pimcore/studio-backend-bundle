@@ -25,25 +25,25 @@ use Pimcore\Model\Element\Note as CoreNote;
  */
 final readonly class NoteHydrator implements NoteHydratorInterface
 {
-    public function __construct(private NoteDataResolverInterface $extractor)
+    public function __construct(private NoteDataResolverInterface $noteDataResolver)
     {
     }
 
     public function hydrate(CoreNote $note): Note
     {
-        $noteUser = $this->extractor->resolveUserData($note);
+        $noteUser = $this->noteDataResolver->resolveUserData($note);
 
         return new Note(
             $note->getId(),
             $note->getType(),
             $note->getCid(),
             $note->getCtype(),
-            $this->extractor->extractCPath($note),
+            $this->noteDataResolver->extractCPath($note),
             $note->getDate(),
             $note->getTitle(),
             $note->getDescription(),
             $note->getLocked(),
-            $this->extractor->resolveData($note),
+            $this->noteDataResolver->resolveNoteData($note),
             $noteUser->getId(),
             $noteUser->getName(),
         );

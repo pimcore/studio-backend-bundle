@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\ResizeModes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
@@ -45,6 +44,7 @@ class Configuration implements ConfigurationInterface
         $this->addOpenApiScanPathsNode($rootNode);
         $this->addApiTokenNode($rootNode);
         $this->addAllowedHostsForCorsNode($rootNode);
+        $this->addSecurityFirewall($rootNode);
         $this->addDefaultAssetFormats($rootNode);
 
         return $treeBuilder;
@@ -55,22 +55,6 @@ class Configuration implements ConfigurationInterface
         $node->children()
             ->arrayNode('open_api_scan_paths')
                ->prototype('scalar')->end()
-               ->validate()
-               ->always(
-                   function ($paths) {
-                       foreach ($paths as $path) {
-                           if (!is_dir($path)) {
-                               throw new InvalidPathException(
-                                   sprintf(
-                                       'The path "%s" is not a valid directory.',
-                                       $path
-                                   )
-                               );
-                           }
-                       }
-
-                       return $paths;
-                   })
                ->end()
            ->end();
     }
@@ -112,6 +96,14 @@ class Configuration implements ConfigurationInterface
     return $hosts;
 })
                 ->end()
+            ->end();
+    }
+
+    public function addSecurityFirewall(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->variableNode('security_firewall')->end()
             ->end();
     }
 

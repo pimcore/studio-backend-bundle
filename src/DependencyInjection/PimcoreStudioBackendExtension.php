@@ -18,11 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Service\TokenServiceInterface;
+use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
@@ -35,7 +37,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 /**
  * @internal
  */
-class PimcoreStudioBackendExtension extends Extension
+class PimcoreStudioBackendExtension extends Extension implements PrependExtensionInterface
 {
     /**
      * {@inheritdoc}
@@ -63,6 +65,7 @@ class PimcoreStudioBackendExtension extends Extension
         $loader->load('icon.yaml');
         $loader->load('notes.yaml');
         $loader->load('open_api.yaml');
+        $loader->load('patcher.yaml');
         $loader->load('properties.yaml');
         $loader->load('schedules.yaml');
         $loader->load('security.yaml');
@@ -73,9 +76,7 @@ class PimcoreStudioBackendExtension extends Extension
         $loader->load('users.yaml');
         $loader->load('versions.yaml');
 
-        $definition = $container->getDefinition(TokenServiceInterface::class);
-        $definition->setArgument('$tokenLifetime', $config['api_token']['lifetime']);
-
+        $this->checkValidOpenApiScanPaths($config['open_api_scan_paths']);
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
         $definition->setArgument('$openApiScanPaths', $config['open_api_scan_paths']);
 
@@ -84,5 +85,30 @@ class PimcoreStudioBackendExtension extends Extension
 
         $definition = $container->getDefinition(DownloadServiceInterface::class);
         $definition->setArgument('$defaultFormats', $config['asset_default_formats']);
+    }
+
+    public function prepend(ContainerBuilder $container): void
+    {
+        if (!$container->hasParameter('pimcore_studio_backend.firewall_settings')) {
+            $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
+            $container->setParameter('pimcore_studio_backend.firewall_settings', $containerConfig['security_firewall']);
+        }
+    }
+
+    /**
+     * @throws InvalidPathException
+     */
+    private function checkValidOpenApiScanPaths(array $config): void
+    {
+        foreach ($config as $path) {
+            if (!is_dir($path)) {
+                throw new InvalidPathException(
+                    sprintf(
+                        'The path "%s" is not a valid directory.',
+                        $path
+                    )
+                );
+            }
+        }
     }
 }

@@ -64,7 +64,6 @@ final class DownloadController extends AbstractApiController
         operationId: 'downloadAssetById',
         description: 'Download assets by id by path parameters',
         summary: 'Download asset by id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]

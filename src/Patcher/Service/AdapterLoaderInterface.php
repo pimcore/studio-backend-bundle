@@ -14,17 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dto\Token;
+namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
-use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Info;
+use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
 
-final class InfoTest extends Unit
+/**
+ * @internal
+ */
+interface AdapterLoaderInterface
 {
-    public function testTokenInfo(): void
-    {
-        $info = new Info('token', 'test');
-        $this->assertSame('token', $info->getToken());
-        $this->assertSame('test', $info->getUsername());
-    }
+    /**
+     * @return array<int, PatchAdapterInterface>
+     */
+    public function loadAdapters(string $elementType): array;
 }

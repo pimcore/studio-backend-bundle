@@ -69,8 +69,7 @@ final class CollectionController extends AbstractApiController
         path: self::API_PATH . '/notes/{elementType}/{id}',
         operationId: 'getNotesForElementByTypeAndId',
         summary: 'Get notes for an element',
-        security: self::SECURITY_SCHEME,
-        tags: [Tags::NotesForElement->name]
+        tags: [Tags::Notes->name]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]

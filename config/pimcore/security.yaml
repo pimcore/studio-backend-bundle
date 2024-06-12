@@ -1,0 +1,4 @@
+security:
+  providers:
+    pimcore_studio_backend:
+      id: Pimcore\Security\User\UserProvider

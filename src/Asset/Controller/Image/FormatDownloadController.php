@@ -73,7 +73,6 @@ final class FormatDownloadController extends AbstractApiController
         operationId: 'downloadImageByFormat',
         description: 'Download image by id and format by path parameters',
         summary: 'Download image by id and format',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'asset')]

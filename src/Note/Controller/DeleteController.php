@@ -54,7 +54,6 @@ final class DeleteController extends AbstractApiController
         path: self::API_PATH . '/notes/{id}',
         operationId: 'deleteNote',
         summary: 'Deleting note by id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Notes->name]
     )]
     #[IdParameter]

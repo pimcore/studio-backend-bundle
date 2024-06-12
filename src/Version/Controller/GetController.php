@@ -57,7 +57,6 @@ final class GetController extends AbstractApiController
         operationId: 'getVersionById',
         description: 'Get version based on the version ID',
         summary: 'Get version by ID',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]

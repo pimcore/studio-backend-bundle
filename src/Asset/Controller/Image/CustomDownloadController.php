@@ -73,7 +73,6 @@ final class CustomDownloadController extends AbstractApiController
         operationId: 'downloadCustomImage',
         description: 'Download custom image by configuration',
         summary: 'Download custom image by configuration',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'image')]

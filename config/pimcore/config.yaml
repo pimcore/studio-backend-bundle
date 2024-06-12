@@ -1,3 +1,7 @@
+imports:
+    - { resource: security.yaml }
+    - { resource: firewall.yaml }
+
 pimcore:
     translations:
         domains:

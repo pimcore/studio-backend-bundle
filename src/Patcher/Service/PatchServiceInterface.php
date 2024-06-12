@@ -14,24 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Config;
+namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
-use OpenApi\Attributes\SecurityScheme;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 
 /**
  * @internal
- * This class exists to document the public api
  */
-#[SecurityScheme(
-    securityScheme: 'auth_token',
-    type: 'http',
-    description: 'Bearer token for authentication',
-    name: 'auth_token',
-    scheme: 'bearer'
-)]
-final class Security
+interface PatchServiceInterface
 {
-    private function __construct()
-    {
-    }
+    /**
+     * @throws ElementSavingFailedException|ElementNotFoundException
+     */
+    public function patch(string $elementType, array $patchData): array;
 }
