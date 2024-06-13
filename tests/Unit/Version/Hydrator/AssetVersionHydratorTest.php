@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Version\Hydrator;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\AssetVersionHydrator;
+use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
 use Pimcore\Model\Asset\Document;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -35,7 +36,8 @@ final class AssetVersionHydratorTest extends Unit
         $asset->setFilename('test.pdf');
 
         $assetVersionHydrator = new AssetVersionHydrator(
-            $this->makeEmpty(EventDispatcherInterface::class)
+            $this->makeEmpty(EventDispatcherInterface::class),
+            $this->makeEmpty(VersionDetailServiceInterface::class)
         );
 
         // Status is not set properly
