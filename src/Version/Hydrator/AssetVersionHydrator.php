@@ -22,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\ImageVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Enum\PdfScanStatus;
 use Pimcore\Model\Asset\Image;
@@ -36,6 +36,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
 {
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
+        private VersionDetailServiceInterface $versionDetailService
     ) {
     }
 
@@ -72,9 +73,9 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
             $image->getFilename(),
             $image->getCreationDate(),
             $image->getModificationDate(),
-            $image->getFileSize(),
+            $this->versionDetailService->getAssetFileSize($image) ?? $image->getFileSize(),
             $image->getMimeType(),
-            $this->getImageDimensions($image)
+            $this->versionDetailService->getImageDimensions($image)
         );
 
         $this->eventDispatcher->dispatch(
@@ -83,24 +84,6 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
         );
 
         return $hydratedImage;
-    }
-
-    private function getImageDimensions(Image $image): Dimensions
-    {
-        try {
-            $assetDimensions = $image->getDimensions();
-        } catch (Exception) {
-            return new Dimensions();
-        }
-
-        if (!$assetDimensions) {
-            return new Dimensions();
-        }
-
-        return new Dimensions(
-            $assetDimensions['width'],
-            $assetDimensions['height']
-        );
     }
 
     private function validatePdfStatus(Asset\Document $pdf): void

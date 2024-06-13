@@ -54,7 +54,7 @@ final class VersionHydrator implements VersionHydratorInterface
             note: $version->getNote(),
             date: $versionDate,
             public: $version->isPublic(),
-            isPublished: $isPublished,
+            published: $isPublished,
             versionCount: $versionCount,
             autosave: $version->isAutoSave(),
             user: $user,

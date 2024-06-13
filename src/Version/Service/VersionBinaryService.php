@@ -30,13 +30,14 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 /**
  * @internal
  */
-final class VersionBinaryService implements VersionBinaryServiceInterface
+final readonly class VersionBinaryService implements VersionBinaryServiceInterface
 {
     use ElementProviderTrait;
     use StreamedResponseTrait;
 
     public function __construct(
-        private readonly VersionRepositoryInterface $repository
+        private VersionRepositoryInterface $repository,
+        private VersionDetailServiceInterface $versionDetailService
     ) {
     }
 
@@ -53,7 +54,12 @@ final class VersionBinaryService implements VersionBinaryServiceInterface
             throw new InvalidElementTypeException($element->getType());
         }
 
-        return $this->getStreamedResponse($element);
+        return $this->getStreamedResponse(
+            $element,
+            HttpResponseHeaders::ATTACHMENT_TYPE->value,
+            [],
+            $this->versionDetailService->getAssetFileSize($element) ?? $element->getFileSize()
+        );
     }
 
     /**
@@ -69,6 +75,11 @@ final class VersionBinaryService implements VersionBinaryServiceInterface
             throw new InvalidElementTypeException($element->getType());
         }
 
-        return $this->getStreamedResponse($element, HttpResponseHeaders::INLINE_TYPE->value);
+        return $this->getStreamedResponse(
+            $element,
+            HttpResponseHeaders::INLINE_TYPE->value,
+            [],
+            $this->versionDetailService->getAssetFileSize($element) ?? $element->getFileSize()
+        );
     }
 }

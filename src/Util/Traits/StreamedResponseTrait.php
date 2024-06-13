@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Video;
@@ -36,7 +37,8 @@ trait StreamedResponseTrait
     protected function getStreamedResponse(
         Asset|ImageThumbnailInterface $element,
         string $contentDisposition = HttpResponseHeaders::ATTACHMENT_TYPE->value,
-        array $additionalHeaders = []
+        array $additionalHeaders = [],
+        ?int $fileSize = null
     ): StreamedResponse {
         $stream = $element->getStream();
 
@@ -47,14 +49,18 @@ trait StreamedResponseTrait
             );
         }
 
+        if (!$fileSize) {
+            $fileSize = $element->getFileSize();
+        }
+
         return new StreamedResponse(
             function () use ($stream) {
                 fpassthru($stream);
             },
-            200,
+            HttpResponseCodes::SUCCESS->value,
             $this->getResponseHeaders(
                 mimeType: $element->getMimeType(),
-                fileSize: $element->getFileSize(),
+                fileSize: $fileSize,
                 filename: $element->getFilename(),
                 contentDisposition: $contentDisposition,
                 additionalHeaders: $additionalHeaders
@@ -77,7 +83,7 @@ trait StreamedResponseTrait
             function () use ($stream) {
                 fpassthru($stream);
             },
-            200,
+            HttpResponseCodes::SUCCESS->value,
             $this->getResponseHeaders(
                 mimeType: 'video/mp4',
                 fileSize: $storage->fileSize($storagePath),

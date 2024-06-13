@@ -31,9 +31,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionBinaryServiceInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -53,7 +55,7 @@ final class ImageStreamController extends AbstractApiController
      * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException|UserNotFoundException
      */
     #[Route('/versions/{id}/image/stream', name: 'pimcore_studio_api_stream_iamge_version', methods: ['GET'])]
-    //#[IsGranted('STUDIO_API')]
+    #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/versions/{id}/image/stream',
         operationId: 'streamImageVersionById',
