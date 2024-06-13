@@ -16,15 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+
 /**
  * @internal
  */
-final class ElementUnsafeException extends AbstractApiException
+final class NotCompletedException extends AbstractApiException
 {
     public function __construct(int $id)
     {
         parent::__construct(
-            200,
+            HttpResponseCodes::NOT_COMPLETED->value,
             sprintf('Element with ID %d is not safe to preview', $id)
         );
     }
