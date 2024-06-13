@@ -29,10 +29,13 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -51,7 +54,8 @@ final readonly class UserService implements UserServiceInterface
         private UserRepositoryInterface $userRepository,
         private UserTreeNodeHydratorInterface $userTreeNodeHydrator,
         private EventDispatcherInterface $eventDispatcher,
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private UserFolderRepositoryInterface $userFolderRepository
     )
     {
     }
@@ -158,5 +162,31 @@ final readonly class UserService implements UserServiceInterface
         }
 
         return ['success' => true, 'error' => ''];
+    }
+
+    /**
+     * @throws NotFoundException|DatabaseException
+     */
+    public function createUser(CreateParameter $createParameter): UserTreeNode
+    {
+        $folderId = 0;
+
+        // Check if parent folder exists
+        if($createParameter->getParentId() !== 0) {
+            $folderId = $this->userFolderRepository->getUserFolderById($createParameter->getParentId())->getId();
+        }
+
+        try {
+            $user = $this->userRepository->createUser($createParameter->getName(), $folderId);
+        } catch (Exception $exception) {
+            throw new DatabaseException(
+                sprintf(
+                    'Error creating user: %s',
+                    $exception->getMessage()
+                )
+            );
+        }
+
+        return $this->userTreeNodeHydrator->hydrate($user);
     }
 }
