@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+
 /**
  * @internal
  */
@@ -24,7 +26,7 @@ final class WorkflowActionNotFoundException extends AbstractApiException
     public function __construct(string $actionName, string $workflowName)
     {
         parent::__construct(
-            404,
+            HttpResponseCodes::NOT_FOUND->value,
             sprintf(
                 'Action %s was not found in workflow %s.',
                 $actionName,

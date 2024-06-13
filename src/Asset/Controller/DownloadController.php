@@ -32,9 +32,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -59,8 +61,7 @@ final class DownloadController extends AbstractApiController
      * @throws UserNotFoundException
      */
     #[Route('/assets/{id}/download', name: 'pimcore_studio_api_download_asset', methods: ['GET'])]
-    //#[IsGranted('STUDIO_API')]
-    //#[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}/download',
         operationId: 'downloadAssetById',

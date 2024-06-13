@@ -30,7 +30,7 @@ final class ElementPublishingFailedException extends AbstractApiException
             sprintf(
                 'Failed to publish element with ID %s: %s',
                 $id,
-                    $error ?? 'Unknown error'
+                $error ?? 'Unknown error'
             )
         );
     }

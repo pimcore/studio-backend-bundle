@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+
 /**
  * @internal
  */
@@ -24,8 +26,12 @@ final class ElementStreamResourceNotFoundException extends AbstractApiException
     public function __construct(int $id, string $type = 'Element')
     {
         parent::__construct(
-            404,
-            sprintf('Unable to get resource for %s with ID %d', $type, $id)
+            HttpResponseCodes::NOT_FOUND->value,
+            sprintf(
+                'Unable to get resource for %s with ID %d',
+                $type,
+                $id
+            )
         );
     }
 }

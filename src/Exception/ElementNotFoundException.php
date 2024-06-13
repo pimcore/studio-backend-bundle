@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+
 /**
  * @internal
  */
@@ -23,6 +25,13 @@ final class ElementNotFoundException extends AbstractApiException
 {
     public function __construct(int $id, string $type = 'Element')
     {
-        parent::__construct(404, sprintf('%s with ID %d not found', $type, $id));
+        parent::__construct(
+            HttpResponseCodes::NOT_FOUND->value,
+            sprintf(
+                '%s with ID %d not found',
+                $type,
+                $id
+            )
+        );
     }
 }
