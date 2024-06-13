@@ -21,9 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
@@ -34,13 +34,11 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final readonly class NoteService implements NoteServiceInterface
 {
-
     public function __construct(
         private NoteRepositoryInterface $noteRepository,
         private NoteHydratorInterface $noteHydrator,
         private EventDispatcherInterface $eventDispatcher
-    )
-    {
+    ) {
     }
 
     /**
@@ -49,6 +47,7 @@ final readonly class NoteService implements NoteServiceInterface
     public function createNote(NoteElementParameters $noteElement, CreateNote $createNote): Note
     {
         $note = $this->noteRepository->createNote($noteElement, $createNote);
+
         return $this->getNote($note->getId());
     }
 

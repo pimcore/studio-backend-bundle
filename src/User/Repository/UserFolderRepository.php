@@ -26,11 +26,9 @@ use Pimcore\Model\User\Folder;
  */
 final readonly class UserFolderRepository implements UserFolderRepositoryInterface
 {
-
     public function __construct(
         private FolderResolverInterface $folderResolver
-    )
-    {
+    ) {
     }
 
     /**
@@ -49,7 +47,7 @@ final readonly class UserFolderRepository implements UserFolderRepositoryInterfa
         $folder = $this->folderResolver->getById($folderId);
 
         if (!$folder instanceof Folder) {
-            throw new NotFoundException(sprintf("User folder with ID %d not found", $folderId));
+            throw new NotFoundException(sprintf('User folder with ID %d not found', $folderId));
         }
 
         return $folder;

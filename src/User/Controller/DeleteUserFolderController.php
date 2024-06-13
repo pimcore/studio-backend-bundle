@@ -40,13 +40,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class DeleteUserFolderController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly UserFolderServiceInterface $userFolderService
     ) {
         parent::__construct($serializer);
     }
-
 
     /**
      * @throws ForbiddenException|NotFoundException|DatabaseException
@@ -62,11 +62,12 @@ final class DeleteUserFolderController extends AbstractApiController
     #[SuccessResponse]
     #[IdParameter(type: 'user-folder')]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function deleteUserFolder(int $id): Response
     {
         $this->userFolderService->deleteUserFolderById($id);
+
         return new Response();
     }
 }

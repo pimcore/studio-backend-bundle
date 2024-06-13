@@ -71,6 +71,7 @@ final class UserPermissionVoter extends Voter
 
         if($userPermissions !== false && is_array($userPermissions)) {
             $this->userPermissions = $userPermissions;
+
             return;
         }
 
@@ -96,6 +97,7 @@ final class UserPermissionVoter extends Voter
         } catch (Exception) {
             throw new AccessDeniedException('Cannot resolve user permissions');
         }
+
         return $userPermissions;
     }
 }

@@ -70,6 +70,7 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
         if (!$predefined) {
             throw new PropertyNotFoundException($id);
         }
+
         return $predefined;
     }
 

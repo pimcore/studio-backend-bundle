@@ -29,8 +29,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
 
     public function __construct(
         SystemSettingsConfig $systemSettingsConfig,
-    )
-    {
+    ) {
         $this->systemSettings = $systemSettingsConfig->getSystemSettingsConfig();
     }
 
@@ -39,7 +38,6 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         $requiredLanguages =
             $this->systemSettings['general']['required_languages'] ??
             $this->systemSettings['general']['valid_languages'];
-
 
         return [
             'requiredLanguages' => $requiredLanguages,

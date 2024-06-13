@@ -35,8 +35,7 @@ final readonly class ScheduleService implements ScheduleServiceInterface
         private ScheduleRepositoryInterface $scheduleRepository,
         private ScheduleHydratorInterface $scheduleHydrator,
         private EventDispatcherInterface $eventDispatcher
-    )
-    {
+    ) {
     }
 
     /**
@@ -79,9 +78,8 @@ final readonly class ScheduleService implements ScheduleServiceInterface
         string $elementType,
         int $id,
         UpdateElementSchedules $updateElementSchedules
-    ): void
-    {
-       $this->scheduleRepository->updateSchedules($elementType, $id, $updateElementSchedules);
+    ): void {
+        $this->scheduleRepository->updateSchedules($elementType, $id, $updateElementSchedules);
     }
 
     /**

@@ -10,10 +10,9 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
-
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
@@ -37,8 +36,7 @@ final class UserCloneService implements UserCloneServiceInterface
         private readonly UserTreeNodeHydratorInterface $userTreeNodeHydrator,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly SecurityServiceInterface $securityService
-    )
-    {
+    ) {
     }
 
     private ?User $user;
@@ -63,7 +61,7 @@ final class UserCloneService implements UserCloneServiceInterface
             $this->cloneAndAssignWorkspaces();
             $this->user->save(); // save user with workspaces
         } catch (Exception $e) {
-            throw new DatabaseException("Could not save user: " . $e->getMessage());
+            throw new DatabaseException('Could not save user: ' . $e->getMessage());
         }
 
         $treeNode = $this->userTreeNodeHydrator->hydrate($this->user);

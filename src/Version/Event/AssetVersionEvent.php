@@ -25,8 +25,7 @@ final class AssetVersionEvent extends AbstractPreResponseEvent
 
     public function __construct(
         private readonly AssetVersion $version
-    )
-    {
+    ) {
         parent::__construct($version);
     }
 

@@ -40,13 +40,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class DeleteUserController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly UserServiceInterface $userService
     ) {
         parent::__construct($serializer);
     }
-
 
     /**
      * @throws NotFoundException|ForbiddenException|DatabaseException
@@ -68,6 +68,7 @@ final class DeleteUserController extends AbstractApiController
     public function cloneUser(int $id): Response
     {
         $this->userService->deleteUser($id);
+
         return new Response();
     }
 }

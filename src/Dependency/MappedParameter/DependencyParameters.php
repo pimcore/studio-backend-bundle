@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyMode;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidDependencyMode;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**
  * @internal
@@ -27,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 final readonly class DependencyParameters extends CollectionParameters
 {
     private DependencyMode $mode;
+
     public function __construct(
         int $page,
         int $pageSize,
@@ -51,5 +51,4 @@ final readonly class DependencyParameters extends CollectionParameters
 
         return $dependencyMode;
     }
-
 }

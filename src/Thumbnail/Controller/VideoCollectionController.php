@@ -64,7 +64,7 @@ final class VideoCollectionController extends AbstractApiController
         content: new ThumbnailsJson()
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getVideoThumbnails(): JsonResponse
     {
@@ -72,7 +72,7 @@ final class VideoCollectionController extends AbstractApiController
 
         return $this->jsonResponse(
             [
-                'items' => $collection->getItems()
+                'items' => $collection->getItems(),
             ]
         );
     }

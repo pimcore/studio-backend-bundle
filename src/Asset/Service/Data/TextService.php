@@ -33,8 +33,7 @@ final class TextService implements TextServiceInterface
     public function __construct(
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly TextEncoderInterface $textEncoder,
-    )
-    {
+    ) {
     }
 
     /**

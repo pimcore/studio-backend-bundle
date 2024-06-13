@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\UpdateSchedule;
  */
 final readonly class UpdateElementSchedules
 {
-    /** @var array<int, UpdateSchedule>  */
+    /** @var array<int, UpdateSchedule> */
     private array $schedules;
 
     public function __construct(

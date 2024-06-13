@@ -28,11 +28,9 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class UserRepository implements UserRepositoryInterface
 {
-
     public function __construct(
         private UserResolverInterface $userResolver
-    )
-    {
+    ) {
     }
 
     public function getUserListingByParentId(int $parentId): UserListing
@@ -54,7 +52,7 @@ final readonly class UserRepository implements UserRepositoryInterface
         $user = $this->userResolver->getById($userId);
 
         if (!$user instanceof User) {
-            throw new NotFoundException(sprintf("User with ID %d not found", $userId));
+            throw new NotFoundException(sprintf('User with ID %d not found', $userId));
         }
 
         return $user;

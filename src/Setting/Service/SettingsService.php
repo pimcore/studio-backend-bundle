@@ -23,8 +23,7 @@ final readonly class SettingsService implements SettingsServiceInterface
 {
     public function __construct(
         private SettingProviderLoaderInterface $settingProviderLoader
-    )
-    {
+    ) {
     }
 
     public function getSettings(): array
@@ -33,9 +32,10 @@ final readonly class SettingsService implements SettingsServiceInterface
         foreach ($this->settingProviderLoader->loadSettingProviders() as $settingProvider) {
             $settings = [
                 ... $settings,
-                ... $settingProvider->getSettings()
+                ... $settingProvider->getSettings(),
             ];
         }
-       return $settings;
+
+        return $settings;
     }
 }

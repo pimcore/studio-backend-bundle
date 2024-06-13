@@ -36,8 +36,7 @@ final readonly class NoteRepository implements NoteRepositoryInterface
     public function __construct(
         private NoteResolverInterface $noteResolver,
         private FilterServiceInterface $filterService
-    )
-    {
+    ) {
     }
 
     /**

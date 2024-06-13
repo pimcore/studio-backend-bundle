@@ -23,8 +23,7 @@ final readonly class UpdateAssetParameter
 {
     public function __construct(
         private array $data
-    )
-    {
+    ) {
     }
 
     public function getData(): array

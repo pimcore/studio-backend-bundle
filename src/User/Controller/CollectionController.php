@@ -42,13 +42,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class CollectionController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly UserServiceInterface $userService
     ) {
         parent::__construct($serializer);
     }
-
 
     #[Route('/users', name: 'pimcore_studio_api_users', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
@@ -69,11 +69,12 @@ final class CollectionController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(UserTreeNode::class))
     )]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getUsers(#[MapQueryString] UserListParameter $userList): Response
     {
         $users = $this->userService->getUserTreeListing($userList);
+
         return $this->getPaginatedCollection($this->serializer, $users->getItems(), $users->getTotalItems());
     }
 }

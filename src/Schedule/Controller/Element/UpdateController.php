@@ -46,8 +46,7 @@ final class UpdateController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly ScheduleServiceInterface $scheduleService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -70,14 +69,13 @@ final class UpdateController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function updateSchedules(
         string $elementType,
         int $id,
         #[MapRequestPayload] UpdateElementSchedules $updateElementSchedules
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->scheduleService->updateSchedules($elementType, $id, $updateElementSchedules);
 
         return $this->jsonResponse(['items' => $this->scheduleService->listSchedules($elementType, $id)]);
