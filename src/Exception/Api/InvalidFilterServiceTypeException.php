@@ -21,13 +21,13 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 /**
  * @internal
  */
-final class NotFoundException extends AbstractApiException
+final class InvalidFilterServiceTypeException extends AbstractApiException
 {
-    public function __construct(string $message)
+    public function __construct(string $type)
     {
         parent::__construct(
-            HttpResponseCodes::NOT_FOUND->value,
-            $message
+            HttpResponseCodes::BAD_REQUEST->value,
+            "Unknown filter type: $type"
         );
     }
 }

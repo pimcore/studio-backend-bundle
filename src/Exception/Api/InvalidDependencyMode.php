@@ -18,8 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-
 /**
  * @internal
  */
