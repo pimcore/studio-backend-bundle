@@ -14,17 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
  */
-final class ForbiddenException extends AbstractApiException
+final class InvalidThumbnailException extends AbstractApiException
 {
-    public function __construct(string $message = 'Access Denied')
+    public function __construct(string $thumbnailName)
     {
-        parent::__construct(HttpResponseCodes::FORBIDDEN->value, $message);
+        parent::__construct(
+            HttpResponseCodes::BAD_REQUEST->value,
+            sprintf('Invalid thumbnail: %s', $thumbnailName)
+        );
     }
 }

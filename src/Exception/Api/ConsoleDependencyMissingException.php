@@ -14,23 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
  */
-final class ElementStreamResourceNotFoundException extends AbstractApiException
+final class ConsoleDependencyMissingException extends AbstractApiException
 {
-    public function __construct(int $id, string $type = 'Element')
+    public function __construct(string $executable, string $module = 'Pimcore')
     {
         parent::__construct(
-            HttpResponseCodes::NOT_FOUND->value,
+            HttpResponseCodes::BAD_REQUEST->value,
             sprintf(
-                'Unable to get resource for %s with ID %d',
-                $type,
-                $id
+                'Please install the "%s" console executable on the server which is necessary for %s.',
+                $executable,
+                $module
             )
         );
     }

@@ -18,20 +18,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-
 /**
  * @internal
  */
-final class InvalidAssetFormatTypeException extends AbstractApiException
+final class ThumbnailResizingFailedException extends AbstractApiException
 {
-    public function __construct(string $type)
+    public function __construct(string $message)
     {
         parent::__construct(
             HttpResponseCodes::BAD_REQUEST->value,
             sprintf(
-                'Invalid asset format type: %s',
-                $type
+                'Thumbnail resizing failed: %s',
+                $message
             )
         );
     }

@@ -14,23 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
  */
-final class ConsoleDependencyMissingException extends AbstractApiException
+final class InvalidAssetFormatTypeException extends AbstractApiException
 {
-    public function __construct(string $executable, string $module = 'Pimcore')
+    public function __construct(string $type)
     {
         parent::__construct(
             HttpResponseCodes::BAD_REQUEST->value,
             sprintf(
-                'Please install the "%s" console executable on the server which is necessary for %s.',
-                $executable,
-                $module
+                'Invalid asset format type: %s',
+                $type
             )
         );
     }

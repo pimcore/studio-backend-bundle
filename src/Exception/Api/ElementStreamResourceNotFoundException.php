@@ -14,22 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
  */
-final class ThumbnailResizingFailedException extends AbstractApiException
+final class ElementStreamResourceNotFoundException extends AbstractApiException
 {
-    public function __construct(string $message)
+    public function __construct(int $id, string $type = 'Element')
     {
         parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
+            HttpResponseCodes::NOT_FOUND->value,
             sprintf(
-                'Thumbnail resizing failed: %s',
-                $message
+                'Unable to get resource for %s with ID %d',
+                $type,
+                $id
             )
         );
     }

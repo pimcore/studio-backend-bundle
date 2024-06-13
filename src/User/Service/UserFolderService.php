@@ -17,12 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
-use Pimcore\Model\User\Folder;
 
 /**
  * @internal
