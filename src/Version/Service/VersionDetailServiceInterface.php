@@ -46,7 +46,7 @@ interface VersionDetailServiceInterface
      * @throws ElementStreamResourceNotFoundException
      */
     public function getImageDimensions(Image $image): Dimensions;
-    
+
     /**
      * @throws ElementStreamResourceNotFoundException
      */
