@@ -14,18 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
  */
-enum UserPermissions: string
+final class ForbiddenException extends AbstractApiException
 {
-    case ASSETS = 'assets';
-    case DOCUMENTS = 'documents';
-    case OBJECTS = 'objects';
-    case NOTES_EVENTS = 'notes_events';
-    case THUMBNAILS = 'thumbnails';
-    case USER_MANAGEMENT = 'users';
-    case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
+    public function __construct(string $message = 'Access Denied')
+    {
+        parent::__construct(HttpResponseCodes::FORBIDDEN->value, $message);
+    }
 }

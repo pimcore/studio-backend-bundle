@@ -14,18 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
+
+use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
 
 /**
  * @internal
  */
-enum UserPermissions: string
+interface UserFolderServiceInterface
 {
-    case ASSETS = 'assets';
-    case DOCUMENTS = 'documents';
-    case OBJECTS = 'objects';
-    case NOTES_EVENTS = 'notes_events';
-    case THUMBNAILS = 'thumbnails';
-    case USER_MANAGEMENT = 'users';
-    case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
+    /**
+     * @throws ForbiddenException|NotFoundException|DatabaseException
+     */
+    public function deleteUserFolderById(int $folderId): void;
 }

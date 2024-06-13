@@ -28,10 +28,12 @@ use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -49,6 +51,7 @@ final class CollectionController extends AbstractApiController
 
 
     #[Route('/users', name: 'pimcore_studio_api_users', methods: ['GET'])]
+    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::API_PATH . '/users',
         operationId: 'getUsers',
