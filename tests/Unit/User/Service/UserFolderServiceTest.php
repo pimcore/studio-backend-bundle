@@ -22,6 +22,7 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService;
 use Pimcore\Model\User\Folder;
@@ -38,8 +39,9 @@ final class UserFolderServiceTest extends Unit
             'getCurrentUser' => $this->makeEmpty(UserInterface::class, ['isAdmin' => false]),
         ]);
         $userFolderRepository = $this->makeEmpty(UserFolderRepositoryInterface::class);
+        $userTreeNodeHydrator = $this->makeEmpty(UserTreeNodeHydratorInterface::class);
 
-        $userFolderService = new UserFolderService($securityService, $userFolderRepository);
+        $userFolderService = new UserFolderService($securityService, $userFolderRepository, $userTreeNodeHydrator);
 
         $this->expectExceptionMessage('Only admin users are allowed to delete user folders');
         $this->expectException(ForbiddenException::class);
@@ -58,8 +60,9 @@ final class UserFolderServiceTest extends Unit
                 throw new Exception('Database error');
             },
         ]);
+        $userTreeNodeHydrator = $this->makeEmpty(UserTreeNodeHydratorInterface::class);
 
-        $userFolderService = new UserFolderService($securityService, $userFolderRepository);
+        $userFolderService = new UserFolderService($securityService, $userFolderRepository, $userTreeNodeHydrator);
 
         $this->expectException(DatabaseException::class);
         $this->expectExceptionMessage('Failed to delete user folder with id 1: Database error');
@@ -76,8 +79,9 @@ final class UserFolderServiceTest extends Unit
             'getUserFolderById' => new Folder(),
             'deleteUserFolder' => Expected::once(),
         ]);
+        $userTreeNodeHydrator = $this->makeEmpty(UserTreeNodeHydratorInterface::class);
 
-        $userFolderService = new UserFolderService($securityService, $userFolderRepository);
+        $userFolderService = new UserFolderService($securityService, $userFolderRepository, $userTreeNodeHydrator);
         $userFolderService->deleteUserFolderById(1);
     }
 }
