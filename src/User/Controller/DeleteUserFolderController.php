@@ -18,6 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -45,6 +48,9 @@ final class DeleteUserFolderController extends AbstractApiController
     }
 
 
+    /**
+     * @throws ForbiddenException|NotFoundException|DatabaseException
+     */
     #[Route('/user/folder/{id}', name: 'pimcore_studio_api_user_folder_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::PIMCORE_ADMIN->value)]
     #[Delete(
