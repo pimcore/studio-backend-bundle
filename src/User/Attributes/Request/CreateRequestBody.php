@@ -30,11 +30,11 @@ final class CreateRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['parentId', 'name',],
+                required: ['parentId', 'name', ],
                 type: 'object',
                 properties: [
                     new UpdateParentId(),
-                    new SingleString('name')
+                    new SingleString('name'),
                 ]
             ),
         );
