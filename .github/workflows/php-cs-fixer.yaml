@@ -10,6 +10,9 @@ on:
     pull_request_target:
         types: [ opened,closed,synchronize ]
 
+permissions:
+    contents: write
+
 jobs:
     php-style:
         uses: pimcore/workflows-collection-public/.github/workflows/reusable-php-cs-fixer.yaml@main
