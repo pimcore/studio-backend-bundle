@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -28,7 +28,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 interface VersionBinaryServiceInterface
 {
     /**
-     * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException
+     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
      */
     public function downloadAsset(
         int $id,
@@ -36,7 +36,7 @@ interface VersionBinaryServiceInterface
     ): StreamedResponse;
 
     /**
-     * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException
+     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
      */
     public function streamImage(
         int $id,

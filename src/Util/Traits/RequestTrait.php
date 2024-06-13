@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\NoRequestException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 

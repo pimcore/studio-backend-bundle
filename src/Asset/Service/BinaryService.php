@@ -18,12 +18,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementProcessingNotCompletedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailConfigurationException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Messenger\AssetPreviewImageMessage;

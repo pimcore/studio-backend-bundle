@@ -21,10 +21,10 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Property\AnyOfA
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterServiceTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\IdSearchTermParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;

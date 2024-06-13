@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Video;

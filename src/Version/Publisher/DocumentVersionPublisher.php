@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Publisher;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementPublishingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\Document;
 use Pimcore\Model\UserInterface;
 
@@ -33,15 +33,16 @@ final readonly class DocumentVersionPublisher implements DocumentVersionPublishe
     ) {
     }
 
+    /**
+     * @throw NotFoundException
+     */
     public function publish(
         Document $versionDocument,
         UserInterface $user
     ): void {
         $currentDocument = $this->documentResolver->getById($versionDocument->getId());
         if (!$currentDocument) {
-            throw new ElementNotFoundException(
-                $versionDocument->getId()
-            );
+            throw new NotFoundException('Version', $versionDocument->getId());
         }
 
         try {

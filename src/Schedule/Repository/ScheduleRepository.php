@@ -22,9 +22,9 @@ use Doctrine\DBAL\Exception;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Schedule\TaskResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -65,14 +65,14 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
     }
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function getSchedule(int $id): Task
     {
         $task = $this->taskResolver->getById($id);
 
         if (!$task) {
-            throw new ElementNotFoundException($id, 'Task');
+            throw new NotFoundException('Task', $id);
         }
 
         return $task;
@@ -80,7 +80,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
 
     /**
      * @return array<int, Task>
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function listSchedules(string $elementType, int $id): array
     {
@@ -121,7 +121,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
     }
 
     /**
-     * @throws ElementNotFoundException|DatabaseException
+     * @throws NotFoundException|DatabaseException
      */
     public function deleteSchedule(int $id): void
     {

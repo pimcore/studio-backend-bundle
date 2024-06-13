@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidActionTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionSubmissionException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidActionTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionSubmissionException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;

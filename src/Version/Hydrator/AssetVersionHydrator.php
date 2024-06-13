@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementProcessingNotCompletedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementUnsafeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\ImageVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
@@ -112,7 +112,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
         }
 
         if ($status === Asset\Enum\PdfScanStatus::UNSAFE) {
-            throw new ElementUnsafeException(
+            throw new NotCompletedException(
                 $pdf->getId()
             );
         }

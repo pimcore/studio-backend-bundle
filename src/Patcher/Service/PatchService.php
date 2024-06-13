@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 
 /**
@@ -37,7 +37,7 @@ final class PatchService implements PatchServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException|ElementNotFoundException
+     * @throws ElementSavingFailedException|NotFoundException
      */
     public function patch(string $elementType, array $patchData): array
     {

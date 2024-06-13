@@ -20,8 +20,8 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\MaxFileSizeExceededException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
 use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Text;
 

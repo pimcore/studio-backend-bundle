@@ -18,8 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -31,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInter
 use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -48,7 +48,7 @@ final class GetController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException|UserNotFoundException
+     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException|UserNotFoundException
      */
     #[Route('/versions/{id}', name: 'pimcore_studio_api_get_version', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]

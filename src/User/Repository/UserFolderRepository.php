@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\FolderResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Folder;
 
 /**
@@ -49,7 +49,7 @@ final readonly class UserFolderRepository implements UserFolderRepositoryInterfa
         $folder = $this->folderResolver->getById($folderId);
 
         if (!$folder instanceof Folder) {
-            throw new NotFoundException(sprintf("User folder with ID %d not found", $folderId));
+            throw new NotFoundException('User folder', $folderId);
         }
 
         return $folder;
