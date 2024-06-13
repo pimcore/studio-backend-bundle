@@ -3,6 +3,8 @@ name: "PHP-CS-Fixer"
 on:
     pull_request_target:
         types: [opened, synchronize, reopened]
+        branches:
+            - "*"
     push:
         branches:
             - "[0-9]+.[0-9]+"
@@ -10,7 +12,8 @@ on:
             - "*_actions"
             - "feature-*"
 
-    -permissions: write
+    permissions:
+        contents: write
 
 jobs:
     php-style:
