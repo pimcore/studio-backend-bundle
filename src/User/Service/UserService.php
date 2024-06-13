@@ -172,7 +172,7 @@ final readonly class UserService implements UserServiceInterface
         $folderId = 0;
 
         // Check if parent folder exists
-        if($createParameter->getParentId() !== 0) {
+        if ($createParameter->getParentId() !== 0) {
             $folderId = $this->userFolderRepository->getUserFolderById($createParameter->getParentId())->getId();
         }
 
