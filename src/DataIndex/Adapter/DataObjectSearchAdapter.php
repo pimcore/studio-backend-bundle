@@ -23,8 +23,8 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObjec
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidSearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterInterface
 {
@@ -65,13 +65,13 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     }
 
     /**
-     * @throws Exception
+     * @throws NotFoundException
      */
     public function getDataObjectById(int $id): DataObject
     {
         $dataObject =  $this->searchService->byId($id);
         if (!$dataObject) {
-            throw new ElementNotFoundException($id);
+            throw new NotFoundException('DataObject', $id);
         }
 
         return new DataObject($dataObject->getId(), $dataObject->getClassName());

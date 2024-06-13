@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Filter\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterServiceTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 
 final class FilterServiceProvider implements FilterServiceProviderInterface
 {

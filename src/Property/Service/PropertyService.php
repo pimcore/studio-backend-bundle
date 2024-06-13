@@ -17,13 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\ElementPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\PredefinedPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
+use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;

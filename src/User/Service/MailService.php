@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\DomainConfigurationException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SettingsProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\LostPasswordEvent;
 use Pimcore\Model\User;

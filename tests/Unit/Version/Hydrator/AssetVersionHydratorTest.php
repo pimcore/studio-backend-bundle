@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Version\Hydrator;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementProcessingNotCompletedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\AssetVersionHydrator;
 use Pimcore\Model\Asset\Document;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;

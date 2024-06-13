@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Note\Service;
 
 use Codeception\Test\Unit;
 use JsonException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterService;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterServiceInterface;

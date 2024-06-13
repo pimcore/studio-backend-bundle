@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\DomainConfigurationException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\RateLimitException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;

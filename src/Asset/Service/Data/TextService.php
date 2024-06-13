@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\MaxFileSizeExceededException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 
 /**
@@ -38,7 +38,7 @@ final class TextService implements TextServiceInterface
     }
 
     /**
-     * @throws ElementNotFoundException|InvalidElementTypeException|MaxFileSizeExceededException
+     * @throws NotFoundException|InvalidElementTypeException|MaxFileSizeExceededException
      */
     public function getUTF8EncodedData(int $id): string
     {

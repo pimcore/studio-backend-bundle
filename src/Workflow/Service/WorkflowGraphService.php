@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowDependencyMissingException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowDependencyMissingException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Tool\Console;
 use Symfony\Component\Process\Process;

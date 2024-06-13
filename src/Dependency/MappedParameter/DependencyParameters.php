@@ -17,9 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyMode;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidDependencyMode;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidDependencyMode;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**
  * @internal

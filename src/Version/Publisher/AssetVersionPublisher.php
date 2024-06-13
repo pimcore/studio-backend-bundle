@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Publisher;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementPublishingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementPublishingFailedException;
 use Pimcore\Model\Asset;
 use Pimcore\Model\UserInterface;
 

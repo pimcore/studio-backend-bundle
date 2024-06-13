@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionSubmissionException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionSubmissionException;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Response\ActionSubmissionResponse;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Model\Element\ElementInterface;

@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
 
@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
 interface ScheduleServiceInterface
 {
     /**
-     * @throws NotAuthorizedException|ElementNotFoundException
+     * @throws NotAuthorizedException|NotFoundException
      */
     public function createSchedule(string $elementType, int $id): Schedule;
 
@@ -44,7 +44,7 @@ interface ScheduleServiceInterface
     ): void;
 
     /**
-     * @throws ElementNotFoundException|DatabaseException
+     * @throws NotFoundException|DatabaseException
      */
     public function deleteSchedule(int $id): void;
 }

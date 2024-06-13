@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Repository;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\NoteResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
@@ -64,14 +64,14 @@ final readonly class NoteRepository implements NoteRepositoryInterface
     }
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function getNote(int $id): Note
     {
         $note = $this->noteResolver->getById($id);
 
         if (!$note) {
-            throw new ElementNotFoundException($id, 'Note');
+            throw new NotFoundException('Note', $id);
         }
 
         return $note;
@@ -105,14 +105,11 @@ final readonly class NoteRepository implements NoteRepositoryInterface
     }
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function deleteNote(int $id): void
     {
-        $note = $this->noteResolver->getById($id);
-        if (!$note) {
-            throw new ElementNotFoundException($id, 'Note');
-        }
+        $note = $this->getNote($id);
         $note->delete();
     }
 }

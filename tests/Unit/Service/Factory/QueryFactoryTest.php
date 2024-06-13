@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInte
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactory;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 

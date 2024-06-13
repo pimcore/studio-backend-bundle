@@ -29,11 +29,11 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterServiceTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -81,7 +81,7 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws SearchException|ElementNotFoundException
+     * @throws SearchException|NotFoundException
      */
     public function getAsset(int $id):  Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
     {

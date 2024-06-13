@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Event\ScheduleEvent;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Hydrator\ScheduleHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Repository\ScheduleRepositoryInterface;
@@ -40,7 +40,7 @@ final readonly class ScheduleService implements ScheduleServiceInterface
     }
 
     /**
-     * @throws NotAuthorizedException|ElementNotFoundException
+     * @throws NotAuthorizedException|NotFoundException
      */
     public function createSchedule(string $elementType, int $id): Schedule
     {
@@ -85,7 +85,7 @@ final readonly class ScheduleService implements ScheduleServiceInterface
     }
 
     /**
-     * @throws ElementNotFoundException|DatabaseException
+     * @throws NotFoundException|DatabaseException
      */
     public function deleteSchedule(int $id): void
     {

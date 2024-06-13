@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Workflow\Service;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydratorInterface;
@@ -41,8 +41,8 @@ final class WorkflowDetailsServiceTest extends Unit
             elementType: 'asset',
         );
         $workflowDetailsService = $this->getWorkflowDetailsService();
-        $this->expectExceptionMessage('Element with ID 1 not found');
-        $this->expectException(ElementNotFoundException::class);
+        $this->expectExceptionMessage('Asset with ID 1 not found');
+        $this->expectException(NotFoundException::class);
         $workflowDetailsService->getWorkflowDetails(
             $parameters,
             $this->makeEmpty(UserInterface::class)

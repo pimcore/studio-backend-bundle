@@ -27,8 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 
 final readonly class AssetSearchService implements AssetSearchServiceInterface
 {
@@ -45,7 +45,7 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     }
 
     /**
-     * @throws SearchException|ElementNotFoundException
+     * @throws SearchException|NotFoundException
      */
     public function getAssetById(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
     {
