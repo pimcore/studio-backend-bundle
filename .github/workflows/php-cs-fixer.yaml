@@ -7,11 +7,8 @@ on:
             - "[0-9]+.x"
             - "*_actions"
             - "feature-*"
-    pull_request:
+    pull_request_target:
         types: [ opened,closed,synchronize ]
-
-permissions:
-    contents: write
 
 jobs:
     php-style:
