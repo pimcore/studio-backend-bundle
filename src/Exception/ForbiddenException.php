@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+
 /**
  * @internal
  */
@@ -23,6 +25,6 @@ final class ForbiddenException extends AbstractApiException
 {
     public function __construct(string $message = 'Access Denied')
     {
-        parent::__construct(403, $message);
+        parent::__construct(HttpResponseCodes::FORBIDDEN->value, $message);
     }
 }
