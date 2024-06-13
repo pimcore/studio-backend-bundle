@@ -19,6 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
@@ -34,4 +37,9 @@ interface UserServiceInterface
     public function resetPassword(ResetPassword $resetPassword): void;
 
     public function getUserTreeListing(UserListParameter $userListParameter): Collection;
+
+    /**
+     * @throws NotFoundException|ForbiddenException|DatabaseException
+     */
+    public function deleteUser(int $userId): void;
 }

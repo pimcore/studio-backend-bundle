@@ -32,6 +32,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 /**
  * @internal
@@ -47,4 +50,12 @@ interface AssetServiceInterface
      * @throws SearchException|NotFoundException
      */
     public function getAsset(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video;
+
+    /**
+     * @throws AccessDeniedException|ElementNotFoundException
+     */
+    public function getAssetElement(
+        UserInterface $user,
+        int $assetId,
+    ): ElementInterface;
 }

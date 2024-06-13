@@ -25,6 +25,9 @@ final class PropertyNotFoundException extends AbstractApiException
 {
     public function __construct(string $id)
     {
-        parent::__construct(HttpResponseCodes::BAD_REQUEST->value, 'Property with ID ' . $id . ' not found');
+        parent::__construct(
+            HttpResponseCodes::NOT_FOUND->value,
+            'Property with ID ' . $id . ' not found'
+        );
     }
 }

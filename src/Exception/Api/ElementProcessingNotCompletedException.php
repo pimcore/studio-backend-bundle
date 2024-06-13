@@ -23,11 +23,11 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
  */
 final class ElementProcessingNotCompletedException extends AbstractApiException
 {
-    public function __construct(int $id)
+    public function __construct(int $id, string $type = 'Element')
     {
         parent::__construct(
             HttpResponseCodes::NOT_COMPLETED->value,
-            sprintf('Element with ID %d was not processed yet', $id)
+            sprintf('%s with ID %d was not processed yet', $type, $id)
         );
     }
 }

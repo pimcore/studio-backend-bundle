@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterInterface
 {
@@ -42,7 +43,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         $search = $dataObjectQuery->getSearch();
         if (!$search instanceof DataObjectSearchInterface) {
             throw new InvalidSearchException(
-                400,
+                HttpResponseCodes::BAD_REQUEST->value,
                 sprintf(
                     'Expected search to be an instance of %s, got %s',
                     DataObjectSearchInterface::class,

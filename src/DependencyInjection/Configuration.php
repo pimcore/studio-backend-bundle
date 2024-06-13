@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\ResizeModes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -43,6 +45,7 @@ class Configuration implements ConfigurationInterface
         $this->addApiTokenNode($rootNode);
         $this->addAllowedHostsForCorsNode($rootNode);
         $this->addSecurityFirewall($rootNode);
+        $this->addDefaultAssetFormats($rootNode);
 
         return $treeBuilder;
     }
@@ -101,6 +104,32 @@ class Configuration implements ConfigurationInterface
         $node
             ->children()
                 ->variableNode('security_firewall')->end()
+            ->end();
+    }
+
+    private function addDefaultAssetFormats(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+                ->arrayNode('asset_default_formats')
+                    ->useAttributeAsKey('name')
+                    ->arrayPrototype()
+                        ->children()
+                            ->enumNode('resize_mode')
+                                ->values(ResizeModes::ALLOWED_MODES)
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
+                            ->integerNode('width')->isRequired()->end()
+                            ->integerNode('dpi')->isRequired()->end()
+                            ->enumNode('format')
+                                ->values(MimeTypes::ALLOWED_FORMATS)
+                                ->isRequired()
+                                ->cannotBeEmpty()
+                            ->end()
+                            ->integerNode('quality')->isRequired()->end()
+                        ->end()
+                    ->end()
+                ->end()
             ->end();
     }
 }

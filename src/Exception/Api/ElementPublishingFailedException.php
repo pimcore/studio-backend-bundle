@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
@@ -25,10 +25,13 @@ final class ElementPublishingFailedException extends AbstractApiException
 {
     public function __construct(int $id, ?string $error = null)
     {
-        parent::__construct(HttpResponseCodes::BAD_REQUEST->value, sprintf(
-            'Failed to publish element with ID %s: %s',
-            $id,
-            $error ?? 'Unknown error'
-        ));
+        parent::__construct(
+            HttpResponseCodes::BAD_REQUEST->value,
+            sprintf(
+                'Failed to publish element with ID %s: %s',
+                $id,
+                $error ?? 'Unknown error'
+            )
+        );
     }
 }

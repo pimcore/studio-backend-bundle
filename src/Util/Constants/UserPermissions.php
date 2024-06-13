@@ -26,4 +26,6 @@ enum UserPermissions: string
     case OBJECTS = 'objects';
     case NOTES_EVENTS = 'notes_events';
     case THUMBNAILS = 'thumbnails';
+    case USER_MANAGEMENT = 'users';
+    case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
 }

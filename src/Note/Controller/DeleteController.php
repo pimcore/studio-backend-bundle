@@ -21,13 +21,12 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -58,16 +57,15 @@ final class DeleteController extends AbstractApiController
     )]
     #[IdParameter]
     #[SuccessResponse(
-        description: 'Id of the note that got deleted',
-        content: new IdJson('ID of deleted note')
+        description: 'Successfully deleted note',
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED
     ])]
-    public function deleteNote(int $id): JsonResponse
+    public function deleteNote(int $id): Response
     {
         $this->noteService->deleteNote($id);
-        return $this->jsonResponse(['id' => $id]);
+        return new Response();
     }
 }

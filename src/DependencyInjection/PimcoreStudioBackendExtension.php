@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Exception;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
@@ -83,6 +84,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(CorsSubscriber::class);
         $definition->setArgument('$allowedHosts', $config['allowed_hosts_for_cors']);
+
+        $definition = $container->getDefinition(DownloadServiceInterface::class);
+        $definition->setArgument('$defaultFormats', $config['asset_default_formats']);
     }
 
     public function prepend(ContainerBuilder $container): void

@@ -25,9 +25,12 @@ final class InvalidElementTypeException extends AbstractApiException
 {
     public function __construct(string $type)
     {
-        parent::__construct(HttpResponseCodes::BAD_REQUEST->value, sprintf(
-            'Invalid element type: %s',
-            $type
-        ));
+        parent::__construct(
+            HttpResponseCodes::BAD_REQUEST->value,
+            sprintf(
+                'Invalid element type: %s',
+                $type
+            )
+        );
     }
 }

@@ -16,9 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+
 /**
  * @internal
  */
-final class InvalidFilterServiceTypeException extends AbstractApiException
+final class NotFoundException extends AbstractApiException
 {
+    public function __construct(string $message)
+    {
+        parent::__construct(
+            HttpResponseCodes::NOT_FOUND->value,
+            $message
+        );
+    }
 }

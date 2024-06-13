@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Enum\PdfScanStatus;
 use Pimcore\Model\Asset\Image;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -106,16 +107,18 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
     {
         $status = $pdf->getScanStatus();
 
-        if ($status !== Asset\Enum\PdfScanStatus::SAFE) {
-            if ($status === Asset\Enum\PdfScanStatus::UNSAFE) {
-                throw new ElementUnsafeException(
-                    $pdf->getId()
-                );
-            }
+        if ($status === PdfScanStatus::SAFE) {
+            return;
+        }
 
-            throw new ElementProcessingNotCompletedException(
+        if ($status === Asset\Enum\PdfScanStatus::UNSAFE) {
+            throw new ElementUnsafeException(
                 $pdf->getId()
             );
         }
+
+        throw new ElementProcessingNotCompletedException(
+            $pdf->getId()
+        );
     }
 }

@@ -16,12 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
@@ -45,7 +50,8 @@ final readonly class UserService implements UserServiceInterface
         private LoggerInterface $pimcoreLogger,
         private UserRepositoryInterface $userRepository,
         private UserTreeNodeHydratorInterface $userTreeNodeHydrator,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private SecurityServiceInterface $securityService
     )
     {
     }
@@ -101,6 +107,33 @@ final readonly class UserService implements UserServiceInterface
             totalItems: $userListing->getTotalCount(),
             items: $users
         );
+    }
+
+    /**
+     * @throws NotFoundException|ForbiddenException|DatabaseException
+     */
+    public function deleteUser(int $userId): void
+    {
+
+        $currentUser = $this->securityService->getCurrentUser();
+        $userToDelete = $this->userRepository->getUserById($userId);
+
+        if (!$currentUser->isAdmin() && $userToDelete->isAdmin()) {
+            throw new ForbiddenException('Only admins can delete other admins');
+        }
+
+        try {
+            $this->userRepository->deleteUser($userToDelete);
+        } catch (Exception $exception) {
+            throw new DatabaseException(
+                sprintf(
+                    'Error deleting user with id %d: %s',
+                    $userId,
+                    $exception->getMessage()
+                )
+            );
+        }
+
     }
 
     /**

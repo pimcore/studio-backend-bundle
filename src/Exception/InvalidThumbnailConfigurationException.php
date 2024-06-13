@@ -14,22 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
  */
-final class WorkflowDependencyMissingException extends AbstractApiException
+final class InvalidThumbnailConfigurationException extends AbstractApiException
 {
-    public function __construct(string $executable)
+    public function __construct(string $type)
     {
         parent::__construct(
             HttpResponseCodes::BAD_REQUEST->value,
             sprintf(
-                'Please install the "%s" console executable on the server to render the workflow graph.',
-                $executable
+                'Invalid thumbnail configuration: %s',
+                $type
             )
         );
     }
