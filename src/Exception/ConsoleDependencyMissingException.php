@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Symfony\Component\HttpFoundation\Response;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
@@ -26,7 +26,7 @@ final class ConsoleDependencyMissingException extends AbstractApiException
     public function __construct(string $executable, string $module = 'Pimcore')
     {
         parent::__construct(
-            Response::HTTP_BAD_REQUEST,
+            HttpResponseCodes::BAD_REQUEST->value,
             sprintf(
                 'Please install the "%s" console executable on the server which is necessary for %s.',
                 $executable,

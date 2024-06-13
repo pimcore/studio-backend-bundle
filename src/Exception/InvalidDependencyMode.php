@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Symfony\Component\HttpFoundation\Response;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
@@ -25,6 +25,6 @@ final class InvalidDependencyMode extends AbstractApiException
 {
     public function __construct(string $message = 'Invalid dependency mode')
     {
-        parent::__construct(Response::HTTP_BAD_REQUEST, $message);
+        parent::__construct(HttpResponseCodes::BAD_REQUEST->value, $message);
     }
 }

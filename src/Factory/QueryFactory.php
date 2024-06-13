@@ -41,7 +41,7 @@ final readonly class QueryFactory implements QueryFactoryInterface
         return match($type) {
             'asset' => $this->assetQueryProvider->createAssetQuery(),
             'dataObject' => $this->dataObjectQueryProvider->createDataObjectQuery(),
-            default => throw new InvalidQueryTypeException(Response::HTTP_BAD_REQUEST, "Unknown query type: $type")
+            default => throw new InvalidQueryTypeException(HttpResponseCodes::BAD_REQUEST->value, "Unknown query type: $type")
         };
     }
 }

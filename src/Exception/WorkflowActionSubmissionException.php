@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
-use Symfony\Component\HttpFoundation\Response;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
@@ -26,7 +26,7 @@ final class WorkflowActionSubmissionException extends AbstractApiException
     public function __construct(string $actionName, string $message)
     {
         parent::__construct(
-            Response::HTTP_BAD_REQUEST,
+            HttpResponseCodes::BAD_REQUEST->value,
             sprintf(
                 'Submitting action %s failed: %s',
                 $actionName,
