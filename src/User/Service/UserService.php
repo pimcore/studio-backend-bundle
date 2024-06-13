@@ -52,8 +52,7 @@ final readonly class UserService implements UserServiceInterface
         private UserTreeNodeHydratorInterface $userTreeNodeHydrator,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService
-    )
-    {
+    ) {
     }
 
     /**
@@ -69,6 +68,7 @@ final readonly class UserService implements UserServiceInterface
 
         if (!$user || !$userChecks['success']) {
             $this->pimcoreLogger->error('Reset password failed', ['error' => $userChecks['error']]);
+
             return;
         }
 
@@ -78,6 +78,7 @@ final readonly class UserService implements UserServiceInterface
             $this->mailService->sendResetPasswordMail($user, $token);
         } catch (DomainConfigurationException|SendMailException $exception) {
             $this->pimcoreLogger->error('Error sending password recovery email', ['error' => $exception->getMessage()]);
+
             throw $exception;
         }
 

@@ -57,7 +57,7 @@ final class CreateController extends AbstractApiController
         content: new JsonContent(ref: PredefinedProperty::class, type: 'object')
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function createProperty(): JsonResponse
     {

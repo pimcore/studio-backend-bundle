@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
 
-
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
@@ -35,9 +34,8 @@ final readonly class UpdateCustomMetadata
         #[Property(description: 'Type', type: 'string', example: 'input')]
         private string $type,
         #[Property(description: 'Data', type: 'mixed', example: 'data')]
-        private mixed  $data
-    )
-    {
+        private mixed $data
+    ) {
     }
 
     public function getName(): string

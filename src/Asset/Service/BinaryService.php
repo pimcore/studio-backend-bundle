@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundEx
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Messenger\AssetPreviewImageMessage;
@@ -44,8 +43,7 @@ final readonly class BinaryService implements BinaryServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private ThumbnailServiceInterface $thumbnailService,
         private Storage $storageTool
-    )
-    {
+    ) {
     }
 
     /**
@@ -57,8 +55,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     public function downloadVideoByThumbnail(
         ElementInterface $video,
         string $thumbnailName
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         if (!$video instanceof Video) {
             throw new InvalidElementTypeException($video->getType());
         }
@@ -75,8 +72,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     public function streamVideoByThumbnail(
         ElementInterface $video,
         string $thumbnailName
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         if (!$video instanceof Video) {
             throw new InvalidElementTypeException($video->getType());
         }
@@ -93,8 +89,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     public function streamVideoImageThumbnail(
         ElementInterface $video,
         VideoImageStreamConfigParameter $imageConfig
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         if (!$video instanceof Video) {
             throw new InvalidElementTypeException($video->getType());
         }

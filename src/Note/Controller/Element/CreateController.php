@@ -44,8 +44,7 @@ final class CreateController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly NoteServiceInterface $noteService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -64,15 +63,15 @@ final class CreateController extends AbstractApiController
     #[IdParameter(type: 'element')]
     #[CreateNoteRequestBody]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function createNote(
         string $elementType,
         int $id,
         #[MapRequestPayload] CreateNote $createNote
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $note = $this->noteService->createNote(new NoteElementParameters($elementType, $id), $createNote);
+
         return $this->jsonResponse(['id' => $note->getId()]);
     }
 }

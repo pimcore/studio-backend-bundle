@@ -171,8 +171,7 @@ final readonly class VersionService implements VersionServiceInterface
     public function cleanupVersions(
         ElementParameters $elementParameters,
         UserInterface $user
-    ): array
-    {
+    ): array {
         $element = $this->getElement(
             $this->serviceResolver,
             $elementParameters->getType(),

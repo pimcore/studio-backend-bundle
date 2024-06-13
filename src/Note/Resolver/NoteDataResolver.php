@@ -30,11 +30,10 @@ final readonly class NoteDataResolver implements NoteDataResolverInterface
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
         private UserResolverInterface $userResolver
-    )
-    {
+    ) {
     }
 
-    public function extractCPath(CoreNote $note) : string
+    public function extractCPath(CoreNote $note): string
     {
         if (!$note->getCid() || !$note->getCtype()) {
             return '';
@@ -49,7 +48,7 @@ final readonly class NoteDataResolver implements NoteDataResolverInterface
         return $element->getFullPath();
     }
 
-    public function resolveUserData(CoreNote $note) : NoteUser
+    public function resolveUserData(CoreNote $note): NoteUser
     {
         if (!$note->getUser()) {
             return new NoteUser();

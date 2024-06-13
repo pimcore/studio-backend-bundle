@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\AssetEvent;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\AssetEvent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
@@ -59,8 +59,7 @@ final readonly class AssetService implements AssetServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-    )
-    {
+    ) {
     }
 
     /**
@@ -94,7 +93,7 @@ final readonly class AssetService implements AssetServiceInterface
     /**
      * @throws SearchException|ElementNotFoundException
      */
-    public function getAsset(int $id):  Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
+    public function getAsset(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
     {
         $asset = $this->assetSearchService->getAssetById($id);
 
@@ -112,8 +111,7 @@ final readonly class AssetService implements AssetServiceInterface
     public function getAssetElement(
         UserInterface $user,
         int $assetId,
-    ): ElementInterface
-    {
+    ): ElementInterface {
         $asset = $this->getElement($this->serviceResolver, ElementTypes::TYPE_ASSET, $assetId);
         $this->securityService->hasElementPermission($asset, $user, ElementPermissions::VIEW_PERMISSION);
 

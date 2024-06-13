@@ -22,10 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 final class AssetEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.asset';
+
     public function __construct(
         private readonly Asset $asset
-    )
-    {
+    ) {
         parent::__construct($asset);
     }
 

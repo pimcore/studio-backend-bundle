@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
-use Pimcore\Model\User\Folder;
 
 /**
  * @internal
@@ -32,8 +31,7 @@ final readonly class UserFolderService implements UserFolderServiceInterface
     public function __construct(
         private SecurityServiceInterface $securityService,
         private UserFolderRepositoryInterface $userFolderRepository
-    )
-    {
+    ) {
     }
 
     /**

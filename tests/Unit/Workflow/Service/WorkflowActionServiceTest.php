@@ -35,12 +35,12 @@ final class WorkflowActionServiceTest extends Unit
     public function _before(): void
     {
         $this->workflowActionService = new WorkflowActionService(
-           $this->makeEmpty(Manager::class),
-           $this->makeEmpty(Registry::class),
-           $this->makeEmpty(SecurityServiceInterface::class),
-           $this->makeEmpty(ServiceProviderInterface::class),
-           $this->makeEmpty(ServiceResolverInterface::class)
-       );
+            $this->makeEmpty(Manager::class),
+            $this->makeEmpty(Registry::class),
+            $this->makeEmpty(SecurityServiceInterface::class),
+            $this->makeEmpty(ServiceProviderInterface::class),
+            $this->makeEmpty(ServiceResolverInterface::class)
+        );
     }
 
     public function testEnrichActionNotes(): void

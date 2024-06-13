@@ -25,8 +25,7 @@ final readonly class NoteElementParameters
         private ?string $type = null,
         private ?int $id = null,
 
-    )
-    {
+    ) {
     }
 
     public function getType(): ?string

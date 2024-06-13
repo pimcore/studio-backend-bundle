@@ -64,7 +64,7 @@ final class TranslationController extends AbstractApiController
         content: new JsonContent(ref: Translation::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getTranslations(
         #[MapRequestPayload] Translation $translation,

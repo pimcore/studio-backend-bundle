@@ -64,7 +64,7 @@ final class ImageCollectionController extends AbstractApiController
         content: new ThumbnailsJson()
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getImageThumbnails(): JsonResponse
     {
@@ -72,7 +72,7 @@ final class ImageCollectionController extends AbstractApiController
 
         return $this->jsonResponse(
             [
-                'items' => $collection->getItems()
+                'items' => $collection->getItems(),
             ]
         );
     }

@@ -36,7 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
         'mimeType',
         'metaData',
         'hasWorkflowWithPermissions',
-        'fullPath'
+        'fullPath',
     ],
     type: 'object'
 )]

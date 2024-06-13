@@ -31,7 +31,7 @@ final readonly class ElementParameters
         private string $type,
         #[NotBlank]
         #[Positive]
-        private int    $id,
+        private int $id,
     ) {
         $this->validate();
     }
@@ -41,6 +41,7 @@ final readonly class ElementParameters
         if ($this->type === ElementTypes::TYPE_DATA_OBJECT) {
             return ElementTypes::TYPE_OBJECT;
         }
+
         return $this->type;
     }
 

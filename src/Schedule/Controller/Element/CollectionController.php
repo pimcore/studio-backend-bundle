@@ -42,8 +42,7 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly ScheduleServiceInterface $scheduleService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -62,13 +61,12 @@ final class CollectionController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getSchedules(
         string $elementType,
         int $id
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return $this->jsonResponse(['items' => $this->scheduleService->listSchedules($elementType, $id)]);
     }
 }

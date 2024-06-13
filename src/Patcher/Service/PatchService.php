@@ -32,8 +32,7 @@ final class PatchService implements PatchServiceInterface
     public function __construct(
         private readonly AdapterLoaderInterface $adapterLoader,
         private readonly ServiceResolver $serviceResolver
-    )
-    {
+    ) {
     }
 
     /**
@@ -41,27 +40,27 @@ final class PatchService implements PatchServiceInterface
      */
     public function patch(string $elementType, array $patchData): array
     {
-       $adapters = $this->adapterLoader->loadAdapters($elementType);
+        $adapters = $this->adapterLoader->loadAdapters($elementType);
 
-       $error = [];
+        $error = [];
 
-       foreach ($patchData as $data) {
-           try {
-               $element  = $this->getElement($this->serviceResolver, $elementType, $data['id']);
-               foreach ($adapters as $adapter) {
-                   $adapter->patch($element, $data);
-               }
+        foreach ($patchData as $data) {
+            try {
+                $element  = $this->getElement($this->serviceResolver, $elementType, $data['id']);
+                foreach ($adapters as $adapter) {
+                    $adapter->patch($element, $data);
+                }
 
-               $element->save();
+                $element->save();
 
-           } catch (Exception $exception) {
-               $error[] = [
-                   'id' => $data['id'],
-                   'message' => $exception->getMessage(),
-               ];
-           }
-       }
+            } catch (Exception $exception) {
+                $error[] = [
+                    'id' => $data['id'],
+                    'message' => $exception->getMessage(),
+                ];
+            }
+        }
 
-       return $error;
+        return $error;
     }
 }

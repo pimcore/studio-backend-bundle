@@ -22,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\ElementPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\PredefinedPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
+use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
@@ -51,6 +51,7 @@ final readonly class PropertyService implements PropertyServiceInterface
     public function createPredefinedProperty(): PredefinedProperty
     {
         $predefined = $this->propertyRepository->createPredefinedProperty();
+
         return $this->getPredefinedProperty($predefined->getId());
     }
 
@@ -89,11 +90,13 @@ final readonly class PropertyService implements PropertyServiceInterface
 
             $hydratedProperties[] = $predefinedProperty;
         }
+
         return $hydratedProperties;
     }
 
     /**
      * @throws PropertyNotFoundException
+     *
      * @return array<int, ElementProperty>
      */
     public function getElementProperties(string $elementType, int $id): array

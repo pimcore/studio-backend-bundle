@@ -40,8 +40,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     public function __construct(
         private ThumbnailServiceInterface $thumbnailService,
         private array $defaultFormats,
-    )
-    {
+    ) {
     }
 
     /**
@@ -49,8 +48,7 @@ final readonly class DownloadService implements DownloadServiceInterface
      */
     public function downloadAsset(
         ElementInterface $asset
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         if (!$asset instanceof Asset) {
             throw new InvalidElementTypeException($asset->getType());
         }
@@ -64,8 +62,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     public function downloadCustomImage(
         ElementInterface $image,
         ImageDownloadConfigParameter $parameters
-    ): BinaryFileResponse
-    {
+    ): BinaryFileResponse {
         if (!$image instanceof Image) {
             throw new InvalidElementTypeException($image->getType());
         }
@@ -113,8 +110,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     public function downloadImageByThumbnail(
         ElementInterface $image,
         string $thumbnailName
-    ): BinaryFileResponse
-    {
+    ): BinaryFileResponse {
         if (!$image instanceof Image) {
             throw new InvalidElementTypeException($image->getType());
         }

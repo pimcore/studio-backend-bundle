@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
 
-
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
@@ -33,9 +32,8 @@ final readonly class PatchCustomMetadata
         #[Property(description: 'Language', type: 'string', example: 'en', nullable: true)]
         private ?string $language,
         #[Property(description: 'Data', type: 'string', example: 'data', nullable: true)]
-        private mixed  $data
-    )
-    {
+        private mixed $data
+    ) {
     }
 
     public function getName(): string

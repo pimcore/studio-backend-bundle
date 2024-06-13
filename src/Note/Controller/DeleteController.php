@@ -39,8 +39,7 @@ final class DeleteController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly NoteServiceInterface $noteService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -61,11 +60,12 @@ final class DeleteController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function deleteNote(int $id): Response
     {
         $this->noteService->deleteNote($id);
+
         return new Response();
     }
 }

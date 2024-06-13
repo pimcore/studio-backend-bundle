@@ -35,8 +35,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private ServiceResolver $serviceResolver,
         private SynchronousProcessingServiceInterface $synchronousProcessingService
 
-    )
-    {
+    ) {
     }
 
     /**
