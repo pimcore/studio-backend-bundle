@@ -20,7 +20,7 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService;

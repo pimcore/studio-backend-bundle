@@ -27,7 +27,7 @@ final class NotFoundException extends AbstractApiException
     {
         parent::__construct(
             HttpResponseCodes::NOT_FOUND->value,
-            sprintf('%s with ID %s not found', $type, $id)
+            sprintf('%s with ID %s not found', ucfirst($type), $id)
         );
     }
 }
