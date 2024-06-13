@@ -20,8 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
