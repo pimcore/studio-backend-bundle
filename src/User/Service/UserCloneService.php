@@ -52,7 +52,7 @@ final class UserCloneService implements UserCloneServiceInterface
     {
         $this->userToClone = User::getById($userId);
         if (!$this->userToClone) {
-            throw new NotFoundException(sprintf('User with id %s not found', $userId));
+            throw new NotFoundException('User', $userId);
         }
 
         $this->createUser();
