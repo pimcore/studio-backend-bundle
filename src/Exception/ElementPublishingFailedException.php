@@ -25,10 +25,13 @@ final class ElementPublishingFailedException extends AbstractApiException
 {
     public function __construct(int $id, ?string $error = null)
     {
-        parent::__construct(Response::HTTP_BAD_REQUEST, sprintf(
-            'Failed to publish element with ID %s: %s',
-            $id,
-            $error ?? 'Unknown error'
-        ));
+        parent::__construct(
+            Response::HTTP_BAD_REQUEST,
+            sprintf(
+                'Failed to publish element with ID %s: %s',
+                $id,
+                    $error ?? 'Unknown error'
+            )
+        );
     }
 }
