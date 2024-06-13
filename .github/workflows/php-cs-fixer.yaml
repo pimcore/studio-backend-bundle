@@ -12,8 +12,8 @@ on:
             - "*_actions"
             - "feature-*"
 
-    permissions:
-        contents: write
+permissions:
+    contents: write
 
 jobs:
     php-style:
