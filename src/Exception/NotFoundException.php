@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+
 /**
  * @internal
  */
@@ -23,6 +25,9 @@ final class NotFoundException extends AbstractApiException
 {
     public function __construct(string $message)
     {
-        parent::__construct(404, $message);
+        parent::__construct(
+            HttpResponseCodes::NOT_FOUND->value,
+            $message
+        );
     }
 }
