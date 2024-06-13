@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\PropertyNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -62,13 +62,13 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     public function getPredefinedProperty(string $id): Predefined
     {
         $predefined = $this->predefinedResolver->getById($id);
         if (!$predefined) {
-            throw new PropertyNotFoundException($id);
+            throw new NotFoundException('Property', $id);
         }
         return $predefined;
     }
@@ -110,7 +110,7 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void
     {
@@ -129,7 +129,7 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     public function deletePredefinedProperty(string $id): void
     {

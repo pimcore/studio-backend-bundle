@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
@@ -35,7 +34,7 @@ interface PropertyServiceInterface
     public function createPredefinedProperty(): PredefinedProperty;
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     public function getPredefinedProperty(string $id): PredefinedProperty;
 
@@ -52,12 +51,12 @@ interface PropertyServiceInterface
     public function getElementProperties(string $elementType, int $id): array;
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void;
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     public function deletePredefinedProperty(string $id): void;
 }

@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\ElementPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\PredefinedPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
@@ -55,7 +55,7 @@ final readonly class PropertyService implements PropertyServiceInterface
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     public function getPredefinedProperty(string $id): PredefinedProperty
     {
@@ -93,7 +93,7 @@ final readonly class PropertyService implements PropertyServiceInterface
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      * @return array<int, ElementProperty>
      */
     public function getElementProperties(string $elementType, int $id): array
@@ -118,7 +118,7 @@ final readonly class PropertyService implements PropertyServiceInterface
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     public function updatePredefinedProperty(string $id, UpdatePredefinedProperty $property): void
     {
@@ -126,7 +126,7 @@ final readonly class PropertyService implements PropertyServiceInterface
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     public function deletePredefinedProperty(string $id): void
     {
