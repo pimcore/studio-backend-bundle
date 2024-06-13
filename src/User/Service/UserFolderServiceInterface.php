@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 
 /**
  * @internal
@@ -29,4 +31,9 @@ interface UserFolderServiceInterface
      * @throws ForbiddenException|NotFoundException|DatabaseException
      */
     public function deleteUserFolderById(int $folderId): void;
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function createUserFolder(CreateParameter $createParameter): UserTreeNode;
 }

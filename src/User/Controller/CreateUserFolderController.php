@@ -27,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\User\Attributes\Request\CreateRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
@@ -40,12 +40,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CreateUserController extends AbstractApiController
+final class CreateUserFolderController extends AbstractApiController
 {
     use PaginatedResponseTrait;
     public function __construct(
         SerializerInterface $serializer,
-        private readonly UserServiceInterface $userService
+        private readonly UserFolderServiceInterface $userFolderService
     ) {
         parent::__construct($serializer);
     }
@@ -54,25 +54,25 @@ final class CreateUserController extends AbstractApiController
     /**
      * @throws DatabaseException|NotFoundException
      */
-    #[Route('/user/', name: 'pimcore_studio_api_user_create', methods: ['POST'])]
+    #[Route('/user/folder', name: 'pimcore_studio_api_user_folder_create', methods: ['POST'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
-        path: self::API_PATH . '/user/',
-        operationId: 'createUser',
-        summary: 'Create a new user.',
+        path: self::API_PATH . '/user/folder',
+        operationId: 'createUserFolder',
+        summary: 'Create a new user folder.',
         tags: [Tags::User->value]
     )]
     #[CreateRequestBody]
     #[SuccessResponse(
-        description: 'Node of the new created User',
+        description: 'Node of the new created Folder',
         content: new JsonContent(ref: UserTreeNode::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND
     ])]
-    public function createUser(#[MapRequestPayload] CreateParameter $createParameter): JsonResponse
+    public function createUserFolder(#[MapRequestPayload] CreateParameter $createParameter): JsonResponse
     {
-        $userNode = $this->userService->createUser($createParameter);
+        $userNode = $this->userFolderService->createUserFolder($createParameter);
         return $this->jsonResponse($userNode);
     }
 }

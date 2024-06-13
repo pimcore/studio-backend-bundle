@@ -34,4 +34,9 @@ interface UserFolderRepositoryInterface
      * @throws NotFoundException
      */
     public function getUserFolderById(int $folderId): Folder;
+
+    /**
+     * @throws Exception
+     */
+    public function createUserFolder(string $folderName, int $parentId): Folder;
 }
