@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -57,17 +58,15 @@ final class DeleteController extends AbstractApiController
     )]
     #[IdParameter(type: 'schedule', schema: new Schema(type: 'integer', example: 123))]
     #[SuccessResponse(
-        description: 'Id of deleted schedule',
-        content: new IdJson('ID of deleted schedule')
+        description: 'Successfully deleted schedule',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteSchedule(int $id): JsonResponse
+    public function deleteSchedule(int $id): Response
     {
         $this->scheduleService->deleteSchedule($id);
-
-        return $this->jsonResponse(['id' => $id]);
+        return new Response();
     }
 }

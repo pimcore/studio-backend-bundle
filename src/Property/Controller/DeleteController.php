@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -56,17 +57,16 @@ final class DeleteController extends AbstractApiController
     )]
     #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]
     #[SuccessResponse(
-        description: 'Id of deleted property',
-        content: new IdJson('ID of deleted property')
+        description: 'Successfully deleted property',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteProperty(string $id): JsonResponse
+    public function deleteProperty(string $id): Response
     {
         $this->propertyService->deletePredefinedProperty($id);
 
-        return $this->jsonResponse(['id' => $id]);
+        return new Response();
     }
 }
