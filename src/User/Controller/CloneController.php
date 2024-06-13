@@ -51,13 +51,13 @@ final class CloneController extends AbstractApiController
 
 
     #[Route('/user/clone/{id}', name: 'pimcore_studio_api_user_clone', methods: ['POST'])]
+    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
         path: self::API_PATH . '/user/clone/{id}',
         operationId: 'cloneUser',
         summary: 'Clone a specific user.',
         tags: [Tags::User->value]
     )]
-    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[SuccessResponse(
         description: 'Node of the cloned user.',
         content: new JsonContent(ref: UserTreeNode::class)

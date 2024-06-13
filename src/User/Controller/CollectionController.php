@@ -51,13 +51,13 @@ final class CollectionController extends AbstractApiController
 
 
     #[Route('/users', name: 'pimcore_studio_api_users', methods: ['GET'])]
+    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::API_PATH . '/users',
         operationId: 'getUsers',
         summary: 'Get collection of users for tree view',
         tags: [Tags::User->value]
     )]
-    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[ParentIdParameter(
         description: 'Filter users by parent id.',
         required: true,
