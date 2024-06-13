@@ -68,7 +68,7 @@ final readonly class OpenSearchFilter implements FilterServiceInterface, OpenSea
             ElementTypes::TYPE_ASSET => $filters->getAssetFilters(),
             ElementTypes::TYPE_DATA_OBJECT => $filters->getDataObjectFilters(),
             ElementTypes::TYPE_DOCUMENT => $filters->getDocumentFilters(),
-            default => throw new InvalidFilterTypeException(400, "Unknown filter type: $type")
+            default => throw new InvalidFilterTypeException(Response::HTTP_BAD_REQUEST, "Unknown filter type: $type")
         };
     }
 

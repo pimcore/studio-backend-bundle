@@ -42,7 +42,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         $search = $dataObjectQuery->getSearch();
         if (!$search instanceof DataObjectSearchInterface) {
             throw new InvalidSearchException(
-                400,
+                Response::HTTP_BAD_REQUEST,
                 sprintf(
                     'Expected search to be an instance of %s, got %s',
                     DataObjectSearchInterface::class,

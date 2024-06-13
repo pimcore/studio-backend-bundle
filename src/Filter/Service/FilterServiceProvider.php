@@ -35,7 +35,7 @@ final class FilterServiceProvider implements FilterServiceProviderInterface
     public function create(string $type): mixed
     {
         if (!array_key_exists($type, $this->filterServices)) {
-            throw new InvalidFilterServiceTypeException(400, "Unknown filter type: $type");
+            throw new InvalidFilterServiceTypeException(Response::HTTP_BAD_REQUEST, "Unknown filter type: $type");
         }
 
         return $this->filterServices[$type];

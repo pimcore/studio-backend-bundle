@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Symfony\Component\HttpFoundation\Response;
+
 /**
  * @internal
  */
@@ -24,7 +26,7 @@ final class InvalidAssetFormatTypeException extends AbstractApiException
     public function __construct(string $type)
     {
         parent::__construct(
-            400,
+            Response::HTTP_BAD_REQUEST,
             sprintf(
                 'Invalid asset format type: %s',
                 $type

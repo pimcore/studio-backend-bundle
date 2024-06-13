@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Symfony\Component\HttpFoundation\Response;
+
 /**
  * @internal
  */
@@ -23,7 +25,7 @@ final class ElementPublishingFailedException extends AbstractApiException
 {
     public function __construct(int $id, ?string $error = null)
     {
-        parent::__construct(400, sprintf(
+        parent::__construct(Response::HTTP_BAD_REQUEST, sprintf(
             'Failed to publish element with ID %s: %s',
             $id,
             $error ?? 'Unknown error'

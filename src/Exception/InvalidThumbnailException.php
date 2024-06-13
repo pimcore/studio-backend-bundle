@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Symfony\Component\HttpFoundation\Response;
+
 /**
  * @internal
  */
@@ -24,7 +26,7 @@ final class InvalidThumbnailException extends AbstractApiException
     public function __construct(string $thumbnailName)
     {
         parent::__construct(
-            400,
+            Response::HTTP_BAD_REQUEST,
             sprintf('Invalid thumbnail: %s', $thumbnailName)
         );
     }

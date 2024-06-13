@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundEx
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Video;
+use Pimcore\Model\Asset\Video\ImageThumbnailInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -33,7 +34,7 @@ trait StreamedResponseTrait
      * @throws ElementStreamResourceNotFoundException
      */
     protected function getStreamedResponse(
-        Asset|Video\ImageThumbnailInterface $element,
+        Asset|ImageThumbnailInterface $element,
         string $contentDisposition = HttpResponseHeaders::ATTACHMENT_TYPE->value,
         array $additionalHeaders = []
     ): StreamedResponse {

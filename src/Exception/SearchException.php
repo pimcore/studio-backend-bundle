@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Symfony\Component\HttpFoundation\Response;
+
 /**
  * @internal
  */
@@ -23,6 +25,6 @@ final class SearchException extends AbstractApiException
 {
     public function __construct(string $type)
     {
-        parent::__construct(400, 'Search for ' . $type . ' failed');
+        parent::__construct(Response::HTTP_BAD_REQUEST, 'Search for ' . $type . ' failed');
     }
 }
