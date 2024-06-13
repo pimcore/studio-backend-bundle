@@ -2,8 +2,7 @@ name: "PHP-CS-Fixer"
 
 on:
     pull_request_target:
-        branches:
-            - "*"
+        types: [opened, synchronize, reopened]
     push:
         branches:
             - "[0-9]+.[0-9]+"
