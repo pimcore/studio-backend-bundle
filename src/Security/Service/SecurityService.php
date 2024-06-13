@@ -19,10 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 /**
  * @internal
@@ -42,7 +42,7 @@ final readonly class SecurityService implements SecurityServiceInterface
     {
         $pimcoreUser = $this->authenticationResolver->authenticateSession();
         if (!$pimcoreUser instanceof User) {
-            throw new UserNotFoundException('No pimcore user found');
+            throw new UserNotFoundException();
         }
 
         return $pimcoreUser;
