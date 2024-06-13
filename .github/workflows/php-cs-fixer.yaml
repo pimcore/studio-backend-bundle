@@ -11,6 +11,8 @@ on:
             - "*_actions"
             - "feature-*"
 
+    -permissions: write
+
 jobs:
     php-style:
         uses: pimcore/workflows-collection-public/.github/workflows/reusable-php-cs-fixer.yaml@main
