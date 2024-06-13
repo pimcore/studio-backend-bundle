@@ -89,7 +89,10 @@ final class DataObjectQuery implements QueryInterface
     {
         $classDefinition = $this->classDefinitionResolver->getByName($classDefinitionId);
         if($classDefinition === null) {
-            throw new ClassDefinitionNotFoundException(HttpResponseCodes::BAD_REQUEST->value, 'Class definition not found');
+            throw new ClassDefinitionNotFoundException(
+                HttpResponseCodes::BAD_REQUEST->value,
+                'Class definition not found'
+            );
         }
         $this->search->setClassDefinition($classDefinition);
 
