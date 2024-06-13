@@ -25,10 +25,12 @@ final class ElementSavingFailedException extends AbstractApiException
 {
     public function __construct(int $id, ?string $error = null)
     {
-        parent::__construct(HttpResponseCodes::INTERNAL_SERVER_ERROR->value, sprintf(
-            'Failed to save element with ID %s: %s',
-            $id,
-            $error ?? 'Unknown error'
-        ));
+        parent::__construct(
+            HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
+            sprintf(
+                'Failed to save element with ID %s: %s',
+                $id, $error ?? 'Unknown error'
+            )
+        );
     }
 }

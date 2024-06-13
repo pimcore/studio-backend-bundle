@@ -25,9 +25,12 @@ final class NotWriteableException extends AbstractApiException
 {
     public function __construct(string $type)
     {
-        parent::__construct(HttpResponseCodes::INTERNAL_SERVER_ERROR->value, sprintf(
-            'Cannot create: %s',
-            $type
-        ));
+        parent::__construct(
+            HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
+            sprintf(
+                'Cannot create: %s',
+                $type
+            )
+        );
     }
 }
