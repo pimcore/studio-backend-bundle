@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -45,7 +46,7 @@ final class CollectionController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException
+     * @throws NotFoundException|AccessDeniedException
      */
     #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_get_element_properties', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
