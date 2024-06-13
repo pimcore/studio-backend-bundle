@@ -17,9 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailConfigurationException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ThumbnailResizingFailedException;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Image\ThumbnailInterface;
+use Pimcore\Model\Asset\Video\Thumbnail\Config as VideoThumbnailConfig;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
@@ -40,4 +44,18 @@ interface ThumbnailServiceInterface
         Image $image,
         bool $deleteAfterSend = true
     ): BinaryFileResponse;
+
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getVideoThumbnailConfig(
+        string $thumbnailName
+    ): VideoThumbnailConfig;
+
+    /**
+     * @throws InvalidThumbnailConfigurationException
+     */
+    public function validateCustomVideoThumbnailConfig(
+        VideoImageStreamConfigParameter $imageConfig
+    ): void;
 }

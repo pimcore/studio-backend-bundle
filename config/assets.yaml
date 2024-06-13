@@ -40,10 +40,16 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\ThumbnailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ThumbnailService
 
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\BinaryServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\BinaryService
+
   Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\ImageAdapter:
     tags: [ 'pimcore.studio_backend.update_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\CustomMetadataAdapter:
+    tags: [ 'pimcore.studio_backend.update_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\CustomSettingsAdapter:
     tags: [ 'pimcore.studio_backend.update_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter\MetadataAdapter:

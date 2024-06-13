@@ -21,16 +21,15 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 /**
  * @internal
  */
-final class WorkflowActionNotAllowedException extends AbstractApiException
+final class InvalidThumbnailConfigurationException extends AbstractApiException
 {
-    public function __construct(string $actionName, string $workflowName)
+    public function __construct(string $type)
     {
         parent::__construct(
             HttpResponseCodes::BAD_REQUEST->value,
             sprintf(
-                'Action %s is not allowed for workflow %s',
-                $actionName,
-                $workflowName
+                'Invalid thumbnail configuration: %s',
+                $type
             )
         );
     }

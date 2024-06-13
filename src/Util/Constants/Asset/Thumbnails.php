@@ -14,23 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
-
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset;
 
 /**
  * @internal
  */
-final class InvalidElementTypeException extends AbstractApiException
+final class Thumbnails
 {
-    public function __construct(string $type)
-    {
-        parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
-            sprintf(
-                'Invalid element type: %s',
-                $type
-            )
-        );
-    }
+    public const DEFAULT_THUMBNAIL_ID = 'pimcore-system-treepreview';
+
+    public const DEFAULT_THUMBNAIL_TEXT = 'original';
 }

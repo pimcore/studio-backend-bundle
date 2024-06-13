@@ -16,9 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
+use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Video;
+use Pimcore\Model\Asset\Video\ImageThumbnailInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -26,8 +30,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 trait StreamedResponseTrait
 {
+    /**
+     * @throws ElementStreamResourceNotFoundException
+     */
     protected function getStreamedResponse(
-        Asset $element,
+        Asset|ImageThumbnailInterface $element,
         string $contentDisposition = HttpResponseHeaders::ATTACHMENT_TYPE->value,
         array $additionalHeaders = []
     ): StreamedResponse {
@@ -40,18 +47,64 @@ trait StreamedResponseTrait
             );
         }
 
-        $headers = array_merge($additionalHeaders, [
-            HttpResponseHeaders::HEADER_CONTENT_TYPE->value => $element->getMimeType(),
+        return new StreamedResponse(
+            function () use ($stream) {
+                fpassthru($stream);
+            },
+            200,
+            $this->getResponseHeaders(
+                mimeType: $element->getMimeType(),
+                fileSize: $element->getFileSize(),
+                filename: $element->getFilename(),
+                contentDisposition: $contentDisposition,
+                additionalHeaders: $additionalHeaders
+            )
+        );
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    protected function getVideoStreamedResponse(
+        Video $video,
+        FilesystemOperator $storage,
+        string $storagePath,
+        string $contentDisposition = HttpResponseHeaders::ATTACHMENT_TYPE->value,
+    ): StreamedResponse {
+        $stream = $storage->readStream($storagePath);
+
+        return new StreamedResponse(
+            function () use ($stream) {
+                fpassthru($stream);
+            },
+            200,
+            $this->getResponseHeaders(
+                mimeType: 'video/mp4',
+                fileSize: $storage->fileSize($storagePath),
+                filename: $video->getFilename(),
+                contentDisposition: $contentDisposition,
+                additionalHeaders: [
+                    HttpResponseHeaders::HEADER_ACCEPT_RANGES->value => 'bytes',
+                ]
+            )
+        );
+    }
+
+    private function getResponseHeaders(
+        string $mimeType,
+        int $fileSize,
+        string $filename,
+        string $contentDisposition,
+        array $additionalHeaders = []
+    ): array {
+        return array_merge($additionalHeaders, [
+            HttpResponseHeaders::HEADER_CONTENT_TYPE->value => $mimeType,
             HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value => sprintf(
                 '%s; filename="%s"',
                 $contentDisposition,
-                $element->getFilename()
+                $filename
             ),
-            HttpResponseHeaders::HEADER_CONTENT_LENGTH->value => $element->getFileSize(),
+            HttpResponseHeaders::HEADER_CONTENT_LENGTH->value => $fileSize,
         ]);
-
-        return new StreamedResponse(function () use ($stream) {
-            fpassthru($stream);
-        }, 200, $headers);
     }
 }

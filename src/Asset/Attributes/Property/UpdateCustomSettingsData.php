@@ -14,24 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\UpdateCustomSettings as UpdateCustomSettingsSchema;
 
 /**
  * @internal
  */
-final class WorkflowActionNotAllowedException extends AbstractApiException
+final class UpdateCustomSettingsData extends Property
 {
-    public function __construct(string $actionName, string $workflowName)
+    public function __construct()
     {
         parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
-            sprintf(
-                'Action %s is not allowed for workflow %s',
-                $actionName,
-                $workflowName
-            )
+            'customSettings',
+            type: 'array',
+            items: new Items(ref: UpdateCustomSettingsSchema::class),
+            nullable: true,
         );
     }
 }

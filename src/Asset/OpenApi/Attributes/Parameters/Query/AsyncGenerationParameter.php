@@ -20,16 +20,16 @@ use Attribute;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class ImageConfigParameter extends QueryParameter
+#[Attribute(Attribute::TARGET_METHOD)]
+final class AsyncGenerationParameter extends QueryParameter
 {
-    public function __construct(string $name, mixed $defaultValue = null)
+    public function __construct(mixed $defaultValue = null)
     {
         parent::__construct(
-            name: $name,
-            description: ucfirst($name) . ' of downloaded image',
+            name: 'async',
+            description: 'Generate the asset asynchronously',
             in: 'query',
-            schema: new Schema(type: 'integer', example: $defaultValue),
+            schema: new Schema(type: 'boolean', example: $defaultValue),
         );
     }
 }

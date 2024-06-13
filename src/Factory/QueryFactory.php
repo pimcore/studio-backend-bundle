@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInte
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
@@ -41,7 +42,10 @@ final readonly class QueryFactory implements QueryFactoryInterface
         return match($type) {
             'asset' => $this->assetQueryProvider->createAssetQuery(),
             'dataObject' => $this->dataObjectQueryProvider->createDataObjectQuery(),
-            default => throw new InvalidQueryTypeException(400, "Unknown query type: $type")
+            default => throw new InvalidQueryTypeException(
+                HttpResponseCodes::BAD_REQUEST->value,
+                "Unknown query type: $type"
+            )
         };
     }
 }

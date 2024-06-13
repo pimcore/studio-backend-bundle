@@ -14,23 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
-
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset;
 
 /**
  * @internal
  */
-final class InvalidElementTypeException extends AbstractApiException
+enum CustomSettings: string
 {
-    public function __construct(string $type)
-    {
-        parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
-            sprintf(
-                'Invalid element type: %s',
-                $type
-            )
-        );
-    }
+    case IMAGE_THUMBNAIL_ASSET = 'image_thumbnail_asset';
+    case IMAGE_THUMBNAIL_TIME = 'image_thumbnail_time';
 }

@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+
 /**
  * @internal
  */
@@ -24,7 +26,7 @@ final class ThumbnailResizingFailedException extends AbstractApiException
     public function __construct(string $message)
     {
         parent::__construct(
-            400,
+            HttpResponseCodes::BAD_REQUEST->value,
             sprintf(
                 'Thumbnail resizing failed: %s',
                 $message
