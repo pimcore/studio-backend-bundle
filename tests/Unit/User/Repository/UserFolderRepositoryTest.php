@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Repository;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\FolderResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository;
 use Pimcore\Model\User\Folder;
 

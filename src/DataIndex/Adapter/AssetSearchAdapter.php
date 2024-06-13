@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
-use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\OpenSearch\SearchFailedException;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
@@ -24,8 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 
 final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 {
@@ -60,18 +59,18 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     }
 
     /**
-     * @throws SearchFailedException|ElementNotFoundException
+     * @throws SearchFailedException|NotFoundException
      */
     public function getAssetById(int $id): Asset
     {
         try {
             $asset = $this->searchService->byId($id);
         } catch (AssetSearchException) {
-            throw new SearchException(sprintf('asset with id %s', $id));
+            throw new SearchException(sprintf('Asset with id %s', $id));
         }
 
         if (!$asset) {
-            throw new ElementNotFoundException($id);
+            throw new NotFoundException('Asset', $id);
         }
 
         return $this->assetHydratorService->hydrate($asset);

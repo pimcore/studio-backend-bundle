@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
@@ -43,7 +43,7 @@ final class VersionDetailService implements VersionDetailServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|ElementNotFoundException|InvalidElementTypeException
+     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
      */
     public function getVersionData(
         int $id,

@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\DomainConfigurationException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\RateLimitException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;

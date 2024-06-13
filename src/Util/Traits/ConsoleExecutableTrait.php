@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ConsoleDependencyMissingException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConsoleDependencyMissingException;
 use Pimcore\Tool\Console;
 
 /**

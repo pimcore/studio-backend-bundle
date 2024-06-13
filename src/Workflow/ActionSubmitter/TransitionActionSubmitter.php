@@ -17,9 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\ActionSubmitter;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidElementTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionNotAllowedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowActionSubmissionException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionNotAllowedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowActionSubmissionException;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Response\ActionSubmissionResponse;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Model\Asset;

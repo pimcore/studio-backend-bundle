@@ -16,14 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
@@ -44,7 +44,7 @@ final readonly class NoteService implements NoteServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException|ElementNotFoundException
+     * @throws ElementSavingFailedException|NotFoundException
      */
     public function createNote(NoteElementParameters $noteElement, CreateNote $createNote): Note
     {
@@ -80,7 +80,7 @@ final readonly class NoteService implements NoteServiceInterface
     }
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function deleteNote(int $id): void
     {
@@ -88,7 +88,7 @@ final readonly class NoteService implements NoteServiceInterface
     }
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     private function getNote(int $id): Note
     {

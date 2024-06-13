@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing as UserListing;
 use Pimcore\Model\UserInterface;
@@ -54,7 +54,7 @@ final readonly class UserRepository implements UserRepositoryInterface
         $user = $this->userResolver->getById($userId);
 
         if (!$user instanceof User) {
-            throw new NotFoundException(sprintf("User with ID %d not found", $userId));
+            throw new NotFoundException('User', $userId);
         }
 
         return $user;
