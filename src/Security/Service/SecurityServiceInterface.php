@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
-
 /**
  * @internal
  */
