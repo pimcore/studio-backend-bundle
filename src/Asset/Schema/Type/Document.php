@@ -22,6 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 
 #[Schema(
     title: 'Document',
+    required: [
+        'pageCount',
+        'imageThumbnailPath'
+    ],
     type: 'object'
 )]
 class Document extends Asset
@@ -42,7 +46,7 @@ class Document extends Asset
         string $type,
         string $filename,
         string $mimeType,
-        array $metaData,
+        bool $hasMetaData,
         bool $workflowWithPermissions,
         string $fullPath,
         int $id,
@@ -62,7 +66,7 @@ class Document extends Asset
             $type,
             $filename,
             $mimeType,
-            $metaData,
+            $hasMetaData,
             $workflowWithPermissions,
             $fullPath,
             $id,

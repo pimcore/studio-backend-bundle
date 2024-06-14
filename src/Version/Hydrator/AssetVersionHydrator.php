@@ -17,14 +17,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementProcessingNotCompletedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementUnsafeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\ImageVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Enum\PdfScanStatus;
 use Pimcore\Model\Asset\Image;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -35,6 +36,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
 {
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
+        private VersionDetailServiceInterface $versionDetailService
     ) {
     }
 
@@ -54,8 +56,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
         }
 
         $hydratedAsset = new AssetVersion(
-            $asset->getFilename(),
-            $this->getTemporaryFile($asset),
+            $asset->getFilename()
         );
 
         $this->eventDispatcher->dispatch(
@@ -70,12 +71,11 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
     {
         $hydratedImage = new ImageVersion(
             $image->getFilename(),
-            $this->getTemporaryFile($image),
             $image->getCreationDate(),
             $image->getModificationDate(),
-            $image->getFileSize(),
+            $this->versionDetailService->getAssetFileSize($image) ?? $image->getFileSize(),
             $image->getMimeType(),
-            $this->getImageDimensions($image)
+            $this->versionDetailService->getImageDimensions($image)
         );
 
         $this->eventDispatcher->dispatch(
@@ -86,49 +86,22 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
         return $hydratedImage;
     }
 
-    private function getImageDimensions(Image $image): Dimensions
-    {
-        try {
-            $assetDimensions = $image->getDimensions();
-        } catch (Exception) {
-            return new Dimensions();
-        }
-
-        if (!$assetDimensions) {
-            return new Dimensions();
-        }
-
-        return new Dimensions(
-            $assetDimensions['width'],
-            $assetDimensions['height']
-        );
-    }
-
-    private function getTemporaryFile(Asset $asset): ?string
-    {
-        try {
-            $temporaryFile = $asset->getTemporaryFile();
-        } catch (Exception) {
-            return null;
-        }
-
-        return $temporaryFile;
-    }
-
     private function validatePdfStatus(Asset\Document $pdf): void
     {
         $status = $pdf->getScanStatus();
 
-        if ($status !== Asset\Enum\PdfScanStatus::SAFE) {
-            if ($status === Asset\Enum\PdfScanStatus::UNSAFE) {
-                throw new ElementUnsafeException(
-                    $pdf->getId()
-                );
-            }
+        if ($status === PdfScanStatus::SAFE) {
+            return;
+        }
 
-            throw new ElementProcessingNotCompletedException(
+        if ($status === Asset\Enum\PdfScanStatus::UNSAFE) {
+            throw new NotCompletedException(
                 $pdf->getId()
             );
         }
+
+        throw new ElementProcessingNotCompletedException(
+            $pdf->getId()
+        );
     }
 }

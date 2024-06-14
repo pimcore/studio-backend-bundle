@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller\Element;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
@@ -45,7 +45,7 @@ final class CollectionController extends AbstractApiController
     }
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_get_element_properties', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
@@ -53,8 +53,7 @@ final class CollectionController extends AbstractApiController
         path: self::API_PATH . '/properties/{elementType}/{id}',
         operationId: 'getPropertiesForElementByTypeAndId',
         summary: 'Get properties for an element based on the element type and the element id',
-        security: self::SECURITY_SCHEME,
-        tags: [Tags::PropertiesForElement->value]
+        tags: [Tags::Properties->value]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]

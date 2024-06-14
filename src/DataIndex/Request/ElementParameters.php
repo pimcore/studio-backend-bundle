@@ -46,7 +46,7 @@ readonly class ElementParameters extends CollectionParameters implements Element
         return $this->idSearchTerm;
     }
 
-    public function getExcludeFolders(): ?bool
+    public function getExcludeFolders(): bool
     {
         return $this->excludeFolders === 'true'; // TODO: symfony 7.1 will support bool type
     }
@@ -56,12 +56,12 @@ readonly class ElementParameters extends CollectionParameters implements Element
         return $this->path;
     }
 
-    public function getPathIncludeParent(): ?bool
+    public function getPathIncludeParent(): bool
     {
         return $this->pathIncludeParent === 'true'; // TODO: symfony 7.1 will support bool type
     }
 
-    public function getPathIncludeDescendants(): ?bool
+    public function getPathIncludeDescendants(): bool
     {
         return $this->pathIncludeDescendants === 'true'; // TODO: symfony 7.1 will support bool type
     }

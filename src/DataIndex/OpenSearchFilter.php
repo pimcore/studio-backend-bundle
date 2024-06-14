@@ -19,12 +19,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Filters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
@@ -68,7 +69,10 @@ final readonly class OpenSearchFilter implements FilterServiceInterface, OpenSea
             ElementTypes::TYPE_ASSET => $filters->getAssetFilters(),
             ElementTypes::TYPE_DATA_OBJECT => $filters->getDataObjectFilters(),
             ElementTypes::TYPE_DOCUMENT => $filters->getDocumentFilters(),
-            default => throw new InvalidFilterTypeException(400, "Unknown filter type: $type")
+            default => throw new InvalidFilterTypeException(
+                HttpResponseCodes::BAD_REQUEST->value,
+                "Unknown filter type: $type"
+            )
         };
     }
 

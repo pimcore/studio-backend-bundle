@@ -55,7 +55,6 @@ final class CollectionController extends AbstractApiController
         path: self::API_PATH . '/properties',
         operationId: 'getProperties',
         summary: 'Get all predefined properties. You can filter by type and query',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Properties->name]
     )]
     #[ElementTypeParameter(false, null)]

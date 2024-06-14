@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'PredefinedProperty',
+    required: ['id', 'name', 'key', 'type', 'ctype', 'inheritable', 'creationDate', 'modificationDate'],
     type: 'object'
 )]
 final class PredefinedProperty implements AdditionalAttributesInterface

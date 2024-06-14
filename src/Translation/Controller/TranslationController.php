@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Controller;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -56,7 +56,6 @@ final class TranslationController extends AbstractApiController
         operationId: 'getTranslations',
         description: 'Get translations for given keys and locale',
         summary: 'Get translations',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Translation->name]
     )]
     #[TranslationRequestBody]

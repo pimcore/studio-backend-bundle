@@ -19,15 +19,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -44,7 +43,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     #[Route('/properties/{id}', name: 'pimcore_studio_api_delete_properties', methods: ['DELETE'])]
     //#[IsGranted('STUDIO_API')]
@@ -52,22 +51,20 @@ final class DeleteController extends AbstractApiController
         path: self::API_PATH . '/properties/{id}',
         operationId: 'deleteProperty',
         summary: 'Delete property with given id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Properties->name]
     )]
     #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]
     #[SuccessResponse(
-        description: 'Id of deleted property',
-        content: new IdJson('ID of deleted property')
+        description: 'Successfully deleted property',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteProperty(string $id): JsonResponse
+    public function deleteProperty(string $id): Response
     {
         $this->propertyService->deletePredefinedProperty($id);
 
-        return $this->jsonResponse(['id' => $id]);
+        return new Response();
     }
 }

@@ -56,7 +56,6 @@ final class SubmitActionController extends AbstractApiController
         operationId: 'submitWorkflowAction',
         description: 'Submit action based on the workflow name, action name and action type',
         summary: 'Submit workflow action',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Workflows->name]
     )]
     #[WorkflowActionRequestBody]

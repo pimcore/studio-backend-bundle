@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'Version',
-    required: ['id', 'cid', 'ctype', 'note', 'date', 'public', 'versionCount', 'autosave', 'user'],
+    required: ['id', 'cid', 'ctype', 'note', 'date', 'public', 'published', 'versionCount', 'autosave', 'user'],
     type: 'object'
 )]
 final class Version implements AdditionalAttributesInterface
@@ -46,6 +46,8 @@ final class Version implements AdditionalAttributesInterface
         private readonly int $date,
         #[Property(description: 'public', type: 'bool', example: false)]
         private readonly bool $public,
+        #[Property(description: 'published', type: 'bool', example: false)]
+        private readonly bool $published,
         #[Property(description: 'version count', type: 'integer', example: 10)]
         private readonly int $versionCount,
         #[Property(description: 'autosave', type: 'bool', example: false)]
@@ -86,6 +88,11 @@ final class Version implements AdditionalAttributesInterface
     public function isPublic(): bool
     {
         return $this->public;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->published;
     }
 
     public function getVersionCount(): int

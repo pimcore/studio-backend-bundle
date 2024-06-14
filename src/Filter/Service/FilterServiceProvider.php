@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Filter\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterServiceTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 
 final class FilterServiceProvider implements FilterServiceProviderInterface
 {
@@ -35,7 +35,7 @@ final class FilterServiceProvider implements FilterServiceProviderInterface
     public function create(string $type): mixed
     {
         if (!array_key_exists($type, $this->filterServices)) {
-            throw new InvalidFilterServiceTypeException(400, "Unknown filter type: $type");
+            throw new InvalidFilterServiceTypeException($type);
         }
 
         return $this->filterServices[$type];

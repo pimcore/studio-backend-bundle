@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Controller\Element;
 
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
@@ -59,7 +59,6 @@ final class UpdateController extends AbstractApiController
         path: self::API_PATH . '/schedules/{elementType}/{id}',
         operationId: 'updateSchedulesForElementByTypeAndId',
         summary: 'Update schedules for an element',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]

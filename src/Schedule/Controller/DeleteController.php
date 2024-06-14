@@ -19,16 +19,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Controller;
 use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -45,7 +44,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws ElementNotFoundException|DatabaseException
+     * @throws NotFoundException|DatabaseException
      */
     #[Route('/schedules/{id}', name: 'pimcore_studio_api_delete_schedule', methods: ['DELETE'])]
     //#[IsGranted('STUDIO_API')]
@@ -53,22 +52,19 @@ final class DeleteController extends AbstractApiController
         path: self::API_PATH . '/schedules/{id}',
         operationId: 'deleteSchedule',
         summary: 'Delete schedule with given id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Schedule->name]
     )]
     #[IdParameter(type: 'schedule', schema: new Schema(type: 'integer', example: 123))]
     #[SuccessResponse(
-        description: 'Id of deleted schedule',
-        content: new IdJson('ID of deleted schedule')
+        description: 'Successfully deleted schedule',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteSchedule(int $id): JsonResponse
+    public function deleteSchedule(int $id): Response
     {
         $this->scheduleService->deleteSchedule($id);
-
-        return $this->jsonResponse(['id' => $id]);
+        return new Response();
     }
 }

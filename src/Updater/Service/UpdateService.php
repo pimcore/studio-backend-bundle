@@ -16,28 +16,31 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
+use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Model\Element\DuplicateFullPathException;
 
 /**
  * @internal
  */
-final class UpdateService implements UpdateServiceInterface
+final readonly class UpdateService implements UpdateServiceInterface
 {
     use ElementProviderTrait;
 
     public function __construct(
-        private readonly AdapterLoaderInterface $adapterLoader,
-        private readonly ServiceResolver $serviceResolver
+        private AdapterLoaderInterface $adapterLoader,
+        private ServiceResolver $serviceResolver,
+        private SynchronousProcessingServiceInterface $synchronousProcessingService
+
     )
     {
     }
 
     /**
-     * @throws ElementSavingFailedException|ElementNotFoundException
+     * @throws ElementSavingFailedException|NotFoundException
      */
     public function update(string $elementType, int $id, array $data): void
     {
@@ -48,8 +51,9 @@ final class UpdateService implements UpdateServiceInterface
         }
 
         try {
+            $this->synchronousProcessingService->enable();
             $element->save();
-        } catch (DuplicateFullPathException $e) {
+        } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
         }
     }

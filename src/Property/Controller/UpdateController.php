@@ -20,7 +20,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -48,14 +48,13 @@ final class UpdateController extends AbstractApiController
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws NotFoundException
      */
     #[Route('/properties/{id}', name: 'pimcore_studio_api_update_property', methods: ['PUT'])]
     #[Put(
         path: self::API_PATH . '/properties/{id}',
         operationId: 'updateProperty',
         summary: 'Updating a property',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Properties->name]
     )]
     #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]

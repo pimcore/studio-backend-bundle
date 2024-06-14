@@ -30,7 +30,7 @@ final class PageSizeParameter extends QueryParameter
             description: 'Number of items per page',
             in: 'query',
             required: true,
-            schema: new Schema(type: 'integer', example: $defaultSize),
+            schema: new Schema(type: 'integer', minimum: 1, example: $defaultSize),
         );
     }
 }

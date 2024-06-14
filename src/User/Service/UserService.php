@@ -16,15 +16,29 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\DomainConfigurationException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\RateLimitException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
+use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -36,7 +50,12 @@ final readonly class UserService implements UserServiceInterface
         private UserResolverInterface $userResolver,
         private MailServiceInterface $mailService,
         private RateLimiterInterface $rateLimiter,
-        private LoggerInterface $pimcoreLogger
+        private LoggerInterface $pimcoreLogger,
+        private UserRepositoryInterface $userRepository,
+        private UserTreeNodeHydratorInterface $userTreeNodeHydrator,
+        private EventDispatcherInterface $eventDispatcher,
+        private SecurityServiceInterface $securityService,
+        private UserFolderRepositoryInterface $userFolderRepository
     )
     {
     }
@@ -68,6 +87,59 @@ final readonly class UserService implements UserServiceInterface
 
     }
 
+    public function getUserTreeListing(UserListParameter $userListParameter): Collection
+    {
+        $userListing = $this->userRepository->getUserListingByParentId($userListParameter->getParentId());
+        $users = [];
+
+        foreach ($userListing->getUsers() as $user) {
+            if ($user->getName() === 'system') {
+                continue;
+            }
+
+            $userTreeNode = $this->userTreeNodeHydrator->hydrate($user);
+
+            $this->eventDispatcher->dispatch(
+                new UserTreeNodeEvent($userTreeNode),
+                UserTreeNodeEvent::EVENT_NAME
+            );
+
+            $users[] = $userTreeNode;
+        }
+
+        return new Collection(
+            totalItems: $userListing->getTotalCount(),
+            items: $users
+        );
+    }
+
+    /**
+     * @throws NotFoundException|ForbiddenException|DatabaseException
+     */
+    public function deleteUser(int $userId): void
+    {
+
+        $currentUser = $this->securityService->getCurrentUser();
+        $userToDelete = $this->userRepository->getUserById($userId);
+
+        if (!$currentUser->isAdmin() && $userToDelete->isAdmin()) {
+            throw new ForbiddenException('Only admins can delete other admins');
+        }
+
+        try {
+            $this->userRepository->deleteUser($userToDelete);
+        } catch (Exception $exception) {
+            throw new DatabaseException(
+                sprintf(
+                    'Error deleting user with id %d: %s',
+                    $userId,
+                    $exception->getMessage()
+                )
+            );
+        }
+
+    }
+
     /**
      * @return array<string, bool|string>
      */
@@ -90,5 +162,31 @@ final readonly class UserService implements UserServiceInterface
         }
 
         return ['success' => true, 'error' => ''];
+    }
+
+    /**
+     * @throws NotFoundException|DatabaseException
+     */
+    public function createUser(CreateParameter $createParameter): UserTreeNode
+    {
+        $folderId = 0;
+
+        // Check if parent folder exists
+        if ($createParameter->getParentId() !== 0) {
+            $folderId = $this->userFolderRepository->getUserFolderById($createParameter->getParentId())->getId();
+        }
+
+        try {
+            $user = $this->userRepository->createUser($createParameter->getName(), $folderId);
+        } catch (Exception $exception) {
+            throw new DatabaseException(
+                sprintf(
+                    'Error creating user: %s',
+                    $exception->getMessage()
+                )
+            );
+        }
+
+        return $this->userTreeNodeHydrator->hydrate($user);
     }
 }

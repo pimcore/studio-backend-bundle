@@ -18,6 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -26,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Attributes\Response\Content\OneOfVersionJson;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -43,6 +47,9 @@ final class GetController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException|UserNotFoundException
+     */
     #[Route('/versions/{id}', name: 'pimcore_studio_api_get_version', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[Get(
@@ -50,7 +57,6 @@ final class GetController extends AbstractApiController
         operationId: 'getVersionById',
         description: 'Get version based on the version ID',
         summary: 'Get version by ID',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]

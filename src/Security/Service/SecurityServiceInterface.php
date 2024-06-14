@@ -16,12 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Schema\Credentials;
-use Pimcore\Bundle\StudioBackendBundle\Exception\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 /**
  * @internal
@@ -29,14 +27,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 interface SecurityServiceInterface
 {
     /**
-     * @throws AccessDeniedException
-     */
-    public function authenticateUser(Credentials $credentials): PasswordAuthenticatedUserInterface;
-
-    public function checkAuthToken(string $token): bool;
-
-    /**
-     * @throws NotAuthorizedException
+     * @throws UserNotFoundException
      */
     public function getCurrentUser(): UserInterface;
 

@@ -16,10 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\NonPublicTranslationException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NoRequestException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotAuthorizedException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NonPublicTranslationException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PublicTranslationTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\RequestTrait;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,7 +40,6 @@ final class PublicAuthorizationVoter extends Voter
 
     public function __construct(
         private readonly RequestStack $requestStack,
-        private readonly SecurityServiceInterface $securityService
     ) {
     }
 
@@ -59,16 +56,6 @@ final class PublicAuthorizationVoter extends Voter
     {
         $request = $this->getCurrentRequest($this->requestStack);
         $subjectName = $this->getSubjectName($subject);
-
-        try {
-            $authToken = $this->getAuthToken($request);
-        } catch (NotAuthorizedException) {
-            return $this->voteOnRequest($request, $subjectName);
-        }
-
-        if ($this->securityService->checkAuthToken($authToken)) {
-            return true;
-        }
 
         return $this->voteOnRequest($request, $subjectName);
     }

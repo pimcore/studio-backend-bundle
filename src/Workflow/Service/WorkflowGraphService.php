@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
-use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\WorkflowDependencyMissingException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowDependencyMissingException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ConsoleExecutableTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Tool\Console;
 use Symfony\Component\Process\Process;
@@ -28,6 +28,8 @@ use Symfony\Component\Workflow\WorkflowInterface;
  */
 final readonly class WorkflowGraphService implements WorkflowGraphServiceInterface
 {
+    use ConsoleExecutableTrait;
+
     private const PHP_EXECUTABLE = 'php';
 
     private const DOT_EXECUTABLE = 'dot';
@@ -43,7 +45,7 @@ final readonly class WorkflowGraphService implements WorkflowGraphServiceInterfa
         $params = [
             'NAME' => $workflow->getName(),
             'PLACES' => implode(' ', array_keys($marking->getPlaces())),
-            'DOT' => $this->getExecutable(self::DOT_EXECUTABLE),
+            'DOT' => $this->getExecutable(self::DOT_EXECUTABLE, 'workflow graph generation'),
         ];
 
         $cmd = $this->getExecutable(self::PHP_EXECUTABLE) . ' ' .
@@ -55,25 +57,5 @@ final readonly class WorkflowGraphService implements WorkflowGraphServiceInterfa
         $process->run(null, $params);
 
         return $process->getOutput();
-    }
-
-    private function getExecutable(string $executable): string
-    {
-        try {
-            $consoleExecutable = Console::getExecutable($executable);
-
-            if (!$consoleExecutable) {
-                throw new WorkflowDependencyMissingException(
-                    $executable
-                );
-            }
-
-            return $consoleExecutable;
-        } catch (Exception) {
-            throw new WorkflowDependencyMissingException(
-                $executable
-            );
-        }
-
     }
 }

@@ -25,6 +25,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'WorkflowDetails',
+    required: ['workflowName', 'workflowStatus', 'graph', 'allowedTransitions', 'globalActions'],
     type: 'object'
 )]
 final readonly class WorkflowDetails

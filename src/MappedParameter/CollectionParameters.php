@@ -16,9 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
 use Pimcore\ValueObject\Integer\PositiveInteger;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
+use ValueError;
 
 /**
  * @internal
@@ -53,7 +55,11 @@ readonly class CollectionParameters implements CollectionParametersInterface
 
     private function validate(): void
     {
-        new PositiveInteger($this->page);
-        new PositiveInteger($this->pageSize);
+        try {
+            new PositiveInteger($this->page);
+            new PositiveInteger($this->pageSize);
+        } catch (ValueError $e) {
+            throw new InvalidFilterException($e->getMessage());
+        }
     }
 }

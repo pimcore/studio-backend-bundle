@@ -1,0 +1,15 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Controller\:
+    resource: '../src/Thumbnail/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ThumbnailRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository\ThumbnailRepository

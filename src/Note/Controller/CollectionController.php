@@ -18,17 +18,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidFilterException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Parameters\Query\NoteSortByParameter;
-use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Response\Property\NoteCollection;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
+use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FieldFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\SortOrderParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -66,7 +67,6 @@ final class CollectionController extends AbstractApiController
         path: self::API_PATH . '/notes',
         operationId: 'getNotes',
         summary: 'Get notes',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Notes->name]
     )]
     #[PageParameter]
@@ -77,7 +77,7 @@ final class CollectionController extends AbstractApiController
     #[FieldFilterParameter]
     #[SuccessResponse(
         description: 'Paginated assets with total count as header param',
-        content: new CollectionJson(new NoteCollection())
+        content: new CollectionJson(new GenericCollection(Note::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED
