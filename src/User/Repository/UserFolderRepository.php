@@ -54,4 +54,15 @@ final readonly class UserFolderRepository implements UserFolderRepositoryInterfa
 
         return $folder;
     }
+
+    /**
+     * @throws Exception
+     */
+    public function createUserFolder(string $folderName, int $parentId): Folder
+    {
+        return $this->folderResolver->create([
+            'parentId' => $parentId,
+            'name' => $folderName,
+        ]);
+    }
 }

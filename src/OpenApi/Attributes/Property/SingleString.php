@@ -14,16 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property;
 
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
-use Pimcore\Model\User\Folder;
-use Pimcore\Model\UserInterface;
+use OpenApi\Attributes\Property;
 
 /**
  * @internal
  */
-interface UserTreeNodeHydratorInterface
+final class SingleString extends Property
 {
-    public function hydrate(UserInterface|Folder $user): UserTreeNode;
+    public function __construct(string $propertyName)
+    {
+        parent::__construct(
+            property: $propertyName,
+            type: 'string',
+        );
+    }
 }

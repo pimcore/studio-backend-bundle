@@ -67,4 +67,17 @@ final readonly class UserRepository implements UserRepositoryInterface
     {
         $user->delete();
     }
+
+    /**
+     * @throws Exception
+     */
+    public function createUser(string $username, int $folderId): UserInterface
+    {
+        return $this->userResolver->create([
+            'parentId' => $folderId,
+            'name' => $username,
+            'password' => '',
+            'active' => true,
+        ]);
+    }
 }

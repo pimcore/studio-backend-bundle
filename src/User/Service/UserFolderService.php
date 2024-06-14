@@ -21,7 +21,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 
 /**
  * @internal
@@ -30,7 +33,8 @@ final readonly class UserFolderService implements UserFolderServiceInterface
 {
     public function __construct(
         private SecurityServiceInterface $securityService,
-        private UserFolderRepositoryInterface $userFolderRepository
+        private UserFolderRepositoryInterface $userFolderRepository,
+        private UserTreeNodeHydratorInterface $userTreeNodeHydrator
     )
     {
     }
@@ -53,5 +57,28 @@ final readonly class UserFolderService implements UserFolderServiceInterface
                 sprintf('Failed to delete user folder with id %d: %s', $folderId, $e->getMessage())
             );
         }
+    }
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function createUserFolder(CreateParameter $createParameter): UserTreeNode
+    {
+        $parentFolderId = 0;
+
+        // Check if parent folder exists
+        if ($createParameter->getParentId() !== 0) {
+            $parentFolderId = $this->userFolderRepository->getUserFolderById($createParameter->getParentId())->getId();
+        }
+
+        try {
+            $folder = $this->userFolderRepository->createUserFolder($createParameter->getName(), $parentFolderId);
+        } catch (Exception $e) {
+            throw new DatabaseException(
+                sprintf('Failed to create user folder: %s', $e->getMessage())
+            );
+        }
+
+        return $this->userTreeNodeHydrator->hydrate($folder);
     }
 }

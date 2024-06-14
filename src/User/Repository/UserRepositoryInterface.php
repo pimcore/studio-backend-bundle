@@ -37,4 +37,9 @@ interface UserRepositoryInterface
      * @throws Exception
      */
     public function deleteUser(UserInterface $user): void;
+
+    /**
+     * @throws Exception
+     */
+    public function createUser(string $username, int $folderId): UserInterface;
 }
