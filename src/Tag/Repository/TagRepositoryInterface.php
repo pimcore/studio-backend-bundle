@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
@@ -32,7 +32,7 @@ use Pimcore\Model\Element\Tag\Listing as TagListing;
 interface TagRepositoryInterface
 {
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function getTagById(int $id): Tag;
 
@@ -42,12 +42,12 @@ interface TagRepositoryInterface
     public function getTagsForElement(ElementParameters $tagElement): array;
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function assignTagToElement(ElementParameters $tagElement, int $tagId): void;
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function unassignTagFromElement(ElementParameters $tagElement, int $tagId): void;
 
@@ -60,13 +60,13 @@ interface TagRepositoryInterface
     public function addTag(CreateTagParameters $params): Tag;
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function updateTag(int $id, UpdateTagParameters $params): Tag;
 
     /**
      * @throws ElementDeletingFailedException
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function deleteTag(int $id): void;
 }
