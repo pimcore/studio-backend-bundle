@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller\Element;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -47,7 +47,7 @@ final class BatchReplaceController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException|ElementNotFoundException
+     * @throws ElementSavingFailedException|NotFoundException
      */
     #[Route(
         '/tags/batch/replace/{elementType}',
@@ -59,7 +59,6 @@ final class BatchReplaceController extends AbstractApiController
         path: self::API_PATH . '/tags/batch/replace/{elementType}',
         operationId: 'batchReplaceTagsForElements',
         summary: 'Batch replace tags for elements',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::TagsForElement->value]
     )]
     #[ElementTypeParameter]

@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidParentIdException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidParentIdException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
@@ -32,7 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 interface TagServiceInterface
 {
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function getTag(int $id): Tag;
 
@@ -42,7 +42,7 @@ interface TagServiceInterface
     public function getTagsForElement(ElementParameters $tagElement): array;
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function assignTagToElement(ElementParameters $tagElement, int $tagId): void;
 
@@ -51,7 +51,7 @@ interface TagServiceInterface
     public function batchReplaceTagsToElements(BatchCollectionParameters $collection): void;
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function unassignTagFromElement(ElementParameters $tagElement, int $tagId): void;
 
@@ -62,18 +62,18 @@ interface TagServiceInterface
 
     /**
      * @throws InvalidParentIdException
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function createTag(CreateTagParameters $tag): Tag;
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function updateTag(int $id, UpdateTagParameters $parameters): Tag;
 
     /**
      * @throws ElementDeletingFailedException
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function deleteTag(int $id): int;
 }

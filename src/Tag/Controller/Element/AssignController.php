@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller\Element;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -45,7 +45,7 @@ final class AssignController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException|ElementNotFoundException
+     * @throws ElementSavingFailedException|NotFoundException
      */
     #[Route('/tags/{elementType}/{id}/{tagId}', name: 'pimcore_studio_api_assign_element_tag', methods: ['POST'])]
     //#[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
@@ -53,7 +53,6 @@ final class AssignController extends AbstractApiController
         path: self::API_PATH . '/tags/{elementType}/{id}/{tagId}',
         operationId: 'assignTagForElement',
         summary: 'Assign tag for element',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::TagsForElement->value]
     )]
     #[ElementTypeParameter]

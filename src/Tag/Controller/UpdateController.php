@@ -52,7 +52,6 @@ final class UpdateController extends AbstractApiController
         path: self::API_PATH . '/tags/{id}',
         operationId: 'updateTag',
         summary: 'Update a tag',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Tags->name]
     )]
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]

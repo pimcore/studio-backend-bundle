@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller\Element;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -45,7 +45,7 @@ final class UnassignController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException|ElementNotFoundException
+     * @throws ElementSavingFailedException|NotFoundException
      */
     #[Route('/tags/{elementType}/{id}/{tagId}', name: 'pimcore_studio_api_unassign_element_tag', methods: ['DELETE'])]
     //#[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
@@ -53,7 +53,6 @@ final class UnassignController extends AbstractApiController
         path: self::API_PATH . '/tags/{elementType}/{id}/{tagId}',
         operationId: 'unassignTagFromElement',
         summary: 'Unassign tag from element',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::TagsForElement->value]
     )]
     #[ElementTypeParameter]

@@ -14,15 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 /**
  * @internal
  */
-final class InvalidParentIdException extends AbstractApiException
+final class ElementDeletingFailedException extends AbstractApiException
 {
-    public function __construct(int $parentId)
+    public function __construct(int $id, ?string $error = null)
     {
-        parent::__construct(400, sprintf('Invalid parent id: %s', $parentId));
+        parent::__construct(
+            500,
+            sprintf('Failed to delete element with ID %s: %s', $id, $error ?? 'Unknown error')
+        );
     }
 }

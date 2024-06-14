@@ -57,7 +57,6 @@ final class CollectionController extends AbstractApiController
         path: self::API_PATH . '/tags/{elementType}/{id}',
         operationId: 'getTagsForElementByTypeAndId',
         summary: 'Get tags for an element',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::TagsForElement->value]
     )]
     #[ElementTypeParameter]

@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller;
 
 use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\DataImporterBundle\Exception\ElementNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\PropertyNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -46,7 +46,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws PropertyNotFoundException
+     * @throws ElementNotFoundException
      */
     #[Route('/tags/{id}', name: 'pimcore_studio_api_delete_tags', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
@@ -54,7 +54,6 @@ final class DeleteController extends AbstractApiController
         path: self::API_PATH . '/tags/{id}',
         operationId: 'deleteTag',
         summary: 'Delete a tag with a given id',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Tags->name]
     )]
     #[IdParameter(type: 'tag', schema: new Schema(type: 'integer', example: 10))]

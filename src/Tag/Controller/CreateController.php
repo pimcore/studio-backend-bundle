@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\BadRequestResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\MethodNotAllowedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error\UnauthorizedResponse;
@@ -58,7 +58,6 @@ final class CreateController extends AbstractApiController
         path: self::API_PATH . '/tag',
         operationId: 'createTag',
         summary: 'Creating a new tag',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Tags->name]
     )]
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]

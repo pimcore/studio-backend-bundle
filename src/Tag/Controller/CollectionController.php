@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FilterParameter;
@@ -66,14 +66,15 @@ final class CollectionController extends AbstractApiController
         path: self::API_PATH . '/tags',
         operationId: 'getTags',
         summary: 'Get all tags for a parent id. You can filter by type and query',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Tags->name]
     )]
     #[PageParameter]
     #[PageSizeParameter]
     #[ElementTypeParameter(false, null)]
     #[FilterParameter]
-    #[ParentIdParameter]
+    #[ParentIdParameter(
+        description: 'Filter tags by parent id.',
+        example: null,)]
     #[SuccessResponse(
         description: 'Tags filtered based on type and query parameters',
         content: new ItemsJson(Tag::class)

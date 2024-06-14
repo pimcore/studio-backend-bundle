@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementDeletingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\ElementNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidParentIdException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidParentIdException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Event\TagEvent;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Hydrator\TagHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
@@ -30,7 +30,7 @@ final readonly class TagService implements TagServiceInterface
     }
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function getTag(int $id): Tag
     {
@@ -53,7 +53,7 @@ final readonly class TagService implements TagServiceInterface
     }
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function assignTagToElement(ElementParameters $tagElement, int $tagId): void
     {
@@ -97,14 +97,14 @@ final readonly class TagService implements TagServiceInterface
 
     /**
      * @throws InvalidParentIdException
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function createTag(CreateTagParameters $tag): Tag
     {
         if ($tag->getParentId() !== 0) {
             try {
                 $this->tagRepository->getTagById($tag->getParentId());
-            } catch (ElementNotFoundException) {
+            } catch (NotFoundException) {
                 throw new InvalidParentIdException($tag->getParentId());
             }
         }
@@ -113,7 +113,7 @@ final readonly class TagService implements TagServiceInterface
     }
 
     /**
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function updateTag(int $id, UpdateTagParameters $parameters): Tag
     {
@@ -122,7 +122,7 @@ final readonly class TagService implements TagServiceInterface
 
     /**
      * @throws ElementDeletingFailedException
-     * @throws ElementNotFoundException
+     * @throws NotFoundException
      */
     public function deleteTag(int $id): int
     {
