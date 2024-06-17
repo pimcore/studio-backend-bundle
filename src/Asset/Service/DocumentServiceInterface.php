@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFou
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Model\Asset\Document;
-use Pimcore\Model\Asset\Enum\PdfScanStatus;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**

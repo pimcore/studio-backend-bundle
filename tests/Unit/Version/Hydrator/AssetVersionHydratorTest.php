@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Version\Hydrator;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\AssetVersionHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
 use Pimcore\Model\Asset\Document;
