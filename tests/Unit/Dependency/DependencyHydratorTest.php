@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dependency;
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\ElementType;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
@@ -60,7 +61,7 @@ final class DependencyHydratorTest extends Unit
                 'getId' => 1,
                 'getPath' => '/testtest',
                 'getType' => 'page',
-                'getElementType' => 'document',
+                'getElementType' => ElementType::DOCUMENT,
                 'isPublished' => true,
             ]
         );
