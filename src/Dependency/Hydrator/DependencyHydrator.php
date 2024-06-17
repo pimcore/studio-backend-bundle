@@ -36,6 +36,9 @@ final readonly class DependencyHydrator implements DependencyHydratorInterface
 
     public function hydrate(ElementSearchResultItemInterface $dependency): ?Dependency
     {
+        // isPublished does not exist in the ElementSearchResultItemInterface
+        // unfortunately there is no other interface for is published
+        // documents and objects have the isPublished method
         return new Dependency(
             $dependency->getId(),
             $dependency->getFullPath(),

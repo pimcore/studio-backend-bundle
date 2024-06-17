@@ -26,6 +26,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyParameters;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -48,8 +49,8 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
         UserInterface $user
     ): ElementSearchResult
     {
-        $search = $this->searchProvider->createElementSearch();
-        $search->setUser($user);
+        $search = $this->searchProvider->createAssetSearch();
+        $search->setUser($this->getUser($user));
         $search->setPage($parameters->getPage());
         $search->setPageSize($parameters->getPageSize());
         $search->addModifier(
@@ -69,7 +70,7 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
     ): ElementSearchResult
     {
         $search = $this->searchProvider->createElementSearch();
-        $search->setUser($user);
+        $search->setUser($this->getUser($user));
         $search->setPage($parameters->getPage());
         $search->setPageSize($parameters->getPageSize());
         $search->addModifier(
@@ -80,5 +81,10 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
         );
 
         return $this->elementSearchService->search($search);
+    }
+
+    private function getUser(UserInterface $user): User
+    {
+        return $user;
     }
 }
