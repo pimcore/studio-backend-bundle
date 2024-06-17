@@ -24,7 +24,6 @@ use Pimcore\Model\User\Permission\Definition as PermissionDefinition;
  */
 final class PermissionHydrator implements PermissionHydratorInterface
 {
-
     public function hydrate(PermissionDefinition $permission): UserPermission
     {
         return new UserPermission(

@@ -14,11 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
-use Pimcore\Model\User\Permission\Definition\Listing as PermissionsListing;
 use Pimcore\Model\User\Permission\Definition as PermissionsDefinition;
+use Pimcore\Model\User\Permission\Definition\Listing as PermissionsListing;
 
 /**
  * @internal
@@ -32,6 +31,7 @@ final class PermissionRepository implements PermissionRepositoryInterface
     {
         $permissions = new PermissionsListing();
         $permissions->setOrderKey('category');
+
         return $permissions->load();
     }
 }
