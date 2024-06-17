@@ -38,7 +38,7 @@ trait StreamedResponseTrait
         Asset|ImageThumbnailInterface $element,
         string $contentDisposition = HttpResponseHeaders::ATTACHMENT_TYPE->value,
         array $additionalHeaders = [],
-        ?int $fileSize = null
+        ?int $fileSize = null,
     ): StreamedResponse {
         $stream = $element->getStream();
 

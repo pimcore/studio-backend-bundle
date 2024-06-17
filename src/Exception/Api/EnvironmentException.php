@@ -14,21 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
+
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
  */
-final readonly class MimeTypes
+final class EnvironmentException extends AbstractApiException
 {
-    public const JPEG = 'JPEG';
-
-    public const PNG = 'PNG';
-
-    public const PDF = 'application/pdf';
-
-    public const ALLOWED_FORMATS = [
-        self::JPEG,
-        self::PNG,
-    ];
+    public function __construct(string $message)
+    {
+        parent::__construct(HttpResponseCodes::INTERNAL_SERVER_ERROR->value, $message);
+    }
 }

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Version\Hydrator;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\AssetVersionHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
@@ -36,13 +37,13 @@ final class AssetVersionHydratorTest extends Unit
         $asset->setFilename('test.pdf');
 
         $assetVersionHydrator = new AssetVersionHydrator(
+            $this->makeEmpty(DocumentServiceInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class),
             $this->makeEmpty(VersionDetailServiceInterface::class)
         );
 
-        // Status is not set properly
-        $this->expectException(ElementProcessingNotCompletedException::class);
-        $this->expectExceptionMessage('Element with ID 1 was not processed yet');
-        $assetVersionHydrator->hydrate($asset);
+        $hydrated = $assetVersionHydrator->hydrate($asset);
+        $this->assertEquals('test.pdf', $hydrated->getFilename());
+        $this->assertEmpty($hydrated->getAdditionalAttributes());
     }
 }
