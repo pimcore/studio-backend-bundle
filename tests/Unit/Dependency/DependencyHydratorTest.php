@@ -19,10 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dependency;
 use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
-use Pimcore\Model\Document;
 
 final class DependencyHydratorTest extends Unit
 {
