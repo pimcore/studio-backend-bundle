@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -50,7 +51,7 @@ final class TranslationController extends AbstractApiController
      * @throws InvalidLocaleException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_translations', methods: ['POST'])]
-    //#[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
+    #[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
     #[POST(
         path: self::API_PATH . self::ROUTE,
         operationId: 'getTranslations',

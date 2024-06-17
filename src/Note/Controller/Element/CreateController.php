@@ -53,6 +53,7 @@ final class CreateController extends AbstractApiController
      * @throws ElementSavingFailedException|NotFoundException
      */
     #[Route('/notes/{elementType}/{id}', name: 'pimcore_studio_api_create_element_note', methods: ['POST'])]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Post(
         path: self::API_PATH . '/notes/{elementType}/{id}',
