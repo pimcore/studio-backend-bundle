@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Dependency;
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
@@ -32,7 +33,7 @@ final class DependencyHydratorTest extends Unit
     {
         $hydrator = $this->getHydrator();
 
-        $dependency = $hydrator->hydrate(['id' => 1, 'type' => 'document']);
+        $dependency = $hydrator->hydrate($this->mockElementSearchResultItemInterface());
 
         $this->assertSame(1, $dependency->getId());
         $this->assertSame('/testtest', $dependency->getPath());
@@ -47,30 +48,23 @@ final class DependencyHydratorTest extends Unit
      */
     private function getHydrator(): DependencyHydratorInterface
     {
-        return new DependencyHydrator($this->mockServiceResolver());
+        return new DependencyHydrator();
     }
 
     /**
      * @throws Exception
      */
-    private function mockServiceResolver(): ServiceResolverInterface
+    private function mockElementSearchResultItemInterface(): ElementSearchResultItemInterface
     {
-        return $this->makeEmpty(ServiceResolverInterface::class,
+        return $this->makeEmpty(
+            ElementSearchResultItemInterface::class,
             [
-                'getElementById' => $this->getDocument(),
-                'getElementType' => 'document',
+                'getId' => 1,
+                'getPath' => '/testtest',
+                'getType' => 'page',
+                'getSubType' => 'document',
                 'isPublished' => true,
-            ]);
-    }
-
-    private function getDocument(): Document
-    {
-        $document = new Document();
-        $document->setPath('/test');
-        $document->setId(1);
-        $document->setType('page');
-        $document->setKey('test');
-
-        return $document;
+            ]
+        );
     }
 }
