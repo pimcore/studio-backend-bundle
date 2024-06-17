@@ -131,9 +131,8 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
 
         foreach ($uniqueStatuses as $status) {
             $statusInfos[] = new WorkflowStatus(
-                $status->getBackgroundColor(),
-                $status->getFontColor(),
-                $status->getBorderColor(),
+                $status->getColor(),
+                $status->getColorInverted(),
                 $status->getPlace(),
                 $status->getLabel(),
             );
