@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
+
 /**
  * @internal
  */
