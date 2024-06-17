@@ -27,8 +27,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -47,7 +49,7 @@ final class DeleteController extends AbstractApiController
      * @throws NotFoundException|DatabaseException
      */
     #[Route('/schedules/{id}', name: 'pimcore_studio_api_delete_schedule', methods: ['DELETE'])]
-    //#[IsGranted('STUDIO_API')]
+    #[IsGranted(UserPermissions::PIMCORE_USER->value)]
     #[Delete(
         path: self::API_PATH . '/schedules/{id}',
         operationId: 'deleteSchedule',

@@ -26,8 +26,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -46,6 +48,7 @@ final class CreateController extends AbstractApiController
      * @throws NotWriteableException
      */
     #[Route('/property', name: 'pimcore_studio_api_create_property', methods: ['POST'])]
+    #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[POST(
         path: self::API_PATH . '/property',
         operationId: 'createProperty',

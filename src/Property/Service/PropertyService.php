@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\ElementPropertyEvent;
@@ -27,8 +28,10 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInt
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * @internal
@@ -40,6 +43,7 @@ final readonly class PropertyService implements PropertyServiceInterface
     public function __construct(
         private PropertyRepositoryInterface $propertyRepository,
         private PropertyHydratorInterface $propertyHydrator,
+        private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private EventDispatcherInterface $eventDispatcher
     ) {
@@ -93,12 +97,19 @@ final readonly class PropertyService implements PropertyServiceInterface
     }
 
     /**
-     * @throws NotFoundException
+     * @throws NotFoundException|AccessDeniedException
      * @return array<int, ElementProperty>
      */
     public function getElementProperties(string $elementType, int $id): array
     {
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
+
+
+        $this->securityService->hasElementPermission(
+            $element,
+            $this->securityService->getCurrentUser(),
+            'properties'
+        );
 
         $hydratedProperties = [];
 

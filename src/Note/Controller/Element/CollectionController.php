@@ -64,6 +64,7 @@ final class CollectionController extends AbstractApiController
      * @throws InvalidFilterException
      */
     #[Route('/notes/{elementType}/{id}', name: 'pimcore_studio_api_get_element_notes', methods: ['GET'])]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Get(
         path: self::API_PATH . '/notes/{elementType}/{id}',

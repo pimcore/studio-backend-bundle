@@ -37,6 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\Colle
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -90,7 +91,7 @@ final class CollectionController extends AbstractApiController
     {
         $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
 
-        $dataObjectQuery = $filterService->applyFilters($parameters, 'dataObject');
+        $dataObjectQuery = $filterService->applyFilters($parameters, ElementTypes::TYPE_DATA_OBJECT);
 
         $result = $this->dataObjectSearchService->searchDataObjects($dataObjectQuery);
 
