@@ -92,7 +92,8 @@ final readonly class DependencyService implements DependencyServiceInterface
         ElementParameters $elementParameters,
         DependencyParameters $parameters,
         UserInterface $user
-    ): Collection {
+    ): Collection
+    {
 
         $result = $this->dependencyRepository->listRequiredByDependencies(
             $elementParameters,
@@ -109,10 +110,4 @@ final readonly class DependencyService implements DependencyServiceInterface
             $result->getPagination()->getTotalItems()
         );
     }
-
-    private function resolveItems(array $items, ElementParameters $elementParameters): array
-    {
-
-    }
-
 }

@@ -37,9 +37,8 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
     use ElementProviderTrait;
 
     public function __construct(
-        private SearchProviderInterface $searchProvider,
         private ElementSearchServiceInterface $elementSearchService,
-        private ServiceResolverInterface $serviceResolver,
+        private SearchProviderInterface $searchProvider
     ) {
     }
 
