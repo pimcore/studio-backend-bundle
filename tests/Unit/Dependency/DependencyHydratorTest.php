@@ -60,7 +60,7 @@ final class DependencyHydratorTest extends Unit
                 'getId' => 1,
                 'getPath' => '/testtest',
                 'getType' => 'page',
-                'getSubType' => 'document',
+                'getElementType' => 'document',
                 'isPublished' => true,
             ]
         );
