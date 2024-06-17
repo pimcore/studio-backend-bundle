@@ -32,6 +32,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\RoleServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\RoleService
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\MailService
     arguments: [ '@Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider' ]
@@ -57,3 +60,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepository
+
+  Pimcore\Bundle\StudioBackendBundle\User\Repository\RoleRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Repository\RoleRepository
