@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Request\UpdateElementSchedules;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Schedule\Task;
 
 /**
@@ -51,6 +52,8 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
      */
     public function createSchedule(string $elementType, int $id): Task
     {
+        $this->checkElementPermissions($elementType, $id);
+
         $user = $this->securityService->getCurrentUser();
 
         $task = new Task();
@@ -75,6 +78,8 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
             throw new NotFoundException('Task', $id);
         }
 
+        $this->checkElementPermissions($task->getCtype(), $task->getCid());
+
         return $task;
     }
 
@@ -84,7 +89,9 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
      */
     public function listSchedules(string $elementType, int $id): array
     {
-        return $this->getElement($this->serviceResolver, $elementType, $id)->getScheduledTasks();
+        $element =  $this->checkElementPermissions($elementType, $id);
+
+        return $element->getScheduledTasks()();
     }
 
     /**
@@ -96,6 +103,8 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         UpdateElementSchedules $updateElementSchedules
     ): void
     {
+        $this->checkElementPermissions($elementType, $id);
+
         $schedules = $updateElementSchedules->getSchedules();
 
         $currentTasks = [];
@@ -127,6 +136,8 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
     {
         $task = $this->getSchedule($id);
 
+        $this->checkElementPermissions($task->getCtype(), $task->getCid());
+
         $queryBuilder = $this->dbResolver->get()->createQueryBuilder();
 
         $queryBuilder->delete('schedule_tasks')
@@ -157,5 +168,19 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         } catch (Exception) {
             throw new DatabaseException();
         }
+    }
+
+
+    private function checkElementPermissions(string $elementType, int $id): ElementInterface
+    {
+        $element = $this->getElement($this->serviceResolver, $elementType, $id);
+
+        $this->securityService->hasElementPermissions(
+            $element,
+            $this->securityService->getCurrentUser(),
+            ['settings', 'versions']
+        );
+
+        return $element;
     }
 }
