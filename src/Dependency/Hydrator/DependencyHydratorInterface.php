@@ -16,12 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
-
 /**
  * @internal
  */
 interface DependencyHydratorInterface
 {
-    public function hydrate(array $dependency): ?Dependency;
+    public function hydrate(ElementSearchResultItemInterface $dependency): ?Dependency;
 }
