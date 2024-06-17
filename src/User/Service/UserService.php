@@ -35,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
@@ -188,5 +189,17 @@ final readonly class UserService implements UserServiceInterface
         }
 
         return $this->userTreeNodeHydrator->hydrate($user);
+    }
+
+    public function getUserById(int $userId): UserSchema
+    {
+        $user = $this->userRepository->getUserById($userId);
+
+        if($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
+            throw new ForbiddenException('Only admins can view other admins');
+        }
+
+        dd($user->getWorkspacesObject());
+
     }
 }
