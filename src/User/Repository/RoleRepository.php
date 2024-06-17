@@ -35,8 +35,9 @@ final class RoleRepository implements RoleRepositoryInterface
         try {
             $roleListing = new Listing();
             $roleListing->setCondition('`type` = ?', ['role']);
+            $roleListing->load();
 
-            return $roleListing->load();
+            return $roleListing->getRoles();
         } catch (\Exception $e) {
             throw new  DatabaseException(sprintf('Error while fetching roles: %s', $e->getMessage()));
         }
