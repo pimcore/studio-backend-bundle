@@ -29,8 +29,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -49,7 +51,7 @@ final class CreateController extends AbstractApiController
      * @throws NotAuthorizedException|NotFoundException
      */
     #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_create_schedule', methods: ['POST'])]
-    //#[IsGranted('STUDIO_API')]
+    #[IsGranted(UserPermissions::PIMCORE_USER->value)]
     #[POST(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
         operationId: 'createSchedule',
