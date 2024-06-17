@@ -85,6 +85,7 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
 
     private function getUser(UserInterface $user): User
     {
+        /** @var User $user */
         return $user;
     }
 }

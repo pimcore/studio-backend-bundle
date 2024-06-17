@@ -17,23 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 
 /**
  * @internal
  */
 final readonly class DependencyHydrator implements DependencyHydratorInterface
 {
-    use ElementProviderTrait;
-
-    public function __construct(
-        private ServiceResolverInterface $serviceResolver,
-    ) {
-
-    }
-
     public function hydrate(ElementSearchResultItemInterface $dependency): ?Dependency
     {
         // isPublished does not exist in the ElementSearchResultItemInterface
