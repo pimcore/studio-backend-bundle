@@ -59,7 +59,7 @@ final class DependencyHydratorTest extends Unit
             ElementSearchResultItemInterface::class,
             [
                 'getId' => 1,
-                'getPath' => '/testtest',
+                'getFullPath' => '/testtest',
                 'getType' => 'page',
                 'getElementType' => ElementType::DOCUMENT,
                 'isPublished' => true,
