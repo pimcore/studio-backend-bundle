@@ -49,9 +49,6 @@ final class GetUserPermissionsController extends AbstractApiController
     }
 
 
-    /**
-     * @throws DatabaseException|NotFoundException
-     */
     #[Route('/user/available-permissions', name: 'pimcore_studio_api_user_available_permissions', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
@@ -64,9 +61,7 @@ final class GetUserPermissionsController extends AbstractApiController
         description: 'List of available user permissions.',
         content: new CollectionJson(new GenericCollection(UserPermission::class))
     )]
-    #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND
-    ])]
+    #[DefaultResponses]
     public function getAvailablePermissions(): JsonResponse
     {
         $permissions = $this->userPermissionsService->getAvailablePermissions();
