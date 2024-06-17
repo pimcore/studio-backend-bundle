@@ -51,7 +51,7 @@ final class CollectionController extends AbstractApiController
      * @throws NotFoundException|AccessDeniedException
      */
     #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_get_element_properties', methods: ['GET'])]
-    #[IsGranted(UserPermissions::PIMCORE_USER->value)]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
         path: self::API_PATH . '/properties/{elementType}/{id}',
         operationId: 'getPropertiesForElementByTypeAndId',

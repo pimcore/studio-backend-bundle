@@ -61,7 +61,7 @@ final class QueryFactoryTest extends Unit
     public function testDataObjectQueryType(): void
     {
         $queryFactory = $this->getQueryFactory();
-        $query = $queryFactory->create('dataObject');
+        $query = $queryFactory->create('data-object');
 
         $this->assertInstanceOf(DataObjectQuery::class, $query);
     }

@@ -51,7 +51,7 @@ final class CreateController extends AbstractApiController
      * @throws NotAuthorizedException|NotFoundException
      */
     #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_create_schedule', methods: ['POST'])]
-    #[IsGranted(UserPermissions::PIMCORE_USER->value)]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[POST(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
         operationId: 'createSchedule',

@@ -57,7 +57,7 @@ final class UpdateController extends AbstractApiController
      * @throws DatabaseException
      */
     #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_update_schedules', methods: ['PUT'])]
-    #[IsGranted(UserPermissions::PIMCORE_USER->value)]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Put(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
         operationId: 'updateSchedulesForElementByTypeAndId',
