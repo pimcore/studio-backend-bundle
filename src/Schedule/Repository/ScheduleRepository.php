@@ -89,9 +89,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
      */
     public function listSchedules(string $elementType, int $id): array
     {
-        $element =  $this->checkElementPermissions($elementType, $id);
-
-        return $element->getScheduledTasks()();
+        return $this->checkElementPermissions($elementType, $id)->getScheduledTasks();
     }
 
     /**
