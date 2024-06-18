@@ -50,7 +50,7 @@ final class UserFolderRepositoryTest extends Unit
         $folderRepository = new UserFolderRepository($folderResolverMock);
 
         $this->expectException(NotFoundException::class);
-        $this->expectExceptionMessage('User folder with ID 1 not found');
+        $this->expectExceptionMessage('User folder with ID: 1 not found');
         $folderRepository->getUserFolderById($folderId);
     }
 
