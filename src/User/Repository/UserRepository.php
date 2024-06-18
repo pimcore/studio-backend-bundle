@@ -28,11 +28,9 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class UserRepository implements UserRepositoryInterface
 {
-
     public function __construct(
         private UserResolverInterface $userResolver
-    )
-    {
+    ) {
     }
 
     public function getUserListingByParentId(int $parentId): UserListing

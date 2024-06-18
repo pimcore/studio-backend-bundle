@@ -32,16 +32,14 @@ final readonly class GlobalActionSubmitter implements GlobalActionSubmitterInter
 {
     public function __construct(
         private Manager $workflowManager,
-    )
-    {
+    ) {
     }
 
     public function submit(
         ElementInterface $element,
         WorkflowInterface $workflow,
         SubmitAction $parameters
-    ): ActionSubmissionResponse
-    {
+    ): ActionSubmissionResponse {
         $workflowName = $parameters->getWorkflowName();
         $actionName = $parameters->getTransition();
 

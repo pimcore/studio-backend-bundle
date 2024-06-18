@@ -25,6 +25,8 @@ final readonly class MimeTypes
 
     public const PNG = 'PNG';
 
+    public const PDF = 'application/pdf';
+
     public const ALLOWED_FORMATS = [
         self::JPEG,
         self::PNG,

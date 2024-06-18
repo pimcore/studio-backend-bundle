@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -57,7 +58,7 @@ final class UpdateController extends AbstractApiController
         summary: 'Update asset',
         tags: [Tags::Assets->name]
     )]
-    #[IdParameter(type: 'asset')]
+    #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[UpdateAssetRequestBody]
     #[SuccessResponse(
         description: 'One of asset types',
@@ -70,6 +71,7 @@ final class UpdateController extends AbstractApiController
     public function updateAsset(int $id, #[MapRequestPayload] UpdateAssetParameter $updateAsset): JsonResponse
     {
         $this->updateService->update('asset', $id, $updateAsset->getData());
+
         return $this->jsonResponse($this->assetService->getAsset($id));
     }
 }

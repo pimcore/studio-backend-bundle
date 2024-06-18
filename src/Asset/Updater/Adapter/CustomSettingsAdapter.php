@@ -67,7 +67,7 @@ final readonly class CustomSettingsAdapter implements UpdateAdapterInterface
     public function supportedElementTypes(): array
     {
         return [
-            ElementTypes::TYPE_ASSET
+            ElementTypes::TYPE_ASSET,
         ];
     }
 }

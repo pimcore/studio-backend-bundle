@@ -53,6 +53,7 @@ final class ThumbnailDownloadController extends AbstractApiController
     ) {
         parent::__construct($serializer);
     }
+
     /**
      * @throws AccessDeniedException
      * @throws NotFoundException

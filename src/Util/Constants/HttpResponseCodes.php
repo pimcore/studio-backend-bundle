@@ -33,6 +33,5 @@ enum HttpResponseCodes: int
     case UNSUPPORTED_MEDIA_TYPE = 415;
     case UNPROCESSABLE_CONTENT = 422;
     case TOO_MANY_REQUESTS = 429;
-
     case INTERNAL_SERVER_ERROR = 500;
 }

@@ -61,6 +61,7 @@ final readonly class ImageAdapter implements UpdateAdapterInterface
         if (!array_key_exists('focalPoint', $data[self::INDEX_KEY])) {
             $image->removeCustomSetting('focalPointX');
             $image->removeCustomSetting('focalPointY');
+
             return;
         }
 

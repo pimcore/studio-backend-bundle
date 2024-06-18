@@ -26,8 +26,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -46,7 +48,7 @@ final class DeleteController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route('/properties/{id}', name: 'pimcore_studio_api_delete_properties', methods: ['DELETE'])]
-    //#[IsGranted('STUDIO_API')]
+    #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[Delete(
         path: self::API_PATH . '/properties/{id}',
         operationId: 'deleteProperty',

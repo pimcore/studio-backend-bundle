@@ -27,8 +27,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('pimcore.studio_backend.patch_adapter')]
 final readonly class ParentIdAdapter implements PatchAdapterInterface
 {
-
     private const INDEX_KEY = 'parentId';
+
     public function patch(ElementInterface $element, array $data): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {

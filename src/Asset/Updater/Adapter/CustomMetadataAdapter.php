@@ -34,10 +34,8 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
 
     public function __construct(
         private EventDispatcherInterface $eventDispatcher
-    )
-    {
+    ) {
     }
-
 
     public function update(ElementInterface $element, array $data): void
     {

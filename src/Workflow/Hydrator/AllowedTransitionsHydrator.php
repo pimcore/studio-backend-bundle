@@ -31,8 +31,7 @@ final readonly class AllowedTransitionsHydrator implements AllowedTransitionsHyd
 {
     public function __construct(
         private WorkflowActionServiceInterface $workflowActionService,
-    )
-    {
+    ) {
     }
 
     /**
@@ -62,5 +61,4 @@ final readonly class AllowedTransitionsHydrator implements AllowedTransitionsHyd
 
         return $hydrated;
     }
-
 }

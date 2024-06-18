@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -40,13 +40,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class DeleteUserController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly UserServiceInterface $userService
     ) {
         parent::__construct($serializer);
     }
-
 
     /**
      * @throws NotFoundException|ForbiddenException|DatabaseException
@@ -68,6 +68,7 @@ final class DeleteUserController extends AbstractApiController
     public function cloneUser(int $id): Response
     {
         $this->userService->deleteUser($id);
+
         return new Response();
     }
 }

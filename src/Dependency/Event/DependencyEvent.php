@@ -25,8 +25,7 @@ final class DependencyEvent extends AbstractPreResponseEvent
 
     public function __construct(
         private readonly Dependency $dependency
-    )
-    {
+    ) {
         parent::__construct($dependency);
     }
 

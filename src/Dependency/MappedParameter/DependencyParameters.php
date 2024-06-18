@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 final readonly class DependencyParameters extends CollectionParameters
 {
     private DependencyMode $mode;
+
     public function __construct(
         int $page,
         int $pageSize,
@@ -50,5 +51,4 @@ final readonly class DependencyParameters extends CollectionParameters
 
         return $dependencyMode;
     }
-
 }

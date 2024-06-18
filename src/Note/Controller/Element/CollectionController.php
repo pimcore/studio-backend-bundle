@@ -55,8 +55,7 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly NoteServiceInterface $noteService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -64,6 +63,7 @@ final class CollectionController extends AbstractApiController
      * @throws InvalidFilterException
      */
     #[Route('/notes/{elementType}/{id}', name: 'pimcore_studio_api_get_element_notes', methods: ['GET'])]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Get(
         path: self::API_PATH . '/notes/{elementType}/{id}',
@@ -84,14 +84,13 @@ final class CollectionController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(Note::class))
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getNotes(
         string $elementType,
         int $id,
         #[MapQueryString] NoteParameters $parameters = new NoteParameters()
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $collection = $this->noteService->listNotes(new NoteElementParameters($elementType, $id), $parameters);
 
         return $this->getPaginatedCollection(

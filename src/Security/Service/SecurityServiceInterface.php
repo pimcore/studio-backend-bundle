@@ -39,4 +39,15 @@ interface SecurityServiceInterface
         UserInterface $user,
         string $permission
     ): void;
+
+    /**
+     * @throws AccessDeniedException
+     *
+     * @param array<string> $permissions
+     */
+    public function hasElementPermissions(
+        ElementInterface $element,
+        UserInterface $user,
+        array $permissions
+    ): void;
 }

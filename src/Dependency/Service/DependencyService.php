@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Event\DependencyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyParameters;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -36,15 +36,15 @@ final readonly class DependencyService implements DependencyServiceInterface
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
+
     public function getDependencies(
         ElementParameters $elementParameters,
         DependencyParameters $parameters,
         UserInterface $user
-    ): Collection
-    {
+    ): Collection {
         return match ($parameters->getMode()) {
-            DependencyMode::REQUIRES => $this->getRequiredDependencies($elementParameters, $parameters),
-            DependencyMode::REQUIRED_BY => $this->getRequiredByDependencies($elementParameters, $parameters),
+            DependencyMode::REQUIRES => $this->getRequiredDependencies($elementParameters, $parameters, $user),
+            DependencyMode::REQUIRED_BY => $this->getRequiredByDependencies($elementParameters, $parameters, $user),
         };
     }
 
@@ -53,14 +53,14 @@ final readonly class DependencyService implements DependencyServiceInterface
         $hydratedDependencies = [];
 
         foreach($dependencies as $dependency) {
-            $dependency = $this->dependencyHydrator->hydrate($dependency);
-            if($dependency) {
-                $this->eventDispatcher->dispatch(
-                    new DependencyEvent($dependency),
-                    DependencyEvent::EVENT_NAME
-                );
-                $hydratedDependencies[] = $dependency;
-            }
+            $result = $this->dependencyHydrator->hydrate($dependency);
+
+            $this->eventDispatcher->dispatch(
+                new DependencyEvent($result),
+                DependencyEvent::EVENT_NAME
+            );
+            $hydratedDependencies[] = $result;
+
         }
 
         return $hydratedDependencies;
@@ -68,46 +68,45 @@ final readonly class DependencyService implements DependencyServiceInterface
 
     private function getRequiredDependencies(
         ElementParameters $elementParameters,
-        DependencyParameters $parameters
+        DependencyParameters $parameters,
+        UserInterface $user
     ): Collection {
 
-        $dependencies = $this->dependencyRepository->listRequiresDependencies(
-            $elementParameters->getType(),
-            $elementParameters->getId()
+        $result = $this->dependencyRepository->listRequiresDependencies(
+            $elementParameters,
+            $parameters,
+            $user
         );
 
-        $dependencies = $this->getDependencyCollection($dependencies);
+        $dependencies = $this->getDependencyCollection($result->getItems());
 
         return new Collection(
             $dependencies,
-            $parameters->getPage(),
-            $parameters->getPageSize(),
-            $this->dependencyRepository->listRequiresDependenciesTotalCount(
-                $elementParameters->getType(),
-                $elementParameters->getId()
-            )
+            $result->getPagination()->getPage(),
+            $result->getPagination()->getPageSize(),
+            $result->getPagination()->getTotalItems()
         );
     }
 
     private function getRequiredByDependencies(
         ElementParameters $elementParameters,
-        DependencyParameters $parameters
+        DependencyParameters $parameters,
+        UserInterface $user
     ): Collection {
-        $dependencies = $this->dependencyRepository->listRequiredByDependencies(
-            $elementParameters->getType(),
-            $elementParameters->getId()
+
+        $result = $this->dependencyRepository->listRequiredByDependencies(
+            $elementParameters,
+            $parameters,
+            $user
         );
 
-        $dependencies = $this->getDependencyCollection($dependencies);
+        $dependencies = $this->getDependencyCollection($result->getItems());
 
         return new Collection(
             $dependencies,
-            $parameters->getPage(),
-            $parameters->getPageSize(),
-            $this->dependencyRepository->listRequiredByDependenciesTotalCount(
-                $elementParameters->getType(),
-                $elementParameters->getId()
-            )
+            $result->getPagination()->getPage(),
+            $result->getPagination()->getPageSize(),
+            $result->getPagination()->getTotalItems()
         );
     }
 }

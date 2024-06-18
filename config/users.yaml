@@ -14,6 +14,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiter
 
+  #
+  # Services
+  #
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserService
 
@@ -23,18 +26,40 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserCloneServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserCloneService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionService
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService
+
+  Pimcore\Bundle\StudioBackendBundle\User\Service\RoleServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\RoleService
 
   Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\MailService
     arguments: [ '@Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider' ]
 
+  #
+  # Hydrators
+  #
   Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\User\Hydrator\PermissionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\PermissionHydrator
+
+
+  #
+  # Repositories
+  #
   Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepository
 
   Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepository
+
+  Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepository
+
+  Pimcore\Bundle\StudioBackendBundle\User\Repository\RoleRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Repository\RoleRepository

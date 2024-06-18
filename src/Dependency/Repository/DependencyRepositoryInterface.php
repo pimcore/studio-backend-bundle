@@ -16,16 +16,25 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Repository;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Element\SearchResult\ElementSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
+use Pimcore\Model\UserInterface;
+
 /**
  * @internal
  */
 interface DependencyRepositoryInterface
 {
-    public function listRequiresDependencies(string $elementType, int $elementId): array;
+    public function listRequiresDependencies(
+        ElementParameters $elementParameters,
+        DependencyParameters $parameters,
+        UserInterface $user
+    ): ElementSearchResult;
 
-    public function listRequiresDependenciesTotalCount(string $elementType, int $elementId): int;
-
-    public function listRequiredByDependencies(string $elementType, int $elementId): array;
-
-    public function listRequiredByDependenciesTotalCount(string $elementType, int $elementId): int;
+    public function listRequiredByDependencies(
+        ElementParameters $elementParameters,
+        DependencyParameters $parameters,
+        UserInterface $user
+    ): ElementSearchResult;
 }

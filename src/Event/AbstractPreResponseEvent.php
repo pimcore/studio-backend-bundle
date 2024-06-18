@@ -28,7 +28,8 @@ abstract class AbstractPreResponseEvent extends Event
     {
     }
 
-    public function hasAdditionalAttribute(string $key): bool {
+    public function hasAdditionalAttribute(string $key): bool
+    {
         return $this->responseObject->hasAdditionalAttribute($key);
     }
 
@@ -42,7 +43,8 @@ abstract class AbstractPreResponseEvent extends Event
         $this->responseObject->addAdditionalAttribute($key, $value);
     }
 
-    public function removeAdditionalAttribute(string $key): void {
+    public function removeAdditionalAttribute(string $key): void
+    {
         $this->responseObject->removeAdditionalAttribute($key);
     }
 }

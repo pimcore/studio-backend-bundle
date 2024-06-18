@@ -24,34 +24,28 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'WorkflowStatus',
-    required: ['backgroundColor', 'fontColor', 'borderColor', 'title', 'label'],
+    required: ['color', 'colorInverted', 'title', 'label'],
     type: 'object'
 )]
 final readonly class WorkflowStatus
 {
     public function __construct(
         #[Property(
-            description: 'backgroundColor',
+            description: 'color',
             type: 'string',
-            example: '#ffa500'
+            example: '#3572b0'
         )]
-        private string $backgroundColor,
+        private string $color,
         #[Property(
-            description: 'fontColor',
-            type: 'string',
-            example: '#000000'
+            description: 'colorInverted',
+            type: 'boolean',
+            example: false
         )]
-        private string $fontColor,
+        private bool $colorInverted,
         #[Property(
             description: 'borderColor',
             type: 'string',
             example: '#ffa500'
-        )]
-        private string $borderColor,
-        #[Property(
-            description: 'title',
-            type: 'string',
-            example: 'edit_images'
         )]
         private string $title,
         #[Property(
@@ -64,19 +58,14 @@ final readonly class WorkflowStatus
 
     }
 
-    public function getBackgroundColor(): string
+    public function getColor(): string
     {
-        return $this->backgroundColor;
+        return $this->color;
     }
 
-    public function getFontColor(): string
+    public function getColorInverted(): bool
     {
-        return $this->fontColor;
-    }
-
-    public function getBorderColor(): string
-    {
-        return $this->borderColor;
+        return $this->colorInverted;
     }
 
     public function getTitle(): string

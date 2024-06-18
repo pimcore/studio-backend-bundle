@@ -43,13 +43,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class CreateUserFolderController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly UserFolderServiceInterface $userFolderService
     ) {
         parent::__construct($serializer);
     }
-
 
     /**
      * @throws DatabaseException|NotFoundException
@@ -68,11 +68,12 @@ final class CreateUserFolderController extends AbstractApiController
         content: new JsonContent(ref: UserTreeNode::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function createUserFolder(#[MapRequestPayload] CreateParameter $createParameter): JsonResponse
     {
         $userNode = $this->userFolderService->createUserFolder($createParameter);
+
         return $this->jsonResponse($userNode);
     }
 }
