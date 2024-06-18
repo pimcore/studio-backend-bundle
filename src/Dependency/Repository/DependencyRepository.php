@@ -38,7 +38,8 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
 
     public function __construct(
         private ElementSearchServiceInterface $elementSearchService,
-        private SearchProviderInterface $searchProvider
+        private SearchProviderInterface $searchProvider,
+        private ServiceResolverInterface $serviceResolver
     ) {
     }
 
@@ -48,13 +49,19 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
         UserInterface $user
     ): ElementSearchResult
     {
-        $search = $this->searchProvider->createAssetSearch();
+        $element = $this->getElement(
+            $this->serviceResolver,
+            $elementParameters->getType(),
+            $elementParameters->getId()
+        );
+
+        $search = $this->searchProvider->createElementSearch();
         $search->setUser($this->getUser($user));
         $search->setPage($parameters->getPage());
         $search->setPageSize($parameters->getPageSize());
         $search->addModifier(
             new RequiresFilter(
-                $elementParameters->getId(),
+                $element->getId(),
                 ElementType::tryFrom($elementParameters->getType())
             )
         );
@@ -68,13 +75,19 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
         UserInterface $user
     ): ElementSearchResult
     {
+        $element = $this->getElement(
+            $this->serviceResolver,
+            $elementParameters->getType(),
+            $elementParameters->getId()
+        );
+
         $search = $this->searchProvider->createElementSearch();
         $search->setUser($this->getUser($user));
         $search->setPage($parameters->getPage());
         $search->setPageSize($parameters->getPageSize());
         $search->addModifier(
             new RequiredByFilter(
-                $elementParameters->getId(),
+                $element->getId(),
                 ElementType::tryFrom($elementParameters->getType())
             )
         );
