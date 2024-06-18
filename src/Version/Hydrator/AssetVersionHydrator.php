@@ -17,15 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotCompletedException;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\ImageVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
 use Pimcore\Model\Asset;
-use Pimcore\Model\Asset\Enum\PdfScanStatus;
 use Pimcore\Model\Asset\Image;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -35,6 +34,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class AssetVersionHydrator implements AssetVersionHydratorInterface
 {
     public function __construct(
+        private DocumentServiceInterface $documentService,
         private EventDispatcherInterface $eventDispatcher,
         private VersionDetailServiceInterface $versionDetailService
     ) {
@@ -46,9 +46,14 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
     public function hydrate(
         Asset $asset
     ): ImageVersion|AssetVersion {
-        if ($asset instanceof Asset\Document &&
-        $asset->getMimeType() === 'application/pdf') {
-            $this->validatePdfStatus($asset);
+        if (
+            $asset instanceof Asset\Document &&
+            $asset->getMimeType() === MimeTypes::PDF &&
+            $this->documentService->isScanningEnabled()
+        ) {
+            $this->documentService->validatePdfScanStatus(
+                $asset
+            );
         }
 
         if ($asset instanceof Image) {
@@ -84,24 +89,5 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
         );
 
         return $hydratedImage;
-    }
-
-    private function validatePdfStatus(Asset\Document $pdf): void
-    {
-        $status = $pdf->getScanStatus();
-
-        if ($status === PdfScanStatus::SAFE) {
-            return;
-        }
-
-        if ($status === Asset\Enum\PdfScanStatus::UNSAFE) {
-            throw new NotCompletedException(
-                $pdf->getId()
-            );
-        }
-
-        throw new ElementProcessingNotCompletedException(
-            $pdf->getId()
-        );
     }
 }
