@@ -71,6 +71,7 @@ final class UpdateController extends AbstractApiController
     public function updateAsset(int $id, #[MapRequestPayload] UpdateAssetParameter $updateAsset): JsonResponse
     {
         $this->updateService->update('asset', $id, $updateAsset->getData());
+
         return $this->jsonResponse($this->assetService->getAsset($id));
     }
 }

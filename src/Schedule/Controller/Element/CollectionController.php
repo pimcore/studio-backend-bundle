@@ -29,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -45,8 +44,7 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly ScheduleServiceInterface $scheduleService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -66,13 +64,12 @@ final class CollectionController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getSchedules(
         string $elementType,
         int $id
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return $this->jsonResponse(['items' => $this->scheduleService->listSchedules($elementType, $id)]);
     }
 }

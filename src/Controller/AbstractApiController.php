@@ -21,7 +21,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
  * @internal
@@ -50,6 +49,7 @@ abstract class AbstractApiController extends AbstractController
         if (!empty($errors)) {
             return new JsonResponse($this->serializer->serialize($errors, 'json'), 207, $headers, true);
         }
+
         return new Response();
     }
 }

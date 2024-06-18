@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Event\DependencyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Hydrator\DependencyHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyParameters;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -36,12 +36,12 @@ final readonly class DependencyService implements DependencyServiceInterface
         private EventDispatcherInterface $eventDispatcher,
     ) {
     }
+
     public function getDependencies(
         ElementParameters $elementParameters,
         DependencyParameters $parameters,
         UserInterface $user
-    ): Collection
-    {
+    ): Collection {
         return match ($parameters->getMode()) {
             DependencyMode::REQUIRES => $this->getRequiredDependencies($elementParameters, $parameters, $user),
             DependencyMode::REQUIRED_BY => $this->getRequiredByDependencies($elementParameters, $parameters, $user),
@@ -92,8 +92,7 @@ final readonly class DependencyService implements DependencyServiceInterface
         ElementParameters $elementParameters,
         DependencyParameters $parameters,
         UserInterface $user
-    ): Collection
-    {
+    ): Collection {
 
         $result = $this->dependencyRepository->listRequiredByDependencies(
             $elementParameters,

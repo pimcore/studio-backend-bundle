@@ -24,8 +24,7 @@ final readonly class NoteUser
     public function __construct(
         private ?int $id = null,
         private ?string $name = null
-    )
-    {
+    ) {
 
     }
 

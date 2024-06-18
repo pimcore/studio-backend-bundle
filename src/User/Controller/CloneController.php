@@ -44,13 +44,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class CloneController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly UserCloneServiceInterface $userCloneService
     ) {
         parent::__construct($serializer);
     }
-
 
     /**
      * @throws DatabaseException|NotFoundException
@@ -73,11 +73,12 @@ final class CloneController extends AbstractApiController
         example: 'Cloned User'
     )]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function cloneUser(int $id, #[MapRequestPayload] UserCloneParameter $userClone): JsonResponse
     {
         $userNode = $this->userCloneService->cloneUser($id, $userClone->getName());
+
         return $this->jsonResponse($userNode);
     }
 }

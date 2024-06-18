@@ -22,10 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 final class CustomSettingsEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.asset_custom_settings';
+
     public function __construct(
         private readonly CustomSettings $customSettings
-    )
-    {
+    ) {
         parent::__construct($customSettings);
     }
 

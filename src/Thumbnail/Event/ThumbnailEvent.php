@@ -25,8 +25,7 @@ final class ThumbnailEvent extends AbstractPreResponseEvent
 
     public function __construct(
         private readonly Thumbnail $thumbnail
-    )
-    {
+    ) {
         parent::__construct($this->thumbnail);
     }
 

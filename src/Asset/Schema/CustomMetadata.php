@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
 
-
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
@@ -40,8 +39,7 @@ final class CustomMetadata implements AdditionalAttributesInterface
         private readonly string $type,
         #[Property(description: 'Data', type: 'string', example: 'data')]
         private readonly mixed $data
-    )
-    {
+    ) {
     }
 
     public function getName(): string

@@ -32,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 )]
 final class UserTreeNode implements AdditionalAttributesInterface
 {
-
     use AdditionalAttributesTrait;
 
     public function __construct(

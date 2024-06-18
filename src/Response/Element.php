@@ -32,7 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
         'isLocked',
         'creationDate',
         'modificationDate',
-        'permissions'
+        'permissions',
     ],
     type: 'object'
 )]

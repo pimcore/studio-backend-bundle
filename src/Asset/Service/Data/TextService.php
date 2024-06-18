@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 
 /**
@@ -33,8 +33,7 @@ final class TextService implements TextServiceInterface
     public function __construct(
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly TextEncoderInterface $textEncoder,
-    )
-    {
+    ) {
     }
 
     /**

@@ -97,8 +97,7 @@ final class CustomDownloadController extends AbstractApiController
     public function downloadCustomImage(
         int $id,
         #[MapQueryString] ImageDownloadConfigParameter $parameters
-    ): BinaryFileResponse
-    {
+    ): BinaryFileResponse {
         $asset = $this->assetService->getAssetElement(
             $this->securityService->getCurrentUser(),
             $id

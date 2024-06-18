@@ -27,7 +27,7 @@ use OpenApi\Attributes\Schema;
     required: [
         'title',
         'description',
-        'type'
+        'type',
     ],
     type: 'object'
 )]
@@ -40,8 +40,7 @@ final readonly class CreateNote
         private string $description,
         #[Property(description: 'type', type: 'string', example: 'Type of note')]
         private string $type
-    )
-    {
+    ) {
     }
 
     public function getTitle(): string

@@ -25,8 +25,7 @@ final class DataObjectVersionEvent extends AbstractPreResponseEvent
 
     public function __construct(
         private readonly DataObjectVersion $version
-    )
-    {
+    ) {
         parent::__construct($version);
     }
 

@@ -67,6 +67,7 @@ final class DeleteController extends AbstractApiController
     public function deleteSchedule(int $id): Response
     {
         $this->scheduleService->deleteSchedule($id);
+
         return new Response();
     }
 }

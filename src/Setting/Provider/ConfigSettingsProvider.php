@@ -27,8 +27,7 @@ final readonly class ConfigSettingsProvider implements SettingsProviderInterface
 {
     public function __construct(
         private Config $config
-    )
-    {
+    ) {
 
     }
 

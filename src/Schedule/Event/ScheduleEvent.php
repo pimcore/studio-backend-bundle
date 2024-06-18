@@ -22,10 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
 final class ScheduleEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.schedule';
+
     public function __construct(
         private readonly Schedule $schedule
-    )
-    {
+    ) {
         parent::__construct($schedule);
     }
 

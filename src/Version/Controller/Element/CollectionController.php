@@ -84,8 +84,7 @@ final class CollectionController extends AbstractApiController
         string $elementType,
         int $id,
         #[MapQueryString] CollectionParameters $parameters
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $collection = $this->versionService->getVersions(
             new ElementParameters($elementType, $id),
             $parameters,

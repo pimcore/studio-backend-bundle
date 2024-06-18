@@ -101,8 +101,7 @@ final class ImageThumbnailStreamController extends AbstractApiController
     public function getVideoImageThumbnail(
         int $id,
         #[MapQueryString] ?VideoImageStreamConfigParameter $imageConfig
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         $asset = $this->assetService->getAssetElement(
             $this->securityService->getCurrentUser(),
             $id

@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
         'height',
         'isVectorGraphic',
         'isAnimated',
-        'imageThumbnailPath'
+        'imageThumbnailPath',
     ],
     type: 'object'
 )]

@@ -26,8 +26,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('pimcore.studio_backend.update_adapter')]
 final readonly class ParentIdAdapter implements UpdateAdapterInterface
 {
-
     private const INDEX_KEY = 'parentId';
+
     public function update(ElementInterface $element, array $data): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {

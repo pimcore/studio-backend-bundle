@@ -25,8 +25,7 @@ final class VersionEvent extends AbstractPreResponseEvent
 
     public function __construct(
         private readonly Version $version
-    )
-    {
+    ) {
         parent::__construct($version);
     }
 

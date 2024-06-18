@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Event\ScheduleEvent;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Hydrator\ScheduleHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Repository\ScheduleRepositoryInterface;
@@ -35,8 +35,7 @@ final readonly class ScheduleService implements ScheduleServiceInterface
         private ScheduleRepositoryInterface $scheduleRepository,
         private ScheduleHydratorInterface $scheduleHydrator,
         private EventDispatcherInterface $eventDispatcher
-    )
-    {
+    ) {
     }
 
     /**
@@ -79,9 +78,8 @@ final readonly class ScheduleService implements ScheduleServiceInterface
         string $elementType,
         int $id,
         UpdateElementSchedules $updateElementSchedules
-    ): void
-    {
-       $this->scheduleRepository->updateSchedules($elementType, $id, $updateElementSchedules);
+    ): void {
+        $this->scheduleRepository->updateSchedules($elementType, $id, $updateElementSchedules);
     }
 
     /**
