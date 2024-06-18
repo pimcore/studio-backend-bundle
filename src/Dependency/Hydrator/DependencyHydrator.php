@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
  */
 final readonly class DependencyHydrator implements DependencyHydratorInterface
 {
-    public function hydrate(ElementSearchResultItemInterface $dependency): ?Dependency
+    public function hydrate(ElementSearchResultItemInterface $dependency): Dependency
     {
         // isPublished does not exist in the ElementSearchResultItemInterface
         // unfortunately there is no other interface for is published

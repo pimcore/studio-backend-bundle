@@ -24,5 +24,5 @@ use Pimcore\Bundle\StudioBackendBundle\Dependency\Schema\Dependency;
  */
 interface DependencyHydratorInterface
 {
-    public function hydrate(ElementSearchResultItemInterface $dependency): ?Dependency;
+    public function hydrate(ElementSearchResultItemInterface $dependency): Dependency;
 }
