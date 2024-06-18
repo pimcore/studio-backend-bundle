@@ -23,7 +23,10 @@ use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateAssetImage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateCustomMetaData;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateCustomSettingsData;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateBooleanProperty;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateParentId;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateStringProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Property\UpdateElementProperties;
 
 /**
@@ -41,7 +44,10 @@ final class UpdateAssetRequestBody extends RequestBody
                 properties: [
                     new Property('data',
                         properties: [
-                            new UpdateParentId(),
+                            new UpdateIntegerProperty('parentId'),
+                            new UpdateStringProperty('key'),
+                            new UpdateStringProperty('locked'),
+                            new UpdateStringProperty('data'),
                             new UpdateCustomMetaData(),
                             new UpdateCustomSettingsData(),
                             new UpdateElementProperties(),

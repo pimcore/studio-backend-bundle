@@ -21,12 +21,12 @@ use OpenApi\Attributes\Property;
 /**
  * @internal
  */
-final class UpdateParentId extends Property
+final class UpdateIntegerProperty extends Property
 {
-    public function __construct()
+    public function __construct(string $propertyName)
     {
         parent::__construct(
-            property: 'parentId',
+            property: $propertyName,
             type: 'integer',
             nullable: true,
         );

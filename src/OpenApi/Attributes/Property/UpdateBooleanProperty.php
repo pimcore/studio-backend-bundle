@@ -21,13 +21,13 @@ use OpenApi\Attributes\Property;
 /**
  * @internal
  */
-final class UpdateParentId extends Property
+final class UpdateBooleanProperty extends Property
 {
-    public function __construct()
+    public function __construct(string $propertyName)
     {
         parent::__construct(
-            property: 'parentId',
-            type: 'integer',
+            property: $propertyName,
+            type: 'boolean',
             nullable: true,
         );
     }
