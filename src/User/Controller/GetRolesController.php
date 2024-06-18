@@ -37,6 +37,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class GetRolesController extends AbstractApiController
 {
+
     use PaginatedResponseTrait;
     public function __construct(
         SerializerInterface $serializer,
