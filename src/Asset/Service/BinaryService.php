@@ -26,8 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Messenger\AssetPreviewImageMessage;
+use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Video;
-use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Tool\Storage;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -53,7 +53,7 @@ final readonly class BinaryService implements BinaryServiceInterface
      * @throws FilesystemException
      */
     public function downloadVideoByThumbnail(
-        ElementInterface $video,
+        Asset $video,
         string $thumbnailName
     ): StreamedResponse {
         if (!$video instanceof Video) {
@@ -70,7 +70,7 @@ final readonly class BinaryService implements BinaryServiceInterface
      * @throws FilesystemException
      */
     public function streamVideoByThumbnail(
-        ElementInterface $video,
+        Asset $video,
         string $thumbnailName
     ): StreamedResponse {
         if (!$video instanceof Video) {
@@ -87,7 +87,7 @@ final readonly class BinaryService implements BinaryServiceInterface
      * @throws InvalidThumbnailException
      */
     public function streamVideoImageThumbnail(
-        ElementInterface $video,
+        Asset $video,
         VideoImageStreamConfigParameter $imageConfig
     ): StreamedResponse {
         if (!$video instanceof Video) {

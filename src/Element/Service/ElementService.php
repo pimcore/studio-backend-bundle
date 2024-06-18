@@ -54,6 +54,20 @@ final readonly class ElementService implements ElementServiceInterface
     /**
      * @throws AccessDeniedException|NotFoundException
      */
+    public function getAllowedElementById(
+        string $elementType,
+        int $elementId,
+        UserInterface $user,
+    ): ElementInterface {
+        $asset = $this->getElement($this->serviceResolver, $elementType, $elementId);
+        $this->securityService->hasElementPermission($asset, $user, $elementType);
+
+        return $asset;
+    }
+
+    /**
+     * @throws AccessDeniedException|NotFoundException
+     */
     public function getAllowedElementByPath(
         string $elementType,
         string $elementPath,

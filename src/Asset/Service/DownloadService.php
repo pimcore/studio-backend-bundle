@@ -47,12 +47,8 @@ final readonly class DownloadService implements DownloadServiceInterface
      * @throws InvalidElementTypeException|ElementStreamResourceNotFoundException
      */
     public function downloadAsset(
-        ElementInterface $asset
+        Asset $asset
     ): StreamedResponse {
-        if (!$asset instanceof Asset) {
-            throw new InvalidElementTypeException($asset->getType());
-        }
-
         return $this->getStreamedResponse($asset, HttpResponseHeaders::ATTACHMENT_TYPE->value);
     }
 
@@ -60,7 +56,7 @@ final readonly class DownloadService implements DownloadServiceInterface
      * @throws InvalidElementTypeException|ThumbnailResizingFailedException
      */
     public function downloadCustomImage(
-        ElementInterface $image,
+        Asset $image,
         ImageDownloadConfigParameter $parameters
     ): BinaryFileResponse {
         if (!$image instanceof Image) {
