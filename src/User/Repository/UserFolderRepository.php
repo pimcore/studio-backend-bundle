@@ -26,11 +26,9 @@ use Pimcore\Model\User\Folder;
  */
 final readonly class UserFolderRepository implements UserFolderRepositoryInterface
 {
-
     public function __construct(
         private FolderResolverInterface $folderResolver
-    )
-    {
+    ) {
     }
 
     /**

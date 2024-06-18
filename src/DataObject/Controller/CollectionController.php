@@ -85,7 +85,7 @@ final class CollectionController extends AbstractApiController
         content: new CollectionJson(new DataObjectCollection())
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getDataObjects(#[MapQueryString] DataObjectParameters $parameters): JsonResponse
     {

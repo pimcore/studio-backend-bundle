@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\ElementPropertyEvent;
@@ -55,6 +54,7 @@ final readonly class PropertyService implements PropertyServiceInterface
     public function createPredefinedProperty(): PredefinedProperty
     {
         $predefined = $this->propertyRepository->createPredefinedProperty();
+
         return $this->getPredefinedProperty($predefined->getId());
     }
 
@@ -93,17 +93,18 @@ final readonly class PropertyService implements PropertyServiceInterface
 
             $hydratedProperties[] = $predefinedProperty;
         }
+
         return $hydratedProperties;
     }
 
     /**
      * @throws NotFoundException|AccessDeniedException
+     *
      * @return array<int, ElementProperty>
      */
     public function getElementProperties(string $elementType, int $id): array
     {
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
-
 
         $this->securityService->hasElementPermission(
             $element,

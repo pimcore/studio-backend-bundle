@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
     title: 'Document',
     required: [
         'pageCount',
-        'imageThumbnailPath'
+        'imageThumbnailPath',
     ],
     type: 'object'
 )]

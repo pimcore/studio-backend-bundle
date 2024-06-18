@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\WorkflowDependencyMissingException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ConsoleExecutableTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Tool\Console;
@@ -38,8 +37,7 @@ final readonly class WorkflowGraphService implements WorkflowGraphServiceInterfa
         ElementInterface $element,
         WorkflowInterface $workflow,
         string $format
-    ): string
-    {
+    ): string {
         $marking = $workflow->getMarking($element);
 
         $params = [

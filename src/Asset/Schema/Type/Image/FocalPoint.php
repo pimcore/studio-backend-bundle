@@ -26,13 +26,12 @@ use OpenApi\Attributes\Schema;
     title: 'FocalPoint',
     required: [
         'x',
-        'y'
+        'y',
     ],
     type: 'object'
 )]
 final readonly class FocalPoint
 {
-
     public function __construct(
         #[Property(description: 'x', type: 'integer', example: 50)]
         private int $x,

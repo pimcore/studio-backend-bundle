@@ -34,13 +34,11 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final readonly class NoteService implements NoteServiceInterface
 {
-
     public function __construct(
         private NoteRepositoryInterface $noteRepository,
         private NoteHydratorInterface $noteHydrator,
         private EventDispatcherInterface $eventDispatcher
-    )
-    {
+    ) {
     }
 
     /**
@@ -49,6 +47,7 @@ final readonly class NoteService implements NoteServiceInterface
     public function createNote(NoteElementParameters $noteElement, CreateNote $createNote): Note
     {
         $note = $this->noteRepository->createNote($noteElement, $createNote);
+
         return $this->getNote($note->getId());
     }
 

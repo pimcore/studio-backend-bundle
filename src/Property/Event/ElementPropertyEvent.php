@@ -22,10 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Schema\ElementProperty;
 final class ElementPropertyEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.element_property';
+
     public function __construct(
         private readonly ElementProperty $elementProperty
-    )
-    {
+    ) {
         parent::__construct($elementProperty);
     }
 

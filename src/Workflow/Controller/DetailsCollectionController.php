@@ -75,11 +75,12 @@ final class DetailsCollectionController extends AbstractApiController
     public function getDetails(#[MapQueryString] WorkflowDetailsParameters $parameters): JsonResponse
     {
         $user = $this->securityService->getCurrentUser();
+
         return $this->jsonResponse([
             'items' => $this->workflowDetailsService->getWorkflowDetails(
                 $parameters,
                 $user
-            )
+            ),
         ]);
     }
 }

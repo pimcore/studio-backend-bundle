@@ -55,8 +55,7 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly NoteServiceInterface $noteService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -85,14 +84,13 @@ final class CollectionController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(Note::class))
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getNotes(
         string $elementType,
         int $id,
         #[MapQueryString] NoteParameters $parameters = new NoteParameters()
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $collection = $this->noteService->listNotes(new NoteElementParameters($elementType, $id), $parameters);
 
         return $this->getPaginatedCollection(

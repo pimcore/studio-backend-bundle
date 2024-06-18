@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-
 /**
  * @internal
  */
@@ -41,12 +40,12 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private EventDispatcherInterface $eventDispatcher
-    )
-    {
+    ) {
     }
 
     /**
      * @throws AccessDeniedException
+     *
      * @return array<int, CustomMetadata>
      */
     public function getCustomMetadata(int $id): array

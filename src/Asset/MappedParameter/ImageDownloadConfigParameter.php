@@ -32,8 +32,7 @@ final readonly class ImageDownloadConfigParameter
         private ?int $height = null,
         private ?int $quality = null,
         private ?int $dpi = null
-    )
-    {
+    ) {
         if (!in_array($this->mimeType, MimeTypes::ALLOWED_FORMATS)) {
             throw new InvalidArgumentException('Invalid mime type' . $this->mimeType);
         }

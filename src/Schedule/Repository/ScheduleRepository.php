@@ -43,8 +43,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         private DbResolverInterface $dbResolver,
         private TaskResolverInterface $taskResolver,
         private SecurityServiceInterface $securityService,
-    )
-    {
+    ) {
     }
 
     /**
@@ -85,6 +84,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
 
     /**
      * @return array<int, Task>
+     *
      * @throws NotFoundException
      */
     public function listSchedules(string $elementType, int $id): array
@@ -99,8 +99,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         string $elementType,
         int $id,
         UpdateElementSchedules $updateElementSchedules
-    ): void
-    {
+    ): void {
         $this->checkElementPermissions($elementType, $id);
 
         $schedules = $updateElementSchedules->getSchedules();
@@ -122,7 +121,6 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
             $task->setActive($schedule->isActive());
             $task->save();
         }
-
 
         $this->deleteObsoleteTasks($currentTasks, $id);
     }
@@ -167,7 +165,6 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
             throw new DatabaseException();
         }
     }
-
 
     private function checkElementPermissions(string $elementType, int $id): ElementInterface
     {

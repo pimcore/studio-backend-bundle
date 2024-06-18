@@ -73,8 +73,7 @@ final class Note implements AdditionalAttributesInterface
         private readonly ?int $userId,
         #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
         private readonly ?string $userName
-    )
-    {
+    ) {
     }
 
     public function getId(): int

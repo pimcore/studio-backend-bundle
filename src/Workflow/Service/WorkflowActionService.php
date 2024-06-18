@@ -48,15 +48,13 @@ final readonly class WorkflowActionService implements WorkflowActionServiceInter
         private SecurityServiceInterface $securityService,
         private ServiceProviderInterface $actionSubmitterLocator,
         private ServiceResolverInterface $serviceResolver,
-    )
-    {
+    ) {
     }
 
     public function submitAction(
         UserInterface $user,
         SubmitAction $parameters
-    ): ActionSubmissionResponse
-    {
+    ): ActionSubmissionResponse {
         $element = $this->getElement(
             $this->serviceResolver,
             $parameters->getElementType(),
@@ -96,8 +94,7 @@ final readonly class WorkflowActionService implements WorkflowActionServiceInter
     public function enrichActionNotes(
         Concrete|Folder $object,
         array $notes
-    ): array
-    {
+    ): array {
         if (empty($notes)) {
             return $notes;
         }
@@ -117,8 +114,7 @@ final readonly class WorkflowActionService implements WorkflowActionServiceInter
     public function getGlobalActions(
         WorkflowInterface $workflow,
         ElementInterface $element
-    ): array
-    {
+    ): array {
         $globalActions = [];
         $allGlobalActions = $this->workflowManager->getGlobalActions($workflow->getName());
         foreach ($allGlobalActions as $globalAction) {

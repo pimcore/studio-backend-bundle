@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -32,8 +31,7 @@ final class UserPermissionService implements UserPermissionServiceInterface
         private readonly PermissionRepositoryInterface $permissionsRepository,
         private readonly PermissionHydratorInterface $permissionHydrator,
         private readonly EventDispatcherInterface $eventDispatcher,
-    )
-    {
+    ) {
     }
 
     public function getAvailablePermissions(): Collection

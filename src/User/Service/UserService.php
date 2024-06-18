@@ -19,12 +19,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DomainConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
@@ -56,8 +56,7 @@ final readonly class UserService implements UserServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private UserFolderRepositoryInterface $userFolderRepository
-    )
-    {
+    ) {
     }
 
     /**
@@ -73,6 +72,7 @@ final readonly class UserService implements UserServiceInterface
 
         if (!$user || !$userChecks['success']) {
             $this->pimcoreLogger->error('Reset password failed', ['error' => $userChecks['error']]);
+
             return;
         }
 
@@ -82,6 +82,7 @@ final readonly class UserService implements UserServiceInterface
             $this->mailService->sendResetPasswordMail($user, $token);
         } catch (DomainConfigurationException|SendMailException $exception) {
             $this->pimcoreLogger->error('Error sending password recovery email', ['error' => $exception->getMessage()]);
+
             throw $exception;
         }
 

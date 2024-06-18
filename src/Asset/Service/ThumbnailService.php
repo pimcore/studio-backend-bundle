@@ -43,8 +43,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
 
     public function __construct(
         private ConfigResolverInterface $configResolver,
-    )
-    {
+    ) {
 
     }
 
@@ -54,8 +53,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     public function getThumbnailFromConfiguration(
         Image $image,
         ImageDownloadConfigParameter $parameters
-    ): ThumbnailInterface
-    {
+    ): ThumbnailInterface {
         $thumbnailConfig = $this->getImageThumbnailConfig($image, $parameters);
         $thumbnail = $image->getThumbnail($thumbnailConfig);
         $dpi = $parameters->getDpi();
@@ -70,8 +68,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         Image\ThumbnailInterface $thumbnail,
         Image $image,
         bool $deleteAfterSend = true
-    ): BinaryFileResponse
-    {
+    ): BinaryFileResponse {
         $downloadFilename = preg_replace(
             '/\.' . preg_quote(pathinfo($image->getFilename(), PATHINFO_EXTENSION), '/') . '$/i',
             '.' . $thumbnail->getFileExtension(),
@@ -93,8 +90,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
      */
     public function getVideoThumbnailConfig(
         string $thumbnailName
-    ): VideoThumbnailConfig
-    {
+    ): VideoThumbnailConfig {
         try {
             $config = $this->configResolver->getByName($thumbnailName);
         } catch (Exception) {
@@ -113,8 +109,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
      */
     public function validateCustomVideoThumbnailConfig(
         VideoImageStreamConfigParameter $imageConfig
-    ): void
-    {
+    ): void {
         if ($imageConfig->getFrame() && (!$imageConfig->getWidth() || !$imageConfig->getHeight())) {
             throw new InvalidThumbnailConfigurationException(
                 'Width and height must be set for frame configuration'
@@ -130,8 +125,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     private function getImageThumbnailConfig(
         Image $image,
         ImageDownloadConfigParameter $parameters
-    ): ImageThumbnailConfig
-    {
+    ): ImageThumbnailConfig {
         $thumbnailConfig = new ImageThumbnailConfig();
         $thumbnailConfig->setName('pimcore-download-' . $image->getId() . '-' . md5(serialize($parameters)));
         $thumbnailConfig = $this->setThumbnailConfigResizeParameters($parameters, $thumbnailConfig);
@@ -157,8 +151,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     private function setThumbnailConfigResizeParameters(
         ImageDownloadConfigParameter $parameters,
         ImageThumbnailConfig $thumbnailConfig
-    ): ImageThumbnailConfig
-    {
+    ): ImageThumbnailConfig {
         $resizeWidth = $parameters->getWidth();
         $resizeHeight = $parameters->getHeight();
 
@@ -193,14 +186,14 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     private function resizeThumbnailFile(
         ThumbnailInterface $thumbnail,
         int $dpi
-    ): void
-    {
+    ): void {
         $exiftool = $this->getExecutable('exiftool', 'thumbnail resizing');
+
         try {
             $process = new Process([
                 $exiftool, '-overwrite_original', '-xresolution=' . $dpi,
                 '-yresolution=' . $dpi, '-resolutionunit=inches',
-                $thumbnail->getLocalFile()
+                $thumbnail->getLocalFile(),
             ]);
             $process->run();
         } catch (Exception $e) {

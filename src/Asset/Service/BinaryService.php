@@ -18,11 +18,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Messenger\AssetPreviewImageMessage;
@@ -43,8 +43,7 @@ final readonly class BinaryService implements BinaryServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private ThumbnailServiceInterface $thumbnailService,
         private Storage $storageTool
-    )
-    {
+    ) {
     }
 
     /**
@@ -56,8 +55,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     public function downloadVideoByThumbnail(
         ElementInterface $video,
         string $thumbnailName
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         if (!$video instanceof Video) {
             throw new InvalidElementTypeException($video->getType());
         }
@@ -74,8 +72,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     public function streamVideoByThumbnail(
         ElementInterface $video,
         string $thumbnailName
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         if (!$video instanceof Video) {
             throw new InvalidElementTypeException($video->getType());
         }
@@ -92,8 +89,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     public function streamVideoImageThumbnail(
         ElementInterface $video,
         VideoImageStreamConfigParameter $imageConfig
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         if (!$video instanceof Video) {
             throw new InvalidElementTypeException($video->getType());
         }

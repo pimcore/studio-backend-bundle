@@ -25,8 +25,7 @@ final class CustomMetadataEvent extends AbstractPreResponseEvent
 
     public function __construct(
         private readonly CustomMetadata $customMetadata
-    )
-    {
+    ) {
         parent::__construct($customMetadata);
     }
 

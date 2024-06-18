@@ -73,8 +73,7 @@ final class CleanupController extends AbstractApiController
     public function cleanupVersions(
         string $elementType,
         int $id
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return $this->jsonResponse(
             ['ids' => $this->versionService->cleanupVersions(
                 new ElementParameters($elementType, $id),

@@ -47,8 +47,7 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
         ElementParameters $elementParameters,
         DependencyParameters $parameters,
         UserInterface $user
-    ): ElementSearchResult
-    {
+    ): ElementSearchResult {
         $element = $this->getElement(
             $this->serviceResolver,
             $elementParameters->getType(),
@@ -73,8 +72,7 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
         ElementParameters $elementParameters,
         DependencyParameters $parameters,
         UserInterface $user
-    ): ElementSearchResult
-    {
+    ): ElementSearchResult {
         $element = $this->getElement(
             $this->serviceResolver,
             $elementParameters->getType(),

@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Schema;
 
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
@@ -36,6 +35,7 @@ final readonly class InvalidCredentials
         private string $error,
     ) {
     }
+
     public function getError(): string
     {
         return $this->error;

@@ -19,14 +19,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Event;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
 
-
 final class NoteEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.note';
+
     public function __construct(
         private readonly Note $note
-    )
-    {
+    ) {
         parent::__construct($note);
     }
 
