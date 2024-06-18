@@ -46,9 +46,9 @@ final class FilterServiceTest extends Unit
             $noteListing->getCondition());
 
         $this->assertSame(
-                ['filter' => '%test%'],
-                $noteListing->getConditionVariables()
-           );
+            ['filter' => '%test%'],
+            $noteListing->getConditionVariables()
+        );
     }
 
     /**

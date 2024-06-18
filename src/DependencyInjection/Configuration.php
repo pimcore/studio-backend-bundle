@@ -79,22 +79,22 @@ class Configuration implements ConfigurationInterface
                 ->prototype('scalar')->end()
                 ->validate()
                 ->always(
-/**
- * @throws InvalidHostException
- */ function ($hosts) {
-    foreach ($hosts as $host) {
-        if (!filter_var($host)) {
-            throw new InvalidHostException(
+                    /**
+                     * @throws InvalidHostException
+                     */ function ($hosts) {
+                        foreach ($hosts as $host) {
+                            if (!filter_var($host)) {
+                                throw new InvalidHostException(
                                     sprintf(
                                         'The host "%s" is not a valid url.',
                                         $host
                                     )
                                 );
-        }
-    }
+                            }
+                        }
 
-    return $hosts;
-})
+                        return $hosts;
+                    })
                 ->end()
             ->end();
     }

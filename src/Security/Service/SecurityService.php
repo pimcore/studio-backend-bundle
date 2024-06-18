@@ -69,4 +69,19 @@ final readonly class SecurityService implements SecurityServiceInterface
             );
         }
     }
+
+    /**
+     * @throws AccessDeniedException
+     *
+     * @param array<string> $permissions
+     */
+    public function hasElementPermissions(
+        ElementInterface $element,
+        UserInterface $user,
+        array $permissions
+    ): void {
+        foreach ($permissions as $permission) {
+            $this->hasElementPermission($element, $user, $permission);
+        }
+    }
 }

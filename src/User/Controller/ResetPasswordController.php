@@ -58,11 +58,12 @@ final class ResetPasswordController extends AbstractApiController
     #[ResetPasswordRequestBody]
     #[SuccessResponse]
     #[DefaultResponses([
-        HttpResponseCodes::TOO_MANY_REQUESTS
+        HttpResponseCodes::TOO_MANY_REQUESTS,
     ])]
     public function resetPassword(#[MapRequestPayload] ResetPassword $resetPassword): Response
     {
         $this->userService->resetPassword($resetPassword);
+
         return new Response();
     }
 }

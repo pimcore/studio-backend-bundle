@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementPublishingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -171,8 +171,7 @@ final readonly class VersionService implements VersionServiceInterface
     public function cleanupVersions(
         ElementParameters $elementParameters,
         UserInterface $user
-    ): array
-    {
+    ): array {
         $element = $this->getElement(
             $this->serviceResolver,
             $elementParameters->getType(),

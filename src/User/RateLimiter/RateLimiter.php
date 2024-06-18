@@ -25,11 +25,11 @@ use Symfony\Component\RateLimiter\RateLimiterFactory;
 final readonly class RateLimiter implements RateLimiterInterface
 {
     use RequestTrait;
+
     public function __construct(
         private RateLimiterFactory $resetPasswordLimiter,
-        private RequestStack       $requestStack,
-    )
-    {
+        private RequestStack $requestStack,
+    ) {
     }
 
     /**

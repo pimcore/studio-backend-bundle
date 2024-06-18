@@ -36,7 +36,7 @@ use Symfony\Component\Workflow\WorkflowInterface;
 final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInterface
 {
     use ElementProviderTrait;
-    
+
     public function __construct(
         private AllowedTransitionsHydratorInterface $allowedTransitionsHydrator,
         private GlobalActionsHydratorInterface $globalActionsHydrator,
@@ -45,8 +45,7 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         private ServiceResolverInterface $serviceResolver,
         private WorkflowActionServiceInterface $workflowActionService,
         private WorkflowGraphServiceInterface $workflowGraphService,
-    )
-    {
+    ) {
     }
 
     /**
@@ -55,8 +54,7 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
     public function getWorkflowDetails(
         WorkflowDetailsParameters $parameters,
         UserInterface $user
-    ): array
-    {
+    ): array {
         $element = $this->getElement(
             $this->serviceResolver,
             $parameters->getElementType(),
@@ -85,7 +83,7 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
 
         return $details;
     }
-    
+
     private function hydrate(
         ElementInterface $element,
         WorkflowInterface $workflow
@@ -109,17 +107,15 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         );
     }
 
-
     private function getWorkflowLabel(WorkflowInterface $workflow): string
     {
         return $this->workflowManager->getWorkflowConfig($workflow->getName())->getLabel();
     }
-    
+
     private function getStatusInfo(
         WorkflowInterface $workflow,
         ElementInterface $element,
-    ): array
-    {
+    ): array {
         $marking = $workflow->getMarking($element);
         $statuses = $this->workflowManager->getOrderedPlaceConfigs($workflow, $marking);
         $uniqueStatuses = [];
@@ -131,9 +127,8 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
 
         foreach ($uniqueStatuses as $status) {
             $statusInfos[] = new WorkflowStatus(
-                $status->getBackgroundColor(),
-                $status->getFontColor(),
-                $status->getBorderColor(),
+                $status->getColor(),
+                $status->getColorInverted(),
                 $status->getPlace(),
                 $status->getLabel(),
             );

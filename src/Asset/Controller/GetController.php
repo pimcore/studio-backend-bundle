@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdPara
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -57,7 +58,7 @@ final class GetController extends AbstractApiController
         summary: 'Get assets by id',
         tags: [Tags::Assets->name]
     )]
-    #[IdParameter(type: 'asset')]
+    #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[SuccessResponse(
         description: 'One of asset types',
         content: new OneOfAssetJson()

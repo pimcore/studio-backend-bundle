@@ -29,8 +29,7 @@ final readonly class VideoImageStreamConfigParameter
         private ?string $aspectRatio = null,
         private ?string $frame = null,
         private ?string $async = null,
-    )
-    {
+    ) {
         if ($this->frame === 'true' && ($this->width === null || $this->height === null)) {
             throw new InvalidThumbnailConfigurationException(
                 'Width and height must be set when using frame configuration'

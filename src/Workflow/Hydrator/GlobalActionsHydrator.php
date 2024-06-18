@@ -30,8 +30,7 @@ final readonly class GlobalActionsHydrator implements GlobalActionsHydratorInter
 {
     public function __construct(
         private WorkflowActionServiceInterface $workflowActionService,
-    )
-    {
+    ) {
     }
 
     /**

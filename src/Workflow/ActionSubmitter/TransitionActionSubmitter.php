@@ -36,16 +36,14 @@ final readonly class TransitionActionSubmitter implements TransitionActionSubmit
 {
     public function __construct(
         private Manager $workflowManager,
-    )
-    {
+    ) {
     }
 
     public function submit(
         ElementInterface $element,
         WorkflowInterface $workflow,
         SubmitAction $parameters,
-    ): ActionSubmissionResponse
-    {
+    ): ActionSubmissionResponse {
         $element = $this->validateElementType($element);
         $transitionName = $parameters->getTransition();
         if (!$workflow->can($element, $transitionName)) {
@@ -87,5 +85,4 @@ final readonly class TransitionActionSubmitter implements TransitionActionSubmit
 
         return $element;
     }
-
 }

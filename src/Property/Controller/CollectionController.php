@@ -48,9 +48,7 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-
     #[Route('/properties', name: 'pimcore_studio_api_properties', methods: ['GET'])]
-    //#[IsGranted('STUDIO_API')]
     #[Get(
         path: self::API_PATH . '/properties',
         operationId: 'getProperties',
@@ -64,7 +62,7 @@ final class CollectionController extends AbstractApiController
         content: new ItemsJson(PredefinedProperty::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getProperties(
         #[MapQueryString] PropertiesParameters $parameters = new PropertiesParameters()

@@ -25,8 +25,7 @@ final class CustomMetadataEvent extends Event
     public function __construct(
         private readonly int $id,
         private array $customMetadata
-    )
-    {
+    ) {
     }
 
     public function getId(): int

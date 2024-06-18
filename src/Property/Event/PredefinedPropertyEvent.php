@@ -25,8 +25,7 @@ final class PredefinedPropertyEvent extends AbstractPreResponseEvent
 
     public function __construct(
         private readonly PredefinedProperty $predefinedProperty
-    )
-    {
+    ) {
         parent::__construct($predefinedProperty);
     }
 

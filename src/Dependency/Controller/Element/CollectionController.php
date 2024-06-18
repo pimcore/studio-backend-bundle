@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Dependency\Attributes\Parameters\Query\De
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Attributes\Response\Property\DependencyCollection;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyParameters;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
@@ -30,13 +31,14 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\Colle
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -55,7 +57,7 @@ final class CollectionController extends AbstractApiController
     }
 
     #[Route('/dependencies/{elementType}/{id}', name: 'pimcore_studio_api_dependencies', methods: ['GET'])]
-    //#[IsGranted('STUDIO_API')]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
         path: self::API_PATH . '/dependencies/{elementType}/{id}',
         operationId: 'getDependencies',
@@ -82,8 +84,7 @@ final class CollectionController extends AbstractApiController
         string $elementType,
         int $id,
         #[MapQueryString] DependencyParameters $parameters
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $collection = $this->dependencyService->getDependencies(
             new ElementParameters($elementType, $id),
             $parameters,

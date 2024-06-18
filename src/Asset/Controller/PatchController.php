@@ -64,6 +64,7 @@ final class PatchController extends AbstractApiController
     public function patchAssets(#[MapRequestPayload] PatchAssetParameter $patchAssetParameter): Response
     {
         $errors = $this->patchService->patch('asset', $patchAssetParameter->getData());
+
         return $this->patchResponse($errors);
     }
 }

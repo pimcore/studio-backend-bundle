@@ -25,8 +25,7 @@ final class ImageVersionEvent extends AbstractPreResponseEvent
 
     public function __construct(
         private readonly ImageVersion $version
-    )
-    {
+    ) {
         parent::__construct($version);
     }
 

@@ -27,9 +27,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Service\ScheduleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -42,12 +44,12 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly ScheduleServiceInterface $scheduleService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
     #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_get_element_schedules', methods: ['GET'])]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
         operationId: 'getSchedulesForElementByTypeAndId',
@@ -62,13 +64,12 @@ final class CollectionController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getSchedules(
         string $elementType,
         int $id
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return $this->jsonResponse(['items' => $this->scheduleService->listSchedules($elementType, $id)]);
     }
 }

@@ -47,6 +47,7 @@ final readonly class UserInformation
     {
         return $this->roles;
     }
+
     public function getUsername(): string
     {
         return $this->username;

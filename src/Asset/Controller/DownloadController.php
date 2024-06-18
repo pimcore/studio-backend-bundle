@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -69,7 +70,7 @@ final class DownloadController extends AbstractApiController
         summary: 'Download asset by id',
         tags: [Tags::Assets->name]
     )]
-    #[IdParameter(type: 'asset')]
+    #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[SuccessResponse(
         description: 'Original asset',
         content: new AssetMediaType(),

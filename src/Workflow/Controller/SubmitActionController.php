@@ -18,12 +18,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Attributes\Request\WorkflowActionRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Attributes\Request\WorkflowActionRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Attributes\Response\Content\WorkflowActionSubmissionJson;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\SubmitAction;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
@@ -69,8 +69,7 @@ final class SubmitActionController extends AbstractApiController
     ])]
     public function publishVersion(
         #[MapRequestPayload] SubmitAction $parameters
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $user = $this->securityService->getCurrentUser();
 
         return $this->jsonResponse($this->workflowActionService->submitAction($user, $parameters));

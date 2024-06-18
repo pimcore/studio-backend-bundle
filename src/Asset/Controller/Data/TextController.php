@@ -19,14 +19,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Data;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\TextServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\DataJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -61,7 +62,7 @@ final class TextController extends AbstractApiController
         summary: 'Get asset data in text UTF8 representation by id',
         tags: [Tags::Assets->name]
     )]
-    #[IdParameter(type: 'asset')]
+    #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[SuccessResponse(
         description: 'UTF8 encoded text data',
         content: new DataJson('UTF 8 encoded text data')

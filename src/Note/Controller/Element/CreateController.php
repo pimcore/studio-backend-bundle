@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Controller\Element;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Request\CreateNoteRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
@@ -44,8 +44,7 @@ final class CreateController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly NoteServiceInterface $noteService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -53,6 +52,7 @@ final class CreateController extends AbstractApiController
      * @throws ElementSavingFailedException|NotFoundException
      */
     #[Route('/notes/{elementType}/{id}', name: 'pimcore_studio_api_create_element_note', methods: ['POST'])]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Post(
         path: self::API_PATH . '/notes/{elementType}/{id}',
@@ -64,15 +64,15 @@ final class CreateController extends AbstractApiController
     #[IdParameter(type: 'element')]
     #[CreateNoteRequestBody]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function createNote(
         string $elementType,
         int $id,
         #[MapRequestPayload] CreateNote $createNote
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $note = $this->noteService->createNote(new NoteElementParameters($elementType, $id), $createNote);
+
         return $this->jsonResponse(['id' => $note->getId()]);
     }
 }

@@ -21,7 +21,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
  */
 final readonly class ElementTypes
 {
-    public const TYPE_DATA_OBJECT = 'dataObject';
+    public const TYPE_DATA_OBJECT = 'data-object';
 
     public const TYPE_OBJECT = 'object';
 

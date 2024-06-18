@@ -30,9 +30,11 @@ use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -51,6 +53,7 @@ final class UpdateController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route('/properties/{id}', name: 'pimcore_studio_api_update_property', methods: ['PUT'])]
+    #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[Put(
         path: self::API_PATH . '/properties/{id}',
         operationId: 'updateProperty',
