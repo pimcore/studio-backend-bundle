@@ -37,15 +37,14 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class GetRolesController extends AbstractApiController
 {
-
     use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly RoleServiceInterface $roleService,
     ) {
         parent::__construct($serializer);
     }
-
 
     #[Route('/user/roles', name: 'pimcore_studio_api_user_roles', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
@@ -63,6 +62,7 @@ final class GetRolesController extends AbstractApiController
     public function getAvailablePermissions(): JsonResponse
     {
         $roles = $this->roleService->getRoles();
+
         return $this->getPaginatedCollection(
             $this->serializer,
             $roles->getItems(),

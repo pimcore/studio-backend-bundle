@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -32,8 +31,7 @@ final readonly class RoleService implements RoleServiceInterface
     public function __construct(
         private RoleRepositoryInterface $roleRepository,
         private EventDispatcherInterface $eventDispatcher
-    )
-    {
+    ) {
     }
 
     /**

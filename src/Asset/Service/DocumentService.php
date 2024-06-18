@@ -45,8 +45,7 @@ final readonly class DocumentService implements DocumentServiceInterface
         private ConfigResolverInterface $configResolver,
         private DocumentResolverInterface $documentResolver,
         private EventDispatcherInterface $eventDispatcher,
-    )
-    {
+    ) {
     }
 
     /**
@@ -90,8 +89,7 @@ final readonly class DocumentService implements DocumentServiceInterface
      */
     public function validatePdfScanStatus(
         Document $asset,
-    ): void
-    {
+    ): void {
         $scanStatus = $asset->getScanStatus();
 
         match (true) {
@@ -113,7 +111,7 @@ final readonly class DocumentService implements DocumentServiceInterface
             throw new EnvironmentException('Document adapter is not available.');
         }
 
-       $this->validateAssetDocument($asset);
+        $this->validateAssetDocument($asset);
 
         return $this->getPdfStreamFromAdapter($adapter, $asset);
     }
