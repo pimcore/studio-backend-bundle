@@ -21,15 +21,15 @@ use OpenApi\Attributes\Property;
 /**
  * @internal
  */
-final class ParentId extends Property
+final class UpdateIntegerProperty extends Property
 {
-    public function __construct()
+    public function __construct(string $propertyName, int $minimum = 1)
     {
         parent::__construct(
-            property: 'parentId',
+            property: $propertyName,
             type: 'integer',
-            minimum: 1,
-            nullable: true,
+            minimum: $minimum,
+            nullable: true
         );
     }
 }

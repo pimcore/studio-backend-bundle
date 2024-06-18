@@ -20,7 +20,7 @@ use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\SingleString;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateParentId;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateIntegerProperty;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class CreateRequestBody extends RequestBody
@@ -31,11 +31,11 @@ final class CreateRequestBody extends RequestBody
             required: true,
             content: new JsonContent(
                 required: ['parentId', 'name', ],
-                type: 'object',
                 properties: [
-                    new UpdateParentId(),
+                    new UpdateIntegerProperty('parentId'),
                     new SingleString('name'),
-                ]
+                ],
+                type: 'object'
             ),
         );
     }
