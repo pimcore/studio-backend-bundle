@@ -21,6 +21,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\Synchro
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 
 /**
@@ -31,10 +32,10 @@ final readonly class UpdateService implements UpdateServiceInterface
     use ElementProviderTrait;
 
     public function __construct(
+        private SynchronousProcessingServiceInterface $synchronousProcessingService,
+        private SecurityServiceInterface $securityService,
         private AdapterLoaderInterface $adapterLoader,
-        private ServiceResolver $serviceResolver,
-        private SynchronousProcessingServiceInterface $synchronousProcessingService
-
+        private ServiceResolver $serviceResolver
     ) {
     }
 
@@ -51,6 +52,7 @@ final readonly class UpdateService implements UpdateServiceInterface
 
         try {
             $this->synchronousProcessingService->enable();
+            $element->setUserModification($this->securityService->getCurrentUser()->getId());
             $element->save();
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
