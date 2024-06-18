@@ -27,7 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 #[Schema(
     title: 'User Role',
     description: 'A user role which is a combination of permissions and settings.',
-    type: 'object'
+    required: ['id', 'category'],
+    type: 'object',
 )]
 final class UserRole implements AdditionalAttributesInterface
 {

@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 #[Schema(
     title: 'User Permission',
     description: 'A permission for a user or role',
+    required: ['key', 'category'],
     type: 'object'
 )]
 final class UserPermission implements AdditionalAttributesInterface

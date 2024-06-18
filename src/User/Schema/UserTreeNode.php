@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 #[Schema(
     title: 'User Tree Node',
     description: 'One node in the user tree',
+    required: ['id', 'name', 'type', 'hasChildren'],
     type: 'object'
 )]
 final class UserTreeNode implements AdditionalAttributesInterface
