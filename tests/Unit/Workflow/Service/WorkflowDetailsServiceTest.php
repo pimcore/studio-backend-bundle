@@ -41,7 +41,7 @@ final class WorkflowDetailsServiceTest extends Unit
             elementType: 'asset',
         );
         $workflowDetailsService = $this->getWorkflowDetailsService();
-        $this->expectExceptionMessage('Asset with ID 1 not found');
+        $this->expectExceptionMessage('Asset with ID: 1 not found');
         $this->expectException(NotFoundException::class);
         $workflowDetailsService->getWorkflowDetails(
             $parameters,

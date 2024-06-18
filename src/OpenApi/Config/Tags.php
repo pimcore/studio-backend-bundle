@@ -26,7 +26,7 @@ use OpenApi\Attributes\Tag;
     description: 'Asset operations to get/update/create/delete assets'
 )]
 #[Tag(
-    name: Tags::Thumbnails->name,
+    name: Tags::AssetThumbnails->name,
     description: 'List thumbnails for assets like videos and images'
 )]
 #[Tag(
@@ -42,6 +42,10 @@ use OpenApi\Attributes\Tag;
     description: 'Get dependencies for a single element.'
 )]
 #[Tag(
+    name: Tags::Elements->name,
+    description: 'Get element properties for a single element based on its type and provided parameters.'
+)]
+#[Tag(
     name: Tags::Notes->name,
     description: 'Note operations to list/delete notes'
 )]
@@ -50,16 +54,16 @@ use OpenApi\Attributes\Tag;
     description: 'Property operations to get/update/create/delete properties'
 )]
 #[Tag(
-    name: Tags::Translation->name,
-    description: 'Get translations either for a single key or multiple keys'
-)]
-#[Tag(
     name: Tags::Schedule->name,
     description: 'Get schedules for an element'
 )]
 #[Tag(
     name: Tags::Settings->name,
     description: 'Get Settings'
+)]
+#[Tag(
+    name: Tags::Translation->name,
+    description: 'Get translations either for a single key or multiple keys'
 )]
 #[Tag(
     name: Tags::User->value,
@@ -79,12 +83,13 @@ enum Tags: string
     case Authorization = 'Authorization';
     case DataObjects = 'DataObjects';
     case Dependencies = 'Dependencies';
+    case Elements = 'Elements';
     case Notes = 'Notes';
     case Properties = 'Properties';
     case Schedule = 'Schedule';
     case Settings = 'Settings';
     case Translation = 'Translation';
-    case Thumbnails = 'Thumbnails';
+    case AssetThumbnails = 'Asset Thumbnails';
     case User = 'User Management';
     case Versions = 'Versions';
     case Workflows = 'Workflows';

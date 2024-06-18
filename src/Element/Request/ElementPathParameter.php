@@ -14,20 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
-
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Request;
 
 /**
  * @internal
  */
-final class NotFoundException extends AbstractApiException
+final readonly class ElementPathParameter
 {
-    public function __construct(string $type, int|string $id, string $parameter = 'ID')
-    {
-        parent::__construct(
-            HttpResponseCodes::NOT_FOUND->value,
-            sprintf('%s with %s: %s not found', ucfirst($type), $parameter, $id)
-        );
+    public function __construct(
+        private string $elementPath
+    ) {
     }
+
+    public function getElementPath(): string
+    {
+        return $this->elementPath;
+    }
+
 }
