@@ -25,26 +25,26 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
-    title: 'User Permission',
-    description: 'A permission for a user or role',
-    required: ['key', 'category'],
-    type: 'object'
+    title: 'User Role',
+    description: 'A user role which is a combination of permissions and settings.',
+    required: ['id', 'category'],
+    type: 'object',
 )]
-final class UserPermission implements AdditionalAttributesInterface
+final class UserRole implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Key of the Permission', type: 'string', example: 'objects')]
-        private readonly string $key,
-        #[Property(description: 'Category og the Permission', type: 'string', example: 'Datahub')]
+        #[Property(description: 'ID of the Role', type: 'integer', example: '1')]
+        private readonly int $id,
+        #[Property(description: 'Name of the Role', type: 'string', example: 'role')]
         private readonly string $category,
     ) {
     }
 
-    public function getKey(): string
+    public function getId(): int
     {
-        return $this->key;
+        return $this->id;
     }
 
     public function getCategory(): string
