@@ -47,7 +47,6 @@ final class GetIdByPathController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-
     #[Route(
         '/elements/{elementType}/path',
         name: 'pimcore_studio_api_elements_get_element_id',
@@ -81,7 +80,7 @@ final class GetIdByPathController extends AbstractApiController
                     $elementType,
                     $elementPath,
                     $this->securityService->getCurrentUser()
-                )
+                ),
             ]
         );
     }

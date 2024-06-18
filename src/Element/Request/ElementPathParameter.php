@@ -30,5 +30,4 @@ final readonly class ElementPathParameter
     {
         return $this->elementPath;
     }
-
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
  *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
+
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
@@ -31,7 +32,7 @@ use Pimcore\Model\UserInterface;
 final readonly class ElementService implements ElementServiceInterface
 {
     use ElementProviderTrait;
-    
+
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
         private SecurityServiceInterface $securityService,
