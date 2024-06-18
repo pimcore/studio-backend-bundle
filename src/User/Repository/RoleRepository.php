@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Model\User\Role;
 use Pimcore\Model\User\Role\Listing;
@@ -38,7 +39,7 @@ final class RoleRepository implements RoleRepositoryInterface
             $roleListing->load();
 
             return $roleListing->getRoles();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new  DatabaseException(sprintf('Error while fetching roles: %s', $e->getMessage()));
         }
     }
