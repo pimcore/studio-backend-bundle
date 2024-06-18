@@ -23,12 +23,13 @@ use OpenApi\Attributes\Property;
  */
 final class UpdateIntegerProperty extends Property
 {
-    public function __construct(string $propertyName)
+    public function __construct(string $propertyName, int $minimum = 1)
     {
         parent::__construct(
             property: $propertyName,
             type: 'integer',
-            nullable: true,
+            minimum: $minimum,
+            nullable: true
         );
     }
 }
