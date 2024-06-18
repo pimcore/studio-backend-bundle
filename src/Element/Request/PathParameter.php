@@ -19,15 +19,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Request;
 /**
  * @internal
  */
-final readonly class ElementPathParameter
+final readonly class PathParameter
 {
     public function __construct(
-        private string $elementPath
+        private string $path
     ) {
     }
 
-    public function getElementPath(): string
+    public function getPath(): string
     {
-        return $this->elementPath;
+        return $this->path;
     }
 }

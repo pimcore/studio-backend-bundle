@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Request\ElementPathParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
@@ -44,11 +44,11 @@ final readonly class ElementService implements ElementServiceInterface
      */
     public function getElementIdByPath(
         string $elementType,
-        ElementPathParameter $elementPath,
+        PathParameter $pathParameter,
         UserInterface $user
     ): int {
 
-        return $this->getAllowedElementByPath($elementType, $elementPath->getElementPath(), $user)->getId();
+        return $this->getAllowedElementByPath($elementType, $pathParameter->getPath(), $user)->getId();
     }
 
     /**

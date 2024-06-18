@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementPathParameter;
@@ -71,14 +72,14 @@ final class GetIdByPathController extends AbstractApiController
     ])]
     public function getElementIdByPath(
         string $elementType,
-        #[MapQueryString] \Pimcore\Bundle\StudioBackendBundle\Element\Request\ElementPathParameter $elementPath
+        #[MapQueryString] PathParameter $pathParameter
     ): JsonResponse {
 
         return $this->jsonResponse(
             [
                 'id' => $this->elementService->getElementIdByPath(
                     $elementType,
-                    $elementPath,
+                    $pathParameter,
                     $this->securityService->getCurrentUser()
                 ),
             ]

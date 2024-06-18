@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Element\Request\ElementPathParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Exception\NotFoundException;
@@ -29,7 +29,7 @@ interface ElementServiceInterface
      */
     public function getElementIdByPath(
         string $elementType,
-        ElementPathParameter $elementPath,
+        PathParameter $pathParameter,
         UserInterface $user
     ): int;
 

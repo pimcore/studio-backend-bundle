@@ -59,6 +59,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $loader->load('data_objects.yaml');
         $loader->load('dependencies.yaml');
         $loader->load('element_workflow.yaml');
+        $loader->load('elements.yaml');
         $loader->load('event_subscribers.yaml');
         $loader->load('factories.yaml');
         $loader->load('filters.yaml');
@@ -77,7 +78,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $loader->load('updater.yaml');
         $loader->load('users.yaml');
         $loader->load('versions.yaml');
-        $loader->load('elements.yaml');
 
         $this->checkValidOpenApiScanPaths($config['open_api_scan_paths']);
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
