@@ -80,6 +80,7 @@ use OpenApi\Attributes\Tag;
 enum Tags: string
 {
     case Assets = 'Assets';
+    case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';
     case DataObjects = 'DataObjects';
     case Dependencies = 'Dependencies';
@@ -89,7 +90,6 @@ enum Tags: string
     case Schedule = 'Schedule';
     case Settings = 'Settings';
     case Translation = 'Translation';
-    case AssetThumbnails = 'Asset Thumbnails';
     case User = 'User Management';
     case Versions = 'Versions';
     case Workflows = 'Workflows';
