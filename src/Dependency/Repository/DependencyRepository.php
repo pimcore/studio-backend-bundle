@@ -16,8 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Repository;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\ElementType;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Element\SearchResult\ElementSearchResult;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Dependency\RequiredByFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Dependency\RequiresFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Element\ElementSearchServiceInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchProviderInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -27,53 +37,67 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
     use ElementProviderTrait;
 
     public function __construct(
-        private ServiceResolverInterface $serviceResolver,
+        private ElementSearchServiceInterface $elementSearchService,
+        private SearchProviderInterface $searchProvider,
+        private ServiceResolverInterface $serviceResolver
     ) {
     }
 
-    public function listRequiresDependencies(string $elementType, int $elementId): array
+    public function listRequiresDependencies(
+        ElementParameters $elementParameters,
+        DependencyParameters $parameters,
+        UserInterface $user
+    ): ElementSearchResult
     {
-        return $this->getElement(
+        $element = $this->getElement(
             $this->serviceResolver,
-            $elementType,
-            $elementId
-        )
-            ->getDependencies()
-            ->getRequires();
-    }
+            $elementParameters->getType(),
+            $elementParameters->getId()
+        );
 
-    public function listRequiresDependenciesTotalCount(string $elementType, int $elementId): int
-    {
-        return
-            $this->getElement(
-                $this->serviceResolver,
-                $elementType,
-                $elementId
+        $search = $this->searchProvider->createElementSearch();
+        $search->setUser($this->getUser($user));
+        $search->setPage($parameters->getPage());
+        $search->setPageSize($parameters->getPageSize());
+        $search->addModifier(
+            new RequiresFilter(
+                $element->getId(),
+                ElementType::tryFrom($elementParameters->getType())
             )
-                ->getDependencies()
-                ->getRequiresTotalCount();
+        );
+
+        return $this->elementSearchService->search($search);
     }
 
-    public function listRequiredByDependencies(string $elementType, int $elementId): array
+    public function listRequiredByDependencies(
+        ElementParameters $elementParameters,
+        DependencyParameters $parameters,
+        UserInterface $user
+    ): ElementSearchResult
     {
-        return $this->getElement(
+        $element = $this->getElement(
             $this->serviceResolver,
-            $elementType,
-            $elementId
-        )
-            ->getDependencies()
-            ->getRequiredBy();
+            $elementParameters->getType(),
+            $elementParameters->getId()
+        );
+
+        $search = $this->searchProvider->createElementSearch();
+        $search->setUser($this->getUser($user));
+        $search->setPage($parameters->getPage());
+        $search->setPageSize($parameters->getPageSize());
+        $search->addModifier(
+            new RequiredByFilter(
+                $element->getId(),
+                ElementType::tryFrom($elementParameters->getType())
+            )
+        );
+
+        return $this->elementSearchService->search($search);
     }
 
-    public function listRequiredByDependenciesTotalCount(string $elementType, int $elementId): int
+    private function getUser(UserInterface $user): User
     {
-        return
-            $this->getElement(
-                $this->serviceResolver,
-                $elementType,
-                $elementId
-            )
-                ->getDependencies()
-                ->getRequiredByTotalCount();
+        /** @var User $user */
+        return $user;
     }
 }
