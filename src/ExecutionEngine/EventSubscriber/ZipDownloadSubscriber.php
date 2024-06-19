@@ -31,8 +31,7 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
     public function __construct(
         private JobRunRepositoryInterface $jobRunRepository,
         private LoggerInterface $pimcoreLogger
-    )
-    {
+    ) {
 
     }
 
@@ -57,7 +56,7 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
                 [
                     'jobRunId' => $jobRun->getId(),
                     'state' => $event->getNewState(),
-                    'owner' => $jobRun->getOwnerId()
+                    'owner' => $jobRun->getOwnerId(),
             ]);
         }
     }
