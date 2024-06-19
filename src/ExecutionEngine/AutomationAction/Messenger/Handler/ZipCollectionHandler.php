@@ -45,7 +45,7 @@ final class ZipCollectionHandler extends AbstractAutomationActionHandler
     {
         $asset = $message->getElement();
 
-        if(!$asset) {
+        if (!$asset) {
             $this->abortAction(
                 'no_asset_found',
                 [],
@@ -58,7 +58,7 @@ final class ZipCollectionHandler extends AbstractAutomationActionHandler
 
         $user = $this->userResolver->getById($jobRun->getOwnerId());
 
-        if(!$user) {
+        if (!$user) {
             $this->abortAction(
                 'no_user_found',
                 [],

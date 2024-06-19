@@ -36,7 +36,7 @@ final class ZipService implements ZipServiceInterface
 
         $state = false;
 
-        if(is_file($zip)) {
+        if (is_file($zip)) {
             $state = $archive->open($zip);
         }
 
@@ -44,7 +44,7 @@ final class ZipService implements ZipServiceInterface
             $state = $archive->open($zip, ZipArchive::CREATE);
         }
 
-        if(!$state) {
+        if (!$state) {
             return null;
         }
 

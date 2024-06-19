@@ -57,7 +57,7 @@ final class ZipCreationHandler extends AbstractAutomationActionHandler
 
         $archive = $this->zipService->getZipArchive($jobRun->getId());
 
-        if(!$archive) {
+        if (!$archive) {
             $this->abortAction(
                 'zip_archive_not_found',
                 [],
@@ -66,11 +66,11 @@ final class ZipCreationHandler extends AbstractAutomationActionHandler
             );
         }
 
-        foreach($context[ZipServiceInterface::ASSETS_INDEX] as $id) {
+        foreach ($context[ZipServiceInterface::ASSETS_INDEX] as $id) {
 
             $asset = $this->serviceResolver->getElementById('asset', $id);
 
-            if(!$asset) {
+            if (!$asset) {
                 $this->abortAction(
                     'asset_not_found',
                     [],
