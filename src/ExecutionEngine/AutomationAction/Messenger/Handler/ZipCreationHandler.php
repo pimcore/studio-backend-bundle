@@ -79,7 +79,6 @@ final class ZipCreationHandler extends AbstractAutomationActionHandler
                 );
             }
 
-
             $this->zipService->addFile($archive, $asset);
             // TODO Send SSE for percentage update
         }
