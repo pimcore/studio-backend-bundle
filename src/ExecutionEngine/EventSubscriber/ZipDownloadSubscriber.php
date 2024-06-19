@@ -29,7 +29,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private JobRunRepositoryInterface $jobRunRepository,
         private LoggerInterface $pimcoreLogger
     ) {
 
