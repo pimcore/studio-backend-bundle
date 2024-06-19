@@ -23,8 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\User;
-use Pimcore\Model\UserInterface;
 use Pimcore\Model\User\Workspace\AbstractWorkspace;
+use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
