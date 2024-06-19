@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -47,6 +49,9 @@ final class GetUserController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws NotFoundException|DatabaseException
+     */
     #[Route('/user/{id}', name: 'pimcore_studio_api_user_get', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
