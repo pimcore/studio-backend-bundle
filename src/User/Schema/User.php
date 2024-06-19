@@ -32,7 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
         'id', 'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage', 'keyBindings',
         'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationEnabled',
         'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
-        'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces'
+        'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces',
     ],
     type: 'object'
 )]

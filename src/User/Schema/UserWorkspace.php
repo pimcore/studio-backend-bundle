@@ -29,7 +29,7 @@ use OpenApi\Attributes\Schema;
         'cid', 'cpath', 'list', 'view',
         'publish', 'delete', 'rename',
         'create', 'settings', 'versions',
-        'properties'
+        'properties',
     ],
     type: 'object',
 )]
