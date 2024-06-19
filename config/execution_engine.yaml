@@ -1,0 +1,26 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+
+  #
+  # Service
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ZipServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ZipService
+
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Handler\ZipCollectionHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Handler\ZipCreationHandler: ~
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\EventSubscriber\ZipDownloadSubscriber: ~
