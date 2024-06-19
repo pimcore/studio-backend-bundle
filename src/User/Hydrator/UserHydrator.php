@@ -22,7 +22,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
-use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 use Pimcore\Model\User\Workspace\AbstractWorkspace;
 use Psr\Log\LoggerInterface;
 use Throwable;
@@ -39,7 +39,7 @@ final class UserHydrator implements UserHydratorInterface
     ) {
     }
 
-    public function hydrate(User $user): UserSchema
+    public function hydrate(UserInterface $user): UserSchema
     {
         // TODO: Remove when https://github.com/pimcore/pimcore/issues/17196 is fixed.
         try {
@@ -102,7 +102,7 @@ final class UserHydrator implements UserHydratorInterface
         }
     }
 
-    private function getContentLanguages(User $user): array
+    private function getContentLanguages(UserInterface $user): array
     {
         $validLanguages = $this->toolResolver->getValidLanguages();
         $contentLanguagesString = $this->adminToolResolver->reorderWebsiteLanguages($user, $validLanguages);
@@ -113,7 +113,7 @@ final class UserHydrator implements UserHydratorInterface
     /**
      * @return UserWorkspace[]
      */
-    private function getAssetWorkspace(User $user): array
+    private function getAssetWorkspace(UserInterface $user): array
     {
         $workspaces = [];
         foreach ($user->getWorkspacesAsset() as $workspace) {
@@ -126,7 +126,7 @@ final class UserHydrator implements UserHydratorInterface
     /**
      * @return UserWorkspace[]
      */
-    private function getDataObjectWorkspace(User $user): array
+    private function getDataObjectWorkspace(UserInterface $user): array
     {
         $workspaces = [];
         foreach ($user->getWorkspacesObject() as $workspace) {
@@ -139,7 +139,7 @@ final class UserHydrator implements UserHydratorInterface
     /**
      * @return UserWorkspace[]
      */
-    private function getDocumentWorkspace(User $user): array
+    private function getDocumentWorkspace(UserInterface $user): array
     {
         $workspaces = [];
         foreach ($user->getWorkspacesDocument() as $workspace) {

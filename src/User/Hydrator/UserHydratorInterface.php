@@ -17,12 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
-use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
 interface UserHydratorInterface
 {
-    public function hydrate(User $user): UserSchema;
+    public function hydrate(UserInterface $user): UserSchema;
 }
