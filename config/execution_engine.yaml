@@ -18,3 +18,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Handler\ZipCollectionHandler: ~
   Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Handler\ZipCreationHandler: ~
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\EventSubscriber\ZipDownloadSubscriber: ~

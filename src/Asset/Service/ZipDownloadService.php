@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DownloadIdsParamete
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 
 final readonly class ZipDownloadService implements ZipDownloadServiceInterface
@@ -37,7 +38,7 @@ final readonly class ZipDownloadService implements ZipDownloadServiceInterface
     public function generateZipFile(DownloadIdsParameter $ids): string
     {
         $job = new Job(
-            name: 'ZipDownloadJob',
+            name: Jobs::CREATE_ZIP->value,
             steps: [
                 new JobStep('Asset collection', ZipCollectionMessage::class, '', []),
                 new JobStep('Zip creation', ZipCreationMessage::class, '', []),
