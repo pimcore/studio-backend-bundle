@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
+use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
@@ -56,7 +57,8 @@ final readonly class UserService implements UserServiceInterface
         private UserTreeNodeHydratorInterface $userTreeNodeHydrator,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
-        private UserFolderRepositoryInterface $userFolderRepository
+        private UserFolderRepositoryInterface $userFolderRepository,
+        private UserHydratorInterface $userHydrator
     ) {
     }
 
@@ -200,7 +202,6 @@ final readonly class UserService implements UserServiceInterface
             throw new ForbiddenException('Only admins can view other admins');
         }
 
-        dd($user->getWorkspacesObject());
-
+        return $this->userHydrator->hydrate($user);
     }
 }

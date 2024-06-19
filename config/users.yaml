@@ -48,6 +48,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Hydrator\PermissionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\PermissionHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydrator
 
   #
   # Repositories
