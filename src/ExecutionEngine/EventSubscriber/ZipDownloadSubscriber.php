@@ -45,7 +45,6 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
 
-
         if (
             $event->getNewState() === JobRunStates::FINISHED->value &&
             $event->getJobName() === Jobs::CREATE_ZIP->value

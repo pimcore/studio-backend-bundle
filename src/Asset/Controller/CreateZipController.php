@@ -21,7 +21,6 @@ use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ZipDownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ScalarItemsJson;

@@ -99,12 +99,11 @@ trait StreamedResponseTrait
 
     protected function getZipStreamedResponse(
         string $path
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         $stream = fopen($path, 'rb');
 
         if (!$stream) {
-           throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $path));
+            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $path));
         }
 
         $response = new StreamedResponse(
@@ -122,6 +121,7 @@ trait StreamedResponseTrait
         );
 
         unlink($path);
+
         return $response;
     }
 
@@ -142,6 +142,4 @@ trait StreamedResponseTrait
             HttpResponseHeaders::HEADER_CONTENT_LENGTH->value => $fileSize,
         ]);
     }
-
-
 }
