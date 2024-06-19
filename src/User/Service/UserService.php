@@ -199,7 +199,7 @@ final readonly class UserService implements UserServiceInterface
     {
         $user = $this->userRepository->getUserById($userId);
 
-        if($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
+        if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException('Only admins can view other admins');
         }
 

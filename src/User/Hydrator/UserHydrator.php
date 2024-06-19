@@ -68,7 +68,8 @@ final class UserHydrator implements UserHydratorInterface
             parentId: $user->getParentId(),
             permissions: $user->getPermissions(),
             roles: $user->getRoles(),
-            twoFactorAuthenticationEnabled: $user->getTwoFactorAuthentication('enabled') || $user->getTwoFactorAuthentication('secret'),
+            twoFactorAuthenticationEnabled:
+                $user->getTwoFactorAuthentication('enabled') || $user->getTwoFactorAuthentication('secret'),
             websiteTranslationLanguagesEdit: $user->getWebsiteTranslationLanguagesEdit(),
             websiteTranslationLanguagesView: $user->getWebsiteTranslationLanguagesView(),
             welcomeScreen: $user->getWelcomeScreen(),

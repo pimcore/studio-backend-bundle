@@ -28,7 +28,12 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 #[Schema(
     title: 'User',
     description: 'Contains all information about a user',
-    required: ['id', 'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage', 'keyBindings', 'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationEnabled', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces'],
+    required: [
+        'id', 'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage', 'keyBindings',
+        'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationEnabled',
+        'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
+        'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces'
+    ],
     type: 'object'
 )]
 final class User implements AdditionalAttributesInterface
@@ -54,7 +59,11 @@ final class User implements AdditionalAttributesInterface
         private readonly bool $closeWarning,
         #[Property(type: 'boolean', example: true)]
         private readonly bool $allowDirtyClose,
-        #[Property(description: 'List of available content Language already sorted.', type: 'object', example: ['de', 'en'])]
+        #[Property(
+            description: 'List of available content Language already sorted.',
+            type: 'object',
+            example: ['de', 'en']
+        )]
         private readonly array $contentLanguages,
         #[Property(type: 'boolean', example: true)]
         private readonly bool $hasImage,

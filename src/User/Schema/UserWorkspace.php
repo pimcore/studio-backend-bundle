@@ -25,7 +25,12 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'User Workspace',
     description: 'Workspace of a user',
-    required: ['cid', 'cpath', 'list', 'view', 'publish', 'delete', 'rename', 'create', 'settings', 'versions', 'properties'],
+    required: [
+        'cid', 'cpath', 'list', 'view',
+        'publish', 'delete', 'rename',
+        'create', 'settings', 'versions',
+        'properties'
+    ],
     type: 'object',
 )]
 final readonly class UserWorkspace
