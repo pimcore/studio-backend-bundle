@@ -20,7 +20,7 @@
     "php": "~8.2",
     "pimcore/static-resolver-bundle": "1.x-dev",
     "pimcore/generic-data-index-bundle": "1.x-dev",
-    "pimcore/pimcore": "^11.0",
+    "pimcore/pimcore": "1.x-dev",
     "zircote/swagger-php": "^4.8",
     "ext-zip": "*"
   },
