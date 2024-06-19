@@ -105,11 +105,8 @@ final class UserHydrator implements UserHydratorInterface
 
     private function getContentLanguages(UserInterface $user): array
     {
-        if (!$user instanceof User) {
-            return [];
-        }
-
         $validLanguages = $this->toolResolver->getValidLanguages();
+        /** @var User $user */
         $contentLanguagesString = $this->adminToolResolver->reorderWebsiteLanguages($user, $validLanguages);
 
         return explode(',', $contentLanguagesString);
