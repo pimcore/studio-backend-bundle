@@ -79,9 +79,13 @@ final class UserHydrator implements UserHydratorInterface
         );
     }
 
-    private function hydrateKeyBindings(string $keyBindings): array
+    private function hydrateKeyBindings(?string $keyBindings): array
     {
         $bindings = [];
+
+        if (!$keyBindings) {
+            return $bindings;
+        }
 
         try {
             $decoded = json_decode($keyBindings, true, 512, JSON_THROW_ON_ERROR);
