@@ -14,20 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use OpenApi\Attributes\Property;
 
 /**
  * @internal
  */
-final class NotFoundException extends AbstractApiException
+final class UpdateIntegerProperty extends Property
 {
-    public function __construct(string $type, int|string $id, string $parameter = 'ID')
+    public function __construct(string $propertyName, int $minimum = 1)
     {
         parent::__construct(
-            HttpResponseCodes::NOT_FOUND->value,
-            sprintf('%s with %s: %s not found', ucfirst($type), $parameter, $id)
+            property: $propertyName,
+            type: 'integer',
+            minimum: $minimum,
+            nullable: true
         );
     }
 }

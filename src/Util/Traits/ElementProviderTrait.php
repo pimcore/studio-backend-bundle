@@ -48,6 +48,22 @@ trait ElementProviderTrait
         return $element;
     }
 
+    /**
+     * @throws NotFoundException
+     */
+    private function getElementByPath(
+        ServiceResolverInterface $serviceResolver,
+        string $type,
+        string $path
+    ): ElementInterface {
+        $element = $serviceResolver->getElementByPath($type, $path);
+        if ($element === null) {
+            throw new NotFoundException($type, $path, 'path');
+        }
+
+        return $element;
+    }
+
     private function getLatestVersionForUser(
         ElementInterface $element,
         ?UserInterface $user

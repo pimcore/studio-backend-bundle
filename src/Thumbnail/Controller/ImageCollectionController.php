@@ -57,7 +57,7 @@ final class ImageCollectionController extends AbstractApiController
         operationId: 'getImageThumbnails',
         description: 'Get image thumbnails',
         summary: 'Get all downloadable image thumbnails',
-        tags: [Tags::Thumbnails->name]
+        tags: [Tags::AssetThumbnails->name]
     )]
     #[SuccessResponse(
         description: 'All downloadable image thumbnails',

@@ -38,7 +38,7 @@ final class UserRepositoryTest extends Unit
         $userRepository = new UserRepository($userResolverMock);
 
         $this->expectException(NotFoundException::class);
-        $this->expectExceptionMessage('User with ID 1 not found');
+        $this->expectExceptionMessage('User with ID: 1 not found');
         $userRepository->getUserById(1);
     }
 

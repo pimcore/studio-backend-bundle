@@ -46,6 +46,10 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentService
 
+  #
+  # Updaters
+  #
+
   Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\ImageAdapter:
     tags: [ 'pimcore.studio_backend.update_adapter' ]
 
@@ -54,6 +58,13 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\CustomSettingsAdapter:
     tags: [ 'pimcore.studio_backend.update_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\DataAdapter:
+    tags: [ 'pimcore.studio_backend.update_adapter' ]
+
+  #
+  # Patcher
+  #
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter\MetadataAdapter:
     tags: [ 'pimcore.studio_backend.patch_adapter' ]

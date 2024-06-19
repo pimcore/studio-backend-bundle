@@ -14,22 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query;
 
-use OpenApi\Attributes\Property;
+use Attribute;
+use OpenApi\Attributes\QueryParameter;
+use OpenApi\Attributes\Schema;
 
-/**
- * @internal
- */
-final class ParentId extends Property
+#[Attribute(Attribute::TARGET_METHOD)]
+final class ElementPathParameter extends QueryParameter
 {
     public function __construct()
     {
         parent::__construct(
-            property: 'parentId',
-            type: 'integer',
-            minimum: 1,
-            nullable: true,
+            name: 'elementPath',
+            description: 'Filter elements by matching element path.',
+            in: 'query',
+            required: true,
+            schema: new Schema(
+                type: 'string',
+                example: 'path/to/element',
+            ),
         );
     }
 }
