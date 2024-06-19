@@ -32,6 +32,6 @@ final readonly class DownloadIdsParameter
     /** @return array<int, ElementDescriptor> */
     public function getItems(): array
     {
-        return array_map(static fn(int $id) => new ElementDescriptor('asset', $id), $this->items);
+        return array_map(static fn (int $id) => new ElementDescriptor('asset', $id), $this->items);
     }
 }

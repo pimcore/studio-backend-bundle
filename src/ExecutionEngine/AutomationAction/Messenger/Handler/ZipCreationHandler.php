@@ -33,10 +33,10 @@ final class ZipCreationHandler extends AbstractAutomationActionHandler
     public function __construct(
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly ZipServiceInterface $zipService
-    )
-    {
+    ) {
         parent::__construct();
     }
+
     /**
      * @throws Exception
      */

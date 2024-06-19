@@ -31,8 +31,7 @@ final readonly class ZipDownloadService implements ZipDownloadServiceInterface
         private JobExecutionAgentInterface $jobExecutionAgent,
         private SecurityServiceInterface $securityService,
         private ZipServiceInterface $zipService
-    )
-    {
+    ) {
     }
 
     public function generateZipFile(DownloadIdsParameter $ids): string

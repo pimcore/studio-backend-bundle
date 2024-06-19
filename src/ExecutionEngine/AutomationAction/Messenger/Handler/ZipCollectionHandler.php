@@ -34,8 +34,7 @@ final class ZipCollectionHandler extends AbstractAutomationActionHandler
     public function __construct(
         private readonly AssetServiceInterface $assetService,
         private readonly UserResolverInterface $userResolver
-    )
-    {
+    ) {
         parent::__construct();
     }
 

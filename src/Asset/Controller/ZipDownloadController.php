@@ -43,8 +43,7 @@ final class ZipDownloadController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly ZipDownloadServiceInterface $zipDownloadService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -68,7 +67,7 @@ final class ZipDownloadController extends AbstractApiController
                     description: 'Path to the zip file',
                     type: 'string',
                     example: '/var/www/html/var/assets.zip'
-                )
+                ),
             ]
         )
     )]

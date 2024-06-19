@@ -31,5 +31,4 @@ interface ZipServiceInterface
     public function getZipArchive(int $id): ?ZipArchive;
 
     public function addFile(ZipArchive $archive, Asset $asset): void;
-
 }
