@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeExcep
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Model\Asset;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\MappedParameter\ZipPathParameter;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -60,4 +61,6 @@ interface DownloadServiceInterface
         Asset $image,
         string $thumbnailName
     ): BinaryFileResponse;
+
+    public function downloadZipArchiveByPath(ZipPathParameter $path): StreamedResponse;
 }

@@ -1,0 +1,12 @@
+pimcore_generic_execution_engine:
+  error_handling: 'stop_on_first_error'
+  execution_context:
+    studio_backend:
+      translations_domain: studio
+
+
+framework:
+  messenger:
+    routing:
+      Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage: pimcore_generic_execution_engine
+      Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage: pimcore_generic_execution_engine
