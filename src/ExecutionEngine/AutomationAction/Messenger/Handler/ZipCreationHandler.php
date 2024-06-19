@@ -81,5 +81,7 @@ final class ZipCreationHandler extends AbstractAutomationActionHandler
 
             $this->zipService->addFile($archive, $asset);
         }
+
+        $archive->close();
     }
 }

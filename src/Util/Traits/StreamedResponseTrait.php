@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Model\Asset;
@@ -96,6 +97,34 @@ trait StreamedResponseTrait
         );
     }
 
+    protected function getZipStreamedResponse(
+        string $path
+    ): StreamedResponse
+    {
+        $stream = fopen($path, 'rb');
+
+        if (!$stream) {
+           throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $path));
+        }
+
+        $response = new StreamedResponse(
+            function () use ($stream) {
+                fpassthru($stream);
+            },
+            HttpResponseCodes::SUCCESS->value,
+            $this->getResponseHeaders(
+                mimeType: 'application/zip',
+                fileSize: filesize($path),
+                filename: 'assets.zip',
+                contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value
+            ),
+
+        );
+
+        unlink($path);
+        return $response;
+    }
+
     private function getResponseHeaders(
         string $mimeType,
         int $fileSize,
@@ -113,4 +142,6 @@ trait StreamedResponseTrait
             HttpResponseHeaders::HEADER_CONTENT_LENGTH->value => $fileSize,
         ]);
     }
+
+
 }

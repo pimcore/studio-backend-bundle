@@ -14,22 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
-use Pimcore\Model\Asset;
-use ZipArchive;
+use Pimcore\Model\Element\ElementDescriptor;
 
 /**
  * @internal
  */
-interface ZipServiceInterface
+final readonly class CreateZipParameter
 {
-    public const ASSETS_INDEX = 'assets';
+    /** @param array<int> $items */
+    public function __construct(
+        private array $items
+    ) {
+    }
 
-    public function getZipArchive(int $id): ?ZipArchive;
-
-    public function addFile(ZipArchive $archive, Asset $asset): void;
-
-    public function generateZipFile(CreateZipParameter $ids): string;
+    /** @return array<int, ElementDescriptor> */
+    public function getItems(): array
+    {
+        return array_map(static fn (int $id) => new ElementDescriptor('asset', $id), $this->items);
+    }
 }

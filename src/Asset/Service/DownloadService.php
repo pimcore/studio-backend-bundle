@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFou
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\MappedParameter\ZipPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
@@ -127,5 +128,10 @@ final readonly class DownloadService implements DownloadServiceInterface
             $image,
             false
         );
+    }
+
+    public function downloadZipArchiveByPath(ZipPathParameter $path): StreamedResponse
+    {
+        return $this->getZipStreamedResponse($path->getPath());
     }
 }

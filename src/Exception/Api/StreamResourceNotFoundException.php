@@ -14,24 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
-use Pimcore\Model\Element\ElementDescriptor;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 /**
  * @internal
  */
-final readonly class DownloadIdsParameter
+final class StreamResourceNotFoundException extends AbstractApiException
 {
-    /** @param array<int> $items */
-    public function __construct(
-        private array $items
-    ) {
-    }
-
-    /** @return array<int, ElementDescriptor> */
-    public function getItems(): array
+    public function __construct(string $message)
     {
-        return array_map(static fn (int $id) => new ElementDescriptor('asset', $id), $this->items);
+        parent::__construct(
+            HttpResponseCodes::NOT_FOUND->value,
+            $message
+        );
     }
 }

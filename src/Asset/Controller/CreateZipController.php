@@ -20,9 +20,10 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DownloadIdsParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ZipDownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ScalarItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -38,20 +39,20 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ZipDownloadController extends AbstractApiController
+final class CreateZipController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ZipDownloadServiceInterface $zipDownloadService
+        private readonly ZipServiceInterface $zipService
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/create-zip-download', name: 'pimcore_studio_api_create_zip_download_asset', methods: ['POST'])]
+    #[Route('/assets/zip/create', name: 'pimcore_studio_api_create_zip_asset', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/create-zip-download',
-        operationId: 'createZipDownloadAssets',
+        path: self::API_PATH . '/assets/zip/create',
+        operationId: 'createZipAssets',
         description: 'Creating zipped assets',
         summary: 'Creating zip file for assets',
         tags: [Tags::Assets->name]
@@ -75,8 +76,8 @@ final class ZipDownloadController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function createZipDownloadAssets(#[MapRequestPayload] DownloadIdsParameter $downloadIds): Response
+    public function createZippedAssets(#[MapRequestPayload] CreateZipParameter $downloadIds): Response
     {
-        return $this->jsonResponse(['path' => $this->zipDownloadService->generateZipFile($downloadIds)]);
+        return $this->jsonResponse(['path' => $this->zipService->generateZipFile($downloadIds)]);
     }
 }

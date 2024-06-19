@@ -44,20 +44,21 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
 
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-        $jobRun = $this->jobRunRepository->getJobRunById($event->getJobRunId());
+
 
         if (
             $event->getNewState() === JobRunStates::FINISHED->value &&
-            $jobRun->getJob()?->getName() === Jobs::CREATE_ZIP->value
-
+            $event->getJobName() === Jobs::CREATE_ZIP->value
         ) {
             // TODO SEND SSE HERE TO CLIENT
-            $this->pimcoreLogger->debug('Creating Zip finished',
+            $this->pimcoreLogger->debug(
+                'Creating Zip finished',
                 [
-                    'jobRunId' => $jobRun->getId(),
+                    'jobRunId' => $event->getJobRunId(),
                     'state' => $event->getNewState(),
-                    'owner' => $jobRun->getOwnerId(),
-            ]);
+                    'owner' => $event->getJobRunOwnerId(),
+                ]
+            );
         }
     }
 }

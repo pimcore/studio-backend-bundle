@@ -16,17 +16,31 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service;
 
+use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Asset;
 use ZipArchive;
 
 /**
  * @internal
  */
-final class ZipService implements ZipServiceInterface
+final readonly class ZipService implements ZipServiceInterface
 {
     private const ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-zip-{id}.zip';
 
     private const ZIP_ID_PLACEHOLDER = '{id}';
+
+    public function __construct(
+        private JobExecutionAgentInterface $jobExecutionAgent,
+        private SecurityServiceInterface $securityService
+    ) {
+    }
 
     public function getZipArchive(int $id): ?ZipArchive
     {
@@ -51,11 +65,6 @@ final class ZipService implements ZipServiceInterface
         return $archive;
     }
 
-    public function getTempZipFilePath(int $id): string
-    {
-        return str_replace(self::ZIP_ID_PLACEHOLDER, (string)$id, self::ZIP_FILE_PATH);
-    }
-
     public function addFile(ZipArchive $archive, Asset $asset): void
     {
         $archive->addFile(
@@ -66,5 +75,30 @@ final class ZipService implements ZipServiceInterface
                 $asset->getRealFullPath()
             )
         );
+    }
+
+    public function generateZipFile(CreateZipParameter $ids): string
+    {
+        $job = new Job(
+            name: Jobs::CREATE_ZIP->value,
+            steps: [
+                new JobStep('Asset collection', ZipCollectionMessage::class, '', []),
+                new JobStep('Zip creation', ZipCreationMessage::class, '', []),
+            ],
+            selectedElements: $ids->getItems()
+        );
+
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $this->securityService->getCurrentUser()->getId(),
+            'studio_backend'
+        );
+
+        return $this->getTempZipFilePath($jobRun->getId());
+    }
+
+    private function getTempZipFilePath(int $id): string
+    {
+        return str_replace(self::ZIP_ID_PLACEHOLDER, (string)$id, self::ZIP_FILE_PATH);
     }
 }
