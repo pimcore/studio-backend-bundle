@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Event\UserEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
@@ -202,6 +203,13 @@ final readonly class UserService implements UserServiceInterface
             throw new ForbiddenException('Only admins can view other admins');
         }
 
-        return $this->userHydrator->hydrate($user);
+        $user = $this->userHydrator->hydrate($user);
+
+        $this->eventDispatcher->dispatch(
+            new UserEvent($user),
+            UserEvent::EVENT_NAME
+        );
+
+        return $user;
     }
 }
