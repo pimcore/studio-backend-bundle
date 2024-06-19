@@ -40,7 +40,7 @@ final class Schedule implements AdditionalAttributesInterface
         private readonly string $ctype,
         #[Property(description: 'Date of schedule', type: 'integer', example: 1634025600)]
         private readonly int $date,
-        #[Property(description: 'Action', type: 'string', enum: ['publish-version', 'delete'])]
+        #[Property(description: 'Action', type: 'string', enum: ['publish', 'delete'])]
         private readonly ?string $action,
         #[Property(description: 'Version ID', type: 'integer', example: 987)]
         private readonly ?int $version,
