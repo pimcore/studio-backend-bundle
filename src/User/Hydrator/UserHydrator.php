@@ -22,8 +22,9 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
-use Pimcore\Model\User\Workspace\AbstractWorkspace;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\User\Workspace\AbstractWorkspace;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -102,7 +103,7 @@ final class UserHydrator implements UserHydratorInterface
         }
     }
 
-    private function getContentLanguages(UserInterface $user): array
+    private function getContentLanguages(User $user): array
     {
         $validLanguages = $this->toolResolver->getValidLanguages();
         $contentLanguagesString = $this->adminToolResolver->reorderWebsiteLanguages($user, $validLanguages);
