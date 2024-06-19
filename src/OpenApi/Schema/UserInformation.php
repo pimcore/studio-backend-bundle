@@ -24,8 +24,8 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'User Informations',
-    description: 'Informations about the user with username and roles',
+    title: 'User Information',
+    description: 'Information about the user with username and roles',
     required: ['username', 'roles'],
     type: 'object'
 )]
