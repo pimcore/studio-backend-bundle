@@ -39,7 +39,7 @@ final readonly class ZipPathParameter
     private function validate(): void
     {
         // TODO Can this be a security risk?
-        if(!is_file($this->path) || strtolower(substr($this->path, -4)) !== '.zip') {
+        if (!is_file($this->path) || strtolower(substr($this->path, -4)) !== '.zip') {
             throw new ForbiddenException();
         }
     }
