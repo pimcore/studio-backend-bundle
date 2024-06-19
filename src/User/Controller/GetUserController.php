@@ -39,13 +39,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class GetUserController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly UserServiceInterface $userService
     ) {
         parent::__construct($serializer);
     }
-
 
     #[Route('/user/{id}', name: 'pimcore_studio_api_user_get', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
@@ -61,11 +61,12 @@ final class GetUserController extends AbstractApiController
         content: new JsonContent(ref: UserSchema::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getUsers(int $id): JsonResponse
     {
         $user = $this->userService->getUserById($id);
+
         return $this->jsonResponse($user);
     }
 }

@@ -43,19 +43,19 @@ final class Version implements AdditionalAttributesInterface
         #[Property(description: 'note', type: 'string', example: 'some note')]
         private readonly string $note,
         #[Property(description: 'date', type: 'integer', example: 1712823182)]
-        private readonly int         $date,
+        private readonly int $date,
         #[Property(description: 'public', type: 'bool', example: false)]
-        private readonly bool        $public,
+        private readonly bool $public,
         #[Property(description: 'published', type: 'bool', example: false)]
-        private readonly bool        $published,
+        private readonly bool $published,
         #[Property(description: 'version count', type: 'integer', example: 10)]
-        private readonly int         $versionCount,
+        private readonly int $versionCount,
         #[Property(description: 'autosave', type: 'bool', example: false)]
-        private readonly bool        $autosave,
+        private readonly bool $autosave,
         #[Property(description: 'user', type: VersionUser::class, example: '{"id":2,"name":"John Doe"}')]
         private readonly VersionUser $user,
         #[Property(description: 'scheduled', type: 'integer', example: null)]
-        private readonly ?int        $scheduled
+        private readonly ?int $scheduled
     ) {
 
     }

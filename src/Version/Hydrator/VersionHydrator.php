@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\VersionUser;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Version;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\VersionUser;
 use Pimcore\Model\Version as PimcoreVersion;
 
 /**

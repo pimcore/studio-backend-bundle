@@ -33,7 +33,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 )]
 final class User implements AdditionalAttributesInterface
 {
-
     use AdditionalAttributesTrait;
 
     public function __construct(
@@ -54,33 +53,33 @@ final class User implements AdditionalAttributesInterface
         #[Property(type: 'boolean', example: true)]
         private readonly bool $closeWarning,
         #[Property(type: 'boolean', example: true)]
-        private readonly bool   $allowDirtyClose,
+        private readonly bool $allowDirtyClose,
         #[Property(description: 'List of available content Language already sorted.', type: 'object', example: ['de', 'en'])]
-        private readonly array  $contentLanguages,
+        private readonly array $contentLanguages,
         #[Property(type: 'boolean', example: true)]
-        private readonly bool   $hasImage,
+        private readonly bool $hasImage,
         #[Property(description: 'Key Bindings', type: 'array', items: new Items(ref: KeyBinding::class))]
-        private readonly array  $keyBindings,
+        private readonly array $keyBindings,
         #[Property(description: 'Language of the User', type: 'string', example: 'de')]
         private readonly string $language,
         #[Property(description: 'Timestamp of the last login', type: 'integer', example: '1718757677')]
-        private readonly ?int   $lastLogin,
+        private readonly ?int $lastLogin,
         #[Property(type: 'boolean', example: true)]
-        private readonly bool   $memorizeTabs,
+        private readonly bool $memorizeTabs,
         #[Property(type: 'int', example: '2')]
-        private readonly ?int   $parentId,
+        private readonly ?int $parentId,
         #[Property(description: 'List of permissions for the user', type: 'object', example: ['objects', 'documents'])]
-        private readonly array  $permissions,
+        private readonly array $permissions,
         #[Property(description: 'ID List of roles the user is assigned', type: 'object', example: [12, 14])]
-        private readonly array  $roles,
+        private readonly array $roles,
         #[Property(type: 'boolean', example: false)]
-        private readonly bool  $twoFactorAuthenticationEnabled,
+        private readonly bool $twoFactorAuthenticationEnabled,
         #[Property(type: 'object', example: ['de', 'en'])]
-        private readonly array  $websiteTranslationLanguagesEdit,
+        private readonly array $websiteTranslationLanguagesEdit,
         #[Property(type: 'object', example: ['de'])]
-        private readonly array  $websiteTranslationLanguagesView,
+        private readonly array $websiteTranslationLanguagesView,
         #[Property(type: 'boolean', example: true)]
-        private readonly bool   $welcomeScreen,
+        private readonly bool $welcomeScreen,
         #[Property(description: 'Asset Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
         private readonly array $assetWorkspaces,
         #[Property(description: 'Data Object Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]

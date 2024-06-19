@@ -23,8 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\User;
-use Psr\Log\LoggerInterface;
 use Pimcore\Model\User\Workspace\AbstractWorkspace;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -36,8 +36,7 @@ final class UserHydrator implements UserHydratorInterface
         private readonly LoggerInterface $pimcoreLogger,
         private readonly ToolResolverInterface $toolResolver,
         private readonly AdminResolverInterface $adminToolResolver,
-    )
-    {
+    ) {
     }
 
     public function hydrate(User $user): UserSchema
@@ -81,6 +80,7 @@ final class UserHydrator implements UserHydratorInterface
     private function hydrateKeyBindings(string $keyBindings): array
     {
         $bindings = [];
+
         try {
             $decoded = json_decode($keyBindings, true, 512, JSON_THROW_ON_ERROR);
 
@@ -97,6 +97,7 @@ final class UserHydrator implements UserHydratorInterface
             return $bindings;
         } catch (Exception $e) {
             $this->pimcoreLogger->warning('Failed to decode key bindings', ['exception' => $e]);
+
             return [];
         }
     }
@@ -105,6 +106,7 @@ final class UserHydrator implements UserHydratorInterface
     {
         $validLanguages = $this->toolResolver->getValidLanguages();
         $contentLanguagesString = $this->adminToolResolver->reorderWebsiteLanguages($user, $validLanguages);
+
         return explode(',', $contentLanguagesString);
     }
 

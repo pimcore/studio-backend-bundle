@@ -30,7 +30,6 @@ use OpenApi\Attributes\Schema;
 )]
 final readonly class UserWorkspace
 {
-
     public function __construct(
         #[Property(description: 'ID of the element', type: 'integer', example: '1')]
         private int $cid,
