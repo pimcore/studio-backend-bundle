@@ -39,9 +39,9 @@ final class ScheduleHydrator implements ScheduleHydratorInterface
 
     private function matchAction(?string $action): ?string
     {
-       return match($action) {
-           'publish-version' => 'publish',
-           default => $action,
-       };
+        return match($action) {
+            'publish-version' => 'publish',
+            default => $action,
+        };
     }
 }
