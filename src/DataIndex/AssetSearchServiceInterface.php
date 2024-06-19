@@ -40,4 +40,10 @@ interface AssetSearchServiceInterface
      * @throws SearchException|NotFoundException
      */
     public function getAssetById(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video;
+
+    /**
+     * @throws SearchException
+     * @return array<int>
+     */
+    public function fetchAssetIds(QueryInterface $assetQuery): array;
 }

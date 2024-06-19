@@ -14,25 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Positive;
-
-/**
- * @internal
- */
-final readonly class ElementCloneParameter
+interface CloneServiceInterface
 {
-    public function __construct(
-        #[NotBlank]
-        #[Positive]
-        private int $targetId
-    ) {
-    }
-
-    public function getTargetId(): int
-    {
-        return $this->targetId;
-    }
+    public function cloneAssetRecursively(
+        int $sourceId,
+        int $parentId
+    ): void;
 }

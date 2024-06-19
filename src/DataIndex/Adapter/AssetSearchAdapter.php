@@ -75,4 +75,17 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 
         return $this->assetHydratorService->hydrate($asset);
     }
+
+    /**
+     * @throws SearchException
+     * @return array<int>
+     */
+    public function fetchAssetIds(QueryInterface $assetQuery): array
+    {
+        try {
+            return $this->searchService->search($assetQuery->getSearch())->getIds();
+        } catch (AssetSearchException) {
+            throw new SearchException('assets');
+        }
+    }
 }

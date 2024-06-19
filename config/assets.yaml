@@ -46,6 +46,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentService
 
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\CloneServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\CloneService
+
   #
   # Updaters
   #
