@@ -69,7 +69,6 @@ final class ZipCollectionHandler extends AbstractAutomationActionHandler
 
         $asset = $this->assetService->getAssetElement($user, $asset->getId());
 
-        // TODO in GEE get it with offset?
         $context = $jobRun->getContext();
 
         $assets = $context[ZipServiceInterface::ASSETS_INDEX] ?? [];
@@ -81,5 +80,6 @@ final class ZipCollectionHandler extends AbstractAutomationActionHandler
         $assets[] = $asset->getId();
 
         $this->updateJobRunContext($jobRun, ZipServiceInterface::ASSETS_INDEX, $assets);
+        // TODO Send SSE for percentage update
     }
 }
