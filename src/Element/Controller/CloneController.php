@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Controller;
 
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\MappedParameter\ElementCloneParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\CloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
@@ -28,13 +28,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\SingleParamete
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserCloneParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -49,8 +46,7 @@ final class CloneController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ElementServiceInterface $elementService,
-        private readonly SecurityServiceInterface $securityService
+        private readonly CloneServiceInterface $cloneService,
     ) {
         parent::__construct($serializer);
     }
@@ -67,8 +63,7 @@ final class CloneController extends AbstractApiController
         tags: [Tags::Elements->value]
     )]
     #[SuccessResponse(
-        description: 'Node of the cloned user.',
-        content: new JsonContent(ref: UserTreeNode::class)
+        description: 'Successfully copied element',
     )]
     #[IdParameter(type: 'element')]
     #[ElementTypeParameter]
@@ -82,16 +77,10 @@ final class CloneController extends AbstractApiController
     public function cloneElement(
         int $id,
         string $elementType,
-        #[MapRequestPayload] UserCloneParameter $userClone): JsonResponse
+        #[MapRequestPayload] ElementCloneParameter $cloneParameter): Response
     {
-        $element = $this->elementService->getAllowedElementById(
-            $elementType,
-            $id,
-            $this->securityService->getCurrentUser()
-        );
+        $this->cloneService->cloneElement($id, $cloneParameter, $elementType);
 
-
-
-        return $this->jsonResponse();
+        return new Response();
     }
 }
