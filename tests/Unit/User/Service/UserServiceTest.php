@@ -24,6 +24,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
@@ -113,6 +114,7 @@ final class UserServiceTest extends Unit
         $userTreeNodeHydratorMock = $this->makeEmpty(UserTreeNodeHydratorInterface::class);
         $eventDispatcherMock = $this->makeEmpty(EventDispatcherInterface::class);
         $userFolderRepositoryMock = $this->makeEmpty(UserFolderRepositoryInterface::class);
+        $userHydratorMock = $this->makeEmpty(UserHydratorInterface::class);
 
         return new UserService(
             $authenticationResolverMock,
@@ -124,7 +126,8 @@ final class UserServiceTest extends Unit
             $userTreeNodeHydratorMock,
             $eventDispatcherMock,
             $securityServiceMock,
-            $userFolderRepositoryMock
+            $userFolderRepositoryMock,
+            $userHydratorMock
         );
     }
 }

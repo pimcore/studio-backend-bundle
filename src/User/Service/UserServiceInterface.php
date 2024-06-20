@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 
 /**
@@ -49,4 +50,9 @@ interface UserServiceInterface
      * @throws NotFoundException|DatabaseException
      */
     public function createUser(CreateParameter $createParameter): UserTreeNode;
+
+    /**
+     * @throws NotFoundException|DatabaseException
+     */
+    public function getUserById(int $userId): UserSchema;
 }
