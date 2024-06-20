@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\User;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Version;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\VersionUser;
 use Pimcore\Model\Version as PimcoreVersion;
 
 /**
@@ -31,9 +31,9 @@ final class VersionHydrator implements VersionHydratorInterface
         int $elementVersionCount,
         ?int $elementModificationDate
     ): Version {
-        $user = new User();
+        $user = new VersionUser();
         if ($version->getUser()) {
-            $user = new User(
+            $user = new VersionUser(
                 $version->getUser()->getId(),
                 $version->getUser()->getName()
             );

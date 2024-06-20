@@ -27,7 +27,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Event\UserEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
+use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
@@ -35,6 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
@@ -55,7 +58,8 @@ final readonly class UserService implements UserServiceInterface
         private UserTreeNodeHydratorInterface $userTreeNodeHydrator,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
-        private UserFolderRepositoryInterface $userFolderRepository
+        private UserFolderRepositoryInterface $userFolderRepository,
+        private UserHydratorInterface $userHydrator
     ) {
     }
 
@@ -189,5 +193,23 @@ final readonly class UserService implements UserServiceInterface
         }
 
         return $this->userTreeNodeHydrator->hydrate($user);
+    }
+
+    public function getUserById(int $userId): UserSchema
+    {
+        $user = $this->userRepository->getUserById($userId);
+
+        if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
+            throw new ForbiddenException('Only admins can view other admins');
+        }
+
+        $user = $this->userHydrator->hydrate($user);
+
+        $this->eventDispatcher->dispatch(
+            new UserEvent($user),
+            UserEvent::EVENT_NAME
+        );
+
+        return $user;
     }
 }

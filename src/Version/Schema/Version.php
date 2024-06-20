@@ -21,9 +21,6 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
-/**
- * @internal
- */
 #[Schema(
     title: 'Version',
     required: ['id', 'cid', 'ctype', 'note', 'date', 'public', 'published', 'versionCount', 'autosave', 'user'],
@@ -52,8 +49,8 @@ final class Version implements AdditionalAttributesInterface
         private readonly int $versionCount,
         #[Property(description: 'autosave', type: 'bool', example: false)]
         private readonly bool $autosave,
-        #[Property(description: 'user', type: User::class, example: '{"id":2,"name":"John Doe"}')]
-        private readonly User $user,
+        #[Property(description: 'user', type: VersionUser::class, example: '{"id":2,"name":"John Doe"}')]
+        private readonly VersionUser $user,
         #[Property(description: 'scheduled', type: 'integer', example: null)]
         private readonly ?int $scheduled
     ) {
@@ -105,7 +102,7 @@ final class Version implements AdditionalAttributesInterface
         return $this->autosave;
     }
 
-    public function getUser(): User
+    public function getUser(): VersionUser
     {
         return $this->user;
     }

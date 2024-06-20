@@ -20,6 +20,9 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'Element',
     required: [

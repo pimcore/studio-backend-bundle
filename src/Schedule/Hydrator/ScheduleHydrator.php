@@ -30,10 +30,18 @@ final class ScheduleHydrator implements ScheduleHydratorInterface
             $task->getId(),
             $task->getCtype(),
             $task->getDate(),
-            $task->getAction(),
+            $this->matchAction($task->getAction()),
             $task->getVersion(),
             $task->getActive(),
             $task->getUserId()
         );
+    }
+
+    private function matchAction(?string $action): ?string
+    {
+        return match($action) {
+            'publish-version' => 'publish',
+            default => $action,
+        };
     }
 }
