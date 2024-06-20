@@ -27,8 +27,7 @@ final readonly class AbortActionData
         private string $translationKey,
         private array $translationParameters,
         private string $exceptionClassName = NotFoundException::class
-    )
-    {
+    ) {
 
     }
 

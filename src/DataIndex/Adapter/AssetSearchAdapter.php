@@ -81,6 +81,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 
     /**
      * @throws SearchException
+     *
      * @return array<int>
      */
     public function fetchAssetIds(QueryInterface $assetQuery): array
@@ -88,6 +89,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
         try {
             $search = $assetQuery->getSearch();
             $search->addModifier(new OrderByFullPath());
+
             return $this->searchResultIdListService->getAllIds($search);
         } catch (AssetSearchException) {
             throw new SearchException('assets');

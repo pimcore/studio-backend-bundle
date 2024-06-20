@@ -37,8 +37,7 @@ trait HandlerValidationTrait
         JobRun $jobRun,
         UserResolverInterface $userResolver,
         ?array $requiredEnvironmentVariables = null,
-    ): AbortActionData|ExecuteActionData
-    {
+    ): AbortActionData|ExecuteActionData {
         $element = $message->getElement();
         if (!$element) {
             return $this->getAbortParameters(Config::ASSET_NOT_FOUND_MESSAGE->value);
@@ -48,7 +47,7 @@ trait HandlerValidationTrait
         if ($user === null) {
             return $this->getAbortParameters(
                 Config::USER_NOT_FOUND_MESSAGE->value,
-                ['userId' => $jobRun->getOwnerId()
+                ['userId' => $jobRun->getOwnerId(),
                 ]
             );
         }

@@ -54,6 +54,7 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
 
     /**
      * @throws SearchException
+     *
      * @return array<int>
      */
     public function fetchAssetIds(QueryInterface $assetQuery): array

@@ -32,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -77,8 +76,7 @@ final class CloneController extends AbstractApiController
     public function cloneElement(
         int $id,
         int $parentId
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $status = 200;
         $data = null;
         $jobRunId = $this->cloneService->cloneAssetRecursively($id, $parentId);

@@ -58,8 +58,7 @@ final readonly class CloneService implements CloneServiceInterface
     public function cloneAssetRecursively(
         int $sourceId,
         int $parentId
-    ): ?int
-    {
+    ): ?int {
         $user = $this->securityService->getCurrentUser();
         $source = $this->assetService->getAssetElement(
             $user,
@@ -93,8 +92,7 @@ final readonly class CloneService implements CloneServiceInterface
         Asset $source,
         Asset $parent,
         UserInterface $user
-    ): Asset
-    {
+    ): Asset {
         if (!$parent->isAllowed(ElementPermissions::CREATE_PERMISSION)) {
             throw new ForbiddenException(
                 sprintf('Missing permissions on target element %s', $parent->getId()));
@@ -102,6 +100,7 @@ final readonly class CloneService implements CloneServiceInterface
 
         try {
             $this->synchronousProcessingService->enable();
+
             return (new AssetService())->copyAsChild(
                 $parent,
                 $source,
@@ -122,8 +121,7 @@ final readonly class CloneService implements CloneServiceInterface
         Asset $source,
         int $originalParentId,
         int $parentId,
-    ): Asset
-    {
+    ): Asset {
         $originalParent = $this->assetService->getAssetElement($user, $originalParentId);
         $parent = $this->assetService->getAssetElement($user, $parentId);
         $parentPath = preg_replace(
@@ -139,8 +137,7 @@ final readonly class CloneService implements CloneServiceInterface
         UserInterface $user,
         Asset $originalParent,
         Asset $newParent,
-    ): int
-    {
+    ): int {
         $query = $this->assetQueryProvider->createAssetQuery();
         $query->filterPath($originalParent->getRealFullPath(), true, false);
         $query->orderByPath('asc');
@@ -165,5 +162,4 @@ final readonly class CloneService implements CloneServiceInterface
 
         return $jobRun->getId();
     }
-
 }

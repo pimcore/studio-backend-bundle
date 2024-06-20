@@ -43,6 +43,7 @@ interface AssetSearchServiceInterface
 
     /**
      * @throws SearchException
+     *
      * @return array<int>
      */
     public function fetchAssetIds(QueryInterface $assetQuery): array;

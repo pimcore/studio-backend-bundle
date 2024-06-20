@@ -28,8 +28,7 @@ final class ExecuteActionData
         private UserInterface $user,
         private ElementDescriptor $subject,
         private array $environmentData = []
-    )
-    {
+    ) {
 
     }
 
@@ -62,6 +61,4 @@ final class ExecuteActionData
     {
         $this->environmentData = $environmentData;
     }
-
-    
 }
