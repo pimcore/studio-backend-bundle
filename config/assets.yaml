@@ -46,8 +46,11 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentService
 
-  Pimcore\Bundle\StudioBackendBundle\Asset\Service\CloneServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\CloneService
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneService
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipService
 
   #
   # Updaters
@@ -71,3 +74,17 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter\MetadataAdapter:
     tags: [ 'pimcore.studio_backend.patch_adapter' ]
+
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipCollectionHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipCreationHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetCopyHandler: ~
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\ZipDownloadSubscriber: ~

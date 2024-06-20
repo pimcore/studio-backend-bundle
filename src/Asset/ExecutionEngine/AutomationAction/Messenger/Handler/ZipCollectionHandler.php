@@ -14,15 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Handler;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Handler\AbstractAutomationActionHandler;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Traits\HandlerValidationTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -31,6 +33,8 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 final class ZipCollectionHandler extends AbstractAutomationActionHandler
 {
+    use HandlerValidationTrait;
+
     public function __construct(
         private readonly AssetServiceInterface $assetService,
         private readonly UserResolverInterface $userResolver
@@ -43,31 +47,26 @@ final class ZipCollectionHandler extends AbstractAutomationActionHandler
      */
     public function __invoke(ZipCollectionMessage $message): void
     {
-        $asset = $message->getElement();
-
-        if (!$asset) {
-            $this->abortAction(
-                'no_asset_found',
-                [],
-                'studio_backend',
-                NotFoundException::class
-            );
-        }
-
         $jobRun = $this->getJobRun($message);
+        $validatedParameters = $this->validateJobParameters(
+            $message,
+            $jobRun,
+            $this->userResolver
+        );
 
-        $user = $this->userResolver->getById($jobRun->getOwnerId());
-
-        if (!$user) {
+        if ($validatedParameters instanceof AbortActionData) {
             $this->abortAction(
-                'no_user_found',
-                [],
-                'studio_backend',
-                NotFoundException::class
+                $validatedParameters->getTranslationKey(),
+                $validatedParameters->getTranslationParameters(),
+                Config::CONTEXT->value,
+                $validatedParameters->getExceptionClassName()
             );
         }
 
-        $asset = $this->assetService->getAssetElement($user, $asset->getId());
+        $user = $validatedParameters->getUser();
+        $jobSubject = $validatedParameters->getSubject();
+
+        $asset = $this->assetService->getAssetElement($user, $jobSubject->getId());
 
         $context = $jobRun->getContext();
 

@@ -17,11 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\CloneServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -29,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -56,11 +59,15 @@ final class CloneController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/assets/{id}/clone/{parentId}',
         operationId: 'cloneElement',
-        summary: 'Clone a specific element.',
+        summary: 'Clone a specific asset.',
         tags: [Tags::Assets->value]
     )]
     #[SuccessResponse(
-        description: 'Successfully copied element',
+        description: 'Successfully copied asset',
+    )]
+    #[CreatedResponse(
+        description: 'Successfully copied parent asset and created jobRun for copying child assets',
+        content: new IdJson('ID of created jobRun')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
@@ -70,10 +77,16 @@ final class CloneController extends AbstractApiController
     public function cloneElement(
         int $id,
         int $parentId
-    ): Response
+    ): JsonResponse
     {
-        $this->cloneService->cloneAssetRecursively($id, $parentId);
+        $status = 200;
+        $data = null;
+        $jobRunId = $this->cloneService->cloneAssetRecursively($id, $parentId);
+        if ($jobRunId) {
+            $status = 201;
+            $data = $this->serializer->serialize(['id' => $jobRunId], 'json');
+        }
 
-        return new Response();
+        return new JsonResponse($data, $status, [], true);
     }
 }

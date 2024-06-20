@@ -33,4 +33,6 @@ interface QueryInterface
     public function excludeFolders(): self;
 
     public function getSearch(): SearchInterface;
+
+    public function orderByPath(string $direction): self;
 }

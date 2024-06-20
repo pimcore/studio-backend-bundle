@@ -58,4 +58,12 @@ interface AssetServiceInterface
         UserInterface $user,
         int $assetId,
     ): AssetModel;
+
+    /**
+     * @throws AccessDeniedException|NotFoundException
+     */
+    public function getAssetElementByPath(
+        UserInterface $user,
+        string $path,
+    ): AssetModel;
 }

@@ -122,4 +122,21 @@ final readonly class AssetService implements AssetServiceInterface
 
         return $asset;
     }
+
+    /**
+     * @throws AccessDeniedException|NotFoundException
+     */
+    public function getAssetElementByPath(
+        UserInterface $user,
+        string $path,
+    ): AssetModel {
+        $asset = $this->getElementByPath($this->serviceResolver, ElementTypes::TYPE_ASSET, $path);
+        $this->securityService->hasElementPermission($asset, $user, ElementPermissions::VIEW_PERMISSION);
+
+        if (!$asset instanceof AssetModel) {
+            throw new InvalidElementTypeException($asset->getType());
+        }
+
+        return $asset;
+    }
 }

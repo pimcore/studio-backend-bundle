@@ -18,7 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\OpenSearch\SearchFailedException;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorServiceInterface;
@@ -30,7 +32,8 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 {
     public function __construct(
         private AssetSearchServiceInterface $searchService,
-        private AssetHydratorServiceInterface $assetHydratorService
+        private AssetHydratorServiceInterface $assetHydratorService,
+        private SearchResultIdListServiceInterface $searchResultIdListService,
     ) {
     }
 
@@ -83,7 +86,9 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     public function fetchAssetIds(QueryInterface $assetQuery): array
     {
         try {
-            return $this->searchService->search($assetQuery->getSearch())->getIds();
+            $search = $assetQuery->getSearch();
+            $search->addModifier(new OrderByFullPath());
+            return $this->searchResultIdListService->getAllIds($search);
         } catch (AssetSearchException) {
             throw new SearchException('assets');
         }

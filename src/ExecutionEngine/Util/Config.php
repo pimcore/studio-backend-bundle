@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Pimcore
@@ -14,12 +13,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
 
-interface CloneServiceInterface
+enum Config: string
 {
-    public function cloneAssetRecursively(
-        int $sourceId,
-        int $parentId
-    ): void;
+    case CONTEXT = 'studio_backend';
+
+    case ASSET_NOT_FOUND_MESSAGE = 'asset_not_found';
+
+    case USER_NOT_FOUND_MESSAGE = 'use_not_found';
+
+    case ENVIRONMENT_VARIABLE_NOT_FOUND = 'environment_variable_not_found';
 }

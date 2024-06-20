@@ -14,14 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Handler;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Handler\AbstractAutomationActionHandler;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -50,7 +51,7 @@ final class ZipCreationHandler extends AbstractAutomationActionHandler
             $this->abortAction(
                 'no_assets_found',
                 [],
-                'studio_backend',
+                Config::CONTEXT->value,
                 NotFoundException::class
             );
         }
@@ -61,7 +62,7 @@ final class ZipCreationHandler extends AbstractAutomationActionHandler
             $this->abortAction(
                 'zip_archive_not_found',
                 [],
-                'studio_backend',
+                Config::CONTEXT->value,
                 NotFoundException::class
             );
         }
@@ -74,7 +75,7 @@ final class ZipCreationHandler extends AbstractAutomationActionHandler
                 $this->abortAction(
                     'asset_not_found',
                     [],
-                    'studio_backend',
+                    Config::CONTEXT->value,
                     NotFoundException::class
                 );
             }
