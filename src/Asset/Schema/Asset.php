@@ -23,9 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
-/**
- * @internal
- */
 #[Schema(
     title: 'Asset',
     required: [

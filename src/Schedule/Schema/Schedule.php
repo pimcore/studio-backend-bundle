@@ -21,9 +21,6 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
-/**
- * @internal
- */
 #[Schema(
     title: 'Schedule',
     required: ['id', 'ctype', 'date', 'active', 'userId'],
