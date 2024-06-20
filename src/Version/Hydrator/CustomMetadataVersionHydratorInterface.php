@@ -16,17 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Version;
-use Pimcore\Model\Version as PimcoreVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\CustomMetadataVersion;
 
 /**
  * @internal
  */
-interface VersionHydratorInterface
+interface CustomMetadataVersionHydratorInterface
 {
-    public function hydrate(
-        PimcoreVersion $version,
-        int $elementVersionCount,
-        ?int $elementModificationDate
-    ): Version;
+    /** @return array<int, CustomMetadataVersion> */
+    public function hydrate(array $customMetadata): array;
 }

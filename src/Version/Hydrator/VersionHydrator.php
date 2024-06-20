@@ -27,7 +27,6 @@ final class VersionHydrator implements VersionHydratorInterface
 {
     public function hydrate(
         PimcoreVersion $version,
-        array $scheduledTasks,
         int $elementVersionCount,
         ?int $elementModificationDate
     ): Version {
@@ -58,7 +57,6 @@ final class VersionHydrator implements VersionHydratorInterface
             versionCount: $versionCount,
             autosave: $version->isAutoSave(),
             user: $user,
-            scheduled: $scheduledTasks[$versionId] ?? null
         );
     }
 }

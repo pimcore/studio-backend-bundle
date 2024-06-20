@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetadataHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
@@ -36,7 +38,8 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
     public function __construct(
         private DocumentServiceInterface $documentService,
         private EventDispatcherInterface $eventDispatcher,
-        private VersionDetailServiceInterface $versionDetailService
+        private VersionDetailServiceInterface $versionDetailService,
+        private CustomMetadataVersionHydratorInterface $customMetadataVersionHydrator,
     ) {
     }
 
@@ -61,7 +64,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
         }
 
         $hydratedAsset = new AssetVersion(
-            $asset->getFilename()
+            fileName: $asset->getFilename(),
         );
 
         $this->eventDispatcher->dispatch(
@@ -80,6 +83,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
             $image->getModificationDate(),
             $this->versionDetailService->getAssetFileSize($image) ?? $image->getFileSize(),
             $image->getMimeType(),
+            $this->customMetadataVersionHydrator->hydrate($image->getMetadata()),
             $this->versionDetailService->getImageDimensions($image)
         );
 
