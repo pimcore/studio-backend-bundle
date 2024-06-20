@@ -32,7 +32,7 @@ final readonly class CustomMetadataVersionHydrator implements CustomMetadataVers
     /** @return array<int, CustomMetadataVersion> */
     public function hydrate(array $customMetadata): array
     {
-       return array_map(
+        return array_map(
             fn (array $customMetadata): CustomMetadataVersion => $this->hydrateSingle($customMetadata),
             $customMetadata
         );

@@ -34,7 +34,7 @@ final readonly class CustomMetadataVersion
         #[Property(description: 'Type', type: 'string', example: 'input')]
         private string $type,
         #[Property(description: 'Data', type: 'string', example: 'data')]
-        private mixed  $data
+        private mixed $data
     ) {
     }
 

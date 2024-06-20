@@ -58,8 +58,6 @@ final class ImageVersion implements AdditionalAttributesInterface
         return $this->fileName;
     }
 
-
-
     public function getCreationDate(): int
     {
         return $this->creationDate;
