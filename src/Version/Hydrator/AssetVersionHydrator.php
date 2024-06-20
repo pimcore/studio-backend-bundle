@@ -17,8 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetadataHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
