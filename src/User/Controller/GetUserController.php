@@ -57,7 +57,7 @@ final class GetUserController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/user/{id}',
         operationId: 'getUserById',
-        summary: 'Get users by id.',
+        summary: 'Get user by id.',
         tags: [Tags::User->value]
     )]
     #[IdParameter]
