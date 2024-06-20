@@ -53,7 +53,9 @@ final class Version implements AdditionalAttributesInterface
         #[Property(description: 'autosave', type: 'bool', example: false)]
         private readonly bool $autosave,
         #[Property(description: 'user', type: VersionUser::class, example: '{"id":2,"name":"John Doe"}')]
-        private readonly VersionUser $user
+        private readonly VersionUser $user,
+        #[Property(description: 'scheduled', type: 'integer', example: null)]
+        private readonly ?int $scheduled
     ) {
 
     }
@@ -106,5 +108,10 @@ final class Version implements AdditionalAttributesInterface
     public function getUser(): VersionUser
     {
         return $this->user;
+    }
+
+    public function getScheduled(): ?int
+    {
+        return $this->scheduled;
     }
 }

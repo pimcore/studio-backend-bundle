@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Event\VersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\VersionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
@@ -64,6 +65,7 @@ final readonly class VersionService implements VersionServiceInterface
             $elementParameters->getType(),
             $elementParameters->getId(),
         );
+        $scheduledTasks = $this->getScheduledTasks($element);
 
         $list = $this->repository->listVersions($element, $elementParameters->getType(), $parameters, $user);
 
@@ -72,6 +74,7 @@ final readonly class VersionService implements VersionServiceInterface
         foreach ($versionObjects as $versionObject) {
             $hydratedVersion = $this->versionHydrator->hydrate(
                 $versionObject,
+                $scheduledTasks,
                 $element->getVersionCount(),
                 $element->getModificationDate()
             );
@@ -147,6 +150,19 @@ final readonly class VersionService implements VersionServiceInterface
         }
 
         return $lastVersion->getId();
+    }
+
+    private function getScheduledTasks(ElementInterface $element): array
+    {
+        $scheduledTasks = $element->getScheduledTasks();
+        $schedules = [];
+        foreach ($scheduledTasks as $task) {
+            if ($task->getActive()) {
+                $schedules[$task->getVersion()] = $task->getDate();
+            }
+        }
+
+        return $schedules;
     }
 
     /**

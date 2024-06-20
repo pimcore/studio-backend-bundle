@@ -35,7 +35,7 @@ final class AssetVersion implements AdditionalAttributesInterface
 
     public function __construct(
         #[Property(description: 'file name', type: 'string', example: 'myImageFile.png')]
-        private readonly string $fileName,
+        private readonly string $fileName
     ) {
     }
 

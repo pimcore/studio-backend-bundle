@@ -62,7 +62,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
         }
 
         $hydratedAsset = new AssetVersion(
-            fileName: $asset->getFilename(),
+            fileName: $asset->getFilename()
         );
 
         $this->eventDispatcher->dispatch(
