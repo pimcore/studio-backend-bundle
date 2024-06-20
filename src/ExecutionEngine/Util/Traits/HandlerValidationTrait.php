@@ -47,7 +47,8 @@ trait HandlerValidationTrait
         if ($user === null) {
             return $this->getAbortParameters(
                 Config::USER_NOT_FOUND_MESSAGE->value,
-                ['userId' => $jobRun->getOwnerId(),
+                [
+                    'userId' => $jobRun->getOwnerId(),
                 ]
             );
         }
