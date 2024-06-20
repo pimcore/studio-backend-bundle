@@ -70,8 +70,8 @@ final class GetUserController extends AbstractApiController
     ])]
     public function getUsers(int $id): JsonResponse
     {
-        $user = $this->userService->getUserById($id);
-
-        return $this->jsonResponse($user);
+        return $this->jsonResponse(
+            $this->userService->getUserById($id)
+        );
     }
 }
