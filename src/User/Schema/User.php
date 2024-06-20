@@ -22,9 +22,6 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
-/**
- * @internal
- */
 #[Schema(
     title: 'User',
     description: 'Contains all information about a user',

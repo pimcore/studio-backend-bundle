@@ -23,9 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings\FixedCustomSe
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
-/**
- * @internal
- */
 #[Schema(
     title: 'CustomSettings',
     type: 'object'

@@ -21,9 +21,6 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
-/**
- * @internal
- */
 #[Schema(
     title: 'Version',
     required: ['id', 'cid', 'ctype', 'note', 'date', 'public', 'published', 'versionCount', 'autosave', 'user'],
