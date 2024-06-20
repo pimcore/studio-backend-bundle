@@ -19,6 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'CustomMetadataVersion',
     required: ['name', 'language', 'type', 'data'],
