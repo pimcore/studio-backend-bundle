@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Symfony\Component\Validator\Constraints\NotBlank;

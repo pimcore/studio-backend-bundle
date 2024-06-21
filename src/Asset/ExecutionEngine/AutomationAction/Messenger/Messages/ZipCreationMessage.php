@@ -14,22 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
-use Pimcore\Model\Asset;
-use ZipArchive;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-interface ZipServiceInterface
+final class ZipCreationMessage extends AbstractExecutionEngineMessage
 {
-    public const ASSETS_INDEX = 'assets';
-
-    public function getZipArchive(int $id): ?ZipArchive;
-
-    public function addFile(ZipArchive $archive, Asset $asset): void;
-
-    public function generateZipFile(CreateZipParameter $ids): string;
 }

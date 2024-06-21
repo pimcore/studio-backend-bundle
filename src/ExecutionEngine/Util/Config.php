@@ -15,8 +15,10 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
 
-enum Jobs: string
+enum Config: string
 {
-    case CREATE_ZIP = 'Create Zip';
-    case CLONE_ASSET = 'Clone Asset';
+    case CONTEXT = 'studio_backend';
+    case ASSET_NOT_FOUND_MESSAGE = 'asset_not_found';
+    case USER_NOT_FOUND_MESSAGE = 'use_not_found';
+    case ENVIRONMENT_VARIABLE_NOT_FOUND = 'environment_variable_not_found';
 }

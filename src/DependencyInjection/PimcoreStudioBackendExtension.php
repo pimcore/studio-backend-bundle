@@ -61,7 +61,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $loader->load('element_workflow.yaml');
         $loader->load('elements.yaml');
         $loader->load('event_subscribers.yaml');
-        $loader->load('execution_engine.yaml');
         $loader->load('factories.yaml');
         $loader->load('filters.yaml');
         $loader->load('icon.yaml');

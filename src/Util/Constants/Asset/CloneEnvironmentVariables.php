@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -13,10 +14,13 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset;
 
-enum Jobs: string
+/**
+ * @internal
+ */
+enum CloneEnvironmentVariables: string
 {
-    case CREATE_ZIP = 'Create Zip';
-    case CLONE_ASSET = 'Clone Asset';
+    case ORIGINAL_PARENT_ID = 'originalParentId';
+    case PARENT_ID = 'parentId';
 }
