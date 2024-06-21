@@ -23,11 +23,11 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
  */
 final class NotFoundException extends AbstractApiException
 {
-    public function __construct(string $type, int|string $id)
+    public function __construct(string $type, int|string $id, string $parameter = 'ID')
     {
         parent::__construct(
             HttpResponseCodes::NOT_FOUND->value,
-            sprintf('%s with ID %s not found', ucfirst($type), $id)
+            sprintf('%s with %s: %s not found', ucfirst($type), $parameter, $id)
         );
     }
 }

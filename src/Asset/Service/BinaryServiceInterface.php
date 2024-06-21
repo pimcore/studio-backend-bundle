@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFou
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -38,7 +38,7 @@ interface BinaryServiceInterface
      * @throws FilesystemException
      */
     public function downloadVideoByThumbnail(
-        ElementInterface $video,
+        Asset $video,
         string $thumbnailName
     ): StreamedResponse;
 
@@ -49,7 +49,7 @@ interface BinaryServiceInterface
      * @throws FilesystemException
      */
     public function streamVideoByThumbnail(
-        ElementInterface $video,
+        Asset $video,
         string $thumbnailName
     ): StreamedResponse;
 
@@ -60,7 +60,7 @@ interface BinaryServiceInterface
      * @throws InvalidThumbnailException
      */
     public function streamVideoImageThumbnail(
-        ElementInterface $video,
+        Asset $video,
         VideoImageStreamConfigParameter $imageConfig
     ): StreamedResponse;
 }

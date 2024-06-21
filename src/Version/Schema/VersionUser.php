@@ -26,7 +26,7 @@ use OpenApi\Attributes\Schema;
     title: 'VersionUser',
     type: 'object'
 )]
-final readonly class User
+final readonly class VersionUser
 {
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 2)]

@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
@@ -42,7 +43,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Asset as AssetModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -111,9 +112,30 @@ final readonly class AssetService implements AssetServiceInterface
     public function getAssetElement(
         UserInterface $user,
         int $assetId,
-    ): ElementInterface {
+    ): AssetModel {
         $asset = $this->getElement($this->serviceResolver, ElementTypes::TYPE_ASSET, $assetId);
         $this->securityService->hasElementPermission($asset, $user, ElementPermissions::VIEW_PERMISSION);
+
+        if (!$asset instanceof AssetModel) {
+            throw new InvalidElementTypeException($asset->getType());
+        }
+
+        return $asset;
+    }
+
+    /**
+     * @throws AccessDeniedException|NotFoundException
+     */
+    public function getAssetElementByPath(
+        UserInterface $user,
+        string $path,
+    ): AssetModel {
+        $asset = $this->getElementByPath($this->serviceResolver, ElementTypes::TYPE_ASSET, $path);
+        $this->securityService->hasElementPermission($asset, $user, ElementPermissions::VIEW_PERMISSION);
+
+        if (!$asset instanceof AssetModel) {
+            throw new InvalidElementTypeException($asset->getType());
+        }
 
         return $asset;
     }

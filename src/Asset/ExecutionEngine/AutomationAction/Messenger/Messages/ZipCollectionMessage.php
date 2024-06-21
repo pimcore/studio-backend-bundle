@@ -14,22 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-use OpenApi\Attributes\Property;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-final class ParentId extends Property
+final class ZipCollectionMessage extends AbstractExecutionEngineMessage
 {
-    public function __construct()
-    {
-        parent::__construct(
-            property: 'parentId',
-            type: 'integer',
-            minimum: 1,
-            nullable: true,
-        );
-    }
 }

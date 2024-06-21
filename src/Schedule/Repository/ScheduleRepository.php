@@ -116,7 +116,7 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
             $task->setCid($id);
             $task->setCtype($elementType);
             $task->setDate($schedule->getDate());
-            $task->setAction($schedule->getAction());
+            $task->setAction($this->matchAction($schedule->getAction()));
             $task->setVersion($schedule->getVersion());
             $task->setActive($schedule->isActive());
             $task->save();
@@ -177,5 +177,13 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
         );
 
         return $element;
+    }
+
+    private function matchAction(?string $action): ?string
+    {
+        return match ($action) {
+            'publish' => 'publish-version',
+            default => $action
+        };
     }
 }

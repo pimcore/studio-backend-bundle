@@ -33,4 +33,11 @@ interface AssetSearchAdapterInterface
      * @throws SearchException|NotFoundException
      */
     public function getAssetById(int $id): Asset;
+
+    /**
+     * @throws SearchException
+     *
+     * @return array<int>
+     */
+    public function fetchAssetIds(QueryInterface $assetQuery): array;
 }

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ZipPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -47,12 +48,8 @@ final readonly class DownloadService implements DownloadServiceInterface
      * @throws InvalidElementTypeException|ElementStreamResourceNotFoundException
      */
     public function downloadAsset(
-        ElementInterface $asset
+        Asset $asset
     ): StreamedResponse {
-        if (!$asset instanceof Asset) {
-            throw new InvalidElementTypeException($asset->getType());
-        }
-
         return $this->getStreamedResponse($asset, HttpResponseHeaders::ATTACHMENT_TYPE->value);
     }
 
@@ -60,7 +57,7 @@ final readonly class DownloadService implements DownloadServiceInterface
      * @throws InvalidElementTypeException|ThumbnailResizingFailedException
      */
     public function downloadCustomImage(
-        ElementInterface $image,
+        Asset $image,
         ImageDownloadConfigParameter $parameters
     ): BinaryFileResponse {
         if (!$image instanceof Image) {
@@ -127,5 +124,10 @@ final readonly class DownloadService implements DownloadServiceInterface
             $image,
             false
         );
+    }
+
+    public function downloadZipArchiveByPath(ZipPathParameter $path): StreamedResponse
+    {
+        return $this->getZipStreamedResponse($path->getPath());
     }
 }

@@ -25,12 +25,12 @@ final class IdParameter extends PathParameter
 {
     public function __construct(
         string $type = 'element',
+        Schema $schema = new Schema(type: 'integer', example: 83),
         string $name = 'id',
-        Schema $schema = new Schema(type: 'integer', example: 83)
     ) {
         parent::__construct(
             name: $name,
-            description: 'ID of the ' . $type,
+            description: ucfirst($name) . ' of the ' . $type,
             in: 'path',
             required: true,
             schema: $schema,

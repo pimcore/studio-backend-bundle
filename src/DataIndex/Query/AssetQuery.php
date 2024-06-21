@@ -16,11 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 
 final class AssetQuery implements QueryInterface
 {
@@ -79,5 +81,12 @@ final class AssetQuery implements QueryInterface
     public function getSearch(): SearchInterface
     {
         return $this->search;
+    }
+
+    public function orderByPath(string $direction): self
+    {
+        $this->search->addModifier(new OrderByFullPath(SortDirection::tryFrom($direction)));
+
+        return $this;
     }
 }

@@ -14,28 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Error;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response;
 
 use Attribute;
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Response;
-use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Response\Schemas;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class NotCompletedResponse extends Response
+final class CreatedResponse extends Response
 {
-    public function __construct()
+    public function __construct(string $description = 'Success', mixed $content = null, ?array $headers = null)
     {
         parent::__construct(
-            response: HttpResponseCodes::NOT_COMPLETED->value,
-            description: 'Content not processed',
-            content: new JsonContent(
-                oneOf: array_map(static function ($class) {
-                    return new Schema(ref: $class);
-                }, Schemas::ERRORS),
-            )
+            response: HttpResponseCodes::CREATED->value,
+            description: $description,
+            headers: $headers,
+            content: $content
         );
     }
 }
