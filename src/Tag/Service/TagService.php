@@ -1,6 +1,19 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * Pimcore
+ *
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
+ * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ */
+
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletingFailedException;
@@ -36,6 +49,7 @@ final readonly class TagService implements TagServiceInterface
     {
         $tag = $this->tagHydrator->hydrateRecursive($this->tagRepository->getTagById($id));
         $this->dispatchTagEvent($tag);
+
         return $tag;
     }
 
@@ -49,6 +63,7 @@ final readonly class TagService implements TagServiceInterface
             $result[$tag->getId()] = $this->tagHydrator->hydrate($tag);
             $this->dispatchTagEvent($result[$tag->getId()]);
         }
+
         return $result;
     }
 
@@ -88,10 +103,12 @@ final readonly class TagService implements TagServiceInterface
         foreach ($tagMap as $tag) {
             if ($tag->getParentId() === 0 || !array_key_exists($tag->getParentId(), $tagMap)) {
                 $nestedTags[] = $tag;
+
                 continue;
             }
             $tagMap[$tag->getParentId()]->addChild($tag);
         }
+
         return $nestedTags;
     }
 
@@ -127,6 +144,7 @@ final readonly class TagService implements TagServiceInterface
     public function deleteTag(int $id): int
     {
         $this->tagRepository->deleteTag($id);
+
         return $id;
     }
 

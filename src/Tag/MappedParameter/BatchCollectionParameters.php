@@ -25,14 +25,14 @@ final readonly class BatchCollectionParameters
         private string $type,
         private array $elementIds = [],
         private array $tagIds = []
-    )
-    {
+    ) {
     }
 
     public function getType(): ?string
     {
         return $this->type;
     }
+
     public function getElementIds(): array
     {
         return $this->elementIds;

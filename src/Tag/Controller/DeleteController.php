@@ -68,6 +68,7 @@ final class DeleteController extends AbstractApiController
     public function deleteTag(int $id): JsonResponse
     {
         $this->tagService->deleteTag($id);
+
         return $this->jsonResponse(['id' => $id]);
     }
 }

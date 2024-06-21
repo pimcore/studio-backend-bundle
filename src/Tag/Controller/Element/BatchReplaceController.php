@@ -41,8 +41,7 @@ final class BatchReplaceController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly TagServiceInterface $tagService,
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -64,13 +63,12 @@ final class BatchReplaceController extends AbstractApiController
     #[ElementTypeParameter]
     #[ElementsTagsCollectionRequestBody]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function assignTag(
         string $elementType,
         #[MapRequestPayload] ElementTagIdCollection $elementTagCollection
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->tagService->batchReplaceTagsToElements(
             new BatchCollectionParameters(
                 $elementType,
@@ -78,6 +76,7 @@ final class BatchReplaceController extends AbstractApiController
                 $elementTagCollection->getTagsIds()
             )
         );
+
         return $this->jsonResponse(['id' => 0]);
     }
 }

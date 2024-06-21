@@ -95,6 +95,7 @@ final readonly class TagRepository implements TagRepositoryInterface
         if (!$tag) {
             throw new NotFoundException('Tag', $id);
         }
+
         return $tag;
     }
 
@@ -145,6 +146,7 @@ final readonly class TagRepository implements TagRepositoryInterface
         $new->setParentId($params->getParentId());
         $new->setName($params->getName());
         $new->save();
+
         return $new;
     }
 
@@ -163,6 +165,7 @@ final readonly class TagRepository implements TagRepositoryInterface
             $tag->setName($params->getName());
         }
         $tag->save();
+
         return $tag;
     }
 
@@ -173,6 +176,7 @@ final readonly class TagRepository implements TagRepositoryInterface
     public function deleteTag(int $id): void
     {
         $tag = $this->getTagById($id);
+
         try {
             $tag->delete();
         } catch (\Exception $e) {

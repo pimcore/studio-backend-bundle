@@ -74,7 +74,7 @@ final class CollectionController extends AbstractApiController
     #[FilterParameter]
     #[ParentIdParameter(
         description: 'Filter tags by parent id.',
-        example: null,)]
+        example: null, )]
     #[SuccessResponse(
         description: 'Tags filtered based on type and query parameters',
         content: new ItemsJson(Tag::class)

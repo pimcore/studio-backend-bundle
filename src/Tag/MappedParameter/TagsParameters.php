@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter;
 
-
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 
 /**

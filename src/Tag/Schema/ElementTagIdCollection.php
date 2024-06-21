@@ -34,18 +34,17 @@ final readonly class ElementTagIdCollection
             description: 'element ids',
             type: 'array',
             items: new Items(type: 'integer', example: 1),
-            example: [1,2,3]
+            example: [1, 2, 3]
         )]
         private array $elementIds,
         #[Property(
             description: 'tag ids',
             type: 'array',
             items: new Items(type: 'integer', example: 1),
-            example: [1,2,3]
+            example: [1, 2, 3]
         )]
         private array $tagIds,
-    )
-    {
+    ) {
     }
 
     public function getElementIds(): array
@@ -57,5 +56,4 @@ final readonly class ElementTagIdCollection
     {
         return $this->tagIds;
     }
-
 }

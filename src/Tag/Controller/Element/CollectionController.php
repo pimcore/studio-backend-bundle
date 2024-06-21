@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller\Element;
 
+use function count;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
@@ -34,7 +35,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-use function count;
 
 /**
  * @internal
@@ -46,8 +46,7 @@ final class CollectionController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly TagServiceInterface $tagService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -66,14 +65,13 @@ final class CollectionController extends AbstractApiController
         content: new CollectionJson(new TagCollection())
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getTags(
         string $elementType,
         int $id,
         #[MapQueryString] TagsParameters $parameters = new TagsParameters()
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $collection = $this->tagService->getTagsForElement(new ElementParameters($elementType, $id));
 
         return $this->getPaginatedCollection(

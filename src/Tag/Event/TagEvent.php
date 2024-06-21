@@ -22,10 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 final class TagEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.tag';
+
     public function __construct(
         private readonly Tag $tag
-    )
-    {
+    ) {
         parent::__construct($tag);
     }
 

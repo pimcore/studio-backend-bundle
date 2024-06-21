@@ -39,8 +39,7 @@ final class AssignController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly TagServiceInterface $tagService,
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -59,15 +58,15 @@ final class AssignController extends AbstractApiController
     #[IdParameter(type: 'element')]
     #[IdParameter(type: 'tag', name: 'tagId')]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function assignTag(
         string $elementType,
         int $id,
         int $tagId
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->tagService->assignTagToElement(new ElementParameters($elementType, $id), $tagId);
+
         return $this->jsonResponse(['id' => $id]);
     }
 }

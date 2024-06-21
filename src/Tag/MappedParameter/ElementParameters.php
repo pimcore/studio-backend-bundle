@@ -24,8 +24,7 @@ final readonly class ElementParameters
     public function __construct(
         private ?string $type = null,
         private ?int $id = null
-    )
-    {
+    ) {
     }
 
     public function getType(): ?string
