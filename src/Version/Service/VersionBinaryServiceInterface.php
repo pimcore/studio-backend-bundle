@@ -35,6 +35,9 @@ interface VersionBinaryServiceInterface
         UserInterface $user
     ): StreamedResponse;
 
+    /**
+     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
+     */
     public function streamThumbnailImage(
         int $id,
         UserInterface $user
