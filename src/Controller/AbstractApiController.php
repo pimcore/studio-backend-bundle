@@ -42,8 +42,7 @@ abstract class AbstractApiController extends AbstractController
         mixed $data,
         int $status = HttpResponseCodes::SUCCESS->value,
         array $headers = []
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return new JsonResponse($this->serializer->serialize($data, 'json'), $status, $headers, true);
     }
 
