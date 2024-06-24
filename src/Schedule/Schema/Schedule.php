@@ -32,24 +32,23 @@ final class Schedule implements AdditionalAttributesInterface
 
     public function __construct(
         #[Property(description: 'id', type: 'integer', example: 666)]
-        private readonly int     $id,
+        private readonly int $id,
         #[Property(description: 'ctype', type: 'string', example: 'Type of element')]
-        private readonly string  $ctype,
+        private readonly string $ctype,
         #[Property(description: 'Date of schedule', type: 'integer', example: 1634025600)]
-        private readonly int     $date,
+        private readonly int $date,
         #[Property(description: 'Action', type: 'string', enum: ['publish', 'delete'])]
         private readonly ?string $action,
         #[Property(description: 'Version ID', type: 'integer', example: 987)]
-        private readonly ?int    $version,
+        private readonly ?int $version,
         #[Property(description: 'Active', type: 'boolean', example: true)]
-        private readonly bool    $active,
+        private readonly bool $active,
         #[Property(description: 'User ID', type: 'integer', example: 999)]
-        private readonly int     $userId,
+        private readonly int $userId,
         #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
-        private readonly string  $username
+        private readonly string $username
     )
     {
-
     }
 
     public function getId(): int
