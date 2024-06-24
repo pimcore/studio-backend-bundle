@@ -29,10 +29,10 @@ final class UpdatePasswordRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['password', 'password_confirmation', ],
+                required: ['password', 'passwordConfirmation', ],
                 properties: [
                     new SingleString('password'),
-                    new SingleString('password_confirmation'),
+                    new SingleString('passwordConfirmation'),
                 ],
                 type: 'object'
             ),

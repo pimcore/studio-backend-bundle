@@ -27,7 +27,7 @@ final readonly class UpdatePasswordParameter
         #[NotBlank]
         private string $password,
         #[NotBlank]
-        private string $password_confirmation
+        private string $passwordConfirmation
     ) {
     }
 
@@ -38,6 +38,6 @@ final readonly class UpdatePasswordParameter
 
     public function getPasswordConfirmation(): string
     {
-        return $this->password_confirmation;
+        return $this->passwordConfirmation;
     }
 }
