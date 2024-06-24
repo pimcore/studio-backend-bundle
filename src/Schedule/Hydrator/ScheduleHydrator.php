@@ -16,16 +16,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Hydrator;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\Schedule;
 use Pimcore\Model\Schedule\Task;
 
 /**
  * @internal
  */
-final class ScheduleHydrator implements ScheduleHydratorInterface
+final readonly class ScheduleHydrator implements ScheduleHydratorInterface
 {
+    public function __construct(private UserResolverInterface $userResolver)
+    {
+    }
+
     public function hydrate(Task $task): Schedule
     {
+        $user = $this->userResolver->getById($task->getUserId());
+
         return new Schedule(
             $task->getId(),
             $task->getCtype(),
@@ -33,7 +40,8 @@ final class ScheduleHydrator implements ScheduleHydratorInterface
             $this->matchAction($task->getAction()),
             $task->getVersion(),
             $task->getActive(),
-            $task->getUserId()
+            $task->getUserId(),
+            $user?->getUsername()
         );
     }
 
