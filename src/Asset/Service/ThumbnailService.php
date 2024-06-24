@@ -41,7 +41,6 @@ use Symfony\Component\Process\Process;
 final readonly class ThumbnailService implements ThumbnailServiceInterface
 {
     use ConsoleExecutableTrait;
-    use StreamedResponseTrait;
 
     public function __construct(
         private ConfigResolverInterface $configResolver,
