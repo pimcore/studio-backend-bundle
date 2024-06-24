@@ -49,7 +49,12 @@ abstract class AbstractApiController extends AbstractController
     protected function patchResponse(array $errors = [], array $headers = []): Response
     {
         if (!empty($errors)) {
-            return new JsonResponse($this->serializer->serialize($errors, 'json'), 207, $headers, true);
+            return new JsonResponse(
+                $this->serializer->serialize($errors, 'json'),
+                HttpResponseCodes::MULTI_STATUS->value,
+                $headers,
+                true
+            );
         }
 
         return new Response();
