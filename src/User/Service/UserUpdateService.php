@@ -131,7 +131,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
      */
     private function updatePermissions(array $permissionsToSet): void
     {
-        $permissions = array_map(function ($permission) {
+        $permissions = array_map(static function ($permission) {
             return $permission->getKey();
         }, $this->permissionRepository->getAvailablePermissions());
 
@@ -149,7 +149,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
      */
     private function updateRoles(array $rolesToSet): void
     {
-        $roles = array_map(function ($role) {
+        $roles = array_map(static function ($role) {
             return $role->getId();
         }, $this->roleRepository->getRoles());
 
@@ -167,7 +167,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
      */
     private function updateClasses(array $classesToSet): void
     {
-        $classes = array_map(function ($class) {
+        $classes = array_map(static function ($class) {
             return $class->getId();
         }, $this->classDefinitionRepository->getClassDefinitions());
 
@@ -250,7 +250,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
      */
     private function checkForDuplicateWorkspaces(array $assetWorkspacesToSet): void
     {
-        $paths = array_map(function ($workspace) {
+        $paths = array_map(static function ($workspace) {
             return $workspace->getCpath();
         }, $assetWorkspacesToSet);
 
