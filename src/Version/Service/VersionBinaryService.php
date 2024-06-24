@@ -66,27 +66,6 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         );
     }
 
-    /**
-     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
-     */
-    public function streamImage(
-        int $id,
-        UserInterface $user
-    ): StreamedResponse {
-        $version = $this->repository->getVersionById($id);
-        $element = $this->repository->getElementFromVersion($version, $user);
-        if (!$element instanceof Asset\Image) {
-            throw new InvalidElementTypeException($element->getType());
-        }
-
-        return $this->getStreamedResponse(
-            $element,
-            HttpResponseHeaders::INLINE_TYPE->value,
-            [],
-            $this->versionDetailService->getAssetFileSize($element) ?? $element->getFileSize()
-        );
-    }
-
     public function streamThumbnailImage(
         int $id,
         UserInterface $user
