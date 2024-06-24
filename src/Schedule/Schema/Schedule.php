@@ -47,8 +47,7 @@ final class Schedule implements AdditionalAttributesInterface
         private readonly int $userId,
         #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
         private readonly string $username
-    )
-    {
+    ) {
     }
 
     public function getId(): int
