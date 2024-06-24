@@ -40,8 +40,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
 
     public function __construct(
         private VersionDetailServiceInterface $versionDetailService,
-        private ThumbnailServiceInterface $thumbnailService,
-        private VersionRepositoryInterface $repository,
+        private VersionRepositoryInterface $repository
     ) {
     }
 
