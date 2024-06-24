@@ -105,7 +105,6 @@ final class UserUpdateService implements UserUpdateServiceInterface
         return $this->userHydrator->hydrate($this->user);
     }
 
-
     /**
      * @throws NotFoundException|DatabaseException|ForbiddenException
      */

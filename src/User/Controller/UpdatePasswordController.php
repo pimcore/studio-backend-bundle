@@ -72,6 +72,7 @@ final class UpdatePasswordController extends AbstractApiController
     public function updatePassword(int $id, #[MapRequestPayload] UpdatePasswordParameter $passwordParameter): Response
     {
         $this->userUpdateService->updatePasswordById($passwordParameter, $id);
+
         return new Response();
     }
 }
