@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model;
 
-use Pimcore\Model\Exception\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AbortExecutionException;
 
 /**
  * @internal
@@ -26,7 +26,7 @@ final readonly class AbortActionData
     public function __construct(
         private string $translationKey,
         private array $translationParameters,
-        private string $exceptionClassName = NotFoundException::class
+        private string $exceptionClassName = AbortExecutionException::class
     ) {
 
     }
@@ -38,7 +38,12 @@ final readonly class AbortActionData
 
     public function getTranslationParameters(): array
     {
-        return $this->translationParameters;
+        return array_combine(
+            array_keys($this->translationParameters),
+            array_map(static function ($value) {
+                return '%' . $value . '%';
+            }, array_values($this->translationParameters))
+        );
     }
 
     public function getExceptionClassName(): string

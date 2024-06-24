@@ -54,18 +54,18 @@ final class ImageStreamController extends AbstractApiController
     /**
      * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException|UserNotFoundException
      */
-    #[Route('/versions/{id}/image/stream', name: 'pimcore_studio_api_stream_iamge_version', methods: ['GET'])]
+    #[Route('/versions/{id}/image/stream', name: 'pimcore_studio_api_stream_image_version', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/versions/{id}/image/stream',
         operationId: 'streamImageVersionById',
-        description: 'Get image version stream based on the version ID',
-        summary: 'Get image version stream by ID',
+        description: 'Get thumbnail image version stream based on the version ID',
+        summary: 'Get thumbnail image version stream by ID',
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
     #[SuccessResponse(
-        description: 'Image version stream',
+        description: 'Image thumbnail version stream',
         content: new AssetMediaType('image/*'),
         headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]
@@ -75,9 +75,6 @@ final class ImageStreamController extends AbstractApiController
     ])]
     public function getVersions(int $id): StreamedResponse
     {
-        return $this->versionBinaryService->streamImage(
-            $id,
-            $this->securityService->getCurrentUser()
-        );
+        return $this->versionBinaryService->streamThumbnailImage($id, $this->securityService->getCurrentUser());
     }
 }

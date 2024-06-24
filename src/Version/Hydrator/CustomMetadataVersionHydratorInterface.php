@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -13,13 +14,15 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
-enum Config: string
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\CustomMetadataVersion;
+
+/**
+ * @internal
+ */
+interface CustomMetadataVersionHydratorInterface
 {
-    case CONTEXT = 'studio';
-    case NO_ELEMENT_PROVIDED = 'ee_no_element_provided';
-    case ELEMENT_NOT_FOUND_MESSAGE = 'ee_element_not_found';
-    case USER_NOT_FOUND_MESSAGE = 'ee_user_not_found';
-    case ENVIRONMENT_VARIABLE_NOT_FOUND = 'ee_environment_variable_not_found';
+    /** @return array<int, CustomMetadataVersion> */
+    public function hydrate(array $customMetadata): array;
 }
