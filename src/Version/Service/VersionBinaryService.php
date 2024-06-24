@@ -64,6 +64,9 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         );
     }
 
+    /**
+     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
+     */
     public function streamThumbnailImage(
         int $id,
         UserInterface $user
