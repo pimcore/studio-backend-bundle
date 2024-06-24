@@ -17,12 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ZipPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\MappedParameter\ZipPathParameter;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -35,14 +35,14 @@ interface DownloadServiceInterface
      * @throws InvalidElementTypeException|ElementStreamResourceNotFoundException
      */
     public function downloadAsset(
-        ElementInterface $asset
+        Asset $asset
     ): StreamedResponse;
 
     /**
      * @throws InvalidElementTypeException|ThumbnailResizingFailedException
      */
     public function downloadCustomImage(
-        ElementInterface $image,
+        Asset $image,
         ImageDownloadConfigParameter $parameters
     ): BinaryFileResponse;
 
@@ -50,7 +50,7 @@ interface DownloadServiceInterface
      * @throws InvalidElementTypeException|InvalidAssetFormatTypeException|ThumbnailResizingFailedException
      */
     public function downloadImageByFormat(
-        ElementInterface $image,
+        Asset $image,
         string $format
     ): BinaryFileResponse;
 
@@ -58,7 +58,7 @@ interface DownloadServiceInterface
      * @throws InvalidElementTypeException
      */
     public function downloadImageByThumbnail(
-        ElementInterface $image,
+        Asset $image,
         string $thumbnailName
     ): BinaryFileResponse;
 

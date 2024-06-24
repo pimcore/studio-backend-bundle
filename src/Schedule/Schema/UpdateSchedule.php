@@ -34,7 +34,7 @@ final readonly class UpdateSchedule
         private int $id,
         #[Property(description: 'Date of schedule', type: 'integer', example: 1634025600)]
         private int $date,
-        #[Property(description: 'Action', type: 'string', enum: ['publish-version', 'delete'])]
+        #[Property(description: 'Action', type: 'string', enum: ['publish', 'delete'])]
         private ?string $action,
         #[Property(description: 'Version ID', type: 'integer', example: 987)]
         private ?int $version,

@@ -32,7 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Asset as AssetModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
 
@@ -57,5 +57,13 @@ interface AssetServiceInterface
     public function getAssetElement(
         UserInterface $user,
         int $assetId,
-    ): ElementInterface;
+    ): AssetModel;
+
+    /**
+     * @throws AccessDeniedException|NotFoundException
+     */
+    public function getAssetElementByPath(
+        UserInterface $user,
+        string $path,
+    ): AssetModel;
 }

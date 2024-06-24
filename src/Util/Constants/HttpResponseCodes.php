@@ -22,6 +22,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 enum HttpResponseCodes: int
 {
     case SUCCESS = 200;
+    case CREATED = 201;
     case NOT_COMPLETED = 202;
     case MULTI_STATUS = 207;
     case BAD_REQUEST = 400;

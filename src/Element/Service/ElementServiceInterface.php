@@ -36,6 +36,15 @@ interface ElementServiceInterface
     /**
      * @throws AccessDeniedException|NotFoundException
      */
+    public function getAllowedElementById(
+        string $elementType,
+        int $elementId,
+        UserInterface $user,
+    ): ElementInterface;
+
+    /**
+     * @throws AccessDeniedException|NotFoundException
+     */
     public function getAllowedElementByPath(
         string $elementType,
         string $elementPath,

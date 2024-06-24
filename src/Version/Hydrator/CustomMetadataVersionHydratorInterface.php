@@ -14,22 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
-use Pimcore\Model\Asset;
-use ZipArchive;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\CustomMetadataVersion;
 
 /**
  * @internal
  */
-interface ZipServiceInterface
+interface CustomMetadataVersionHydratorInterface
 {
-    public const ASSETS_INDEX = 'assets';
-
-    public function getZipArchive(int $id): ?ZipArchive;
-
-    public function addFile(ZipArchive $archive, Asset $asset): void;
-
-    public function generateZipFile(CreateZipParameter $ids): string;
+    /** @return array<int, CustomMetadataVersion> */
+    public function hydrate(array $customMetadata): array;
 }

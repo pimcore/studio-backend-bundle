@@ -20,14 +20,17 @@ use Attribute;
 use OpenApi\Attributes\PathParameter;
 use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_METHOD)]
+#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class IdParameter extends PathParameter
 {
-    public function __construct(string $type = 'element', Schema $schema = new Schema(type: 'integer', example: 83))
-    {
+    public function __construct(
+        string $type = 'element',
+        Schema $schema = new Schema(type: 'integer', example: 83),
+        string $name = 'id',
+    ) {
         parent::__construct(
-            name: 'id',
-            description: 'ID of the ' . $type,
+            name: $name,
+            description: ucfirst($name) . ' of the ' . $type,
             in: 'path',
             required: true,
             schema: $schema,
