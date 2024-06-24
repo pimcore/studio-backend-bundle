@@ -16,9 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Image\Thumbnail\ConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
@@ -36,8 +38,9 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
     use StreamedResponseTrait;
 
     public function __construct(
-        private VersionRepositoryInterface $repository,
-        private VersionDetailServiceInterface $versionDetailService
+        private VersionDetailServiceInterface $versionDetailService,
+        private ConfigResolverInterface $configResolver,
+        private VersionRepositoryInterface $repository
     ) {
     }
 
@@ -65,21 +68,29 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
     /**
      * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
      */
-    public function streamImage(
+    public function streamThumbnailImage(
         int $id,
         UserInterface $user
     ): StreamedResponse {
         $version = $this->repository->getVersionById($id);
-        $element = $this->repository->getElementFromVersion($version, $user);
-        if (!$element instanceof Asset\Image) {
-            throw new InvalidElementTypeException($element->getType());
+        $image = $this->repository->getElementFromVersion($version, $user);
+        if (!$image instanceof Asset\Image) {
+            throw new InvalidElementTypeException($image->getType());
+        }
+
+        $config = $this->configResolver->getPreviewConfig();
+        $thumbnail = $image->getThumbnail($config);
+
+        $autoFormatConfigs = $config->getAutoFormatThumbnailConfigs();
+        if ($autoFormatConfigs && $config->getFormat() === strtoupper(FormatTypes::SOURCE)) {
+            $thumbnail = $image->getThumbnail(current($autoFormatConfigs));
         }
 
         return $this->getStreamedResponse(
-            $element,
+            $thumbnail,
             HttpResponseHeaders::INLINE_TYPE->value,
             [],
-            $this->versionDetailService->getAssetFileSize($element) ?? $element->getFileSize()
+            $thumbnail->getFileSize()
         );
     }
 }
