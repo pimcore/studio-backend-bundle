@@ -14,9 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Traits;
+namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction;
 
+use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Handler\AbstractAutomationActionHandler;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\GenericExecutionEngineMessageInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConsoleDependencyMissingException;
@@ -27,12 +29,12 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 /**
  * @internal
  */
-trait HandlerValidationTrait
+class AbstractHandler extends AbstractAutomationActionHandler
 {
     /**
      * @throws ConsoleDependencyMissingException
      */
-    private function validateJobParameters(
+    protected function validateJobParameters(
         GenericExecutionEngineMessageInterface $message,
         JobRun $jobRun,
         UserResolverInterface $userResolver,
@@ -40,12 +42,18 @@ trait HandlerValidationTrait
     ): AbortActionData|ExecuteActionData {
         $element = $message->getElement();
         if (!$element) {
-            return $this->getAbortParameters(Config::ASSET_NOT_FOUND_MESSAGE->value);
+            return $this->getAbortData(
+                Config::ELEMENT_NOT_FOUND_MESSAGE->value,
+                [
+                    'id' => $element->getId(),
+                    'type' => ucfirst($element->getType()),
+                ]
+            );
         }
 
         $user = $userResolver->getById($jobRun->getOwnerId());
         if ($user === null) {
-            return $this->getAbortParameters(
+            return $this->getAbortData(
                 Config::USER_NOT_FOUND_MESSAGE->value,
                 [
                     'userId' => $jobRun->getOwnerId(),
@@ -58,7 +66,7 @@ trait HandlerValidationTrait
             $jobEnvironmentData = $jobRun->getJob()?->getEnvironmentData();
             foreach ($requiredEnvironmentVariables as $requiredEnvironmentVariable) {
                 if (!isset($jobEnvironmentData[$requiredEnvironmentVariable])) {
-                    return $this->getAbortParameters(
+                    return $this->getAbortData(
                         Config::ENVIRONMENT_VARIABLE_NOT_FOUND->value,
                         ['variable' => $requiredEnvironmentVariable]
                     );
@@ -73,11 +81,24 @@ trait HandlerValidationTrait
         );
     }
 
-    private function getAbortParameters(string $message, array $messageParams = []): AbortActionData
+    protected function getAbortData(string $message, array $messageParams = []): AbortActionData
     {
         return new AbortActionData(
             $message,
             $messageParams,
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function abort(AbortActionData $abortActionData): void
+    {
+        $this->abortAction(
+            $abortActionData->getTranslationKey(),
+            $abortActionData->getTranslationParameters(),
+            Config::CONTEXT->value,
+            $abortActionData->getExceptionClassName()
         );
     }
 }

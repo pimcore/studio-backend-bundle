@@ -2,3 +2,6 @@ username: Username
 password: Password
 login: Login
 Forgot your password: Forgot your password?
+ee_element_not_found: Element with type %type% with ID %id% not found
+ee_user_not_found: User with ID %userId% not found
+ee_environment_variable_not_found: Environment variable %variable% not found

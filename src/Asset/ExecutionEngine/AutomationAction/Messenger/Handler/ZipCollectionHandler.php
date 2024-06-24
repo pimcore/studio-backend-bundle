@@ -17,11 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Handler\AbstractAutomationActionHandler;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Traits\HandlerValidationTrait;
@@ -31,9 +32,8 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class ZipCollectionHandler extends AbstractAutomationActionHandler
+final class ZipCollectionHandler extends AbstractHandler
 {
-    use HandlerValidationTrait;
 
     public function __construct(
         private readonly AssetServiceInterface $assetService,
@@ -64,9 +64,19 @@ final class ZipCollectionHandler extends AbstractAutomationActionHandler
         }
 
         $user = $validatedParameters->getUser();
-        $jobSubject = $validatedParameters->getSubject();
+        $asset = $validatedParameters->getSubject();
 
-        $asset = $this->assetService->getAssetElement($user, $jobSubject->getId());
+        try {
+            $asset = $this->assetService->getAssetElement($user, $asset->getId());
+        } catch (NotFoundException) {
+            $this->abort($this->getAbortData(
+                Config::ELEMENT_NOT_FOUND_MESSAGE->value,
+                [
+                    'id' => $asset->getId(),
+                    'type' => ucfirst($asset->getType())
+                ],
+            ));
+        }
 
         $context = $jobRun->getContext();
 
