@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Image\Thumbnail\ConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -25,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Model\Asset;
-use Pimcore\Model\Asset\Image\Thumbnail\Config;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -39,6 +39,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
 
     public function __construct(
         private VersionDetailServiceInterface $versionDetailService,
+        private ConfigResolverInterface $configResolver,
         private VersionRepositoryInterface $repository
     ) {
     }
@@ -77,7 +78,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
             throw new InvalidElementTypeException($image->getType());
         }
 
-        $config = Config::getPreviewConfig();
+        $config = $this->configResolver->getPreviewConfig();
         $thumbnail = $image->getThumbnail($config);
 
         $autoFormatConfigs = $config->getAutoFormatThumbnailConfigs();
