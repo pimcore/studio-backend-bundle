@@ -16,14 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ThumbnailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Image\Thumbnail\Config;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -36,8 +39,9 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
     use StreamedResponseTrait;
 
     public function __construct(
+        private VersionDetailServiceInterface $versionDetailService,
+        private ThumbnailServiceInterface $thumbnailService,
         private VersionRepositoryInterface $repository,
-        private VersionDetailServiceInterface $versionDetailService
     ) {
     }
 
@@ -81,5 +85,26 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
             [],
             $this->versionDetailService->getAssetFileSize($element) ?? $element->getFileSize()
         );
+    }
+
+    public function streamThumbnailImage(
+        int $id,
+        UserInterface $user
+    ): StreamedResponse {
+        $version = $this->repository->getVersionById($id);
+        $image = $this->repository->getElementFromVersion($version, $user);
+        if (!$image instanceof Asset\Image) {
+            throw new InvalidElementTypeException($image->getType());
+        }
+
+        $config = Config::getPreviewConfig();
+        $thumbnail = $image->getThumbnail($config);
+
+        $autoFormatConfigs = $config->getAutoFormatThumbnailConfigs();
+        if ($autoFormatConfigs && $config->getFormat() === strtoupper(FormatTypes::SOURCE)) {
+            $thumbnail = $image->getThumbnail(current($autoFormatConfigs));
+        }
+
+        return $this->thumbnailService->getStreamResponseFromThumbnail($thumbnail);
     }
 }

@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -41,43 +42,49 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ImageStreamController extends AbstractApiController
+final class ThumbnailController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly SecurityServiceInterface $securityService,
         private readonly VersionBinaryServiceInterface $versionBinaryService,
+        private readonly SecurityServiceInterface $securityService,
+
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException|UserNotFoundException
+     * @throws AccessDeniedException
+     * @throws NotFoundException
+     * @throws InvalidElementTypeException
+     * @throws SearchException
+     * @throws UserNotFoundException
      */
-    #[Route('/versions/{id}/image/stream', name: 'pimcore_studio_api_stream_image_version', methods: ['GET'])]
+    #[Route(
+        '/versions/{id}/image/thumbnail',
+        name: 'pimcore_studio_api_thumbnail_image_version',
+        methods: ['GET']
+    )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/versions/{id}/image/stream',
-        operationId: 'streamImageVersionById',
-        description: 'Get image version stream based on the version ID',
-        summary: 'Get image version stream by ID',
+        path: self::API_PATH . '/versions/{id}/image/thumbnail',
+        operationId: 'thumbnailImageVersionById',
+        description: 'Get image version thumbnail based on the version ID',
+        summary: 'Get thumbnail image version by ID',
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
     #[SuccessResponse(
-        description: 'Image version stream',
-        content: new AssetMediaType('image/*'),
+        description: 'Image based on thumbnail name',
+        content: new AssetMediaType(),
         headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getVersions(int $id): StreamedResponse
+    public function getImageByThumbnail(int $id): StreamedResponse
     {
-        return $this->versionBinaryService->streamImage(
-            $id,
-            $this->securityService->getCurrentUser()
-        );
+      return $this->versionBinaryService->streamThumbnailImage($id, $this->securityService->getCurrentUser());
     }
 }

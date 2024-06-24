@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\UserInterface;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -39,6 +40,11 @@ interface VersionBinaryServiceInterface
      * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
      */
     public function streamImage(
+        int $id,
+        UserInterface $user
+    ): StreamedResponse;
+
+    public function streamThumbnailImage(
         int $id,
         UserInterface $user
     ): StreamedResponse;
