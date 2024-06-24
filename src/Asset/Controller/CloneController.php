@@ -31,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -85,6 +84,7 @@ final class CloneController extends AbstractApiController
         if ($jobRunId) {
             $status = 201;
             $data = $this->serializer->serialize(['id' => $jobRunId], 'json');
+
             return $this->jsonResponse($data, $status);
         }
 
