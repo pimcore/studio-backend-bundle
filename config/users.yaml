@@ -20,6 +20,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService
 
