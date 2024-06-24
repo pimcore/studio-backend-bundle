@@ -26,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedExce
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\ResizeModes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ConsoleExecutableTrait;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageThumbnailConfig;
 use Pimcore\Model\Asset\Image\ThumbnailInterface;
