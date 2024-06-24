@@ -68,7 +68,7 @@ final class JwtController extends AbstractApiController
             $urlParts['path'] ?? '/',
             $urlParts['host'] ?? '',
             $urlParts['scheme'] === 'https',
-            false //TODO: check with FE if this should be true
+            true
         );
     }
 }
