@@ -1,6 +1,19 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * Pimcore
+ *
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
+ * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ */
+
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Model;
 
 /**
@@ -18,12 +31,14 @@ final class TopicCollection
 
     /**
      * @param string|array<string> $topics
+     *
      * @return void
      */
     public function addServerPublishableTopic(string|array $topics): void
     {
         if (is_array($topics)) {
             $this->serverPublishableTopics = array_merge($this->serverPublishableTopics, $topics);
+
             return;
         }
 
@@ -32,12 +47,14 @@ final class TopicCollection
 
     /**
      * @param string|array<string> $topics
+     *
      * @return void
      */
     public function addServerSubscribableTopic(string|array $topics): void
     {
         if (is_array($topics)) {
             $this->serverSubscribableTopics = array_merge($this->serverSubscribableTopics, $topics);
+
             return;
         }
 
@@ -46,12 +63,14 @@ final class TopicCollection
 
     /**
      * @param string|array<string> $topics
+     *
      * @return void
      */
     public function addClientPublishableTopic(string|array $topics): void
     {
         if (is_array($topics)) {
             $this->clientPublishableTopics = array_merge($this->clientPublishableTopics, $topics);
+
             return;
         }
 
@@ -60,12 +79,14 @@ final class TopicCollection
 
     /**
      * @param string|array<string> $topics
+     *
      * @return void
      */
     public function addClientSubscribableTopic(string|array $topics): void
     {
         if (is_array($topics)) {
             $this->clientSubscribableTopics = array_merge($this->clientSubscribableTopics, $topics);
+
             return;
         }
 

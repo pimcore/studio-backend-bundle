@@ -54,6 +54,7 @@ final class JwtController extends AbstractApiController
         $res->headers->setCookie(
             $this->createCookie(0)
         );
+
         return $res;
     }
 

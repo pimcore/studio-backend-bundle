@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Model\TopicCollection;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ServerTopicProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ClientTopicProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ServerTopicProviderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 /**
@@ -48,6 +48,7 @@ final class TaggedIteratorAdapter implements TopicLoaderInterface
                 $collection->addClientSubscribableTopic($topicProvider->getClientSubscribableTopic());
             }
         }
+
         return $collection;
     }
 }

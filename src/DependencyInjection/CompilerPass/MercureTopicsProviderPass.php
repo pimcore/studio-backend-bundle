@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ServerTopicProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ClientTopicProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ServerTopicProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\MustImplementInterfaceTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
