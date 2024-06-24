@@ -39,9 +39,9 @@ abstract class AbstractApiController extends AbstractController
 
     }
 
-    protected function jsonResponse(mixed $data, array $headers = []): JsonResponse
+    protected function jsonResponse(mixed $data, int $status, array $headers = []): JsonResponse
     {
-        return new JsonResponse($this->serializer->serialize($data, 'json'), 200, $headers, true);
+        return new JsonResponse($this->serializer->serialize($data, 'json'), $status, $headers, true);
     }
 
     protected function patchResponse(array $errors = [], array $headers = []): Response
