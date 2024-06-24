@@ -84,6 +84,11 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
             $thumbnail = $image->getThumbnail(current($autoFormatConfigs));
         }
 
-        return $this->thumbnailService->getStreamResponseFromThumbnail($thumbnail);
+        return $this->getStreamedResponse(
+            $thumbnail,
+            HttpResponseHeaders::INLINE_TYPE->value,
+            [],
+            $thumbnail->getFileSize()
+        );
     }
 }

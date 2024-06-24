@@ -46,10 +46,6 @@ interface ThumbnailServiceInterface
         bool $deleteAfterSend = true
     ): BinaryFileResponse;
 
-    public function getStreamResponseFromThumbnail(
-        Image\ThumbnailInterface $thumbnail,
-    ): StreamedResponse;
-
     /**
      * @throws InvalidThumbnailException
      */

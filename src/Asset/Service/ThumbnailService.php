@@ -89,17 +89,6 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         return $response;
     }
 
-    public function getStreamResponseFromThumbnail(
-        Image\ThumbnailInterface $thumbnail,
-    ): StreamedResponse {
-        return $this->getStreamedResponse(
-            $thumbnail,
-            HttpResponseHeaders::INLINE_TYPE->value,
-            [],
-            $thumbnail->getFileSize()
-        );
-    }
-
     /**
      * @throws InvalidThumbnailException
      */
