@@ -81,7 +81,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
                 continue;
             }
-            $container->setParameter('pimcore_studio_backend.mercure_settings.' . $key, $containerConfig['mercure_settings'][$key]);
+            $container->setParameter(
+                'pimcore_studio_backend.mercure_settings.' . $key,
+                $containerConfig['mercure_settings'][$key]
+            );
         }
     }
 
