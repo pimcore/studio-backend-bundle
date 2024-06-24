@@ -51,3 +51,35 @@ security:
       - { path: ^/studio/api/(docs|docs.json|translations)$, roles: PUBLIC_ACCESS }
       - { path: ^/studio, roles: ROLE_PIMCORE_USER }
 ```
+
+## Mercure
+
+The Studio Backend Bundle uses Mercure to push updates to the frontend. To enable Mercure, you need to set up a 
+Mercure hub and configure the bundle to use it.
+
+### Setup
+For Mercure setup instruction, see [https://mercure.rocks/docs/hub/install](https://mercure.rocks/docs/hub/install).
+
+The simplest way to set up Mercure is using the docker image and set up a reverse proxy on our webserver to prevent CSP issues.
+For details, more aspects and some Q&A see the [Mercure Setup page](./02_Mercure_Setup.md).
+
+### JWT Key
+A valid JWT key is necessary for proper Mercure communication. Currently, the bundle uses same key for subscriber and publisher.
+Use your preferred password generator to create a secure and valid JWT key, which is used by the application to encrypt JWT tokens and payloads.
+
+> Keep the jwt_key private!
+> To learn more about JWT keys and generate a valid key, e.g. take a look at https://jwt.io.
+
+Also make sure to configure corresponding jwt keys for Pimcore as well as for Mercure.
+
+### Configuration
+
+You need to define an url for the backend(server) as well as for the frontend(client) to connect to the Mercure hub.
+
+```yaml
+pimcore_studio_backend:
+    mercure_settings:
+        jwt_key: 'your-256-bit-secret'
+        hub_url_client: 'http://mercure/.well-known/mercure'
+        hub_url_server: 'http://mercure/.well-known/mercure'
+```

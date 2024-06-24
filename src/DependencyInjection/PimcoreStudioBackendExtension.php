@@ -46,38 +46,17 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
+        $configPath = __DIR__ . '/../../config';
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
         // Load services and configuration
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader = new YamlFileLoader($container, new FileLocator($configPath));
 
-        $loader->load('assets.yaml');
-        $loader->load('authorization.yaml');
-        $loader->load('data_index.yaml');
-        $loader->load('data_index_filters.yaml');
-        $loader->load('data_objects.yaml');
-        $loader->load('dependencies.yaml');
-        $loader->load('element_workflow.yaml');
-        $loader->load('elements.yaml');
-        $loader->load('event_subscribers.yaml');
-        $loader->load('factories.yaml');
-        $loader->load('filters.yaml');
-        $loader->load('icon.yaml');
-        $loader->load('notes.yaml');
-        $loader->load('open_api.yaml');
-        $loader->load('patcher.yaml');
-        $loader->load('properties.yaml');
-        $loader->load('resolver.yaml');
-        $loader->load('schedules.yaml');
-        $loader->load('security.yaml');
-        $loader->load('services.yaml');
-        $loader->load('settings.yaml');
-        $loader->load('translation.yaml');
-        $loader->load('thumbnails.yaml');
-        $loader->load('updater.yaml');
-        $loader->load('users.yaml');
-        $loader->load('versions.yaml');
+        $files = glob(__DIR__ . '/../../config/*.yaml');
+        foreach ($files as $file) {
+            $loader->load(basename($file));
+        }
 
         $this->checkValidOpenApiScanPaths($config['open_api_scan_paths']);
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
@@ -95,6 +74,14 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         if (!$container->hasParameter('pimcore_studio_backend.firewall_settings')) {
             $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
             $container->setParameter('pimcore_studio_backend.firewall_settings', $containerConfig['security_firewall']);
+        }
+
+        $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
+        foreach ($containerConfig['mercure_settings'] as $key => $setting) {
+            if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
+                continue;
+            }
+            $container->setParameter('pimcore_studio_backend.mercure_settings.' . $key, $containerConfig['mercure_settings'][$key]);
         }
     }
 
