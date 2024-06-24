@@ -85,6 +85,6 @@ final class ThumbnailController extends AbstractApiController
     ])]
     public function getImageByThumbnail(int $id): StreamedResponse
     {
-      return $this->versionBinaryService->streamThumbnailImage($id, $this->securityService->getCurrentUser());
+        return $this->versionBinaryService->streamThumbnailImage($id, $this->securityService->getCurrentUser());
     }
 }
