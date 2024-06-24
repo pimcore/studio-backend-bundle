@@ -80,6 +80,6 @@ You need to define an url for the backend(server) as well as for the frontend(cl
 pimcore_studio_backend:
     mercure_settings:
         jwt_key: 'your-256-bit-secret'
-        hub_url_client: 'http://mercure/.well-known/mercure'
+        hub_url_client: 'http://localhost:8080/.well-known/mercure'
         hub_url_server: 'http://mercure/.well-known/mercure'
 ```
