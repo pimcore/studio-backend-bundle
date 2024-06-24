@@ -62,16 +62,16 @@ final class ZipCollectionHandler extends AbstractHandler
         }
 
         $user = $validatedParameters->getUser();
-        $asset = $validatedParameters->getSubject();
+        $jobAsset = $validatedParameters->getSubject();
 
         try {
-            $asset = $this->assetService->getAssetElement($user, $asset->getId());
+            $this->assetService->getAssetElement($user, $jobAsset->getId());
         } catch (NotFoundException) {
             $this->abort($this->getAbortData(
                 Config::ELEMENT_NOT_FOUND_MESSAGE->value,
                 [
-                    'id' => $asset->getId(),
-                    'type' => ucfirst($asset->getType()),
+                    'id' => $jobAsset->getId(),
+                    'type' => ucfirst($jobAsset->getType()),
                 ],
             ));
         }
@@ -80,11 +80,11 @@ final class ZipCollectionHandler extends AbstractHandler
 
         $assets = $context[ZipServiceInterface::ASSETS_INDEX] ?? [];
 
-        if (in_array($asset->getId(), $assets, true)) {
+        if (in_array($jobAsset->getId(), $assets, true)) {
             return;
         }
 
-        $assets[] = $asset->getId();
+        $assets[] = $jobAsset->getId();
 
         $this->updateJobRunContext($jobRun, ZipServiceInterface::ASSETS_INDEX, $assets);
         // TODO Send SSE for percentage update

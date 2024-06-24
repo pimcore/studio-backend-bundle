@@ -75,9 +75,9 @@ final class ZipCreationHandler extends AbstractHandler
             );
         }
 
-        $asset = $validatedParameters->getSubject();
+        $jobAsset = $validatedParameters->getSubject();
 
-        if (!in_array($asset->getId(), $context[ZipServiceInterface::ASSETS_INDEX], true)) {
+        if (!in_array($jobAsset->getId(), $context[ZipServiceInterface::ASSETS_INDEX], true)) {
             $this->abortAction(
                 'asset_permission_denied',
                 [],
@@ -96,14 +96,14 @@ final class ZipCreationHandler extends AbstractHandler
             );
         }
 
-        $asset = $this->serviceResolver->getElementById($asset->getType(), $asset->getId());
+        $asset = $this->serviceResolver->getElementById($jobAsset->getType(), $jobAsset->getId());
 
         if (!$asset) {
             $this->abort($this->getAbortData(
                 Config::ELEMENT_NOT_FOUND_MESSAGE->value,
                 [
-                    'id' => $asset->getId(),
-                    'type' => ucfirst($asset->getType()),
+                    'id' => $jobAsset->getId(),
+                    'type' => ucfirst($jobAsset->getType()),
                 ],
             ));
         }

@@ -42,13 +42,7 @@ class AbstractHandler extends AbstractAutomationActionHandler
     ): AbortActionData|ExecuteActionData {
         $element = $message->getElement();
         if (!$element) {
-            return $this->getAbortData(
-                Config::ELEMENT_NOT_FOUND_MESSAGE->value,
-                [
-                    'id' => $element->getId(),
-                    'type' => ucfirst($element->getType()),
-                ]
-            );
+            return $this->getAbortData(Config::ELEMENT_NOT_FOUND_MESSAGE->value);
         }
 
         $user = $userResolver->getById($jobRun->getOwnerId());
