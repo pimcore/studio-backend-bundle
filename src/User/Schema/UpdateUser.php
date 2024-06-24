@@ -88,11 +88,6 @@ final readonly class UpdateUser
     ) {
     }
 
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
     public function getEmail(): ?string
     {
         return $this->email;
@@ -144,11 +139,6 @@ final readonly class UpdateUser
     public function getLanguage(): string
     {
         return $this->language;
-    }
-
-    public function getLastLogin(): ?int
-    {
-        return $this->lastLogin;
     }
 
     public function isMemorizeTabs(): bool
