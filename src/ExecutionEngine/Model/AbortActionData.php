@@ -40,8 +40,8 @@ final readonly class AbortActionData
     {
         return array_combine(
             array_keys($this->translationParameters),
-            array_map(static function($value) {
-                return "%" . $value . "%";
+            array_map(static function ($value) {
+                return '%' . $value . '%';
             }, array_values($this->translationParameters))
         );
     }

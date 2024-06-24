@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Traits\HandlerValidationTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -34,7 +33,6 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 final class ZipCollectionHandler extends AbstractHandler
 {
-
     public function __construct(
         private readonly AssetServiceInterface $assetService,
         private readonly UserResolverInterface $userResolver
@@ -73,7 +71,7 @@ final class ZipCollectionHandler extends AbstractHandler
                 Config::ELEMENT_NOT_FOUND_MESSAGE->value,
                 [
                     'id' => $asset->getId(),
-                    'type' => ucfirst($asset->getType())
+                    'type' => ucfirst($asset->getType()),
                 ],
             ));
         }

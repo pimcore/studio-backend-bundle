@@ -75,7 +75,6 @@ final class ZipCreationHandler extends AbstractHandler
             );
         }
 
-
         $asset = $validatedParameters->getSubject();
 
         if (!in_array($asset->getId(), $context[ZipServiceInterface::ASSETS_INDEX], true)) {
@@ -104,11 +103,10 @@ final class ZipCreationHandler extends AbstractHandler
                 Config::ELEMENT_NOT_FOUND_MESSAGE->value,
                 [
                     'id' => $asset->getId(),
-                    'type' => ucfirst($asset->getType())
+                    'type' => ucfirst($asset->getType()),
                 ],
             ));
         }
-
 
         $this->zipService->addFile($archive, $asset);
         // TODO Send SSE for percentage update
