@@ -54,6 +54,7 @@ final readonly class UpdateUserParameter
         private array $documentWorkspaces,
     ) {
     }
+
     public function getEmail(): ?string
     {
         return $this->email;

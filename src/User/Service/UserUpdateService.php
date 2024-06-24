@@ -4,11 +4,14 @@ declare(strict_types=1);
 /**
  * Pimcore
  *
- * This source file is available under following license:
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
  * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
@@ -41,7 +44,6 @@ use Pimcore\Model\UserInterface;
  */
 final class UserUpdateService implements UserUpdateServiceInterface
 {
-
     private UserInterface $user;
 
     public function __construct(
@@ -52,8 +54,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
         private readonly RoleRepositoryInterface $roleRepository,
         private readonly ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private readonly ServiceResolverInterface $elementServiceResolver
-    )
-    {
+    ) {
     }
 
     /**
@@ -170,7 +171,6 @@ final class UserUpdateService implements UserUpdateServiceInterface
             return $class->getId();
         }, $this->classDefinitionRepository->getClassDefinitions());
 
-
         foreach ($classesToSet as $class) {
             if (!in_array($class, $classes, true)) {
                 throw new NotFoundException('Class', $class);
@@ -265,8 +265,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
         UserWorkspace $params,
         ElementInterface $element,
         AbstractWorkspace $workspace
-    ): AbstractWorkspace
-    {
+    ): AbstractWorkspace {
         $workspace->setUserId($this->user->getId());
         $workspace->setCpath($element->getRealFullPath());
         $workspace->setCid($element->getId());
