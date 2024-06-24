@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Controller;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,8 +29,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route('/studio/api')]
 abstract class AbstractApiController extends AbstractController
 {
-    public const VOTER_STUDIO_API = 'STUDIO_API';
-
     public const VOTER_PUBLIC_STUDIO_API = 'PUBLIC_STUDIO_API';
 
     public const API_PATH = '/studio/api';
@@ -39,7 +38,11 @@ abstract class AbstractApiController extends AbstractController
 
     }
 
-    protected function jsonResponse(mixed $data, int $status, array $headers = []): JsonResponse
+    protected function jsonResponse(
+        mixed $data,
+        int $status = HttpResponseCodes::SUCCESS->value,
+        array $headers = []
+    ): JsonResponse
     {
         return new JsonResponse($this->serializer->serialize($data, 'json'), $status, $headers, true);
     }
