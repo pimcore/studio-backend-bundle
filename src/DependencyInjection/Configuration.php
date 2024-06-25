@@ -46,6 +46,7 @@ class Configuration implements ConfigurationInterface
         $this->addAllowedHostsForCorsNode($rootNode);
         $this->addSecurityFirewall($rootNode);
         $this->addDefaultAssetFormats($rootNode);
+        $this->addRecycleBinThreshold($rootNode);
 
         return $treeBuilder;
     }
@@ -129,6 +130,15 @@ class Configuration implements ConfigurationInterface
                             ->integerNode('quality')->isRequired()->end()
                         ->end()
                     ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addRecycleBinThreshold(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+                ->integerNode('element_recycle_bin_threshold')
+                    ->defaultValue(100)
                 ->end()
             ->end();
     }

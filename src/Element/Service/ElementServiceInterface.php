@@ -50,4 +50,8 @@ interface ElementServiceInterface
         string $elementPath,
         UserInterface $user
     ): ElementInterface;
+
+    public function hasElementDependencies(
+        ElementInterface $element
+    ): bool;
 }

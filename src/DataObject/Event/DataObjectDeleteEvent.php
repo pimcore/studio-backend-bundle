@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -13,12 +14,14 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Event;
 
-enum Jobs: string
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\ElementDeleteParamsTrait;
+use Pimcore\Event\Model\DataObjectEvent;
+
+final class DataObjectDeleteEvent extends DataObjectEvent
 {
-    case CREATE_ZIP = 'Create Zip';
-    case CLONE_ASSET = 'Clone Asset';
-    case DELETE_ASSET = 'Delete Asset';
-    case DELETE_PARENT_ASSET = 'Delete Parent Asset';
+    public const EVENT_NAME = 'dataObject.delete';
+
+    use ElementDeleteParamsTrait;
 }

@@ -17,12 +17,22 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\Asset;
 use Pimcore\Model\UserInterface;
 
 interface CloneServiceInterface
 {
+    /**
+     * @throws AccessDeniedException
+     * @throws ElementSavingFailedException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws UserNotFoundException
+     */
     public function cloneAssetRecursively(
         int $sourceId,
         int $parentId

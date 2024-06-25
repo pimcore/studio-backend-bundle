@@ -17,15 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -35,7 +36,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class ZipCreationHandler extends AbstractHandler
 {
     public function __construct(
-        private readonly ServiceResolverInterface $serviceResolver,
+        private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver,
         private readonly ZipServiceInterface $zipService
     ) {
@@ -96,16 +97,13 @@ final class ZipCreationHandler extends AbstractHandler
             );
         }
 
-        $asset = $this->serviceResolver->getElementById($jobAsset->getType(), $jobAsset->getId());
-
-        if (!$asset) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_NOT_FOUND_MESSAGE->value,
-                [
-                    'id' => $jobAsset->getId(),
-                    'type' => ucfirst($jobAsset->getType()),
-                ],
-            ));
+        $asset = $this->getElementById(
+            $jobAsset,
+            $validatedParameters->getUser(),
+            $this->elementService
+        );
+        if (!$asset instanceof Asset) {
+            return;
         }
 
         $this->zipService->addFile($archive, $asset);

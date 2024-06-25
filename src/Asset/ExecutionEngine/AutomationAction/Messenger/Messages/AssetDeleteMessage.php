@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -13,12 +14,13 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-enum Jobs: string
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
+
+/**
+ * @internal
+ */
+final class AssetDeleteMessage extends AbstractExecutionEngineMessage
 {
-    case CREATE_ZIP = 'Create Zip';
-    case CLONE_ASSET = 'Clone Asset';
-    case DELETE_ASSET = 'Delete Asset';
-    case DELETE_PARENT_ASSET = 'Delete Parent Asset';
 }
