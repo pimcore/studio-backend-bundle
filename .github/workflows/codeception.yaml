@@ -1,16 +1,14 @@
 name: "Codeception Tests centralised"
 
 on:
-  workflow_dispatch:
-  pull_request:
-    branches:
-      - "[0-9]+.[0-9]+"
-      - "[0-9]+.x"
-      - "feature-*"
-  push:
-    branches:
-      - "[0-9]+.[0-9]+"
-      - "[0-9]+.x"
+    workflow_dispatch:
+    push:
+        branches:
+            - "[0-9]+.[0-9]+"
+            - "[0-9]+.x"
+            - "feature-*"
+    pull_request:
+        types: [opened, synchronize, reopened]
 
 env:
   PIMCORE_PROJECT_ROOT: ${{ github.workspace }}
