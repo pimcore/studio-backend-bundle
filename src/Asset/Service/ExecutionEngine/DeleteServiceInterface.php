@@ -27,5 +27,5 @@ interface DeleteServiceInterface
     public function deleteAssets(
         Asset $asset,
         UserInterface $user
-    ):?int;
+    ): ?int;
 }

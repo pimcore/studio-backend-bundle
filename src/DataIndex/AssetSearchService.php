@@ -36,8 +36,7 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     public function __construct(
         private AssetSearchAdapterInterface $assetSearchAdapter,
         private AssetQueryProviderInterface $assetQueryProvider
-    )
-    {
+    ) {
     }
 
     /**
@@ -74,8 +73,7 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     public function getChildrenIds(
         string $parentPath,
         ?string $sortDirection = null
-    ): array
-    {
+    ): array {
         $query = $this->assetQueryProvider->createAssetQuery();
         $query->filterPath($parentPath, true, false);
         if ($sortDirection) {
@@ -88,8 +86,7 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     public function countChildren(
         string $parentPath,
         ?string $sortDirection = null
-    ): int
-    {
+    ): int {
 
         return count($this->getChildrenIds($parentPath, $sortDirection));
     }

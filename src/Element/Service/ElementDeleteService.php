@@ -59,9 +59,8 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     public function deleteParentElement(
         ElementInterface $element,
         UserInterface $user
-    ): void
-    {
-        /** @var User $user because of the core method*/
+    ): void {
+        /** @var User $user because of the core method */
         if (!$element->isAllowed(ElementPermissions::DELETE_PERMISSION, $user)) {
             throw new ForbiddenException(
                 sprintf(
@@ -100,8 +99,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     public function deleteElement(
         ElementInterface $element,
         UserInterface $user
-    ): void
-    {
+    ): void {
         if (($element instanceof Asset ||
             $element instanceof Document ||
             $element instanceof DataObject) &&
@@ -154,8 +152,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
      */
     private function getDeleteEvent(
         ElementInterface $element
-    ): AssetDeleteEvent|DataObjectDeleteEvent
-    {
+    ): AssetDeleteEvent|DataObjectDeleteEvent {
         return match (true) {
             $element instanceof Asset => new AssetDeleteEvent($element),
             $element instanceof DataObject => new DataObjectDeleteEvent($element),

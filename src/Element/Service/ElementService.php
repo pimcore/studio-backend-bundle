@@ -16,10 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
-use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;

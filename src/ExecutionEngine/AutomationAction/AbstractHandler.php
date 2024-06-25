@@ -113,9 +113,9 @@ class AbstractHandler extends AbstractAutomationActionHandler
         ElementDescriptor $jobAsset,
         UserInterface $user,
         AssetServiceInterface $assetService
-    ): Asset
-    {
+    ): Asset {
         $asset = null;
+
         try {
             $asset = $assetService->getAssetElement($user, $jobAsset->getId());
         } catch (NotFoundException) {
@@ -148,8 +148,7 @@ class AbstractHandler extends AbstractAutomationActionHandler
         ElementDescriptor $jobElement,
         UserInterface $user,
         ElementServiceInterface $elementService
-    ): ElementInterface
-    {
+    ): ElementInterface {
         try {
             return $elementService->getAllowedElementById(
                 $jobElement->getType(),

@@ -30,6 +30,7 @@ interface DataObjectSearchAdapterInterface
      * @throws NotFoundException
      */
     public function getDataObjectById(int $id): DataObject;
+
     /**
      * @throws SearchException
      *

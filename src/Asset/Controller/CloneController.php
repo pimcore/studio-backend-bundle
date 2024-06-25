@@ -83,6 +83,7 @@ final class CloneController extends AbstractApiController
 
         if ($jobRunId) {
             $status = 201;
+
             return $this->jsonResponse(['id' => $jobRunId], $status);
         }
 

@@ -4,11 +4,14 @@ declare(strict_types=1);
 /**
  * Pimcore
  *
- * This source file is available under following license:
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
  * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
@@ -40,11 +43,11 @@ final readonly class DeleteService implements DeleteServiceInterface
         private int $recycleBinThreshold
     ) {
     }
+
     public function deleteAssets(
         Asset $asset,
         UserInterface $user
-    ):?int
-    {
+    ): ?int {
         if (!$asset->hasChildren()) {
             $this->elementDeleteService->addElementToRecycleBin($asset, $user);
             $this->elementDeleteService->deleteParentElement($asset, $user);
@@ -58,8 +61,7 @@ final readonly class DeleteService implements DeleteServiceInterface
     private function deleteAssetsWithExecutionEngine(
         Asset $asset,
         UserInterface $user
-    ): int
-    {
+    ): int {
         $ids = $this->assetSearchService->getChildrenIds($asset->getRealFullPath(), 'desc');
         // ToDo This might need to be reconsidered for separate job in the future
         if (count($ids) < $this->recycleBinThreshold) {
@@ -90,7 +92,7 @@ final readonly class DeleteService implements DeleteServiceInterface
                 new ElementDescriptor(
                     ElementTypes::TYPE_ASSET,
                     $asset->getId()
-                )
+                ),
             ]
         );
         $jobRun = $this->jobExecutionAgent->startJobExecution($job, $user->getId(), Config::CONTEXT->value);

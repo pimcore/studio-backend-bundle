@@ -27,8 +27,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
     public function __construct(
         private DataObjectSearchAdapterInterface $dataObjectSearchAdapter,
         private DataObjectQueryProviderInterface $dataObjectQueryProvider
-    )
-    {
+    ) {
     }
 
     public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
@@ -40,7 +39,6 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
     {
         return $this->dataObjectSearchAdapter->getDataObjectById($id);
     }
-
 
     /**
      * @throws SearchException
@@ -60,8 +58,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
     public function getChildrenIds(
         string $parentPath,
         ?string $sortDirection = null
-    ): array
-    {
+    ): array {
         $query = $this->dataObjectQueryProvider->createDataObjectQuery();
         $query->filterPath($parentPath, true, false);
         if ($sortDirection) {
@@ -74,8 +71,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
     public function countChildren(
         string $parentPath,
         ?string $sortDirection = null
-    ): int
-    {
+    ): int {
 
         return count($this->getChildrenIds($parentPath, $sortDirection));
     }

@@ -100,7 +100,7 @@ final class AssetDeleteHandler extends AbstractHandler
             return;
         }
 
-        /** @var User $user because of the core method*/
+        /** @var User $user because of the core method */
         if (!$assetElement->isAllowed(ElementPermissions::DELETE_PERMISSION, $user)) {
             $messageParameters = $this->getAbortData(
                 Config::ELEMENT_PERMISSION_MISSING_MESSAGE->value,
