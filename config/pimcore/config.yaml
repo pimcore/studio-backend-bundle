@@ -31,3 +31,15 @@ pimcore_studio_backend:
             format: "JPEG"
             quality: 90
     element_recycle_bin_threshold: 100
+
+mercure:
+    hubs:
+        studio_server:
+            url: '%pimcore_studio_backend.mercure_settings.hub_url_server%'
+            jwt:
+                provider: 'Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ServerTokenService'
+
+        studio_client:
+            url: '%pimcore_studio_backend.mercure_settings.hub_url_client%'
+            jwt:
+                provider: 'Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService'
