@@ -27,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\User;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
