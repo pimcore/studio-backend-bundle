@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Model\Element\ElementInterface;
@@ -48,4 +49,9 @@ interface ElementDeleteServiceInterface
         ElementInterface $element,
         UserInterface $user
     ): void;
+
+    public function getElementDeleteInfo(
+        ElementInterface $element,
+        UserInterface $user
+    ): DeleteInfo;
 }
