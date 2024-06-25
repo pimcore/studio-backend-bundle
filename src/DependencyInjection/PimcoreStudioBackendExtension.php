@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 use Exception;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
@@ -54,7 +56,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $loader = new YamlFileLoader($container, new FileLocator($configPath));
 
         $files = glob(__DIR__ . '/../../config/*.yaml');
-
         foreach ($files as $file) {
             $loader->load(basename($file));
         }
@@ -68,6 +69,12 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(DownloadServiceInterface::class);
         $definition->setArgument('$defaultFormats', $config['asset_default_formats']);
+
+        $definition = $container->getDefinition(DeleteServiceInterface::class);
+        $definition->setArgument('$recycleBinThreshold', $config['element_recycle_bin_threshold']);
+
+        $definition = $container->getDefinition(ElementDeleteServiceInterface::class);
+        $definition->setArgument('$recycleBinThreshold', $config['element_recycle_bin_threshold']);
     }
 
     public function prepend(ContainerBuilder $container): void
@@ -75,6 +82,17 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         if (!$container->hasParameter('pimcore_studio_backend.firewall_settings')) {
             $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
             $container->setParameter('pimcore_studio_backend.firewall_settings', $containerConfig['security_firewall']);
+        }
+
+        $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
+        foreach ($containerConfig['mercure_settings'] as $key => $setting) {
+            if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
+                continue;
+            }
+            $container->setParameter(
+                'pimcore_studio_backend.mercure_settings.' . $key,
+                $containerConfig['mercure_settings'][$key]
+            );
         }
     }
 

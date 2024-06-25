@@ -46,6 +46,8 @@ class Configuration implements ConfigurationInterface
         $this->addAllowedHostsForCorsNode($rootNode);
         $this->addSecurityFirewall($rootNode);
         $this->addDefaultAssetFormats($rootNode);
+        $this->addRecycleBinThreshold($rootNode);
+        $this->addMercureConfiguration($rootNode);
 
         return $treeBuilder;
     }
@@ -128,6 +130,35 @@ class Configuration implements ConfigurationInterface
                             ->end()
                             ->integerNode('quality')->isRequired()->end()
                         ->end()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addRecycleBinThreshold(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+                ->integerNode('element_recycle_bin_threshold')
+                    ->defaultValue(100)
+                ->end()
+            ->end();
+    }
+
+    private function addMercureConfiguration(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('mercure_settings')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->scalarNode('hub_url_server')
+                        ->defaultValue('http://localhost:3000/.well-known/mercure')
+                    ->end()
+                    ->scalarNode('hub_url_client')
+                        ->defaultValue('http://localhost:3000/.well-known/mercure')
+                    ->end()
+                    ->scalarNode('jwt_key')
+                        ->info('The key used to sign the JWT token')
+                        ->defaultNull()
                     ->end()
                 ->end()
             ->end();

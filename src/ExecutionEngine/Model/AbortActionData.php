@@ -39,10 +39,10 @@ final readonly class AbortActionData
     public function getTranslationParameters(): array
     {
         return array_combine(
-            array_keys($this->translationParameters),
             array_map(static function ($value) {
                 return '%' . $value . '%';
-            }, array_values($this->translationParameters))
+            }, array_keys($this->translationParameters)),
+            array_values($this->translationParameters)
         );
     }
 

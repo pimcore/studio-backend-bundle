@@ -19,4 +19,6 @@ enum Jobs: string
 {
     case CREATE_ZIP = 'Create Zip';
     case CLONE_ASSET = 'Clone Asset';
+    case DELETE_ASSET = 'Delete Asset';
+    case DELETE_PARENT_ASSET = 'Delete Parent Asset';
 }

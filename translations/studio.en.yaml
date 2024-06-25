@@ -6,3 +6,6 @@ ee_no_element_provided: No element provided
 ee_element_not_found: Element with type %type% with ID %id% not found
 ee_user_not_found: User with ID %userId% not found
 ee_environment_variable_not_found: Environment variable %variable% not found
+ee_element_locked: Element with type %type% with ID %id% is locked
+ee_element_permission_missing: User with ID %userId% has missing permission %permission% on element with type %type% and ID %id%
+ee_element_delete_failed: 'Element with type %type% with ID %id% could not be deleted: %message%'

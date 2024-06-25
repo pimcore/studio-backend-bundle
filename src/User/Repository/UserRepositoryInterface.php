@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Listing as UserListing;
 use Pimcore\Model\UserInterface;
@@ -42,4 +43,9 @@ interface UserRepositoryInterface
      * @throws Exception
      */
     public function createUser(string $username, int $folderId): UserInterface;
+
+    /**
+     * @throws DatabaseException
+     */
+    public function updateUser(UserInterface $user): void;
 }

@@ -46,6 +46,10 @@ use OpenApi\Attributes\Tag;
     description: 'Get element properties for a single element based on its type and provided parameters.'
 )]
 #[Tag(
+    name: Tags::Mercure->name,
+    description: 'Retrieve JWT token for Mercure hub as cookie'
+)]
+#[Tag(
     name: Tags::Notes->name,
     description: 'Note operations to list/delete notes'
 )]
@@ -97,6 +101,7 @@ enum Tags: string
     case DataObjects = 'DataObjects';
     case Dependencies = 'Dependencies';
     case Elements = 'Elements';
+    case Mercure = 'Mercure';
     case Notes = 'Notes';
     case Properties = 'Properties';
     case Schedule = 'Schedule';

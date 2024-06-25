@@ -19,8 +19,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedResponse;
@@ -51,7 +54,11 @@ final class CloneController extends AbstractApiController
     }
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws AccessDeniedException
+     * @throws ElementSavingFailedException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws UserNotFoundException
      */
     #[Route('/assets/{id}/clone/{parentId}', name: 'pimcore_studio_api_assets_clone', methods: ['POST'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
@@ -77,15 +84,14 @@ final class CloneController extends AbstractApiController
         int $id,
         int $parentId
     ): Response {
-        $status = 200;
+        $status = HttpResponseCodes::SUCCESS->value;
         $data = null;
         $jobRunId = $this->cloneService->cloneAssetRecursively($id, $parentId);
 
         if ($jobRunId) {
-            $status = 201;
-            $data = $this->serializer->serialize(['id' => $jobRunId], 'json');
+            $status = HttpResponseCodes::CREATED->value;
 
-            return $this->jsonResponse($data, $status);
+            return $this->jsonResponse(['id' => $jobRunId], $status);
         }
 
         return new Response($data, $status);
