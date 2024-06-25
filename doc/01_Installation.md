@@ -88,7 +88,7 @@ pimcore_studio_backend:
 
 This documentation is currently work in progress and will be updated soon.
 
-Here is a working development configuration:
+Here is a working **development** configuration:
 
 Docker compose:
 ```yaml
