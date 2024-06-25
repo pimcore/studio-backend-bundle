@@ -152,8 +152,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     public function getElementDeleteInfo(
         ElementInterface $element,
         UserInterface $user
-    ): DeleteInfo
-    {
+    ): DeleteInfo {
         $hasDependencies = $this->elementService->hasElementDependencies($element);
         $canUseRecycleBin = $this->useRecycleBinForElement($element, $user);
 
