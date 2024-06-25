@@ -83,3 +83,40 @@ pimcore_studio_backend:
         hub_url_client: 'http://localhost:8080/.well-known/mercure'
         hub_url_server: 'http://mercure/.well-known/mercure'
 ```
+
+## Currently WIP
+
+This documentation is currently work in progress and will be updated soon.
+
+Here is a working development configuration:
+
+Docker compose:
+```yaml
+    mercure:
+        image: dunglas/mercure:latest
+        container_name: mercure
+        restart: unless-stopped
+        environment:
+            # Uncomment the following line to disable HTTPS
+            SERVER_NAME: ':80'
+            MERCURE_PUBLISHER_JWT_KEY: 'THIS_IS_MY_SECRET_KEY_NEEDS_TO_BE_LONGER'
+            MERCURE_SUBSCRIBER_JWT_KEY: 'THIS_IS_MY_SECRET_KEY_NEEDS_TO_BE_LONGER'
+        # Uncomment the following line to enable the development mode
+        command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
+        ports:
+            - "8080:80"
+        #    - "8443:443"
+        volumes:
+            - pimcore-demo-mercure-data:/data
+            - pimcore-demo-mercure-config:/config
+```
+
+config.yaml:
+```yaml
+pimcore_studio_backend:
+    mercure_settings:
+        jwt_key: 'THIS_IS_MY_SECRET_KEY_NEEDS_TO_BE_LONGER'
+        hub_url_client: 'http://localhost:8080/.well-known/mercure'
+        hub_url_server: 'http://mercure/.well-known/mercure'
+```
+Demo UI available under: http://localhost:8080/.well-known/mercure/ui/

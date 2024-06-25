@@ -1,5 +1,10 @@
 # Mercure Setup
 
+
+
+
+
+
 ## Start and Configure Mercure
 
 It is recommended to use an up-to-date instance of Mercure, e.g. via their docker container. For details see
@@ -54,7 +59,7 @@ Add mercure to your docker compose file and make sure to add the configuration f
       # certificates for running ngnix (for direct edit to work, system has to run with https)
       - ~/.certs:/etc/nginx/certs
 
-  mercure.local:
+  mercure:
     image: dunglas/mercure
     restart: unless-stopped
     environment:
