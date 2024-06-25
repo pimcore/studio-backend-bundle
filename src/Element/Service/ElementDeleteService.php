@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Event\AssetDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\DataObjectDeleteEvent;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -47,6 +48,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
+        private ElementServiceInterface $elementService,
         private EventDispatcherInterface $eventDispatcher,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
         private int $recycleBinThreshold
@@ -148,6 +150,16 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         $bin->setElement($element);
         /** @var User $user because of the core method */
         $bin->save($user);
+    }
+
+    public function getElementDeleteInfo(
+        ElementInterface $element,
+        UserInterface $user
+    ): DeleteInfo {
+        $hasDependencies = $this->elementService->hasElementDependencies($element);
+        $canUseRecycleBin = $this->useRecycleBinForElement($element, $user);
+
+        return new DeleteInfo($hasDependencies, $canUseRecycleBin);
     }
 
     /**
