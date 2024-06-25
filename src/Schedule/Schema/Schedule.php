@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'Schedule',
-    required: ['id', 'ctype', 'date', 'active', 'userId'],
+    required: ['id', 'ctype', 'date', 'active', 'userId', 'username'],
     type: 'object'
 )]
 final class Schedule implements AdditionalAttributesInterface
@@ -44,9 +44,10 @@ final class Schedule implements AdditionalAttributesInterface
         #[Property(description: 'Active', type: 'boolean', example: true)]
         private readonly bool $active,
         #[Property(description: 'User ID', type: 'integer', example: 999)]
-        private readonly int $userId
+        private readonly int $userId,
+        #[Property(description: 'Username', type: 'string', example: 'shaquille.oatmeal')]
+        private readonly string $username
     ) {
-
     }
 
     public function getId(): int
@@ -82,5 +83,10 @@ final class Schedule implements AdditionalAttributesInterface
     public function getUserId(): int
     {
         return $this->userId;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
     }
 }

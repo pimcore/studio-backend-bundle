@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing as UserListing;
@@ -77,5 +78,20 @@ final readonly class UserRepository implements UserRepositoryInterface
             'password' => '',
             'active' => true,
         ]);
+    }
+
+    public function updateUser(UserInterface $user): void
+    {
+        try {
+            $user->save();
+        } catch (Exception $exception) {
+            throw new DatabaseException(
+                sprintf(
+                    'Error updating user with id %d: %s',
+                    $user->getId(),
+                    $exception->getMessage()
+                )
+            );
+        }
     }
 }

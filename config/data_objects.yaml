@@ -10,3 +10,11 @@ services:
     resource: '../src/DataObject/Controller'
     public: true
     tags: [ 'controller.service_arguments' ]
+
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Repository\ClassDefinitionRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Repository\ClassDefinitionRepository
