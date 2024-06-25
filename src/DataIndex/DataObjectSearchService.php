@@ -65,7 +65,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
             $query->orderByPath($sortDirection);
         }
 
-        return $this->fetchAssetIds($query);
+        return $this->dataObjectSearchAdapter->fetchAssetIds($query);
     }
 
     public function countChildren(
