@@ -21,10 +21,20 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Handler\AbstractAutomationActionHandler;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\GenericExecutionEngineMessageInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConsoleDependencyMissingException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\ExecuteActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
+use Pimcore\Model\Asset;
+use Pimcore\Model\Element\ElementDescriptor;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -94,5 +104,77 @@ class AbstractHandler extends AbstractAutomationActionHandler
             Config::CONTEXT->value,
             $abortActionData->getExceptionClassName()
         );
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function getAssetById(
+        ElementDescriptor $jobAsset,
+        UserInterface $user,
+        AssetServiceInterface $assetService
+    ): Asset {
+        $asset = null;
+
+        try {
+            $asset = $assetService->getAssetElement($user, $jobAsset->getId());
+        } catch (NotFoundException) {
+            $this->abort($this->getAbortData(
+                Config::ELEMENT_NOT_FOUND_MESSAGE->value,
+                [
+                    'id' => $jobAsset->getId(),
+                    'type' => ucfirst($jobAsset->getType()),
+                ],
+            ));
+        }
+
+        if (!$asset instanceof Asset) {
+            $this->abort($this->getAbortData(
+                Config::ELEMENT_NOT_FOUND_MESSAGE->value,
+                [
+                    'id' => $jobAsset->getId(),
+                    'type' => ucfirst($jobAsset->getType()),
+                ],
+            ));
+        }
+
+        return $asset;
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function getElementById(
+        ElementDescriptor $jobElement,
+        UserInterface $user,
+        ElementServiceInterface $elementService
+    ): ElementInterface {
+        try {
+            return $elementService->getAllowedElementById(
+                $jobElement->getType(),
+                $jobElement->getId(),
+                $user
+            );
+        } catch (AccessDeniedException) {
+            $this->abort($this->getAbortData(
+                Config::ELEMENT_PERMISSION_MISSING_MESSAGE->value,
+                [
+                    'userId' => $user->getId(),
+                    'permission' => ElementPermissions::VIEW_PERMISSION,
+                    'type' => ucfirst($jobElement->getType()),
+                    'id' => $jobElement->getId(),
+                ],
+            ));
+        } catch (NotFoundException) {
+            $this->abort($this->getAbortData(
+                Config::ELEMENT_NOT_FOUND_MESSAGE->value,
+                [
+                    'id' => $jobElement->getId(),
+                    'type' => ucfirst($jobElement->getType()),
+                ],
+            ));
+        }
+
+        throw new EnvironmentException('How did I get here?');
     }
 }

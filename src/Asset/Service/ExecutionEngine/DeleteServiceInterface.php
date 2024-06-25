@@ -14,20 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
+
+use Pimcore\Model\Asset;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-final readonly class PathParameter
+interface DeleteServiceInterface
 {
-    public function __construct(
-        private string $elementPath
-    ) {
-    }
-
-    public function getPath(): string
-    {
-        return $this->elementPath;
-    }
+    public function deleteAssets(
+        Asset $asset,
+        UserInterface $user
+    ): ?int;
 }

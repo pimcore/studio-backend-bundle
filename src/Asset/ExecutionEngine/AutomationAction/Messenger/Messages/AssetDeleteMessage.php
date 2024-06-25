@@ -14,20 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
+
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-final readonly class PathParameter
+final class AssetDeleteMessage extends AbstractExecutionEngineMessage
 {
-    public function __construct(
-        private string $elementPath
-    ) {
-    }
-
-    public function getPath(): string
-    {
-        return $this->elementPath;
-    }
 }

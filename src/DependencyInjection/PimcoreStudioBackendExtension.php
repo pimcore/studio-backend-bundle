@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 use Exception;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
@@ -67,6 +69,12 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(DownloadServiceInterface::class);
         $definition->setArgument('$defaultFormats', $config['asset_default_formats']);
+
+        $definition = $container->getDefinition(DeleteServiceInterface::class);
+        $definition->setArgument('$recycleBinThreshold', $config['element_recycle_bin_threshold']);
+
+        $definition = $container->getDefinition(ElementDeleteServiceInterface::class);
+        $definition->setArgument('$recycleBinThreshold', $config['element_recycle_bin_threshold']);
     }
 
     public function prepend(ContainerBuilder $container): void

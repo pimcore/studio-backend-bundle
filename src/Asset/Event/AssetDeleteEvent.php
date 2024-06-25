@@ -14,20 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event;
 
-/**
- * @internal
- */
-final readonly class PathParameter
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\ElementDeleteParamsTrait;
+use Pimcore\Event\Model\AssetEvent;
+
+final class AssetDeleteEvent extends AssetEvent
 {
-    public function __construct(
-        private string $elementPath
-    ) {
-    }
+    public const EVENT_NAME = 'asset.delete';
 
-    public function getPath(): string
-    {
-        return $this->elementPath;
-    }
+    use ElementDeleteParamsTrait;
 }
