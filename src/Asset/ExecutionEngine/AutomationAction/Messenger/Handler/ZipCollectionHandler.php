@@ -63,7 +63,7 @@ final class ZipCollectionHandler extends AbstractHandler
         $user = $validatedParameters->getUser();
         $jobAsset = $validatedParameters->getSubject();
         $this->getElementById(
-            $jobAsset->getId(),
+            $jobAsset,
             $user,
             $this->elementService
         );

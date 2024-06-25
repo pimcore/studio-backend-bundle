@@ -79,9 +79,6 @@ final class AssetDeleteHandler extends AbstractHandler
             $user,
             $this->elementService
         );
-        if (!$assetElement instanceof Asset) {
-            return;
-        }
 
         if ($assetElement->getId() === $parentAsset->getId()) {
             try {
