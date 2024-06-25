@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -53,6 +54,13 @@ final readonly class CloneService implements CloneServiceInterface
     ) {
     }
 
+    /**
+     * @throws AccessDeniedException
+     * @throws ElementSavingFailedException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     * @throws UserNotFoundException
+     */
     public function cloneAssetRecursively(
         int $sourceId,
         int $parentId

@@ -17,14 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
 interface ElementDeleteServiceInterface
 {
     /**
-     * @throws ElementDeletionFailedException|ForbiddenException
+     * @throws ElementDeletionFailedException|EnvironmentException|ForbiddenException|InvalidElementTypeException
      */
     public function deleteParentElement(
         ElementInterface $element,
@@ -32,13 +34,16 @@ interface ElementDeleteServiceInterface
     ): void;
 
     /**
-     * @throws ElementDeletionFailedException|ForbiddenException
+     * @throws ElementDeletionFailedException|EnvironmentException
      */
     public function deleteElement(
         ElementInterface $element,
         UserInterface $user
     ): void;
 
+    /**
+     * @throws InvalidElementTypeException
+     */
     public function useRecycleBinForElement(
         ElementInterface $element,
         UserInterface $user

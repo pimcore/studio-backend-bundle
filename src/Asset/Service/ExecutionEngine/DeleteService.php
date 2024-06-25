@@ -22,6 +22,10 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetDeleteMessage;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -44,6 +48,9 @@ final readonly class DeleteService implements DeleteServiceInterface
     ) {
     }
 
+    /**
+     * @throws ElementDeletionFailedException|EnvironmentException|ForbiddenException|InvalidElementTypeException
+     */
     public function deleteAssets(
         Asset $asset,
         UserInterface $user
