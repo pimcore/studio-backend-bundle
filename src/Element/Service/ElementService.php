@@ -16,12 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Model\Asset;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Exception\NotFoundException;
 use Pimcore\Model\UserInterface;
@@ -59,10 +65,10 @@ final readonly class ElementService implements ElementServiceInterface
         int $elementId,
         UserInterface $user,
     ): ElementInterface {
-        $asset = $this->getElement($this->serviceResolver, $elementType, $elementId);
-        $this->securityService->hasElementPermission($asset, $user, $elementType);
+        $element = $this->getElement($this->serviceResolver, $elementType, $elementId);
+        $this->securityService->hasElementPermission($element, $user, ElementPermissions::VIEW_PERMISSION);
 
-        return $asset;
+        return $element;
     }
 
     /**
@@ -77,5 +83,18 @@ final readonly class ElementService implements ElementServiceInterface
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::VIEW_PERMISSION);
 
         return $element;
+    }
+
+    public function hasElementDependencies(
+        ElementInterface $element
+    ): bool {
+        if (($element instanceof Asset ||
+            $element instanceof Document ||
+            $element instanceof DataObject) &&
+            $element->hasChildren()) {
+            return true;
+        }
+
+        return $element->getDependencies()->isRequired();
     }
 }

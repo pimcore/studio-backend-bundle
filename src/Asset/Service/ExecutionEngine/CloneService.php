@@ -24,7 +24,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCopyMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -46,7 +45,6 @@ use Pimcore\Model\UserInterface;
 final readonly class CloneService implements CloneServiceInterface
 {
     public function __construct(
-        private AssetQueryProviderInterface $assetQueryProvider,
         private AssetServiceInterface $assetService,
         private AssetSearchServiceInterface $assetSearchService,
         private JobExecutionAgentInterface $jobExecutionAgent,
@@ -95,7 +93,11 @@ final readonly class CloneService implements CloneServiceInterface
     ): Asset {
         if (!$parent->isAllowed(ElementPermissions::CREATE_PERMISSION)) {
             throw new ForbiddenException(
-                sprintf('Missing permissions on target element %s', $parent->getId()));
+                sprintf(
+                    'Missing permissions on target element %s',
+                    $parent->getId()
+                )
+            );
         }
 
         try {
@@ -138,11 +140,7 @@ final readonly class CloneService implements CloneServiceInterface
         Asset $originalParent,
         Asset $newParent,
     ): int {
-        $query = $this->assetQueryProvider->createAssetQuery();
-        $query->filterPath($originalParent->getRealFullPath(), true, false);
-        $query->orderByPath('asc');
-        $ids = $this->assetSearchService->fetchAssetIds($query);
-
+        $ids = $this->assetSearchService->getChildrenIds($originalParent->getRealFullPath(), 'asc');
         $job = new Job(
             name: Jobs::CLONE_ASSET->value,
             steps: [
@@ -160,7 +158,6 @@ final readonly class CloneService implements CloneServiceInterface
                 CloneEnvironmentVariables::PARENT_ID->value => $newParent->getId(),
             ]
         );
-
         $jobRun = $this->jobExecutionAgent->startJobExecution($job, $user->getId(), Config::CONTEXT->value);
 
         return $jobRun->getId();

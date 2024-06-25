@@ -30,3 +30,4 @@ pimcore_studio_backend:
             dpi: 144
             format: "JPEG"
             quality: 90
+    element_recycle_bin_threshold: 100

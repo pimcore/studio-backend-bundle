@@ -19,9 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -34,7 +33,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class ZipCollectionHandler extends AbstractHandler
 {
     public function __construct(
-        private readonly AssetServiceInterface $assetService,
+        private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver
     ) {
         parent::__construct();
@@ -63,18 +62,11 @@ final class ZipCollectionHandler extends AbstractHandler
 
         $user = $validatedParameters->getUser();
         $jobAsset = $validatedParameters->getSubject();
-
-        try {
-            $this->assetService->getAssetElement($user, $jobAsset->getId());
-        } catch (NotFoundException) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_NOT_FOUND_MESSAGE->value,
-                [
-                    'id' => $jobAsset->getId(),
-                    'type' => ucfirst($jobAsset->getType()),
-                ],
-            ));
-        }
+        $this->getElementById(
+            $jobAsset->getId(),
+            $user,
+            $this->elementService
+        );
 
         $context = $jobRun->getContext();
 

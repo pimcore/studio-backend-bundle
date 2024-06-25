@@ -16,8 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
-use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
+use OpenApi\Attributes\Delete;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -27,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -39,13 +41,15 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CloneController extends AbstractApiController
+final class DeleteController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CloneServiceInterface $cloneService,
+        private readonly AssetServiceInterface $assetService,
+        private readonly DeleteServiceInterface $deleteService,
+        private readonly SecurityServiceInterface $securityService
     ) {
         parent::__construct($serializer);
     }
@@ -53,36 +57,40 @@ final class CloneController extends AbstractApiController
     /**
      * @throws DatabaseException|NotFoundException
      */
-    #[Route('/assets/{id}/clone/{parentId}', name: 'pimcore_studio_api_assets_clone', methods: ['POST'])]
+    #[Route('/assets/{id}/delete', name: 'pimcore_studio_api_assets_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
-    #[Post(
-        path: self::API_PATH . '/assets/{id}/clone/{parentId}',
-        operationId: 'cloneElement',
-        summary: 'Clone a specific asset.',
+    #[Delete(
+        path: self::API_PATH . '/assets/{id}/delete',
+        operationId: 'deleteAsset',
+        summary: 'Delete a specific asset and its children.',
         tags: [Tags::Assets->value]
     )]
     #[SuccessResponse(
-        description: 'Successfully copied asset',
+        description: 'Successfully deleted asset',
     )]
     #[CreatedResponse(
-        description: 'Successfully copied parent asset and created jobRun for copying child assets',
+        description: 'Successfully created jobRun for deleting assets',
         content: new IdJson('ID of created jobRun')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
-    #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function cloneElement(
-        int $id,
-        int $parentId
+    public function deleteAsset(
+        int $id
     ): Response {
+        $user = $this->securityService->getCurrentUser();
+        $asset = $this->assetService->getAssetElement(
+            $user,
+            $id
+        );
         $status = 200;
         $data = null;
-        $jobRunId = $this->cloneService->cloneAssetRecursively($id, $parentId);
+        $jobRunId = $this->deleteService->deleteAssets($asset, $user);
 
         if ($jobRunId) {
             $status = 201;
+
             return $this->jsonResponse(['id' => $jobRunId], $status);
         }
 

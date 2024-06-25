@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -13,12 +14,18 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
-enum Jobs: string
+use Pimcore\Model\Asset;
+use Pimcore\Model\UserInterface;
+
+/**
+ * @internal
+ */
+interface DeleteServiceInterface
 {
-    case CREATE_ZIP = 'Create Zip';
-    case CLONE_ASSET = 'Clone Asset';
-    case DELETE_ASSET = 'Delete Asset';
-    case DELETE_PARENT_ASSET = 'Delete Parent Asset';
+    public function deleteAssets(
+        Asset $asset,
+        UserInterface $user
+    ):?int;
 }
