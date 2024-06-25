@@ -20,8 +20,13 @@ use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedResponse;
@@ -55,7 +60,13 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws AccessDeniedException
+     * @throws ElementDeletionFailedException
+     * @throws EnvironmentException
+     * @throws ForbiddenException
+     * @throws InvalidElementTypeException
+     * @throws NotFoundException
+     * @throws UserNotFoundException
      */
     #[Route('/assets/{id}/delete', name: 'pimcore_studio_api_assets_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
@@ -84,12 +95,12 @@ final class DeleteController extends AbstractApiController
             $user,
             $id
         );
-        $status = 200;
+        $status = HttpResponseCodes::SUCCESS->value;
         $data = null;
         $jobRunId = $this->deleteService->deleteAssets($asset, $user);
 
         if ($jobRunId) {
-            $status = 201;
+            $status = HttpResponseCodes::CREATED->value;
 
             return $this->jsonResponse(['id' => $jobRunId], $status);
         }

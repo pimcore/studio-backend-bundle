@@ -56,7 +56,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     }
 
     /**
-     * @throws ElementDeletionFailedException|ForbiddenException
+     * @throws ElementDeletionFailedException|EnvironmentException|ForbiddenException|InvalidElementTypeException
      */
     public function deleteParentElement(
         ElementInterface $element,
@@ -96,7 +96,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     }
 
     /**
-     * @throws ElementDeletionFailedException
+     * @throws ElementDeletionFailedException|EnvironmentException
      */
     public function deleteElement(
         ElementInterface $element,
@@ -124,6 +124,9 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         }
     }
 
+    /**
+     * @throws InvalidElementTypeException
+     */
     public function useRecycleBinForElement(
         ElementInterface $element,
         UserInterface $user
