@@ -22,6 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 
 trait HandlerProgressTrait
 {
+    private const FREQUENCY = 10;
+
+    private const SEND_THRESHOLD = 99;
+
     private function updateProgress(JobRun $jobRun, PublishServiceInterface $publishService): void
     {
         $totalEvents = $jobRun->getJob()?->getEnvironmentData()['totalEvents'];
@@ -31,9 +35,11 @@ trait HandlerProgressTrait
 
         $this->updateJobRunContext($jobRun, 'processedElements', $processedElements);
 
+        $updateFrequency = max(1, (int)($totalEvents / self::FREQUENCY));
+
         $progress = (int)($processedElements / $totalEvents * 100);
 
-        if (($progress < 99) && $processedElements % 10 !== 0) {
+        if (($progress < self::SEND_THRESHOLD) && $processedElements % $updateFrequency !== 0) {
             return;
         }
 
