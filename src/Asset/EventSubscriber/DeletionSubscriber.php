@@ -20,6 +20,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -49,7 +50,10 @@ final readonly class DeletionSubscriber implements EventSubscriberInterface
         ) {
             $this->publishService->publish(
                 Events::DELETION_FINISHED->value,
-                []
+                new Finished(
+                    $event->getJobRunId(),
+                    $event->getNewState()
+                )
             );
         }
     }
