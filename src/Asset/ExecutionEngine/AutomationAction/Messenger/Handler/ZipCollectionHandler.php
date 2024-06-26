@@ -84,7 +84,6 @@ final class ZipCollectionHandler extends AbstractHandler
         $assets[] = $jobAsset->getId();
 
         $this->updateJobRunContext($jobRun, ZipServiceInterface::ASSETS_INDEX, $assets);
-        // TODO Send SSE for percentage update
 
         $this->updateProgress($jobRun, $this->publishService);
     }
