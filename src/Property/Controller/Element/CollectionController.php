@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller\Element;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
@@ -70,8 +71,10 @@ final class CollectionController extends AbstractApiController
     ])]
     public function getProperties(string $elementType, int $id): JsonResponse
     {
+        $parameters = new ElementParameters($elementType, $id);
+
         return $this->jsonResponse(
-            ['items' => $this->propertyService->getElementProperties($elementType, $id)]
+            ['items' => $this->propertyService->getElementProperties($parameters->getType(), $parameters->getId())]
         );
     }
 }

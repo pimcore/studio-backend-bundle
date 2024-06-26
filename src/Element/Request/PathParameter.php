@@ -22,12 +22,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Request;
 final readonly class PathParameter
 {
     public function __construct(
-        private string $path
+        private string $elementPath
     ) {
     }
 
     public function getPath(): string
     {
-        return $this->path;
+        return $this->elementPath;
     }
 }
