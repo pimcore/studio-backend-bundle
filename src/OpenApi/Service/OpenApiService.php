@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Service;
 
 use OpenApi\Annotations\OpenApi;
+use OpenApi\Attributes\Schema;
 use OpenApi\Generator;
 
 final readonly class OpenApiService implements OpenApiServiceInterface
@@ -30,7 +31,9 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         $config = Generator::scan([...$this->openApiScanPaths]);
 
         if ($config) {
-            asort($config->components->schemas);
+            usort($config->components->schemas, static function (Schema $a, Schema $b) {
+                return $a->title <=> $b->title;
+            });
         }
 
         return $config;
