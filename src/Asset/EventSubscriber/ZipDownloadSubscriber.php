@@ -34,8 +34,7 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private PublishServiceInterface $publishService,
-        private ZipServiceInterface $zipService,
-        private LoggerInterface $pimcoreLogger
+        private ZipServiceInterface $zipService
     ) {
 
     }
@@ -57,7 +56,6 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
             $event->getNewState() === JobRunStates::FINISHED->value &&
             $event->getJobName() === Jobs::CREATE_ZIP->value
         ) {
-            // TODO SEND SSE HERE TO CLIENT
             $this->publishService->publish(
                 Events::ZIP_DOWNLOAD_READY->value,
                 new ZipDownloadReady(
