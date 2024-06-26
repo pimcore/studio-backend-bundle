@@ -40,6 +40,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class AssetDeleteHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
+
     public function __construct(
         private readonly ElementDeleteServiceInterface $elementDeleteService,
         private readonly ElementServiceInterface $elementService,
