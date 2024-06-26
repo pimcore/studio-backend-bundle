@@ -25,8 +25,10 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\User;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -37,9 +39,12 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 final class AssetDeleteHandler extends AbstractHandler
 {
+    use HandlerProgressTrait;
+
     public function __construct(
         private readonly ElementDeleteServiceInterface $elementDeleteService,
         private readonly ElementServiceInterface $elementService,
+        private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver
     ) {
         parent::__construct();
@@ -82,6 +87,8 @@ final class AssetDeleteHandler extends AbstractHandler
         if ($assetElement->getId() === $parentAsset->getId()) {
             try {
                 $this->elementDeleteService->deleteParentElement($assetElement, $user);
+
+                $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
             } catch (Exception $exception) {
                 $this->abort($this->getAbortData(
                     Config::ELEMENT_DELETE_FAILED_MESSAGE->value,
@@ -135,7 +142,6 @@ final class AssetDeleteHandler extends AbstractHandler
             return;
         }
 
-        // TODO Send SSE for percentage update
         try {
             $this->elementDeleteService->deleteElement($assetElement, $user);
         } catch (Exception $exception) {
@@ -148,6 +154,8 @@ final class AssetDeleteHandler extends AbstractHandler
                 ],
             ));
         }
+
+        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 
     protected function configureStep(): void
