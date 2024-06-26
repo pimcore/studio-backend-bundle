@@ -97,5 +97,5 @@ services:
   # Mercure SSE
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Provider\ZipTopicProvider:
+  Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Provider\AssetTopicProvider:
     tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]

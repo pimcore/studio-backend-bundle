@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag('pimcore.studio_backend.mercure.topic.provider')]
-final class ZipTopicProvider extends AbstractServerToClientProvider
+final class AssetTopicProvider extends AbstractServerToClientProvider
 {
     public function getClientSubscribableTopic(): array
     {
