@@ -39,7 +39,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class UserTreeController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
@@ -50,11 +50,11 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/users', name: 'pimcore_studio_api_users', methods: ['GET'])]
+    #[Route('/users/tree', name: 'pimcore_studio_api_user_tree', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
-        path: self::API_PATH . '/users',
-        operationId: 'getUsers',
+        path: self::API_PATH . '/users/tree',
+        operationId: 'getUserTree',
         summary: 'Get collection of users for tree view',
         tags: [Tags::User->value]
     )]
@@ -71,7 +71,7 @@ final class CollectionController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getUsers(#[MapQueryString] UserListParameter $userList): Response
+    public function getUserTree(#[MapQueryString] UserListParameter $userList): Response
     {
         $users = $this->userService->getUserTreeListing($userList);
 
