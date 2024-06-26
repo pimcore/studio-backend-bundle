@@ -69,7 +69,7 @@ final class DeleteController extends AbstractApiController
      * @throws UserNotFoundException
      */
     #[Route('/assets/{id}/delete', name: 'pimcore_studio_api_assets_delete', methods: ['DELETE'])]
-    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
+    #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
         path: self::API_PATH . '/assets/{id}/delete',
         operationId: 'deleteAsset',
