@@ -76,7 +76,7 @@ final readonly class AssetService implements AssetServiceInterface
             ElementTypes::TYPE_ASSET
         );
 
-        $assetQuery->orderByPath('ASC');
+        $assetQuery->orderByPath('asc');
 
         $result = $this->assetSearchService->searchAssets($assetQuery);
 
