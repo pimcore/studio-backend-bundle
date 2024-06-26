@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementPublishingFailedExce
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -88,12 +89,12 @@ final class FolderController extends AbstractApiController
         string $elementType,
         #[MapRequestPayload] FolderData $folderData
     ): Response {
-        $user = $this->securityService->getCurrentUser();
+        $parameters = new ElementParameters($elementType, $parentId);
         $this->elementFolderService->createFolderByType(
-            $parentId,
-            $elementType,
+            $parameters->getId(),
+            $parameters->getType(),
             $folderData->getFolderName(),
-            $user
+            $this->securityService->getCurrentUser()
         );
 
         return new Response();

@@ -101,7 +101,7 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
     ): void {
         match (true) {
             $elementType === ElementTypes::TYPE_ASSET => $this->createAssetFolder($parentId, $key, $data),
-            $elementType === ElementTypes::TYPE_DATA_OBJECT => $this->createDataObjectFolder($parentId, $key, $data),
+            $elementType === ElementTypes::TYPE_OBJECT => $this->createDataObjectFolder($parentId, $key, $data),
             $elementType === ElementTypes::TYPE_DOCUMENT => $this->createDocumentFolder($parentId, $key, $data),
             default => throw new InvalidElementTypeException($elementType),
         };
