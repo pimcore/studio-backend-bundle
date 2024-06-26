@@ -44,7 +44,7 @@ final readonly class Progress
         private int $jobRunId,
         #[Property(description: 'jobName', type: 'string', example: 'Job Name')]
         private string $jobName,
-        #[Property(description: 'jobStepName', type: 'string', example: 1)]
+        #[Property(description: 'jobStepName', type: 'string', example: 'Job Step Name')]
         private string $jobStepName,
     ) {
     }
