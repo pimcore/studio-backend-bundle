@@ -65,6 +65,4 @@ final readonly class Progress
     {
         return $this->jobName;
     }
-
-
 }

@@ -90,7 +90,7 @@ final readonly class ZipService implements ZipServiceInterface
             steps: $steps,
             selectedElements: $ids->getItems(),
             environmentData: [
-                'totalEvents' => count($ids->getItems()) * count($steps)
+                'totalEvents' => count($ids->getItems()) * count($steps),
             ]
         );
 
