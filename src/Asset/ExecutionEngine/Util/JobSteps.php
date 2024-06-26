@@ -20,4 +20,5 @@ enum JobSteps: string
     case ZIP_COLLECTION = 'Zip Collection';
     case ZIP_CREATION = 'Zip Creation';
     case ASSET_DELETION = 'Asset Deletion';
+    case ASSET_CLONING = 'Asset Cloning';
 }

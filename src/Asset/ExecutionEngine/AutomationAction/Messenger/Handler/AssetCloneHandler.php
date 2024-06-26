@@ -18,13 +18,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCopyMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -32,10 +34,13 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class AssetCopyHandler extends AbstractHandler
+final class AssetCloneHandler extends AbstractHandler
 {
+    use HandlerProgressTrait;
+
     public function __construct(
         private readonly ElementServiceInterface $elementService,
+        private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
         private readonly CloneServiceInterface $cloneService
     ) {
@@ -45,7 +50,7 @@ final class AssetCopyHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(AssetCopyMessage $message): void
+    public function __invoke(AssetCloneMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         $validatedParameters = $this->validateJobParameters(
@@ -85,11 +90,12 @@ final class AssetCopyHandler extends AbstractHandler
             $environmentVariables[CloneEnvironmentVariables::PARENT_ID->value],
         );
 
-        // TODO Send SSE for percentage update
         $this->cloneService->cloneElement(
             $source,
             $parent,
             $user
         );
+
+        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 }
