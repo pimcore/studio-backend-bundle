@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Pimcore
@@ -14,19 +13,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Util;
 
-interface PublishServiceInterface
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
+
+enum Events: string
 {
-    /**
-     * @param string|array<string> $topics
-     */
-    public function publish(
-        string|array $topics,
-        mixed $data,
-        bool $private = true,
-        ?string $id = null,
-        ?string $type = null,
-        ?int $retry = null
-    ): void;
+    use EnumToValueArrayTrait;
+
+    case HANDLER_PROGRESS = 'handler-progress';
 }

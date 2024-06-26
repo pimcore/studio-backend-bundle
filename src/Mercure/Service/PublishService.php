@@ -16,17 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
-use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
+use Symfony\Component\Serializer\SerializerInterface;
 
 final readonly class PublishService implements PublishServiceInterface
 {
     public function __construct(
         private HubInterface $serverHub,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private SerializerInterface $serializer
     ) {
     }
 
@@ -47,11 +48,7 @@ final readonly class PublishService implements PublishServiceInterface
             $topics = [$topics];
         }
 
-        try {
-            $jsonData = json_encode($data, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
-            throw new JsonEncodingException('Failed to encode data to JSON: ' . $e->getMessage(), 0, $e);
-        }
+        $jsonData = $this->serializer->serialize($data, 'json');
 
         $this->logger->debug(
             sprintf(
