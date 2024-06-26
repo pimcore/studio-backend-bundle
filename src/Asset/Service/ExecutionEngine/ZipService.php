@@ -88,10 +88,7 @@ final readonly class ZipService implements ZipServiceInterface
         $job = new Job(
             name: Jobs::CREATE_ZIP->value,
             steps: $steps,
-            selectedElements: $ids->getItems(),
-            environmentData: [
-                'totalEvents' => count($ids->getItems()) * count($steps),
-            ]
+            selectedElements: $ids->getItems()
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(

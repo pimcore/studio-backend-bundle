@@ -26,9 +26,12 @@ trait HandlerProgressTrait
 
     private const SEND_THRESHOLD = 99;
 
+
+
     private function updateProgress(JobRun $jobRun, PublishServiceInterface $publishService): void
     {
-        $totalEvents = $jobRun->getJob()?->getEnvironmentData()['totalEvents'];
+        $totalEvents = $this->getTotalEvents($jobRun);
+
         $processedElements = $jobRun->getContext()['processedElements'] ?? 0;
 
         $processedElements++;
@@ -52,5 +55,20 @@ trait HandlerProgressTrait
                 $jobRun->getJob()?->getName() ?? ''
             )
         );
+    }
+
+    private function getTotalEvents(JobRun $jobRun): int
+    {
+        $steps = count($jobRun->getJob()?->getSteps() ?? []);
+
+        if (isset($jobRun->getContext()['totalEvents'])) {
+            return $jobRun->getContext()['totalEvents'];
+        }
+
+        $totalEvents = $steps * $jobRun->getTotalElements();
+
+        $this->updateJobRunContext($jobRun, 'totalEvents', $steps * $jobRun->getTotalElements());
+
+        return $totalEvents;
     }
 }
