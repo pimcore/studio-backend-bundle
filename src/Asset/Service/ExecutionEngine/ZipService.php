@@ -21,6 +21,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
@@ -81,8 +82,8 @@ final readonly class ZipService implements ZipServiceInterface
     public function generateZipFile(CreateZipParameter $ids): string
     {
         $steps = [
-            new JobStep('Asset collection', ZipCollectionMessage::class, '', []),
-            new JobStep('Zip creation', ZipCreationMessage::class, '', []),
+            new JobStep(JobSteps::ZIP_COLLECTION->value, ZipCollectionMessage::class, '', []),
+            new JobStep(JobSteps::ZIP_CREATION->value, ZipCreationMessage::class, '', []),
         ];
 
         $job = new Job(

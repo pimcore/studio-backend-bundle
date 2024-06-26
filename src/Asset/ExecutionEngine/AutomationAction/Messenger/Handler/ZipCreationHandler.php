@@ -115,6 +115,6 @@ final class ZipCreationHandler extends AbstractHandler
 
         $archive->close();
 
-        $this->updateProgress($jobRun, $this->publishService);
+        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)?->getName());
     }
 }

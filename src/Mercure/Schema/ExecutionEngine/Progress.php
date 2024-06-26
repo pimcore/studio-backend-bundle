@@ -29,6 +29,7 @@ use OpenApi\Attributes\Schema;
         'user',
         'jobRunId',
         'jobName',
+        'jobStepName',
     ],
     type: 'object'
 )]
@@ -42,7 +43,9 @@ final readonly class Progress
         #[Property(description: 'jobRunId', type: 'integer', example: 73)]
         private int $jobRunId,
         #[Property(description: 'jobName', type: 'string', example: 'Job Name')]
-        private string $jobName
+        private string $jobName,
+        #[Property(description: 'jobStepName', type: 'string', example: 1)]
+        private string $jobStepName,
     ) {
     }
 
@@ -64,5 +67,10 @@ final readonly class Progress
     public function getJobName(): string
     {
         return $this->jobName;
+    }
+
+    public function getCurrentStep(): string
+    {
+        return $this->jobStepName;
     }
 }

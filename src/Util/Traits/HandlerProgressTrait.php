@@ -26,15 +26,22 @@ trait HandlerProgressTrait
 
     private const SEND_THRESHOLD = 99;
 
-    private function updateProgress(JobRun $jobRun, PublishServiceInterface $publishService): void
+    private const PROCESSING_EVENTS = 'processedEvents';
+    private const TOTAL_EVENTS = 'totalEvents';
+
+    private function updateProgress(
+        PublishServiceInterface $publishService,
+        JobRun $jobRun,
+        string $jobStepName = ''
+    ): void
     {
         $totalEvents = $this->getTotalEvents($jobRun);
 
-        $processedElements = $jobRun->getContext()['processedElements'] ?? 0;
+        $processedElements = $jobRun->getContext()[self::PROCESSING_EVENTS] ?? 0;
 
         $processedElements++;
 
-        $this->updateJobRunContext($jobRun, 'processedElements', $processedElements);
+        $this->updateJobRunContext($jobRun, self::PROCESSING_EVENTS, $processedElements);
 
         $updateFrequency = max(1, (int)($totalEvents / self::FREQUENCY));
 
@@ -50,7 +57,8 @@ trait HandlerProgressTrait
                 $progress,
                 $jobRun->getOwnerId(),
                 $jobRun->getId(),
-                $jobRun->getJob()?->getName() ?? ''
+                $jobRun->getJob()?->getName() ?? '',
+                $jobStepName,
             )
         );
     }
@@ -59,13 +67,13 @@ trait HandlerProgressTrait
     {
         $steps = count($jobRun->getJob()?->getSteps() ?? []);
 
-        if (isset($jobRun->getContext()['totalEvents'])) {
-            return $jobRun->getContext()['totalEvents'];
+        if (isset($jobRun->getContext()[self::TOTAL_EVENTS])) {
+            return $jobRun->getContext()[self::TOTAL_EVENTS];
         }
 
         $totalEvents = $steps * $jobRun->getTotalElements();
 
-        $this->updateJobRunContext($jobRun, 'totalEvents', $steps * $jobRun->getTotalElements());
+        $this->updateJobRunContext($jobRun, self::TOTAL_EVENTS, $steps * $jobRun->getTotalElements());
 
         return $totalEvents;
     }

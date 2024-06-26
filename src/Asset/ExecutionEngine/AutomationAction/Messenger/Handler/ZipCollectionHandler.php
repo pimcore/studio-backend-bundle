@@ -85,6 +85,6 @@ final class ZipCollectionHandler extends AbstractHandler
 
         $this->updateJobRunContext($jobRun, ZipServiceInterface::ASSETS_INDEX, $assets);
 
-        $this->updateProgress($jobRun, $this->publishService);
+        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)?->getName());
     }
 }
