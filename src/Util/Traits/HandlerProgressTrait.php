@@ -33,7 +33,7 @@ trait HandlerProgressTrait
 
         $progress = (int)($processedElements / $totalEvents * 100);
 
-        if(($progress < 99) && $processedElements % 10 !== 0) {
+        if (($progress < 99) && $processedElements % 10 !== 0) {
             return;
         }
 
