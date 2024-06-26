@@ -27,14 +27,14 @@ trait HandlerProgressTrait
     private const SEND_THRESHOLD = 99;
 
     private const PROCESSING_EVENTS = 'processedEvents';
+
     private const TOTAL_EVENTS = 'totalEvents';
 
     private function updateProgress(
         PublishServiceInterface $publishService,
         JobRun $jobRun,
         string $jobStepName = ''
-    ): void
-    {
+    ): void {
         $totalEvents = $this->getTotalEvents($jobRun);
 
         $processedElements = $jobRun->getContext()[self::PROCESSING_EVENTS] ?? 0;
