@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceI
 use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
