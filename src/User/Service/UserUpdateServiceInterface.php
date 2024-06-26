@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 
@@ -32,4 +33,9 @@ interface UserUpdateServiceInterface
      * @throws NotFoundException|DatabaseException|ForbiddenException|ParseException
      */
     public function updateUserById(UpdateUserParameter $updateUserParameter, int $userId): UserSchema;
+
+    /**
+     * @throws NotFoundException|DatabaseException|ForbiddenException
+     */
+    public function updatePasswordById(UpdatePasswordParameter $updateParameter, int $userId): void;
 }
