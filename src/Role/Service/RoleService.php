@@ -14,13 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\User\Event\UserRoleEvent;
-use Pimcore\Bundle\StudioBackendBundle\User\Repository\RoleRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserRole;
+use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleEvent;
+use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UserRole;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -49,8 +49,8 @@ final readonly class RoleService implements RoleServiceInterface
             );
 
             $this->eventDispatcher->dispatch(
-                new UserRoleEvent($item),
-                UserRoleEvent::EVENT_NAME
+                new RoleEvent($item),
+                RoleEvent::EVENT_NAME
             );
 
             $items[] = $item;
