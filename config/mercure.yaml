@@ -1,0 +1,37 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # controllers are imported separately to make sure they're public
+    # and have a tag that allows actions to type-hint services
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Controller\:
+        resource: '../src/Mercure/Controller'
+        public: true
+        tags: [ 'controller.service_arguments' ]
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Controller\JwtController:
+        arguments:
+            Symfony\Component\Mercure\HubInterface: '@mercure.hub.studio_client'
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TopicLoaderInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TaggedIteratorAdapter
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ServerTokenService: ~
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\ClientTokenService: ~
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishService
+
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishService:
+        arguments:
+            Symfony\Component\Mercure\HubInterface: '@mercure.hub.studio_server'
+
+    Symfony\Component\Mercure\Jwt\TokenFactoryInterface:
+        class: Symfony\Component\Mercure\Jwt\LcobucciFactory
+        arguments:
+            - '%pimcore_studio_backend.mercure_settings.jwt_key%'
+
+

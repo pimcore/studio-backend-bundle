@@ -19,12 +19,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCopyMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
+use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -34,7 +35,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class AssetCopyHandler extends AbstractHandler
 {
     public function __construct(
-        private readonly AssetServiceInterface $assetService,
+        private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver,
         private readonly CloneServiceInterface $cloneService
     ) {
@@ -69,7 +70,14 @@ final class AssetCopyHandler extends AbstractHandler
         $user = $validatedParameters->getUser();
         $assetElement = $validatedParameters->getSubject();
         $environmentVariables = $validatedParameters->getEnvironmentData();
-        $source = $this->assetService->getAssetElement($user, $assetElement->getId());
+        $source = $this->getElementById(
+            $assetElement,
+            $user,
+            $this->elementService
+        );
+        if (!$source instanceof Asset) {
+            return;
+        }
         $parent = $this->cloneService->getNewCloneTarget(
             $user,
             $source,

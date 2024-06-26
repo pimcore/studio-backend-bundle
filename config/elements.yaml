@@ -13,3 +13,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementService
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteService
