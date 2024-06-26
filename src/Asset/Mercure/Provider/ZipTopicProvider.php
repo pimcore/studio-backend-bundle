@@ -16,8 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Provider;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events as AssetEvents;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\AbstractServerToClientProvider;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -28,11 +29,16 @@ final class ZipTopicProvider extends AbstractServerToClientProvider
 {
     public function getClientSubscribableTopic(): array
     {
-        return Events::values();
+        return $this->getEvents();
     }
 
     public function getServerPublishableTopic(): array
     {
-        return Events::values();
+        return $this->getEvents();
+    }
+
+    private function getEvents(): array
+    {
+        return array_merge(Events::values(), AssetEvents::values());
     }
 }

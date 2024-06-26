@@ -22,8 +22,6 @@ interface PublishServiceInterface
 {
     /**
      * @param string|array<string> $topics
-     *
-     * @throws JsonEncodingException
      */
     public function publish(
         string|array $topics,

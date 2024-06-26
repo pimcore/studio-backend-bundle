@@ -80,13 +80,18 @@ final readonly class ZipService implements ZipServiceInterface
 
     public function generateZipFile(CreateZipParameter $ids): string
     {
+        $steps = [
+            new JobStep('Asset collection', ZipCollectionMessage::class, '', []),
+            new JobStep('Zip creation', ZipCreationMessage::class, '', []),
+        ];
+
         $job = new Job(
             name: Jobs::CREATE_ZIP->value,
-            steps: [
-                new JobStep('Asset collection', ZipCollectionMessage::class, '', []),
-                new JobStep('Zip creation', ZipCreationMessage::class, '', []),
-            ],
-            selectedElements: $ids->getItems()
+            steps: $steps,
+            selectedElements: $ids->getItems(),
+            environmentData: [
+                'totalEvents' => count($ids->getItems()) * count($steps)
+            ]
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(

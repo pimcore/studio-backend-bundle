@@ -24,7 +24,5 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
 enum Events: string
 {
     use EnumToValueArrayTrait;
-
-    case ZIP_COLLECTION_PROGRESS = 'zip-collection-progress';
     case ZIP_DOWNLOAD_READY = 'zip-download-ready';
 }
