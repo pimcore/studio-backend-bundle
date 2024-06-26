@@ -26,8 +26,6 @@ trait HandlerProgressTrait
 
     private const SEND_THRESHOLD = 99;
 
-
-
     private function updateProgress(JobRun $jobRun, PublishServiceInterface $publishService): void
     {
         $totalEvents = $this->getTotalEvents($jobRun);
