@@ -98,7 +98,7 @@ final readonly class ZipService implements ZipServiceInterface
         return $this->getTempZipFilePath($jobRun->getId());
     }
 
-    private function getTempZipFilePath(int $id): string
+    public function getTempZipFilePath(int $id): string
     {
         return str_replace(self::ZIP_ID_PLACEHOLDER, (string)$id, self::ZIP_FILE_PATH);
     }

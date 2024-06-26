@@ -32,4 +32,6 @@ interface ZipServiceInterface
     public function addFile(ZipArchive $archive, Asset $asset): void;
 
     public function generateZipFile(CreateZipParameter $ids): string;
+
+      public function getTempZipFilePath(int $id): string;
 }

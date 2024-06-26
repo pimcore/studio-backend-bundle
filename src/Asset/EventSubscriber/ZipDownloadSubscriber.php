@@ -18,7 +18,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Schema\ZipDownloadReady;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -28,6 +33,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
 {
     public function __construct(
+        private PublishServiceInterface $publishService,
+        private ZipServiceInterface $zipService,
         private LoggerInterface $pimcoreLogger
     ) {
 
@@ -40,6 +47,9 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @throws JsonEncodingException
+     */
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
 
@@ -48,13 +58,13 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
             $event->getJobName() === Jobs::CREATE_ZIP->value
         ) {
             // TODO SEND SSE HERE TO CLIENT
-            $this->pimcoreLogger->debug(
-                'Creating Zip finished',
-                [
-                    'jobRunId' => $event->getJobRunId(),
-                    'state' => $event->getNewState(),
-                    'owner' => $event->getJobRunOwnerId(),
-                ]
+            $this->publishService->publish(
+                Events::ZIP_DOWNLOAD_READY->value,
+                new ZipDownloadReady(
+                    $event->getJobRunId(),
+                    $this->zipService->getTempZipFilePath($event->getJobRunId()),
+                    $event->getJobRunOwnerId()
+                )
             );
         }
     }
