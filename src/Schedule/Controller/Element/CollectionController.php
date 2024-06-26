@@ -78,7 +78,7 @@ final class CollectionController extends AbstractApiController
                 'items' => $this->scheduleService->listSchedules(
                     $parameters->getType(),
                     $parameters->getId()
-                )
+                ),
             ]
         );
     }

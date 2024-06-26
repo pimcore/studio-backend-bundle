@@ -72,6 +72,7 @@ final class CollectionController extends AbstractApiController
     public function getProperties(string $elementType, int $id): JsonResponse
     {
         $parameters = new ElementParameters($elementType, $id);
+
         return $this->jsonResponse(
             ['items' => $this->propertyService->getElementProperties($parameters->getType(), $parameters->getId())]
         );

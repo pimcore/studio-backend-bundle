@@ -92,7 +92,7 @@ final class UpdateController extends AbstractApiController
                 'items' => $this->scheduleService->listSchedules(
                     $parameters->getType(),
                     $parameters->getId()
-                )
+                ),
             ]
         );
     }
