@@ -31,11 +31,14 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         $config = Generator::scan([...$this->openApiScanPaths]);
 
         if ($config) {
-            usort($config->components->schemas, static function (Schema $a, Schema $b) {
-                return $a->title <=> $b->title;
-            });
+            usort($config->components->schemas, [$this, 'sortSchemas']);
         }
 
         return $config;
+    }
+
+    private function sortSchemas(Schema $a, Schema $b): int
+    {
+        return $a->title <=> $b->title;
     }
 }
