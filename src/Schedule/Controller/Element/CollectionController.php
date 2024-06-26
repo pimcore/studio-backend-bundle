@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Controller\Element;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
@@ -70,6 +71,15 @@ final class CollectionController extends AbstractApiController
         string $elementType,
         int $id
     ): JsonResponse {
-        return $this->jsonResponse(['items' => $this->scheduleService->listSchedules($elementType, $id)]);
+        $parameters = new ElementParameters($elementType, $id);
+
+        return $this->jsonResponse(
+            [
+                'items' => $this->scheduleService->listSchedules(
+                    $parameters->getType(),
+                    $parameters->getId()
+                )
+            ]
+        );
     }
 }

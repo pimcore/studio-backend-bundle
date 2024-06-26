@@ -21,6 +21,7 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -69,6 +70,13 @@ final class CreateController extends AbstractApiController
     ])]
     public function createSchedule(string $elementType, int $id): JsonResponse
     {
-        return $this->jsonResponse($this->scheduleService->createSchedule($elementType, $id));
+        $parameters = new ElementParameters($elementType, $id);
+
+        return $this->jsonResponse(
+            $this->scheduleService->createSchedule(
+                $parameters->getType(),
+                $parameters->getId()
+            )
+        );
     }
 }
