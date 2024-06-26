@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;

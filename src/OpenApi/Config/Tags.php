@@ -74,6 +74,10 @@ use OpenApi\Attributes\Tag;
     description: 'User Management operations'
 )]
 #[Tag(
+    name: Tags::Role->value,
+    description: 'Role Management operations'
+)]
+#[Tag(
     name: Tags::Versions->name,
     description: 'Versions operations to get/list/publish/delete and cleanup versions'
 )]
@@ -96,6 +100,7 @@ enum Tags: string
     case Settings = 'Settings';
     case Translation = 'Translation';
     case User = 'User Management';
+    case Role = 'Role Management';
     case Versions = 'Versions';
     case Workflows = 'Workflows';
 }

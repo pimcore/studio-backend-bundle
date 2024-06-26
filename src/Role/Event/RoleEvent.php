@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Event;
 
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserRole;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UserRole;
 
-final class UserRoleEvent extends AbstractPreResponseEvent
+final class RoleEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.user_role';
 

@@ -14,18 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Model\User\Role;
 
 /**
  * @internal
  */
-interface RoleServiceInterface
+interface RoleRepositoryInterface
 {
     /**
+     * @return Role[]
+     *
      * @throws DatabaseException
      */
-    public function getRoles(): Collection;
+    public function getRoles(): array;
 }
