@@ -21,7 +21,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Provider;
  */
 abstract class AbstractServerToClientProvider implements ServerTopicProviderInterface, ClientTopicProviderInterface
 {
-
     abstract public function getClientSubscribableTopic(): array;
 
     abstract public function getServerPublishableTopic(): array;

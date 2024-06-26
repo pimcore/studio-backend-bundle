@@ -27,7 +27,7 @@ use OpenApi\Attributes\Schema;
     required: [
         'id',
         'path',
-        'user'
+        'user',
     ],
     type: 'object'
 )]

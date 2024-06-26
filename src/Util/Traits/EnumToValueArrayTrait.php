@@ -21,7 +21,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
  */
 trait EnumToValueArrayTrait
 {
-    public static function values(): array {
+    public static function values(): array
+    {
         return array_column(self::cases(), 'value');
     }
 }

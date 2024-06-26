@@ -33,5 +33,5 @@ interface ZipServiceInterface
 
     public function generateZipFile(CreateZipParameter $ids): string;
 
-      public function getTempZipFilePath(int $id): string;
+    public function getTempZipFilePath(int $id): string;
 }
