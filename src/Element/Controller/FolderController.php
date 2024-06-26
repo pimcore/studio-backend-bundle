@@ -87,8 +87,7 @@ final class FolderController extends AbstractApiController
         int $parentId,
         string $elementType,
         #[MapRequestPayload] FolderData $folderData
-    ): Response
-    {
+    ): Response {
         $user = $this->securityService->getCurrentUser();
         $this->elementFolderService->createFolderByType(
             $parentId,

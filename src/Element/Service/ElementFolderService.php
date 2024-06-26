@@ -40,8 +40,7 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
         private DocumentResolverInterface $documentResolver,
         private ElementServiceInterface $elementService,
         private ServiceResolverInterface $serviceResolver,
-    )
-    {
+    ) {
     }
 
     /**
@@ -56,8 +55,7 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
         string $elementType,
         string $folderName,
         UserInterface $user
-    ): void
-    {
+    ): void {
         $parent = $this->elementService->getAllowedElementById($elementType, $parentId, $user);
         $key = $this->serviceResolver->getValidKey($folderName, $elementType);
         $existingElement = $this->serviceResolver->getElementByPath(
@@ -100,8 +98,7 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
         string $elementType,
         string $key,
         array $data
-    ): void
-    {
+    ): void {
         match (true) {
             $elementType === ElementTypes::TYPE_ASSET => $this->createAssetFolder($parentId, $key, $data),
             $elementType === ElementTypes::TYPE_DATA_OBJECT => $this->createDataObjectFolder($parentId, $key, $data),
@@ -114,8 +111,7 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
         int $parentId,
         string $key,
         array $data
-    ): void
-    {
+    ): void {
         $data['filename'] = $key;
         $this->assetResolver->create(
             $parentId,
@@ -127,8 +123,7 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
         int $parentId,
         string $key,
         array $data
-    ): void
-    {
+    ): void {
         $data['key'] = $key;
         $data['creationDate'] = time();
         $data['published'] = true;
@@ -142,8 +137,7 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
         int $parentId,
         string $key,
         array $data
-    ): void
-    {
+    ): void {
         $data['key'] = $key;
         $data['published'] = true;
         $this->documentResolver->create(
@@ -151,5 +145,4 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
             $data
         );
     }
-
 }
