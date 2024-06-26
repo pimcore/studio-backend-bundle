@@ -34,8 +34,8 @@ use OpenApi\Attributes\Schema;
 final readonly class ZipDownloadReady
 {
     public function __construct(
-        #[Property(description: 'id', type: 'integer', example: 1)]
-        private int $id,
+        #[Property(description: 'jobRunId', type: 'integer', example: 1)]
+        private int $jobRunId,
         #[Property(description: 'path', type: 'string', example: '/path/to/assets.zip')]
         private string $path,
         #[Property(description: 'user', type: 'integer', example: 2)]
@@ -43,9 +43,9 @@ final readonly class ZipDownloadReady
     ) {
     }
 
-    public function getId(): int
+    public function getJobRunId(): int
     {
-        return $this->id;
+        return $this->jobRunId;
     }
 
     public function getPath(): string

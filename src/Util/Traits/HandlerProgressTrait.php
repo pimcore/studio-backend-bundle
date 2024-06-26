@@ -16,7 +16,7 @@
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\Progress;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Progress;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 

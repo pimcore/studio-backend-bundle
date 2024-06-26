@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'SSEProgress',
+    title: 'SSEHandlerProgress',
     required: [
         'progress',
         'user',
