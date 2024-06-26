@@ -150,9 +150,9 @@ final readonly class CloneService implements CloneServiceInterface
     ): int {
         $ids = $this->assetSearchService->getChildrenIds($originalParent->getRealFullPath(), 'asc');
         $job = new Job(
-            name: Jobs::CLONE_ASSET->value,
+            name: Jobs::CLONE_ASSETS->value,
             steps: [
-                new JobStep(Jobs::CLONE_ASSET->value, AssetCopyMessage::class, '', []),
+                new JobStep(Jobs::CLONE_ASSETS->value, AssetCopyMessage::class, '', []),
             ],
             selectedElements: array_map(
                 static fn (int $id) => new ElementDescriptor(

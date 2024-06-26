@@ -20,6 +20,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetDeleteMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
@@ -77,7 +78,7 @@ final readonly class DeleteService implements DeleteServiceInterface
 
         $jobSteps = array_map(
             static fn (int $id) => new JobStep(
-                Jobs::DELETE_ASSET->value,
+                JobSteps::ASSET_DELETION->value,
                 AssetDeleteMessage::class,
                 '',
                 [self::ASSET_TO_DELETE => $id]
@@ -86,14 +87,14 @@ final readonly class DeleteService implements DeleteServiceInterface
         );
 
         $jobSteps[] = new JobStep(
-            Jobs::DELETE_ASSET->value,
+            JobSteps::ASSET_DELETION->value,
             AssetDeleteMessage::class,
             '',
             [self::ASSET_TO_DELETE => $asset->getId()]
         );
 
         $job = new Job(
-            name: Jobs::DELETE_ASSET->value,
+            name: Jobs::DELETE_ASSETS->value,
             steps: $jobSteps,
             selectedElements:[
                 new ElementDescriptor(
