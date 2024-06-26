@@ -26,7 +26,7 @@ final class ElementSavingFailedException extends AbstractApiException
     public function __construct(?int $id, ?string $error = null)
     {
         $message = sprintf(
-            'Failed to save a new element : %s',
+            'Failed to save new element: %s',
             $error ?? 'Unknown error'
         );
 

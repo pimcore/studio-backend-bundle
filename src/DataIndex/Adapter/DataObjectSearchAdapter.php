@@ -16,20 +16,25 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\DataObjectSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
 final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterInterface
 {
     public function __construct(
-        private DataObjectSearchServiceInterface $searchService
+        private DataObjectSearchServiceInterface $searchService,
+        private SearchResultIdListServiceInterface $searchResultIdListService,
     ) {
     }
 
@@ -75,5 +80,22 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         }
 
         return new DataObject($dataObject->getId(), $dataObject->getClassName());
+    }
+
+    /**
+     * @throws SearchException
+     *
+     * @return array<int>
+     */
+    public function fetchAssetIds(QueryInterface $dataObjectQuery): array
+    {
+        try {
+            $search = $dataObjectQuery->getSearch();
+            $search->addModifier(new OrderByFullPath());
+
+            return $this->searchResultIdListService->getAllIds($search);
+        } catch (DataObjectSearchException) {
+            throw new SearchException('dataObjects');
+        }
     }
 }

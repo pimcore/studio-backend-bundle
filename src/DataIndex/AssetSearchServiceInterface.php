@@ -47,4 +47,23 @@ interface AssetSearchServiceInterface
      * @return array<int>
      */
     public function fetchAssetIds(QueryInterface $assetQuery): array;
+
+    /**
+     * @throws SearchException
+     *
+     * @return array<int>
+     */
+    public function getChildrenIds(
+        string $parentPath,
+        ?string $sortDirection = null
+    ): array;
+
+    /**
+     * @throws SearchException
+     *
+     */
+    public function countChildren(
+        string $parentPath,
+        ?string $sortDirection = null
+    ): int;
 }

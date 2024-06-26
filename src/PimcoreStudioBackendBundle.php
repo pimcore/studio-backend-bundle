@@ -20,6 +20,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\PimcoreGenericDataIndexBundle;
 use Pimcore\Bundle\GenericExecutionEngineBundle\PimcoreGenericExecutionEngineBundle;
 use Pimcore\Bundle\StaticResolverBundle\PimcoreStaticResolverBundle;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\FilterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\MercureTopicsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PatchAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\UpdateAdapterPass;
@@ -27,6 +28,7 @@ use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
 use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
 use Pimcore\HttpKernel\BundleCollection\BundleCollection;
+use Symfony\Bundle\MercureBundle\MercureBundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements DependentBundleInterface
@@ -70,12 +72,14 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new PatchAdapterPass());
         $container->addCompilerPass(new UpdateAdapterPass());
         $container->addCompilerPass(new SettingsProviderPass());
+        $container->addCompilerPass(new MercureTopicsProviderPass());
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void
     {
         $collection->addBundle(new PimcoreStaticResolverBundle());
         $collection->addBundle(new PimcoreGenericDataIndexBundle());
+        $collection->addBundle(new MercureBundle());
         $collection->addBundle(new PimcoreGenericExecutionEngineBundle());
     }
 }

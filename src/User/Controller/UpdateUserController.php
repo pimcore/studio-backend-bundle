@@ -66,7 +66,7 @@ final class UpdateUserController extends AbstractApiController
         summary: 'Update user by id.',
         tags: [Tags::User->value]
     )]
-    #[IdParameter]
+    #[IdParameter(type: 'User')]
     #[SuccessResponse(
         description: 'Updated data.',
         content: new JsonContent(ref: UserSchema::class)
@@ -76,6 +76,7 @@ final class UpdateUserController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::FORBIDDEN,
     ])]
     public function updateUsers(int $id, #[MapRequestPayload] UpdateUserParameter $userUpdate): JsonResponse
     {

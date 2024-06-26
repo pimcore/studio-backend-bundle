@@ -29,10 +29,12 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -52,7 +54,7 @@ final class CleanupController extends AbstractApiController
      * @throws AccessDeniedException|NotFoundException|UserNotFoundException
      */
     #[Route('/versions/{elementType}/{id}', name: 'pimcore_studio_api_cleanup_versions', methods: ['DELETE'])]
-    //#[IsGranted('STUDIO_API')]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Delete(
         path: self::API_PATH . '/versions/{elementType}/{id}',
         operationId: 'cleanupVersion',
