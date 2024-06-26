@@ -35,7 +35,7 @@ final class UserRole implements AdditionalAttributesInterface
         #[Property(description: 'ID of the Role', type: 'integer', example: '1')]
         private readonly int $id,
         #[Property(description: 'Name of the Role', type: 'string', example: 'role')]
-        private readonly string $category,
+        private readonly string $name,
     ) {
     }
 
@@ -44,8 +44,8 @@ final class UserRole implements AdditionalAttributesInterface
         return $this->id;
     }
 
-    public function getCategory(): string
+    public function getName(): string
     {
-        return $this->category;
+        return $this->name;
     }
 }

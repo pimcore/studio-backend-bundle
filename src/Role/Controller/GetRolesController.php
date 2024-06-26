@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -46,20 +46,20 @@ final class GetRolesController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/user/roles', name: 'pimcore_studio_api_user_roles', methods: ['GET'])]
+    #[Route('/roles', name: 'pimcore_studio_api_roles', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
-        path: self::API_PATH . '/user/roles',
+        path: self::API_PATH . '/roles',
         operationId: 'getUserRoles',
         summary: 'Get all available user roles.',
-        tags: [Tags::User->value]
+        tags: [Tags::Role->value]
     )]
     #[SuccessResponse(
         description: 'List of available user roles.',
         content: new CollectionJson(new GenericCollection(UserRole::class))
     )]
     #[DefaultResponses]
-    public function getAvailablePermissions(): JsonResponse
+    public function getRoles(): JsonResponse
     {
         $roles = $this->roleService->getRoles();
 
