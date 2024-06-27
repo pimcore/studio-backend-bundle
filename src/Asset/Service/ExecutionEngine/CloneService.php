@@ -21,7 +21,8 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\Synchro
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCopyMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
@@ -152,7 +153,7 @@ final readonly class CloneService implements CloneServiceInterface
         $job = new Job(
             name: Jobs::CLONE_ASSETS->value,
             steps: [
-                new JobStep(Jobs::CLONE_ASSETS->value, AssetCopyMessage::class, '', []),
+                new JobStep(JobSteps::ASSET_CLONING->value, AssetCloneMessage::class, '', []),
             ],
             selectedElements: array_map(
                 static fn (int $id) => new ElementDescriptor(

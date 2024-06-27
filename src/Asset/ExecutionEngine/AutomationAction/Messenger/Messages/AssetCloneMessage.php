@@ -21,6 +21,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecu
 /**
  * @internal
  */
-final class AssetCopyMessage extends AbstractExecutionEngineMessage
+final class AssetCloneMessage extends AbstractExecutionEngineMessage
 {
 }

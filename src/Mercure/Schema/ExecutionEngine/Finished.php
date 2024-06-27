@@ -27,7 +27,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
     title: 'SSEJobRunFinished',
     required: [
         'jobRunId',
-        'status',
+        'state',
     ],
     type: 'object'
 )]
