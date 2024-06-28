@@ -17,6 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
+use function class_implements;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal

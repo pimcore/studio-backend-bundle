@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function in_array;
 
 /**
  * @internal
