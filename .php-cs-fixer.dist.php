@@ -32,7 +32,6 @@ $config->setRules([
             ' @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)' . PHP_EOL .
             ' @license    http://www.pimcore.org/license     GPLv3 and PCL'
     ],
-
     'blank_line_before_statement'         => true,
     'encoding'                            => true,
     'function_typehint_space'             => true,
@@ -72,7 +71,13 @@ $config->setRules([
     'ternary_operator_spaces'             => true,
     'trailing_comma_in_multiline'         => true,
     'whitespace_after_comma_in_array'     => true,
-    'global_namespace_import'             =>  ['import_functions' => true],
+    'native_function_invocation' => [
+        'include' => [
+            '@compiler_optimized',
+        ],
+        'scope' => 'namespaced',
+        'strict' => true,
+    ],
 ]);
 
 $config->setFinder($finder);
