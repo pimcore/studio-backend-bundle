@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader;
 
-use function in_array;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\AdapterLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use function in_array;
 
 /**
  * @internal

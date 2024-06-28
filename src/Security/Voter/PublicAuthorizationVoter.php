@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
-use function in_array;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NonPublicTranslationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PublicTranslationTrait;
@@ -26,6 +25,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use function in_array;
 
 /**
  * @internal

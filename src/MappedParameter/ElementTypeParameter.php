@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
-use function in_array;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use function in_array;
 
 /**
  * @internal

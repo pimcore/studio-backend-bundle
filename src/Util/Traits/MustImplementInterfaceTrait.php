@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
-use function in_array;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
+use function in_array;
 
 /**
  * @internal

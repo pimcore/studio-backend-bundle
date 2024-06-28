@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Filter\Service;
 
-use function array_key_exists;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
+use function array_key_exists;
 
 final class FilterServiceProvider implements FilterServiceProviderInterface
 {

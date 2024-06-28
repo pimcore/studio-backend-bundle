@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
-use function array_key_exists;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NonPublicTranslationException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\PublicTranslations;
 use Symfony\Component\HttpFoundation\InputBag;
+use function array_key_exists;
 
 /**
  * @internal

@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 
-use function in_array;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ClientTopicProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ServerTopicProviderInterface;
@@ -24,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TaggedIteratorAdap
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\MustImplementInterfaceTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use function in_array;
 
 /**
  * @internal

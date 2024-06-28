@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle;
 
-use function dirname;
 use Pimcore\Bundle\GenericDataIndexBundle\PimcoreGenericDataIndexBundle;
 use Pimcore\Bundle\GenericExecutionEngineBundle\PimcoreGenericExecutionEngineBundle;
 use Pimcore\Bundle\StaticResolverBundle\PimcoreStaticResolverBundle;
@@ -31,6 +30,7 @@ use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
 use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 use Symfony\Bundle\MercureBundle\MercureBundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use function dirname;
 
 class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements DependentBundleInterface
 {
