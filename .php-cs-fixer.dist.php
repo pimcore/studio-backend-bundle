@@ -78,6 +78,11 @@ $config->setRules([
         'scope' => 'namespaced',
         'strict' => true,
     ],
+    'global_namespace_import' => [
+        'import_classes' => true,
+        'import_constants' => true,
+        'import_functions' => true,
+    ],
 ]);
 
 $config->setFinder($finder);
