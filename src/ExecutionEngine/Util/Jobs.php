@@ -17,7 +17,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
 
 enum Jobs: string
 {
-    case CREATE_ZIP = 'Create Zip';
-    case CLONE_ASSETS = 'Clone Assets';
-    case DELETE_ASSETS = 'Delete Assets';
+    case CREATE_ZIP = 'studio_ee_job_create_zip';
+    case CLONE_ASSETS = 'studio_ee_job_clone_assets';
+    case DELETE_ASSETS = 'studio_ee_job_delete_assets';
 }
