@@ -34,7 +34,7 @@ final class FilterServiceProvider implements FilterServiceProviderInterface
      */
     public function create(string $type): mixed
     {
-        if (!array_key_exists($type, $this->filterServices)) {
+        if (!\array_key_exists($type, $this->filterServices)) {
             throw new InvalidFilterServiceTypeException($type);
         }
 

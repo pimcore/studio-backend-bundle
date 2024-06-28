@@ -46,7 +46,7 @@ final class PublicAuthorizationVoter extends Voter
     protected function supports(string $attribute, mixed $subject): bool
     {
         return $attribute === self::SUPPORTED_ATTRIBUTE &&
-            in_array($this->getSubjectName($subject), self::SUPPORTED_SUBJECTS, true);
+            \in_array($this->getSubjectName($subject), self::SUPPORTED_SUBJECTS, true);
     }
 
     /**

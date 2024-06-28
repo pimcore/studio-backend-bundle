@@ -30,7 +30,7 @@ final readonly class KeyAdapter implements UpdateAdapterInterface
 
     public function update(ElementInterface $element, array $data): void
     {
-        if (!array_key_exists($this->getIndexKey(), $data)) {
+        if (!\array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
 

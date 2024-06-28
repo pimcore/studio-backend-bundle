@@ -44,7 +44,7 @@ final readonly class PublishService implements PublishServiceInterface
         ?string $type = null,
         ?int $retry = null
     ): void {
-        if (is_string($topics)) {
+        if (\is_string($topics)) {
             $topics = [$topics];
         }
 

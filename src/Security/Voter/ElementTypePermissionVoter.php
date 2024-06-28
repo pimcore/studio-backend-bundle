@@ -61,7 +61,7 @@ final class ElementTypePermissionVoter extends Voter
     {
         $elementType = $this->getElementTypeFromRequest();
 
-        if (!$elementType || !array_key_exists($elementType, self::TYPE_TO_PERMISSION)) {
+        if (!$elementType || !\array_key_exists($elementType, self::TYPE_TO_PERMISSION)) {
             return false;
         }
 

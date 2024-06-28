@@ -54,11 +54,11 @@ final readonly class ImageAdapter implements UpdateAdapterInterface
 
     private function checkFocalPoint(Image $image, array $data): void
     {
-        if (!array_key_exists(self::INDEX_KEY, $data)) {
+        if (!\array_key_exists(self::INDEX_KEY, $data)) {
             return;
         }
 
-        if (!array_key_exists('focalPoint', $data[self::INDEX_KEY])) {
+        if (!\array_key_exists('focalPoint', $data[self::INDEX_KEY])) {
             $image->removeCustomSetting('focalPointX');
             $image->removeCustomSetting('focalPointY');
 

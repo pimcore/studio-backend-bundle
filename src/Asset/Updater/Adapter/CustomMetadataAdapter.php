@@ -39,7 +39,7 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
 
     public function update(ElementInterface $element, array $data): void
     {
-        if (!$element instanceof Asset || !array_key_exists($this->getIndexKey(), $data)) {
+        if (!$element instanceof Asset || !\array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
 

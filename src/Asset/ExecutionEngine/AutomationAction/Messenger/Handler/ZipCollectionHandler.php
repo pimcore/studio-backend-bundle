@@ -77,7 +77,7 @@ final class ZipCollectionHandler extends AbstractHandler
 
         $assets = $context[ZipServiceInterface::ASSETS_INDEX] ?? [];
 
-        if (in_array($jobAsset->getId(), $assets, true)) {
+        if (\in_array($jobAsset->getId(), $assets, true)) {
             return;
         }
 

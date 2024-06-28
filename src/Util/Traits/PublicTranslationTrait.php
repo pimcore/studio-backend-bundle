@@ -33,7 +33,7 @@ trait PublicTranslationTrait
     private function voteOnTranslation(InputBag $payload): bool
     {
         $parameters = $payload->all();
-        if (!array_key_exists(self::ARRAY_KEYS_INDEX, $parameters)) {
+        if (!\array_key_exists(self::ARRAY_KEYS_INDEX, $parameters)) {
             return false;
         }
 

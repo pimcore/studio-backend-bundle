@@ -54,7 +54,7 @@ final class MetadataAdapter implements PatchAdapterInterface
 
             // check for every single metadata if it is in the patch data
             foreach (self::PATCHABLE_KEYS as $patchKeys) {
-                if (array_key_exists($patchKeys, $metadataForPatch[$index])) {
+                if (\array_key_exists($patchKeys, $metadataForPatch[$index])) {
                     $metadata[$patchKeys] = $metadataForPatch[$index][$patchKeys];
                 }
             }

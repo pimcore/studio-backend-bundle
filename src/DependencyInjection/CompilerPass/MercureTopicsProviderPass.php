@@ -47,8 +47,8 @@ final class MercureTopicsProviderPass implements CompilerPassInterface
             if (
                 $classInterfaces === false ||
                 (
-                    !in_array(ServerTopicProviderInterface::class, $classInterfaces, true) &&
-                    !in_array(ClientTopicProviderInterface::class, $classInterfaces, true)
+                    !\in_array(ServerTopicProviderInterface::class, $classInterfaces, true) &&
+                    !\in_array(ClientTopicProviderInterface::class, $classInterfaces, true)
                 )
 
             ) {

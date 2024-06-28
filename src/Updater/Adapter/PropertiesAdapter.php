@@ -33,7 +33,7 @@ final readonly class PropertiesAdapter implements UpdateAdapterInterface
 
     public function update(ElementInterface $element, array $data): void
     {
-        if (!array_key_exists($this->getIndexKey(), $data)) {
+        if (!\array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
         $this->propertyRepository->updateElementProperties($element, $data);

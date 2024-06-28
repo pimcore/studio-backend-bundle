@@ -56,6 +56,6 @@ final readonly class RoleService implements RoleServiceInterface
             $items[] = $item;
         }
 
-        return new Collection(count($items), $items);
+        return new Collection(\count($items), $items);
     }
 }

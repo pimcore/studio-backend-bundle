@@ -31,7 +31,7 @@ trait MustImplementInterfaceTrait
         $classInterfaces = class_implements($class, false);
         if (
             $classInterfaces === false ||
-            !in_array($interface, $classInterfaces, true)
+            !\in_array($interface, $classInterfaces, true)
         ) {
             throw new MustImplementInterfaceException(
                 sprintf('%s must implement %s', $class, $interface)

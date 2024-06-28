@@ -65,7 +65,7 @@ trait HandlerProgressTrait
 
     private function getTotalEvents(JobRun $jobRun): int
     {
-        $steps = count($jobRun->getJob()?->getSteps() ?? []);
+        $steps = \count($jobRun->getJob()?->getSteps() ?? []);
 
         if (isset($jobRun->getContext()[self::TOTAL_EVENTS])) {
             return $jobRun->getContext()[self::TOTAL_EVENTS];

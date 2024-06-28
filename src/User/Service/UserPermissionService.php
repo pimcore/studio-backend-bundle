@@ -49,6 +49,6 @@ final class UserPermissionService implements UserPermissionServiceInterface
             $items[] = $item;
         }
 
-        return new Collection(count($items), $items);
+        return new Collection(\count($items), $items);
     }
 }

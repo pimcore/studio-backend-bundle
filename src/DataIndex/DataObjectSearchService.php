@@ -73,6 +73,6 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
         ?string $sortDirection = null
     ): int {
 
-        return count($this->getChildrenIds($parentPath, $sortDirection));
+        return \count($this->getChildrenIds($parentPath, $sortDirection));
     }
 }

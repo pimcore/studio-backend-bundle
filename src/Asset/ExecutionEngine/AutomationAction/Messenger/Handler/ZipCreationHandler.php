@@ -72,7 +72,7 @@ final class ZipCreationHandler extends AbstractHandler
 
         $context = $jobRun->getContext();
 
-        if (!array_key_exists(ZipServiceInterface::ASSETS_INDEX, $context)) {
+        if (!\array_key_exists(ZipServiceInterface::ASSETS_INDEX, $context)) {
             $this->abortAction(
                 'no_assets_found',
                 [],
@@ -83,7 +83,7 @@ final class ZipCreationHandler extends AbstractHandler
 
         $jobAsset = $validatedParameters->getSubject();
 
-        if (!in_array($jobAsset->getId(), $context[ZipServiceInterface::ASSETS_INDEX], true)) {
+        if (!\in_array($jobAsset->getId(), $context[ZipServiceInterface::ASSETS_INDEX], true)) {
             $this->abortAction(
                 'asset_permission_denied',
                 [],

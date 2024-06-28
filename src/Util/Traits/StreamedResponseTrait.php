@@ -44,7 +44,7 @@ trait StreamedResponseTrait
     ): StreamedResponse {
         $stream = $element->getStream();
 
-        if (!is_resource($stream)) {
+        if (!\is_resource($stream)) {
             throw new ElementStreamResourceNotFoundException(
                 $element->getId(),
                 $element->getType()

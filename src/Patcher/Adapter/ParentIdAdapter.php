@@ -31,7 +31,7 @@ final readonly class ParentIdAdapter implements PatchAdapterInterface
 
     public function patch(ElementInterface $element, array $data): void
     {
-        if (!array_key_exists($this->getIndexKey(), $data)) {
+        if (!\array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
 

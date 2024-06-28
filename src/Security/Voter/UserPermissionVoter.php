@@ -47,7 +47,7 @@ final class UserPermissionVoter extends Voter
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, $this->userPermissions, true);
+        return \in_array($attribute, $this->userPermissions, true);
     }
 
     /**
@@ -69,7 +69,7 @@ final class UserPermissionVoter extends Voter
     {
         $userPermissions = $this->cacheResolver->load(self::USER_PERMISSIONS_CACHE_KEY);
 
-        if($userPermissions !== false && is_array($userPermissions)) {
+        if($userPermissions !== false && \is_array($userPermissions)) {
             $this->userPermissions = $userPermissions;
 
             return;

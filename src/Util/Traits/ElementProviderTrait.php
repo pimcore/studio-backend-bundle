@@ -93,7 +93,7 @@ trait ElementProviderTrait
             $element instanceof Asset => Asset::class,
             $element instanceof Document => Document::class,
             $element instanceof DataObject => DataObject::class,
-            default => throw new InvalidElementTypeException(get_class($element))
+            default => throw new InvalidElementTypeException(\get_class($element))
         };
     }
 

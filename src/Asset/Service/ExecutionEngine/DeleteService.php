@@ -72,7 +72,7 @@ final readonly class DeleteService implements DeleteServiceInterface
     ): int {
         $ids = $this->assetSearchService->getChildrenIds($asset->getRealFullPath(), 'desc');
         // ToDo This might need to be reconsidered for separate job in the future
-        if (count($ids) < $this->recycleBinThreshold) {
+        if (\count($ids) < $this->recycleBinThreshold) {
             $this->elementDeleteService->addElementToRecycleBin($asset, $user);
         }
 

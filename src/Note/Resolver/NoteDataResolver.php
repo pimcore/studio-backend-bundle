@@ -76,7 +76,7 @@ final readonly class NoteDataResolver implements NoteDataResolverInterface
 
             $data = match($type) {
                 'document', 'object', 'asset' => $this->resolveElementData($d['data']),
-                'date' => is_object($d['data']) ? $d['data']->getTimestamp() : $d['data'],
+                'date' => \is_object($d['data']) ? $d['data']->getTimestamp() : $d['data'],
                 default => $d['data'],
             };
 

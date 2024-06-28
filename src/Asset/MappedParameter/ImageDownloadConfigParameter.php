@@ -33,11 +33,11 @@ final readonly class ImageDownloadConfigParameter
         private ?int $quality = null,
         private ?int $dpi = null
     ) {
-        if (!in_array($this->mimeType, MimeTypes::ALLOWED_FORMATS)) {
+        if (!\in_array($this->mimeType, MimeTypes::ALLOWED_FORMATS)) {
             throw new InvalidArgumentException('Invalid mime type' . $this->mimeType);
         }
 
-        if (!in_array($this->resizeMode, ResizeModes::ALLOWED_MODES)) {
+        if (!\in_array($this->resizeMode, ResizeModes::ALLOWED_MODES)) {
             throw new InvalidArgumentException('Invalid resize mode ' . $this->resizeMode);
         }
     }

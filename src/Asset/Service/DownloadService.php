@@ -81,7 +81,7 @@ final readonly class DownloadService implements DownloadServiceInterface
             throw new InvalidElementTypeException($image->getType());
         }
 
-        if (!in_array($format, FormatTypes::ALLOWED_FORMATS)) {
+        if (!\in_array($format, FormatTypes::ALLOWED_FORMATS)) {
             throw new InvalidAssetFormatTypeException($format);
         }
         $configuration = $this->defaultFormats[$format];

@@ -85,7 +85,7 @@ final class CorsSubscriber implements EventSubscriberInterface
         // Run CORS check in here to ensure domain is in the system
         $corsOrigin = $request->headers->get('origin');
 
-        if (in_array($corsOrigin, $this->allowedHosts, true)) {
+        if (\in_array($corsOrigin, $this->allowedHosts, true)) {
             $response = $event->getResponse();
 
             $response->headers->set('Access-Control-Allow-Credentials', 'true');

@@ -35,7 +35,7 @@ final readonly class AssetHydratorService implements AssetHydratorServiceInterfa
      */
     public function hydrate(AssetSearchResultItem $item): Asset
     {
-        $class = get_class($item);
+        $class = \get_class($item);
         if($this->assetHydratorLocator->has($class)) {
             return $this->assetHydratorLocator->get($class)->hydrate($item);
         }

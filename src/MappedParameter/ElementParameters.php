@@ -55,7 +55,7 @@ final readonly class ElementParameters
      */
     private function validate(): void
     {
-        if (!in_array($this->type, ElementTypes::ALLOWED_TYPES)) {
+        if (!\in_array($this->type, ElementTypes::ALLOWED_TYPES)) {
             throw new InvalidElementTypeException($this->type);
         }
     }
