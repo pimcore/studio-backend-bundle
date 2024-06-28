@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use function in_array;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
@@ -27,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use function in_array;
 
 /**
  * @internal

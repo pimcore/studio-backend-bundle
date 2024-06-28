@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
+use function in_array;
 use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\ResizeModes;
-use function in_array;
 
 /**
  * @internal

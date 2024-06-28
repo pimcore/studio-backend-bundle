@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
+use function in_array;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ZipPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
@@ -32,7 +33,6 @@ use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use function in_array;
 
 /**
  * @internal
