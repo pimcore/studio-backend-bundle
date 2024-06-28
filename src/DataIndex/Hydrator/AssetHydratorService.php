@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
+use function get_class;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Symfony\Contracts\Service\ServiceProviderInterface;
@@ -35,7 +36,7 @@ final readonly class AssetHydratorService implements AssetHydratorServiceInterfa
      */
     public function hydrate(AssetSearchResultItem $item): Asset
     {
-        $class = \get_class($item);
+        $class = get_class($item);
         if($this->assetHydratorLocator->has($class)) {
             return $this->assetHydratorLocator->get($class)->hydrate($item);
         }

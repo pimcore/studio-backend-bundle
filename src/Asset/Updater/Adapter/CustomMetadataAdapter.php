@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter;
 
+use function array_key_exists;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreSet\CustomMetadataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -39,7 +40,7 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
 
     public function update(ElementInterface $element, array $data): void
     {
-        if (!$element instanceof Asset || !\array_key_exists($this->getIndexKey(), $data)) {
+        if (!$element instanceof Asset || !array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
 

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Schema;
 
+use function in_array;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -53,11 +54,11 @@ final readonly class SubmitAction
         #[Property(description: 'workflowOptions', type: 'array', items: new Items(), example: [])]
         private array $workflowOptions = [],
     ) {
-        if (!\in_array($this->actionType, WorkflowActionTypes::ALLOWED_TYPES, true)) {
+        if (!in_array($this->actionType, WorkflowActionTypes::ALLOWED_TYPES, true)) {
             throw new InvalidActionTypeException($this->actionType);
         }
 
-        if (!\in_array($this->elementType, ElementTypes::ALLOWED_TYPES, true)) {
+        if (!in_array($this->elementType, ElementTypes::ALLOWED_TYPES, true)) {
             throw new InvalidElementTypeException($this->elementType);
         }
     }

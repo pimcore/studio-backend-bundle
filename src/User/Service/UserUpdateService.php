@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use function in_array;
 use JsonException;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
@@ -41,6 +42,7 @@ use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
 use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 use Pimcore\Model\UserInterface;
+use function strlen;
 
 /**
  * @internal
@@ -124,7 +126,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
             throw new InvalidArgumentException('Passwords do not match');
         }
 
-        if (\strlen($updateParameter->getPassword()) < 10) {
+        if (strlen($updateParameter->getPassword()) < 10) {
             throw new InvalidArgumentException('Passwords have to be at least 10 characters long');
         }
 
@@ -172,7 +174,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
         }, $this->permissionRepository->getAvailablePermissions());
 
         foreach ($permissionsToSet as $permission) {
-            if (!\in_array($permission, $permissions, true)) {
+            if (!in_array($permission, $permissions, true)) {
                 throw new NotFoundException('Permission', $permission, 'Key');
             }
         }
@@ -190,7 +192,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
         }, $this->roleRepository->getRoles());
 
         foreach ($rolesToSet as $role) {
-            if (!\in_array($role, $roles, true)) {
+            if (!in_array($role, $roles, true)) {
                 throw new NotFoundException('Role', $role);
             }
         }
@@ -208,7 +210,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
         }, $this->classDefinitionRepository->getClassDefinitions());
 
         foreach ($classesToSet as $class) {
-            if (!\in_array($class, $classes, true)) {
+            if (!in_array($class, $classes, true)) {
                 throw new NotFoundException('Class', $class);
             }
         }

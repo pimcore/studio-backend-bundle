@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
+use function array_key_exists;
 use OpenApi\Attributes\AdditionalProperties;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
@@ -43,7 +44,7 @@ trait AdditionalAttributesTrait
 
     public function hasAdditionalAttribute(string $key): bool
     {
-        return \array_key_exists($key, $this->additionalAttributes);
+        return array_key_exists($key, $this->additionalAttributes);
     }
 
     public function getAdditionalAttributes(): array

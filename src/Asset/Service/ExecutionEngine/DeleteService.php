@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
+use function count;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -72,7 +73,7 @@ final readonly class DeleteService implements DeleteServiceInterface
     ): int {
         $ids = $this->assetSearchService->getChildrenIds($asset->getRealFullPath(), 'desc');
         // ToDo This might need to be reconsidered for separate job in the future
-        if (\count($ids) < $this->recycleBinThreshold) {
+        if (count($ids) < $this->recycleBinThreshold) {
             $this->elementDeleteService->addElementToRecycleBin($asset, $user);
         }
 

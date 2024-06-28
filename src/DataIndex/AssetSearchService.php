@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
+use function count;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
@@ -88,6 +89,6 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
         ?string $sortDirection = null
     ): int {
 
-        return \count($this->getChildrenIds($parentPath, $sortDirection));
+        return count($this->getChildrenIds($parentPath, $sortDirection));
     }
 }

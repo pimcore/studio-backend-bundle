@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
 
+use function array_key_exists;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
@@ -31,7 +32,7 @@ final readonly class ParentIdAdapter implements PatchAdapterInterface
 
     public function patch(ElementInterface $element, array $data): void
     {
-        if (!\array_key_exists($this->getIndexKey(), $data)) {
+        if (!array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
 

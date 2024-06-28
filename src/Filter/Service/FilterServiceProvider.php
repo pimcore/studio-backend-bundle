@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Filter\Service;
 
+use function array_key_exists;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 
 final class FilterServiceProvider implements FilterServiceProviderInterface
@@ -34,7 +35,7 @@ final class FilterServiceProvider implements FilterServiceProviderInterface
      */
     public function create(string $type): mixed
     {
-        if (!\array_key_exists($type, $this->filterServices)) {
+        if (!array_key_exists($type, $this->filterServices)) {
             throw new InvalidFilterServiceTypeException($type);
         }
 

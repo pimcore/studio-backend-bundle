@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Resolver;
 
+use function is_object;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteUser;
@@ -76,7 +77,7 @@ final readonly class NoteDataResolver implements NoteDataResolverInterface
 
             $data = match($type) {
                 'document', 'object', 'asset' => $this->resolveElementData($d['data']),
-                'date' => \is_object($d['data']) ? $d['data']->getTimestamp() : $d['data'],
+                'date' => is_object($d['data']) ? $d['data']->getTimestamp() : $d['data'],
                 default => $d['data'],
             };
 

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use function in_array;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
@@ -77,7 +78,7 @@ final class ZipCollectionHandler extends AbstractHandler
 
         $assets = $context[ZipServiceInterface::ASSETS_INDEX] ?? [];
 
-        if (\in_array($jobAsset->getId(), $assets, true)) {
+        if (in_array($jobAsset->getId(), $assets, true)) {
             return;
         }
 

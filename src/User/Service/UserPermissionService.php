@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
+use function count;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserPermissionEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\PermissionHydratorInterface;
@@ -49,6 +50,6 @@ final class UserPermissionService implements UserPermissionServiceInterface
             $items[] = $item;
         }
 
-        return new Collection(\count($items), $items);
+        return new Collection(count($items), $items);
     }
 }

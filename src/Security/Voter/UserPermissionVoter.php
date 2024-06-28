@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
 use Doctrine\DBAL\Exception;
+use function in_array;
+use function is_array;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
@@ -47,7 +49,7 @@ final class UserPermissionVoter extends Voter
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return \in_array($attribute, $this->userPermissions, true);
+        return in_array($attribute, $this->userPermissions, true);
     }
 
     /**
@@ -69,7 +71,7 @@ final class UserPermissionVoter extends Voter
     {
         $userPermissions = $this->cacheResolver->load(self::USER_PERMISSIONS_CACHE_KEY);
 
-        if($userPermissions !== false && \is_array($userPermissions)) {
+        if($userPermissions !== false && is_array($userPermissions)) {
             $this->userPermissions = $userPermissions;
 
             return;

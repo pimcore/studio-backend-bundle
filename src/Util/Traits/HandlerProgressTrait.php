@@ -15,6 +15,7 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
+use function count;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Progress;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
@@ -65,7 +66,7 @@ trait HandlerProgressTrait
 
     private function getTotalEvents(JobRun $jobRun): int
     {
-        $steps = \count($jobRun->getJob()?->getSteps() ?? []);
+        $steps = count($jobRun->getJob()?->getSteps() ?? []);
 
         if (isset($jobRun->getContext()[self::TOTAL_EVENTS])) {
             return $jobRun->getContext()[self::TOTAL_EVENTS];

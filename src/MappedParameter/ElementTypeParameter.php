@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
+use function in_array;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -46,7 +47,7 @@ final readonly class ElementTypeParameter
      */
     private function validate(): void
     {
-        if (!\in_array($this->type, ElementTypes::ALLOWED_TYPES)) {
+        if (!in_array($this->type, ElementTypes::ALLOWED_TYPES)) {
             throw new InvalidElementTypeException($this->type);
         }
     }

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
+use function get_class;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -93,7 +94,7 @@ trait ElementProviderTrait
             $element instanceof Asset => Asset::class,
             $element instanceof Document => Document::class,
             $element instanceof DataObject => DataObject::class,
-            default => throw new InvalidElementTypeException(\get_class($element))
+            default => throw new InvalidElementTypeException(get_class($element))
         };
     }
 

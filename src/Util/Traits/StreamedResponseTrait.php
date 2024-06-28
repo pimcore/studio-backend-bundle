@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
+use function is_resource;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
@@ -44,7 +45,7 @@ trait StreamedResponseTrait
     ): StreamedResponse {
         $stream = $element->getStream();
 
-        if (!\is_resource($stream)) {
+        if (!is_resource($stream)) {
             throw new ElementStreamResourceNotFoundException(
                 $element->getId(),
                 $element->getType()

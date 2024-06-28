@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter;
 
+use function array_key_exists;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset;
@@ -54,7 +55,7 @@ final class MetadataAdapter implements PatchAdapterInterface
 
             // check for every single metadata if it is in the patch data
             foreach (self::PATCHABLE_KEYS as $patchKeys) {
-                if (\array_key_exists($patchKeys, $metadataForPatch[$index])) {
+                if (array_key_exists($patchKeys, $metadataForPatch[$index])) {
                     $metadata[$patchKeys] = $metadataForPatch[$index][$patchKeys];
                 }
             }

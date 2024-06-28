@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 
+use function array_key_exists;
 use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
@@ -33,7 +34,7 @@ final readonly class PropertiesAdapter implements UpdateAdapterInterface
 
     public function update(ElementInterface $element, array $data): void
     {
-        if (!\array_key_exists($this->getIndexKey(), $data)) {
+        if (!array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
         $this->propertyRepository->updateElementProperties($element, $data);

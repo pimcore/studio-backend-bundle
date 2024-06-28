@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
+use function is_string;
 use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mercure\HubInterface;
@@ -44,7 +45,7 @@ final readonly class PublishService implements PublishServiceInterface
         ?string $type = null,
         ?int $retry = null
     ): void {
-        if (\is_string($topics)) {
+        if (is_string($topics)) {
             $topics = [$topics];
         }
 

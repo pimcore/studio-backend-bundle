@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
+use function in_array;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ZipPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
@@ -81,7 +82,7 @@ final readonly class DownloadService implements DownloadServiceInterface
             throw new InvalidElementTypeException($image->getType());
         }
 
-        if (!\in_array($format, FormatTypes::ALLOWED_FORMATS)) {
+        if (!in_array($format, FormatTypes::ALLOWED_FORMATS)) {
             throw new InvalidAssetFormatTypeException($format);
         }
         $configuration = $this->defaultFormats[$format];

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
+use function count;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleEvent;
@@ -56,6 +57,6 @@ final readonly class RoleService implements RoleServiceInterface
             $items[] = $item;
         }
 
-        return new Collection(\count($items), $items);
+        return new Collection(count($items), $items);
     }
 }

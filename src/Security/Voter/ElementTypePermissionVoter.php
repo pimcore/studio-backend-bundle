@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
+use function array_key_exists;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -61,7 +62,7 @@ final class ElementTypePermissionVoter extends Voter
     {
         $elementType = $this->getElementTypeFromRequest();
 
-        if (!$elementType || !\array_key_exists($elementType, self::TYPE_TO_PERMISSION)) {
+        if (!$elementType || !array_key_exists($elementType, self::TYPE_TO_PERMISSION)) {
             return false;
         }
 

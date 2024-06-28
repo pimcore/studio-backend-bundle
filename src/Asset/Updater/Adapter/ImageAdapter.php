@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter;
 
+use function array_key_exists;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset\Image;
@@ -54,11 +55,11 @@ final readonly class ImageAdapter implements UpdateAdapterInterface
 
     private function checkFocalPoint(Image $image, array $data): void
     {
-        if (!\array_key_exists(self::INDEX_KEY, $data)) {
+        if (!array_key_exists(self::INDEX_KEY, $data)) {
             return;
         }
 
-        if (!\array_key_exists('focalPoint', $data[self::INDEX_KEY])) {
+        if (!array_key_exists('focalPoint', $data[self::INDEX_KEY])) {
             $image->removeCustomSetting('focalPointX');
             $image->removeCustomSetting('focalPointY');
 

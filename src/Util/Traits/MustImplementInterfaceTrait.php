@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
+use function in_array;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 
 /**
@@ -31,7 +32,7 @@ trait MustImplementInterfaceTrait
         $classInterfaces = class_implements($class, false);
         if (
             $classInterfaces === false ||
-            !\in_array($interface, $classInterfaces, true)
+            !in_array($interface, $classInterfaces, true)
         ) {
             throw new MustImplementInterfaceException(
                 sprintf('%s must implement %s', $class, $interface)

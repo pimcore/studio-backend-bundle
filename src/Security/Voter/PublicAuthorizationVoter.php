@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
+use function in_array;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NonPublicTranslationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PublicTranslationTrait;
@@ -46,7 +47,7 @@ final class PublicAuthorizationVoter extends Voter
     protected function supports(string $attribute, mixed $subject): bool
     {
         return $attribute === self::SUPPORTED_ATTRIBUTE &&
-            \in_array($this->getSubjectName($subject), self::SUPPORTED_SUBJECTS, true);
+            in_array($this->getSubjectName($subject), self::SUPPORTED_SUBJECTS, true);
     }
 
     /**

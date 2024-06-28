@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use function get_class;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DataObjectSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
@@ -51,7 +52,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
                 sprintf(
                     'Expected search to be an instance of %s, got %s',
                     DataObjectSearchInterface::class,
-                    \get_class($search)
+                    get_class($search)
                 )
             );
         }

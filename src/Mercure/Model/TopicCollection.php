@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Model;
 
+use function is_array;
+
 /**
  * @internal
  */
@@ -36,7 +38,7 @@ final class TopicCollection
      */
     public function addServerPublishableTopic(string|array $topics): void
     {
-        if (\is_array($topics)) {
+        if (is_array($topics)) {
             $this->serverPublishableTopics = array_merge($this->serverPublishableTopics, $topics);
 
             return;
@@ -52,7 +54,7 @@ final class TopicCollection
      */
     public function addServerSubscribableTopic(string|array $topics): void
     {
-        if (\is_array($topics)) {
+        if (is_array($topics)) {
             $this->serverSubscribableTopics = array_merge($this->serverSubscribableTopics, $topics);
 
             return;
@@ -68,7 +70,7 @@ final class TopicCollection
      */
     public function addClientPublishableTopic(string|array $topics): void
     {
-        if (\is_array($topics)) {
+        if (is_array($topics)) {
             $this->clientPublishableTopics = array_merge($this->clientPublishableTopics, $topics);
 
             return;
@@ -84,7 +86,7 @@ final class TopicCollection
      */
     public function addClientSubscribableTopic(string|array $topics): void
     {
-        if (\is_array($topics)) {
+        if (is_array($topics)) {
             $this->clientSubscribableTopics = array_merge($this->clientSubscribableTopics, $topics);
 
             return;
