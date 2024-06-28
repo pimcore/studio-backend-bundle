@@ -72,7 +72,7 @@ $config->setRules([
     'ternary_operator_spaces'             => true,
     'trailing_comma_in_multiline'         => true,
     'whitespace_after_comma_in_array'     => true,
-    'import_functions'                    => true,
+    'global_namespace_import'             =>  ['import_functions' => true],
 ]);
 
 $config->setFinder($finder);
