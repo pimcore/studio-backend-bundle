@@ -83,6 +83,7 @@ $config->setRules([
         'import_constants' => true,
         'import_functions' => true,
     ],
+    'imports_order' => ['const', 'class', 'function']
 ]);
 
 $config->setFinder($finder);
