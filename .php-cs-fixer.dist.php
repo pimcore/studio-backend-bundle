@@ -56,7 +56,6 @@ $config->setRules([
     'no_whitespace_before_comma_in_array' => true,
     'no_whitespace_in_blank_line'         => true,
     'object_operator_without_whitespace'  => true,
-    'ordered_imports'                     => true,
     'phpdoc_indent'                       => true,
     'phpdoc_no_useless_inheritdoc'        => true,
     'phpdoc_scalar'                       => true,
@@ -83,7 +82,10 @@ $config->setRules([
         'import_constants' => true,
         'import_functions' => true,
     ],
-    'imports_order' => ['const', 'class', 'function']
+    'ordered_imports' => [
+        'imports_order' => ['const', 'class', 'function']
+    ],
+
 ]);
 
 $config->setFinder($finder);
