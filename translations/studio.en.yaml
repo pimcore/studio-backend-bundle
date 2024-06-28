@@ -1,11 +1,14 @@
-username: Username
-password: Password
-login: Login
-Forgot your password: Forgot your password?
-ee_no_element_provided: No element provided
-ee_element_not_found: Element with type %type% with ID %id% not found
-ee_user_not_found: User with ID %userId% not found
-ee_environment_variable_not_found: Environment variable %variable% not found
-ee_element_locked: Element with type %type% with ID %id% is locked
-ee_element_permission_missing: User with ID %userId% has missing permission %permission% on element with type %type% and ID %id%
-ee_element_delete_failed: 'Element with type %type% with ID %id% could not be deleted: %message%'
+studio_ee_no_element_provided: No element provided
+studio_ee_element_not_found: Element with type %type% with ID %id% not found
+studio_ee_user_not_found: User with ID %userId% not found
+studio_ee_environment_variable_not_found: Environment variable %variable% not found
+studio_ee_element_locked: Element with type %type% with ID %id% is locked
+studio_ee_element_permission_missing: User with ID %userId% has missing permission %permission% on element with type %type% and ID %id%
+studio_ee_element_delete_failed: 'Element with type %type% with ID %id% could not be deleted: %message%'
+studio_ee_job_create_zip: Create Zip
+studio_ee_job_clone_assets: Clone Assets
+studio_ee_job_delete_assets: Delete Assets
+studio_ee_jop_step_zip_collection: Zip Collection
+studio_ee_jop_step_zip_creation: Zip Creation
+studio_ee_jop_step_asset_deletion: Asset Deletion
+studio_ee_jop_step_asset_cloning: Asset Cloning
