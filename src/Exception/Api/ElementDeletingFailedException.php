@@ -14,11 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
-interface IconServiceInterface
+/**
+ * @internal
+ */
+final class ElementDeletingFailedException extends AbstractApiException
 {
-    public function getIconForAsset(string $assetType, string $mimeType): string;
-
-    public function getIconForTag(): string;
+    public function __construct(int $id, ?string $error = null)
+    {
+        parent::__construct(
+            500,
+            sprintf('Failed to delete element with ID %s: %s', $id, $error ?? 'Unknown error')
+        );
+    }
 }

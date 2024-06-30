@@ -14,11 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter;
 
-interface IconServiceInterface
+/**
+ * @internal
+ */
+final readonly class ElementParameters
 {
-    public function getIconForAsset(string $assetType, string $mimeType): string;
+    public function __construct(
+        private ?string $type = null,
+        private ?int $id = null
+    ) {
+    }
 
-    public function getIconForTag(): string;
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 }
