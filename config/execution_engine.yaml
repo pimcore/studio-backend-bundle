@@ -1,0 +1,18 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Asset\Controller\:
+    resource: '../src/Asset/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\EventSubscriber\FailureSubscriber: ~

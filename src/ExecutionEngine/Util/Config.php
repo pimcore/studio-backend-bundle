@@ -17,7 +17,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
 
 enum Config: string
 {
-    case CONTEXT = 'studio';
+    case CONTEXT_STOP_ON_ERROR = 'studio_stop_on_error';
+    case CONTEXT_CONTINUE_ON_ERROR = 'studio_continue_on_error';
     case NO_ELEMENT_PROVIDED = 'studio_ee_no_element_provided';
     case ELEMENT_NOT_FOUND_MESSAGE = 'studio_ee_element_not_found';
     case USER_NOT_FOUND_MESSAGE = 'studio_ee_user_not_found';

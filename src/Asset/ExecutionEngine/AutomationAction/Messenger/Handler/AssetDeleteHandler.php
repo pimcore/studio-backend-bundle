@@ -26,11 +26,9 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Element\ElementDescriptor;
-use Pimcore\Model\User;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -63,12 +61,7 @@ final class AssetDeleteHandler extends AbstractHandler
         );
 
         if ($validatedParameters instanceof AbortActionData) {
-            $this->abortAction(
-                $validatedParameters->getTranslationKey(),
-                $validatedParameters->getTranslationParameters(),
-                Config::CONTEXT->value,
-                $validatedParameters->getExceptionClassName()
-            );
+            $this->abort($validatedParameters);
         }
 
         $user = $validatedParameters->getUser();
@@ -99,45 +92,6 @@ final class AssetDeleteHandler extends AbstractHandler
                     ],
                 ));
             }
-
-            return;
-        }
-
-        /** @var User $user because of the core method */
-        if (!$assetElement->isAllowed(ElementPermissions::DELETE_PERMISSION, $user)) {
-            $messageParameters = $this->getAbortData(
-                Config::ELEMENT_PERMISSION_MISSING_MESSAGE->value,
-                [
-                    'userId' => $user->getId(),
-                    'permission' => ElementPermissions::DELETE_PERMISSION,
-                    'type' => ElementTypes::TYPE_ASSET,
-                    'id' => $assetId,
-                ]
-            );
-
-            $this->logMessageToJobRun(
-                $jobRun,
-                $messageParameters->getTranslationKey(),
-                $messageParameters->getTranslationParameters()
-            );
-
-            return;
-        }
-
-        if ($assetElement->isLocked()) {
-            $messageParameters = $this->getAbortData(
-                Config::ELEMENT_LOCKED_MESSAGE->value,
-                [
-                    'type' => ElementTypes::TYPE_ASSET,
-                    'id' => $assetId,
-                ]
-            );
-
-            $this->logMessageToJobRun(
-                $jobRun,
-                $messageParameters->getTranslationKey(),
-                $messageParameters->getTranslationParameters()
-            );
 
             return;
         }

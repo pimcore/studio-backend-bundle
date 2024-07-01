@@ -52,6 +52,7 @@ final readonly class CloneSubscriber implements EventSubscriberInterface
                 Events::DELETION_FINISHED->value,
                 new Finished(
                     $event->getJobRunId(),
+                    $event->getJobName(),
                     $event->getNewState()
                 )
             );

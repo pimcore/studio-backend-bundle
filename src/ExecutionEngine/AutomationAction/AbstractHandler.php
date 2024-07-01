@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\ExecuteActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -52,7 +53,7 @@ class AbstractHandler extends AbstractAutomationActionHandler
     ): AbortActionData|ExecuteActionData {
         $element = $message->getElement();
         if (!$element) {
-            return $this->getAbortData(Config::ELEMENT_NOT_FOUND_MESSAGE->value);
+            return $this->getAbortData(Config::NO_ELEMENT_PROVIDED->value);
         }
 
         $user = $userResolver->getById($jobRun->getOwnerId());
@@ -101,44 +102,9 @@ class AbstractHandler extends AbstractAutomationActionHandler
         $this->abortAction(
             $abortActionData->getTranslationKey(),
             $abortActionData->getTranslationParameters(),
-            Config::CONTEXT->value,
+            TranslatorService::DOMAIN,
             $abortActionData->getExceptionClassName()
         );
-    }
-
-    /**
-     * @throws Exception
-     */
-    protected function getAssetById(
-        ElementDescriptor $jobAsset,
-        UserInterface $user,
-        AssetServiceInterface $assetService
-    ): Asset {
-        $asset = null;
-
-        try {
-            $asset = $assetService->getAssetElement($user, $jobAsset->getId());
-        } catch (NotFoundException) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_NOT_FOUND_MESSAGE->value,
-                [
-                    'id' => $jobAsset->getId(),
-                    'type' => ucfirst($jobAsset->getType()),
-                ],
-            ));
-        }
-
-        if (!$asset instanceof Asset) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_NOT_FOUND_MESSAGE->value,
-                [
-                    'id' => $jobAsset->getId(),
-                    'type' => ucfirst($jobAsset->getType()),
-                ],
-            ));
-        }
-
-        return $asset;
     }
 
     /**

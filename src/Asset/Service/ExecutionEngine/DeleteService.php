@@ -103,7 +103,12 @@ final readonly class DeleteService implements DeleteServiceInterface
                 ),
             ]
         );
-        $jobRun = $this->jobExecutionAgent->startJobExecution($job, $user->getId(), Config::CONTEXT->value);
+
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $user->getId(),
+            Config::CONTEXT_CONTINUE_ON_ERROR->value
+        );
 
         return $jobRun->getId();
     }
