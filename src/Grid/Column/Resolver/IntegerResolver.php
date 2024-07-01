@@ -25,10 +25,10 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final class IntegerResolver implements ColumnResolverInterface
 {
-
     public function resolve(Column $columnDefinition, ElementInterface $element): mixed
     {
         $getter = 'get' . ucfirst($columnDefinition->getKey());
+
         return $element->$getter();
     }
 

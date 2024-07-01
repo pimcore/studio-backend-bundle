@@ -26,10 +26,10 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final class DatetimeResolver implements ColumnResolverInterface
 {
-
     public function resolve(Column $columnDefinition, ElementInterface $element): mixed
     {
         $getter = 'get' . ucfirst($columnDefinition->getKey());
+
         return Carbon::create($element->$getter())->toISOString();
     }
 

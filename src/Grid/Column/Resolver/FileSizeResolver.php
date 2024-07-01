@@ -26,7 +26,6 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final class FileSizeResolver implements ColumnResolverInterface
 {
-
     public function resolve(Column $columnDefinition, ElementInterface $element): mixed
     {
         /** @var Asset $element */

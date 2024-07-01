@@ -49,14 +49,15 @@ final readonly class GridService implements GridServiceInterface
 
     public function getGridDataForElement(Configuration $configuration, ElementInterface $element): array
     {
-         $data = [];
-         foreach($configuration->getColumns() as $column) {
-             if(!array_key_exists($column->getType(), $this->columnResolvers)) {
-                 continue;
-             }
-             $data[$column->getKey()] = $this->columnResolvers[$column->getType()]->resolve($column, $element);
-         }
-         return $data;
+        $data = [];
+        foreach($configuration->getColumns() as $column) {
+            if(!array_key_exists($column->getType(), $this->columnResolvers)) {
+                continue;
+            }
+            $data[$column->getKey()] = $this->columnResolvers[$column->getType()]->resolve($column, $element);
+        }
+
+        return $data;
     }
 
     public function getAssetGridConfiguration(): Configuration
@@ -106,6 +107,7 @@ final readonly class GridService implements GridServiceInterface
                 config: $column['config']
             );
         }
+
         return new Configuration($columns);
     }
 }
