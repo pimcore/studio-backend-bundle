@@ -22,6 +22,7 @@ use OpenApi\Attributes\Schema;
 
 /**
  * Column contains all data + values that is needed for the grid
+ *
  * @internal
  */
 #[Schema(
@@ -45,8 +46,7 @@ final readonly class ColumnDefinition
         private string $type,
         #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
         private array $config,
-    )
-    {
+    ) {
 
     }
 

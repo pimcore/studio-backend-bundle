@@ -31,16 +31,15 @@ final readonly class ColumnMapper implements ColumnMapperInterface
         'filename' => 'string',
         'creationDate' => 'datetime',
         'modificationDate' => 'datetime',
-        'size' => 'integer'
+        'size' => 'integer',
     ];
-
 
     public function getType(string $column): string
     {
-       if(!array_key_exists($column, self::COLUMN_MAPPING)) {
-           throw new InvalidArgumentException('Column not found');
-       }
+        if(!array_key_exists($column, self::COLUMN_MAPPING)) {
+            throw new InvalidArgumentException('Column not found');
+        }
 
-       return self::COLUMN_MAPPING[$column];
+        return self::COLUMN_MAPPING[$column];
     }
 }

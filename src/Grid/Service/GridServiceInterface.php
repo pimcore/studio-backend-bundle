@@ -26,6 +26,7 @@ use Pimcore\Model\Element\ElementInterface;
 interface GridServiceInterface
 {
     public function getAssetGridConfiguration(): Configuration;
+
     public function getDocumentGridColumns(): Configuration;
 
     public function getDataObjectGridColumns(ClassDefinition $classDefinition): Configuration;

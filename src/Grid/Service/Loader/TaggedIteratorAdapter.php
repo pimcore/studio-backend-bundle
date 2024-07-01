@@ -43,8 +43,9 @@ final readonly class TaggedIteratorAdapter implements AdapterLoaderInterface
     {
         $adapters = [];
         foreach($this->taggedAdapter as $adapter) {
-           $adapters[$adapter->getType()] = $adapter;
+            $adapters[$adapter->getType()] = $adapter;
         }
+
         return $adapters;
     }
 }

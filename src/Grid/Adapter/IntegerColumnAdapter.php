@@ -21,7 +21,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Adapter;
  */
 final readonly class IntegerColumnAdapter implements ColumnAdapterInterface
 {
-
     public function getType(): string
     {
         return 'integer';

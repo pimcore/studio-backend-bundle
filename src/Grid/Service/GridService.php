@@ -38,14 +38,15 @@ final readonly class GridService implements GridServiceInterface
     ) {
         $this->adapters = $adapterLoader->loadAdapters();
     }
+
     public function getGridDataForElement(Configuration $configuration, ElementInterface $element): array
     {
-      // $data = [];
-      // foreach($configuration->getColumns() as $column) {
-      //     $data[$column->getKey()] = $column->getData($element);
-      // }
+        // $data = [];
+        // foreach($configuration->getColumns() as $column) {
+        //     $data[$column->getKey()] = $column->getData($element);
+        // }
 
-      // return $data;
+        // return $data;
         return [];
     }
 
@@ -67,6 +68,7 @@ final readonly class GridService implements GridServiceInterface
                 config: $this->adapters[$type]->getConfig()
             );
         }
+
         return new Configuration($columns);
     }
 
