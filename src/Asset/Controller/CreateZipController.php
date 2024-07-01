@@ -20,7 +20,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ScalarItemsJson;
@@ -75,8 +75,10 @@ final class CreateZipController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function createZippedAssets(#[MapRequestPayload] CreateZipParameter $downloadIds): Response
+    public function createZippedAssets(
+        #[MapRequestPayload] CreateAssetFileParameter $createAssetFileParameter
+    ): Response
     {
-        return $this->jsonResponse(['path' => $this->zipService->generateZipFile($downloadIds)]);
+        return $this->jsonResponse(['path' => $this->zipService->generateZipFile($createAssetFileParameter)]);
     }
 }

@@ -16,24 +16,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
+use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
-use Pimcore\Model\Asset;
-use ZipArchive;
 
 /**
  * @internal
  */
-final readonly class ZipService implements ZipServiceInterface
+final class CsvService implements CsvServiceInterface
 {
     use TempFilePathTrait;
 
@@ -43,50 +42,15 @@ final readonly class ZipService implements ZipServiceInterface
     ) {
     }
 
-    public function getZipArchive(int $id): ?ZipArchive
-    {
-        $zip = $this->getTempFilePath($id, self::ZIP_FILE_PATH);
-
-        $archive = new ZipArchive();
-
-        $state = false;
-
-        if (is_file($zip)) {
-            $state = $archive->open($zip);
-        }
-
-        if (!$state) {
-            $state = $archive->open($zip, ZipArchive::CREATE);
-        }
-
-        if (!$state) {
-            return null;
-        }
-
-        return $archive;
-    }
-
-    public function addFile(ZipArchive $archive, Asset $asset): void
-    {
-        $archive->addFile(
-            $asset->getLocalFile(),
-            preg_replace(
-                '@^' . preg_quote($asset->getRealPath(), '@') . '@i',
-                '',
-                $asset->getRealFullPath()
-            )
-        );
-    }
-
-    public function generateZipFile(CreateAssetFileParameter $ids): string
+    public function generateCsvFile(CreateAssetFileParameter $ids): string
     {
         $steps = [
-            new JobStep(JobSteps::ZIP_COLLECTION->value, CollectionMessage::class, '', []),
-            new JobStep(JobSteps::ZIP_CREATION->value, ZipCreationMessage::class, '', []),
+            new JobStep(JobSteps::CSV_CREATION->value, CollectionMessage::class, '', []),
+            new JobStep(JobSteps::CSV_CREATION->value, CsvCreationMessage::class, '', []),
         ];
 
         $job = new Job(
-            name: Jobs::CREATE_ZIP->value,
+            name: Jobs::CREATE_CSV->value,
             steps: $steps,
             selectedElements: $ids->getItems()
         );
@@ -97,6 +61,16 @@ final readonly class ZipService implements ZipServiceInterface
             Config::CONTEXT->value
         );
 
-        return $this->getTempFilePath($jobRun->getId(), self::ZIP_FILE_PATH);
+        return $this->getTempFilePath($jobRun->getId(), self::CSV_FILE_PATH);
+    }
+
+    public function getCsvFile(int $id): ?FilesystemOperator
+    {
+        return null;
+    }
+
+    public function addAsset(): void
+    {
+        // TODO: Implement addAsset() method.
     }
 }

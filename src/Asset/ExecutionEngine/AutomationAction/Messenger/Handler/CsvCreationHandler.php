@@ -16,30 +16,35 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
+use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * @internal
  */
 #[AsMessageHandler]
-final class ZipCollectionHandler extends AbstractHandler
+final class CsvCreationHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
     public function __construct(
+        private readonly PublishServiceInterface $publishService,
         private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver,
-        private readonly PublishServiceInterface $publishService,
+        private readonly CsvServiceInterface $csvService
     ) {
         parent::__construct();
     }
@@ -47,9 +52,10 @@ final class ZipCollectionHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(ZipCollectionMessage $message): void
+    public function __invoke(ZipCreationMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
+
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,
@@ -65,25 +71,48 @@ final class ZipCollectionHandler extends AbstractHandler
             );
         }
 
-        $user = $validatedParameters->getUser();
-        $jobAsset = $validatedParameters->getSubject();
-        $this->getElementById(
-            $jobAsset,
-            $user,
-            $this->elementService
-        );
-
         $context = $jobRun->getContext();
 
-        $assets = $context[ZipServiceInterface::ASSETS_INDEX] ?? [];
+        if (!array_key_exists(ZipServiceInterface::ASSETS_INDEX, $context)) {
+            $this->abortAction(
+                'no_assets_found',
+                [],
+                Config::CONTEXT->value,
+                NotFoundException::class
+            );
+        }
 
-        if (in_array($jobAsset->getId(), $assets, true)) {
+        $jobAsset = $validatedParameters->getSubject();
+
+        if (!in_array($jobAsset->getId(), $context[ZipServiceInterface::ASSETS_INDEX], true)) {
+            $this->abortAction(
+                'asset_permission_denied',
+                [],
+                Config::CONTEXT->value,
+                AccessDeniedException::class
+            );
+        }
+
+        $csv = $this->csvService->getCsvFile($jobRun->getId());
+        if (!$csv) {
+            $this->abortAction(
+                'csv_file_not_found',
+                [],
+                Config::CONTEXT->value,
+                NotFoundException::class
+            );
+        }
+
+        $asset = $this->getElementById(
+            $jobAsset,
+            $validatedParameters->getUser(),
+            $this->elementService
+        );
+        if (!$asset instanceof Asset) {
             return;
         }
 
-        $assets[] = $jobAsset->getId();
-
-        $this->updateJobRunContext($jobRun, ZipServiceInterface::ASSETS_INDEX, $assets);
+        $this->csvService->addAsset($csv, $asset);
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
