@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Adapter\ColumnAdapterInterface;
 interface AdapterLoaderInterface
 {
     /**
-     * @return array<int, ColumnAdapterInterface>
+     * @return array<string, ColumnAdapterInterface>
      */
     public function loadAdapters(): array;
 }
