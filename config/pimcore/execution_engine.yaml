@@ -1,9 +1,12 @@
 pimcore_generic_execution_engine:
   error_handling: 'stop_on_first_error'
   execution_context:
-    studio_backend:
+    studio_stop_on_error:
       translations_domain: studio
-
+      error_handling: 'stop_on_first_error'
+    studio_continue_on_error:
+      translations_domain: studio
+      error_handling: 'continue_on_error'
 
 framework:
   messenger:

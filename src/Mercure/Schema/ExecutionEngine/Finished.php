@@ -27,6 +27,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
     title: 'SSEJobRunFinished',
     required: [
         'jobRunId',
+        'jobRunName',
         'state',
     ],
     type: 'object'
@@ -36,8 +37,12 @@ final readonly class Finished
     public function __construct(
         #[Property(description: 'jobRunId', type: 'integer', example: 73)]
         private int $jobRunId,
-        #[Property(description: 'state', type: 'string', example: JobRunStates::FINISHED->value)]
-        private string $state,
+        #[Property(description: 'jobRunName', type: 'string', example: 'my-job-name')]
+        private string $jobName,
+        #[Property(description: 'status', type: 'string', example: JobRunStates::FINISHED->value)]
+        private string $status,
+        #[Property(description: 'messages', type: 'list', example: ['Something went wrong'])]
+        private array $messages = [],
     ) {
     }
 
@@ -46,8 +51,18 @@ final readonly class Finished
         return $this->jobRunId;
     }
 
-    public function getState(): string
+    public function getJobName(): string
     {
-        return $this->state;
+        return $this->jobName;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function getMessages(): array
+    {
+        return $this->messages;
     }
 }

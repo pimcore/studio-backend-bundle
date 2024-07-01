@@ -167,7 +167,11 @@ final readonly class CloneService implements CloneServiceInterface
                 CloneEnvironmentVariables::PARENT_ID->value => $newParent->getId(),
             ]
         );
-        $jobRun = $this->jobExecutionAgent->startJobExecution($job, $user->getId(), Config::CONTEXT->value);
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $user->getId(),
+            Config::CONTEXT_STOP_ON_ERROR->value
+        );
 
         return $jobRun->getId();
     }
