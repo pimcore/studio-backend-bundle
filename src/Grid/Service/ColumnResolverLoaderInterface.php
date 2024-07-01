@@ -14,30 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
+
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 
 /**
  * @internal
  */
-final readonly class DatetimeColumnAdapter implements ColumnAdapterInterface
+interface ColumnResolverLoaderInterface
 {
-    public function getType(): string
-    {
-        return 'datetime';
-    }
-
-    public function getConfig(): array
-    {
-        return  [];
-    }
-
-    public function isSortable(): bool
-    {
-        return true;
-    }
-
-    public function isEditable(): bool
-    {
-        return false;
-    }
+    /**
+     * @return array<string, ColumnResolverInterface>
+     */
+    public function loadColumnResolvers(): array;
 }

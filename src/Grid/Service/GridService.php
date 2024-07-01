@@ -16,8 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Adapter\ColumnAdapterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\Element\ElementInterface;
@@ -28,26 +29,34 @@ use Pimcore\Model\Element\ElementInterface;
 final readonly class GridService implements GridServiceInterface
 {
     /**
-     * @param array<int, ColumnAdapterInterface> $adapters
+     * @param array<int, ColumnDefinitionInterface> $columnDefinitions
      */
-    private array $adapters;
+    private array $columnDefinitions;
+
+    /**
+     * @param array<int, ColumnResolverInterface> $columnResolvers
+     */
+    private array $columnResolvers;
 
     public function __construct(
-        AdapterLoaderInterface $adapterLoader,
+        ColumnDefinitionLoaderInterface $columnAdapterLoader,
+        ColumnResolverLoaderInterface $columnResolverLoader,
         private SystemColumnServiceInterface $systemColumnService
     ) {
-        $this->adapters = $adapterLoader->loadAdapters();
+        $this->columnDefinitions = $columnAdapterLoader->loadColumnDefinitions();
+        $this->columnResolvers = $columnResolverLoader->loadColumnResolvers();
     }
 
     public function getGridDataForElement(Configuration $configuration, ElementInterface $element): array
     {
-        // $data = [];
-        // foreach($configuration->getColumns() as $column) {
-        //     $data[$column->getKey()] = $column->getData($element);
-        // }
-
-        // return $data;
-        return [];
+         $data = [];
+         foreach($configuration->getColumns() as $column) {
+             if(!array_key_exists($column->getType(), $this->columnResolvers)) {
+                 continue;
+             }
+             $data[$column->getKey()] = $this->columnResolvers[$column->getType()]->resolve($column, $element);
+         }
+         return $data;
     }
 
     public function getAssetGridConfiguration(): Configuration
@@ -55,17 +64,17 @@ final readonly class GridService implements GridServiceInterface
         $systemColumns = $this->systemColumnService->getSystemColumnsForAssets();
         $columns = [];
         foreach ($systemColumns as $columnKey => $type) {
-            if (!array_key_exists($type, $this->adapters)) {
+            if (!array_key_exists($type, $this->columnDefinitions)) {
                 continue;
             }
-            $columns[] = new ColumnDefinition(
+            $columns[] = new Column(
                 key: $columnKey,
                 group: 'system',
-                sortable: $this->adapters[$type]->isSortable(),
+                sortable: $this->columnDefinitions[$type]->isSortable(),
                 editable: false,
                 localizable: false,
                 type: $type,
-                config: $this->adapters[$type]->getConfig()
+                config: $this->columnDefinitions[$type]->getConfig()
             );
         }
 
@@ -80,5 +89,23 @@ final readonly class GridService implements GridServiceInterface
     public function getDataObjectGridColumns(ClassDefinition $classDefinition): Configuration
     {
         return new Configuration([]);
+    }
+
+    public function getConfigurationFromArray(array $config): Configuration
+    {
+        $columns = [];
+
+        foreach ($config['columns'] as $column) {
+            $columns[] = new Column(
+                key: $column['key'],
+                group: $column['group'],
+                sortable: $column['sortable'],
+                editable: $column['editable'],
+                localizable: $column['localizable'],
+                type: $column['type'],
+                config: $column['config']
+            );
+        }
+        return new Configuration($columns);
     }
 }

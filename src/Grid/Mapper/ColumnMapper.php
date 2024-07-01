@@ -31,7 +31,7 @@ final readonly class ColumnMapper implements ColumnMapperInterface
         'filename' => 'string',
         'creationDate' => 'datetime',
         'modificationDate' => 'datetime',
-        'size' => 'integer',
+        'size' => 'fileSize',
     ];
 
     public function getType(string $column): string

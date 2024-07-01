@@ -14,18 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
+
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 
 /**
  * @internal
  */
-interface ColumnAdapterInterface
+interface ColumnDefinitionLoaderInterface
 {
-    public function getType(): string;
-
-    public function getConfig(): array;
-
-    public function isSortable(): bool;
-
-    public function isEditable(): bool;
+    /**
+     * @return array<string, ColumnDefinitionInterface>
+     */
+    public function loadColumnDefinitions(): array;
 }

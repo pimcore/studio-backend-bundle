@@ -30,20 +30,20 @@ use OpenApi\Attributes\Schema;
 final readonly class Configuration
 {
     /**
-     * @param array<int, ColumnDefinition> $columns
+     * @param array<int, Column> $columns
      */
     public function __construct(
         #[Property(
             property: 'columns',
             type: 'array',
-            items: new Items(ref: ColumnDefinition::class)
+            items: new Items(ref: Column::class)
         )]
         private array $columns,
     ) {
     }
 
     /**
-     * @return array<int, ColumnDefinition>
+     * @return array<int, Column>
      */
     public function getColumns(): array
     {

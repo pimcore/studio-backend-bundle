@@ -29,7 +29,7 @@ use OpenApi\Attributes\Schema;
     title: 'GridColumnDefinition',
     type: 'object'
 )]
-final readonly class ColumnDefinition
+final readonly class Column
 {
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]

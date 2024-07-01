@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Adapter\ColumnAdapterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorAdapter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnResolverLoader;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\MustImplementInterfaceTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -26,7 +26,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 /**
  * @internal
  */
-final readonly class GridColumnAdapterPass implements CompilerPassInterface
+final readonly class GridColumnResolverPass implements CompilerPassInterface
 {
     use MustImplementInterfaceTrait;
 
@@ -37,13 +37,13 @@ final readonly class GridColumnAdapterPass implements CompilerPassInterface
     {
         $taggedServices = array_keys(
             [
-                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::ADAPTER_TAG),
+                ... $container->findTaggedServiceIds(TaggedIteratorColumnResolverLoader::COLUMN_RESOLVER_TAG),
 
             ]
         );
 
         foreach ($taggedServices as $environmentType) {
-            $this->checkInterface($environmentType, ColumnAdapterInterface::class);
+            $this->checkInterface($environmentType, ColumnResolverInterface::class);
         }
     }
 }

@@ -14,16 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
+
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 
 /**
  * @internal
  */
-final readonly class StringColumnAdapter implements ColumnAdapterInterface
+final readonly class FileSizeDefinition implements ColumnDefinitionInterface
 {
     public function getType(): string
     {
-        return 'string';
+        return 'fileSize';
     }
 
     public function getConfig(): array
@@ -34,10 +36,5 @@ final readonly class StringColumnAdapter implements ColumnAdapterInterface
     public function isSortable(): bool
     {
         return true;
-    }
-
-    public function isEditable(): bool
-    {
-        return false;
     }
 }

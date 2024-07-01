@@ -14,17 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Adapter\ColumnAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 
 /**
  * @internal
  */
-interface AdapterLoaderInterface
+final readonly class ImageDefinition implements ColumnDefinitionInterface
 {
-    /**
-     * @return array<string, ColumnAdapterInterface>
-     */
-    public function loadAdapters(): array;
+    public function getType(): string
+    {
+        return 'image';
+    }
+
+    public function getConfig(): array
+    {
+        return  [];
+    }
+
+    public function isSortable(): bool
+    {
+        return false;
+    }
 }
