@@ -26,8 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\SingleParamete
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserCloneParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserCloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -65,7 +65,7 @@ final class CloneController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'Node of the cloned user.',
-        content: new JsonContent(ref: UserTreeNode::class)
+        content: new JsonContent(ref: TreeNode::class)
     )]
     #[IdParameter(type: 'user')]
     #[SingleParameterRequestBody(

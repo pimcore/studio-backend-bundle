@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Schema;
 
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 
 /**
  * @internal
@@ -27,7 +27,7 @@ final class UserTreeNodeTest extends Unit
     public function testGetId(): void
     {
         $id = 1;
-        $userTreeNode = new UserTreeNode($id, 'name', 'user', true);
+        $userTreeNode = new TreeNode($id, 'name', 'user', true);
 
         $this->assertSame($id, $userTreeNode->getId());
     }
@@ -35,7 +35,7 @@ final class UserTreeNodeTest extends Unit
     public function testGetName(): void
     {
         $name = 'name';
-        $userTreeNode = new UserTreeNode(1, $name, 'user', true);
+        $userTreeNode = new TreeNode(1, $name, 'user', true);
 
         $this->assertSame($name, $userTreeNode->getName());
     }
@@ -43,7 +43,7 @@ final class UserTreeNodeTest extends Unit
     public function testGetType(): void
     {
         $type = 'user';
-        $userTreeNode = new UserTreeNode(1, 'name', $type, true);
+        $userTreeNode = new TreeNode(1, 'name', $type, true);
 
         $this->assertSame($type, $userTreeNode->getType());
     }
@@ -51,7 +51,7 @@ final class UserTreeNodeTest extends Unit
     public function testIsHasChildren(): void
     {
         $hasChildren = false;
-        $userTreeNode = new UserTreeNode(1, 'name', 'user', $hasChildren);
+        $userTreeNode = new TreeNode(1, 'name', 'user', $hasChildren);
 
         $this->assertSame($hasChildren, $userTreeNode->hasChildren());
     }

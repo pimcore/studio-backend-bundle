@@ -24,8 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\Colle
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -66,7 +66,7 @@ final class UserTreeController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'Collection of users including folders for the given parent id.',
-        content: new CollectionJson(new GenericCollection(UserTreeNode::class))
+        content: new CollectionJson(new GenericCollection(TreeNode::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,

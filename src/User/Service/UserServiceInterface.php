@@ -22,12 +22,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 
 /**
  * @internal
@@ -49,7 +49,7 @@ interface UserServiceInterface
     /**
      * @throws NotFoundException|DatabaseException
      */
-    public function createUser(CreateParameter $createParameter): UserTreeNode;
+    public function createUser(CreateParameter $createParameter): TreeNode;
 
     /**
      * @throws NotFoundException|DatabaseException

@@ -17,18 +17,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Event;
 
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 
 final class UserTreeNodeEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.user_tree_node';
 
-    public function __construct(private readonly UserTreeNode $user)
+    public function __construct(private readonly TreeNode $user)
     {
         parent::__construct($user);
     }
 
-    public function getUserTreeNode(): UserTreeNode
+    public function getUserTreeNode(): TreeNode
     {
         return $this->user;
     }
