@@ -155,7 +155,13 @@ final readonly class CloneService implements CloneServiceInterface
             steps: [
                 new JobStep(JobSteps::ASSET_CLONING->value, AssetCloneMessage::class, '', []),
             ],
-            selectedElements: [],
+            selectedElements: array_map(
+                static fn (int $id) => new ElementDescriptor(
+                    ElementTypes::TYPE_ASSET,
+                    $id
+                ),
+                $ids
+            ),
             environmentData: [
                 CloneEnvironmentVariables::ORIGINAL_PARENT_ID->value => $originalParent->getId(),
                 CloneEnvironmentVariables::PARENT_ID->value => $newParent->getId(),
