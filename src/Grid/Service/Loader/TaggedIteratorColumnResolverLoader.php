@@ -38,7 +38,7 @@ final readonly class TaggedIteratorColumnResolverLoader implements ColumnResolve
     }
 
     /**
-     * @return array<string, ColumnDefinitionInterface>
+     * @return array<string, ColumnResolverInterface>
      */
     public function loadColumnResolvers(): array
     {
