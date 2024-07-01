@@ -33,7 +33,7 @@ final readonly class SystemColumnService implements SystemColumnServiceInterface
     {
         $systemColumns = Service::GRID_SYSTEM_COLUMNS;
         $columns = [];
-        foreach($systemColumns as $column) {
+        foreach ($systemColumns as $column) {
             $columns[$column] = $this->columnMapper->getType($column);
         }
 

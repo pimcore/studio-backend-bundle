@@ -54,8 +54,8 @@ final readonly class GridService implements GridServiceInterface
     {
         $systemColumns = $this->systemColumnService->getSystemColumnsForAssets();
         $columns = [];
-        foreach($systemColumns as $columnKey => $type) {
-            if(!array_key_exists($type, $this->adapters)) {
+        foreach ($systemColumns as $columnKey => $type) {
+            if (!array_key_exists($type, $this->adapters)) {
                 continue;
             }
             $columns[] = new ColumnDefinition(

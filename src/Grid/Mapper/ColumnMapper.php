@@ -36,7 +36,7 @@ final readonly class ColumnMapper implements ColumnMapperInterface
 
     public function getType(string $column): string
     {
-        if(!array_key_exists($column, self::COLUMN_MAPPING)) {
+        if (!array_key_exists($column, self::COLUMN_MAPPING)) {
             throw new InvalidArgumentException('Column not found');
         }
 

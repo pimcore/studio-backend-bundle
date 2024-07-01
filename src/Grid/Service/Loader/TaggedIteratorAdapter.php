@@ -32,17 +32,17 @@ final readonly class TaggedIteratorAdapter implements AdapterLoaderInterface
      */
     public function __construct(
         #[TaggedIterator(self::ADAPTER_TAG)]
-        private readonly iterable $taggedAdapter,
+        private iterable $taggedAdapter,
     ) {
     }
 
     /**
-     * @return array<int, ColumnAdapterInterface>
+     * @return array<string, ColumnAdapterInterface>
      */
     public function loadAdapters(): array
     {
         $adapters = [];
-        foreach($this->taggedAdapter as $adapter) {
+        foreach ($this->taggedAdapter as $adapter) {
             $adapters[$adapter->getType()] = $adapter;
         }
 
