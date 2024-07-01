@@ -23,9 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Model\Asset;
 use ZipArchive;
 
@@ -95,7 +95,7 @@ final readonly class ZipService implements ZipServiceInterface
         $jobRun = $this->jobExecutionAgent->startJobExecution(
             $job,
             $this->securityService->getCurrentUser()->getId(),
-            Config::CONTEXT->value
+            TranslatorService::DOMAIN
         );
 
         return $this->getTempZipFilePath($jobRun->getId());

@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber;
+namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\EventSubscriber;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunErrorLogRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -27,10 +27,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * @internal
  */
-final readonly class CloneSubscriber implements EventSubscriberInterface
+final readonly class FailureSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private PublishServiceInterface $publishService,
+        private JobRunErrorLogRepositoryInterface $jobRunErrorLogRepository
     ) {
 
     }
@@ -45,15 +46,22 @@ final readonly class CloneSubscriber implements EventSubscriberInterface
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
         if (
-            $event->getNewState() === JobRunStates::FINISHED->value &&
-            $event->getJobName() === Jobs::CLONE_ASSETS->value
+            $event->getNewState() === JobRunStates::FAILED->value
         ) {
+            $log = $this->jobRunErrorLogRepository->getLogsByJobRunId(
+                $event->getJobRunId(),
+                null,
+                [],
+                1
+            );
+
             $this->publishService->publish(
-                Events::DELETION_FINISHED->value,
+                Events::FAILED->value,
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
-                    $event->getNewState()
+                    $event->getNewState(),
+                    [$log[0]->getErrorMessage()]
                 )
             );
         }
