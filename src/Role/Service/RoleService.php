@@ -19,6 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleEvent;
+use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleTreeNodeEvent;
+use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\RoleTreeListingParameter;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UserRole;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -30,7 +33,8 @@ final readonly class RoleService implements RoleServiceInterface
 {
     public function __construct(
         private RoleRepositoryInterface $roleRepository,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private RoleTreeNodeHydratorInterface $roleTreeNodeHydrator
     ) {
     }
 
@@ -57,5 +61,28 @@ final readonly class RoleService implements RoleServiceInterface
         }
 
         return new Collection(count($items), $items);
+    }
+
+    /**
+     * @throws DatabaseException
+     */
+    public function getRoleTreeCollection(RoleTreeListingParameter $listingParameter): Collection
+    {
+        $roles = $this->roleRepository->getRoleListingWithFolderByParentId($listingParameter->getParentId());
+
+        $items = [];
+        foreach ($roles->getRoles() as $role) {
+            $item = $this->roleTreeNodeHydrator->hydrate($role);
+
+            $this->eventDispatcher->dispatch(
+                new RoleTreeNodeEvent($item),
+                RoleTreeNodeEvent::EVENT_NAME
+            );
+
+            $items[] = $item;
+        }
+
+        return new Collection(count($items), $items);
+
     }
 }

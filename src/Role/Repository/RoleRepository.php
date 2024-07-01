@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Model\User\Role;
+use Pimcore\Model\User\Role\Folder as RoleFolder;
 use Pimcore\Model\User\Role\Listing;
 
 /**
@@ -39,6 +40,26 @@ final class RoleRepository implements RoleRepositoryInterface
             $roleListing->load();
 
             return $roleListing->getRoles();
+        } catch (Exception $e) {
+            throw new  DatabaseException(sprintf('Error while fetching roles: %s', $e->getMessage()));
+        }
+    }
+
+
+    /**
+     *
+     * @throws DatabaseException
+     */
+    public function getRoleListingWithFolderByParentId(int $parentId): Listing
+    {
+        try {
+            $roleListing = new Listing();
+            $roleListing->setCondition('parentId = ?', $parentId);
+            $roleListing->setOrder('ASC');
+            $roleListing->setOrderKey('name');
+            $roleListing->load();
+
+            return $roleListing;
         } catch (Exception $e) {
             throw new  DatabaseException(sprintf('Error while fetching roles: %s', $e->getMessage()));
         }

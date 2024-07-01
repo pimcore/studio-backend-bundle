@@ -21,6 +21,9 @@ services:
   # Hydrators
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydrator
+
   #
   # Repositories
   #

@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\RoleTreeListingParameter;
 
 /**
  * @internal
@@ -28,4 +29,9 @@ interface RoleServiceInterface
      * @throws DatabaseException
      */
     public function getRoles(): Collection;
+
+    /**
+     * @throws DatabaseException
+     */
+    public function getRoleTreeCollection(RoleTreeListingParameter $listingParameter): Collection;
 }
