@@ -43,4 +43,23 @@ final class RoleRepository implements RoleRepositoryInterface
             throw new  DatabaseException(sprintf('Error while fetching roles: %s', $e->getMessage()));
         }
     }
+
+    /**
+     *
+     * @throws DatabaseException
+     */
+    public function getRoleListingWithFolderByParentId(int $parentId): Listing
+    {
+        try {
+            $roleListing = new Listing();
+            $roleListing->setCondition('parentId = ?', $parentId);
+            $roleListing->setOrder('ASC');
+            $roleListing->setOrderKey('name');
+            $roleListing->load();
+
+            return $roleListing;
+        } catch (Exception $e) {
+            throw new  DatabaseException(sprintf('Error while fetching roles: %s', $e->getMessage()));
+        }
+    }
 }

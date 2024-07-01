@@ -14,21 +14,25 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
-use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\PositiveOrZero;
 
 /**
  * @internal
  */
-final class UserListParameterTest extends Unit
+final readonly class ParentIdParameter
 {
-    public function testGetParentId(): void
-    {
-        $parentId = 1;
-        $userListParameter = new UserListParameter($parentId);
+    public function __construct(
+        #[PositiveOrZero]
+        #[NotBlank]
+        private int $parentId = 1
+    ) {
+    }
 
-        $this->assertSame($parentId, $userListParameter->getParentId());
+    public function getParentId(): int
+    {
+        return $this->parentId;
     }
 }

@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Model\User\Folder;
 use Pimcore\Model\UserInterface;
 
@@ -25,5 +25,5 @@ use Pimcore\Model\UserInterface;
  */
 interface UserTreeNodeHydratorInterface
 {
-    public function hydrate(UserInterface|Folder $user): UserTreeNode;
+    public function hydrate(UserInterface|Folder $user): TreeNode;
 }

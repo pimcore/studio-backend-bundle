@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Attributes\Response\Property;
 
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 
 final class UserTreeNodeCollection extends Property
 {
@@ -28,7 +28,7 @@ final class UserTreeNodeCollection extends Property
             'items',
             title: 'items',
             type: 'array',
-            items: new Items(ref: UserTreeNode::class)
+            items: new Items(ref: TreeNode::class)
         );
     }
 }

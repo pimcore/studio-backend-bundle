@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Model\User\Role;
+use Pimcore\Model\User\Role\Listing;
 
 /**
  * @internal
@@ -30,4 +31,10 @@ interface RoleRepositoryInterface
      * @throws DatabaseException
      */
     public function getRoles(): array;
+
+    /**
+     *
+     * @throws DatabaseException
+     */
+    public function getRoleListingWithFolderByParentId(int $parentId): Listing;
 }

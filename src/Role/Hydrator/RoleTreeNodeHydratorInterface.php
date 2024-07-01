@@ -14,25 +14,16 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Hydrator;
 
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\PositiveOrZero;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
+use Pimcore\Model\User\Role\Folder as RoleFolder;
+use Pimcore\Model\User\UserRoleInterface;
 
 /**
  * @internal
  */
-final readonly class UserListParameter
+interface RoleTreeNodeHydratorInterface
 {
-    public function __construct(
-        #[PositiveOrZero]
-        #[NotBlank]
-        private int $parentId = 1
-    ) {
-    }
-
-    public function getParentId(): int
-    {
-        return $this->parentId;
-    }
+    public function hydrate(UserRoleInterface|RoleFolder $role): TreeNode;
 }

@@ -14,11 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter as ParentIdMappedParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter as MappedParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
@@ -26,8 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,42 +39,43 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class UserTreeController extends AbstractApiController
+final class RoleTreeController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly UserServiceInterface $userService
+        private readonly RoleServiceInterface $roleService
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/users/tree', name: 'pimcore_studio_api_user_tree', methods: ['GET'])]
+    /**
+     * @throws DatabaseException
+     */
+    #[Route('/roles/tree', name: 'pimcore_studio_api_role_tree', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
-        path: self::API_PATH . '/users/tree',
-        operationId: 'getUserTree',
-        summary: 'Get collection of users for tree view',
-        tags: [Tags::User->value]
+        path: self::API_PATH . '/roles/tree',
+        operationId: 'getRoleTree',
+        summary: 'Get collection of roles for tree view',
+        tags: [Tags::Role->value]
     )]
     #[ParentIdParameter(
-        description: 'Filter users by parent id.',
+        description: 'Filter roles by parent id.',
         required: true,
         minimum: 0,
         example: 0
     )]
     #[SuccessResponse(
-        description: 'Collection of users including folders for the given parent id.',
+        description: 'Collection of roles including folders for the given parent id.',
         content: new CollectionJson(new GenericCollection(TreeNode::class))
     )]
-    #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND,
-    ])]
-    public function getUserTree(#[MapQueryString] ParentIdMappedParameter $userList): Response
+    #[DefaultResponses]
+    public function getRoleTree(#[MapQueryString] MappedParentIdParameter $roleTreeListingParameter): Response
     {
-        $users = $this->userService->getUserTreeListing($userList);
+        $roles = $this->roleService->getRoleTreeCollection($roleTreeListingParameter);
 
-        return $this->getPaginatedCollection($this->serializer, $users->getItems(), $users->getTotalItems());
+        return $this->getPaginatedCollection($this->serializer, $roles->getItems(), $roles->getTotalItems());
     }
 }

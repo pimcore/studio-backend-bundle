@@ -14,28 +14,28 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
-use Pimcore\Model\User\Folder;
-use Pimcore\Model\UserInterface;
+use Pimcore\Model\User\Role\Folder as RoleFolder;
+use Pimcore\Model\User\UserRoleInterface;
 
 /**
  * @internal
  */
-final class UserTreeNodeHydrator implements UserTreeNodeHydratorInterface
+final class RoleTreeNodeHydrator implements RoleTreeNodeHydratorInterface
 {
-    public function hydrate(UserInterface|Folder $user): TreeNode
+    public function hydrate(UserRoleInterface|RoleFolder $role): TreeNode
     {
         $hasChildren = false;
-        if ($user instanceof Folder) {
-            $hasChildren = $user->hasChildren();
+        if ($role instanceof RoleFolder) {
+            $hasChildren = $role->hasChildren();
         }
 
         return new TreeNode(
-            id: $user->getId(),
-            name: $user->getName(),
-            type: $user->getType(),
+            id: $role->getId(),
+            name: $role->getName(),
+            type: $role->getType(),
             hasChildren: $hasChildren,
         );
     }

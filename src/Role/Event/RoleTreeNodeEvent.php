@@ -14,21 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Event;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 
-/**
- * @internal
- */
-interface UserCloneServiceInterface
+final class RoleTreeNodeEvent extends AbstractPreResponseEvent
 {
-    /**
-     * Clone a user with the given id and assign the given name to the new user.
-     *
-     * @throws DatabaseException|NotFoundException
-     */
-    public function cloneUser(int $userId, string $userName): TreeNode;
+    public const EVENT_NAME = 'pre_response.role_tree_node';
+
+    public function __construct(private readonly TreeNode $roleNode)
+    {
+        parent::__construct($roleNode);
+    }
+
+    public function getRoleTreeNode(): TreeNode
+    {
+        return $this->roleNode;
+    }
 }

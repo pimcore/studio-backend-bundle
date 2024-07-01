@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Event;
 
 use Codeception\Test\Unit;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 
 /**
  * @internal
@@ -27,7 +27,7 @@ final class UserTreeNodeEventTest extends Unit
 {
     public function testGetUserTreeNode(): void
     {
-        $userTreeNode = new UserTreeNode(
+        $userTreeNode = new TreeNode(
             id: 1,
             name: 'name',
             type: 'type',

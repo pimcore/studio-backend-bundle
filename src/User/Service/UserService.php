@@ -25,6 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserEvent;
@@ -32,13 +34,11 @@ use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -92,7 +92,7 @@ final readonly class UserService implements UserServiceInterface
 
     }
 
-    public function getUserTreeListing(UserListParameter $userListParameter): Collection
+    public function getUserTreeListing(ParentIdParameter $userListParameter): Collection
     {
         $userListing = $this->userRepository->getUserListingByParentId($userListParameter->getParentId());
         $users = [];
@@ -172,7 +172,7 @@ final readonly class UserService implements UserServiceInterface
     /**
      * @throws NotFoundException|DatabaseException
      */
-    public function createUser(CreateParameter $createParameter): UserTreeNode
+    public function createUser(CreateParameter $createParameter): TreeNode
     {
         $folderId = 0;
 
