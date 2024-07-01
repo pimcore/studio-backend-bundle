@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\PositiveOrZero;
@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Constraints\PositiveOrZero;
 /**
  * @internal
  */
-final readonly class UserListParameter
+final readonly class ParentIdParameter
 {
     public function __construct(
         #[PositiveOrZero]

@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Controller;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter as MappedParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
@@ -72,7 +73,7 @@ final class RoleTreeController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(TreeNode::class))
     )]
     #[DefaultResponses]
-    public function getRoleTree(#[MapQueryString] RoleTreeListingParameter $roleTreeListingParameter): Response
+    public function getRoleTree(#[MapQueryString] MappedParentIdParameter $roleTreeListingParameter): Response
     {
         $roles = $this->roleService->getRoleTreeCollection($roleTreeListingParameter);
 

@@ -22,10 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SendMailException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 
@@ -39,7 +39,7 @@ interface UserServiceInterface
      */
     public function resetPassword(ResetPassword $resetPassword): void;
 
-    public function getUserTreeListing(UserListParameter $userListParameter): Collection;
+    public function getUserTreeListing(ParentIdParameter $userListParameter): Collection;
 
     /**
      * @throws NotFoundException|ForbiddenException|DatabaseException

@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter as ParentIdMappedParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
@@ -25,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
-use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -71,7 +71,7 @@ final class UserTreeController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getUserTree(#[MapQueryString] UserListParameter $userList): Response
+    public function getUserTree(#[MapQueryString] ParentIdMappedParameter $userList): Response
     {
         $users = $this->userService->getUserTreeListing($userList);
 
