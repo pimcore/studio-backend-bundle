@@ -70,8 +70,7 @@ final readonly class DeletionSubscriber implements EventSubscriberInterface
     private function handleFinishedWithErrors(
         int $jobRunId,
         string $jobName
-    ): void
-    {
+    ): void {
         $messages = [];
         $errorLogs = $this->jobRunErrorLogRepository->getLogsByJobRunId($jobRunId);
         foreach ($errorLogs as $errorLog) {
