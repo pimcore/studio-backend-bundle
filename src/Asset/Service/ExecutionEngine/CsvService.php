@@ -23,10 +23,10 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 
 /**
@@ -42,7 +42,7 @@ final class CsvService implements CsvServiceInterface
     ) {
     }
 
-    public function generateCsvFile(CreateAssetFileParameter $ids): string
+    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): string
     {
         $steps = [
             new JobStep(JobSteps::CSV_CREATION->value, CollectionMessage::class, '', []),
@@ -52,13 +52,13 @@ final class CsvService implements CsvServiceInterface
         $job = new Job(
             name: Jobs::CREATE_CSV->value,
             steps: $steps,
-            selectedElements: $ids->getItems()
+            selectedElements: $exportAssetParameter->getAssets()
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
             $job,
             $this->securityService->getCurrentUser()->getId(),
-            Config::CONTEXT->value
+            TranslatorService::DOMAIN
         );
 
         return $this->getTempFilePath($jobRun->getId(), self::CSV_FILE_PATH);

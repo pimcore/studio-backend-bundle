@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 
 /**
  * @internal
@@ -31,6 +32,6 @@ interface CsvServiceInterface
 
     public function addAsset(): void;
 
-    public function generateCsvFile(CreateAssetFileParameter $ids): string;
+    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): string;
     public function getTempFilePath(int $id, string $path): string;
 }

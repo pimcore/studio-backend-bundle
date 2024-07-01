@@ -16,14 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ScalarItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -57,7 +57,20 @@ final class CreateCsvController extends AbstractApiController
         tags: [Tags::Assets->name]
     )]
     #[RequestBody(
-        content: new ScalarItemsJson('integer')
+        content: new JsonContent(
+            properties: [
+                new Property(
+                    property: 'items',
+                    properties: [
+                        new Property(property: 'assets', type: 'array', items: new Items(type: 'integer')),
+                        new Property(property: 'gridConfig', type: 'array', items: new Items(type: 'string')),
+                        new Property(property: 'settings', type: 'object', items: new Items(type: 'string')),
+                    ],
+                    type: 'object'
+                ),
+            ],
+            type: 'object',
+        )
     )]
     #[SuccessResponse(
         content: new JsonContent(
@@ -76,9 +89,9 @@ final class CreateCsvController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function createZippedAssets(
-        #[MapRequestPayload] CreateAssetFileParameter $createAssetFileParameter
+        #[MapRequestPayload] ExportAssetParameter $exportAssetParameter
     ): Response
     {
-        return $this->jsonResponse(['path' => $this->csvService->generateCsvFile($createAssetFileParameter)]);
+        return $this->jsonResponse(['path' => $this->csvService->generateCsvFile($exportAssetParameter)]);
     }
 }

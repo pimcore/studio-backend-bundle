@@ -26,7 +26,7 @@ final readonly class ExportAssetParameter
 {
     /** @param array<int> $items */
     public function __construct(
-        private array $items,
+        private array $assets,
         private array $gridConfig,
         private array $settings,
     ) {
@@ -43,13 +43,13 @@ final readonly class ExportAssetParameter
     }
 
     /** @return array<int, ElementDescriptor> */
-    public function getItems(): array
+    public function getAssets(): array
     {
         return array_map(
             static fn (int $id) => new ElementDescriptor(
                 ElementTypes::TYPE_ASSET,
                 $id
-            ), $this->items
+            ), $this->assets
         );
     }
 }
