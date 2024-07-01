@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterf
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
 
 /**
  * @internal

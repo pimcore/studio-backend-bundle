@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\UserInterface;
+use function count;
 
 /**
  * @internal

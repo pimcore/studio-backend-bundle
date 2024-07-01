@@ -20,6 +20,7 @@ use OpenApi\Attributes\AdditionalProperties;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use function array_key_exists;
 
 /**
  * @internal

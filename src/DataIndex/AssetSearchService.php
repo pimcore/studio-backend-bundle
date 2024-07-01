@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInte
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use function count;
 
 final readonly class AssetSearchService implements AssetSearchServiceInterface
 {

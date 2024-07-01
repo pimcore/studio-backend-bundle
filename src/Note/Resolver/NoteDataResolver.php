@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteUser;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\Note as CoreNote;
+use function is_object;
 
 /**
  * @internal

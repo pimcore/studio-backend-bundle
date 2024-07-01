@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service\Loader;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use function in_array;
 
 /**
  * @internal
