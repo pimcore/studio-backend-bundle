@@ -1,14 +1,17 @@
 pimcore_generic_execution_engine:
   error_handling: 'stop_on_first_error'
   execution_context:
-    studio_backend:
+    studio_stop_on_error:
       translations_domain: studio
-
+      error_handling: 'stop_on_first_error'
+    studio_continue_on_error:
+      translations_domain: studio
+      error_handling: 'continue_on_error'
 
 framework:
   messenger:
     routing:
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage: pimcore_generic_execution_engine
-      Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCopyMessage: pimcore_generic_execution_engine
+      Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetDeleteMessage: pimcore_generic_execution_engine
