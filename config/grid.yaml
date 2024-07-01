@@ -22,3 +22,10 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Adapter\IntegerColumnAdapter:
     tags: [ 'pimcore.studio_backend.grid_column_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Adapter\StringColumnAdapter:
+    tags: [ 'pimcore.studio_backend.grid_column_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Adapter\DatetimeColumnAdapter:
+    tags: [ 'pimcore.studio_backend.grid_column_adapter' ]
+
