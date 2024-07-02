@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -26,15 +28,17 @@ use OpenApi\Attributes\Schema;
     title: 'GridColumnData',
     type: 'object'
 )]
-final readonly class ColumnData
+final class ColumnData implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]
-        private string $key,
+        private readonly string $key,
         #[Property(description: 'Locale', type: 'string', example: 'en')]
-        private ?string $locale,
+        private readonly ?string $locale,
         #[Property(description: 'Value', type: 'mixed', example: 73)]
-        private mixed $value
+        private readonly mixed $value
     ) {
     }
 

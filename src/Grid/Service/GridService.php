@@ -21,6 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
@@ -28,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\Element\ElementInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -51,7 +54,8 @@ final readonly class GridService implements GridServiceInterface
         ColumnResolverLoaderInterface $columnResolverLoader,
         private SystemColumnServiceInterface $systemColumnService,
         private GridSearchInterface $gridSearch,
-        private ServiceResolverInterface $serviceResolver
+        private ServiceResolverInterface $serviceResolver,
+        private EventDispatcherInterface $eventDispatcher
     ) {
         $this->columnDefinitions = $columnAdapterLoader->loadColumnDefinitions();
         $this->columnResolvers = $columnResolverLoader->loadColumnResolvers();
@@ -100,7 +104,15 @@ final readonly class GridService implements GridServiceInterface
             if (!$this->supports($column, $elementType)) {
                 continue;
             }
-            $data['columns'][] = $this->columnResolvers[$column->getType()]->resolve($column, $element);
+
+            $columnData = $this->columnResolvers[$column->getType()]->resolve($column, $element);
+
+            $this->eventDispatcher->dispatch(
+                new GridColumnDataEvent($columnData),
+                GridColumnDataEvent::EVENT_NAME
+            );
+
+            $data['columns'][] = $columnData;
         }
 
         return $data;
@@ -114,7 +126,7 @@ final readonly class GridService implements GridServiceInterface
             if (!array_key_exists($type, $this->columnDefinitions)) {
                 continue;
             }
-            $columns[] = new Column(
+            $column = new Column(
                 key: $columnKey,
                 group: 'system',
                 sortable: $this->columnDefinitions[$type]->isSortable(),
@@ -124,6 +136,13 @@ final readonly class GridService implements GridServiceInterface
                 type: $type,
                 config: $this->columnDefinitions[$type]->getConfig()
             );
+
+            $this->eventDispatcher->dispatch(
+                new GridColumnDefinitionEvent($column),
+                GridColumnDefinitionEvent::EVENT_NAME
+            );
+
+            $columns[] = $column;
         }
 
         return new Configuration($columns);

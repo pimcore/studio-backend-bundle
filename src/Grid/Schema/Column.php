@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * Column contains all data + values that is needed for the grid
@@ -30,25 +32,27 @@ use OpenApi\Attributes\Schema;
     required: ['key', 'group', 'sortable', 'editable', 'localizable', 'locale', 'type', 'config'],
     type: 'object'
 )]
-final readonly class Column
+final class Column implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]
-        private string $key,
+        private readonly string $key,
         #[Property(description: 'Group', type: 'string', example: 'system')]
-        private string $group,
+        private readonly string $group,
         #[Property(description: 'Sortable', type: 'boolean', example: true)]
-        private bool $sortable,
+        private readonly bool $sortable,
         #[Property(description: 'Editable', type: 'boolean', example: false)]
-        private bool $editable,
+        private readonly bool $editable,
         #[Property(description: 'Localizable', type: 'boolean', example: false)]
-        private bool $localizable,
+        private readonly bool $localizable,
         #[Property(description: 'Locale', type: 'string', example: 'en')]
-        private ?string $locale,
+        private readonly ?string $locale,
         #[Property(description: 'Type', type: 'string', example: 'integer')]
-        private string $type,
+        private readonly string $type,
         #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
-        private array $config,
+        private readonly array $config,
     ) {
     }
 
