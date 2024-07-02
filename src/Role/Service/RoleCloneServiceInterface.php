@@ -14,33 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\User\Role;
-use Pimcore\Model\User\Role\Listing;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 
 /**
  * @internal
  */
-interface RoleRepositoryInterface
+interface RoleCloneServiceInterface
 {
     /**
-     * @return Role[]
-     *
-     * @throws DatabaseException
+     * @throws DatabaseException|NotFoundException
      */
-    public function getRoles(): array;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getRoleById(int $roleId): Role;
-
-    /**
-     *
-     * @throws DatabaseException
-     */
-    public function getRoleListingWithFolderByParentId(int $parentId): Listing;
+    public function cloneRole(int $roleId, string $roleName): TreeNode;
 }
