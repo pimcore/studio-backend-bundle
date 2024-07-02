@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Role;
@@ -43,4 +44,9 @@ interface RoleRepositoryInterface
      * @throws DatabaseException
      */
     public function getRoleListingWithFolderByParentId(int $parentId): Listing;
+
+    /**
+     * @throws Exception
+     */
+    public function deleteRole(Role $role): void;
 }

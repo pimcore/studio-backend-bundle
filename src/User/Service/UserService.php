@@ -123,7 +123,6 @@ final readonly class UserService implements UserServiceInterface
      */
     public function deleteUser(int $userId): void
     {
-
         $currentUser = $this->securityService->getCurrentUser();
         $userToDelete = $this->userRepository->getUserById($userId);
 
