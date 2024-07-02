@@ -30,6 +30,7 @@ use Pimcore\Model\Element\ElementInterface;
 final class FileSizeResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
+
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
         /** @var Asset $element */

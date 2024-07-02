@@ -29,6 +29,7 @@ use Pimcore\Model\Element\ElementInterface;
 final class ImageResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
+
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
         return $this->getColumnData(

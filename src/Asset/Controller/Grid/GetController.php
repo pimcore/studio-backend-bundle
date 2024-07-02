@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid;
 
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -24,9 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attributes\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attributes\Request\GridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;

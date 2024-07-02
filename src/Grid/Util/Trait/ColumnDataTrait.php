@@ -26,6 +26,6 @@ trait ColumnDataTrait
 {
     private function getColumnData(Column $column, mixed $value): ColumnData
     {
-        return new ColumnData($column->getKey(), $column->getLocale() , $value);
+        return new ColumnData($column->getKey(), $column->getLocale(), $value);
     }
 }
