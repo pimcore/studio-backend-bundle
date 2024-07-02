@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -22,21 +22,21 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 #[Schema(
-    title: 'User Tree Node',
-    description: 'One node in the user tree',
+    title: 'Tree Node',
+    description: 'One node in the a tree',
     required: ['id', 'name', 'type', 'hasChildren'],
     type: 'object'
 )]
-final class UserTreeNode implements AdditionalAttributesInterface
+final class TreeNode implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 
     public function __construct(
         #[Property(description: 'Unique Identifier', type: 'integer', example: '1')]
         private readonly int $id,
-        #[Property(description: 'Name of Folder or User', type: 'string', example: 'admin')]
+        #[Property(description: 'Name of the tree node', type: 'string', example: 'admin')]
         private readonly string $name,
-        #[Property(description: 'Is ether user or folder', type: 'string', example: 'user')]
+        #[Property(description: 'Is ether folder or a specific item in the folder', type: 'string', example: 'user')]
         private readonly string $type,
         #[Property(description: 'If a folder has sub items', type: 'bool', example: true)]
         private readonly bool $hasChildren,

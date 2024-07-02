@@ -17,15 +17,23 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Image\Thumbnail\ConfigResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Document;
+use Pimcore\Model\Asset\Image;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -38,9 +46,10 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
     use StreamedResponseTrait;
 
     public function __construct(
-        private VersionDetailServiceInterface $versionDetailService,
+        private DocumentServiceInterface $documentService,
         private ConfigResolverInterface $configResolver,
-        private VersionRepositoryInterface $repository
+        private VersionDetailServiceInterface $versionDetailService,
+        private VersionRepositoryInterface $repository,
     ) {
     }
 
@@ -74,7 +83,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
     ): StreamedResponse {
         $version = $this->repository->getVersionById($id);
         $image = $this->repository->getElementFromVersion($version, $user);
-        if (!$image instanceof Asset\Image) {
+        if (!$image instanceof Image) {
             throw new InvalidElementTypeException($image->getType());
         }
 
@@ -92,5 +101,30 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
             [],
             $thumbnail->getFileSize()
         );
+    }
+
+    /**
+     * @throws AccessDeniedException
+     * @throws ElementProcessingNotCompletedException
+     * @throws ElementStreamResourceNotFoundException
+     * @throws EnvironmentException
+     * @throws InvalidElementTypeException
+     * @throws NotFoundException
+     * @throws UnprocessableContentException
+     */
+    public function streamPdfPreview(
+        int $id,
+        UserInterface $user
+    ): StreamedResponse {
+        $version = $this->repository->getVersionById($id);
+        $document = $this->repository->getElementFromVersion($version, $user);
+
+        if (!$document instanceof Document ||
+            $document->getMimeType() !== MimeTypes::PDF
+        ) {
+            throw new InvalidElementTypeException($document->getType());
+        }
+
+        return $this->documentService->getPreviewStream($document);
     }
 }

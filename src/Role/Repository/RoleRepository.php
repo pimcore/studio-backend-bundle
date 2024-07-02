@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\Role\RoleResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Role;
 use Pimcore\Model\User\Role\Listing;
 
@@ -26,6 +28,11 @@ use Pimcore\Model\User\Role\Listing;
  */
 final class RoleRepository implements RoleRepositoryInterface
 {
+    public function __construct(
+        private RoleResolverInterface $roleResolver
+    ) {
+    }
+
     /**
      * @return Role[]
      *
@@ -39,6 +46,38 @@ final class RoleRepository implements RoleRepositoryInterface
             $roleListing->load();
 
             return $roleListing->getRoles();
+        } catch (Exception $e) {
+            throw new  DatabaseException(sprintf('Error while fetching roles: %s', $e->getMessage()));
+        }
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getRoleById(int $roleId): Role
+    {
+        $role = $this->roleResolver->getById($roleId);
+        if (!$role instanceof Role) {
+            throw new NotFoundException('Role', $roleId);
+        }
+
+        return $role;
+    }
+
+    /**
+     *
+     * @throws DatabaseException
+     */
+    public function getRoleListingWithFolderByParentId(int $parentId): Listing
+    {
+        try {
+            $roleListing = new Listing();
+            $roleListing->setCondition('parentId = ?', $parentId);
+            $roleListing->setOrder('ASC');
+            $roleListing->setOrderKey('name');
+            $roleListing->load();
+
+            return $roleListing;
         } catch (Exception $e) {
             throw new  DatabaseException(sprintf('Error while fetching roles: %s', $e->getMessage()));
         }

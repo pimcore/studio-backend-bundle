@@ -14,21 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\MappedParameter;
-
-use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UserListParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Mapper;
 
 /**
  * @internal
  */
-final class UserListParameterTest extends Unit
+interface ColumnMapperInterface
 {
-    public function testGetParentId(): void
-    {
-        $parentId = 1;
-        $userListParameter = new UserListParameter($parentId);
-
-        $this->assertSame($parentId, $userListParameter->getParentId());
-    }
+    public function getType(string $column): string;
 }

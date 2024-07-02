@@ -24,9 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\Attributes\Request\CreateRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -65,7 +65,7 @@ final class CreateUserFolderController extends AbstractApiController
     #[CreateRequestBody]
     #[SuccessResponse(
         description: 'Node of the new created Folder',
-        content: new JsonContent(ref: UserTreeNode::class)
+        content: new JsonContent(ref: TreeNode::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,

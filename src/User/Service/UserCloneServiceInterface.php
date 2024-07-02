@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 
 /**
  * @internal
@@ -30,5 +30,5 @@ interface UserCloneServiceInterface
      *
      * @throws DatabaseException|NotFoundException
      */
-    public function cloneUser(int $userId, string $userName): UserTreeNode;
+    public function cloneUser(int $userId, string $userName): TreeNode;
 }
