@@ -41,7 +41,7 @@ final class DatetimeResolver implements ColumnResolverInterface
     {
         return $this->getColumnData(
             $column,
-            Carbon::create($this->getValue($column, $element))->toISOString()
+            $this->getValue($column, $element)
         );
     }
 
