@@ -28,11 +28,9 @@ use Pimcore\Model\User\Role\Listing;
  */
 final class RoleRepository implements RoleRepositoryInterface
 {
-
     public function __construct(
         private RoleResolverInterface $roleResolver
-    )
-    {
+    ) {
     }
 
     /**

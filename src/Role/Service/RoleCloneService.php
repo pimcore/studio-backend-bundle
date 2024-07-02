@@ -4,17 +4,19 @@ declare(strict_types=1);
 /**
  * Pimcore
  *
- * This source file is available under following license:
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
  * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\Role\RoleResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
@@ -30,7 +32,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final class RoleCloneService implements RoleCloneServiceInterface
 {
-
     private ?Role $roleToClone;
 
     private ?Role $role;
@@ -40,10 +41,8 @@ final class RoleCloneService implements RoleCloneServiceInterface
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly WorkspaceCloneServiceInterface $workspaceCloneService,
         private readonly RoleTreeNodeHydratorInterface $roleTreeNodeHydrator
-    )
-    {
+    ) {
     }
-
 
     /**
      * @throws DatabaseException|NotFoundException
@@ -86,7 +85,6 @@ final class RoleCloneService implements RoleCloneServiceInterface
         $this->role->setPermissions($this->roleToClone->getPermissions());
         $this->role->setWebsiteTranslationLanguagesEdit($this->roleToClone->getWebsiteTranslationLanguagesEdit());
         $this->role->setWebsiteTranslationLanguagesView($this->roleToClone->getWebsiteTranslationLanguagesView());
-
 
         if ($this->roleToClone->getClasses()) {
             $this->role->setClasses(implode(',', $this->roleToClone->getClasses()));
