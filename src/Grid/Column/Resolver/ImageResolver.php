@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
@@ -30,6 +31,9 @@ final class ImageResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
         return $this->getColumnData(

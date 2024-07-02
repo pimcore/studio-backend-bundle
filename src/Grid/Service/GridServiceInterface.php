@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -33,6 +34,9 @@ interface GridServiceInterface
 
     public function getDataObjectGridColumns(ClassDefinition $classDefinition): Configuration;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getGridDataForElement(
         Configuration $configuration,
         ElementInterface $element,

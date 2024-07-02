@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
@@ -56,6 +57,9 @@ final readonly class GridService implements GridServiceInterface
         $this->columnResolvers = $columnResolverLoader->loadColumnResolvers();
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getAssetGrid(GridParameter $gridParameter): Collection
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
@@ -83,6 +87,9 @@ final readonly class GridService implements GridServiceInterface
         );
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getGridDataForElement(
         Configuration $configuration,
         ElementInterface $element,

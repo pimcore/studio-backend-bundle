@@ -18,8 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attributes\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attributes\Request\GridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
@@ -49,7 +48,7 @@ final class GetController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|SearchException
+     * @throws InvalidArgumentException
      */
     #[Route('/assets/grid', name: 'pimcore_studio_api_get_asset_grid', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
