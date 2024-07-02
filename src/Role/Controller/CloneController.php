@@ -31,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\RoleCloneParameter;
 use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleCloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -43,7 +42,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class CloneController extends AbstractApiController
 {
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly RoleCloneServiceInterface $roleCloneService

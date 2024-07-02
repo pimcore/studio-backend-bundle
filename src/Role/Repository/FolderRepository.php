@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
 
 use Exception;
@@ -27,11 +26,9 @@ use Pimcore\Model\User\Role\Folder;
  */
 final readonly class FolderRepository implements FolderRepositoryInterface
 {
-
     public function __construct(
         private FolderResolverInterface $folderResolver
-    )
-    {
+    ) {
     }
 
     /**
@@ -50,7 +47,7 @@ final readonly class FolderRepository implements FolderRepositoryInterface
         $folder = $this->folderResolver->getById($folderId);
 
         if (!$folder instanceof Folder) {
-            throw new NotFoundException("Folder", $folderId);
+            throw new NotFoundException('Folder', $folderId);
         }
 
         return $folder;

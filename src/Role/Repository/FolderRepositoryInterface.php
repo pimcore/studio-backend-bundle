@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
 
-
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Role\Folder;
@@ -26,7 +25,6 @@ use Pimcore\Model\User\Role\Folder;
  */
 interface FolderRepositoryInterface
 {
-
     /**
      * @throws NotFoundException
      */

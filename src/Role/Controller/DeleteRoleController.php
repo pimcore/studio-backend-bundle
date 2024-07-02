@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -39,7 +38,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class DeleteRoleController extends AbstractApiController
 {
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly RoleServiceInterface $roleService
@@ -61,7 +59,7 @@ final class DeleteRoleController extends AbstractApiController
     #[SuccessResponse]
     #[IdParameter(type: 'role')]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function deleteRole(int $id): Response
     {

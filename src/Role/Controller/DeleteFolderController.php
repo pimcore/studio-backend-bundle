@@ -37,7 +37,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class DeleteFolderController extends AbstractApiController
 {
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly FolderServiceInterface $folderService
@@ -59,7 +58,7 @@ final class DeleteFolderController extends AbstractApiController
     #[SuccessResponse]
     #[IdParameter(type: 'folder')]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function deleteRoleFolder(int $id): Response
     {
