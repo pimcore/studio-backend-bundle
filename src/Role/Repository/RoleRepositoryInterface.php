@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Role;
 use Pimcore\Model\User\Role\Listing;
 
@@ -31,6 +32,11 @@ interface RoleRepositoryInterface
      * @throws DatabaseException
      */
     public function getRoles(): array;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getRoleById(int $roleId): Role;
 
     /**
      *
