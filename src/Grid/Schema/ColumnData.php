@@ -35,8 +35,7 @@ final readonly class ColumnData
         private ?string $locale,
         #[Property(description: 'value', type: 'mixed', example: 73)]
         private mixed $value
-    )
-    {
+    ) {
     }
 
     public function getKey(): string

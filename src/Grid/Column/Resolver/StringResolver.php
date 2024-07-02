@@ -28,6 +28,7 @@ use Pimcore\Model\Element\ElementInterface;
 final class StringResolver implements ColumnResolverInterface
 {
     use SimpleGetterTrait;
+
     public function resolve(Column $columnDefinition, ElementInterface $element): ?string
     {
         return $this->getValue($columnDefinition, $element);

@@ -79,13 +79,11 @@ final readonly class GridService implements GridServiceInterface
         return ['items' => $data];
     }
 
-
     public function getGridDataForElement(
         Configuration $configuration,
         ElementInterface $element,
         string $elementType
-    ): array
-    {
+    ): array {
         $data = [];
         foreach ($configuration->getColumns() as $column) {
             if (!$this->supports($column, $elementType)) {

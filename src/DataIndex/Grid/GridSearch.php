@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
@@ -31,8 +30,7 @@ final readonly class GridSearch implements GridSearchInterface
     public function __construct(
         private SecurityServiceInterface $securityService,
         private AssetSearchServiceInterface $assetSearchService,
-    )
-    {
+    ) {
     }
 
     public function searchAssets(GridParameter $gridParameter): AssetSearchResult

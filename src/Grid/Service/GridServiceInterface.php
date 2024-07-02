@@ -34,7 +34,7 @@ interface GridServiceInterface
     public function getGridDataForElement(
         Configuration $configuration,
         ElementInterface $element,
-         string $elementType
+        string $elementType
     ): array;
 
     public function getConfigurationFromArray(array $config): Configuration;

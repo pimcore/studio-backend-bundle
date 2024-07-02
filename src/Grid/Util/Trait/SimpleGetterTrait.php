@@ -36,6 +36,7 @@ trait SimpleGetterTrait
                 'Method ' . $getter . ' does not exist on ' . get_class($element)
             );
         }
+
         return $element->$getter();
     }
 

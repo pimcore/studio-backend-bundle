@@ -29,6 +29,7 @@ use Pimcore\Model\Element\ElementInterface;
 final class DatetimeResolver implements ColumnResolverInterface
 {
     use SimpleGetterTrait;
+
     public function resolve(Column $columnDefinition, ElementInterface $element): ?string
     {
         $getter = $this->getGetter($columnDefinition);
