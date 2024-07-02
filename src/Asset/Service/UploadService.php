@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
@@ -40,6 +41,7 @@ final readonly class UploadService implements UploadServiceInterface
         private AssetServiceInterface $assetService,
         private AssetResolverInterface $assetResolver,
         private ServiceResolverInterface $serviceResolver,
+        private SynchronousProcessingServiceInterface $synchronousProcessingService,
     ) {
 
     }
@@ -63,6 +65,7 @@ final readonly class UploadService implements UploadServiceInterface
         $userId = $user->getId();
 
         try {
+            $this->synchronousProcessingService->enable();
             $asset = $this->assetResolver->create(
                 $parentId,
                 [
