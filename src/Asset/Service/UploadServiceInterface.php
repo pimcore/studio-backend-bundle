@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\UserInterface;
@@ -31,7 +30,6 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 interface UploadServiceInterface
 {
-
     /**
      * @throws AccessDeniedException
      * @throws DatabaseException

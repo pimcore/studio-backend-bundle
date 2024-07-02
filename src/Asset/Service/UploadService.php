@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
@@ -42,7 +41,7 @@ final readonly class UploadService implements UploadServiceInterface
         private AssetResolverInterface $assetResolver,
         private ServiceResolverInterface $serviceResolver,
     ) {
-        
+
     }
 
     /**
@@ -57,8 +56,7 @@ final readonly class UploadService implements UploadServiceInterface
         int $parentId,
         UploadedFile $file,
         UserInterface $user
-    ): int
-    {
+    ): int {
         $this->validateParent($user, $parentId);
         $sourcePath = $this->getValidSourcePath($file);
         $fileName = $this->getValidFileName($file);
@@ -82,7 +80,7 @@ final readonly class UploadService implements UploadServiceInterface
 
         return $asset->getId();
     }
-    
+
     /**
      * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
      */
