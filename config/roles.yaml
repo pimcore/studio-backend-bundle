@@ -17,6 +17,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleService
 
+  Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleCloneServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleCloneService
+
   #
   # Hydrators
   #
