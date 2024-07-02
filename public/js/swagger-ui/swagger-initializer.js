@@ -6,6 +6,7 @@ window.onload = function() {
     url: dataUrl,
     dom_id: '#swagger-ui',
     deepLinking: true,
+    docExpansion: 'none',
     operationsSorter: function(a, b) {
       const order = ['POST', 'GET', 'PUT', 'PATCH', 'DELETE'];
       return order.indexOf(a.get("method").toUpperCase()) - order.indexOf(b.get("method").toUpperCase());
