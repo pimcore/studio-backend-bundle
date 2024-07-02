@@ -131,6 +131,7 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
                 $status->getColorInverted(),
                 $status->getPlace(),
                 $status->getLabel(),
+                $status->isVisibleInHeader(),
             );
         }
 
