@@ -32,6 +32,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Document;
+use Pimcore\Model\Asset\Image;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -81,7 +83,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
     ): StreamedResponse {
         $version = $this->repository->getVersionById($id);
         $image = $this->repository->getElementFromVersion($version, $user);
-        if (!$image instanceof Asset\Image) {
+        if (!$image instanceof Image) {
             throw new InvalidElementTypeException($image->getType());
         }
 
@@ -117,7 +119,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         $version = $this->repository->getVersionById($id);
         $document = $this->repository->getElementFromVersion($version, $user);
 
-        if (!$document instanceof Asset\Document ||
+        if (!$document instanceof Document ||
             $document->getMimeType() !== MimeTypes::PDF
         ) {
             throw new InvalidElementTypeException($document->getType());
