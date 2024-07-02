@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 
@@ -26,7 +27,7 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final class FileSizeResolver implements ColumnResolverInterface
 {
-    public function resolve(Column $columnDefinition, ElementInterface $element): mixed
+    public function resolve(Column $columnDefinition, ElementInterface $element): string|int
     {
         /** @var Asset $element */
         return $element->getFileSize(true);
@@ -35,5 +36,12 @@ final class FileSizeResolver implements ColumnResolverInterface
     public function getType(): string
     {
         return 'fileSize';
+    }
+
+    public function supportedElementTypes(): array
+    {
+        return [
+            ElementTypes::TYPE_ASSET,
+        ];
     }
 }

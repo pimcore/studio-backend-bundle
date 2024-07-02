@@ -31,7 +31,11 @@ interface GridServiceInterface
 
     public function getDataObjectGridColumns(ClassDefinition $classDefinition): Configuration;
 
-    public function getGridDataForElement(Configuration $configuration, ElementInterface $element): array;
+    public function getGridDataForElement(
+        Configuration $configuration,
+        ElementInterface $element,
+         string $elementType
+    ): array;
 
     public function getConfigurationFromArray(array $config): Configuration;
 }

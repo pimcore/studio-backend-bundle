@@ -14,16 +14,16 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Model\Element\ElementInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 
-interface ColumnResolverInterface
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
+
+/**
+ * @internal
+ */
+interface GridSearchInterface
 {
-    public function resolve(Column $columnDefinition, ElementInterface $element): mixed;
-
-    public function getType(): string;
-
-    public function supportedElementTypes(): array;
+    public function searchAssets(GridParameter $gridParameter): AssetSearchResult;
 }

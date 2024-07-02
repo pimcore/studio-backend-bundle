@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver;
 use Carbon\Carbon;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\SimpleGetterTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -26,9 +28,10 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final class DatetimeResolver implements ColumnResolverInterface
 {
-    public function resolve(Column $columnDefinition, ElementInterface $element): mixed
+    use SimpleGetterTrait;
+    public function resolve(Column $columnDefinition, ElementInterface $element): ?string
     {
-        $getter = 'get' . ucfirst($columnDefinition->getKey());
+        $getter = $this->getGetter($columnDefinition);
 
         return Carbon::create($element->$getter())->toISOString();
     }
@@ -36,5 +39,14 @@ final class DatetimeResolver implements ColumnResolverInterface
     public function getType(): string
     {
         return 'datetime';
+    }
+
+    public function supportedElementTypes(): array
+    {
+        return [
+            ElementTypes::TYPE_ASSET,
+            ElementTypes::TYPE_DOCUMENT,
+            ElementTypes::TYPE_OBJECT,
+        ];
     }
 }

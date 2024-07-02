@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\SimpleGetterTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -25,15 +27,23 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final class StringResolver implements ColumnResolverInterface
 {
-    public function resolve(Column $columnDefinition, ElementInterface $element): mixed
+    use SimpleGetterTrait;
+    public function resolve(Column $columnDefinition, ElementInterface $element): ?string
     {
-        $getter = 'get' . ucfirst($columnDefinition->getKey());
-
-        return $element->$getter();
+        return $this->getValue($columnDefinition, $element);
     }
 
     public function getType(): string
     {
         return 'string';
+    }
+
+    public function supportedElementTypes(): array
+    {
+        return [
+            ElementTypes::TYPE_ASSET,
+            ElementTypes::TYPE_DOCUMENT,
+            ElementTypes::TYPE_OBJECT,
+        ];
     }
 }

@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 
@@ -26,7 +27,7 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final class ImageResolver implements ColumnResolverInterface
 {
-    public function resolve(Column $columnDefinition, ElementInterface $element): mixed
+    public function resolve(Column $columnDefinition, ElementInterface $element): string
     {
         /** @var Asset $element */
         return $element->getRealFullPath();
@@ -35,5 +36,14 @@ final class ImageResolver implements ColumnResolverInterface
     public function getType(): string
     {
         return 'image';
+    }
+
+    public function supportedElementTypes(): array
+    {
+        return [
+            ElementTypes::TYPE_ASSET,
+            ElementTypes::TYPE_DOCUMENT,
+            ElementTypes::TYPE_OBJECT,
+        ];
     }
 }

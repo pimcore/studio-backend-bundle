@@ -16,10 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\Element\ElementInterface;
 
@@ -28,6 +33,8 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final readonly class GridService implements GridServiceInterface
 {
+    use ElementProviderTrait;
+
     /**
      * @param array<int, ColumnDefinitionInterface> $columnDefinitions
      */
@@ -41,20 +48,54 @@ final readonly class GridService implements GridServiceInterface
     public function __construct(
         ColumnDefinitionLoaderInterface $columnAdapterLoader,
         ColumnResolverLoaderInterface $columnResolverLoader,
-        private SystemColumnServiceInterface $systemColumnService
+        private SystemColumnServiceInterface $systemColumnService,
+        private GridSearchInterface $gridSearch,
+        private ServiceResolverInterface $serviceResolver
     ) {
         $this->columnDefinitions = $columnAdapterLoader->loadColumnDefinitions();
         $this->columnResolvers = $columnResolverLoader->loadColumnResolvers();
     }
 
-    public function getGridDataForElement(Configuration $configuration, ElementInterface $element): array
+    public function getAssetGrid(GridParameter $gridParameter): array
+    {
+        $result = $this->gridSearch->searchAssets($gridParameter);
+
+        if(empty($result->getIds())) {
+            return [];
+        }
+
+        $data = [];
+
+        foreach ($result->getItems() as $item) {
+            $type = $item->getElementType()->value;
+            $asset = $this->getElement($this->serviceResolver, $type, $item->getId());
+            $data[] = $this->getGridDataForElement(
+                $this->getAssetGridConfiguration(),
+                $asset,
+                $type
+            );
+        }
+
+        return ['items' => $data];
+    }
+
+
+    public function getGridDataForElement(
+        Configuration $configuration,
+        ElementInterface $element,
+        string $elementType
+    ): array
     {
         $data = [];
-        foreach($configuration->getColumns() as $column) {
-            if(!array_key_exists($column->getType(), $this->columnResolvers)) {
+        foreach ($configuration->getColumns() as $column) {
+            if (!$this->supports($column, $elementType)) {
                 continue;
             }
-            $data[$column->getKey()] = $this->columnResolvers[$column->getType()]->resolve($column, $element);
+            $data['columns'][] = new ColumnData(
+                $column->getKey(),
+                null,
+                $this->columnResolvers[$column->getType()]->resolve($column, $element)
+            );
         }
 
         return $data;
@@ -109,5 +150,21 @@ final readonly class GridService implements GridServiceInterface
         }
 
         return new Configuration($columns);
+    }
+
+    private function supports(Column $column, string $elementType): bool
+    {
+        if (!array_key_exists($column->getType(), $this->columnResolvers)) {
+            return false;
+        }
+
+        /** @var ColumnResolverInterface $resolver */
+        $resolver = $this->columnResolvers[$column->getType()];
+
+        if (!in_array($elementType, $resolver->supportedElementTypes(), true)) {
+            return false;
+        }
+
+        return true;
     }
 }
