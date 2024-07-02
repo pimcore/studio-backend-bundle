@@ -54,6 +54,12 @@ final readonly class WorkflowStatus
             example: 'Edit Images'
         )]
         private string $label,
+        #[Property(
+            description: 'visibleInDetail',
+            type: 'boolean',
+            example: true
+        )]
+        private bool $visibleInDetail,
     ) {
 
     }
@@ -76,5 +82,10 @@ final readonly class WorkflowStatus
     public function getLabel(): string
     {
         return $this->label;
+    }
+
+    public function isVisibleInDetail(): bool
+    {
+        return $this->visibleInDetail;
     }
 }

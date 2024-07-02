@@ -60,6 +60,10 @@ final readonly class DocumentService implements DocumentServiceInterface
             return $this->getStreamFromDocument($asset);
         }
 
+        if (!str_ends_with($asset->getKey(), '.pdf')) {
+            throw new EnvironmentException('Invalid document name: ' . $asset->getKey());
+        }
+
         if ($this->isScanningEnabled()) {
             $this->validatePdfScanStatus($asset);
             if ($asset->getScanStatus() === null) {
