@@ -21,6 +21,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetS
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\User;
 
 /**
  * @internal
@@ -36,7 +37,9 @@ final readonly class GridSearch implements GridSearchInterface
     public function searchAssets(GridParameter $gridParameter): AssetSearchResult
     {
         $search = new AssetSearch();
-        $search->setUser($this->securityService->getCurrentUser());
+        /** @var User $user */
+        $user = $this->securityService->getCurrentUser();
+        $search->setUser($user);
 
         return $this->assetSearchService->search($search);
     }

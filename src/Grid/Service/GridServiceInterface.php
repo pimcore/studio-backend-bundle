@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\Element\ElementInterface;
@@ -38,4 +39,6 @@ interface GridServiceInterface
     ): array;
 
     public function getConfigurationFromArray(array $config): Configuration;
+
+    public function getAssetGrid(GridParameter $gridParameter): array;
 }
