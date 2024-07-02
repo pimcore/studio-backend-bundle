@@ -60,7 +60,7 @@ final readonly class GridService implements GridServiceInterface
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
 
-        if(empty($result->getIds())) {
+        if (empty($result->getIds())) {
             return new Collection(totalItems: 0, items: []);
         }
 

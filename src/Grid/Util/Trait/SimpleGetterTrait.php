@@ -30,8 +30,8 @@ trait SimpleGetterTrait
      */
     private function getValue(Column $columnDefinition, ElementInterface $element): mixed
     {
-        $getter = 'get' . ucfirst($columnDefinition->getKey());
-        if(method_exists($element, $getter) === false) {
+        $getter = $this->getGetter($columnDefinition);
+        if (method_exists($element, $getter) === false) {
             throw new InvalidArgumentException(
                 'Method ' . $getter . ' does not exist on ' . get_class($element)
             );
