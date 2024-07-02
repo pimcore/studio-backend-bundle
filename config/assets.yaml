@@ -46,6 +46,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentService
 
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadService
+
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneService
 
@@ -54,6 +57,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteService
+
 
   #
   # Updaters
