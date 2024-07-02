@@ -39,7 +39,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class DeleteRoleController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
@@ -62,8 +61,7 @@ final class DeleteRoleController extends AbstractApiController
     #[SuccessResponse]
     #[IdParameter(type: 'role')]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::NOT_FOUND
     ])]
     public function deleteRole(int $id): Response
     {
