@@ -18,13 +18,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Attributes\Property\GridCollection;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Attributes\Request\GridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\GenericCollection;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -60,13 +63,11 @@ final class GetController extends AbstractApiController
         summary: 'Get assets for grid',
         tags: [Tags::Grid->name]
     )]
-    #[RequestBody(
-        content: new JsonContent(ref: GridParameter::class)
-    )]
+    #[GridRequestBody]
     #[SuccessResponse(
         description: 'Grid data',
-        content: new JsonContent(
-            ref: Configuration::class
+        content: new CollectionJson(
+            collection: new GridCollection()
         )
     )]
     #[DefaultResponses([

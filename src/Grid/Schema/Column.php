@@ -27,6 +27,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'GridColumnDefinition',
+    required: ['key', 'group', 'sortable', 'editable', 'localizable', 'locale', 'type', 'config'],
     type: 'object'
 )]
 final readonly class Column
@@ -42,12 +43,13 @@ final readonly class Column
         private bool $editable,
         #[Property(description: 'Localizable', type: 'boolean', example: false)]
         private bool $localizable,
+        #[Property(description: 'Locale', type: 'string', example: 'en')]
+        private ?string $locale,
         #[Property(description: 'Type', type: 'string', example: 'integer')]
         private string $type,
         #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
         private array $config,
     ) {
-
     }
 
     public function getConfig(): array
@@ -78,6 +80,11 @@ final readonly class Column
     public function isLocalizable(): bool
     {
         return $this->localizable;
+    }
+
+    public function getLocale(): ?string
+    {
+        return $this->locale;
     }
 
     public function getType(): string

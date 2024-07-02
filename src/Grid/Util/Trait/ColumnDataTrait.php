@@ -14,17 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
-use Pimcore\Model\Element\ElementInterface;
 
-interface ColumnResolverInterface
+/**
+ * @internal
+ */
+trait ColumnDataTrait
 {
-    public function resolve(Column $column, ElementInterface $element): ColumnData;
-
-    public function getType(): string;
-
-    public function supportedElementTypes(): array;
+    private function getColumnData(Column $column, mixed $value): ColumnData
+    {
+        return new ColumnData($column->getKey(), $column->getLocale() , $value);
+    }
 }

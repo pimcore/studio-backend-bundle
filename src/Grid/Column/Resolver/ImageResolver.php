@@ -18,8 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -27,10 +28,13 @@ use Pimcore\Model\Element\ElementInterface;
  */
 final class ImageResolver implements ColumnResolverInterface
 {
-    public function resolve(Column $columnDefinition, ElementInterface $element): string
+    use ColumnDataTrait;
+    public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        /** @var Asset $element */
-        return $element->getRealFullPath();
+        return $this->getColumnData(
+            $column,
+            $element->getRealFullPath()
+        );
     }
 
     public function getType(): string

@@ -14,17 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
-use Pimcore\Model\Element\ElementInterface;
+use OpenApi\Attributes\Property;
 
-interface ColumnResolverInterface
+/**
+ * @internal
+ */
+final class SingleInteger extends Property
 {
-    public function resolve(Column $column, ElementInterface $element): ColumnData;
-
-    public function getType(): string;
-
-    public function supportedElementTypes(): array;
+    public function __construct(string $propertyName)
+    {
+        parent::__construct(
+            property: $propertyName,
+            type: 'integer',
+            example: 1
+        );
+    }
 }

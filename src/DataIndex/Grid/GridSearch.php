@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResult;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -40,6 +41,7 @@ final readonly class GridSearch implements GridSearchInterface
         /** @var User $user */
         $user = $this->securityService->getCurrentUser();
         $search->setUser($user);
+        $search->addModifier(new ParentIdFilter($gridParameter->getFolderId()));
 
         return $this->assetSearchService->search($search);
     }

@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\SimpleGetterTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
@@ -28,10 +30,14 @@ use Pimcore\Model\Element\ElementInterface;
 final class IntegerResolver implements ColumnResolverInterface
 {
     use SimpleGetterTrait;
+    use ColumnDataTrait;
 
-    public function resolve(Column $columnDefinition, ElementInterface $element): int
+    public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        return $this->getValue($columnDefinition, $element);
+        return $this->getColumnData(
+            $column,
+            $this->getValue($column, $element)
+        );
     }
 
     public function getType(): string

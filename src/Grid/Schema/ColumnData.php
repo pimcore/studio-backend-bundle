@@ -33,7 +33,7 @@ final readonly class ColumnData
         private string $key,
         #[Property(description: 'Locale', type: 'string', example: 'en')]
         private ?string $locale,
-        #[Property(description: 'value', type: 'mixed', example: 73)]
+        #[Property(description: 'Value', type: 'mixed', example: 73)]
         private mixed $value
     ) {
     }

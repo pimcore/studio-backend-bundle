@@ -24,18 +24,18 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 final readonly class GridParameter
 {
     public function __construct(
-        private int $id,
+        private int $folderId,
         private array $gridConfig,
     ) {
     }
 
-    public function getId(): int
+    public function getFolderId(): int
     {
-        return $this->id;
+        return $this->folderId;
     }
 
-    public function getGridConfig(): Configuration
+    public function getGridConfig(): array
     {
-        return new Configuration($this->gridConfig);
+        return $this->gridConfig;
     }
 }

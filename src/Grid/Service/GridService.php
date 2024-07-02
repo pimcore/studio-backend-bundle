@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\Element\ElementInterface;
@@ -56,12 +57,12 @@ final readonly class GridService implements GridServiceInterface
         $this->columnResolvers = $columnResolverLoader->loadColumnResolvers();
     }
 
-    public function getAssetGrid(GridParameter $gridParameter): array
+    public function getAssetGrid(GridParameter $gridParameter): Collection
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
 
         if(empty($result->getIds())) {
-            return [];
+            return new Collection(totalItems: 0, items: []);
         }
 
         $data = [];
@@ -69,14 +70,18 @@ final readonly class GridService implements GridServiceInterface
         foreach ($result->getItems() as $item) {
             $type = $item->getElementType()->value;
             $asset = $this->getElement($this->serviceResolver, $type, $item->getId());
+
             $data[] = $this->getGridDataForElement(
-                $this->getAssetGridConfiguration(),
+                $this->getConfigurationFromArray($gridParameter->getGridConfig()),
                 $asset,
                 $type
             );
         }
 
-        return ['items' => $data];
+        return new Collection(
+            totalItems: $result->getPagination()->getTotalItems(),
+            items: $data
+        );
     }
 
     public function getGridDataForElement(
@@ -89,11 +94,7 @@ final readonly class GridService implements GridServiceInterface
             if (!$this->supports($column, $elementType)) {
                 continue;
             }
-            $data['columns'][] = new ColumnData(
-                $column->getKey(),
-                null,
-                $this->columnResolvers[$column->getType()]->resolve($column, $element)
-            );
+            $data['columns'][] = $this->columnResolvers[$column->getType()]->resolve($column, $element);
         }
 
         return $data;
@@ -113,6 +114,7 @@ final readonly class GridService implements GridServiceInterface
                 sortable: $this->columnDefinitions[$type]->isSortable(),
                 editable: false,
                 localizable: false,
+                locale: null,
                 type: $type,
                 config: $this->columnDefinitions[$type]->getConfig()
             );
@@ -142,6 +144,7 @@ final readonly class GridService implements GridServiceInterface
                 sortable: $column['sortable'],
                 editable: $column['editable'],
                 localizable: $column['localizable'],
+                locale: $column['locale'],
                 type: $column['type'],
                 config: $column['config']
             );
