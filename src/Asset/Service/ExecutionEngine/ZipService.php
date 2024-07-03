@@ -21,10 +21,11 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Model\Asset;
 use ZipArchive;
 
@@ -80,25 +81,27 @@ final readonly class ZipService implements ZipServiceInterface
 
     public function generateZipFile(CreateZipParameter $ids): string
     {
+        $steps = [
+            new JobStep(JobSteps::ZIP_COLLECTION->value, ZipCollectionMessage::class, '', []),
+            new JobStep(JobSteps::ZIP_CREATION->value, ZipCreationMessage::class, '', []),
+        ];
+
         $job = new Job(
             name: Jobs::CREATE_ZIP->value,
-            steps: [
-                new JobStep('Asset collection', ZipCollectionMessage::class, '', []),
-                new JobStep('Zip creation', ZipCreationMessage::class, '', []),
-            ],
+            steps: $steps,
             selectedElements: $ids->getItems()
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
             $job,
             $this->securityService->getCurrentUser()->getId(),
-            Config::CONTEXT->value
+            TranslatorService::DOMAIN
         );
 
         return $this->getTempZipFilePath($jobRun->getId());
     }
 
-    private function getTempZipFilePath(int $id): string
+    public function getTempZipFilePath(int $id): string
     {
         return str_replace(self::ZIP_ID_PLACEHOLDER, (string)$id, self::ZIP_FILE_PATH);
     }

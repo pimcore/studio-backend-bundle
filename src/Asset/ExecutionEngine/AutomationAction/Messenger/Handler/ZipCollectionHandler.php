@@ -23,7 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceI
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -32,9 +33,12 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 final class ZipCollectionHandler extends AbstractHandler
 {
+    use HandlerProgressTrait;
+
     public function __construct(
         private readonly ElementServiceInterface $elementService,
-        private readonly UserResolverInterface $userResolver
+        private readonly UserResolverInterface $userResolver,
+        private readonly PublishServiceInterface $publishService,
     ) {
         parent::__construct();
     }
@@ -52,12 +56,7 @@ final class ZipCollectionHandler extends AbstractHandler
         );
 
         if ($validatedParameters instanceof AbortActionData) {
-            $this->abortAction(
-                $validatedParameters->getTranslationKey(),
-                $validatedParameters->getTranslationParameters(),
-                Config::CONTEXT->value,
-                $validatedParameters->getExceptionClassName()
-            );
+            $this->abort($validatedParameters);
         }
 
         $user = $validatedParameters->getUser();
@@ -79,6 +78,7 @@ final class ZipCollectionHandler extends AbstractHandler
         $assets[] = $jobAsset->getId();
 
         $this->updateJobRunContext($jobRun, ZipServiceInterface::ASSETS_INDEX, $assets);
-        // TODO Send SSE for percentage update
+
+        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 }

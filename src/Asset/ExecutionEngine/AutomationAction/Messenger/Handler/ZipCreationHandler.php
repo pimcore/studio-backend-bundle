@@ -25,7 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -35,7 +37,10 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 #[AsMessageHandler]
 final class ZipCreationHandler extends AbstractHandler
 {
+    use HandlerProgressTrait;
+
     public function __construct(
+        private readonly PublishServiceInterface $publishService,
         private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver,
         private readonly ZipServiceInterface $zipService
@@ -57,12 +62,7 @@ final class ZipCreationHandler extends AbstractHandler
         );
 
         if ($validatedParameters instanceof AbortActionData) {
-            $this->abortAction(
-                $validatedParameters->getTranslationKey(),
-                $validatedParameters->getTranslationParameters(),
-                Config::CONTEXT->value,
-                $validatedParameters->getExceptionClassName()
-            );
+            $this->abort($validatedParameters);
         }
 
         $context = $jobRun->getContext();
@@ -71,7 +71,7 @@ final class ZipCreationHandler extends AbstractHandler
             $this->abortAction(
                 'no_assets_found',
                 [],
-                Config::CONTEXT->value,
+                TranslatorService::DOMAIN,
                 NotFoundException::class
             );
         }
@@ -82,7 +82,7 @@ final class ZipCreationHandler extends AbstractHandler
             $this->abortAction(
                 'asset_permission_denied',
                 [],
-                Config::CONTEXT->value,
+                TranslatorService::DOMAIN,
                 AccessDeniedException::class
             );
         }
@@ -92,7 +92,7 @@ final class ZipCreationHandler extends AbstractHandler
             $this->abortAction(
                 'zip_archive_not_found',
                 [],
-                Config::CONTEXT->value,
+                TranslatorService::DOMAIN,
                 NotFoundException::class
             );
         }
@@ -107,8 +107,9 @@ final class ZipCreationHandler extends AbstractHandler
         }
 
         $this->zipService->addFile($archive, $asset);
-        // TODO Send SSE for percentage update
 
         $archive->close();
+
+        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 }

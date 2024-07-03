@@ -19,8 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 
 /**
  * @internal
@@ -35,5 +35,5 @@ interface UserFolderServiceInterface
     /**
      * @throws DatabaseException|NotFoundException
      */
-    public function createUserFolder(CreateParameter $createParameter): UserTreeNode;
+    public function createUserFolder(CreateParameter $createParameter): TreeNode;
 }

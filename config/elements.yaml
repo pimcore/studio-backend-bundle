@@ -16,3 +16,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteService
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementFolderServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementFolderService

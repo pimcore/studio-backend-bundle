@@ -17,17 +17,20 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use JsonException;
+use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
@@ -53,7 +56,8 @@ final class UserUpdateService implements UserUpdateServiceInterface
         private readonly PermissionRepositoryInterface $permissionRepository,
         private readonly RoleRepositoryInterface $roleRepository,
         private readonly ClassDefinitionRepositoryInterface $classDefinitionRepository,
-        private readonly ServiceResolverInterface $elementServiceResolver
+        private readonly ServiceResolverInterface $elementServiceResolver,
+        private readonly AuthenticationResolverInterface $authenticationResolver
     ) {
     }
 
@@ -99,6 +103,38 @@ final class UserUpdateService implements UserUpdateServiceInterface
         $this->userRepository->updateUser($this->user);
 
         return $this->userHydrator->hydrate($this->user);
+    }
+
+    /**
+     * @throws NotFoundException|DatabaseException|ForbiddenException
+     */
+    public function updatePasswordById(UpdatePasswordParameter $updateParameter, int $userId): void
+    {
+        $this->user = $this->userRepository->getUserById($userId);
+
+        if ($this->user->getName() === 'system') {
+            throw new ForbiddenException('System user password cannot be changed');
+        }
+
+        if ($this->user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
+            throw new ForbiddenException('Only admin can update admin user');
+        }
+
+        if ($updateParameter->getPassword() !== $updateParameter->getPasswordConfirmation()) {
+            throw new InvalidArgumentException('Passwords do not match');
+        }
+
+        if (strlen($updateParameter->getPassword()) < 10) {
+            throw new InvalidArgumentException('Passwords have to be at least 10 characters long');
+        }
+
+        $passwordHash = $this->authenticationResolver->getPasswordHash(
+            $this->user->getName(),
+            $updateParameter->getPassword()
+        );
+
+        $this->user->setPassword($passwordHash);
+        $this->userRepository->updateUser($this->user);
     }
 
     /**

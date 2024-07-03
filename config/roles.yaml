@@ -1,0 +1,40 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Role\Controller\:
+    resource: '../src/Role/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+  Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleService
+
+  Pimcore\Bundle\StudioBackendBundle\Role\Service\FolderServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Role\Service\FolderService
+
+  Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleCloneServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleCloneService
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydrator
+
+  #
+  # Repositories
+  #
+  Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepository

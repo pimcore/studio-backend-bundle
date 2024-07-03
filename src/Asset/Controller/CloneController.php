@@ -61,7 +61,7 @@ final class CloneController extends AbstractApiController
      * @throws UserNotFoundException
      */
     #[Route('/assets/{id}/clone/{parentId}', name: 'pimcore_studio_api_assets_clone', methods: ['POST'])]
-    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
+    #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/{id}/clone/{parentId}',
         operationId: 'cloneElement',

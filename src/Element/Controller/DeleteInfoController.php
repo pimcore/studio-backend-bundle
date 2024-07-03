@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -75,8 +76,9 @@ final class DeleteInfoController extends AbstractApiController
         int $id,
         string $elementType
     ): JsonResponse {
+        $parameters = new ElementParameters($elementType, $id);
         $user = $this->securityService->getCurrentUser();
-        $element = $this->elementService->getAllowedElementById($elementType, $id, $user);
+        $element = $this->elementService->getAllowedElementById($parameters->getType(), $parameters->getId(), $user);
 
         return $this->jsonResponse(
             $this->elementDeleteService->getElementDeleteInfo($element, $user)

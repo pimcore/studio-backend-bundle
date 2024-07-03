@@ -62,26 +62,6 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         ElementInterface $element,
         UserInterface $user
     ): void {
-        /** @var User $user because of the core method */
-        if (!$element->isAllowed(ElementPermissions::DELETE_PERMISSION, $user)) {
-            throw new ForbiddenException(
-                sprintf(
-                    'Missing %s permission on target element %s',
-                    ElementPermissions::DELETE_PERMISSION,
-                    $element->getId()
-                )
-            );
-        }
-
-        if ($element->isLocked()) {
-            throw new ForbiddenException(
-                sprintf(
-                    'Asset %s is locked',
-                    $element->getId()
-                )
-            );
-        }
-
         $event = $this->getDeleteEvent($element);
         $this->eventDispatcher->dispatch($event);
 
@@ -102,6 +82,27 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         ElementInterface $element,
         UserInterface $user
     ): void {
+
+        /** @var User $user because of the core method */
+        if (!$element->isAllowed(ElementPermissions::DELETE_PERMISSION, $user)) {
+            throw new ForbiddenException(
+                sprintf(
+                    'Missing %s permission on target element %s',
+                    ElementPermissions::DELETE_PERMISSION,
+                    $element->getId()
+                )
+            );
+        }
+
+        if ($element->isLocked()) {
+            throw new ForbiddenException(
+                sprintf(
+                    'Asset %s is locked',
+                    $element->getId()
+                )
+            );
+        }
+
         if (($element instanceof Asset ||
             $element instanceof Document ||
             $element instanceof DataObject) &&
@@ -132,7 +133,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         UserInterface $user
     ): bool {
         $path = $element->getRealFullPath();
-        // ToDO Implement For Documents
+        // ToDo Implement For Documents
         $childrenCount = match (true) {
             $element instanceof Asset => $this->assetSearchService->countChildren($path),
             $element instanceof DataObject => $this->dataObjectSearchService->countChildren($path),

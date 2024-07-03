@@ -46,6 +46,10 @@ use OpenApi\Attributes\Tag;
     description: 'Get element properties for a single element based on its type and provided parameters.'
 )]
 #[Tag(
+    name: Tags::Grid->name,
+    description: 'Grid operations'
+)]
+#[Tag(
     name: Tags::Mercure->name,
     description: 'Retrieve JWT token for Mercure hub as cookie'
 )]
@@ -86,6 +90,10 @@ use OpenApi\Attributes\Tag;
     description: 'User Management operations'
 )]
 #[Tag(
+    name: Tags::Role->value,
+    description: 'Role Management operations'
+)]
+#[Tag(
     name: Tags::Versions->name,
     description: 'Versions operations to get/list/publish/delete and cleanup versions'
 )]
@@ -101,6 +109,7 @@ enum Tags: string
     case DataObjects = 'DataObjects';
     case Dependencies = 'Dependencies';
     case Elements = 'Elements';
+    case Grid = 'Grid';
     case Mercure = 'Mercure';
     case Notes = 'Notes';
     case Properties = 'Properties';
@@ -110,6 +119,7 @@ enum Tags: string
     case TagsForElement = 'Tags for Element';
     case Translation = 'Translation';
     case User = 'User Management';
+    case Role = 'Role Management';
     case Versions = 'Versions';
     case Workflows = 'Workflows';
 }

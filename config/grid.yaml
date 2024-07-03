@@ -1,0 +1,63 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearch
+
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\ColumnMapperInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\ColumnMapper
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnService
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnDefinitionLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnDefinitionLoader
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnResolverLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnResolverLoader
+
+  #
+  # Column Definitions
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\IntegerDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\StringDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DatetimeDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\ImageDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\FileSizeDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  #
+  # Column Resolver
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\StringResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\IntegerResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\FileSizeResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DatetimeResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\ImageResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]

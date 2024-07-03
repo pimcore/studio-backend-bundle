@@ -19,10 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserTreeNode;
 use Pimcore\Model\User;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -46,7 +46,7 @@ final class UserCloneService implements UserCloneServiceInterface
     /**
      * @throws DatabaseException|NotFoundException
      */
-    public function cloneUser(int $userId, string $userName): UserTreeNode
+    public function cloneUser(int $userId, string $userName): TreeNode
     {
         $this->userToClone = User::getById($userId);
         if (!$this->userToClone) {
