@@ -58,9 +58,6 @@ final readonly class GridService implements GridServiceInterface
         private ServiceResolverInterface $serviceResolver,
         private EventDispatcherInterface $eventDispatcher
     ) {
-        // make private method to get lazy loading
-        $this->columnDefinitions = $columnDefinitionLoader->loadColumnDefinitions();
-        $this->columnResolvers = $columnResolverLoader->loadColumnResolvers();
     }
 
     /**
@@ -108,7 +105,7 @@ final readonly class GridService implements GridServiceInterface
                 continue;
             }
 
-            $columnData = $this->columnResolvers[$column->getType()]->resolve($column, $element);
+            $columnData = $this->getColumnResolvers()[$column->getType()]->resolve($column, $element);
 
             $this->eventDispatcher->dispatch(
                 new GridColumnDataEvent($columnData),
@@ -139,18 +136,18 @@ final readonly class GridService implements GridServiceInterface
         $systemColumns = $this->systemColumnService->getSystemColumnsForAssets();
         $columns = [];
         foreach ($systemColumns as $columnKey => $type) {
-            if (!array_key_exists($type, $this->columnDefinitions)) {
+            if (!array_key_exists($type, $this->getColumnDefinitions())) {
                 continue;
             }
             $column = new Column(
                 key: $columnKey,
                 group: 'system',
-                sortable: $this->columnDefinitions[$type]->isSortable(),
+                sortable: $this->getColumnDefinitions()[$type]->isSortable(),
                 editable: false,
                 localizable: false,
                 locale: null,
                 type: $type,
-                config: $this->columnDefinitions[$type]->getConfig()
+                config: $this->getColumnDefinitions()[$type]->getConfig()
             );
 
             $this->eventDispatcher->dispatch(
@@ -204,12 +201,12 @@ final readonly class GridService implements GridServiceInterface
 
     private function supports(Column $column, string $elementType): bool
     {
-        if (!array_key_exists($column->getType(), $this->columnResolvers)) {
+        if (!array_key_exists($column->getType(), $this->getColumnResolvers())) {
             return false;
         }
 
         /** @var ColumnResolverInterface $resolver */
-        $resolver = $this->columnResolvers[$column->getType()];
+        $resolver = $this->getColumnResolvers()[$column->getType()];
 
         if (!in_array($elementType, $resolver->supportedElementTypes(), true)) {
             return false;
@@ -220,6 +217,19 @@ final readonly class GridService implements GridServiceInterface
 
     private function getColumnDefinitions(): array
     {
-        return $this->columnDefinitionLoader->loadColumnDefinitions();
+        if ($this->columnDefinitions) {
+            return $this->columnDefinitions;
+        }
+        $this->columnDefinitions = $this->columnDefinitionLoader->loadColumnDefinitions();
+        return $this->columnDefinitions;
+    }
+
+    private function getColumnResolvers(): array
+    {
+        if ($this->columnResolvers) {
+            return $this->columnResolvers;
+        }
+        $this->columnResolvers = $this->columnResolverLoader->loadColumnResolvers();
+        return $this->columnResolvers;
     }
 }
