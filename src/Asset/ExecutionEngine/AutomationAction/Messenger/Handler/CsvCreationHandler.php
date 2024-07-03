@@ -16,18 +16,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -44,7 +46,8 @@ final class CsvCreationHandler extends AbstractHandler
         private readonly PublishServiceInterface $publishService,
         private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver,
-        private readonly CsvServiceInterface $csvService
+        private readonly CsvServiceInterface $csvService,
+        private readonly GridServiceInterface $gridService
     ) {
         parent::__construct();
     }
@@ -52,7 +55,7 @@ final class CsvCreationHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(ZipCreationMessage $message): void
+    public function __invoke(CsvCreationMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
 
@@ -66,7 +69,7 @@ final class CsvCreationHandler extends AbstractHandler
             $this->abortAction(
                 $validatedParameters->getTranslationKey(),
                 $validatedParameters->getTranslationParameters(),
-                Config::CONTEXT->value,
+                TranslatorService::DOMAIN,
                 $validatedParameters->getExceptionClassName()
             );
         }
@@ -77,7 +80,7 @@ final class CsvCreationHandler extends AbstractHandler
             $this->abortAction(
                 'no_assets_found',
                 [],
-                Config::CONTEXT->value,
+                TranslatorService::DOMAIN,
                 NotFoundException::class
             );
         }
@@ -88,17 +91,25 @@ final class CsvCreationHandler extends AbstractHandler
             $this->abortAction(
                 'asset_permission_denied',
                 [],
-                Config::CONTEXT->value,
+                TranslatorService::DOMAIN,
                 AccessDeniedException::class
             );
         }
 
-        $csv = $this->csvService->getCsvFile($jobRun->getId());
+
+
+        $settings = $this->extractConfigFieldFromJobStepConfig($message, 'settings');
+        $configuration = $this->gridService->getConfigurationFromArray(
+            $this->extractConfigFieldFromJobStepConfig($message, 'configuration')
+        );
+
+        $csv = $this->csvService->getCsvFile($jobRun->getId(), $configuration, $settings);
+
         if (!$csv) {
             $this->abortAction(
                 'csv_file_not_found',
                 [],
-                Config::CONTEXT->value,
+                TranslatorService::DOMAIN,
                 NotFoundException::class
             );
         }
@@ -111,9 +122,22 @@ final class CsvCreationHandler extends AbstractHandler
         if (!$asset instanceof Asset) {
             return;
         }
+        $assetData = $this->gridService->getGridValuesForElement(
+            $configuration,
+            $asset,
+            ElementTypes::TYPE_ASSET
+        );
 
-        $this->csvService->addAsset($csv, $asset);
+        $this->csvService->addData($csv, $settings['delimiter'], $assetData);
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+    }
+
+    protected function configureStep(): void
+    {
+        $this->stepConfiguration->setRequired('settings');
+        $this->stepConfiguration->setAllowedTypes('settings', 'array');
+        $this->stepConfiguration->setRequired('configuration');
+        $this->stepConfiguration->setAllowedTypes('configuration', 'array');
     }
 }

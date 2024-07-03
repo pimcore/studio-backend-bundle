@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -50,14 +51,15 @@ final readonly class GridService implements GridServiceInterface
     private array $columnResolvers;
 
     public function __construct(
-        ColumnDefinitionLoaderInterface $columnAdapterLoader,
-        ColumnResolverLoaderInterface $columnResolverLoader,
+        private ColumnDefinitionLoaderInterface $columnDefinitionLoader,
+        private ColumnResolverLoaderInterface $columnResolverLoader,
         private SystemColumnServiceInterface $systemColumnService,
         private GridSearchInterface $gridSearch,
         private ServiceResolverInterface $serviceResolver,
         private EventDispatcherInterface $eventDispatcher
     ) {
-        $this->columnDefinitions = $columnAdapterLoader->loadColumnDefinitions();
+        // make private method to get lazy loading
+        $this->columnDefinitions = $columnDefinitionLoader->loadColumnDefinitions();
         $this->columnResolvers = $columnResolverLoader->loadColumnResolvers();
     }
 
@@ -101,6 +103,7 @@ final readonly class GridService implements GridServiceInterface
     ): array {
         $data = [];
         foreach ($configuration->getColumns() as $column) {
+            // move this to the resolver
             if (!$this->supports($column, $elementType)) {
                 continue;
             }
@@ -116,6 +119,19 @@ final readonly class GridService implements GridServiceInterface
         }
 
         return $data;
+    }
+
+    public function getGridValuesForElement(
+        Configuration $configuration,
+        ElementInterface $element,
+        string $elementType
+    ): array {
+        $data = $this->getGridDataForElement($configuration, $element, $elementType);
+
+        return array_map(
+            static fn(ColumnData $columnData) => $columnData->getValue(),
+            $data['columns']
+        );
     }
 
     public function getAssetGridConfiguration(): Configuration
@@ -178,6 +194,14 @@ final readonly class GridService implements GridServiceInterface
         return new Configuration($columns);
     }
 
+    public function getColumnKeys(Configuration $configuration): array
+    {
+        return array_map(
+            static fn(Column $column) => $column->getKey(),
+            $configuration->getColumns()
+        );
+    }
+
     private function supports(Column $column, string $elementType): bool
     {
         if (!array_key_exists($column->getType(), $this->columnResolvers)) {
@@ -192,5 +216,10 @@ final readonly class GridService implements GridServiceInterface
         }
 
         return true;
+    }
+
+    private function getColumnDefinitions(): array
+    {
+        return $this->columnDefinitionLoader->loadColumnDefinitions();
     }
 }

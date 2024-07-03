@@ -24,6 +24,7 @@ use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -59,17 +60,14 @@ final class CreateCsvController extends AbstractApiController
     #[RequestBody(
         content: new JsonContent(
             properties: [
-                new Property(
-                    property: 'items',
-                    properties: [
-                        new Property(property: 'assets', type: 'array', items: new Items(type: 'integer')),
-                        new Property(property: 'gridConfig', type: 'array', items: new Items(type: 'string')),
-                        new Property(property: 'settings', type: 'object', items: new Items(type: 'string')),
-                    ],
-                    type: 'object'
-                ),
+                new Property(property: 'assets', type: 'array', items: new Items(type: 'integer')),
+                new Property(property: 'gridConfig', ref: Configuration::class),
+                new Property(property: 'settings', properties: [
+                    new Property(property: 'delimiter', type: 'string'),
+                    new Property(property: 'header', type: 'string'),
+                ], type: 'object'),
             ],
-            type: 'object',
+            type: 'object'
         )
     )]
     #[SuccessResponse(
@@ -88,7 +86,7 @@ final class CreateCsvController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function createZippedAssets(
+    public function createCsvAssets(
         #[MapRequestPayload] ExportAssetParameter $exportAssetParameter
     ): Response
     {

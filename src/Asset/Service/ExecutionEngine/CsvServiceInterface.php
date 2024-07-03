@@ -16,22 +16,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
-use League\Flysystem\FilesystemOperator;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
 interface CsvServiceInterface
 {
-    public const CSV_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-csv-{id}.zip';
+    public const CSV_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-csv-{id}.csv';
 
 
-    public function getCsvFile(int $id): ?FilesystemOperator;
+    public function getCsvFile(int $id, Configuration $configuration, array $settings): string;
 
-    public function addAsset(): void;
+    public function addData(string $filePath,string $delimiter, array $data): void;
 
     public function generateCsvFile(ExportAssetParameter $exportAssetParameter): string;
     public function getTempFilePath(int $id, string $path): string;
+
 }

@@ -95,7 +95,7 @@ final readonly class ZipService implements ZipServiceInterface
         $jobRun = $this->jobExecutionAgent->startJobExecution(
             $job,
             $this->securityService->getCurrentUser()->getId(),
-            TranslatorService::DOMAIN
+            Config::CONTEXT_STOP_ON_ERROR->value
         );
 
         return $this->getTempFilePath($jobRun->getId(), self::ZIP_FILE_PATH);

@@ -24,7 +24,11 @@ use Pimcore\Model\Element\ElementDescriptor;
  */
 final readonly class ExportAssetParameter
 {
-    /** @param array<int> $items */
+    /**
+     * @param array $assets
+     * @param array $gridConfig
+     * @param array $settings
+     */
     public function __construct(
         private array $assets,
         private array $gridConfig,
