@@ -50,10 +50,8 @@ final readonly class ExportAssetParameter
     public function getAssets(): array
     {
         return array_map(
-            static fn (int $id) => new ElementDescriptor(
-                ElementTypes::TYPE_ASSET,
-                $id
-            ), $this->assets
+            static fn (int $id) => new ElementDescriptor(ElementTypes::TYPE_ASSET, $id),
+            $this->assets
         );
     }
 }
