@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 
 /**
@@ -32,6 +33,8 @@ final readonly class CreateZipParameter
     /** @return array<int, ElementDescriptor> */
     public function getItems(): array
     {
-        return array_map(static fn (int $id) => new ElementDescriptor('asset', $id), $this->items);
+        return array_map(
+            static fn (int $id) => new ElementDescriptor(ElementTypes::TYPE_ASSET, $id), $this->items
+        );
     }
 }

@@ -43,4 +43,17 @@ interface UploadServiceInterface
         UploadedFile $file,
         UserInterface $user
     ): int;
+
+    /**
+     * @throws AccessDeniedException
+     * @throws DatabaseException
+     * @throws EnvironmentException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     */
+    public function replaceAssetBinary(
+        int $assetId,
+        UploadedFile $file,
+        UserInterface $user
+    ): void;
 }
