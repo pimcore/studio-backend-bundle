@@ -16,7 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleEvent;
@@ -84,5 +86,21 @@ final readonly class RoleService implements RoleServiceInterface
 
         return new Collection(count($items), $items);
 
+    }
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function deleteRole(int $roleId): void
+    {
+        $role = $this->roleRepository->getRoleById($roleId);
+
+        try {
+            $this->roleRepository->deleteRole($role);
+        } catch (Exception $exception) {
+            throw new DatabaseException(
+                sprintf('Failed to delete role with id %d: %s', $roleId, $exception->getMessage()),
+            );
+        }
     }
 }

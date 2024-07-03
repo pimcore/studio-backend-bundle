@@ -17,36 +17,39 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\Role\FolderResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\User\Role;
-use Pimcore\Model\User\Role\Listing;
+use Pimcore\Model\User\Role\Folder;
 
 /**
  * @internal
  */
-interface RoleRepositoryInterface
+final readonly class FolderRepository implements FolderRepositoryInterface
 {
-    /**
-     * @return Role[]
-     *
-     * @throws DatabaseException
-     */
-    public function getRoles(): array;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getRoleById(int $roleId): Role;
-
-    /**
-     *
-     * @throws DatabaseException
-     */
-    public function getRoleListingWithFolderByParentId(int $parentId): Listing;
+    public function __construct(
+        private FolderResolverInterface $folderResolver
+    ) {
+    }
 
     /**
      * @throws Exception
      */
-    public function deleteRole(Role $role): void;
+    public function deleteFolder(Folder $folder): void
+    {
+        $folder->delete();
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getFolderById(int $folderId): Folder
+    {
+        $folder = $this->folderResolver->getById($folderId);
+
+        if (!$folder instanceof Folder) {
+            throw new NotFoundException('Folder', $folderId);
+        }
+
+        return $folder;
+    }
 }

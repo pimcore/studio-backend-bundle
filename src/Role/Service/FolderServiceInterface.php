@@ -14,39 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Role\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
-use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\User\Role;
-use Pimcore\Model\User\Role\Listing;
 
 /**
  * @internal
  */
-interface RoleRepositoryInterface
+interface FolderServiceInterface
 {
     /**
-     * @return Role[]
-     *
-     * @throws DatabaseException
+     * @throws NotFoundException|DatabaseException
      */
-    public function getRoles(): array;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getRoleById(int $roleId): Role;
-
-    /**
-     *
-     * @throws DatabaseException
-     */
-    public function getRoleListingWithFolderByParentId(int $parentId): Listing;
-
-    /**
-     * @throws Exception
-     */
-    public function deleteRole(Role $role): void;
+    public function deleteFolder(int $folderId): void;
 }

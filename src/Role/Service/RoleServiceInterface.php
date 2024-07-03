@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
@@ -34,4 +35,9 @@ interface RoleServiceInterface
      * @throws DatabaseException
      */
     public function getRoleTreeCollection(ParentIdParameter $listingParameter): Collection;
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function deleteRole(int $roleId): void;
 }

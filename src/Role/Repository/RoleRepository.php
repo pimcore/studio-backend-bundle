@@ -82,4 +82,12 @@ final class RoleRepository implements RoleRepositoryInterface
             throw new  DatabaseException(sprintf('Error while fetching roles: %s', $e->getMessage()));
         }
     }
+
+    /**
+     * @throws Exception
+     */
+    public function deleteRole(Role $role): void
+    {
+        $role->delete();
+    }
 }
