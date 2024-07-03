@@ -77,8 +77,7 @@ final class CreateZipController extends AbstractApiController
     ])]
     public function createZippedAssets(
         #[MapRequestPayload] CreateAssetFileParameter $createAssetFileParameter
-    ): Response
-    {
+    ): Response {
         return $this->jsonResponse(['path' => $this->zipService->generateZipFile($createAssetFileParameter)]);
     }
 }

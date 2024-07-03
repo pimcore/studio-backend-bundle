@@ -129,7 +129,7 @@ final readonly class GridService implements GridServiceInterface
         $data = $this->getGridDataForElement($configuration, $element, $elementType);
 
         return array_map(
-            static fn(ColumnData $columnData) => $columnData->getValue(),
+            static fn (ColumnData $columnData) => $columnData->getValue(),
             $data['columns']
         );
     }
@@ -197,7 +197,7 @@ final readonly class GridService implements GridServiceInterface
     public function getColumnKeys(Configuration $configuration): array
     {
         return array_map(
-            static fn(Column $column) => $column->getKey(),
+            static fn (Column $column) => $column->getKey(),
             $configuration->getColumns()
         );
     }

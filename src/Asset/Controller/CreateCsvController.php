@@ -88,8 +88,7 @@ final class CreateCsvController extends AbstractApiController
     ])]
     public function createCsvAssets(
         #[MapRequestPayload] ExportAssetParameter $exportAssetParameter
-    ): Response
-    {
+    ): Response {
         return $this->jsonResponse(['path' => $this->csvService->generateCsvFile($exportAssetParameter)]);
     }
 }
