@@ -195,7 +195,8 @@ final readonly class UploadService implements UploadServiceInterface
         }
 
         $fileName = preg_replace(
-            '/\.' . $originalExtension . '$/i', '.' . $newExtension,
+            '/\.' . $originalExtension . '$/i',
+            '.' . $newExtension,
             $originalFileName
         );
 

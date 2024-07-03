@@ -34,7 +34,9 @@ final readonly class CreateZipParameter
     public function getItems(): array
     {
         return array_map(
-            static fn (int $id) => new ElementDescriptor(ElementTypes::TYPE_ASSET, $id), $this->items
+            static fn (int $id) =>
+            new ElementDescriptor(ElementTypes::TYPE_ASSET, $id),
+            $this->items
         );
     }
 }
