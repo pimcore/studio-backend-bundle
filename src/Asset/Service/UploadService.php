@@ -187,8 +187,7 @@ final readonly class UploadService implements UploadServiceInterface
         string $originalFileName,
         string $newFileName,
         ElementInterface $parent
-    ): string
-    {
+    ): string {
         $newExtension = pathinfo($newFileName, PATHINFO_EXTENSION);
         $originalExtension = pathinfo($originalFileName, PATHINFO_EXTENSION);
         if ($newExtension === $originalExtension) {
@@ -207,8 +206,7 @@ final readonly class UploadService implements UploadServiceInterface
         UploadedFile $file,
         string $fileName,
         string $assetType
-    ): void
-    {
+    ): void {
         $mimeTypes = new MimeTypes();
         $mimeType = $mimeTypes->guessMimeType($file->getRealPath());
         $newType = $this->assetResolver->getTypeFromMimeMapping($mimeType, $fileName);
