@@ -53,17 +53,9 @@ final class Note implements AdditionalAttributesInterface
         private readonly bool $locked,
         #[Property(
             description: 'Data of note',
-            type: 'object',
+            type: 'array',
+            items: new Items(),
             example: 'Can be pretty much anything',
-            additionalProperties: new AdditionalProperties(
-                oneOf: [
-                    new Schema(type: 'string'),
-                    new Schema(type: 'number'),
-                    new Schema(type: 'boolean'),
-                    new Schema(type: 'object'),
-                    new Schema(type: 'array', items: new Items()),
-                ]
-            )
         )]
         private readonly array $data,
         #[Property(description: 'User ID', type: 'integer', example: 1)]
