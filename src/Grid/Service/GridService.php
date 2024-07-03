@@ -36,7 +36,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * @internal
  */
-final readonly class GridService implements GridServiceInterface
+final class GridService implements GridServiceInterface
 {
     use ElementProviderTrait;
 
@@ -51,12 +51,12 @@ final readonly class GridService implements GridServiceInterface
     private array $columnResolvers;
 
     public function __construct(
-        private ColumnDefinitionLoaderInterface $columnDefinitionLoader,
-        private ColumnResolverLoaderInterface $columnResolverLoader,
-        private SystemColumnServiceInterface $systemColumnService,
-        private GridSearchInterface $gridSearch,
-        private ServiceResolverInterface $serviceResolver,
-        private EventDispatcherInterface $eventDispatcher
+        private readonly ColumnDefinitionLoaderInterface $columnDefinitionLoader,
+        private readonly ColumnResolverLoaderInterface $columnResolverLoader,
+        private readonly SystemColumnServiceInterface $systemColumnService,
+        private readonly GridSearchInterface $gridSearch,
+        private readonly ServiceResolverInterface $serviceResolver,
+        private readonly EventDispatcherInterface $eventDispatcher
     ) {
     }
 
