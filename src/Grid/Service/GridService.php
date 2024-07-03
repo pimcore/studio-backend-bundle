@@ -221,6 +221,7 @@ final readonly class GridService implements GridServiceInterface
             return $this->columnDefinitions;
         }
         $this->columnDefinitions = $this->columnDefinitionLoader->loadColumnDefinitions();
+
         return $this->columnDefinitions;
     }
 
@@ -230,6 +231,7 @@ final readonly class GridService implements GridServiceInterface
             return $this->columnResolvers;
         }
         $this->columnResolvers = $this->columnResolverLoader->loadColumnResolvers();
+
         return $this->columnResolvers;
     }
 }
