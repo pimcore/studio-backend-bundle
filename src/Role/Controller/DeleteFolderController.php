@@ -16,23 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Controller;
 
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Request\SingleParameterRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
-use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\RoleCloneParameter;
-use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleCloneServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\Service\FolderServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -40,42 +35,35 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CloneController extends AbstractApiController
+final class DeleteFolderController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly RoleCloneServiceInterface $roleCloneService
+        private readonly FolderServiceInterface $folderService
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws NotFoundException|DatabaseException
      */
-    #[Route('/role/clone/{id}', name: 'pimcore_studio_api_role_clone', methods: ['POST'])]
+    #[Route('/role/folder/{id}', name: 'pimcore_studio_api_role_folder_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
-    #[Post(
-        path: self::API_PATH . '/role/clone/{id}',
-        operationId: 'cloneRole',
-        summary: 'Clone a specific Role.',
+    #[Delete(
+        path: self::API_PATH . '/role/folder/{id}',
+        operationId: 'deleteRoleFolder',
+        summary: 'Delete a specific folder with all sub roles.',
         tags: [Tags::Role->value]
     )]
-    #[SuccessResponse(
-        description: 'Node of the cloned Role.',
-        content: new JsonContent(ref: TreeNode::class)
-    )]
-    #[IdParameter(type: 'role')]
-    #[SingleParameterRequestBody(
-        parameterName: 'name',
-        example: 'Cloned Role'
-    )]
+    #[SuccessResponse]
+    #[IdParameter(type: 'folder')]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function cloneRole(int $id, #[MapRequestPayload] RoleCloneParameter $roleClone): JsonResponse
+    public function deleteRoleFolder(int $id): Response
     {
-        $roleNode = $this->roleCloneService->cloneRole($id, $roleClone->getName());
+        $this->folderService->deleteFolder($id);
 
-        return $this->jsonResponse($roleNode);
+        return new Response();
     }
 }
