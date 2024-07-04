@@ -116,7 +116,7 @@ final readonly class RoleService implements RoleServiceInterface
     {
         $folderId = 0;
 
-        if($createParameter->getParentId() !== 0) {
+        if ($createParameter->getParentId() !== 0) {
             $folderId = $this->folderRepository->getFolderById($createParameter->getParentId())->getId();
         }
 

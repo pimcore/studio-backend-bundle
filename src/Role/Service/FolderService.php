@@ -57,7 +57,7 @@ final readonly class FolderService implements FolderServiceInterface
     public function createFolder(CreateParameter $createParameter): TreeNode
     {
         $parentFolderId = 0;
-        if($createParameter->getParentId() !== 0) {
+        if ($createParameter->getParentId() !== 0) {
             $parentFolderId = $this->folderRepository->getFolderById($createParameter->getParentId())->getId();
         }
 
