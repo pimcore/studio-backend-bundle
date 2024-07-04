@@ -13,12 +13,14 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 
-enum Jobs: string
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
+
+enum DownloadFormats: string
 {
-    case CREATE_ZIP = 'studio_ee_job_create_zip';
-    case CLONE_ASSETS = 'studio_ee_job_clone_assets';
-    case DELETE_ASSETS = 'studio_ee_job_delete_assets';
-    case CREATE_CSV = 'studio_ee_job_create_csv';
+    use EnumToValueArrayTrait;
+
+    case CSV = 'csv';
+    case ZIP = 'zip';
 }

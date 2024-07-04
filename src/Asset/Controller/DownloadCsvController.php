@@ -37,7 +37,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class DownloadZipController extends AbstractApiController
+final class DownloadCsvController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -46,19 +46,19 @@ final class DownloadZipController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/download/zip', name: 'pimcore_studio_api_zip_download_asset', methods: ['GET'])]
+    #[Route('/assets/download/csv', name: 'pimcore_studio_api_csv_download_asset', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/download/zip',
-        operationId: 'downloadZippedAssets',
-        description: 'Downloading zipped assets',
-        summary: 'Downloading the zip file with assets',
+        path: self::API_PATH . '/assets/download/csv',
+        operationId: 'downloadAssetsCsv',
+        description: 'Downloading csv file with assets',
+        summary: 'Downloading the csv file with assets',
         tags: [Tags::Assets->name]
     )]
     #[PathParameter]
     #[SuccessResponse(
-        description: 'Zip archive',
-        content: [new AssetMediaType('application/zip')],
+        description: 'CSV File',
+        content: [new AssetMediaType('application/csv')],
         headers: [new ContentDisposition()]
     )]
     #[DefaultResponses([
@@ -67,6 +67,6 @@ final class DownloadZipController extends AbstractApiController
     ])]
     public function downloadZippedAssets(#[MapQueryString] DownloadPathParameter $path): StreamedResponse
     {
-        return $this->downloadService->downloadZipArchiveByPath($path);
+        return $this->downloadService->downloadCsvByPath($path);
     }
 }

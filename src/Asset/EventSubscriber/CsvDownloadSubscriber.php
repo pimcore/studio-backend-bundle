@@ -20,7 +20,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Schema\DownloadReady;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
@@ -29,11 +29,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * @internal
  */
-final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
+final readonly class CsvDownloadSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private PublishServiceInterface $publishService,
-        private ZipServiceInterface $zipService
+        private CsvServiceInterface $csvService
     ) {
 
     }
@@ -53,13 +53,13 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
 
         if (
             $event->getNewState() === JobRunStates::FINISHED->value &&
-            $event->getJobName() === Jobs::CREATE_ZIP->value
+            $event->getJobName() === Jobs::CREATE_CSV->value
         ) {
             $this->publishService->publish(
-                Events::ZIP_DOWNLOAD_READY->value,
+                Events::CSV_DOWNLOAD_READY->value,
                 new DownloadReady(
                     $event->getJobRunId(),
-                    $this->zipService->getTempFilePath($event->getJobRunId(), ZipServiceInterface::ZIP_FILE_PATH),
+                    $this->csvService->getTempFilePath($event->getJobRunId(), CsvServiceInterface::CSV_FILE_PATH),
                     $event->getJobRunOwnerId()
                 )
             );

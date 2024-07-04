@@ -21,6 +21,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecu
 /**
  * @internal
  */
-final class ZipCollectionMessage extends AbstractExecutionEngineMessage
+final class CollectionMessage extends AbstractExecutionEngineMessage
 {
 }
