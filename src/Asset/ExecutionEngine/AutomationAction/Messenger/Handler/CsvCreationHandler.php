@@ -33,6 +33,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function array_key_exists;
+use function in_array;
 
 /**
  * @internal
