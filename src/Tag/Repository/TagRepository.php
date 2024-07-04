@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Repository;
 
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tag\TagResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -179,7 +180,7 @@ final readonly class TagRepository implements TagRepositoryInterface
 
         try {
             $tag->delete();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new ElementDeletingFailedException($id, $e->getMessage());
         }
     }

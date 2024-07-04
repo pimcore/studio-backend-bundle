@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Repository\TagRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_key_exists;
 
 /**
  * @internal
