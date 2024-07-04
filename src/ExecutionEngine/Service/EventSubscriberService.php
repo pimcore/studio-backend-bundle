@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 /**
  * @internal
  */
-final readonly class EventSubscriberService
+final readonly class EventSubscriberService implements EventSubscriberServiceInterface
 {
     public function __construct(
         private JobRunErrorLogRepositoryInterface $jobRunErrorLogRepository,

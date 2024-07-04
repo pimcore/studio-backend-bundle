@@ -19,24 +19,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset\Folder;
-use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -50,16 +43,11 @@ final readonly class UploadService implements UploadServiceInterface
     public function __construct(
         private AssetServiceInterface $assetService,
         private AssetResolverInterface $assetResolver,
-        private JobExecutionAgentInterface $jobExecutionAgent,
         private ServiceResolverInterface $serviceResolver,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
     ) {
 
     }
-
-    private const UPLOAD_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/upload-asset-{id}-{name}';
-    private const UPLOAD_ID_PLACEHOLDER = '{id}';
-    private const UPLOAD_NAME_PLACEHOLDER = '{name}';
 
     /**
      * @throws AccessDeniedException
@@ -73,9 +61,10 @@ final readonly class UploadService implements UploadServiceInterface
         UploadedFile $file,
         UserInterface $user
     ): int {
-        $this->validateParent($user, $parentId);
+        $parent = $this->validateParent($user, $parentId);
         $sourcePath = $this->getValidSourcePath($file);
         $fileName = $this->getValidFileName($file);
+        $uniqueName = $this->assetService->getUniqueAssetName($parent->getRealPath(), $fileName);
         $userId = $user->getId();
 
         try {
@@ -83,7 +72,7 @@ final readonly class UploadService implements UploadServiceInterface
             $asset = $this->assetResolver->create(
                 $parentId,
                 [
-                    'filename' => $fileName,
+                    'filename' => $uniqueName,
                     'sourcePath' => $sourcePath,
                     'userOwner' => $userId,
                     'userModification' => $userId,
@@ -141,37 +130,9 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws EnvironmentException
-     */
-    public function uploadAssetsAsynchronously(
-        UserInterface $user,
-        array $files,
-        int $parentId,
-        string $folderId
-    ): int {
-        $job = new Job(
-            name: Jobs::UPLOAD_ASSETS->value,
-            steps: [
-                new JobStep(JobSteps::ASSET_UPLOADING->value, AssetUploadMessage::class, '', []),
-            ],
-            selectedElements: $this->getFilesToUpload($files, $folderId),
-            environmentData: [
-                CloneEnvironmentVariables::PARENT_ID->value => $parentId,
-            ]
-        );
-        $jobRun = $this->jobExecutionAgent->startJobExecution(
-            $job,
-            $user->getId(),
-            Config::CONTEXT_CONTINUE_ON_ERROR->value
-        );
-
-        return $jobRun->getId();
-    }
-
-    /**
      * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
      */
-    private function validateParent(UserInterface $user, int $parentId): void
+    public function validateParent(UserInterface $user, int $parentId): ElementInterface
     {
         $parent = $this->assetService->getAssetElement($user, $parentId);
         if (!$parent->isAllowed(ElementPermissions::CREATE_PERMISSION)) {
@@ -186,6 +147,8 @@ final readonly class UploadService implements UploadServiceInterface
         if (!$parent instanceof Folder) {
             throw new EnvironmentException('Invalid parent type: ' . $parent->getType());
         }
+
+        return $parent;
     }
 
     /**
@@ -263,48 +226,5 @@ final readonly class UploadService implements UploadServiceInterface
                 )
             );
         }
-    }
-
-    private function getFilesToUpload(
-        array $files,
-        string $folderId
-    ): array
-    {
-        $filesToUpload = [];
-        foreach ($files as $index => $file) {
-            if (!$file instanceof UploadedFile) {
-                throw new EnvironmentException('Invalid file found in the request');
-            }
-            $fileName = $file->getClientOriginalName();
-
-            $sourcePath = $this->getTempFilePath($folderId, $fileName);
-            copy(
-                $file->getRealPath(), $sourcePath
-            );
-
-            try {
-                $fileData = json_encode([
-                    'fileName' => $file->getClientOriginalName(),
-                    'sourcePath' => $sourcePath,
-                ], JSON_THROW_ON_ERROR);
-                $filesToUpload[] =  new ElementDescriptor($fileData, $index);
-            } catch (Exception $e) {
-                throw new EnvironmentException($e->getMessage());
-            }
-        }
-
-        return $filesToUpload;
-    }
-
-    private function getTempFilePath(string $id, string $name): string
-    {
-        return str_replace(
-            [
-                self::UPLOAD_ID_PLACEHOLDER,
-                self::UPLOAD_NAME_PLACEHOLDER
-            ],
-            [$id, $name],
-            self::UPLOAD_PATH
-        );
     }
 }

@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\AddAssetRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
@@ -31,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdPara
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -48,13 +48,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class AddController extends AbstractApiController
+final class ZipController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         private readonly SecurityServiceInterface $securityService,
-        private readonly UploadServiceInterface $uploadService,
+        private readonly ZipServiceInterface $zipService,
         SerializerInterface $serializer,
     ) {
         parent::__construct($serializer);
@@ -68,50 +68,50 @@ final class AddController extends AbstractApiController
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
-    #[Route('/assets/add/{parentId}', name: 'pimcore_studio_api_assets_add', methods: ['POST'])]
+    #[Route('/assets/add-zip/{parentId}', name: 'pimcore_studio_api_assets_upload_zip', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/add/{parentId}',
-        operationId: 'addAsset',
-        summary: 'Add a new asset.',
+        path: self::API_PATH . '/assets/add-zip/{parentId}',
+        operationId: 'addAssetsZip',
+        summary: 'Add a new asset via zip file.',
         tags: [Tags::Assets->value]
     )]
-    #[SuccessResponse(
-        description: 'Successfully uploaded new asset',
-        content: new IdJson('ID of created asset')
+    #[CreatedResponse(
+        description: 'Successfully created jobRun to upload multiple assets',
+        content: new IdJson('ID of created jobRun')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
     #[AddAssetRequestBody(
         [
             new Property(
-                property: 'file',
-                description: 'File to upload',
+                property: 'zipFile',
+                description: 'Zip file to upload',
                 type: 'string',
                 format: 'binary'
             ),
         ],
-        ['file']
+        ['zipFile']
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function addAsset(
+    public function addAssetsZip(
         int $parentId,
         // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
         Request $request
     ): JsonResponse {
-
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
-            throw new EnvironmentException('Invalid file found in the request');
+            throw new EnvironmentException('Invalid zip file found in the request');
         }
 
         return $this->jsonResponse(
             [
-                'id' => $this->uploadService->uploadAsset(
-                    $parentId,
+                'id' => $this->zipService->uploadZipAssets(
+                    $this->securityService->getCurrentUser(),
                     $file,
-                    $this->securityService->getCurrentUser()
+                    $parentId,
+                    $request->getSession()->getId()
                 ),
             ]
         );

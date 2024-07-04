@@ -19,6 +19,6 @@ enum Jobs: string
 {
     case CREATE_ZIP = 'studio_ee_job_create_zip';
     case CLONE_ASSETS = 'studio_ee_job_clone_assets';
-    case UPLOAD_ASSETS = 'studio_ee_job_upload_assets';
+    case ZIP_FILE_UPLOAD = 'studio_ee_job_upload_zip_file';
     case DELETE_ASSETS = 'studio_ee_job_delete_assets';
 }

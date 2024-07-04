@@ -5,9 +5,10 @@ studio_ee_environment_variable_not_found: Environment variable %variable% not fo
 studio_ee_element_locked: Element with type %type% with ID %id% is locked
 studio_ee_element_permission_missing: User with ID %userId% has missing permission %permission% on element with type %type% and ID %id%
 studio_ee_element_delete_failed: 'Element with type %type% with ID %id% could not be deleted: %message%'
-studio_ee_asset_upload_failed: 'Asset binary file could not be uploaded: %message%'
+studio_ee_zip_file_upload_failed: 'Zip file could not be uploaded: %message%'
 studio_ee_job_create_zip: Create Zip
 studio_ee_job_clone_assets: Clone Assets
+studio_ee_job_upload_zip_file: Upload Zip File
 studio_ee_job_delete_assets: Delete Assets
 studio_ee_jop_step_zip_collection: Zip Collection
 studio_ee_jop_step_zip_creation: Zip Creation

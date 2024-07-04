@@ -90,7 +90,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipCreationHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetCloneHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetDeleteHandler: ~
-  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetUploadHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipUploadHandler: ~
 
   #
   # Event Subscriber
@@ -99,6 +99,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\ZipDownloadSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\DeletionSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\CloneSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\UploadSubscriber: ~
 
   #
   # Mercure SSE

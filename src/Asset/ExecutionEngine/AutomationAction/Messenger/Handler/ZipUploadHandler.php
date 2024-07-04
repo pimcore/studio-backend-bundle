@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -34,7 +34,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class AssetUploadHandler extends AbstractHandler
+final class ZipUploadHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
@@ -50,7 +50,7 @@ final class AssetUploadHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(AssetUploadMessage $message): void
+    public function __invoke(ZipUploadMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         $validatedParameters = $this->validateJobParameters(
@@ -70,17 +70,8 @@ final class AssetUploadHandler extends AbstractHandler
         $environmentVariables = $validatedParameters->getEnvironmentData();
 
         try {
-            $fileData = json_decode(
-                $validatedParameters->getSubject()->getType(),
-                true,
-                512,
-                JSON_THROW_ON_ERROR
-            );
+            $archivePath = $validatedParameters->getSubject()->getType();
 
-            $file = new UploadedFile(
-                $fileData['sourcePath'],
-                $fileData['fileName'],
-            );
 
             $this->uploadService->uploadAsset(
                 $environmentVariables[CloneEnvironmentVariables::PARENT_ID->value],
@@ -89,7 +80,7 @@ final class AssetUploadHandler extends AbstractHandler
             );
         } catch (Exception $exception) {
             $this->abort($this->getAbortData(
-                Config::ASSET_UPLOAD_FAILED_MESSAGE->value,
+                Config::ZIP_FILE_UPLOAD_FAILED_MESSAGE->value,
                 ['message' => $exception->getMessage()],
             ));
         }
