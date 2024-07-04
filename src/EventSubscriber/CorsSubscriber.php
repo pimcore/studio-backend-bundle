@@ -54,7 +54,7 @@ final class CorsSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
 
-        if(!$this->isStudioBackendPath($request->getPathInfo())) {
+        if (!$this->isStudioBackendPath($request->getPathInfo())) {
             return;
         }
 
@@ -68,7 +68,7 @@ final class CorsSubscriber implements EventSubscriberInterface
 
             $route = $this->router->getRouteCollection()->get($routeInfo['_route']);
 
-            if(!$route instanceof Route) {
+            if (!$route instanceof Route) {
                 return;
             }
 
