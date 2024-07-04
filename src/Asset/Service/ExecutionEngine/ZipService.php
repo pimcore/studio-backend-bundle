@@ -26,6 +26,11 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -47,7 +52,8 @@ final readonly class ZipService implements ZipServiceInterface
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent,
         private SecurityServiceInterface $securityService,
-        private StorageResolverInterface $storageResolver
+        private StorageResolverInterface $storageResolver,
+        private UploadServiceInterface $uploadService,
     ) {
     }
 
@@ -98,17 +104,18 @@ final readonly class ZipService implements ZipServiceInterface
     public function uploadZipAssets(
         UserInterface $user,
         UploadedFile $zipArchive,
-        int $parentId,
-        string $archiveId
+        int $parentId
     ): int {
         $this->uploadService->validateParent($user, $parentId);
+        $archiveId = $parentId . '-' . time();
+        $this->copyUploadZipFile($zipArchive->getRealPath(), $archiveId);
         $job = new Job(
             name: Jobs::ZIP_FILE_UPLOAD->value,
             steps: [
                 new JobStep(JobSteps::ZIP_UPLOADING->value, ZipUploadMessage::class, '', []),
             ],
             selectedElements: [new ElementDescriptor(
-                $this->copyUploadZipFile($zipArchive, $parentId . ' - ' . $archiveId),
+                $archiveId,
                 $parentId
             )],
         );
@@ -140,6 +147,22 @@ final readonly class ZipService implements ZipServiceInterface
             Config::CONTEXT_STOP_ON_ERROR->value
         );
 
-        return $this->getTempFilePath($jobRun->getId(), self::ZIP_FILE_PATH);
+        return $this->getTempFilePath($jobRun->getId(), self::DOWNLOAD_ZIP_FILE_PATH);
+    }
+
+    private function copyUploadZipFile(
+        string $zipArchivePath,
+        string $archiveId
+    ): void
+    {
+        if (!is_file($zipArchivePath)) {
+            throw new EnvironmentException(
+                'Something went wrong, please check upload_max_filesize and post_max_size in your php.ini ' .
+                ' as well as the write permissions of your temporary directories.'
+            );
+        }
+
+        $pathTarget = $this->getTempFilePath($archiveId, self::UPLOAD_ZIP_FILE_PATH);
+        copy($zipArchivePath, $pathTarget);
     }
 }

@@ -110,8 +110,7 @@ final class ZipController extends AbstractApiController
                 'id' => $this->zipService->uploadZipAssets(
                     $this->securityService->getCurrentUser(),
                     $file,
-                    $parentId,
-                    $request->getSession()->getId()
+                    $parentId
                 ),
             ]
         );

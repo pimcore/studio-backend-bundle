@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -36,7 +35,9 @@ interface ZipServiceInterface
 
     public const ZIP_FILE_NAME = 'download-zip-{id}.zip';
 
-    public const ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-zip-{id}.zip';
+    public const DOWNLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-zip-{id}.zip';
+
+    public const UPLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/upload-zip-{id}.zip';
 
     public function getZipArchive(int $id): ?ZipArchive;
 
@@ -48,8 +49,7 @@ interface ZipServiceInterface
     public function uploadZipAssets(
         UserInterface $user,
         UploadedFile $zipArchive,
-        int $parentId,
-        string $archiveId
+        int $parentId
     ): int;
 
     public function generateZipFile(CreateAssetFileParameter $ids): string;

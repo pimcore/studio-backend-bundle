@@ -19,12 +19,12 @@ trait TempFilePathTrait
 {
     private const ID_PLACEHOLDER = '{id}';
 
-    public function getTempFilePath(int $id, string $path): string
+    public function getTempFilePath(mixed $id, string $path): string
     {
         return str_replace(self::ID_PLACEHOLDER, (string)$id, $path);
     }
 
-    public function getTempFileName(int $id, string $fileName): string
+    public function getTempFileName(mixed $id, string $fileName): string
     {
         return str_replace(self::ID_PLACEHOLDER, (string)$id, $fileName);
     }
