@@ -41,7 +41,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class CreateFolderController extends AbstractApiController
 {
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly FolderServiceInterface $folderService

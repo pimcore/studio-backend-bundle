@@ -28,10 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Attributes\Request\CreateRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -43,7 +41,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class CreateRoleController extends AbstractApiController
 {
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly RoleServiceInterface $roleService
