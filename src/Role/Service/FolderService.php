@@ -19,7 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
+use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 
 /**
  * @internal
@@ -27,7 +30,8 @@ use Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface
 final readonly class FolderService implements FolderServiceInterface
 {
     public function __construct(
-        private FolderRepositoryInterface $folderRepository
+        private FolderRepositoryInterface $folderRepository,
+        private RoleTreeNodeHydratorInterface $roleTreeNodeHydrator
     ) {
     }
 
@@ -47,6 +51,32 @@ final readonly class FolderService implements FolderServiceInterface
                     $folderId,
                     $exception->getMessage()
                 ));
+        }
+    }
+
+    public function createFolder(CreateParameter $createParameter): TreeNode
+    {
+        $parentFolderId = 0;
+        if($createParameter->getParentId() !== 0) {
+            $parentFolderId = $this->folderRepository->getFolderById($createParameter->getParentId())->getId();
+        }
+
+        try {
+            $folder = $this->folderRepository->createFolder(
+                $createParameter->getName(),
+                $parentFolderId
+            );
+
+            return $this->roleTreeNodeHydrator->hydrate($folder);
+
+        } catch (Exception $exception) {
+            throw new DatabaseException(
+                sprintf(
+                    'Failed to create folder with name %s: %s',
+                    $createParameter->getName(),
+                    $exception->getMessage()
+                )
+            );
         }
     }
 }

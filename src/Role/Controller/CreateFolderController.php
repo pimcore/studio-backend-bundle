@@ -25,13 +25,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
-use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\Service\FolderServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Attributes\Request\CreateRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -41,12 +39,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CreateRoleController extends AbstractApiController
+final class CreateFolderController extends AbstractApiController
 {
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly RoleServiceInterface $roleService
+        private readonly FolderServiceInterface $folderService
     ) {
         parent::__construct($serializer);
     }
@@ -54,25 +52,25 @@ final class CreateRoleController extends AbstractApiController
     /**
      * @throws DatabaseException|NotFoundException
      */
-    #[Route('/role', name: 'pimcore_studio_api_role_create', methods: ['POST'])]
+    #[Route('/role/folder', name: 'pimcore_studio_api_role_folder_create', methods: ['POST'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
-        path: self::API_PATH . '/role',
-        operationId: 'createRole',
-        summary: 'Create a new role.',
+        path: self::API_PATH . '/role/folder',
+        operationId: 'createRoleFolder',
+        summary: 'Create a new role folder.',
         tags: [Tags::Role->value]
     )]
     #[CreateRequestBody]
     #[SuccessResponse(
-        description: 'Node of the new created Role',
+        description: 'Node of the new created Folder',
         content: new JsonContent(ref: TreeNode::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function createRole(#[MapRequestPayload] CreateParameter $createParameter): JsonResponse
+    public function createRoleFolder(#[MapRequestPayload] CreateParameter $createParameter): JsonResponse
     {
-        $roleNode = $this->roleService->createRole($createParameter);
+        $roleNode = $this->folderService->createFolder($createParameter);
 
         return $this->jsonResponse($roleNode);
     }
