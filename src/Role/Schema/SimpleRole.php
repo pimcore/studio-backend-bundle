@@ -27,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
     required: ['id', 'category'],
     type: 'object',
 )]
-final class UserRole implements AdditionalAttributesInterface
+final class SimpleRole implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 

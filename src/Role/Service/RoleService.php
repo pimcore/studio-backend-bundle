@@ -27,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UserRole;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\SimpleRole;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -54,7 +54,7 @@ final readonly class RoleService implements RoleServiceInterface
         $items = [];
 
         foreach ($roles as $role) {
-            $item = new UserRole(
+            $item = new SimpleRole(
                 $role->getId(),
                 $role->getName(),
             );
