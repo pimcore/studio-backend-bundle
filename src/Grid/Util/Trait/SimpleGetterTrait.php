@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Model\Element\ElementInterface;
+use function get_class;
 
 trait SimpleGetterTrait
 {

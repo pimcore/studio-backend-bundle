@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Event\UserPermissionEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\PermissionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
 
 /**
  * @internal

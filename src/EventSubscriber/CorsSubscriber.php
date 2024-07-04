@@ -25,6 +25,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouterInterface;
+use function in_array;
 
 final class CorsSubscriber implements EventSubscriberInterface
 {
