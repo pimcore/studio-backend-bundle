@@ -20,12 +20,15 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleEvent;
 use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UserRole;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -36,7 +39,8 @@ final readonly class RoleService implements RoleServiceInterface
     public function __construct(
         private RoleRepositoryInterface $roleRepository,
         private EventDispatcherInterface $eventDispatcher,
-        private RoleTreeNodeHydratorInterface $roleTreeNodeHydrator
+        private RoleTreeNodeHydratorInterface $roleTreeNodeHydrator,
+        private FolderRepositoryInterface $folderRepository
     ) {
     }
 
@@ -100,6 +104,31 @@ final readonly class RoleService implements RoleServiceInterface
         } catch (Exception $exception) {
             throw new DatabaseException(
                 sprintf('Failed to delete role with id %d: %s', $roleId, $exception->getMessage()),
+            );
+        }
+    }
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function createRole(CreateParameter $createParameter): TreeNode
+    {
+        $folderId = 0;
+
+        if($createParameter->getParentId() !== 0) {
+            $folderId = $this->folderRepository->getFolderById($createParameter->getParentId())->getId();
+        }
+
+        try {
+            $role = $this->roleRepository->createRole($createParameter->getName(), $folderId);
+
+            return $this->roleTreeNodeHydrator->hydrate($role);
+        } catch (Exception $exception) {
+            throw new DatabaseException(
+                sprintf(
+                    'Error creating role: %s',
+                    $exception->getMessage()
+                )
             );
         }
     }
