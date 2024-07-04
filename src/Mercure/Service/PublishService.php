@@ -21,6 +21,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
+use function is_string;
 
 final readonly class PublishService implements PublishServiceInterface
 {
