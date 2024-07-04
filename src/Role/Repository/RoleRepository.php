@@ -90,4 +90,12 @@ final class RoleRepository implements RoleRepositoryInterface
     {
         $role->delete();
     }
+
+    public function createRole(string $roleName, int $folderId): Role
+    {
+        return $this->roleResolver->create([
+            'parentId' => $folderId,
+            'name' => $roleName,
+        ]);
+    }
 }
