@@ -18,16 +18,25 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset\Folder;
+use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -41,6 +50,7 @@ final readonly class UploadService implements UploadServiceInterface
     public function __construct(
         private AssetServiceInterface $assetService,
         private AssetResolverInterface $assetResolver,
+        private JobExecutionAgentInterface $jobExecutionAgent,
         private ServiceResolverInterface $serviceResolver,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
     ) {
@@ -124,6 +134,68 @@ final readonly class UploadService implements UploadServiceInterface
         } finally {
             @unlink($sourcePath);
         }
+    }
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function uploadAssetsAsynchronously(
+        UserInterface $user,
+        array $files,
+        int $parentId
+    ): int {
+        dd($files);
+        dd(array_map(static function ($file, $index) {
+            try {
+                if (!$file instanceof UploadedFile) {
+                    throw new EnvironmentException(
+                        'Invalid file found in the request'
+                    );
+                }
+
+                $fileData = json_encode([
+                    'fileName' => $file->getClientOriginalName(),
+                    'sourcePath' => $file->getRealPath(),
+                    'stream' => $file->getStream(),
+                ], JSON_THROW_ON_ERROR);
+                return new ElementDescriptor($fileData, $index);
+            } catch (Exception $e) {
+                throw new EnvironmentException($e->getMessage());
+            }
+        }, $files, array_keys($files)));
+        $job = new Job(
+            name: Jobs::UPLOAD_ASSETS->value,
+            steps: [
+                new JobStep(JobSteps::ASSET_UPLOADING->value, AssetUploadMessage::class, '', []),
+            ],
+            selectedElements: array_map(static function ($file, $index) {
+                try {
+                    if (!$file instanceof UploadedFile) {
+                        throw new EnvironmentException(
+                            'Invalid file found in the request'
+                        );
+                    }
+
+                    $fileData = json_encode([
+                        'fileName' => $file->getClientOriginalName(),
+                        'sourcePath' => $file->getRealPath(),
+                    ], JSON_THROW_ON_ERROR);
+                    return new ElementDescriptor($fileData, $index);
+                } catch (Exception $e) {
+                    throw new EnvironmentException($e->getMessage());
+                }
+            }, $files, array_keys($files)),
+            environmentData: [
+                CloneEnvironmentVariables::PARENT_ID->value => $parentId,
+            ]
+        );
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $user->getId(),
+            Config::CONTEXT_CONTINUE_ON_ERROR->value
+        );
+
+        return $jobRun->getId();
     }
 
     /**

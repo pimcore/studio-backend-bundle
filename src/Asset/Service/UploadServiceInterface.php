@@ -56,4 +56,13 @@ interface UploadServiceInterface
         UploadedFile $file,
         UserInterface $user
     ): void;
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function uploadAssetsAsynchronously(
+        UserInterface $user,
+        array $files,
+        int $parentId
+    ): int;
 }

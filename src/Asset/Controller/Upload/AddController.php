@@ -17,18 +17,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\AddAssetRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\AddAssetsRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -75,12 +75,16 @@ final class AddController extends AbstractApiController
         summary: 'Add a new asset.',
         tags: [Tags::Assets->value]
     )]
+    #[CreatedResponse(
+        description: 'Successfully created jobRun to upload multiple assets',
+        content: new IdJson('ID of created jobRun')
+    )]
     #[SuccessResponse(
         description: 'Successfully uploaded new asset',
         content: new IdJson('ID of created asset')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
-    #[AddAssetRequestBody]
+    #[AddAssetsRequestBody]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
@@ -90,19 +94,34 @@ final class AddController extends AbstractApiController
         Request $request
     ): JsonResponse {
 
-        $file = $request->files->get('file');
-        if (!$file instanceof UploadedFile) {
-            throw new ElementStreamResourceNotFoundException(0, 'File');
+        $files = $request->files->get('files');
+        if (!is_array($files) || count($files) === 0) {
+            throw new EnvironmentException('No files found in the request');
+        }
+        $user = $this->securityService->getCurrentUser();
+
+        if (count($files) === 1) {
+            if (!$files[0] instanceof UploadedFile) {
+                throw new EnvironmentException('Invalid file found in the request');
+            }
+
+            return $this->jsonResponse(
+                [
+                    'id' => $this->uploadService->uploadAsset(
+                        $parentId,
+                        $files[0],
+                        $user
+                    ),
+                ]
+            );
         }
 
-        return new JsonResponse(
-            [
-                'id' => $this->uploadService->uploadAsset(
-                    $parentId,
-                    $file,
-                    $this->securityService->getCurrentUser()
-                ),
-            ]
+        $jobRunId = $this->uploadService->uploadAssetsAsynchronously(
+            $user,
+            $files,
+            $parentId
         );
+
+        return $this->jsonResponse(['id' => $jobRunId], HttpResponseCodes::CREATED->value);
     }
 }

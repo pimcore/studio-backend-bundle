@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -13,13 +14,13 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-enum JobSteps: string
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
+
+/**
+ * @internal
+ */
+final class AssetUploadMessage extends AbstractExecutionEngineMessage
 {
-    case ZIP_COLLECTION = 'studio_ee_jop_step_zip_collection';
-    case ZIP_CREATION = 'studio_ee_jop_step_zip_creation';
-    case ASSET_DELETION = 'studio_ee_jop_step_asset_deletion';
-    case ASSET_CLONING = 'studio_ee_jop_step_asset_cloning';
-    case ASSET_UPLOADING = 'studio_ee_jop_step_asset_uploading';
 }

@@ -27,4 +27,5 @@ enum Config: string
     case ELEMENT_PERMISSION_MISSING_MESSAGE = 'studio_ee_element_permission_missing';
     case ELEMENT_HAS_CHILDREN_MESSAGE = 'studio_ee_element_has_existing_children';
     case ELEMENT_DELETE_FAILED_MESSAGE = 'studio_ee_element_delete_failed';
+    case ASSET_UPLOAD_FAILED_MESSAGE = 'studio_ee_asset_upload_failed';
 }
