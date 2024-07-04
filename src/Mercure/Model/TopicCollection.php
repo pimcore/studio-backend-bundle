@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Model;
 
+use function is_array;
+
 /**
  * @internal
  */
