@@ -42,7 +42,7 @@ final class CsvExportRequestBody extends RequestBody
                         new Property(
                             property: Csv::SETTINGS_HEADER->value,
                             type: 'enum',
-                            enum: [Csv::values()],
+                            enum: Csv::values(),
                             example: Csv::SETTINGS_HEADER_TITLE->value
                         ),
                     ], type: 'object'),
