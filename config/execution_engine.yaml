@@ -11,6 +11,11 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
+
+  # Services
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberService
+
   #
   # Event Subscriber
   #

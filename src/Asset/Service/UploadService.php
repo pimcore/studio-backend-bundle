@@ -57,6 +57,10 @@ final readonly class UploadService implements UploadServiceInterface
 
     }
 
+    private const UPLOAD_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/upload-asset-{id}-{name}';
+    private const UPLOAD_ID_PLACEHOLDER = '{id}';
+    private const UPLOAD_NAME_PLACEHOLDER = '{name}';
+
     /**
      * @throws AccessDeniedException
      * @throws DatabaseException
@@ -142,49 +146,15 @@ final readonly class UploadService implements UploadServiceInterface
     public function uploadAssetsAsynchronously(
         UserInterface $user,
         array $files,
-        int $parentId
+        int $parentId,
+        string $folderId
     ): int {
-        dd($files);
-        dd(array_map(static function ($file, $index) {
-            try {
-                if (!$file instanceof UploadedFile) {
-                    throw new EnvironmentException(
-                        'Invalid file found in the request'
-                    );
-                }
-
-                $fileData = json_encode([
-                    'fileName' => $file->getClientOriginalName(),
-                    'sourcePath' => $file->getRealPath(),
-                    'stream' => $file->getStream(),
-                ], JSON_THROW_ON_ERROR);
-                return new ElementDescriptor($fileData, $index);
-            } catch (Exception $e) {
-                throw new EnvironmentException($e->getMessage());
-            }
-        }, $files, array_keys($files)));
         $job = new Job(
             name: Jobs::UPLOAD_ASSETS->value,
             steps: [
                 new JobStep(JobSteps::ASSET_UPLOADING->value, AssetUploadMessage::class, '', []),
             ],
-            selectedElements: array_map(static function ($file, $index) {
-                try {
-                    if (!$file instanceof UploadedFile) {
-                        throw new EnvironmentException(
-                            'Invalid file found in the request'
-                        );
-                    }
-
-                    $fileData = json_encode([
-                        'fileName' => $file->getClientOriginalName(),
-                        'sourcePath' => $file->getRealPath(),
-                    ], JSON_THROW_ON_ERROR);
-                    return new ElementDescriptor($fileData, $index);
-                } catch (Exception $e) {
-                    throw new EnvironmentException($e->getMessage());
-                }
-            }, $files, array_keys($files)),
+            selectedElements: $this->getFilesToUpload($files, $folderId),
             environmentData: [
                 CloneEnvironmentVariables::PARENT_ID->value => $parentId,
             ]
@@ -293,5 +263,48 @@ final readonly class UploadService implements UploadServiceInterface
                 )
             );
         }
+    }
+
+    private function getFilesToUpload(
+        array $files,
+        string $folderId
+    ): array
+    {
+        $filesToUpload = [];
+        foreach ($files as $index => $file) {
+            if (!$file instanceof UploadedFile) {
+                throw new EnvironmentException('Invalid file found in the request');
+            }
+            $fileName = $file->getClientOriginalName();
+
+            $sourcePath = $this->getTempFilePath($folderId, $fileName);
+            copy(
+                $file->getRealPath(), $sourcePath
+            );
+
+            try {
+                $fileData = json_encode([
+                    'fileName' => $file->getClientOriginalName(),
+                    'sourcePath' => $sourcePath,
+                ], JSON_THROW_ON_ERROR);
+                $filesToUpload[] =  new ElementDescriptor($fileData, $index);
+            } catch (Exception $e) {
+                throw new EnvironmentException($e->getMessage());
+            }
+        }
+
+        return $filesToUpload;
+    }
+
+    private function getTempFilePath(string $id, string $name): string
+    {
+        return str_replace(
+            [
+                self::UPLOAD_ID_PLACEHOLDER,
+                self::UPLOAD_NAME_PLACEHOLDER
+            ],
+            [$id, $name],
+            self::UPLOAD_PATH
+        );
     }
 }

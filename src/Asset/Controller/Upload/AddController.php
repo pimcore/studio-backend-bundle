@@ -16,7 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\AddAssetRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\AddAssetsRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -84,7 +87,22 @@ final class AddController extends AbstractApiController
         content: new IdJson('ID of created asset')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
-    #[AddAssetsRequestBody]
+    #[AddAssetRequestBody(
+        [
+            new Property(
+                property: 'files[]',
+                title: 'files',
+                description: 'Files to upload',
+                type: 'array',
+                items: new Items(
+                    title: 'file',
+                    type: 'string',
+                    format: 'binary',
+                ),
+            ),
+        ],
+        ['files[]']
+    )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
@@ -119,7 +137,8 @@ final class AddController extends AbstractApiController
         $jobRunId = $this->uploadService->uploadAssetsAsynchronously(
             $user,
             $files,
-            $parentId
+            $parentId,
+            $request->getSession()->getId()
         );
 
         return $this->jsonResponse(['id' => $jobRunId], HttpResponseCodes::CREATED->value);
