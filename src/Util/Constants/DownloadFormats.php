@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Pimcore
@@ -14,22 +13,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Mercure;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
 
-/**
- * @internal
- */
-enum Events: string
+enum DownloadFormats: string
 {
     use EnumToValueArrayTrait;
 
-    case ZIP_DOWNLOAD_READY = 'zip-download-ready';
-    case CSV_DOWNLOAD_READY = 'csv-download-ready';
-    case DELETION_FINISHED = 'deletion-finished';
-    case CLONING_FINISHED = 'cloning-finished';
-    case ASSET_UPLOAD_FINISHED = 'asset-upload-finished';
-    case FINISHED_WITH_ERRORS = 'job-finished-with-errors';
-    case FAILED = 'job-failed';
+    case CSV = 'csv';
+    case ZIP = 'zip';
 }

@@ -13,13 +13,19 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
 
-enum Jobs: string
+trait TempFilePathTrait
 {
-    case CREATE_ZIP = 'studio_ee_job_create_zip';
-    case CLONE_ASSETS = 'studio_ee_job_clone_assets';
-    case ZIP_FILE_UPLOAD = 'studio_ee_job_upload_zip_file';
-    case DELETE_ASSETS = 'studio_ee_job_delete_assets';
-    case CREATE_CSV = 'studio_ee_job_create_csv';
+    private const ID_PLACEHOLDER = '{id}';
+
+    public function getTempFilePath(int $id, string $path): string
+    {
+        return str_replace(self::ID_PLACEHOLDER, (string)$id, $path);
+    }
+
+    public function getTempFileName(int $id, string $fileName): string
+    {
+        return str_replace(self::ID_PLACEHOLDER, (string)$id, $fileName);
+    }
 }

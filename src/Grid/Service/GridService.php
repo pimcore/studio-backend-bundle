@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -37,30 +38,28 @@ use function in_array;
 /**
  * @internal
  */
-final readonly class GridService implements GridServiceInterface
+final class GridService implements GridServiceInterface
 {
     use ElementProviderTrait;
 
     /**
      * @param array<int, ColumnDefinitionInterface> $columnDefinitions
      */
-    private array $columnDefinitions;
+    private array $columnDefinitions = [];
 
     /**
      * @param array<int, ColumnResolverInterface> $columnResolvers
      */
-    private array $columnResolvers;
+    private array $columnResolvers = [];
 
     public function __construct(
-        ColumnDefinitionLoaderInterface $columnAdapterLoader,
-        ColumnResolverLoaderInterface $columnResolverLoader,
-        private SystemColumnServiceInterface $systemColumnService,
-        private GridSearchInterface $gridSearch,
-        private ServiceResolverInterface $serviceResolver,
-        private EventDispatcherInterface $eventDispatcher
+        private readonly ColumnDefinitionLoaderInterface $columnDefinitionLoader,
+        private readonly ColumnResolverLoaderInterface $columnResolverLoader,
+        private readonly SystemColumnServiceInterface $systemColumnService,
+        private readonly GridSearchInterface $gridSearch,
+        private readonly ServiceResolverInterface $serviceResolver,
+        private readonly EventDispatcherInterface $eventDispatcher
     ) {
-        $this->columnDefinitions = $columnAdapterLoader->loadColumnDefinitions();
-        $this->columnResolvers = $columnResolverLoader->loadColumnResolvers();
     }
 
     /**
@@ -103,11 +102,12 @@ final readonly class GridService implements GridServiceInterface
     ): array {
         $data = [];
         foreach ($configuration->getColumns() as $column) {
+            // move this to the resolver
             if (!$this->supports($column, $elementType)) {
                 continue;
             }
 
-            $columnData = $this->columnResolvers[$column->getType()]->resolve($column, $element);
+            $columnData = $this->getColumnResolvers()[$column->getType()]->resolve($column, $element);
 
             $this->eventDispatcher->dispatch(
                 new GridColumnDataEvent($columnData),
@@ -120,23 +120,36 @@ final readonly class GridService implements GridServiceInterface
         return $data;
     }
 
+    public function getGridValuesForElement(
+        Configuration $configuration,
+        ElementInterface $element,
+        string $elementType
+    ): array {
+        $data = $this->getGridDataForElement($configuration, $element, $elementType);
+
+        return array_map(
+            static fn (ColumnData $columnData) => $columnData->getValue(),
+            $data['columns']
+        );
+    }
+
     public function getAssetGridConfiguration(): Configuration
     {
         $systemColumns = $this->systemColumnService->getSystemColumnsForAssets();
         $columns = [];
         foreach ($systemColumns as $columnKey => $type) {
-            if (!array_key_exists($type, $this->columnDefinitions)) {
+            if (!array_key_exists($type, $this->getColumnDefinitions())) {
                 continue;
             }
             $column = new Column(
                 key: $columnKey,
                 group: 'system',
-                sortable: $this->columnDefinitions[$type]->isSortable(),
+                sortable: $this->getColumnDefinitions()[$type]->isSortable(),
                 editable: false,
                 localizable: false,
                 locale: null,
                 type: $type,
-                config: $this->columnDefinitions[$type]->getConfig()
+                config: $this->getColumnDefinitions()[$type]->getConfig()
             );
 
             $this->eventDispatcher->dispatch(
@@ -180,19 +193,49 @@ final readonly class GridService implements GridServiceInterface
         return new Configuration($columns);
     }
 
+    public function getColumnKeys(Configuration $configuration, bool $withGroup = false): array
+    {
+        return array_map(
+            static function (Column $column) use ($withGroup) {
+                return $column->getKey() . ($withGroup ? '~' . $column->getGroup() : '');
+            },
+            $configuration->getColumns()
+        );
+    }
+
     private function supports(Column $column, string $elementType): bool
     {
-        if (!array_key_exists($column->getType(), $this->columnResolvers)) {
+        if (!array_key_exists($column->getType(), $this->getColumnResolvers())) {
             return false;
         }
 
         /** @var ColumnResolverInterface $resolver */
-        $resolver = $this->columnResolvers[$column->getType()];
+        $resolver = $this->getColumnResolvers()[$column->getType()];
 
         if (!in_array($elementType, $resolver->supportedElementTypes(), true)) {
             return false;
         }
 
         return true;
+    }
+
+    private function getColumnDefinitions(): array
+    {
+        if ($this->columnDefinitions) {
+            return $this->columnDefinitions;
+        }
+        $this->columnDefinitions = $this->columnDefinitionLoader->loadColumnDefinitions();
+
+        return $this->columnDefinitions;
+    }
+
+    private function getColumnResolvers(): array
+    {
+        if ($this->columnResolvers) {
+            return $this->columnResolvers;
+        }
+        $this->columnResolvers = $this->columnResolverLoader->loadColumnResolvers();
+
+        return $this->columnResolvers;
     }
 }

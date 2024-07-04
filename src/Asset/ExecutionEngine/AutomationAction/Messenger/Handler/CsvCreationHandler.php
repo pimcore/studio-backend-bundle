@@ -18,14 +18,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -36,7 +40,7 @@ use function in_array;
  * @internal
  */
 #[AsMessageHandler]
-final class ZipCreationHandler extends AbstractHandler
+final class CsvCreationHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
@@ -44,7 +48,8 @@ final class ZipCreationHandler extends AbstractHandler
         private readonly PublishServiceInterface $publishService,
         private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver,
-        private readonly ZipServiceInterface $zipService
+        private readonly CsvServiceInterface $csvService,
+        private readonly GridServiceInterface $gridService
     ) {
         parent::__construct();
     }
@@ -52,7 +57,7 @@ final class ZipCreationHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(ZipCreationMessage $message): void
+    public function __invoke(CsvCreationMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
 
@@ -63,7 +68,12 @@ final class ZipCreationHandler extends AbstractHandler
         );
 
         if ($validatedParameters instanceof AbortActionData) {
-            $this->abort($validatedParameters);
+            $this->abortAction(
+                $validatedParameters->getTranslationKey(),
+                $validatedParameters->getTranslationParameters(),
+                TranslatorService::DOMAIN,
+                $validatedParameters->getExceptionClassName()
+            );
         }
 
         $context = $jobRun->getContext();
@@ -93,12 +103,18 @@ final class ZipCreationHandler extends AbstractHandler
             ));
         }
 
-        $archive = $this->zipService->getZipArchive($jobRun->getId());
-        if (!$archive) {
+        $settings = $this->extractConfigFieldFromJobStepConfig($message, 'settings');
+        $configuration = $this->gridService->getConfigurationFromArray(
+            $this->extractConfigFieldFromJobStepConfig($message, 'configuration')
+        );
+
+        $csv = $this->csvService->getCsvFile($jobRun->getId(), $configuration, $settings);
+
+        if (!$csv) {
             $this->abort($this->getAbortData(
                 Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
                 [
-                    'type' => 'zip',
+                    'type' => 'csv',
                     'jobRunId' => $jobRun->getId(),
                 ]
             ));
@@ -114,10 +130,22 @@ final class ZipCreationHandler extends AbstractHandler
             return;
         }
 
-        $this->zipService->addFile($archive, $asset);
+        $assetData = $this->gridService->getGridValuesForElement(
+            $configuration,
+            $asset,
+            ElementTypes::TYPE_ASSET
+        );
 
-        $archive->close();
+        $this->csvService->addData($csv, $settings['delimiter'], $assetData);
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+    }
+
+    protected function configureStep(): void
+    {
+        $this->stepConfiguration->setRequired('settings');
+        $this->stepConfiguration->setAllowedTypes('settings', 'array');
+        $this->stepConfiguration->setRequired('configuration');
+        $this->stepConfiguration->setAllowedTypes('configuration', 'array');
     }
 }

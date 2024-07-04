@@ -14,28 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
-
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 
 /**
  * @internal
  */
-final readonly class DatetimeDefinition implements ColumnDefinitionInterface
+enum StorageDirectories: string
 {
-    public function getType(): string
-    {
-        //TODO:  refactor to enum
-        return 'datetime';
-    }
-
-    public function getConfig(): array
-    {
-        return  [];
-    }
-
-    public function isSortable(): bool
-    {
-        return true;
-    }
+    case TEMP = 'temp';
 }

@@ -19,11 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
-use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\CsvExportRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ScalarItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -38,35 +37,33 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CreateZipController extends AbstractApiController
+final class CreateCsvController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ZipServiceInterface $zipService
+        private readonly CsvServiceInterface $csvService
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/zip/create', name: 'pimcore_studio_api_create_zip_asset', methods: ['POST'])]
+    #[Route('/assets/csv/create', name: 'pimcore_studio_api_create_csv_asset', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/zip/create',
-        operationId: 'createZipAssets',
-        description: 'Creating zipped assets',
-        summary: 'Creating zip file for assets',
+        path: self::API_PATH . '/assets/csv/create',
+        operationId: 'createCsvAssets',
+        description: 'Creating csv for assets',
+        summary: 'Creating CSV file for assets',
         tags: [Tags::Assets->name]
     )]
-    #[RequestBody(
-        content: new ScalarItemsJson('integer')
-    )]
+    #[CsvExportRequestBody]
     #[SuccessResponse(
         content: new JsonContent(
             properties: [
                 new Property(
                     property: 'path',
-                    description: 'Path to the zip file',
+                    description: 'Path to the csv file',
                     type: 'string',
-                    example: '/var/www/html/var/assets.zip'
+                    example: '/var/www/html/var/assets.csv'
                 ),
             ]
         )
@@ -75,9 +72,9 @@ final class CreateZipController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function createZippedAssets(
-        #[MapRequestPayload] CreateAssetFileParameter $createAssetFileParameter
+    public function createCsvAssets(
+        #[MapRequestPayload] ExportAssetParameter $exportAssetParameter
     ): Response {
-        return $this->jsonResponse(['path' => $this->zipService->generateZipFile($createAssetFileParameter)]);
+        return $this->jsonResponse(['path' => $this->csvService->generateCsvFile($exportAssetParameter)]);
     }
 }

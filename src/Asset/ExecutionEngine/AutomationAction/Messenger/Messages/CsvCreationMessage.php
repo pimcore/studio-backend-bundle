@@ -14,28 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-final readonly class DatetimeDefinition implements ColumnDefinitionInterface
+final class CsvCreationMessage extends AbstractExecutionEngineMessage
 {
-    public function getType(): string
-    {
-        //TODO:  refactor to enum
-        return 'datetime';
-    }
-
-    public function getConfig(): array
-    {
-        return  [];
-    }
-
-    public function isSortable(): bool
-    {
-        return true;
-    }
 }

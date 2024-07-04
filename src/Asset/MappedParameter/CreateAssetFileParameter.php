@@ -22,7 +22,7 @@ use Pimcore\Model\Element\ElementDescriptor;
 /**
  * @internal
  */
-final readonly class CreateZipParameter
+final readonly class CreateAssetFileParameter
 {
     /** @param array<int> $items */
     public function __construct(

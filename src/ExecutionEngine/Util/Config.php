@@ -28,4 +28,7 @@ enum Config: string
     case ELEMENT_HAS_CHILDREN_MESSAGE = 'studio_ee_element_has_existing_children';
     case ELEMENT_DELETE_FAILED_MESSAGE = 'studio_ee_element_delete_failed';
     case ZIP_FILE_UPLOAD_FAILED_MESSAGE = 'studio_ee_zip_file_upload_failed';
+    case ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED = 'studio_ee_element_folder_collection_not_supported';
+    case FILE_NOT_FOUND_FOR_JOB_RUN = 'studio_ee_file_not_found_for_job_run';
+    case NO_ASSETS_FOUND_FOR_JOB_RUN = 'studio_ee_no_assets_found_for_job_run';
 }

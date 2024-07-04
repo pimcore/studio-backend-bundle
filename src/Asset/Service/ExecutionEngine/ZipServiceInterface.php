@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
 use Pimcore\Model\Asset;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -33,11 +34,11 @@ interface ZipServiceInterface
 {
     public const ASSETS_INDEX = 'assets';
 
-    public const DOWNLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-zip-{id}.zip';
+    public const ZIP_FILE_NAME = 'download-zip-{id}.zip';
 
-    public const UPLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/upload-zip-{id}.zip';
+    public const ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-zip-{id}.zip';
 
-    public function getZipArchive(int $id, $create = true): ?ZipArchive;
+    public function getZipArchive(int $id): ?ZipArchive;
 
     public function addFile(ZipArchive $archive, Asset $asset): void;
 
@@ -51,7 +52,7 @@ interface ZipServiceInterface
         string $archiveId
     ): int;
 
-    public function generateZipFile(CreateZipParameter $ids): string;
+    public function generateZipFile(CreateAssetFileParameter $ids): string;
 
-    public function getTempZipFilePath(int|string $id, string $subject = self::DOWNLOAD_ZIP_FILE_PATH): string;
+    public function getTempFilePath(int $id, string $path): string;
 }

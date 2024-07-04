@@ -10,7 +10,11 @@ studio_ee_job_create_zip: Create Zip
 studio_ee_job_clone_assets: Clone Assets
 studio_ee_job_upload_zip_file: Upload Zip File
 studio_ee_job_delete_assets: Delete Assets
-studio_ee_jop_step_zip_collection: Zip Collection
-studio_ee_jop_step_zip_creation: Zip Creation
-studio_ee_jop_step_asset_deletion: Asset Deletion
-studio_ee_jop_step_asset_cloning: Asset Cloning
+studio_ee_job_step_zip_collection: Zip Collection
+studio_ee_job_step_zip_creation: Zip Creation
+studio_ee_job_step_asset_deletion: Asset Deletion
+studio_ee_job_step_asset_cloning: Asset Cloning
+studio_ee_job_step_csv_file_not_found: CSV file not found
+studio_ee_element_folder_collection_not_supported: 'Collection for folders is not supported. ID: %folderId%'
+studio_ee_file_not_found_for_job_run: 'File %type% not found for job run. ID: %jobRunId%'
+studio_ee_no_assets_found_for_job_run: 'No assets found for job run. ID: %jobRunId%'
