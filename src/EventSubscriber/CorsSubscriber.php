@@ -22,30 +22,27 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
+use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouterInterface;
+use function in_array;
 
 final class CorsSubscriber implements EventSubscriberInterface
 {
     use StudioBackendPathTrait;
 
-    private array $routeMethods;
-
     public function __construct(
         private readonly RouterInterface $router,
+        private readonly UrlMatcherInterface $urlMatcher,
         private readonly array $allowedHosts = []
     ) {
-        foreach($this->router->getRouteCollection()->getIterator() as $route) {
-            if($this->isStudioBackendPath($route->getPath())) {
-                $this->routeMethods[$route->getPath()] = implode(', ', $route->getMethods());
-            }
-        }
     }
 
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::REQUEST => ['onKernelRequest', 9999],
-            KernelEvents::RESPONSE => ['onKernelResponse', 9999],
+            KernelEvents::REQUEST => ['onKernelRequest', 250],
+            KernelEvents::RESPONSE => ['onKernelResponse', 0],
         ];
     }
 
@@ -58,17 +55,31 @@ final class CorsSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
 
-        if(!$this->isStudioBackendPath($request->getPathInfo())) {
+        if (!$this->isStudioBackendPath($request->getPathInfo())) {
             return;
         }
 
         // perform preflight checks
         if ($request->getMethod() === 'OPTIONS') {
-            $response = new Response();
+            $routeInfo = $this->urlMatcher->match($request->getPathInfo());
 
+            if (empty($routeInfo) || !isset($routeInfo['_route'])) {
+                return;
+            }
+
+            $route = $this->router->getRouteCollection()->get($routeInfo['_route']);
+
+            if (!$route instanceof Route) {
+                return;
+            }
+
+            $response = new Response();
             $response->headers->set('Access-Control-Allow-Credentials', 'true');
-            $response->headers->set('Access-Control-Allow-Methods', $this->routeMethods[$request->getPathInfo()]);
-            $response->headers->set('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization');
+            $response->headers->set('Access-Control-Allow-Methods', implode(', ', $route->getMethods()));
+            $response->headers->set(
+                'Access-Control-Allow-Headers',
+                'Origin, Content-Type, Accept, Authorization'
+            );
             $response->headers->set('Access-Control-Max-Age', '3600');
 
             $event->setResponse($response);

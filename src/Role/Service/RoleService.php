@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UserRole;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
 
 /**
  * @internal

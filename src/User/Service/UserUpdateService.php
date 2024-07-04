@@ -41,6 +41,8 @@ use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
 use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 use Pimcore\Model\UserInterface;
+use function in_array;
+use function strlen;
 
 /**
  * @internal

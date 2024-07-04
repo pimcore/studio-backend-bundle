@@ -32,6 +32,7 @@ use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
 use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 use Symfony\Bundle\MercureBundle\MercureBundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use function dirname;
 
 class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements DependentBundleInterface
 {
