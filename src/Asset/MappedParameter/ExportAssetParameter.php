@@ -64,15 +64,15 @@ final readonly class ExportAssetParameter
             throw new InvalidArgumentException('No assets provided');
         }
 
-        if(empty($this->gridConfig)) {
+        if (empty($this->gridConfig)) {
             throw new InvalidArgumentException('No grid config provided');
         }
 
-        if(empty($this->settings)) {
+        if (empty($this->settings)) {
             throw new InvalidArgumentException('No settings provided');
         }
 
-        if(!isset($this->settings[Csv::SETTINGS_DELIMITER->value])) {
+        if (!isset($this->settings[Csv::SETTINGS_DELIMITER->value])) {
             throw new InvalidArgumentException('No delimiter provided');
         }
     }

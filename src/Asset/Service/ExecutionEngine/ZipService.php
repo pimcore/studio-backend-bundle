@@ -62,7 +62,7 @@ final readonly class ZipService implements ZipServiceInterface
                 $state = $archive->open($zip);
             }
 
-            if(!$state) {
+            if (!$state) {
                 $state = $archive->open($zip, ZipArchive::CREATE);
             }
         } catch (FilesystemException) {
