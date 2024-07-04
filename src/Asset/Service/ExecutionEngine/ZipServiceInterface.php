@@ -27,6 +27,8 @@ interface ZipServiceInterface
 {
     public const ASSETS_INDEX = 'assets';
 
+    public const ZIP_FILE_NAME = 'download-zip-{id}.zip';
+
     public const ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-zip-{id}.zip';
 
     public function getZipArchive(int $id): ?ZipArchive;

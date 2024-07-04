@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants\Csv;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 
@@ -34,6 +36,7 @@ final readonly class ExportAssetParameter
         private array $gridConfig,
         private array $settings,
     ) {
+        $this->validate();
     }
 
     public function getGridConfig(): array
@@ -53,5 +56,24 @@ final readonly class ExportAssetParameter
             static fn (int $id) => new ElementDescriptor(ElementTypes::TYPE_ASSET, $id),
             $this->assets
         );
+    }
+
+    private function validate(): void
+    {
+        if (empty($this->assets)) {
+            throw new InvalidArgumentException('No assets provided');
+        }
+
+        if(empty($this->gridConfig)) {
+            throw new InvalidArgumentException('No grid config provided');
+        }
+
+        if(empty($this->settings)) {
+            throw new InvalidArgumentException('No settings provided');
+        }
+
+        if(!isset($this->settings[Csv::SETTINGS_DELIMITER->value])) {
+            throw new InvalidArgumentException('No delimiter provided');
+        }
     }
 }

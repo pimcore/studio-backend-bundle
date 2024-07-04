@@ -21,12 +21,13 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\AbortExecutionException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -70,33 +71,39 @@ final class ZipCreationHandler extends AbstractHandler
         $context = $jobRun->getContext();
 
         if (!array_key_exists(ZipServiceInterface::ASSETS_INDEX, $context)) {
-            $this->abortAction(
-                'no_assets_found',
-                [],
-                TranslatorService::DOMAIN,
-                NotFoundException::class
+            $this->abort(
+                $this->getAbortData(
+                    Config::NO_ASSETS_FOUND_FOR_JOB_RUN->value,
+                    [
+                        'jobRunId' => $jobRun->getId(),
+                    ]
+                )
             );
         }
 
         $jobAsset = $validatedParameters->getSubject();
 
         if (!in_array($jobAsset->getId(), $context[ZipServiceInterface::ASSETS_INDEX], true)) {
-            $this->abortAction(
-                'asset_permission_denied',
-                [],
-                TranslatorService::DOMAIN,
-                AccessDeniedException::class
-            );
+            $this->abort($this->getAbortData(
+                Config::ELEMENT_PERMISSION_MISSING_MESSAGE->value,
+                [
+                    'userId' => $jobRun->getOwnerId(),
+                    'permission' => ElementPermissions::VIEW_PERMISSION,
+                    'type' => ucfirst($jobAsset->getType()),
+                    'id' => $jobAsset->getId(),
+                ],
+            ));
         }
 
         $archive = $this->zipService->getZipArchive($jobRun->getId());
         if (!$archive) {
-            $this->abortAction(
-                'zip_archive_not_found',
-                [],
-                TranslatorService::DOMAIN,
-                NotFoundException::class
-            );
+            $this->abort($this->getAbortData(
+                Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
+                [
+                    'type' => 'zip',
+                    'jobRunId' => $jobRun->getId(),
+                ]
+            ));
         }
 
         $asset = $this->getElementById(
@@ -104,6 +111,7 @@ final class ZipCreationHandler extends AbstractHandler
             $validatedParameters->getUser(),
             $this->elementService
         );
+
         if (!$asset instanceof Asset) {
             return;
         }

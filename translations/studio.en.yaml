@@ -13,3 +13,6 @@ studio_ee_job_step_zip_creation: Zip Creation
 studio_ee_job_step_asset_deletion: Asset Deletion
 studio_ee_job_step_asset_cloning: Asset Cloning
 studio_ee_job_step_csv_file_not_found: CSV file not found
+studio_ee_element_folder_collection_not_supported: 'Collection for folders is not supported. ID: %folderId%'
+studio_ee_file_not_found_for_job_run: 'File %type% not found for job run. ID: %jobRunId%'
+studio_ee_no_assets_found_for_job_run: 'No assets found for job run. ID: %jobRunId%'

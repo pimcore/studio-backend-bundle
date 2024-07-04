@@ -16,9 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\StaticResolverBundle\Models\Tool\StorageResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
@@ -26,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFilePara
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\StorageDirectories;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Asset;
 use ZipArchive;
@@ -39,24 +42,31 @@ final readonly class ZipService implements ZipServiceInterface
 
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent,
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private StorageResolverInterface $storageResolver
     ) {
     }
 
     public function getZipArchive(int $id): ?ZipArchive
     {
-        $zip = $this->getTempFilePath($id, self::ZIP_FILE_PATH);
+        $zip = $this->getTempFileName($id, self::ZIP_FILE_NAME);
+
+        $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
 
         $archive = new ZipArchive();
 
         $state = false;
 
-        if (is_file($zip)) {
-            $state = $archive->open($zip);
-        }
+        try {
+            if ($storage->fileExists($zip)) {
+                $state = $archive->open($zip);
+            }
 
-        if (!$state) {
-            $state = $archive->open($zip, ZipArchive::CREATE);
+            if(!$state) {
+                $state = $archive->open($zip, ZipArchive::CREATE);
+            }
+        } catch (FilesystemException) {
+            return null;
         }
 
         if (!$state) {
