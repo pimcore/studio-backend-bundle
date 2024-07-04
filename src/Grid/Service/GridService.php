@@ -45,12 +45,12 @@ final class GridService implements GridServiceInterface
     /**
      * @param array<int, ColumnDefinitionInterface> $columnDefinitions
      */
-    private array $columnDefinitions;
+    private array $columnDefinitions = [];
 
     /**
      * @param array<int, ColumnResolverInterface> $columnResolvers
      */
-    private array $columnResolvers;
+    private array $columnResolvers = [];
 
     public function __construct(
         private readonly ColumnDefinitionLoaderInterface $columnDefinitionLoader,
@@ -193,10 +193,12 @@ final class GridService implements GridServiceInterface
         return new Configuration($columns);
     }
 
-    public function getColumnKeys(Configuration $configuration): array
+    public function getColumnKeys(Configuration $configuration, bool $withGroup = false): array
     {
         return array_map(
-            static fn (Column $column) => $column->getKey(),
+            static function (Column $column) use ($withGroup) {
+                return $column->getKey() . ($withGroup ? '~' . $column->getGroup() : '');
+            },
             $configuration->getColumns()
         );
     }

@@ -21,6 +21,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\CsvExportRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -57,19 +58,7 @@ final class CreateCsvController extends AbstractApiController
         summary: 'Creating CSV file for assets',
         tags: [Tags::Assets->name]
     )]
-    #[RequestBody(
-        content: new JsonContent(
-            properties: [
-                new Property(property: 'assets', type: 'array', items: new Items(type: 'integer')),
-                new Property(property: 'gridConfig', ref: Configuration::class),
-                new Property(property: 'settings', properties: [
-                    new Property(property: 'delimiter', type: 'string'),
-                    new Property(property: 'header', type: 'string'),
-                ], type: 'object'),
-            ],
-            type: 'object'
-        )
-    )]
+    #[CsvExportRequestBody]
     #[SuccessResponse(
         content: new JsonContent(
             properties: [

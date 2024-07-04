@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -13,19 +14,12 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Traits;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 
-trait TempFilePathTrait
+/**
+ * @internal
+ */
+enum StorageDirectories: string
 {
-    private const ID_PLACEHOLDER = '{id}';
-
-    public function getTempFilePath(int $id, string $path): string
-    {
-        return str_replace(self::ID_PLACEHOLDER, (string)$id, $path);
-    }
-
-    public function getTempFileName(int $id, string $fileName): string
-    {
-        return str_replace(self::ID_PLACEHOLDER, (string)$id, $fileName);
-    }
+    case TEMP = 'temp';
 }

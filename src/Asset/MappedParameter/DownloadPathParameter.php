@@ -17,12 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\DownloadFormats;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
  * @internal
  */
-final readonly class ZipPathParameter
+final readonly class DownloadPathParameter
 {
     public function __construct(
         #[NotBlank]
@@ -39,8 +40,17 @@ final readonly class ZipPathParameter
     private function validate(): void
     {
         // TODO Can this be a security risk?
-        if (!is_file($this->path) || strtolower(substr($this->path, -4)) !== '.zip') {
+        if (!is_file($this->path) && !$this->inDownloadFormats()) {
             throw new ForbiddenException();
         }
+    }
+
+    private function inDownloadFormats(): bool
+    {
+        return in_array(
+            strtolower(substr($this->path, -3)),
+            DownloadFormats::values(),
+            true
+        );
     }
 }

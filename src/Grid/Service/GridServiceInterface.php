@@ -53,5 +53,5 @@ interface GridServiceInterface
 
     public function getAssetGrid(GridParameter $gridParameter): Collection;
 
-    public function getColumnKeys(Configuration $configuration): array;
+    public function getColumnKeys(Configuration $configuration, bool $withGroup = false): array;
 }

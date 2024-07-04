@@ -100,6 +100,7 @@ services:
   #
 
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\ZipDownloadSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\CsvDownloadSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\DeletionSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\CloneSubscriber: ~
 

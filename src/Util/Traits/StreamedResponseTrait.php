@@ -99,9 +99,8 @@ trait StreamedResponseTrait
         );
     }
 
-    protected function getZipStreamedResponse(
-        string $path
-    ): StreamedResponse {
+    protected function getFileStreamedResponse(string $path, string $mimeType, string $filename): StreamedResponse
+    {
         $stream = fopen($path, 'rb');
 
         if (!$stream) {
@@ -114,9 +113,9 @@ trait StreamedResponseTrait
             },
             HttpResponseCodes::SUCCESS->value,
             $this->getResponseHeaders(
-                mimeType: 'application/zip',
+                mimeType: $mimeType,
                 fileSize: filesize($path),
-                filename: 'assets.zip',
+                filename: $filename,
                 contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value
             ),
 
