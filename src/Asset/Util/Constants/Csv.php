@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Pimcore
@@ -14,21 +13,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Mercure;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
 
-/**
- * @internal
- */
-enum Events: string
+enum Csv: string
 {
     use EnumToValueArrayTrait;
 
-    case ZIP_DOWNLOAD_READY = 'zip-download-ready';
-    case CSV_DOWNLOAD_READY = 'csv-download-ready';
-    case DELETION_FINISHED = 'deletion-finished';
-    case CLONING_FINISHED = 'cloning-finished';
-    case FINISHED_WITH_ERRORS = 'job-finished-with-errors';
-    case FAILED = 'job-failed';
+    case JOB_STEP_CONFIG_SETTINGS = 'settings';
+    case JOB_STEP_CONFIG_CONFIGURATION = 'configuration';
+    case SETTINGS_DELIMITER = 'delimiter';
+    case SETTINGS_HEADER = 'header';
+    case SETTINGS_HEADER_NO_HEADER = 'no_header';
+    case SETTINGS_HEADER_TITLE = 'title';
+    case SETTINGS_HEADER_NAME = 'name';
+    case NEW_LINE = "\r\n";
 }

@@ -43,7 +43,15 @@ interface GridServiceInterface
         string $elementType
     ): array;
 
+    public function getGridValuesForElement(
+        Configuration $configuration,
+        ElementInterface $element,
+        string $elementType
+    ): array;
+
     public function getConfigurationFromArray(array $config): Configuration;
 
     public function getAssetGrid(GridParameter $gridParameter): Collection;
+
+    public function getColumnKeys(Configuration $configuration, bool $withGroup = false): array;
 }

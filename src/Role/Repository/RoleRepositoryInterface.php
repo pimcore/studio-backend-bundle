@@ -49,4 +49,9 @@ interface RoleRepositoryInterface
      * @throws Exception
      */
     public function deleteRole(Role $role): void;
+
+    /**
+     * @throws Exception
+     */
+    public function createRole(string $roleName, int $folderId): Role;
 }

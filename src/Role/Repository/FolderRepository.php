@@ -52,4 +52,15 @@ final readonly class FolderRepository implements FolderRepositoryInterface
 
         return $folder;
     }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function createFolder(string $folderName, int $parentId): Folder
+    {
+        return $this->folderResolver->create([
+            'parentId' => $parentId,
+            'name' => $folderName,
+        ]);
+    }
 }

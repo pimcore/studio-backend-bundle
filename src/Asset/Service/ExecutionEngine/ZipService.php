@@ -16,16 +16,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCollectionMessage;
+use Pimcore\Bundle\StaticResolverBundle\Models\Tool\StorageResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateZipParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\StorageDirectories;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Asset;
 use ZipArchive;
 
@@ -34,30 +38,35 @@ use ZipArchive;
  */
 final readonly class ZipService implements ZipServiceInterface
 {
-    private const ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-zip-{id}.zip';
-
-    private const ZIP_ID_PLACEHOLDER = '{id}';
+    use TempFilePathTrait;
 
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent,
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private StorageResolverInterface $storageResolver
     ) {
     }
 
     public function getZipArchive(int $id): ?ZipArchive
     {
-        $zip = $this->getTempZipFilePath($id);
+        $zip = $this->getTempFileName($id, self::ZIP_FILE_NAME);
+
+        $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
 
         $archive = new ZipArchive();
 
         $state = false;
 
-        if (is_file($zip)) {
-            $state = $archive->open($zip);
-        }
+        try {
+            if ($storage->fileExists($zip)) {
+                $state = $archive->open($zip);
+            }
 
-        if (!$state) {
-            $state = $archive->open($zip, ZipArchive::CREATE);
+            if (!$state) {
+                $state = $archive->open($zip, ZipArchive::CREATE);
+            }
+        } catch (FilesystemException) {
+            return null;
         }
 
         if (!$state) {
@@ -79,10 +88,10 @@ final readonly class ZipService implements ZipServiceInterface
         );
     }
 
-    public function generateZipFile(CreateZipParameter $ids): string
+    public function generateZipFile(CreateAssetFileParameter $ids): string
     {
         $steps = [
-            new JobStep(JobSteps::ZIP_COLLECTION->value, ZipCollectionMessage::class, '', []),
+            new JobStep(JobSteps::ZIP_COLLECTION->value, CollectionMessage::class, '', []),
             new JobStep(JobSteps::ZIP_CREATION->value, ZipCreationMessage::class, '', []),
         ];
 
@@ -95,14 +104,9 @@ final readonly class ZipService implements ZipServiceInterface
         $jobRun = $this->jobExecutionAgent->startJobExecution(
             $job,
             $this->securityService->getCurrentUser()->getId(),
-            TranslatorService::DOMAIN
+            Config::CONTEXT_STOP_ON_ERROR->value
         );
 
-        return $this->getTempZipFilePath($jobRun->getId());
-    }
-
-    public function getTempZipFilePath(int $id): string
-    {
-        return str_replace(self::ZIP_ID_PLACEHOLDER, (string)$id, self::ZIP_FILE_PATH);
+        return $this->getTempFilePath($jobRun->getId(), self::ZIP_FILE_PATH);
     }
 }

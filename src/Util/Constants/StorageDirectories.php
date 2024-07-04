@@ -14,24 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
-
-use Pimcore\Model\Element\ElementDescriptor;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 
 /**
  * @internal
  */
-final readonly class CreateZipParameter
+enum StorageDirectories: string
 {
-    /** @param array<int> $items */
-    public function __construct(
-        private array $items
-    ) {
-    }
-
-    /** @return array<int, ElementDescriptor> */
-    public function getItems(): array
-    {
-        return array_map(static fn (int $id) => new ElementDescriptor('asset', $id), $this->items);
-    }
+    case TEMP = 'temp';
 }

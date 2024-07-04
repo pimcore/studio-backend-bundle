@@ -16,31 +16,27 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Symfony\Component\Validator\Constraints\NotBlank;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Model\Element\ElementDescriptor;
 
 /**
  * @internal
  */
-final readonly class ZipPathParameter
+final readonly class CreateAssetFileParameter
 {
+    /** @param array<int> $items */
     public function __construct(
-        #[NotBlank]
-        private string $path,
+        private array $items
     ) {
-        $this->validate();
     }
 
-    public function getPath(): string
+    /** @return array<int, ElementDescriptor> */
+    public function getItems(): array
     {
-        return $this->path;
-    }
-
-    private function validate(): void
-    {
-        // TODO Can this be a security risk?
-        if (!is_file($this->path) || strtolower(substr($this->path, -4)) !== '.zip') {
-            throw new ForbiddenException();
-        }
+        return array_map(
+            static fn (int $id) =>
+            new ElementDescriptor(ElementTypes::TYPE_ASSET, $id),
+            $this->items
+        );
     }
 }

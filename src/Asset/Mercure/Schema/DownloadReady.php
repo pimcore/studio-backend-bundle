@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    title: 'SSEZipDownloadReady',
+    title: 'SSEDownloadReady',
     required: [
         'id',
         'path',
@@ -31,7 +31,7 @@ use OpenApi\Attributes\Schema;
     ],
     type: 'object'
 )]
-final readonly class ZipDownloadReady
+final readonly class DownloadReady
 {
     public function __construct(
         #[Property(description: 'jobRunId', type: 'integer', example: 1)]

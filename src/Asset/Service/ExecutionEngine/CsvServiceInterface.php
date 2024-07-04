@@ -16,26 +16,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
-use Pimcore\Model\Asset;
-use ZipArchive;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 
 /**
  * @internal
  */
-interface ZipServiceInterface
+interface CsvServiceInterface
 {
-    public const ASSETS_INDEX = 'assets';
+    public const CSV_FILE_NAME = 'download-csv-{id}.csv';
 
-    public const ZIP_FILE_NAME = 'download-zip-{id}.zip';
+    public const CSV_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::CSV_FILE_NAME;
 
-    public const ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-zip-{id}.zip';
+    public function getCsvFile(int $id, Configuration $configuration, array $settings): string;
 
-    public function getZipArchive(int $id): ?ZipArchive;
+    public function addData(string $filePath, string $delimiter, array $data): void;
 
-    public function addFile(ZipArchive $archive, Asset $asset): void;
-
-    public function generateZipFile(CreateAssetFileParameter $ids): string;
+    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): string;
 
     public function getTempFilePath(int $id, string $path): string;
 }
