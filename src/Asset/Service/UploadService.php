@@ -25,12 +25,13 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset\Folder;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Mime\MimeTypes;
 
 /**
  * @internal
@@ -52,7 +53,6 @@ final readonly class UploadService implements UploadServiceInterface
      * @throws EnvironmentException
      * @throws ForbiddenException
      * @throws NotFoundException
-     * @throws UserNotFoundException
      */
     public function uploadAsset(
         int $parentId,
@@ -77,11 +77,53 @@ final readonly class UploadService implements UploadServiceInterface
             );
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
+        } finally {
+            @unlink($sourcePath);
         }
 
-        @unlink($sourcePath);
-
         return $asset->getId();
+    }
+
+    /**
+     * @throws AccessDeniedException
+     * @throws DatabaseException
+     * @throws EnvironmentException
+     * @throws ForbiddenException
+     * @throws NotFoundException
+     */
+    public function replaceAssetBinary(
+        int $assetId,
+        UploadedFile $file,
+        UserInterface $user
+    ): void {
+        $asset = $this->assetService->getAssetElement($user, $assetId);
+        if (!$asset->isAllowed(ElementPermissions::PUBLISH_PERMISSION)) {
+            throw new ForbiddenException(
+                sprintf(
+                    'Missing permissions on target Asset %s',
+                    $asset->getId()
+                )
+            );
+        }
+
+        $sourcePath = $this->getValidSourcePath($file);
+        $fileName = $this->getValidFileName($file);
+        $this->validateMimeType($file, $fileName, $asset->getType());
+
+        try {
+            $asset->setStream(fopen($sourcePath, 'rb'));
+            $asset->setCustomSetting('thumbnails', null);
+            if (method_exists($asset, 'getEmbeddedMetaData')) {
+                $asset->getEmbeddedMetaData(true);
+            }
+            $asset->setUserModification($user->getId());
+            $asset->setFilename($this->getUpdatedFileName($asset->getFilename(), $fileName, $asset->getParent()));
+            $asset->save();
+        } catch (Exception $e) {
+            throw new DatabaseException($e->getMessage());
+        } finally {
+            @unlink($sourcePath);
+        }
     }
 
     /**
@@ -139,5 +181,45 @@ final readonly class UploadService implements UploadServiceInterface
         }
 
         return $fileName;
+    }
+
+    private function getUpdatedFileName(
+        string $originalFileName,
+        string $newFileName,
+        ElementInterface $parent
+    ): string {
+        $newExtension = pathinfo($newFileName, PATHINFO_EXTENSION);
+        $originalExtension = pathinfo($originalFileName, PATHINFO_EXTENSION);
+        if ($newExtension === $originalExtension) {
+            return $newFileName;
+        }
+
+        $fileName = preg_replace(
+            '/\.' . $originalExtension . '$/i',
+            '.' . $newExtension,
+            $originalFileName
+        );
+
+        return $this->serviceResolver->getSafeCopyName($fileName, $parent);
+    }
+
+    private function validateMimeType(
+        UploadedFile $file,
+        string $fileName,
+        string $assetType
+    ): void {
+        $mimeTypes = new MimeTypes();
+        $mimeType = $mimeTypes->guessMimeType($file->getRealPath());
+        $newType = $this->assetResolver->getTypeFromMimeMapping($mimeType, $fileName);
+
+        if ($newType !== $assetType) {
+            throw new EnvironmentException(
+                sprintf(
+                    'Inconsistent asset binary types: original asset (%s) - new asset (%s)',
+                    $assetType,
+                    $newType
+                )
+            );
+        }
     }
 }

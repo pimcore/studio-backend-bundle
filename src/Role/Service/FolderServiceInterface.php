@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
+use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 
 /**
  * @internal
@@ -28,4 +30,9 @@ interface FolderServiceInterface
      * @throws NotFoundException|DatabaseException
      */
     public function deleteFolder(int $folderId): void;
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function createFolder(CreateParameter $createParameter): TreeNode;
 }

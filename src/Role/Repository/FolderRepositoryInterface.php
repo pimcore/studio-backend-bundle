@@ -34,4 +34,9 @@ interface FolderRepositoryInterface
      * @throws Exception
      */
     public function deleteFolder(Folder $folder): void;
+
+    /**
+     * @throws Exception
+     */
+    public function createFolder(string $folderName, int $parentId): Folder;
 }

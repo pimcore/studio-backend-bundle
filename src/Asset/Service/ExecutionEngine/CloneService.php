@@ -37,6 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVari
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Asset\Service as AssetService;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\UserInterface;
@@ -106,6 +107,13 @@ final readonly class CloneService implements CloneServiceInterface
                     'Missing permissions on target element %s',
                     $parent->getId()
                 )
+            );
+        }
+
+        if (!$parent instanceof Folder) {
+            throw new ElementSavingFailedException(
+                null,
+                sprintf('Invalid parent type (%s)', $parent->getType())
             );
         }
 

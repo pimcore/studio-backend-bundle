@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -47,7 +46,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class AddController extends AbstractApiController
+final class ReplaceController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
@@ -67,25 +66,24 @@ final class AddController extends AbstractApiController
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
-    #[Route('/assets/add/{parentId}', name: 'pimcore_studio_api_assets_add', methods: ['POST'])]
+    #[Route('/assets/{id}/replace', name: 'pimcore_studio_api_assets_replace', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/add/{parentId}',
-        operationId: 'addAsset',
-        summary: 'Add a new asset.',
+        path: self::API_PATH . '/assets/{id}/replace',
+        operationId: 'replaceAsset',
+        summary: 'Replace existing asset binary.',
         tags: [Tags::Assets->value]
     )]
     #[SuccessResponse(
-        description: 'Successfully uploaded new asset',
-        content: new IdJson('ID of created asset')
+        description: 'Successfully replaced asset binary',
     )]
-    #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
+    #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[AddAssetRequestBody]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function addAsset(
-        int $parentId,
+    public function replaceAsset(
+        int $id,
         // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
         Request $request
     ): JsonResponse {
@@ -95,14 +93,12 @@ final class AddController extends AbstractApiController
             throw new ElementStreamResourceNotFoundException(0, 'File');
         }
 
-        return new JsonResponse(
-            [
-                'id' => $this->uploadService->uploadAsset(
-                    $parentId,
-                    $file,
-                    $this->securityService->getCurrentUser()
-                ),
-            ]
+        $this->uploadService->replaceAssetBinary(
+            $id,
+            $file,
+            $this->securityService->getCurrentUser()
         );
+
+        return new JsonResponse();
     }
 }
