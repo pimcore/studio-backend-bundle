@@ -62,7 +62,7 @@ final class GetRoleController extends AbstractApiController
     )]
     #[IdParameter(type: 'role')]
     #[SuccessResponse(
-        description: 'User data.',
+        description: 'Role data.',
         content: new JsonContent(ref: DetailedRoleSchema::class)
     )]
     #[DefaultResponses([
