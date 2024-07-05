@@ -60,8 +60,8 @@ final readonly class RoleService implements RoleServiceInterface
             );
 
             $this->eventDispatcher->dispatch(
-                new RoleEvent($item),
-                RoleEvent::EVENT_NAME
+                new SimpleRoleEvent($item),
+                SimpleRoleEvent::EVENT_NAME
             );
 
             $items[] = $item;
