@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\StorageDirectories;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Asset;
@@ -57,10 +58,13 @@ final readonly class ZipService implements ZipServiceInterface
     ) {
     }
 
-    public function getZipArchive(int $id): ?ZipArchive
+    public function getZipArchive(
+        mixed $id,
+        string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
+        bool $create = true
+    ): ?ZipArchive
     {
-        $zip = $this->getTempFileName($id, self::ZIP_FILE_NAME);
-
+        $zip = $this->getTempFileName($id, $fileName);
         $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
 
         $archive = new ZipArchive();
@@ -69,17 +73,17 @@ final readonly class ZipService implements ZipServiceInterface
 
         try {
             if ($storage->fileExists($zip)) {
-                $state = $archive->open($zip);
+                $state = $archive->open($this->getTempFilePathFromName($id, $fileName));
             }
 
-            if (!$state) {
+            if (!$state && $create) {
                 $state = $archive->open($zip, ZipArchive::CREATE);
             }
         } catch (FilesystemException) {
             return null;
         }
 
-        if (!$state) {
+        if ($state !== true) {
             return null;
         }
 
@@ -96,6 +100,30 @@ final readonly class ZipService implements ZipServiceInterface
                 $asset->getRealFullPath()
             )
         );
+    }
+
+    public function getArchiveFiles(
+        ZipArchive $archive,
+        string $targetPath
+    ): array
+    {
+        $files = [];
+        $fileCount = $archive->count();
+        if (!$archive->extractTo($targetPath)) {
+            throw new EnvironmentException('Failed to extract zip archive.');
+        }
+
+        foreach (range(0, $fileCount - 1) as $i) {
+            $fileName = $this->uploadService->sanitizeFileToUpload($archive->getNameIndex($i));
+            if ($fileName !== null) {
+                $files[] = [
+                    'fileName' => $fileName,
+                    'sourcePath' => $targetPath . '/' . $fileName,
+                ];
+            }
+        }
+
+        return $files;
     }
 
     /**
@@ -118,6 +146,9 @@ final readonly class ZipService implements ZipServiceInterface
                 $archiveId,
                 $parentId
             )],
+            environmentData: [
+                CloneEnvironmentVariables::PARENT_ID->value => $parentId,
+            ]
         );
         $jobRun = $this->jobExecutionAgent->startJobExecution(
             $job,
@@ -148,6 +179,18 @@ final readonly class ZipService implements ZipServiceInterface
         );
 
         return $this->getTempFilePath($jobRun->getId(), self::DOWNLOAD_ZIP_FILE_PATH);
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    public function cleanUpArchive(
+        mixed $id,
+        string $directory
+    ): void
+    {
+        $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
+        $storage->deleteDirectory($directory);
     }
 
     private function copyUploadZipFile(

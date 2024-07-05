@@ -24,6 +24,15 @@ trait TempFilePathTrait
         return str_replace(self::ID_PLACEHOLDER, (string)$id, $path);
     }
 
+    public function getTempFilePathFromName(mixed $id, string $name): string
+    {
+        return str_replace(
+            self::ID_PLACEHOLDER,
+            (string)$id,
+            PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . $name
+        );
+    }
+
     public function getTempFileName(mixed $id, string $fileName): string
     {
         return str_replace(self::ID_PLACEHOLDER, (string)$id, $fileName);

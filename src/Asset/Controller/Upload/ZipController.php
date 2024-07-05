@@ -20,7 +20,6 @@ use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\AddAssetRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -51,6 +50,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class ZipController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
+    private const FILE_KEY = 'zipFile';
 
     public function __construct(
         private readonly SecurityServiceInterface $securityService,
@@ -84,13 +85,13 @@ final class ZipController extends AbstractApiController
     #[AddAssetRequestBody(
         [
             new Property(
-                property: 'zipFile',
+                property: self::FILE_KEY,
                 description: 'Zip file to upload',
                 type: 'string',
                 format: 'binary'
             ),
         ],
-        ['zipFile']
+        [self::FILE_KEY]
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
@@ -100,7 +101,7 @@ final class ZipController extends AbstractApiController
         // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
         Request $request
     ): JsonResponse {
-        $file = $request->files->get('file');
+        $file = $request->files->get(self::FILE_KEY);
         if (!$file instanceof UploadedFile) {
             throw new EnvironmentException('Invalid zip file found in the request');
         }

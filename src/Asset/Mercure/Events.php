@@ -26,6 +26,7 @@ enum Events: string
     use EnumToValueArrayTrait;
 
     case ZIP_DOWNLOAD_READY = 'zip-download-ready';
+    case ZIP_UPLOAD_FINISHED = 'zip-upload-finished';
     case CSV_DOWNLOAD_READY = 'csv-download-ready';
     case DELETION_FINISHED = 'deletion-finished';
     case CLONING_FINISHED = 'cloning-finished';

@@ -46,6 +46,15 @@ interface UploadServiceInterface
     ): int;
 
     /**
+     * @throws EnvironmentException
+     */
+    public function uploadAssetsAsynchronously(
+        UserInterface $user,
+        array $files,
+        int $parentId
+    ): int;
+
+    /**
      * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws EnvironmentException
@@ -63,4 +72,6 @@ interface UploadServiceInterface
      * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
      */
     public function validateParent(UserInterface $user, int $parentId): ElementInterface;
+
+    public function sanitizeFileToUpload(string $fileName): ?string;
 }

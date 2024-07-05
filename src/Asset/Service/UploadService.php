@@ -19,17 +19,25 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCleanupMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset\Folder;
+use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -43,6 +51,7 @@ final readonly class UploadService implements UploadServiceInterface
     public function __construct(
         private AssetServiceInterface $assetService,
         private AssetResolverInterface $assetResolver,
+        private JobExecutionAgentInterface $jobExecutionAgent,
         private ServiceResolverInterface $serviceResolver,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
     ) {
@@ -80,11 +89,44 @@ final readonly class UploadService implements UploadServiceInterface
             );
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
-        } finally {
-            @unlink($sourcePath);
         }
 
         return $asset->getId();
+    }
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function uploadAssetsAsynchronously(
+        UserInterface $user,
+        array $files,
+        int $parentId
+    ): int {
+        $job = new Job(
+            name: Jobs::UPLOAD_ASSETS->value,
+            steps: [
+                new JobStep(JobSteps::ASSET_UPLOADING->value, AssetUploadMessage::class, '', []),
+                new JobStep(JobSteps::ZIP_CLEANUP->value, ZipCleanupMessage::class, '', []),
+            ],
+            selectedElements: array_map(static function ($file, $index) {
+                try {
+                    $fileData = json_encode($file, JSON_THROW_ON_ERROR);
+                    return new ElementDescriptor($fileData, $index);
+                } catch (Exception $e) {
+                    throw new EnvironmentException($e->getMessage());
+                }
+            }, $files, array_keys($files)),
+            environmentData: [
+                CloneEnvironmentVariables::PARENT_ID->value => $parentId,
+            ]
+        );
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $user->getId(),
+            Config::CONTEXT_CONTINUE_ON_ERROR->value
+        );
+
+        return $jobRun->getId();
     }
 
     /**
@@ -149,6 +191,16 @@ final readonly class UploadService implements UploadServiceInterface
         }
 
         return $parent;
+    }
+
+    public function sanitizeFileToUpload(string $fileName): ?string
+    {
+        if (str_starts_with($fileName, '__MACOSX/') ||
+            str_ends_with($fileName, '/Thumbs.db')) {
+            return null;
+        }
+
+        return $fileName;
     }
 
     /**

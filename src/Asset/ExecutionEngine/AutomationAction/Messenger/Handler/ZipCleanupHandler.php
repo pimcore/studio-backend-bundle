@@ -17,17 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCleanupMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -35,13 +32,12 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class ZipUploadHandler extends AbstractHandler
+final class ZipCleanupHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
-        private readonly UploadServiceInterface $uploadService,
         private readonly UserResolverInterface $userResolver,
         private readonly ZipServiceInterface $zipService,
     ) {
@@ -51,72 +47,36 @@ final class ZipUploadHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(ZipUploadMessage $message): void
+    public function __invoke(ZipCleanupMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,
-            $this->userResolver,
-            [
-                CloneEnvironmentVariables::PARENT_ID->value,
-            ],
+            $this->userResolver
         );
 
         if ($validatedParameters instanceof AbortActionData) {
             $this->abort($validatedParameters);
         }
 
-        $user = $validatedParameters->getUser();
         $archiveId = $validatedParameters->getSubject()->getType();
-        $archiveExtractPath = $this->zipService->getTempFilePath(
+        $archiveFolder = $this->zipService->getTempFileName(
             $archiveId,
-            ZipServiceInterface::UPLOAD_ZIP_FOLDER_PATH
+            ZipServiceInterface::UPLOAD_ZIP_FOLDER_NAME
         );
         try {
-            $archive = $this->zipService->getZipArchive(
+            $this->zipService->cleanUpArchive(
                 $archiveId,
-                ZipServiceInterface::UPLOAD_ZIP_FILE_NAME,
-                false
+                $archiveFolder
             );
-
-            if (!$archive) {
-                $this->abort($this->getAbortData(
-                    Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
-                    [
-                        'type' => ElementTypes::TYPE_ARCHIVE,
-                        'id' => $archiveId
-                    ],
-                ));
-            }
-
-            $files = $this->zipService->getArchiveFiles(
-                $archive,
-                $archiveExtractPath
-            );
-
-            if (empty($files)) {
-                $this->abort($this->getAbortData(
-                    Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
-                    [
-                        'type' => ElementTypes::TYPE_ARCHIVE,
-                        'id' => $archiveId
-                    ],
-                ));
-            }
-
-            $childJobRunId = $this->uploadService->uploadAssetsAsynchronously(
-                $user,
-                $files,
-                $validatedParameters->getEnvironmentData()[CloneEnvironmentVariables::PARENT_ID->value]
-            );
-
-            $this->updateJobRunContext($jobRun, JobRunContext::CHILD_JOB_RUN->value, $childJobRunId);
-
-        } catch (Exception $exception) {
+        } catch (Exception|FilesystemException $exception) {
             $this->abort($this->getAbortData(
                 Config::ZIP_FILE_UPLOAD_FAILED_MESSAGE->value,
-                ['message' => $exception->getMessage()],
+                [
+                    'directory' => $archiveFolder,
+                    'message' => $exception->getMessage()
+                ],
             ));
         } finally {
             unlink($this->zipService->getTempFilePath($archiveId, ZipServiceInterface::UPLOAD_ZIP_FILE_PATH));

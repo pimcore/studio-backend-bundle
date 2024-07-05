@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -33,15 +34,30 @@ interface ZipServiceInterface
 {
     public const ASSETS_INDEX = 'assets';
 
-    public const ZIP_FILE_NAME = 'download-zip-{id}.zip';
+    public const DOWNLOAD_ZIP_FILE_NAME = 'download-zip-{id}.zip';
 
-    public const DOWNLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-zip-{id}.zip';
+    public const UPLOAD_ZIP_FILE_NAME = 'upload-zip-{id}.zip';
 
-    public const UPLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/upload-zip-{id}.zip';
+    public const UPLOAD_ZIP_FOLDER_NAME = 'upload-zip-{id}';
 
-    public function getZipArchive(int $id): ?ZipArchive;
+    public const DOWNLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::DOWNLOAD_ZIP_FILE_NAME;
+
+    public const UPLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::UPLOAD_ZIP_FILE_NAME;
+
+    public const UPLOAD_ZIP_FOLDER_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::UPLOAD_ZIP_FOLDER_NAME;
+
+    public function getZipArchive(
+        mixed $id,
+        string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
+        bool $create = true
+    ): ?ZipArchive;
 
     public function addFile(ZipArchive $archive, Asset $asset): void;
+
+    public function getArchiveFiles(
+        ZipArchive $archive,
+        string $targetPath
+    ): array;
 
     /**
      * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
@@ -54,5 +70,15 @@ interface ZipServiceInterface
 
     public function generateZipFile(CreateAssetFileParameter $ids): string;
 
-    public function getTempFilePath(int $id, string $path): string;
+    /**
+     * @throws FilesystemException
+     */
+    public function cleanUpArchive(
+        mixed $id,
+        string $directory
+    ): void;
+
+    public function getTempFilePath(mixed $id, string $path): string;
+
+    public function getTempFileName(mixed $id, string $fileName): string;
 }

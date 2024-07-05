@@ -94,13 +94,16 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCreationHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetCloneHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetDeleteHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetUploadHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipUploadHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipCleanupHandler: ~
 
   #
   # Event Subscriber
   #
 
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\ZipDownloadSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\ZipUploadSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\CsvDownloadSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\DeletionSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\CloneSubscriber: ~
