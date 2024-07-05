@@ -123,7 +123,14 @@ final readonly class RoleService implements RoleServiceInterface
         try {
             $role = $this->roleRepository->createRole($createParameter->getName(), $folderId);
 
-            return $this->roleTreeNodeHydrator->hydrate($role);
+            $role =  $this->roleTreeNodeHydrator->hydrate($role);
+
+            $this->eventDispatcher->dispatch(
+                new RoleTreeNodeEvent($role),
+                RoleTreeNodeEvent::EVENT_NAME
+            );
+
+            return $role;
         } catch (Exception $exception) {
             throw new DatabaseException(
                 sprintf(
