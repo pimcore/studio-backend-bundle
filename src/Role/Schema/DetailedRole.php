@@ -81,12 +81,10 @@ final class DetailedRole implements AdditionalAttributesInterface
         return $this->name;
     }
 
-
     public function getClasses(): array
     {
         return $this->classes;
     }
-
 
     public function getParentId(): ?int
     {
@@ -97,7 +95,6 @@ final class DetailedRole implements AdditionalAttributesInterface
     {
         return $this->permissions;
     }
-
 
     public function getWebsiteTranslationLanguagesEdit(): array
     {

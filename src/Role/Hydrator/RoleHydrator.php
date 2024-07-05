@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
@@ -28,8 +27,7 @@ final readonly class RoleHydrator implements RoleHydratorInterface
 {
     public function __construct(
         private WorkspaceHydratorInterface $workspaceHydrator
-    )
-    {
+    ) {
     }
 
     public function hydrate(UserRoleInterface $role): DetailedRole

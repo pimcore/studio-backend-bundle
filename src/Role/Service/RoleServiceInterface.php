@@ -53,5 +53,4 @@ interface RoleServiceInterface
      * @throws NotFoundException
      */
     public function getRoleById(int $roleId): DetailedRole;
-
 }

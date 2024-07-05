@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
@@ -27,7 +26,6 @@ use Pimcore\Model\UserInterface;
  */
 final class WorkspaceHydrator implements WorkspaceHydratorInterface
 {
-
     /**
      * @return UserWorkspace[]
      */
