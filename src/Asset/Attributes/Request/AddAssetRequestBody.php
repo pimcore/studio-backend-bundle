@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request;
 
 use Attribute;
 use OpenApi\Attributes\MediaType;
-use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use OpenApi\Attributes\Schema;
 

@@ -65,6 +65,7 @@ final class ZipCleanupHandler extends AbstractHandler
             $archiveId,
             ZipServiceInterface::UPLOAD_ZIP_FOLDER_NAME
         );
+
         try {
             $this->zipService->cleanUpArchive(
                 $archiveId,
@@ -75,13 +76,13 @@ final class ZipCleanupHandler extends AbstractHandler
                 Config::ZIP_FILE_UPLOAD_FAILED_MESSAGE->value,
                 [
                     'directory' => $archiveFolder,
-                    'message' => $exception->getMessage()
+                    'message' => $exception->getMessage(),
                 ],
             ));
         } finally {
             unlink($this->zipService->getTempFilePath($archiveId, ZipServiceInterface::UPLOAD_ZIP_FILE_PATH));
         }
 
-       $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 }

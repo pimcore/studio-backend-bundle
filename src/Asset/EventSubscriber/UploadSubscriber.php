@@ -44,7 +44,6 @@ final readonly class UploadSubscriber implements EventSubscriberInterface
         ];
     }
 
-
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
         if ($event->getJobName() !==  Jobs::UPLOAD_ASSETS->value) {

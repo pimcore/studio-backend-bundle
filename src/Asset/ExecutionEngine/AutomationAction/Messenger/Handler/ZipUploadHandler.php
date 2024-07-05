@@ -73,6 +73,7 @@ final class ZipUploadHandler extends AbstractHandler
             $archiveId,
             ZipServiceInterface::UPLOAD_ZIP_FOLDER_PATH
         );
+
         try {
             $archive = $this->zipService->getZipArchive(
                 $archiveId,
@@ -85,7 +86,7 @@ final class ZipUploadHandler extends AbstractHandler
                     Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
                     [
                         'type' => ElementTypes::TYPE_ARCHIVE,
-                        'id' => $archiveId
+                        'id' => $archiveId,
                     ],
                 ));
             }
@@ -100,7 +101,7 @@ final class ZipUploadHandler extends AbstractHandler
                     Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
                     [
                         'type' => ElementTypes::TYPE_ARCHIVE,
-                        'id' => $archiveId
+                        'id' => $archiveId,
                     ],
                 ));
             }
@@ -122,6 +123,6 @@ final class ZipUploadHandler extends AbstractHandler
             unlink($this->zipService->getTempFilePath($archiveId, ZipServiceInterface::UPLOAD_ZIP_FILE_PATH));
         }
 
-       $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 }

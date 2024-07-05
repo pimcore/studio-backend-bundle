@@ -25,5 +25,4 @@ interface EventSubscriberServiceInterface
         int $jobRunId,
         string $jobName
     ): void;
-
 }

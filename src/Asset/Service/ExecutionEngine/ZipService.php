@@ -62,8 +62,7 @@ final readonly class ZipService implements ZipServiceInterface
         mixed $id,
         string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
         bool $create = true
-    ): ?ZipArchive
-    {
+    ): ?ZipArchive {
         $zip = $this->getTempFileName($id, $fileName);
         $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
 
@@ -105,8 +104,7 @@ final readonly class ZipService implements ZipServiceInterface
     public function getArchiveFiles(
         ZipArchive $archive,
         string $targetPath
-    ): array
-    {
+    ): array {
         $files = [];
         $fileCount = $archive->count();
         if (!$archive->extractTo($targetPath)) {
@@ -187,8 +185,7 @@ final readonly class ZipService implements ZipServiceInterface
     public function cleanUpArchive(
         mixed $id,
         string $directory
-    ): void
-    {
+    ): void {
         $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
         $storage->deleteDirectory($directory);
     }
@@ -196,8 +193,7 @@ final readonly class ZipService implements ZipServiceInterface
     private function copyUploadZipFile(
         string $zipArchivePath,
         string $archiveId
-    ): void
-    {
+    ): void {
         if (!is_file($zipArchivePath)) {
             throw new EnvironmentException(
                 'Something went wrong, please check upload_max_filesize and post_max_size in your php.ini ' .

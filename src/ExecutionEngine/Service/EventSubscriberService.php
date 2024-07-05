@@ -54,5 +54,4 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
             )
         );
     }
-
 }

@@ -111,6 +111,7 @@ final readonly class UploadService implements UploadServiceInterface
             selectedElements: array_map(static function ($file, $index) {
                 try {
                     $fileData = json_encode($file, JSON_THROW_ON_ERROR);
+
                     return new ElementDescriptor($fileData, $index);
                 } catch (Exception $e) {
                     throw new EnvironmentException($e->getMessage());

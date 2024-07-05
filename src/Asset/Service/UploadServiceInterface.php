@@ -67,7 +67,6 @@ interface UploadServiceInterface
         UserInterface $user
     ): void;
 
-
     /**
      * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
      */
