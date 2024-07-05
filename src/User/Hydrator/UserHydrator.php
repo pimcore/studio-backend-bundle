@@ -31,12 +31,13 @@ use Throwable;
 /**
  * @internal
  */
-final class UserHydrator implements UserHydratorInterface
+final readonly class UserHydrator implements UserHydratorInterface
 {
     public function __construct(
-        private readonly LoggerInterface $pimcoreLogger,
-        private readonly ToolResolverInterface $toolResolver,
-        private readonly AdminResolverInterface $adminToolResolver,
+        private LoggerInterface $pimcoreLogger,
+        private ToolResolverInterface $toolResolver,
+        private AdminResolverInterface $adminToolResolver,
+        private WorkspaceHydratorInterface $workspaceHydrator,
     ) {
     }
 
@@ -73,9 +74,9 @@ final class UserHydrator implements UserHydratorInterface
             websiteTranslationLanguagesEdit: $user->getWebsiteTranslationLanguagesEdit(),
             websiteTranslationLanguagesView: $user->getWebsiteTranslationLanguagesView(),
             welcomeScreen: $user->getWelcomeScreen(),
-            assetWorkspaces: $this->getAssetWorkspace($user),
-            dataObjectWorkspaces: $this->getDataObjectWorkspace($user),
-            documentWorkspaces: $this->getDocumentWorkspace($user),
+            assetWorkspaces: $this->workspaceHydrator->hydrateAssetWorkspace($user),
+            dataObjectWorkspaces: $this->workspaceHydrator->hydrateDataObjectWorkspace($user),
+            documentWorkspaces: $this->workspaceHydrator->hydrateDocumentWorkspace($user),
         );
     }
 
@@ -115,61 +116,5 @@ final class UserHydrator implements UserHydratorInterface
         $contentLanguagesString = $this->adminToolResolver->reorderWebsiteLanguages($user, $validLanguages);
 
         return explode(',', $contentLanguagesString);
-    }
-
-    /**
-     * @return UserWorkspace[]
-     */
-    private function getAssetWorkspace(UserInterface $user): array
-    {
-        $workspaces = [];
-        foreach ($user->getWorkspacesAsset() as $workspace) {
-            $workspaces[] = $this->getUserWorkspace($workspace);
-        }
-
-        return $workspaces;
-    }
-
-    /**
-     * @return UserWorkspace[]
-     */
-    private function getDataObjectWorkspace(UserInterface $user): array
-    {
-        $workspaces = [];
-        foreach ($user->getWorkspacesObject() as $workspace) {
-            $workspaces[] = $this->getUserWorkspace($workspace);
-        }
-
-        return $workspaces;
-    }
-
-    /**
-     * @return UserWorkspace[]
-     */
-    private function getDocumentWorkspace(UserInterface $user): array
-    {
-        $workspaces = [];
-        foreach ($user->getWorkspacesDocument() as $workspace) {
-            $workspaces[] = $this->getUserWorkspace($workspace);
-        }
-
-        return $workspaces;
-    }
-
-    private function getUserWorkspace(AbstractWorkspace $workspace): UserWorkspace
-    {
-        return new UserWorkspace(
-            $workspace->getCid(),
-            $workspace->getCpath(),
-            $workspace->getList(),
-            $workspace->getView(),
-            $workspace->getPublish(),
-            $workspace->getDelete(),
-            $workspace->getRename(),
-            $workspace->getCreate(),
-            $workspace->getSettings(),
-            $workspace->getVersions(),
-            $workspace->getProperties(),
-        );
     }
 }

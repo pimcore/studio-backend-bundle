@@ -22,11 +22,14 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleEvent;
+use Pimcore\Bundle\StudioBackendBundle\Role\Event\DetailedRoleEvent;
+use Pimcore\Bundle\StudioBackendBundle\Role\Event\SimpleRoleEvent;
 use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleTreeNodeEvent;
+use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\SimpleRole;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -41,6 +44,7 @@ final readonly class RoleService implements RoleServiceInterface
         private RoleRepositoryInterface $roleRepository,
         private EventDispatcherInterface $eventDispatcher,
         private RoleTreeNodeHydratorInterface $roleTreeNodeHydrator,
+        private RoleHydratorInterface $roleHydrator,
         private FolderRepositoryInterface $folderRepository
     ) {
     }
@@ -139,5 +143,22 @@ final readonly class RoleService implements RoleServiceInterface
                 )
             );
         }
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getRoleById(int $roleId): DetailedRole
+    {
+        $role = $this->roleRepository->getRoleById($roleId);
+
+        $role = $this->roleHydrator->hydrate($role);
+
+        $this->eventDispatcher->dispatch(
+            new DetailedRoleEvent($role),
+            DetailedRoleEvent::EVENT_NAME
+        );
+
+        return $role;
     }
 }

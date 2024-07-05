@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Controller;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
@@ -25,8 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdPara
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole as DetailedRoleSchema;
+use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
@@ -38,13 +38,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetUserController extends AbstractApiController
+final class GetRoleController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly UserServiceInterface $userService
+        private readonly RoleServiceInterface $roleService
     ) {
         parent::__construct($serializer);
     }
@@ -52,26 +52,26 @@ final class GetUserController extends AbstractApiController
     /**
      * @throws NotFoundException|DatabaseException
      */
-    #[Route('/user/{id}', name: 'pimcore_studio_api_user_get', methods: ['GET'])]
+    #[Route('/role/{id}', name: 'pimcore_studio_api_role_get', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
-        path: self::API_PATH . '/user/{id}',
-        operationId: 'getUserById',
-        summary: 'Get user by id.',
-        tags: [Tags::User->value]
+        path: self::API_PATH . '/role/{id}',
+        operationId: 'getRoleById',
+        summary: 'Get role by id.',
+        tags: [Tags::Role->value]
     )]
-    #[IdParameter(type: 'user')]
+    #[IdParameter(type: 'role')]
     #[SuccessResponse(
         description: 'User data.',
-        content: new JsonContent(ref: UserSchema::class)
+        content: new JsonContent(ref: DetailedRoleSchema::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getUsers(int $id): JsonResponse
+    public function getRoleById(int $id): JsonResponse
     {
         return $this->jsonResponse(
-            $this->userService->getUserById($id)
+            $this->roleService->getRoleById($id)
         );
     }
 }
