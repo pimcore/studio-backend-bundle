@@ -84,8 +84,6 @@ final class AssetUploadHandler extends AbstractHandler
                 Config::ASSET_UPLOAD_FAILED_MESSAGE->value,
                 ['message' => $exception->getMessage()],
             ));
-        } finally {
-            unlink($fileData['sourcePath']);
         }
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
