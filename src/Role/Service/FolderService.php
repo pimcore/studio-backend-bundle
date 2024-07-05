@@ -20,9 +20,11 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
+use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -31,7 +33,8 @@ final readonly class FolderService implements FolderServiceInterface
 {
     public function __construct(
         private FolderRepositoryInterface $folderRepository,
-        private RoleTreeNodeHydratorInterface $roleTreeNodeHydrator
+        private RoleTreeNodeHydratorInterface $roleTreeNodeHydrator,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -67,7 +70,14 @@ final readonly class FolderService implements FolderServiceInterface
                 $parentFolderId
             );
 
-            return $this->roleTreeNodeHydrator->hydrate($folder);
+            $folder =  $this->roleTreeNodeHydrator->hydrate($folder);
+
+            $this->eventDispatcher->dispatch(
+                new RoleTreeNodeEvent($folder),
+                RoleTreeNodeEvent::EVENT_NAME
+            );
+
+            return $folder;
 
         } catch (Exception $exception) {
             throw new DatabaseException(

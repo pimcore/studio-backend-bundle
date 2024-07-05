@@ -22,12 +22,15 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleEvent;
+use Pimcore\Bundle\StudioBackendBundle\Role\Event\DetailedRoleEvent;
 use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleTreeNodeEvent;
+use Pimcore\Bundle\StudioBackendBundle\Role\Event\SimpleRoleEvent;
+use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UserRole;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\SimpleRole;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -41,6 +44,7 @@ final readonly class RoleService implements RoleServiceInterface
         private RoleRepositoryInterface $roleRepository,
         private EventDispatcherInterface $eventDispatcher,
         private RoleTreeNodeHydratorInterface $roleTreeNodeHydrator,
+        private RoleHydratorInterface $roleHydrator,
         private FolderRepositoryInterface $folderRepository
     ) {
     }
@@ -54,14 +58,14 @@ final readonly class RoleService implements RoleServiceInterface
         $items = [];
 
         foreach ($roles as $role) {
-            $item = new UserRole(
+            $item = new SimpleRole(
                 $role->getId(),
                 $role->getName(),
             );
 
             $this->eventDispatcher->dispatch(
-                new RoleEvent($item),
-                RoleEvent::EVENT_NAME
+                new SimpleRoleEvent($item),
+                SimpleRoleEvent::EVENT_NAME
             );
 
             $items[] = $item;
@@ -123,7 +127,14 @@ final readonly class RoleService implements RoleServiceInterface
         try {
             $role = $this->roleRepository->createRole($createParameter->getName(), $folderId);
 
-            return $this->roleTreeNodeHydrator->hydrate($role);
+            $role =  $this->roleTreeNodeHydrator->hydrate($role);
+
+            $this->eventDispatcher->dispatch(
+                new RoleTreeNodeEvent($role),
+                RoleTreeNodeEvent::EVENT_NAME
+            );
+
+            return $role;
         } catch (Exception $exception) {
             throw new DatabaseException(
                 sprintf(
@@ -132,5 +143,22 @@ final readonly class RoleService implements RoleServiceInterface
                 )
             );
         }
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getRoleById(int $roleId): DetailedRole
+    {
+        $role = $this->roleRepository->getRoleById($roleId);
+
+        $role = $this->roleHydrator->hydrate($role);
+
+        $this->eventDispatcher->dispatch(
+            new DetailedRoleEvent($role),
+            DetailedRoleEvent::EVENT_NAME
+        );
+
+        return $role;
     }
 }

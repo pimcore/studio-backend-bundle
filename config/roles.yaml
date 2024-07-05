@@ -27,6 +27,9 @@ services:
   # Hydrators
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleHydrator
+
   Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydrator
 
