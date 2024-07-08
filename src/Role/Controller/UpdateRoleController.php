@@ -27,12 +27,13 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\UpdateRoleParameter;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UpdateRole;
 use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -47,7 +48,7 @@ final class UpdateRoleController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly RoleServiceInterface $roleUpdateService
+        private readonly RoleServiceInterface $roleService
     ) {
         parent::__construct($serializer);
     }
@@ -64,17 +65,20 @@ final class UpdateRoleController extends AbstractApiController
         tags: [Tags::Role->value]
     )]
     #[IdParameter(type: 'Role')]
-    #[SuccessResponse]
+    #[SuccessResponse(
+        description: 'Updated data.',
+        content: new JsonContent(ref: DetailedRole::class)
+    )]
     #[RequestBody(
         content: new JsonContent(ref: UpdateRole::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function updateRoleById(int $id, #[MapRequestPayload] UpdateRoleParameter $roleUpdate): Response
+    public function updateRoleById(int $id, #[MapRequestPayload] UpdateRoleParameter $roleUpdate): JsonResponse
     {
-        $this->roleUpdateService->updateRoleById($id, $roleUpdate);
+        $this->roleService->updateRoleById($id, $roleUpdate);
 
-        return new Response();
+        return $this->jsonResponse($this->roleService->getRoleById($id));
     }
 }

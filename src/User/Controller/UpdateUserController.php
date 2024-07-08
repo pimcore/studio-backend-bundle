@@ -29,12 +29,14 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUser;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -49,7 +51,8 @@ final class UpdateUserController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly UserUpdateServiceInterface $userUpdateService
+        private readonly UserUpdateServiceInterface $userUpdateService,
+        private readonly UserServiceInterface $userService
     ) {
         parent::__construct($serializer);
     }
@@ -66,7 +69,10 @@ final class UpdateUserController extends AbstractApiController
         tags: [Tags::User->value]
     )]
     #[IdParameter(type: 'User')]
-    #[SuccessResponse]
+    #[SuccessResponse(
+        description: 'Updated data.',
+        content: new JsonContent(ref: UserSchema::class)
+    )]
     #[RequestBody(
         content: new JsonContent(ref: UpdateUser::class)
     )]
@@ -74,10 +80,10 @@ final class UpdateUserController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::FORBIDDEN,
     ])]
-    public function updateUsers(int $id, #[MapRequestPayload] UpdateUserParameter $userUpdate): Response
+    public function updateUsers(int $id, #[MapRequestPayload] UpdateUserParameter $userUpdate): JsonResponse
     {
         $this->userUpdateService->updateUserById($userUpdate, $id);
 
-        return new Response();
+        return $this->jsonResponse($this->userService->getUserById($id));
     }
 }
