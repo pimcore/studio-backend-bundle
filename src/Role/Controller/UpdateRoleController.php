@@ -27,13 +27,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\UpdateRoleParameter;
-use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UpdateRole;
 use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;

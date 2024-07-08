@@ -24,12 +24,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use function strlen;
 
 /**

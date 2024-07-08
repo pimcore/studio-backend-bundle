@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 
 /**
  * @internal
