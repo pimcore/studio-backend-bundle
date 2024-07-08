@@ -27,11 +27,13 @@ use Pimcore\Bundle\StudioBackendBundle\Role\Event\RoleTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Role\Event\SimpleRoleEvent;
 use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\UpdateRoleParameter;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\SimpleRole;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
@@ -45,7 +47,8 @@ final readonly class RoleService implements RoleServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private RoleTreeNodeHydratorInterface $roleTreeNodeHydrator,
         private RoleHydratorInterface $roleHydrator,
-        private FolderRepositoryInterface $folderRepository
+        private FolderRepositoryInterface $folderRepository,
+        private UpdateServiceInterface $updateService,
     ) {
     }
 
@@ -151,6 +154,39 @@ final readonly class RoleService implements RoleServiceInterface
     public function getRoleById(int $roleId): DetailedRole
     {
         $role = $this->roleRepository->getRoleById($roleId);
+
+        $role = $this->roleHydrator->hydrate($role);
+
+        $this->eventDispatcher->dispatch(
+            new DetailedRoleEvent($role),
+            DetailedRoleEvent::EVENT_NAME
+        );
+
+        return $role;
+    }
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function updateRoleById(int $roleId, UpdateRoleParameter $updateRoleParameter): DetailedRole
+    {
+        $role = $this->roleRepository->getRoleById($roleId);
+
+        $role->setParentId($updateRoleParameter->getParentId());
+        $role->setWebsiteTranslationLanguagesEdit($updateRoleParameter->getWebsiteTranslationLanguagesEdit());
+        $role->setWebsiteTranslationLanguagesView($updateRoleParameter->getWebsiteTranslationLanguagesView());
+        $role->setDocTypes($updateRoleParameter->getDocTypes());
+
+        $role = $this->updateService->updateClasses($updateRoleParameter->getClasses(), $role);
+        $role = $this->updateService->updatePermissions($updateRoleParameter->getPermissions(), $role);
+        $role = $this->updateService->updateAssetWorkspaces($updateRoleParameter->getAssetWorkspaces(), $role);
+        $role = $this->updateService->updateDataObjectWorkspaces(
+            $updateRoleParameter->getDataObjectWorkspaces(),
+            $role
+        );
+        $role = $this->updateService->updateDocumentWorkspaces($updateRoleParameter->getDocumentWorkspaces(), $role);
+
+        $this->roleRepository->updateRole($role);
 
         $role = $this->roleHydrator->hydrate($role);
 
