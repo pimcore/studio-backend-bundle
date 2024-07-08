@@ -20,7 +20,7 @@ use Attribute;
 use OpenApi\Attributes\Response;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
-#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_METHOD)]
 final class SuccessResponse extends Response
 {
     public function __construct(string $description = 'Success', mixed $content = null, ?array $headers = null)

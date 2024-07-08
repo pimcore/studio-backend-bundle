@@ -63,7 +63,6 @@ final class ZipController extends AbstractApiController
 
     /**
      * @throws AccessDeniedException
-     * @throws DatabaseException
      * @throws EnvironmentException
      * @throws ForbiddenException
      * @throws NotFoundException
