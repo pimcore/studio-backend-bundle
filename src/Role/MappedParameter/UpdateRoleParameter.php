@@ -37,6 +37,7 @@ final readonly class UpdateRoleParameter
         private array $documentWorkspaces,
     ) {
     }
+
     public function getParentId(): int
     {
         return $this->parentId;

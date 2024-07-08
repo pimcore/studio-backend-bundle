@@ -31,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Model\UserInterface;
-use function in_array;
 use function strlen;
 
 /**
@@ -39,7 +38,6 @@ use function strlen;
  */
 final class UserUpdateService implements UserUpdateServiceInterface
 {
-
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly SecurityServiceInterface $securityService,

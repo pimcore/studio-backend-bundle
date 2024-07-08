@@ -30,20 +30,19 @@ use Pimcore\Model\User\Workspace\Asset as AssetWorkspace;
 use Pimcore\Model\User\Workspace\DataObject as DataObjectWorkspace;
 use Pimcore\Model\User\Workspace\Document as DocumentWorkspace;
 use Pimcore\Model\UserInterface;
+use function in_array;
 
 /**
  * @internal
  */
 final readonly class UpdateService implements UpdateServiceInterface
 {
-
     public function __construct(
         private PermissionRepositoryInterface $permissionRepository,
         private RoleRepositoryInterface $roleRepository,
         private ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private ServiceResolverInterface $elementServiceResolver,
-    )
-    {
+    ) {
     }
 
     /**
@@ -52,8 +51,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     public function updatePermissions(
         array $permissionsToSet,
         UserInterface|UserRoleInterface $user
-    ): UserInterface|UserRoleInterface
-    {
+    ): UserInterface|UserRoleInterface {
         $permissions = array_map(static function ($permission) {
             return $permission->getKey();
         }, $this->permissionRepository->getAvailablePermissions());
@@ -95,8 +93,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     public function updateClasses(
         array $classesToSet,
         UserInterface|UserRoleInterface $user
-    ): UserInterface|UserRoleInterface
-    {
+    ): UserInterface|UserRoleInterface {
         $classes = array_map(static function ($class) {
             return $class->getId();
         }, $this->classDefinitionRepository->getClassDefinitions());
@@ -120,8 +117,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     public function updateAssetWorkspaces(
         array $assetWorkspacesToSet,
         UserInterface|UserRoleInterface $user
-    ): UserInterface|UserRoleInterface
-    {
+    ): UserInterface|UserRoleInterface {
         $this->checkForDuplicateWorkspaces($assetWorkspacesToSet);
 
         $workspaces = [];
@@ -146,8 +142,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     public function updateDataObjectWorkspaces(
         array $objectWorkspacesToSet,
         UserInterface|UserRoleInterface $user
-    ): UserInterface|UserRoleInterface
-    {
+    ): UserInterface|UserRoleInterface {
         $this->checkForDuplicateWorkspaces($objectWorkspacesToSet);
 
         $workspaces = [];
@@ -177,8 +172,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     public function updateDocumentWorkspaces(
         array $documentWorkspacesToSet,
         UserInterface|UserRoleInterface $user
-    ): UserInterface|UserRoleInterface
-    {
+    ): UserInterface|UserRoleInterface {
         $this->checkForDuplicateWorkspaces($documentWorkspacesToSet);
 
         $workspaces = [];
