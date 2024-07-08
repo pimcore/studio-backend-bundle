@@ -168,7 +168,7 @@ final readonly class RoleService implements RoleServiceInterface
     /**
      * @throws DatabaseException|NotFoundException
      */
-    public function updateRoleById(int $roleId, UpdateRoleParameter $updateRoleParameter): DetailedRole
+    public function updateRoleById(int $roleId, UpdateRoleParameter $updateRoleParameter): void
     {
         $role = $this->roleRepository->getRoleById($roleId);
 
@@ -187,14 +187,5 @@ final readonly class RoleService implements RoleServiceInterface
         $role = $this->updateService->updateDocumentWorkspaces($updateRoleParameter->getDocumentWorkspaces(), $role);
 
         $this->roleRepository->updateRole($role);
-
-        $role = $this->roleHydrator->hydrate($role);
-
-        $this->eventDispatcher->dispatch(
-            new DetailedRoleEvent($role),
-            DetailedRoleEvent::EVENT_NAME
-        );
-
-        return $role;
     }
 }

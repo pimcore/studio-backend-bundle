@@ -40,7 +40,6 @@ final class UserUpdateService implements UserUpdateServiceInterface
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
         private readonly SecurityServiceInterface $securityService,
-        private readonly UserHydratorInterface $userHydrator,
         private readonly UpdateServiceInterface $updateService,
         private readonly AuthenticationResolverInterface $authenticationResolver
     ) {
@@ -49,7 +48,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
     /**
      * @throws NotFoundException|DatabaseException|ForbiddenException|ParseException
      */
-    public function updateUserById(UpdateUserParameter $updateUserParameter, int $userId): UserSchema
+    public function updateUserById(UpdateUserParameter $updateUserParameter, int $userId): void
     {
         $user = $this->userRepository->getUserById($userId);
 
@@ -90,8 +89,6 @@ final class UserUpdateService implements UserUpdateServiceInterface
         $user = $this->updateService->updateDocumentWorkspaces($updateUserParameter->getDocumentWorkspaces(), $user);
 
         $this->userRepository->updateUser($user);
-
-        return $this->userHydrator->hydrate($user);
     }
 
     /**

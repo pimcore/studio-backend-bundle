@@ -58,5 +58,5 @@ interface RoleServiceInterface
     /**
      * @throws NotFoundException|DatabaseException
      */
-    public function updateRoleById(int $roleId, UpdateRoleParameter $updateRoleParameter): DetailedRole;
+    public function updateRoleById(int $roleId, UpdateRoleParameter $updateRoleParameter): void;
 }

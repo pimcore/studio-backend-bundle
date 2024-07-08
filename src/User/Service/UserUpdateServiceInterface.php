@@ -32,7 +32,7 @@ interface UserUpdateServiceInterface
     /**
      * @throws NotFoundException|DatabaseException|ForbiddenException|ParseException
      */
-    public function updateUserById(UpdateUserParameter $updateUserParameter, int $userId): UserSchema;
+    public function updateUserById(UpdateUserParameter $updateUserParameter, int $userId): void;
 
     /**
      * @throws NotFoundException|DatabaseException|ForbiddenException

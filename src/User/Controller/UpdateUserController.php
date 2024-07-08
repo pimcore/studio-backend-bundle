@@ -30,12 +30,12 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUser;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -67,10 +67,7 @@ final class UpdateUserController extends AbstractApiController
         tags: [Tags::User->value]
     )]
     #[IdParameter(type: 'User')]
-    #[SuccessResponse(
-        description: 'Updated data.',
-        content: new JsonContent(ref: UserSchema::class)
-    )]
+    #[SuccessResponse]
     #[RequestBody(
         content: new JsonContent(ref: UpdateUser::class)
     )]
@@ -78,10 +75,10 @@ final class UpdateUserController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::FORBIDDEN,
     ])]
-    public function updateUsers(int $id, #[MapRequestPayload] UpdateUserParameter $userUpdate): JsonResponse
+    public function updateUsers(int $id, #[MapRequestPayload] UpdateUserParameter $userUpdate): Response
     {
-        return $this->jsonResponse(
-            $this->userUpdateService->updateUserById($userUpdate, $id)
-        );
+        $this->userUpdateService->updateUserById($userUpdate, $id);
+
+        return new Response();
     }
 }
