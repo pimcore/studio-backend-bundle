@@ -60,6 +60,7 @@ final readonly class FailureSubscriber implements EventSubscriberInterface
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
+                    $event->getJobRunOwnerId(),
                     $event->getNewState(),
                     [$log[0]->getErrorMessage()]
                 )
