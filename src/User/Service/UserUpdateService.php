@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
-use Pimcore\Model\UserInterface;
 use function strlen;
 
 /**

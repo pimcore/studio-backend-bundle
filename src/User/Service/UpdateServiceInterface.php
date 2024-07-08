@@ -29,6 +29,7 @@ interface UpdateServiceInterface
 {
     /**
      * @template T of UserInterface|UserRoleInterface
+     *
      * @throws NotFoundException
      *
      * @return T
@@ -45,7 +46,9 @@ interface UpdateServiceInterface
 
     /**
      * @template T of UserInterface|UserRoleInterface
+     *
      * @param T $user
+     *
      * @throws NotFoundException
      *
      * @return T
@@ -57,6 +60,7 @@ interface UpdateServiceInterface
 
     /**
      * @template T of UserInterface|UserRoleInterface
+     *
      * @param UserWorkspace[] $assetWorkspacesToSet
      * @param T $user
      *
@@ -71,10 +75,12 @@ interface UpdateServiceInterface
 
     /**
      * @template T of UserInterface|UserRoleInterface
+     *
      * @param UserWorkspace[] $objectWorkspacesToSet
      * @param T $user
      *
      * @throws ParseException
+     *
      * @return T
      */
     public function updateDataObjectWorkspaces(
@@ -84,10 +90,12 @@ interface UpdateServiceInterface
 
     /**
      * @template T of UserInterface|UserRoleInterface
+     *
      * @param UserWorkspace[] $documentWorkspacesToSet
      * @param T $user
      *
      * @throws ParseException
+     *
      * @return T
      */
     public function updateDocumentWorkspaces(
