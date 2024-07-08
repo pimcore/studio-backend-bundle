@@ -73,9 +73,8 @@ interface ZipServiceInterface
     /**
      * @throws FilesystemException
      */
-    public function cleanUpArchive(
-        mixed $id,
-        string $directory
+    public function cleanUpArchiveFolder(
+        string $folder
     ): void;
 
     public function getTempFilePath(mixed $id, string $path): string;

@@ -24,7 +24,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCleanupMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -33,7 +33,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset\Folder;
@@ -89,6 +88,8 @@ final readonly class UploadService implements UploadServiceInterface
             );
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
+        } finally {
+            @unlink($sourcePath);
         }
 
         return $asset->getId();
@@ -100,13 +101,13 @@ final readonly class UploadService implements UploadServiceInterface
     public function uploadAssetsAsynchronously(
         UserInterface $user,
         array $files,
-        int $parentId
+        int $parentId,
+        string $folderName,
     ): int {
         $job = new Job(
             name: Jobs::UPLOAD_ASSETS->value,
             steps: [
                 new JobStep(JobSteps::ASSET_UPLOADING->value, AssetUploadMessage::class, '', []),
-                new JobStep(JobSteps::ZIP_CLEANUP->value, ZipCleanupMessage::class, '', []),
             ],
             selectedElements: array_map(static function ($file, $index) {
                 try {
@@ -118,7 +119,8 @@ final readonly class UploadService implements UploadServiceInterface
                 }
             }, $files, array_keys($files)),
             environmentData: [
-                CloneEnvironmentVariables::PARENT_ID->value => $parentId,
+                EnvironmentVariables::PARENT_ID->value => $parentId,
+                EnvironmentVariables::UPLOAD_FOLDER_NAME->value => $folderName,
             ]
         );
         $jobRun = $this->jobExecutionAgent->startJobExecution(

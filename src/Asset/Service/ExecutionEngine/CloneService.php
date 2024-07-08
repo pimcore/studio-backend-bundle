@@ -33,7 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset;
@@ -171,8 +171,8 @@ final readonly class CloneService implements CloneServiceInterface
                 $ids
             ),
             environmentData: [
-                CloneEnvironmentVariables::ORIGINAL_PARENT_ID->value => $originalParent->getId(),
-                CloneEnvironmentVariables::PARENT_ID->value => $newParent->getId(),
+                EnvironmentVariables::ORIGINAL_PARENT_ID->value => $originalParent->getId(),
+                EnvironmentVariables::PARENT_ID->value => $newParent->getId(),
             ]
         );
         $jobRun = $this->jobExecutionAgent->startJobExecution(

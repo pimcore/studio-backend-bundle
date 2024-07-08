@@ -17,14 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -41,6 +43,7 @@ final class AssetUploadHandler extends AbstractHandler
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
         private readonly UploadServiceInterface $uploadService,
+        private readonly ZipServiceInterface $zipService,
     ) {
         parent::__construct();
     }
@@ -56,7 +59,8 @@ final class AssetUploadHandler extends AbstractHandler
             $jobRun,
             $this->userResolver,
             [
-                CloneEnvironmentVariables::PARENT_ID->value,
+                EnvironmentVariables::PARENT_ID->value,
+                EnvironmentVariables::UPLOAD_FOLDER_NAME->value,
             ],
         );
 
@@ -74,12 +78,18 @@ final class AssetUploadHandler extends AbstractHandler
                 $fileData['sourcePath'],
                 $fileData['fileName'],
             );
+
             $this->uploadService->uploadAsset(
-                $environmentVariables[CloneEnvironmentVariables::PARENT_ID->value],
+                $environmentVariables[EnvironmentVariables::PARENT_ID->value],
                 $file,
                 $user
             );
-        } catch (Exception $exception) {
+
+            $this->zipService->cleanUpArchiveFolder(
+                $environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_NAME->value],
+            );
+
+        } catch (Exception|FilesystemException $exception) {
             $this->abort($this->getAbortData(
                 Config::ASSET_UPLOAD_FAILED_MESSAGE->value,
                 ['message' => $exception->getMessage()],

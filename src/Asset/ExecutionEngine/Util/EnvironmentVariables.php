@@ -14,13 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
-
-use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util;
 
 /**
  * @internal
  */
-final class ZipCleanupMessage extends AbstractExecutionEngineMessage
+enum EnvironmentVariables: string
 {
+    case ORIGINAL_PARENT_ID = 'originalParentId';
+    case PARENT_ID = 'parentId';
+    case UPLOAD_FOLDER_NAME = 'uploadFolderName';
 }

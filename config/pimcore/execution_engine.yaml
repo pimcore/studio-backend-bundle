@@ -18,4 +18,3 @@ framework:
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetDeleteMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage: pimcore_generic_execution_engine
-      Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCleanupMessage: pimcore_generic_execution_engine

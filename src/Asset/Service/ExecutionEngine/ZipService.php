@@ -34,7 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\StorageDirectories;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Asset;
@@ -145,7 +145,7 @@ final readonly class ZipService implements ZipServiceInterface
                 $parentId
             )],
             environmentData: [
-                CloneEnvironmentVariables::PARENT_ID->value => $parentId,
+                EnvironmentVariables::PARENT_ID->value => $parentId,
             ]
         );
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -182,12 +182,13 @@ final readonly class ZipService implements ZipServiceInterface
     /**
      * @throws FilesystemException
      */
-    public function cleanUpArchive(
-        mixed $id,
-        string $directory
+    public function cleanUpArchiveFolder(
+        string $folder
     ): void {
         $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
-        $storage->deleteDirectory($directory);
+        if (empty($storage->listContents($folder)->toArray())) {
+            $storage->deleteDirectory($folder);
+        }
     }
 
     private function copyUploadZipFile(

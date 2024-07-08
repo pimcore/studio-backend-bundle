@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CloneEnvironmentVariables;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -59,7 +59,7 @@ final class ZipUploadHandler extends AbstractHandler
             $jobRun,
             $this->userResolver,
             [
-                CloneEnvironmentVariables::PARENT_ID->value,
+                EnvironmentVariables::PARENT_ID->value,
             ],
         );
 
@@ -109,7 +109,11 @@ final class ZipUploadHandler extends AbstractHandler
             $childJobRunId = $this->uploadService->uploadAssetsAsynchronously(
                 $user,
                 $files,
-                $validatedParameters->getEnvironmentData()[CloneEnvironmentVariables::PARENT_ID->value]
+                $validatedParameters->getEnvironmentData()[EnvironmentVariables::PARENT_ID->value],
+                $this->zipService->getTempFileName(
+                    $archiveId,
+                    ZipServiceInterface::UPLOAD_ZIP_FOLDER_NAME
+                )
             );
 
             $this->updateJobRunContext($jobRun, JobRunContext::CHILD_JOB_RUN->value, $childJobRunId);

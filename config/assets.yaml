@@ -96,7 +96,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetDeleteHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetUploadHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipUploadHandler: ~
-  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipCleanupHandler: ~
 
   #
   # Event Subscriber

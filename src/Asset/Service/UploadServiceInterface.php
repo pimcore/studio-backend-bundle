@@ -51,7 +51,8 @@ interface UploadServiceInterface
     public function uploadAssetsAsynchronously(
         UserInterface $user,
         array $files,
-        int $parentId
+        int $parentId,
+        string $folderName,
     ): int;
 
     /**
