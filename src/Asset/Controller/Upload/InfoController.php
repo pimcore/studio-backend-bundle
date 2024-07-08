@@ -84,7 +84,7 @@ final class InfoController extends AbstractApiController
                     $parentId,
                     $fileName,
                     $this->securityService->getCurrentUser()
-                )
+                ),
             ]
         );
     }

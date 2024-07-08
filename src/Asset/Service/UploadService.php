@@ -67,8 +67,7 @@ final readonly class UploadService implements UploadServiceInterface
         int $parentId,
         string $fileName,
         UserInterface $user
-    ): bool
-    {
+    ): bool {
         $parent = $this->assetService->getAssetElement($user, $parentId);
 
         return $this->assetServiceResolver->pathExists(

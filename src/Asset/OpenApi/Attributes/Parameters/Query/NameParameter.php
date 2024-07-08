@@ -28,8 +28,7 @@ final class NameParameter extends QueryParameter
         $name = 'thumbnailName',
         $description = 'Find asset by matching thumbnail name.',
         $example = Thumbnails::DEFAULT_THUMBNAIL_ID->value,
-    )
-    {
+    ) {
         parent::__construct(
             name: $name,
             description: $description,
