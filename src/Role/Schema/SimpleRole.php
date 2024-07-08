@@ -22,12 +22,12 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 #[Schema(
-    title: 'User Role',
+    title: 'Simple User Role',
     description: 'A user role which is a combination of permissions and settings.',
     required: ['id', 'category'],
     type: 'object',
 )]
-final class UserRole implements AdditionalAttributesInterface
+final class SimpleRole implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 

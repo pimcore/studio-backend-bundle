@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\Colle
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UserRole;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\SimpleRole;
 use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
@@ -56,7 +56,7 @@ final class GetRolesController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'List of available user roles.',
-        content: new CollectionJson(new GenericCollection(UserRole::class))
+        content: new CollectionJson(new GenericCollection(SimpleRole::class))
     )]
     #[DefaultResponses]
     public function getRoles(): JsonResponse
