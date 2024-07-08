@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\AssetEvent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
@@ -56,6 +57,7 @@ final readonly class AssetService implements AssetServiceInterface
 
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
+        private AssetServiceResolverInterface $assetServiceResolver,
         private FilterServiceProviderInterface $filterServiceProvider,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
@@ -140,5 +142,25 @@ final readonly class AssetService implements AssetServiceInterface
         }
 
         return $asset;
+    }
+
+    public function getUniqueAssetName(string $targetPath, string $filename): string
+    {
+        $pathInfo = pathinfo($filename);
+        $extension = empty($pathInfo['extension']) ? '' : '.' . $pathInfo['extension'];
+        $count = 1;
+
+        if ($targetPath === '/') {
+            $targetPath = '';
+        }
+
+        while (true) {
+            if ($this->assetServiceResolver->pathExists($targetPath . '/' . $filename)) {
+                $filename = $pathInfo['filename'] . '_' . $count . $extension;
+                $count++;
+            } else {
+                return $filename;
+            }
+        }
     }
 }

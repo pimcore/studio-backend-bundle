@@ -29,6 +29,8 @@ final readonly class ElementTypes
 
     public const TYPE_DOCUMENT = 'document';
 
+    public const TYPE_ARCHIVE = 'zip archive';
+
     public const TYPE_FOLDER = 'folder';
 
     public const ALLOWED_TYPES = [

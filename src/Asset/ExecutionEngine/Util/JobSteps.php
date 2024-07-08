@@ -19,8 +19,10 @@ enum JobSteps: string
 {
     case ZIP_COLLECTION = 'studio_ee_job_step_zip_collection';
     case ZIP_CREATION = 'studio_ee_job_step_zip_creation';
+    case ZIP_UPLOADING = 'studio_ee_jop_step_zip_uploading';
     case ASSET_DELETION = 'studio_ee_job_step_asset_deletion';
     case ASSET_CLONING = 'studio_ee_job_step_asset_cloning';
+    case ASSET_UPLOADING = 'studio_ee_job_step_asset_uploading';
     case CSV_COLLECTION = 'studio_ee_job_step_csv_collection';
     case CSV_CREATION = 'studio_ee_job_step_csv_creation';
 }

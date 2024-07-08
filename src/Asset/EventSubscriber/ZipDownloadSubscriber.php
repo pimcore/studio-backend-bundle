@@ -59,7 +59,10 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
                 Events::ZIP_DOWNLOAD_READY->value,
                 new DownloadReady(
                     $event->getJobRunId(),
-                    $this->zipService->getTempFilePath($event->getJobRunId(), ZipServiceInterface::ZIP_FILE_PATH),
+                    $this->zipService->getTempFilePath(
+                        $event->getJobRunId(),
+                        ZipServiceInterface::DOWNLOAD_ZIP_FILE_PATH
+                    ),
                     $event->getJobRunOwnerId()
                 )
             );

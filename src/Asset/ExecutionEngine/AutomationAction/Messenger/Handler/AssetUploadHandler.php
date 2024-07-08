@@ -17,31 +17,33 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
-use Pimcore\Model\Asset;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
  * @internal
  */
 #[AsMessageHandler]
-final class AssetCloneHandler extends AbstractHandler
+final class AssetUploadHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
     public function __construct(
-        private readonly ElementServiceInterface $elementService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
-        private readonly CloneServiceInterface $cloneService
+        private readonly UploadServiceInterface $uploadService,
+        private readonly ZipServiceInterface $zipService,
     ) {
         parent::__construct();
     }
@@ -49,7 +51,7 @@ final class AssetCloneHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(AssetCloneMessage $message): void
+    public function __invoke(AssetUploadMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         $validatedParameters = $this->validateJobParameters(
@@ -57,8 +59,8 @@ final class AssetCloneHandler extends AbstractHandler
             $jobRun,
             $this->userResolver,
             [
-                EnvironmentVariables::ORIGINAL_PARENT_ID->value,
                 EnvironmentVariables::PARENT_ID->value,
+                EnvironmentVariables::UPLOAD_FOLDER_NAME->value,
             ],
         );
 
@@ -67,25 +69,32 @@ final class AssetCloneHandler extends AbstractHandler
         }
 
         $user = $validatedParameters->getUser();
-        $assetElement = $validatedParameters->getSubject();
         $environmentVariables = $validatedParameters->getEnvironmentData();
-        $source = $this->getElementById(
-            $assetElement,
-            $user,
-            $this->elementService
-        );
-        if (!$source instanceof Asset) {
-            return;
+
+        try {
+            $element = $validatedParameters->getSubject()->getType();
+            $fileData = json_decode($element, true, 512, JSON_THROW_ON_ERROR);
+            $file = new UploadedFile(
+                $fileData['sourcePath'],
+                $fileData['fileName'],
+            );
+
+            $this->uploadService->uploadAsset(
+                $environmentVariables[EnvironmentVariables::PARENT_ID->value],
+                $file,
+                $user
+            );
+
+            $this->zipService->cleanUpArchiveFolder(
+                $environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_NAME->value],
+            );
+
+        } catch (Exception|FilesystemException $exception) {
+            $this->abort($this->getAbortData(
+                Config::ASSET_UPLOAD_FAILED_MESSAGE->value,
+                ['message' => $exception->getMessage()],
+            ));
         }
-
-        $parent = $this->cloneService->getNewCloneTarget(
-            $user,
-            $source,
-            $environmentVariables[EnvironmentVariables::ORIGINAL_PARENT_ID->value],
-            $environmentVariables[EnvironmentVariables::PARENT_ID->value],
-        );
-
-        $this->cloneService->cloneElement($source, $parent, $user);
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
