@@ -46,7 +46,13 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
+     * @template T of UserInterface|UserRoleInterface
+     *
+     * @param T $user
+     *
      * @throws NotFoundException
+     *
+     * @return T
      */
     public function updatePermissions(
         array $permissionsToSet,
@@ -88,7 +94,13 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
+     * @template T of UserInterface|UserRoleInterface
+     *
+     * @param T $user
+     *
      * @throws NotFoundException
+     *
+     * @return T
      */
     public function updateClasses(
         array $classesToSet,
@@ -110,9 +122,14 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
+     * @template T of UserInterface|UserRoleInterface
+     *
      * @param UserWorkspace[] $assetWorkspacesToSet
+     * @param T $user
      *
      * @throws ParseException
+     *
+     * @return T
      */
     public function updateAssetWorkspaces(
         array $assetWorkspacesToSet,
@@ -135,9 +152,14 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
+     * @template T of UserInterface|UserRoleInterface
+     *
      * @param UserWorkspace[] $objectWorkspacesToSet
+     * @param T $user
      *
      * @throws ParseException
+     *
+     * @return T
      */
     public function updateDataObjectWorkspaces(
         array $objectWorkspacesToSet,
@@ -165,9 +187,14 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
+     * @template T of UserInterface|UserRoleInterface
+     *
      * @param UserWorkspace[] $documentWorkspacesToSet
+     * @param T $user
      *
      * @throws ParseException
+     *
+     * @return T
      */
     public function updateDocumentWorkspaces(
         array $documentWorkspacesToSet,

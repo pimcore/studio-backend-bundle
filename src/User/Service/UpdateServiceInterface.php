@@ -30,6 +30,8 @@ interface UpdateServiceInterface
     /**
      * @template T of UserInterface|UserRoleInterface
      *
+     * @param T $user
+     *
      * @throws NotFoundException
      *
      * @return T
