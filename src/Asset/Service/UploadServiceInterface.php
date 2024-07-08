@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -45,6 +46,16 @@ interface UploadServiceInterface
     ): int;
 
     /**
+     * @throws EnvironmentException
+     */
+    public function uploadAssetsAsynchronously(
+        UserInterface $user,
+        array $files,
+        int $parentId,
+        string $folderName,
+    ): int;
+
+    /**
      * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws EnvironmentException
@@ -56,4 +67,11 @@ interface UploadServiceInterface
         UploadedFile $file,
         UserInterface $user
     ): void;
+
+    /**
+     * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
+     */
+    public function validateParent(UserInterface $user, int $parentId): ElementInterface;
+
+    public function sanitizeFileToUpload(string $fileName): ?string;
 }

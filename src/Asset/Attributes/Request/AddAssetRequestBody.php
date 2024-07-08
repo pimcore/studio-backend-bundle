@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request;
 
 use Attribute;
 use OpenApi\Attributes\MediaType;
-use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use OpenApi\Attributes\Schema;
 
@@ -28,22 +27,15 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class AddAssetRequestBody extends RequestBody
 {
-    public function __construct()
+    public function __construct(array $properties, array $required = [])
     {
         parent::__construct(
             required: true,
             content: new MediaType(
                 mediaType: 'multipart/form-data',
                 schema: new Schema(
-                    required: ['file'],
-                    properties: [
-                        new Property(
-                            property: 'file',
-                            description: 'File to upload',
-                            type: 'string',
-                            format: 'binary'
-                        ),
-                    ],
+                    required: $required,
+                    properties: $properties,
                     type: 'object',
                 )
             ),

@@ -28,7 +28,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * @internal
  */
-final readonly class DeletionSubscriber implements EventSubscriberInterface
+final readonly class UploadSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
@@ -46,13 +46,13 @@ final readonly class DeletionSubscriber implements EventSubscriberInterface
 
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-        if ($event->getJobName() !==  Jobs::DELETE_ASSETS->value) {
+        if ($event->getJobName() !==  Jobs::UPLOAD_ASSETS->value) {
             return;
         }
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
-                Events::DELETION_FINISHED->value,
+                Events::ASSET_UPLOAD_FINISHED->value,
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),

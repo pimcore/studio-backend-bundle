@@ -16,8 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\Asset;
+use Pimcore\Model\UserInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;
 
 /**
@@ -27,15 +34,50 @@ interface ZipServiceInterface
 {
     public const ASSETS_INDEX = 'assets';
 
-    public const ZIP_FILE_NAME = 'download-zip-{id}.zip';
+    public const DOWNLOAD_ZIP_FILE_NAME = 'download-zip-{id}.zip';
 
-    public const ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/download-zip-{id}.zip';
+    public const UPLOAD_ZIP_FILE_NAME = 'upload-zip-{id}.zip';
 
-    public function getZipArchive(int $id): ?ZipArchive;
+    public const UPLOAD_ZIP_FOLDER_NAME = 'upload-zip-{id}';
+
+    public const DOWNLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::DOWNLOAD_ZIP_FILE_NAME;
+
+    public const UPLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::UPLOAD_ZIP_FILE_NAME;
+
+    public const UPLOAD_ZIP_FOLDER_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::UPLOAD_ZIP_FOLDER_NAME;
+
+    public function getZipArchive(
+        mixed $id,
+        string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
+        bool $create = true
+    ): ?ZipArchive;
 
     public function addFile(ZipArchive $archive, Asset $asset): void;
 
+    public function getArchiveFiles(
+        ZipArchive $archive,
+        string $targetPath
+    ): array;
+
+    /**
+     * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
+     */
+    public function uploadZipAssets(
+        UserInterface $user,
+        UploadedFile $zipArchive,
+        int $parentId
+    ): int;
+
     public function generateZipFile(CreateAssetFileParameter $ids): string;
 
-    public function getTempFilePath(int $id, string $path): string;
+    /**
+     * @throws FilesystemException
+     */
+    public function cleanUpArchiveFolder(
+        string $folder
+    ): void;
+
+    public function getTempFilePath(mixed $id, string $path): string;
+
+    public function getTempFileName(mixed $id, string $fileName): string;
 }
