@@ -25,9 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Thumbnails;
 final class NameParameter extends QueryParameter
 {
     public function __construct(
-        $name = 'thumbnailName',
-        $description = 'Find asset by matching thumbnail name.',
-        $example = Thumbnails::DEFAULT_THUMBNAIL_ID->value,
+        string $name = 'thumbnailName',
+        string $description = 'Find asset by matching thumbnail name.',
+        string $example = Thumbnails::DEFAULT_THUMBNAIL_ID->value,
     ) {
         parent::__construct(
             name: $name,
