@@ -85,6 +85,7 @@ final class DeleteController extends AbstractApiController
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function deleteAsset(

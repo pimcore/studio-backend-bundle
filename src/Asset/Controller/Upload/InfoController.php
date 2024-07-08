@@ -16,19 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 
-use OpenApi\Attributes\Post;
-use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\AddAssetRequestBody;
+use OpenApi\Attributes\Get;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attributes\Parameters\Query\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\BoolJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -36,83 +31,60 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class AddController extends AbstractApiController
+final class InfoController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
-        private readonly SecurityServiceInterface $securityService,
-        private readonly UploadServiceInterface $uploadService,
         SerializerInterface $serializer,
+        private readonly UploadServiceInterface $uploadService,
+        private readonly SecurityServiceInterface $securityService
     ) {
         parent::__construct($serializer);
     }
 
     /**
      * @throws AccessDeniedException
-     * @throws DatabaseException
-     * @throws EnvironmentException
-     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
-    #[Route('/assets/add/{parentId}', name: 'pimcore_studio_api_assets_add', methods: ['POST'])]
+    #[Route('/assets/exists/{parentId}', name: 'pimcore_studio_api_get_asset', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
-    #[Post(
-        path: self::API_PATH . '/assets/add/{parentId}',
-        operationId: 'addAsset',
-        summary: 'Add a new asset.',
-        tags: [Tags::Assets->value]
-    )]
-    #[SuccessResponse(
-        description: 'Successfully uploaded new asset',
-        content: new IdJson('ID of created asset')
+    #[Get(
+        path: self::API_PATH . '/assets/exists/{parentId}',
+        operationId: 'getAssetExists',
+        description: 'Get information if asset already exists by parentId path parameter and fileName query string',
+        summary: 'Get asset info by parentId and fileName',
+        tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
-    #[AddAssetRequestBody(
-        [
-            new Property(
-                property: 'file',
-                description: 'File to upload',
-                type: 'string',
-                format: 'binary'
-            ),
-        ],
-        ['file']
+    #[NameParameter(name: 'fileName', description: 'Name of the file to upload', example: 'file.jpg')]
+    #[SuccessResponse(
+        description: 'Returns true if asset with the same name and in the same path already exists, false otherwise',
+        content: new BoolJson(name: 'exists', description: 'True if asset exists, false otherwise')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function addAsset(
-        int $parentId,
-        // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
-        Request $request
-    ): JsonResponse {
-
-        $file = $request->files->get('file');
-        if (!$file instanceof UploadedFile) {
-            throw new EnvironmentException('Invalid file found in the request');
-        }
+    public function getAssetExists(int $parentId, #[MapQueryParameter] string $fileName): JsonResponse
+    {
 
         return $this->jsonResponse(
             [
-                'id' => $this->uploadService->uploadAsset(
+                'exists' => $this->uploadService->fileExists(
                     $parentId,
-                    $file,
+                    $fileName,
                     $this->securityService->getCurrentUser()
-                ),
+                )
             ]
         );
     }

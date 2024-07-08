@@ -91,6 +91,7 @@ final class ReplaceController extends AbstractApiController
         ['file']
     )]
     #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function replaceAsset(

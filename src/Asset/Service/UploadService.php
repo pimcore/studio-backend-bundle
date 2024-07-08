@@ -22,6 +22,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
@@ -50,11 +51,30 @@ final readonly class UploadService implements UploadServiceInterface
     public function __construct(
         private AssetServiceInterface $assetService,
         private AssetResolverInterface $assetResolver,
+        private AssetServiceResolverInterface $assetServiceResolver,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private ServiceResolverInterface $serviceResolver,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
     ) {
 
+    }
+
+    /**
+     * @throws AccessDeniedException
+     * @throws NotFoundException
+     */
+    public function fileExists(
+        int $parentId,
+        string $fileName,
+        UserInterface $user
+    ): bool
+    {
+        $parent = $this->assetService->getAssetElement($user, $parentId);
+
+        return $this->assetServiceResolver->pathExists(
+            $parent->getRealFullPath() . '/' . $fileName,
+            ElementTypes::TYPE_ASSET
+        );
     }
 
     /**

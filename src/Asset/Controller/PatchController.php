@@ -60,6 +60,7 @@ final class PatchController extends AbstractApiController
     #[PatchSuccessResponseWithErrors(content: new PatchErrorJson())]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function patchAssets(#[MapRequestPayload] PatchAssetParameter $patchAssetParameter): Response
     {

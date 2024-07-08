@@ -33,6 +33,16 @@ interface UploadServiceInterface
 {
     /**
      * @throws AccessDeniedException
+     * @throws NotFoundException
+     */
+    public function fileExists(
+        int $parentId,
+        string $fileName,
+        UserInterface $user
+    ): bool;
+
+    /**
+     * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws EnvironmentException
      * @throws ForbiddenException
