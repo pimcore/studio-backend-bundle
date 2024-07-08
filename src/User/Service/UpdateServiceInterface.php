@@ -28,7 +28,10 @@ use Pimcore\Model\UserInterface;
 interface UpdateServiceInterface
 {
     /**
+     * @template T of UserInterface|UserRoleInterface
      * @throws NotFoundException
+     *
+     * @return T
      */
     public function updatePermissions(
         array $permissionsToSet,
@@ -41,7 +44,11 @@ interface UpdateServiceInterface
     public function updateRoles(array $rolesToSet, UserInterface $user): UserInterface;
 
     /**
+     * @template T of UserInterface|UserRoleInterface
+     * @param T $user
      * @throws NotFoundException
+     *
+     * @return T
      */
     public function updateClasses(
         array $classesToSet,
@@ -49,9 +56,13 @@ interface UpdateServiceInterface
     ): UserInterface|UserRoleInterface;
 
     /**
+     * @template T of UserInterface|UserRoleInterface
      * @param UserWorkspace[] $assetWorkspacesToSet
+     * @param T $user
      *
      * @throws ParseException
+     *
+     * @return T
      */
     public function updateAssetWorkspaces(
         array $assetWorkspacesToSet,
@@ -59,9 +70,12 @@ interface UpdateServiceInterface
     ): UserInterface|UserRoleInterface;
 
     /**
+     * @template T of UserInterface|UserRoleInterface
      * @param UserWorkspace[] $objectWorkspacesToSet
+     * @param T $user
      *
      * @throws ParseException
+     * @return T
      */
     public function updateDataObjectWorkspaces(
         array $objectWorkspacesToSet,
@@ -69,9 +83,12 @@ interface UpdateServiceInterface
     ): UserInterface|UserRoleInterface;
 
     /**
+     * @template T of UserInterface|UserRoleInterface
      * @param UserWorkspace[] $documentWorkspacesToSet
+     * @param T $user
      *
      * @throws ParseException
+     * @return T
      */
     public function updateDocumentWorkspaces(
         array $documentWorkspacesToSet,

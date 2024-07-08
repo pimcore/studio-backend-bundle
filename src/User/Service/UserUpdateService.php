@@ -80,7 +80,6 @@ final class UserUpdateService implements UserUpdateServiceInterface
             $this->getKeyBindingsString($updateUserParameter->getKeyBindings())
         );
 
-        /** @var UserInterface $user */
         $user = $this->updateService->updatePermissions($updateUserParameter->getPermissions(), $user);
         $user = $this->updateService->updateRoles($updateUserParameter->getRoles(), $user);
         $user = $this->updateService->updateClasses($updateUserParameter->getClasses(), $user);
@@ -101,13 +100,13 @@ final class UserUpdateService implements UserUpdateServiceInterface
      */
     public function updatePasswordById(UpdatePasswordParameter $updateParameter, int $userId): void
     {
-        $this->user = $this->userRepository->getUserById($userId);
+        $user = $this->userRepository->getUserById($userId);
 
-        if ($this->user->getName() === 'system') {
+        if ($user->getName() === 'system') {
             throw new ForbiddenException('System user password cannot be changed');
         }
 
-        if ($this->user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
+        if ($user->isAdmin() && !$this->securityService->getCurrentUser()->isAdmin()) {
             throw new ForbiddenException('Only admin can update admin user');
         }
 
@@ -120,12 +119,12 @@ final class UserUpdateService implements UserUpdateServiceInterface
         }
 
         $passwordHash = $this->authenticationResolver->getPasswordHash(
-            $this->user->getName(),
+            $user->getName(),
             $updateParameter->getPassword()
         );
 
-        $this->user->setPassword($passwordHash);
-        $this->userRepository->updateUser($this->user);
+        $user->setPassword($passwordHash);
+        $this->userRepository->updateUser($user);
     }
 
     /**
