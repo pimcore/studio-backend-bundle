@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\PatchSuccessR
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,11 +61,11 @@ final class PatchController extends AbstractApiController
     #[PatchSuccessResponseWithErrors(content: new PatchErrorJson())]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function patchAssets(#[MapRequestPayload] PatchAssetParameter $patchAssetParameter): Response
     {
-        $errors = $this->patchService->patch('asset', $patchAssetParameter->getData());
+        $errors = $this->patchService->patch(ElementTypes::TYPE_ASSET, $patchAssetParameter->getData());
 
         return $this->patchResponse($errors);
     }
