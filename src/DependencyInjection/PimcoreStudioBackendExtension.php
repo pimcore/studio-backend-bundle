@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteServi
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -75,6 +76,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(ElementDeleteServiceInterface::class);
         $definition->setArgument('$recycleBinThreshold', $config['element_recycle_bin_threshold']);
+
+        $definition = $container->getDefinition(HubServiceInterface::class);
+        $definition->setArgument('$cookieLifetime', $config['mercure_settings']['cookie_lifetime']);
     }
 
     public function prepend(ContainerBuilder $container): void
