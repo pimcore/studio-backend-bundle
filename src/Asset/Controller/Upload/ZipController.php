@@ -92,6 +92,7 @@ final class ZipController extends AbstractApiController
         [self::FILE_KEY]
     )]
     #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function addAssetsZip(
