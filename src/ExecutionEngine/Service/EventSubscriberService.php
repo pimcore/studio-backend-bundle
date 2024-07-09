@@ -36,6 +36,7 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
 
     public function handleFinishedWithErrors(
         int $jobRunId,
+        int $ownerId,
         string $jobName
     ): void {
         $messages = [];
@@ -49,6 +50,7 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
             new Finished(
                 $jobRunId,
                 $jobName,
+                $ownerId,
                 JobRunStates::FINISHED_WITH_ERRORS->value,
                 $messages
             )

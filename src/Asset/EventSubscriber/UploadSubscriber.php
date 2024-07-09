@@ -56,11 +56,13 @@ final readonly class UploadSubscriber implements EventSubscriberInterface
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
+                    $event->getJobRunOwnerId(),
                     $event->getNewState()
                 )
             ),
             JobRunStates::FINISHED_WITH_ERRORS->value => $this->eventSubscriberService->handleFinishedWithErrors(
                 $event->getJobRunId(),
+                $event->getJobRunOwnerId(),
                 $event->getJobName()
             ),
             default => null,

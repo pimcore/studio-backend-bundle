@@ -53,6 +53,7 @@ final readonly class CloneSubscriber implements EventSubscriberInterface
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
+                    $event->getJobRunOwnerId(),
                     $event->getNewState()
                 )
             );

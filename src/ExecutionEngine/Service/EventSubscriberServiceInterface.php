@@ -23,6 +23,7 @@ interface EventSubscriberServiceInterface
 {
     public function handleFinishedWithErrors(
         int $jobRunId,
+        int $ownerId,
         string $jobName
     ): void;
 }
