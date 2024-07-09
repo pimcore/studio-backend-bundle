@@ -27,9 +27,9 @@ use function array_key_exists;
  * @internal
  */
 #[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
-final readonly class ParentIdAdapter implements PatchAdapterInterface
+final readonly class LockAdapter implements PatchAdapterInterface
 {
-    private const INDEX_KEY = 'parentId';
+    private const INDEX_KEY = 'locked';
 
     public function patch(ElementInterface $element, array $data): void
     {
@@ -37,7 +37,7 @@ final readonly class ParentIdAdapter implements PatchAdapterInterface
             return;
         }
 
-        $element->setParentId($data[$this->getIndexKey()]);
+        $element->setLocked($data[$this->getIndexKey()]);
     }
 
     public function getIndexKey(): string

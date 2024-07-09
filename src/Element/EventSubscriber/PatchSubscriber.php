@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
+use Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
@@ -28,7 +28,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * @internal
  */
-final readonly class DeletionSubscriber implements EventSubscriberInterface
+final readonly class PatchSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
@@ -46,13 +46,13 @@ final readonly class DeletionSubscriber implements EventSubscriberInterface
 
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-        if ($event->getJobName() !== Jobs::DELETE_ASSETS->value) {
+        if ($event->getJobName() !== Jobs::PATCH_ELEMENTS->value) {
             return;
         }
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
-                Events::DELETION_FINISHED->value,
+                Events::PATCH_FINISHED->value,
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),

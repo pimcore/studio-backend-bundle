@@ -14,19 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Provider;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Provider;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events as AssetEvents;
+use Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\AbstractServerToClientProvider;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TaggedIteratorAdapter;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
 #[AutoconfigureTag(TaggedIteratorAdapter::TOPIC_LOADER_TAG)]
-final class AssetTopicProvider extends AbstractServerToClientProvider
+final class ElementTopicProvider extends AbstractServerToClientProvider
 {
     public function getClientSubscribableTopic(): array
     {
@@ -40,6 +39,6 @@ final class AssetTopicProvider extends AbstractServerToClientProvider
 
     private function getEvents(): array
     {
-        return array_merge(Events::values(), AssetEvents::values());
+        return Events::values();
     }
 }

@@ -10,6 +10,16 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchService
 
+  #
+  # Adapters
+  #
+
   Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\ParentIdAdapter:
+    tags : ['pimcore.studio_backend.patch_adapter']
+
+  Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\KeyAdapter:
+    tags : ['pimcore.studio_backend.patch_adapter']
+
+  Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\LockAdapter:
     tags : ['pimcore.studio_backend.patch_adapter']
 
