@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use function count;
 
 /**
  * @internal
@@ -51,8 +52,7 @@ final class PatchService implements PatchServiceInterface
         string $elementType,
         array $patchData,
         UserInterface $user,
-    ): ?int
-    {
+    ): ?int {
         if (count($patchData) > 1) {
             return $this->patchAsynchronously($elementType, $patchData, $user);
         }
@@ -70,8 +70,7 @@ final class PatchService implements PatchServiceInterface
         ElementInterface $element,
         string $elementType,
         array $elementPatchData
-    ): void
-    {
+    ): void {
         try {
             $adapters = $this->adapterLoader->loadAdapters($elementType);
             foreach ($adapters as $adapter) {
@@ -91,8 +90,7 @@ final class PatchService implements PatchServiceInterface
         string $elementType,
         array $patchData,
         UserInterface $user,
-    ): int
-    {
+    ): int {
         $job = new Job(
             name: Jobs::PATCH_ELEMENTS->value,
             steps: [

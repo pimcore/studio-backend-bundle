@@ -23,5 +23,4 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecu
  */
 final class PatchMessage extends AbstractExecutionEngineMessage
 {
-
 }

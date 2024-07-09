@@ -27,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
