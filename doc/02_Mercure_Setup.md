@@ -29,6 +29,16 @@ pimcore_studio_backend:
         hub_url_server: 'http://mercure/.well-known/mercure'
 ```
 You need to configure the full URL including protocol, port and path to Mercure here.
+Additionally, you can configure the cookie lifetime for the JWT token in seconds. The default value is 3600 seconds.
+
+```yaml
+pimcore_studio_backend:
+    mercure_settings:
+      cookie_lifetime: 3600
+```
+
+
+```yaml
 
 ## Example Configuration with docker compose
 Following there are configuration snippets for a setup with docker compose.
