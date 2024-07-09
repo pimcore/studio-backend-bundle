@@ -49,7 +49,6 @@ final readonly class UploadSubscriber implements EventSubscriberInterface
         if ($event->getJobName() !==  Jobs::UPLOAD_ASSETS->value) {
             return;
         }
-        $ownerId = $event->getJobRunOwnerId();
 
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
@@ -57,13 +56,13 @@ final readonly class UploadSubscriber implements EventSubscriberInterface
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
-                    $ownerId,
+                    $event->getJobRunOwnerId(),
                     $event->getNewState()
                 )
             ),
             JobRunStates::FINISHED_WITH_ERRORS->value => $this->eventSubscriberService->handleFinishedWithErrors(
                 $event->getJobRunId(),
-                $ownerId,
+                $event->getJobRunOwnerId(),
                 $event->getJobName()
             ),
             default => null,
