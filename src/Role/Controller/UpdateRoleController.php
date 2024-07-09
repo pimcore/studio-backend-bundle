@@ -14,25 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Role\Controller;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUser;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\UpdateRoleParameter;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UpdateRole;
+use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
@@ -45,45 +42,43 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class UpdateUserController extends AbstractApiController
+final class UpdateRoleController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly UserUpdateServiceInterface $userUpdateService,
-        private readonly UserServiceInterface $userService
+        private readonly RoleServiceInterface $roleService
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws NotFoundException|DatabaseException|ForbiddenException|ParseException
+     * @throws NotFoundException|DatabaseException
      */
-    #[Route('/user/{id}', name: 'pimcore_studio_api_user_update', methods: ['PUT'])]
+    #[Route('/role/{id}', name: 'pimcore_studio_api_role_update', methods: ['PUT'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Put(
-        path: self::API_PATH . '/user/{id}',
-        operationId: 'updateUserById',
-        summary: 'Update user by id.',
-        tags: [Tags::User->value]
+        path: self::API_PATH . '/role/{id}',
+        operationId: 'updateRoleById',
+        summary: 'Update role by id.',
+        tags: [Tags::Role->value]
     )]
-    #[IdParameter(type: 'User')]
+    #[IdParameter(type: 'Role')]
     #[SuccessResponse(
         description: 'Updated data.',
-        content: new JsonContent(ref: UserSchema::class)
+        content: new JsonContent(ref: DetailedRole::class)
     )]
     #[RequestBody(
-        content: new JsonContent(ref: UpdateUser::class)
+        content: new JsonContent(ref: UpdateRole::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::FORBIDDEN,
     ])]
-    public function updateUsers(int $id, #[MapRequestPayload] UpdateUserParameter $userUpdate): JsonResponse
+    public function updateRoleById(int $id, #[MapRequestPayload] UpdateRoleParameter $roleUpdate): JsonResponse
     {
-        $this->userUpdateService->updateUserById($userUpdate, $id);
+        $this->roleService->updateRoleById($id, $roleUpdate);
 
-        return $this->jsonResponse($this->userService->getUserById($id));
+        return $this->jsonResponse($this->roleService->getRoleById($id));
     }
 }

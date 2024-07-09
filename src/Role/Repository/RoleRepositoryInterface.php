@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Role;
 use Pimcore\Model\User\Role\Listing;
+use Pimcore\Model\User\UserRoleInterface;
 
 /**
  * @internal
@@ -54,4 +55,9 @@ interface RoleRepositoryInterface
      * @throws Exception
      */
     public function createRole(string $roleName, int $folderId): Role;
+
+    /**
+     * @throws DatabaseException
+     */
+    public function updateRole(UserRoleInterface $role): void;
 }

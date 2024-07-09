@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Role\MappedParameter\UpdateRoleParameter;
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 
@@ -53,4 +54,9 @@ interface RoleServiceInterface
      * @throws NotFoundException
      */
     public function getRoleById(int $roleId): DetailedRole;
+
+    /**
+     * @throws NotFoundException|DatabaseException
+     */
+    public function updateRoleById(int $roleId, UpdateRoleParameter $updateRoleParameter): void;
 }

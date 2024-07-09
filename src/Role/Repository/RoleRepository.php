@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Role;
 use Pimcore\Model\User\Role\Listing;
+use Pimcore\Model\User\UserRoleInterface;
 
 /**
  * @internal
@@ -97,5 +98,23 @@ final class RoleRepository implements RoleRepositoryInterface
             'parentId' => $folderId,
             'name' => $roleName,
         ]);
+    }
+
+    /**
+     * @throws DatabaseException
+     */
+    public function updateRole(UserRoleInterface $role): void
+    {
+        try {
+            $role->save();
+        } catch (Exception $exception) {
+            throw new DatabaseException(
+                sprintf(
+                    'Error updating role with id %d: %s',
+                    $role->getId(),
+                    $exception->getMessage()
+                )
+            );
+        }
     }
 }
