@@ -11,7 +11,8 @@ services:
         public: true
         tags: [ 'controller.service_arguments' ]
 
-    Pimcore\Bundle\StudioBackendBundle\Mercure\Controller\JwtController:
+    Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface:
+        class: Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubService
         arguments:
             Symfony\Component\Mercure\HubInterface: '@mercure.hub.studio_client'
 

@@ -160,6 +160,10 @@ class Configuration implements ConfigurationInterface
                         ->info('The key used to sign the JWT token')
                         ->defaultNull()
                     ->end()
+                     ->integerNode('cookie_lifetime')
+                        ->info('Lifetime of the mercure cookie in seconds. Default is one hour.')
+                        ->defaultValue(3600)
+                    ->end()
                 ->end()
             ->end();
     }

@@ -18,12 +18,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -32,8 +31,10 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class JwtController extends AbstractApiController
 {
-    public function __construct(private readonly HubInterface $clientHub, SerializerInterface $serializer)
-    {
+    public function __construct(
+        private readonly HubServiceInterface $hubService,
+        SerializerInterface $serializer
+    ) {
         parent::__construct($serializer);
     }
 
@@ -52,24 +53,9 @@ final class JwtController extends AbstractApiController
     {
         $res = new Response();
         $res->headers->setCookie(
-            $this->createCookie(0)
+            $this->hubService->createCookie()
         );
 
         return $res;
-    }
-
-    private function createCookie(int $lifetime): Cookie
-    {
-        $urlParts = parse_url($this->clientHub->getPublicUrl());
-
-        return Cookie::create(
-            'mercureAuthorization',
-            $this->clientHub->getProvider()->getJwt(),
-            $lifetime,
-            $urlParts['path'] ?? '/',
-            $urlParts['host'] ?? '',
-            $urlParts['scheme'] === 'https',
-            true
-        );
     }
 }
