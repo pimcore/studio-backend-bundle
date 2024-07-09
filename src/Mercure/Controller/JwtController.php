@@ -34,8 +34,7 @@ final class JwtController extends AbstractApiController
     public function __construct(
         private readonly HubServiceInterface $hubService,
         SerializerInterface $serializer
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 

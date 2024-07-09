@@ -28,13 +28,13 @@ final readonly class HubService implements HubServiceInterface
     public function __construct(
         private HubInterface $clientHub,
         private int $cookieLifetime = 3600
-    )
-    {
+    ) {
     }
 
     public function createCookie(): Cookie
     {
         $urlParts = parse_url($this->clientHub->getPublicUrl());
+
         return new Cookie(
             Mercure::AUTHORIZATION_COOKIE_NAME->value,
             $this->clientHub->getProvider()->getJwt(),

@@ -25,6 +25,5 @@ enum Mercure: string
     case URL_PATH = 'path';
     case URL_HOST = 'host';
     case URL_SCHEME = 'scheme';
-
     case URL_SCHEME_HTTPS = 'https';
 }
