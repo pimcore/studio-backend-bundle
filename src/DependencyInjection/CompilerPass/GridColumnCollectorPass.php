@@ -18,8 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnDefinitionLoader;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnCollectorLoader;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\MustImplementInterfaceTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;

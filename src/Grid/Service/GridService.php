@@ -161,7 +161,6 @@ final class GridService implements GridServiceInterface
             GridColumnDefinitionEvent::EVENT_NAME
         );*/
 
-
         //TODO: Add metadata columns
         /*$meta = new \Pimcore\Model\Metadata\Predefined\Listing();
 
@@ -185,7 +184,6 @@ final class GridService implements GridServiceInterface
 
             $columns[] = $column;
         }*/
-
 
         return new Configuration($columns);
     }
