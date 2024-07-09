@@ -20,12 +20,18 @@ use OpenApi\Attributes\Patch;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\PatchAssetRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\PatchErrorJson;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\PatchSuccessResponseWithErrors;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,10 +48,14 @@ final class PatchController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly PatchServiceInterface $patchService,
+        private readonly SecurityServiceInterface $securityService
     ) {
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws AccessDeniedException|ElementSavingFailedException|NotFoundException|UserNotFoundException
+     */
     #[Route('/assets', name: 'pimcore_studio_api_patch_asset', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Patch(
@@ -56,15 +66,33 @@ final class PatchController extends AbstractApiController
         tags: [Tags::Assets->name]
     )]
     #[PatchAssetRequestBody]
-    #[SuccessResponse]
-    #[PatchSuccessResponseWithErrors(content: new PatchErrorJson())]
+    #[SuccessResponse(
+        description: 'Successfully patched asset',
+    )]
+    #[CreatedResponse(
+        description: 'Successfully created jobRun for patching multiple assets',
+        content: new IdJson('ID of created jobRun')
+    )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function patchAssets(#[MapRequestPayload] PatchAssetParameter $patchAssetParameter): Response
     {
-        $errors = $this->patchService->patch('asset', $patchAssetParameter->getData());
+        $status = HttpResponseCodes::SUCCESS->value;
+        $data = null;
+        $jobRunId = $this->patchService->patch(
+            ElementTypes::TYPE_ASSET,
+            $patchAssetParameter->getData(),
+            $this->securityService->getCurrentUser()
+        );
 
-        return $this->patchResponse($errors);
+        if ($jobRunId) {
+            $status = HttpResponseCodes::CREATED->value;
+
+            return $this->jsonResponse(['id' => $jobRunId], $status);
+        }
+
+        return new Response($data, $status);
     }
 }

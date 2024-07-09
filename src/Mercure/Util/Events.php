@@ -22,4 +22,6 @@ enum Events: string
     use EnumToValueArrayTrait;
 
     case HANDLER_PROGRESS = 'handler-progress';
+    case FINISHED_WITH_ERRORS = 'job-finished-with-errors';
+    case FAILED = 'job-failed';
 }

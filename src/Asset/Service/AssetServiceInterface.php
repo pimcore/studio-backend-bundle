@@ -66,4 +66,6 @@ interface AssetServiceInterface
         UserInterface $user,
         string $path,
     ): AssetModel;
+
+    public function getUniqueAssetName(string $targetPath, string $filename): string;
 }

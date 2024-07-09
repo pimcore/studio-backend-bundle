@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUser;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -50,7 +51,8 @@ final class UpdateUserController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly UserUpdateServiceInterface $userUpdateService
+        private readonly UserUpdateServiceInterface $userUpdateService,
+        private readonly UserServiceInterface $userService
     ) {
         parent::__construct($serializer);
     }
@@ -80,8 +82,8 @@ final class UpdateUserController extends AbstractApiController
     ])]
     public function updateUsers(int $id, #[MapRequestPayload] UpdateUserParameter $userUpdate): JsonResponse
     {
-        return $this->jsonResponse(
-            $this->userUpdateService->updateUserById($userUpdate, $id)
-        );
+        $this->userUpdateService->updateUserById($userUpdate, $id);
+
+        return $this->jsonResponse($this->userService->getUserById($id));
     }
 }

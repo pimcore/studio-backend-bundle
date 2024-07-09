@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 
 use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\AddAssetRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -78,8 +79,19 @@ final class ReplaceController extends AbstractApiController
         description: 'Successfully replaced asset binary',
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
-    #[AddAssetRequestBody]
+    #[AddAssetRequestBody(
+        [
+            new Property(
+                property: 'file',
+                description: 'File to upload',
+                type: 'string',
+                format: 'binary'
+            ),
+        ],
+        ['file']
+    )]
     #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function replaceAsset(

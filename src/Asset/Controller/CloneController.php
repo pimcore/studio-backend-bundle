@@ -78,6 +78,7 @@ final class CloneController extends AbstractApiController
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
     #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function cloneElement(

@@ -49,10 +49,11 @@ final readonly class CloneSubscriber implements EventSubscriberInterface
             $event->getJobName() === Jobs::CLONE_ASSETS->value
         ) {
             $this->publishService->publish(
-                Events::DELETION_FINISHED->value,
+                Events::CLONING_FINISHED->value,
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
+                    $event->getJobRunOwnerId(),
                     $event->getNewState()
                 )
             );

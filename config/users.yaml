@@ -23,6 +23,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateService
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserFolderService
 
@@ -50,6 +53,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\User\Hydrator\WorkspaceHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\WorkspaceHydrator
 
   #
   # Repositories

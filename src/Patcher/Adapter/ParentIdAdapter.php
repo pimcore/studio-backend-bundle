@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -25,7 +26,7 @@ use function array_key_exists;
 /**
  * @internal
  */
-#[AutoconfigureTag('pimcore.studio_backend.patch_adapter')]
+#[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
 final readonly class ParentIdAdapter implements PatchAdapterInterface
 {
     private const INDEX_KEY = 'parentId';

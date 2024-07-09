@@ -17,18 +17,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Role\Event;
 
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Bundle\StudioBackendBundle\Role\Schema\UserRole;
+use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
 
-final class RoleEvent extends AbstractPreResponseEvent
+final class DetailedRoleEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.user_role';
+    public const EVENT_NAME = 'pre_response.user_detailed_role';
 
-    public function __construct(private readonly UserRole $role)
+    public function __construct(private readonly DetailedRole $role)
     {
         parent::__construct($role);
     }
 
-    public function getUserRole(): UserRole
+    public function getUserRole(): DetailedRole
     {
         return $this->role;
     }

@@ -60,7 +60,7 @@ final class GetUserController extends AbstractApiController
         summary: 'Get user by id.',
         tags: [Tags::User->value]
     )]
-    #[IdParameter]
+    #[IdParameter(type: 'user')]
     #[SuccessResponse(
         description: 'User data.',
         content: new JsonContent(ref: UserSchema::class)

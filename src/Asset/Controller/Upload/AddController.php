@@ -17,12 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 
 use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\AddAssetRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -80,8 +80,19 @@ final class AddController extends AbstractApiController
         content: new IdJson('ID of created asset')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
-    #[AddAssetRequestBody]
+    #[AddAssetRequestBody(
+        [
+            new Property(
+                property: 'file',
+                description: 'File to upload',
+                type: 'string',
+                format: 'binary'
+            ),
+        ],
+        ['file']
+    )]
     #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function addAsset(
@@ -92,10 +103,10 @@ final class AddController extends AbstractApiController
 
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
-            throw new ElementStreamResourceNotFoundException(0, 'File');
+            throw new EnvironmentException('Invalid file found in the request');
         }
 
-        return new JsonResponse(
+        return $this->jsonResponse(
             [
                 'id' => $this->uploadService->uploadAsset(
                     $parentId,

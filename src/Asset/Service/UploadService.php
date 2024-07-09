@@ -18,16 +18,26 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset\Folder;
+use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -41,10 +51,29 @@ final readonly class UploadService implements UploadServiceInterface
     public function __construct(
         private AssetServiceInterface $assetService,
         private AssetResolverInterface $assetResolver,
+        private AssetServiceResolverInterface $assetServiceResolver,
+        private JobExecutionAgentInterface $jobExecutionAgent,
         private ServiceResolverInterface $serviceResolver,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
     ) {
 
+    }
+
+    /**
+     * @throws AccessDeniedException
+     * @throws NotFoundException
+     */
+    public function fileExists(
+        int $parentId,
+        string $fileName,
+        UserInterface $user
+    ): bool {
+        $parent = $this->assetService->getAssetElement($user, $parentId);
+
+        return $this->assetServiceResolver->pathExists(
+            $parent->getRealFullPath() . '/' . $fileName,
+            ElementTypes::TYPE_ASSET
+        );
     }
 
     /**
@@ -59,9 +88,10 @@ final readonly class UploadService implements UploadServiceInterface
         UploadedFile $file,
         UserInterface $user
     ): int {
-        $this->validateParent($user, $parentId);
+        $parent = $this->validateParent($user, $parentId);
         $sourcePath = $this->getValidSourcePath($file);
         $fileName = $this->getValidFileName($file);
+        $uniqueName = $this->assetService->getUniqueAssetName($parent->getRealPath(), $fileName);
         $userId = $user->getId();
 
         try {
@@ -69,7 +99,7 @@ final readonly class UploadService implements UploadServiceInterface
             $asset = $this->assetResolver->create(
                 $parentId,
                 [
-                    'filename' => $fileName,
+                    'filename' => $uniqueName,
                     'sourcePath' => $sourcePath,
                     'userOwner' => $userId,
                     'userModification' => $userId,
@@ -82,6 +112,43 @@ final readonly class UploadService implements UploadServiceInterface
         }
 
         return $asset->getId();
+    }
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function uploadAssetsAsynchronously(
+        UserInterface $user,
+        array $files,
+        int $parentId,
+        string $folderName,
+    ): int {
+        $job = new Job(
+            name: Jobs::UPLOAD_ASSETS->value,
+            steps: [
+                new JobStep(JobSteps::ASSET_UPLOADING->value, AssetUploadMessage::class, '', []),
+            ],
+            selectedElements: array_map(static function ($file, $index) {
+                try {
+                    $fileData = json_encode($file, JSON_THROW_ON_ERROR);
+
+                    return new ElementDescriptor($fileData, $index);
+                } catch (Exception $e) {
+                    throw new EnvironmentException($e->getMessage());
+                }
+            }, $files, array_keys($files)),
+            environmentData: [
+                EnvironmentVariables::PARENT_ID->value => $parentId,
+                EnvironmentVariables::UPLOAD_FOLDER_NAME->value => $folderName,
+            ]
+        );
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $user->getId(),
+            Config::CONTEXT_CONTINUE_ON_ERROR->value
+        );
+
+        return $jobRun->getId();
     }
 
     /**
@@ -129,7 +196,7 @@ final readonly class UploadService implements UploadServiceInterface
     /**
      * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
      */
-    private function validateParent(UserInterface $user, int $parentId): void
+    public function validateParent(UserInterface $user, int $parentId): ElementInterface
     {
         $parent = $this->assetService->getAssetElement($user, $parentId);
         if (!$parent->isAllowed(ElementPermissions::CREATE_PERMISSION)) {
@@ -144,6 +211,18 @@ final readonly class UploadService implements UploadServiceInterface
         if (!$parent instanceof Folder) {
             throw new EnvironmentException('Invalid parent type: ' . $parent->getType());
         }
+
+        return $parent;
+    }
+
+    public function sanitizeFileToUpload(string $fileName): ?string
+    {
+        if (str_starts_with($fileName, '__MACOSX/') ||
+            str_ends_with($fileName, '/Thumbs.db')) {
+            return null;
+        }
+
+        return $fileName;
     }
 
     /**
