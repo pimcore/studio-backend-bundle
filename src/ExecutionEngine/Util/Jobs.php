@@ -23,4 +23,5 @@ enum Jobs: string
     case UPLOAD_ASSETS = 'studio_ee_job_upload_assets';
     case ZIP_FILE_UPLOAD = 'studio_ee_job_upload_zip_file';
     case CREATE_CSV = 'studio_ee_job_create_csv';
+    case PATCH_ELEMENTS = 'studio_ee_job_patch_elements';
 }

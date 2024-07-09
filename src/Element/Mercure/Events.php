@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -13,15 +14,15 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Mercure;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
 
+/**
+ * @internal
+ */
 enum Events: string
 {
     use EnumToValueArrayTrait;
-
-    case HANDLER_PROGRESS = 'handler-progress';
-    case FINISHED_WITH_ERRORS = 'job-finished-with-errors';
-    case FAILED = 'job-failed';
+    case PATCH_FINISHED = 'patch-finished';
 }

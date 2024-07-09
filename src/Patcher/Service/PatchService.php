@@ -17,50 +17,103 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Model\Element\ElementDescriptor;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
 final class PatchService implements PatchServiceInterface
 {
-    use ElementProviderTrait;
-
     public function __construct(
         private readonly AdapterLoaderInterface $adapterLoader,
-        private readonly ServiceResolver $serviceResolver
+        private readonly ElementServiceInterface $elementService,
+        private readonly JobExecutionAgentInterface $jobExecutionAgent,
     ) {
     }
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws AccessDeniedException|ElementSavingFailedException|NotFoundException
      */
-    public function patch(string $elementType, array $patchData): array
+    public function patch(
+        string $elementType,
+        array $patchData,
+        UserInterface $user,
+    ): ?int
     {
-        $adapters = $this->adapterLoader->loadAdapters($elementType);
-
-        $error = [];
-
-        foreach ($patchData as $data) {
-            try {
-                $element  = $this->getElement($this->serviceResolver, $elementType, $data['id']);
-                foreach ($adapters as $adapter) {
-                    $adapter->patch($element, $data);
-                }
-
-                $element->save();
-
-            } catch (Exception $exception) {
-                $error[] = [
-                    'id' => $data['id'],
-                    'message' => $exception->getMessage(),
-                ];
-            }
+        if (count($patchData) > 1) {
+            return $this->patchAsynchronously($elementType, $patchData, $user);
         }
 
-        return $error;
+        $element = $this->elementService->getAllowedElementById($elementType, $patchData[0]['id'], $user);
+        $this->patchElement($element, $elementType, $patchData[0]);
+
+        return null;
+    }
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function patchElement(
+        ElementInterface $element,
+        string $elementType,
+        array $elementPatchData
+    ): void
+    {
+        try {
+            $adapters = $this->adapterLoader->loadAdapters($elementType);
+            foreach ($adapters as $adapter) {
+                $adapter->patch($element, $elementPatchData);
+            }
+
+            $element->save();
+        } catch (Exception $exception) {
+            throw new ElementSavingFailedException(
+                $element->getId(),
+                $exception->getMessage()
+            );
+        }
+    }
+
+    private function patchAsynchronously(
+        string $elementType,
+        array $patchData,
+        UserInterface $user,
+    ): int
+    {
+        $job = new Job(
+            name: Jobs::PATCH_ELEMENTS->value,
+            steps: [
+                new JobStep(JobSteps::ELEMENT_PATCHING->value, PatchMessage::class, '', []),
+            ],
+            selectedElements: array_map(
+                static fn (array $data) => new ElementDescriptor(
+                    $elementType,
+                    $data['id']
+                ),
+                $patchData
+            ),
+            environmentData: array_column($patchData, null, 'id'),
+        );
+
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $user->getId(),
+            Config::CONTEXT_CONTINUE_ON_ERROR->value
+        );
+
+        return $jobRun->getId();
     }
 }

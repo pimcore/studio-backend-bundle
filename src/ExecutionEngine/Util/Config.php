@@ -33,4 +33,6 @@ enum Config: string
     case FILE_NOT_FOUND_FOR_JOB_RUN = 'studio_ee_file_not_found_for_job_run';
     case NO_ASSETS_FOUND_FOR_JOB_RUN = 'studio_ee_no_assets_found_for_job_run';
     case ASSET_UPLOAD_FAILED_MESSAGE = 'studio_ee_asset_upload_failed';
+    case ELEMENT_PATCH_FAILED_MESSAGE = 'studio_ee_element_patch_failed';
+    case NO_ELEMENT_DATA_FOUND = 'studio_ee_no_element_data_found';
 }

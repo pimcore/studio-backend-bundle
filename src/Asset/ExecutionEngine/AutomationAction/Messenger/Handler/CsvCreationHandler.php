@@ -68,12 +68,7 @@ final class CsvCreationHandler extends AbstractHandler
         );
 
         if ($validatedParameters instanceof AbortActionData) {
-            $this->abortAction(
-                $validatedParameters->getTranslationKey(),
-                $validatedParameters->getTranslationParameters(),
-                TranslatorService::DOMAIN,
-                $validatedParameters->getExceptionClassName()
-            );
+            $this->abort($validatedParameters);
         }
 
         $context = $jobRun->getContext();
