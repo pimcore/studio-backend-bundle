@@ -56,7 +56,7 @@ final class InfoController extends AbstractApiController
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
-    #[Route('/assets/exists/{parentId}', name: 'pimcore_studio_api_get_asset', methods: ['GET'])]
+    #[Route('/assets/exists/{parentId}', name: 'pimcore_studio_api_asset_upload_info', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/exists/{parentId}',
