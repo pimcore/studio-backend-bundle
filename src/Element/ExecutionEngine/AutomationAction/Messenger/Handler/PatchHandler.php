@@ -87,7 +87,7 @@ final class PatchHandler extends AbstractHandler
             $this->patchService->patchElement($element, $elementType, $jobEnvironmentData[$elementId]);
         } catch (Exception $exception) {
             $this->abort($this->getAbortData(
-                Config::ELEMENT_DELETE_FAILED_MESSAGE->value,
+                Config::ELEMENT_PATCH_FAILED_MESSAGE->value,
                 [
                     'type' => $elementType,
                     'id' => $elementId,

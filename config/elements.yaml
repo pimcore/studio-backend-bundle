@@ -29,6 +29,12 @@ services:
 
 
   #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\PatchSubscriber: ~
+
+  #
   # Mercure SSE
   #
 
