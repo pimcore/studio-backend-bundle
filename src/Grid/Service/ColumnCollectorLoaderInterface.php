@@ -14,27 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 
 /**
  * @internal
  */
-final readonly class IntegerDefinition implements ColumnDefinitionInterface
+interface ColumnCollectorLoaderInterface
 {
-    public function getType(): string
-    {
-        return 'integer';
-    }
-
-    public function getConfig(): array
-    {
-        return  [];
-    }
-
-    public function isSortable(): bool
-    {
-        return true;
-    }
+    /**
+     * @return array<string, ColumnCollectorInterface>
+     */
+    public function loadColumnCollectors(): array;
 }

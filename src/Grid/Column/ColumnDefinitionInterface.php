@@ -20,7 +20,7 @@ interface ColumnDefinitionInterface
 {
     public function getType(): string;
 
-    public function getConfig(): array;
+    public function getConfig(mixed $config): array;
 
     public function isSortable(): bool;
 }

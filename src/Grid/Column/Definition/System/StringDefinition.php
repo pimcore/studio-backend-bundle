@@ -14,27 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 
 /**
  * @internal
  */
-final readonly class ImageDefinition implements ColumnDefinitionInterface
+final readonly class StringDefinition implements ColumnDefinitionInterface
 {
     public function getType(): string
     {
-        return 'image';
+        return 'system.string';
     }
 
-    public function getConfig(): array
+    public function getConfig(mixed $config): array
     {
         return  [];
     }
 
     public function isSortable(): bool
     {
-        return false;
+        return true;
     }
 }

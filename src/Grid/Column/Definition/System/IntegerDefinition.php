@@ -14,21 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 
 /**
  * @internal
  */
-final readonly class FileSizeDefinition implements ColumnDefinitionInterface
+final readonly class IntegerDefinition implements ColumnDefinitionInterface
 {
     public function getType(): string
     {
-        return 'fileSize';
+        return 'system.integer';
     }
 
-    public function getConfig(): array
+    public function getConfig(mixed $config): array
     {
         return  [];
     }

@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
@@ -28,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\Element\ElementInterface;
@@ -52,9 +54,15 @@ final class GridService implements GridServiceInterface
      */
     private array $columnResolvers = [];
 
+    /**
+     * @param array<string, ColumnCollectorInterface> $columnCollectors
+     */
+    private array $columnCollectors = [];
+
     public function __construct(
         private readonly ColumnDefinitionLoaderInterface $columnDefinitionLoader,
         private readonly ColumnResolverLoaderInterface $columnResolverLoader,
+        private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
         private readonly SystemColumnServiceInterface $systemColumnService,
         private readonly GridSearchInterface $gridSearch,
         private readonly ServiceResolverInterface $serviceResolver,
@@ -135,30 +143,49 @@ final class GridService implements GridServiceInterface
 
     public function getAssetGridConfiguration(): Configuration
     {
-        $systemColumns = $this->systemColumnService->getSystemColumnsForAssets();
         $columns = [];
-        foreach ($systemColumns as $columnKey => $type) {
+        foreach ($this->getColumnCollectors() as $collector) {
+            // Only collect supported asset collectors
+            if (!in_array(ElementTypes::TYPE_ASSET, $collector->supportedElementTypes(), true)) {
+                continue;
+            }
+
+            $columns = array_merge($columns, $collector->getColumnDefinitions(
+                $this->getColumnDefinitions()
+            ));
+        }
+
+        //TODO: Fire event for all columns
+        /*$this->eventDispatcher->dispatch(
+            new GridColumnDefinitionEvent($column),
+            GridColumnDefinitionEvent::EVENT_NAME
+        );*/
+
+
+        //TODO: Add metadata columns
+        /*$meta = new \Pimcore\Model\Metadata\Predefined\Listing();
+
+        $list = $meta->load();
+
+        foreach ($list as $item) {
+            $type = $item->getType();
             if (!array_key_exists($type, $this->getColumnDefinitions())) {
                 continue;
             }
             $column = new Column(
-                key: $columnKey,
-                group: 'system',
+                key: $item->getName(),
+                group: 'metadata',
                 sortable: $this->getColumnDefinitions()[$type]->isSortable(),
                 editable: false,
                 localizable: false,
                 locale: null,
                 type: $type,
-                config: $this->getColumnDefinitions()[$type]->getConfig()
-            );
-
-            $this->eventDispatcher->dispatch(
-                new GridColumnDefinitionEvent($column),
-                GridColumnDefinitionEvent::EVENT_NAME
+                config: $this->getColumnDefinitions()[$type]->getConfig($item->getConfig())
             );
 
             $columns[] = $column;
-        }
+        }*/
+
 
         return new Configuration($columns);
     }
@@ -227,6 +254,20 @@ final class GridService implements GridServiceInterface
         $this->columnDefinitions = $this->columnDefinitionLoader->loadColumnDefinitions();
 
         return $this->columnDefinitions;
+    }
+
+    /**
+     * @return array<string, ColumnCollectorInterface>
+     */
+    private function getColumnCollectors(): array
+    {
+        if ($this->columnCollectors) {
+            return $this->columnCollectors;
+        }
+
+        $this->columnCollectors = $this->columnCollectorLoader->loadColumnCollectors();
+
+        return $this->columnCollectors;
     }
 
     private function getColumnResolvers(): array

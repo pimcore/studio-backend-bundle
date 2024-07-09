@@ -14,27 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 
-/**
- * @internal
- */
-final readonly class StringDefinition implements ColumnDefinitionInterface
+interface ColumnCollectorInterface
 {
-    public function getType(): string
-    {
-        return 'string';
-    }
+    public function getCollectorName(): string;
 
-    public function getConfig(): array
-    {
-        return  [];
-    }
+    /**
+     * @param ColumnDefinitionInterface[] $availableColumnDefinitions
+     *
+     * @return Column[]
+     */
+    public function getColumnDefinitions(array $availableColumnDefinitions): array;
 
-    public function isSortable(): bool
-    {
-        return true;
-    }
+    public function supportedElementTypes(): array;
 }
