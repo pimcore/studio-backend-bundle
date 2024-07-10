@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Email\Event\BlocklistEntryEvent;
+use Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse\BlocklistEntryEvent;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\BlocklistEntry;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;

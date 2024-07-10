@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Email\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse;
 
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\BlocklistEntry;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
