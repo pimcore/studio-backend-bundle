@@ -21,6 +21,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Email\Util\Constants\TestEmailContentType;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use function in_array;
 
 #[Schema(
     title: 'TestEmailRequest',
@@ -42,7 +43,7 @@ final readonly class TestEmailRequest
             enum: [
                 TestEmailContentType::DOCUMENT->value,
                 TestEmailContentType::HTML->value,
-                TestEmailContentType::TEXT->value
+                TestEmailContentType::TEXT->value,
             ],
             example: TestEmailContentType::TEXT->value
         )]
@@ -119,7 +120,7 @@ final readonly class TestEmailRequest
             !in_array($this->contentType, [
                 TestEmailContentType::DOCUMENT->value,
                 TestEmailContentType::HTML->value,
-                TestEmailContentType::TEXT->value
+                TestEmailContentType::TEXT->value,
             ], true) =>
             throw new EnvironmentException('Invalid content type'),
             default => null

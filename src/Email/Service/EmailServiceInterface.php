@@ -35,5 +35,4 @@ interface EmailServiceInterface
      * @throws NotFoundException
      */
     public function sendTestEmail(TestEmailRequest $parameters, UserInterface $user): void;
-
 }
