@@ -73,8 +73,7 @@ final class UpdateController extends AbstractApiController
     public function updateVersion(
         int $id,
         #[MapRequestPayload] UpdateVersionParameter $parameters
-    ): Response
-    {
+    ): Response {
         $version = $this->repository->getVersionById($id);
 
         $this->securityService->hasElementPermission(

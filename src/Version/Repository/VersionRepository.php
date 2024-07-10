@@ -129,8 +129,7 @@ final readonly class VersionRepository implements VersionRepositoryInterface
     public function updateVersion(
         Version $version,
         UpdateVersionParameter $parameter
-    ): void
-    {
+    ): void {
         if ($parameter->getNote() !== null) {
             $version->setNote($parameter->getNote());
         }
