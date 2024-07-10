@@ -17,3 +17,10 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Email\Repository\BlocklistRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Email\Repository\BlocklistRepository
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailService
