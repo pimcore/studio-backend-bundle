@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property\BlocklistCollection;
 use Pimcore\Bundle\StudioBackendBundle\Email\Repository\BlocklistRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
@@ -83,8 +82,7 @@ final class CollectionController extends AbstractApiController
     public function getBlocklistEntries(
         #[MapQueryString] CollectionParameters $parameters,
         #[MapQueryParameter] ?string $email = null
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $collection = $this->blocklistRepository->listEntries($parameters, $email);
 
         return $this->getPaginatedCollection(

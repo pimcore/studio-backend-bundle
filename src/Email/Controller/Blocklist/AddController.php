@@ -63,7 +63,7 @@ final class AddController extends AbstractApiController
         description: 'Successfully added a new blocklist entry',
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function addBlocklistEntry(
         #[MapRequestPayload] BlocklistEntryRequest $request

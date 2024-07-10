@@ -35,9 +35,8 @@ final readonly class BlocklistRepository implements BlocklistRepositoryInterface
 {
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
-    )
-    {
-        
+    ) {
+
     }
 
     /**
@@ -55,8 +54,7 @@ final readonly class BlocklistRepository implements BlocklistRepositoryInterface
     public function listEntries(
         CollectionParameters $parameters,
         string $email = null,
-    ): Collection
-    {
+    ): Collection {
         $list = [];
         $listing = $this->getListing($parameters, $email);
         foreach ($listing as $listEntry) {
@@ -135,8 +133,7 @@ final readonly class BlocklistRepository implements BlocklistRepositoryInterface
     private function getListing(
         CollectionParameters $parameters,
         string $email = null,
-    ): Listing
-    {
+    ): Listing {
         $limit = $parameters->getPageSize();
         $listing = new Listing();
         $listing->setLimit($limit);
