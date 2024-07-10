@@ -16,13 +16,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Repository;
 
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Version\VersionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\UpdateVersionParameter;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
@@ -118,6 +121,32 @@ final readonly class VersionRepository implements VersionRepositoryInterface
         }
 
         return $version;
+    }
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function updateVersion(
+        Version $version,
+        UpdateVersionParameter $parameter
+    ): void
+    {
+        if ($parameter->getNote() !== null) {
+            $version->setNote($parameter->getNote());
+        }
+
+        if ($parameter->isPublic() !== null) {
+            $version->setPublic($parameter->isPublic());
+        }
+
+        try {
+            $version->save();
+        } catch (Exception $exception) {
+            throw new ElementSavingFailedException(
+                $version->getId(),
+                $exception->getMessage()
+            );
+        }
     }
 
     public function cleanupVersions(
