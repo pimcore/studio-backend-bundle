@@ -99,31 +99,45 @@ trait StreamedResponseTrait
         );
     }
 
-    protected function getFileStreamedResponse(string $path, string $mimeType, string $filename): StreamedResponse
+    /**
+     * @throws StreamResourceNotFoundException
+     */
+    protected function getFileStreamedResponse(
+        string $path,
+        string $mimeType,
+        string $filename,
+        FilesystemOperator $storage,
+    ): StreamedResponse
     {
-        $stream = fopen($path, 'rb');
+        try {
+            $stream = $storage->readStream($path);
 
-        if (!$stream) {
-            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $path));
+            $response = new StreamedResponse(
+                function () use ($stream) {
+                    fpassthru($stream);
+                },
+                HttpResponseCodes::SUCCESS->value,
+                $this->getResponseHeaders(
+                    mimeType: $mimeType,
+                    fileSize: $storage->fileSize($path),
+                    filename: $filename,
+                    contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value
+                ),
+            );
+
+            $storage->delete($path);
+
+            return $response;
+        } catch (FilesystemException $e) {
+            throw new StreamResourceNotFoundException(
+                sprintf(
+                    'Could not process stream for file %s: %s',
+                    $path,
+                    $e->getMessage()
+                )
+            );
         }
 
-        $response = new StreamedResponse(
-            function () use ($stream) {
-                fpassthru($stream);
-            },
-            HttpResponseCodes::SUCCESS->value,
-            $this->getResponseHeaders(
-                mimeType: $mimeType,
-                fileSize: filesize($path),
-                filename: $filename,
-                contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value
-            ),
-
-        );
-
-        unlink($path);
-
-        return $response;
     }
 
     private function getResponseHeaders(

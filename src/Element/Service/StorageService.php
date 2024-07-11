@@ -39,7 +39,7 @@ final readonly class StorageService implements StorageServiceInterface
     /**
      * @throws EnvironmentException
      */
-    public function removeFile(string $location): void
+    public function removeTempFile(string $location): void
     {
         $storage = $this->getTempStorage();
         try {
@@ -53,7 +53,31 @@ final readonly class StorageService implements StorageServiceInterface
                 )
             );
         }
+    }
 
+    /**
+     * @throws EnvironmentException
+     */
+    public function tempFileExists(string $location): bool
+    {
+        $storage = $this->getTempStorage();
+        try {
+            return $storage->fileExists($location);
+        } catch (FilesystemException $e) {
+            throw new EnvironmentException(
+                sprintf(
+                    'Could not look for file %s: %s',
+                    $location,
+                    $e->getMessage()
+                )
+            );
+        }
+    }
+
+
+    public function getThumbnailStorage(): FilesystemOperator
+    {
+        return $this->storageResolver->get(StorageDirectories::THUMBNAIL->value);
     }
 
     public function getTempStorage(): FilesystemOperator

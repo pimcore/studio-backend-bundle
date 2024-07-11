@@ -192,7 +192,7 @@ final readonly class ZipService implements ZipServiceInterface
     public function cleanUpArchive(
         string $archive
     ): void {
-        $this->storageService->removeFile($archive);
+        $this->storageService->removeTempFile($archive);
     }
 
     private function copyUploadZipFile(

@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfig
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -62,7 +63,13 @@ interface DownloadServiceInterface
         string $thumbnailName
     ): BinaryFileResponse;
 
+    /**
+     * @throws StreamResourceNotFoundException
+     */
     public function downloadZipArchiveByPath(DownloadPathParameter $path): StreamedResponse;
 
+    /**
+     * @throws StreamResourceNotFoundException
+     */
     public function downloadCsvByPath(DownloadPathParameter $path): StreamedResponse;
 }

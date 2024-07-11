@@ -116,7 +116,7 @@ final readonly class UploadService implements UploadServiceInterface
             if ($pathPrefix) {
                 $fileLocation = $pathPrefix . '/' . $fileLocation;
             }
-            $this->storageService->removeFile($fileLocation);
+            $this->storageService->removeTempFile($fileLocation);
         }
 
         return $asset->getId();

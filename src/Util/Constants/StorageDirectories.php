@@ -22,4 +22,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 enum StorageDirectories: string
 {
     case TEMP = 'temp';
+
+    case THUMBNAIL = 'thumbnail';
 }

@@ -27,7 +27,14 @@ interface StorageServiceInterface
     /**
      * @throws EnvironmentException
      */
-    public function removeFile(string $location): void;
+    public function removeTempFile(string $location): void;
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function tempFileExists(string $location): bool;
+
+    public function getThumbnailStorage(): FilesystemOperator;
 
     public function getTempStorage(): FilesystemOperator;
 
