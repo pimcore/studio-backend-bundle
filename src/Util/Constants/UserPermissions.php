@@ -25,6 +25,7 @@ enum UserPermissions: string
     case DATA_OBJECTS = 'objects';
     case DOCUMENTS = 'documents';
     case ELEMENT_TYPE_PERMISSION  = 'ELEMENT_TYPE_PERMISSION';
+    case EMAILS = 'emails';
     case NOTES_EVENTS = 'notes_events';
     case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
     case PIMCORE_USER = 'ROLE_PIMCORE_USER';

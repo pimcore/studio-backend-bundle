@@ -46,6 +46,10 @@ use OpenApi\Attributes\Tag;
     description: 'Get element properties for a single element based on its type and provided parameters.'
 )]
 #[Tag(
+    name: Tags::Emails->value,
+    description: 'Email operations to get/update/create/delete/test emails and email blocklist.'
+)]
+#[Tag(
     name: Tags::Grid->name,
     description: 'Grid operations'
 )]
@@ -109,6 +113,7 @@ enum Tags: string
     case DataObjects = 'DataObjects';
     case Dependencies = 'Dependencies';
     case Elements = 'Elements';
+    case Emails = 'E-Mails';
     case Grid = 'Grid';
     case Mercure = 'Mercure';
     case Notes = 'Notes';
