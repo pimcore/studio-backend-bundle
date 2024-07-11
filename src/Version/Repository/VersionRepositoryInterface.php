@@ -17,9 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\Version\MappedParameter\UpdateVersionParameter;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
@@ -60,6 +62,14 @@ interface VersionRepositoryInterface
     public function getVersionById(
         int $id
     ): Version;
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function updateVersion(
+        Version $version,
+        UpdateVersionParameter $parameter
+    ): void;
 
     public function cleanupVersions(
         ElementParameters $elementParameters,

@@ -64,19 +64,19 @@ final readonly class ZipService implements ZipServiceInterface
         bool $create = true
     ): ?ZipArchive {
         $zip = $this->getTempFileName($id, $fileName);
+        $zipStoragePath = $this->getTempFilePathFromName($id, $fileName);
         $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
-
         $archive = new ZipArchive();
 
         $state = false;
 
         try {
             if ($storage->fileExists($zip)) {
-                $state = $archive->open($this->getTempFilePathFromName($id, $fileName));
+                $state = $archive->open($zipStoragePath);
             }
 
             if (!$state && $create) {
-                $state = $archive->open($zip, ZipArchive::CREATE);
+                $state = $archive->open($zipStoragePath, ZipArchive::CREATE);
             }
         } catch (FilesystemException) {
             return null;

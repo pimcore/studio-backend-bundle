@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunErrorLogRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 
 /**
  * @internal
@@ -36,6 +36,7 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
 
     public function handleFinishedWithErrors(
         int $jobRunId,
+        int $ownerId,
         string $jobName
     ): void {
         $messages = [];
@@ -49,6 +50,7 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
             new Finished(
                 $jobRunId,
                 $jobName,
+                $ownerId,
                 JobRunStates::FINISHED_WITH_ERRORS->value,
                 $messages
             )

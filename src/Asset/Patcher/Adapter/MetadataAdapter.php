@@ -17,14 +17,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 
 /**
  * @internal
  */
+#[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
 final class MetadataAdapter implements PatchAdapterInterface
 {
     private const INDEX_KEY = 'metadata';

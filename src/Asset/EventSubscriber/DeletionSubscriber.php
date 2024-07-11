@@ -46,7 +46,7 @@ final readonly class DeletionSubscriber implements EventSubscriberInterface
 
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-        if ($event->getJobName() !==  Jobs::DELETE_ASSETS->value) {
+        if ($event->getJobName() !== Jobs::DELETE_ASSETS->value) {
             return;
         }
 
@@ -56,11 +56,13 @@ final readonly class DeletionSubscriber implements EventSubscriberInterface
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
+                    $event->getJobRunOwnerId(),
                     $event->getNewState()
                 )
             ),
             JobRunStates::FINISHED_WITH_ERRORS->value => $this->eventSubscriberService->handleFinishedWithErrors(
                 $event->getJobRunId(),
+                $event->getJobRunOwnerId(),
                 $event->getJobName()
             ),
             default => null,

@@ -68,13 +68,10 @@ final class DeleteController extends AbstractApiController
     ])]
     public function deleteVersion(int $id): Response
     {
-        $user = $this->securityService->getCurrentUser();
-
         $version = $this->repository->getVersionById($id);
-
         $this->securityService->hasElementPermission(
             $version->getData(),
-            $user,
+            $this->securityService->getCurrentUser(),
             ElementPermissions::VERSIONS_PERMISSION
         );
 

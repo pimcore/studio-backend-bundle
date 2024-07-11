@@ -18,13 +18,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Provider;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events as AssetEvents;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\AbstractServerToClientProvider;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
-#[AutoconfigureTag('pimcore.studio_backend.mercure.topic.provider')]
+#[AutoconfigureTag(TaggedIteratorAdapter::TOPIC_LOADER_TAG)]
 final class AssetTopicProvider extends AbstractServerToClientProvider
 {
     public function getClientSubscribableTopic(): array

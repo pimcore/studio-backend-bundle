@@ -19,9 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\EventSubscriber;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunErrorLogRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -60,6 +60,7 @@ final readonly class FailureSubscriber implements EventSubscriberInterface
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
+                    $event->getJobRunOwnerId(),
                     $event->getNewState(),
                     [$log[0]->getErrorMessage()]
                 )

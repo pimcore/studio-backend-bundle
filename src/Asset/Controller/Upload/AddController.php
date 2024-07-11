@@ -92,6 +92,7 @@ final class AddController extends AbstractApiController
         ['file']
     )]
     #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function addAsset(

@@ -8,7 +8,8 @@
 
 ## Bundle Installation
 
-To install the Studio Backend Bundle, follow the three steps below:
+To install the Studio Backend Bundle, follow the four steps below:
+
 
 1) Install the required dependencies:
 
@@ -16,7 +17,20 @@ To install the Studio Backend Bundle, follow the three steps below:
 composer require pimcore/studio-backend-bundle
 ```
 
-2) Make sure the bundle is enabled in the `config/bundles.php` file. The following lines should be added:
+2) Enable Firewall settings
+
+To enable the firewall settingsin your project, add the following configuration to your `config/packages/security.yaml` file:
+
+```yaml
+security:
+    firewalls: 
+        pimcore_studio: '%pimcore_studio_backend.firewall_settings%'
+    access_control:
+      - { path: ^/studio/api/(docs|docs.json|translations)$, roles: PUBLIC_ACCESS }
+      - { path: ^/studio, roles: ROLE_PIMCORE_USER }
+```
+
+3) Make sure the bundle is enabled in the `config/bundles.php` file. The following lines should be added:
 
 ```php
 use Pimcore\Bundle\StudioBackendBundle\PimcoreStudioBackendBundle;
@@ -28,7 +42,7 @@ return [
 ];  
 ```
 
-3) Install the bundle:
+4) Install the bundle:
 
 ```bash
 bin/console pimcore:bundle:install PimcoreStudioBackendBundle
@@ -38,19 +52,6 @@ bin/console pimcore:bundle:install PimcoreStudioBackendBundle
 Pimcore Studio Backend also requires the installation and setup of the generic data index. 
 The bundle is required by default and also automatically enabled in the bundles.
 To install the generic data index refer to [Generic-Data-Index](https://github.com/pimcore/generic-data-index-bundle?tab=readme-ov-file)
-
-## Enable Firewall settings
-
-To enable the firewall settings, add the following configuration to your `config/packages/security.yaml` file:
-
-```yaml
-security:
-    firewalls: 
-        pimcore_studio: '%pimcore_studio_backend.firewall_settings%'
-    access_control:
-      - { path: ^/studio/api/(docs|docs.json|translations)$, roles: PUBLIC_ACCESS }
-      - { path: ^/studio, roles: ROLE_PIMCORE_USER }
-```
 
 ## Mercure
 

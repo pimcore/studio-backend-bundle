@@ -16,8 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -25,7 +28,20 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 interface PatchServiceInterface
 {
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws AccessDeniedException|ElementSavingFailedException|NotFoundException
      */
-    public function patch(string $elementType, array $patchData): array;
+    public function patch(
+        string $elementType,
+        array $patchData,
+        UserInterface $user,
+    ): ?int;
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function patchElement(
+        ElementInterface $element,
+        string $elementType,
+        array $elementPatchData
+    ): void;
 }

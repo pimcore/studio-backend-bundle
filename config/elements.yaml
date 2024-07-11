@@ -19,3 +19,24 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementFolderServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementFolderService
+
+
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\PatchHandler: ~
+
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\PatchSubscriber: ~
+
+  #
+  # Mercure SSE
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Provider\ElementTopicProvider:
+    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]

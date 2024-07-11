@@ -28,7 +28,10 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
     required: [
         'jobRunId',
         'jobRunName',
+        'ownerId',
         'state',
+        'messages',
+        'notifyAll',
     ],
     type: 'object'
 )]
@@ -38,11 +41,15 @@ final readonly class Finished
         #[Property(description: 'jobRunId', type: 'integer', example: 73)]
         private int $jobRunId,
         #[Property(description: 'jobRunName', type: 'string', example: 'my-job-name')]
-        private string $jobName,
+        private string $jobRunName,
+        #[Property(description: 'ownerId', type: 'integer', example: 13)]
+        private int $ownerId,
         #[Property(description: 'status', type: 'string', example: JobRunStates::FINISHED->value)]
         private string $status,
         #[Property(description: 'messages', type: 'list', example: ['Something went wrong'])]
         private array $messages = [],
+        #[Property(description: 'notifyAll', type: 'boolean', example: false)]
+        private bool $notifyAll = false,
     ) {
     }
 
@@ -51,9 +58,14 @@ final readonly class Finished
         return $this->jobRunId;
     }
 
-    public function getJobName(): string
+    public function getJobRunName(): string
     {
-        return $this->jobName;
+        return $this->jobRunName;
+    }
+
+    public function getOwnerId(): int
+    {
+        return $this->ownerId;
     }
 
     public function getStatus(): string
@@ -64,5 +76,10 @@ final readonly class Finished
     public function getMessages(): array
     {
         return $this->messages;
+    }
+
+    public function isNotifyAll(): bool
+    {
+        return $this->notifyAll;
     }
 }
