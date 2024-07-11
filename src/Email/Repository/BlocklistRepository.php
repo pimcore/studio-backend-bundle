@@ -17,28 +17,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse\BlocklistEntryEvent;
-use Pimcore\Bundle\StudioBackendBundle\Email\Schema\BlocklistEntry;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\Exception\NotFoundException;
 use Pimcore\Model\Tool\Email\Blocklist;
 use Pimcore\Model\Tool\Email\Blocklist\Listing;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
  */
 final readonly class BlocklistRepository implements BlocklistRepositoryInterface
 {
-    public function __construct(
-        private EventDispatcherInterface $eventDispatcher,
-    ) {
-
-    }
-
     /**
      * @throws EnvironmentException
      */
@@ -51,30 +41,20 @@ final readonly class BlocklistRepository implements BlocklistRepositoryInterface
         }
     }
 
-    public function listEntries(
+    public function getListing(
         CollectionParameters $parameters,
         string $email = null,
-    ): Collection {
-        $list = [];
-        $listing = $this->getListing($parameters, $email);
-        foreach ($listing as $listEntry) {
-            $entry = new BlocklistEntry(
-                $listEntry->getAddress(),
-                $listEntry->getCreationDate(),
-                $listEntry->getModificationDate()
-            );
+    ): Listing {
+        $limit = $parameters->getPageSize();
+        $listing = new Listing();
+        $listing->setLimit($limit);
+        $listing->setOffset(($parameters->getPage() - 1) * $limit);
 
-            $this->eventDispatcher->dispatch(
-                new BlocklistEntryEvent($entry)
-            );
-
-            $list[] = $entry;
+        if ($email !== null) {
+            $listing->setCondition('`address` LIKE ' . $listing->quote('%'. $email .'%'));
         }
 
-        return new Collection(
-            $listing->getTotalCount(),
-            $list
-        );
+        return $listing;
     }
 
     /**
@@ -128,21 +108,5 @@ final readonly class BlocklistRepository implements BlocklistRepositoryInterface
         $blockList->getDao()->getByAddress($email);
 
         return $blockList;
-    }
-
-    private function getListing(
-        CollectionParameters $parameters,
-        string $email = null,
-    ): Listing {
-        $limit = $parameters->getPageSize();
-        $listing = new Listing();
-        $listing->setLimit($limit);
-        $listing->setOffset(($parameters->getPage() - 1) * $limit);
-
-        if ($email !== null) {
-            $listing->setCondition('`address` LIKE ' . $listing->quote('%'. $email .'%'));
-        }
-
-        return $listing;
     }
 }

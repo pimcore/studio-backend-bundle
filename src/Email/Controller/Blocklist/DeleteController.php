@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller\Blocklist;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Email\Repository\BlocklistRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -41,7 +41,7 @@ final class DeleteController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly BlocklistRepositoryInterface $repository
+        private readonly BlocklistServiceInterface $blocklistService
     ) {
         parent::__construct($serializer);
     }
@@ -58,7 +58,7 @@ final class DeleteController extends AbstractApiController
         operationId: 'deleteBlocklistEntry',
         description: 'Delete blocklist entry based on the provided email address',
         summary: 'Delete blocklist entry',
-        tags: [Tags::Emails->name]
+        tags: [Tags::Emails->value]
     )]
     #[TextFieldParameter(
         name: 'email',
@@ -74,7 +74,7 @@ final class DeleteController extends AbstractApiController
     ])]
     public function deleteBlocklistEntry(#[MapQueryParameter] string $email): Response
     {
-        $this->repository->deleteEntry($email);
+        $this->blocklistService->deleteEntry($email);
 
         return new Response();
     }

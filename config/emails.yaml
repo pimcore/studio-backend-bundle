@@ -24,3 +24,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailService
+
+  Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistService
