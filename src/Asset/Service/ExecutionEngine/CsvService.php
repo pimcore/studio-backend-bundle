@@ -50,7 +50,7 @@ final class CsvService implements CsvServiceInterface
     ) {
     }
 
-    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): string
+    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): int
     {
         $steps = [
             new JobStep(JobSteps::CSV_COLLECTION->value, CollectionMessage::class, '', []),
@@ -77,7 +77,7 @@ final class CsvService implements CsvServiceInterface
             Config::CONTEXT_STOP_ON_ERROR->value
         );
 
-        return $this->getTempFilePath($jobRun->getId(), self::CSV_FILE_PATH);
+        return $jobRun->getId();
     }
 
     public function getCsvFile(int $id, Configuration $configuration, array $settings): string

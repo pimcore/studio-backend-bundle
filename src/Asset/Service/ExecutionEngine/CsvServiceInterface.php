@@ -32,7 +32,7 @@ interface CsvServiceInterface
 
     public function addData(string $filePath, string $delimiter, array $data): void;
 
-    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): string;
+    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): int;
 
     public function getTempFilePath(int $id, string $path): string;
 }

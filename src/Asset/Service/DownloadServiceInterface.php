@@ -19,8 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DownloadPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Model\Asset;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -64,5 +66,8 @@ interface DownloadServiceInterface
 
     public function downloadZipArchiveByPath(DownloadPathParameter $path): StreamedResponse;
 
-    public function downloadCsvByPath(DownloadPathParameter $path): StreamedResponse;
+    /**
+     * @throws NotFoundException|ForbiddenException
+     */
+    public function downloadCsvByJobRunId(int $jobRunId): StreamedResponse;
 }

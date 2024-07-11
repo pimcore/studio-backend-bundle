@@ -22,6 +22,9 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header\ContentD
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DownloadPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -46,16 +49,19 @@ final class DownloadCsvController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/download/csv', name: 'pimcore_studio_api_csv_download_asset', methods: ['GET'])]
+    /**
+     * @throws NotFoundException|ForbiddenException
+     */
+    #[Route('/assets/download/csv/{jobRunId}', name: 'pimcore_studio_api_csv_download_asset', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/download/csv',
+        path: self::API_PATH . '/assets/download/csv/{jobRunId}',
         operationId: 'downloadAssetsCsv',
         description: 'Downloading csv file with assets',
         summary: 'Downloading the csv file with assets',
         tags: [Tags::Assets->name]
     )]
-    #[PathParameter]
+    #[IdParameter(type: 'JobRun', name: 'jobRunId')]
     #[SuccessResponse(
         description: 'CSV File',
         content: [new AssetMediaType('application/csv')],
@@ -63,10 +69,11 @@ final class DownloadCsvController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function downloadCsvAssets(#[MapQueryString] DownloadPathParameter $path): StreamedResponse
+    public function downloadCsvAssets(int $jobRunId): StreamedResponse
     {
-        return $this->downloadService->downloadCsvByPath($path);
+        return $this->downloadService->downloadCsvByJobRunId($jobRunId);
     }
 }
