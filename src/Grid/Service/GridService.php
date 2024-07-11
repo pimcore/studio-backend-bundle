@@ -63,7 +63,6 @@ final class GridService implements GridServiceInterface
         private readonly ColumnDefinitionLoaderInterface $columnDefinitionLoader,
         private readonly ColumnResolverLoaderInterface $columnResolverLoader,
         private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
-        private readonly SystemColumnServiceInterface $systemColumnService,
         private readonly GridSearchInterface $gridSearch,
         private readonly ServiceResolverInterface $serviceResolver,
         private readonly EventDispatcherInterface $eventDispatcher
