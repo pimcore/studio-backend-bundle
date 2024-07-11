@@ -29,8 +29,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -46,13 +48,12 @@ final class GetController extends AbstractApiController
     }
 
     #[Route('/tags/{id}', name: 'pimcore_studio_api_get_tag', methods: ['GET'])]
-    //#[IsGranted('STUDIO_API')]
+    #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
         path: self::API_PATH . '/tags/{id}',
         operationId: 'getTagById',
         description: 'Get tag based on the tag ID',
         summary: 'Get tag by ID',
-        security: self::SECURITY_SCHEME,
         tags: [Tags::Tags->name]
     )]
     #[IdParameter(type: 'tag')]

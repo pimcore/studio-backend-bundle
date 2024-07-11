@@ -27,8 +27,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -47,7 +49,7 @@ final class AssignController extends AbstractApiController
      * @throws ElementSavingFailedException|NotFoundException
      */
     #[Route('/tags/{elementType}/{id}/{tagId}', name: 'pimcore_studio_api_assign_element_tag', methods: ['POST'])]
-    //#[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
+    #[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Post(
         path: self::API_PATH . '/tags/{elementType}/{id}/{tagId}',
         operationId: 'assignTagForElement',

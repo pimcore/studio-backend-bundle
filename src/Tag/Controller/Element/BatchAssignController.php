@@ -28,9 +28,11 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParame
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\ElementTagIdCollection;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -53,7 +55,7 @@ final class BatchAssignController extends AbstractApiController
         name: 'pimcore_studio_api_batch_assign_elements_tags',
         methods: ['POST']
     )]
-    //#[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
+    #[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Post(
         path: self::API_PATH . '/tags/batch/assign/{elementType}',
         operationId: 'batchAssignTagsForElements',

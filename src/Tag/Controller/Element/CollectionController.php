@@ -29,10 +29,12 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 use function count;
 
@@ -51,7 +53,7 @@ final class CollectionController extends AbstractApiController
     }
 
     #[Route('/tags/{elementType}/{id}', name: 'pimcore_studio_api_get_element_tags', methods: ['GET'])]
-    //#[IsGranted(UserPermissions::TAGS_SEARCH->value)]
+    #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
         path: self::API_PATH . '/tags/{elementType}/{id}',
         operationId: 'getTagsForElementByTypeAndId',
