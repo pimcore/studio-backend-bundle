@@ -107,8 +107,7 @@ trait StreamedResponseTrait
         string $mimeType,
         string $filename,
         FilesystemOperator $storage,
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         try {
             $stream = $storage->readStream($path);
 

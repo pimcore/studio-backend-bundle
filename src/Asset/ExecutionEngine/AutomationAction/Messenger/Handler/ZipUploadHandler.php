@@ -20,7 +20,6 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipService;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;

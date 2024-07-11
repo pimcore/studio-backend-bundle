@@ -37,5 +37,4 @@ interface StorageServiceInterface
     public function getThumbnailStorage(): FilesystemOperator;
 
     public function getTempStorage(): FilesystemOperator;
-
 }

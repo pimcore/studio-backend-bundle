@@ -22,7 +22,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Tool\StorageResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\StorageDirectories;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
-use Pimcore\Tool\Storage;
 
 /**
  * @internal
@@ -42,6 +41,7 @@ final readonly class StorageService implements StorageServiceInterface
     public function removeTempFile(string $location): void
     {
         $storage = $this->getTempStorage();
+
         try {
             $storage->delete($location);
         } catch (FilesystemException $e) {
@@ -61,6 +61,7 @@ final readonly class StorageService implements StorageServiceInterface
     public function tempFileExists(string $location): bool
     {
         $storage = $this->getTempStorage();
+
         try {
             return $storage->fileExists($location);
         } catch (FilesystemException $e) {
@@ -73,7 +74,6 @@ final readonly class StorageService implements StorageServiceInterface
             );
         }
     }
-
 
     public function getThumbnailStorage(): FilesystemOperator
     {
