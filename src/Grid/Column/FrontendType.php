@@ -26,8 +26,6 @@ enum FrontendType: string
     case TEXTAREA = 'textarea';
     case SELECT = 'select';
     case CHECKBOX = 'checkbox';
-
     case DATETIME = 'datetime';
-
     case IMAGE = 'image';
 }

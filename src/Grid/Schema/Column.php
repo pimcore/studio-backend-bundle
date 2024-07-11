@@ -102,6 +102,4 @@ final class Column implements AdditionalAttributesInterface
     {
         return $this->frontendType;
     }
-
-
 }
