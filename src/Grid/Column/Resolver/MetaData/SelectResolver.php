@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -33,6 +34,7 @@ final class SelectResolver implements ColumnResolverInterface
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
+        /** @var Asset $element */
         return $this->getColumnData(
             $column,
             $element->getMetadata($column->getKey())

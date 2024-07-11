@@ -32,12 +32,10 @@ use Pimcore\Model\Element\ElementInterface;
 final class AssetResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
-    use CheckForAssetTrait;
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        $this->isAsset($element);
-
+        /** @var Asset $element */
         $asset = $element->getMetadata($column->getKey());
 
         if (!$asset instanceof Asset) {
