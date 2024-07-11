@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller\Blocklist;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property\BlocklistCollection;
-use Pimcore\Bundle\StudioBackendBundle\Email\Repository\BlocklistRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
@@ -48,7 +48,7 @@ final class CollectionController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly BlocklistRepositoryInterface $blocklistRepository,
+        private readonly BlocklistServiceInterface $blocklistService,
     ) {
         parent::__construct($serializer);
     }
@@ -63,7 +63,7 @@ final class CollectionController extends AbstractApiController
         operationId: 'getBlocklistEntries',
         description: 'Get paginated blocklist entries',
         summary: 'Get all blocklist entries',
-        tags: [Tags::Emails->name]
+        tags: [Tags::Emails->value]
     )]
     #[PageParameter]
     #[PageSizeParameter]
@@ -83,7 +83,7 @@ final class CollectionController extends AbstractApiController
         #[MapQueryString] CollectionParameters $parameters,
         #[MapQueryParameter] ?string $email = null
     ): JsonResponse {
-        $collection = $this->blocklistRepository->listEntries($parameters, $email);
+        $collection = $this->blocklistService->listEntries($parameters, $email);
 
         return $this->getPaginatedCollection(
             $this->serializer,

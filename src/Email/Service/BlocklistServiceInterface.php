@@ -14,27 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Email\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
-use Pimcore\Model\Tool\Email\Blocklist\Listing;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
  */
-interface BlocklistRepositoryInterface
+interface BlocklistServiceInterface
 {
     /**
      * @throws EnvironmentException
      */
     public function addEntry(string $email): void;
 
-    public function getListing(
+    public function listEntries(
         CollectionParameters $parameters,
         string $email = null,
-    ): Listing;
+    ): Collection;
 
     /**
      * @throws ApiNotFoundException
