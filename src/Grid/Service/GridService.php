@@ -155,35 +155,12 @@ final class GridService implements GridServiceInterface
             ));
         }
 
-        //TODO: Fire event for all columns
-        /*$this->eventDispatcher->dispatch(
-            new GridColumnDefinitionEvent($column),
-            GridColumnDefinitionEvent::EVENT_NAME
-        );*/
-
-        //TODO: Add metadata columns
-        /*$meta = new \Pimcore\Model\Metadata\Predefined\Listing();
-
-        $list = $meta->load();
-
-        foreach ($list as $item) {
-            $type = $item->getType();
-            if (!array_key_exists($type, $this->getColumnDefinitions())) {
-                continue;
-            }
-            $column = new Column(
-                key: $item->getName(),
-                group: 'metadata',
-                sortable: $this->getColumnDefinitions()[$type]->isSortable(),
-                editable: false,
-                localizable: false,
-                locale: null,
-                type: $type,
-                config: $this->getColumnDefinitions()[$type]->getConfig($item->getConfig())
+        foreach ($columns as $column) {
+            $this->eventDispatcher->dispatch(
+                new GridColumnDefinitionEvent($column),
+                GridColumnDefinitionEvent::EVENT_NAME
             );
-
-            $columns[] = $column;
-        }*/
+        }
 
         return new Configuration($columns);
     }
