@@ -70,6 +70,10 @@ interface ZipServiceInterface
 
     public function generateZipFile(CreateAssetFileParameter $ids): string;
 
+    public function cleanUpArchive(
+        string $archive
+    ): void;
+
     /**
      * @throws FilesystemException
      */

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
@@ -27,6 +28,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -54,6 +56,7 @@ final readonly class UploadService implements UploadServiceInterface
         private AssetServiceResolverInterface $assetServiceResolver,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private ServiceResolverInterface $serviceResolver,
+        private StorageServiceInterface $storageService,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
     ) {
 
@@ -86,7 +89,8 @@ final readonly class UploadService implements UploadServiceInterface
     public function uploadAsset(
         int $parentId,
         UploadedFile $file,
-        UserInterface $user
+        UserInterface $user,
+        ?string $pathPrefix = null
     ): int {
         $parent = $this->validateParent($user, $parentId);
         $sourcePath = $this->getValidSourcePath($file);
@@ -108,7 +112,11 @@ final readonly class UploadService implements UploadServiceInterface
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
         } finally {
-            @unlink($sourcePath);
+            $fileLocation = $file->getFilename();
+            if ($pathPrefix) {
+                $fileLocation = $pathPrefix . '/' . $fileLocation;
+            }
+            $this->storageService->removeFile($fileLocation);
         }
 
         return $asset->getId();

@@ -20,6 +20,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipService;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -124,7 +125,12 @@ final class ZipUploadHandler extends AbstractHandler
                 ['message' => $exception->getMessage()],
             ));
         } finally {
-            unlink($this->zipService->getTempFilePath($archiveId, ZipServiceInterface::UPLOAD_ZIP_FILE_PATH));
+            $this->zipService->cleanUpArchive(
+                $this->zipService->getTempFileName(
+                    $archiveId,
+                    ZipServiceInterface::UPLOAD_ZIP_FILE_NAME
+                )
+            );
         }
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
