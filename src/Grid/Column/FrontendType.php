@@ -16,13 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
-interface ColumnDefinitionInterface
+/**
+ * @internal
+ */
+enum FrontendType: string
 {
-    public function getType(): string;
+    case ELEMENT_DROPZONE = 'element_dropzone';
+    case INPUT = 'input';
+    case TEXTAREA = 'textarea';
+    case SELECT = 'select';
+    case CHECKBOX = 'checkbox';
 
-    public function getConfig(mixed $config): array;
+    case DATETIME = 'datetime';
 
-    public function isSortable(): bool;
-
-    public function getFrontendType(): string;
+    case IMAGE = 'image';
 }

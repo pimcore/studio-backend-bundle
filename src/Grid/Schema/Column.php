@@ -51,6 +51,8 @@ final class Column implements AdditionalAttributesInterface
         private readonly ?string $locale,
         #[Property(description: 'Type', type: 'string', example: 'integer')]
         private readonly string $type,
+        #[Property(description: 'Frontend Type', type: 'string', example: 'integer')]
+        private readonly string $frontendType,
         #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
         private readonly array $config,
     ) {
@@ -95,4 +97,11 @@ final class Column implements AdditionalAttributesInterface
     {
         return $this->type;
     }
+
+    public function getFrontendType(): string
+    {
+        return $this->frontendType;
+    }
+
+
 }

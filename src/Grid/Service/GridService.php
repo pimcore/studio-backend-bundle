@@ -188,6 +188,7 @@ final class GridService implements GridServiceInterface
                 localizable: $column['localizable'],
                 locale: $column['locale'],
                 type: $column['type'],
+                frontendType: $column['frontendType'],
                 config: $column['config']
             );
         }

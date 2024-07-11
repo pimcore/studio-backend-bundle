@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 
 /**
  * @internal
@@ -36,5 +37,10 @@ final readonly class FileSizeDefinition implements ColumnDefinitionInterface
     public function isSortable(): bool
     {
         return true;
+    }
+
+    public function getFrontendType(): string
+    {
+        return FrontendType::INPUT->value;
     }
 }

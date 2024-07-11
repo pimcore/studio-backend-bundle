@@ -61,6 +61,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
                 localizable: false,
                 locale: null,
                 type: $availableColumnDefinitions[$type]->getType(),
+                frontendType: $availableColumnDefinitions[$type]->getFrontendType(),
                 config: []
             );
 

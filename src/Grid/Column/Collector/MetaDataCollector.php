@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\MetaData\Repository\MetaDataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -68,6 +69,7 @@ final readonly class MetaDataCollector implements ColumnCollectorInterface
                 localizable: false,
                 locale: null,
                 type: 'metadata.string',
+                frontendType: FrontendType::INPUT->value,
                 config: []
             );
         }
@@ -99,6 +101,7 @@ final readonly class MetaDataCollector implements ColumnCollectorInterface
                 localizable: false,
                 locale: null,
                 type: $type,
+                frontendType: $availableColumnDefinitions[$type]->getFrontendType(),
                 config: $availableColumnDefinitions[$type]->getConfig($item->getConfig())
             );
         }

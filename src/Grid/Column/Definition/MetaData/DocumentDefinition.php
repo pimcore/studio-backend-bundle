@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\MetaData;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 
 /**
  * @internal
@@ -37,5 +38,10 @@ final readonly class DocumentDefinition implements ColumnDefinitionInterface
     public function isSortable(): bool
     {
         return false;
+    }
+
+    public function getFrontendType(): string
+    {
+        return FrontendType::ELEMENT_DROPZONE->value;
     }
 }
