@@ -149,9 +149,12 @@ final class GridService implements GridServiceInterface
                 continue;
             }
 
-            $columns = array_merge($columns, $collector->getColumnDefinitions(
-                $this->getColumnDefinitions()
-            ));
+            $columns = array_merge(
+                $columns,
+                $collector->getColumnDefinitions(
+                    $this->getColumnDefinitions()
+                )
+            );
         }
 
         foreach ($columns as $column) {
