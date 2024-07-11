@@ -16,9 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidParentIdException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Event\TagEvent;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Hydrator\TagHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
@@ -28,6 +31,8 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Repository\TagRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 
@@ -36,9 +41,13 @@ use function array_key_exists;
  */
 final readonly class TagService implements TagServiceInterface
 {
+    use ElementProviderTrait;
+
     public function __construct(
         private TagRepositoryInterface $tagRepository,
         private TagHydratorInterface $tagHydrator,
+        private SecurityServiceInterface $securityService,
+        private ServiceResolverInterface $serviceResolver,
         private EventDispatcherInterface $eventDispatcher
     ) {
     }
@@ -60,6 +69,7 @@ final readonly class TagService implements TagServiceInterface
     public function getTagsForElement(ElementParameters $tagElement): array
     {
         $result = [];
+        $this->checkElementPermission($tagElement->getType(), $tagElement->getId(), ElementPermissions::VIEW_PERMISSION);
         foreach ($this->tagRepository->getTagsForElement($tagElement) as $tag) {
             $result[$tag->getId()] = $this->tagHydrator->hydrate($tag);
             $this->dispatchTagEvent($result[$tag->getId()]);
@@ -73,16 +83,33 @@ final readonly class TagService implements TagServiceInterface
      */
     public function assignTagToElement(ElementParameters $tagElement, int $tagId): void
     {
+        $this->checkElementPermission($tagElement->getType(), $tagElement->getId(), ElementPermissions::PUBLISH_PERMISSION);
         $this->tagRepository->assignTagToElement($tagElement, $tagId);
     }
 
     public function batchAssignTagsToElements(BatchCollectionParameters $collection): void
     {
+        foreach ($collection->getElementIds() as $elementId) {
+            $this->checkElementPermission(
+                $collection->getType(),
+                $elementId,
+                ElementPermissions::PUBLISH_PERMISSION
+            );
+        }
+
         $this->tagRepository->batchAssignTagsToElements($collection);
     }
 
     public function batchReplaceTagsToElements(BatchCollectionParameters $collection): void
     {
+        foreach ($collection->getElementIds() as $elementId) {
+            $this->checkElementPermission(
+                $collection->getType(),
+                $elementId,
+                ElementPermissions::PUBLISH_PERMISSION
+            );
+        }
+
         $this->tagRepository->batchReplaceTagsToElements($collection);
     }
 
@@ -156,6 +183,19 @@ final readonly class TagService implements TagServiceInterface
 
     public function unassignTagFromElement(ElementParameters $tagElement, int $tagId): void
     {
+        $this->checkElementPermission($tagElement->getType(), $tagElement->getId(), ElementPermissions::PUBLISH_PERMISSION);
         $this->tagRepository->unassignTagFromElement($tagElement, $tagId);
+    }
+
+    /**
+     * @throws AccessDeniedException
+     */
+    private function checkElementPermission(string $type, int $id, string $permission): void
+    {
+        $this->securityService->hasElementPermission(
+            $this->getElement($this->serviceResolver, $type, $id),
+            $this->securityService->getCurrentUser(),
+            $permission
+        );
     }
 }
