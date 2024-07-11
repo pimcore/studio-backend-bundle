@@ -20,7 +20,6 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tag\TagResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
