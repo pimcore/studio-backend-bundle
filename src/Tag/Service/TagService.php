@@ -69,7 +69,11 @@ final readonly class TagService implements TagServiceInterface
     public function getTagsForElement(ElementParameters $tagElement): array
     {
         $result = [];
-        $this->checkElementPermission($tagElement->getType(), $tagElement->getId(), ElementPermissions::VIEW_PERMISSION);
+        $this->checkElementPermission(
+            $tagElement->getType(),
+            $tagElement->getId(),
+            ElementPermissions::VIEW_PERMISSION
+        );
         foreach ($this->tagRepository->getTagsForElement($tagElement) as $tag) {
             $result[$tag->getId()] = $this->tagHydrator->hydrate($tag);
             $this->dispatchTagEvent($result[$tag->getId()]);
@@ -83,7 +87,11 @@ final readonly class TagService implements TagServiceInterface
      */
     public function assignTagToElement(ElementParameters $tagElement, int $tagId): void
     {
-        $this->checkElementPermission($tagElement->getType(), $tagElement->getId(), ElementPermissions::PUBLISH_PERMISSION);
+        $this->checkElementPermission(
+            $tagElement->getType(),
+            $tagElement->getId(),
+            ElementPermissions::PUBLISH_PERMISSION
+        );
         $this->tagRepository->assignTagToElement($tagElement, $tagId);
     }
 
@@ -183,7 +191,11 @@ final readonly class TagService implements TagServiceInterface
 
     public function unassignTagFromElement(ElementParameters $tagElement, int $tagId): void
     {
-        $this->checkElementPermission($tagElement->getType(), $tagElement->getId(), ElementPermissions::PUBLISH_PERMISSION);
+        $this->checkElementPermission(
+            $tagElement->getType(),
+            $tagElement->getId(),
+            ElementPermissions::PUBLISH_PERMISSION
+        );
         $this->tagRepository->unassignTagFromElement($tagElement, $tagId);
     }
 
