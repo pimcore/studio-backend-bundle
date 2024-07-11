@@ -38,7 +38,6 @@ final readonly class TagRepository implements TagRepositoryInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private SecurityServiceInterface $securityService,
         private TagResolverInterface $tagResolver
     ) {
     }
