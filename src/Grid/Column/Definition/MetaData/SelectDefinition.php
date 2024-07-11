@@ -32,7 +32,7 @@ final readonly class SelectDefinition implements ColumnDefinitionInterface
     public function getConfig(mixed $config): array
     {
         return  [
-            'options' => explode(",", $config),
+            'options' => explode(',', $config),
         ];
     }
 

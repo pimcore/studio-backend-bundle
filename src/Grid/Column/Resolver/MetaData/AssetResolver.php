@@ -40,7 +40,6 @@ final class AssetResolver implements ColumnResolverInterface
             return $this->getColumnData($column, null);
         }
 
-
         return $this->getColumnData(
             $column,
             $asset->getFullPath()

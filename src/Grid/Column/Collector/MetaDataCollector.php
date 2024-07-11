@@ -75,7 +75,6 @@ final readonly class MetaDataCollector implements ColumnCollectorInterface
         return $columns;
     }
 
-
     /**
      * @param ColumnDefinitionInterface[] $availableColumnDefinitions
      *
