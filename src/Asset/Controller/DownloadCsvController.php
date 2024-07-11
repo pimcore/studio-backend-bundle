@@ -65,7 +65,7 @@ final class DownloadCsvController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function downloadZippedAssets(#[MapQueryString] DownloadPathParameter $path): StreamedResponse
+    public function downloadCsvAssets(#[MapQueryString] DownloadPathParameter $path): StreamedResponse
     {
         return $this->downloadService->downloadCsvByPath($path);
     }
