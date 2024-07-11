@@ -19,23 +19,23 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\MetaData\Repository\MetaDataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use function array_key_exists;
 
 /**
  * @internal
  */
-final readonly class SystemFieldCollector implements ColumnCollectorInterface
+final readonly class MetaDataCollector implements ColumnCollectorInterface
 {
     public function __construct(
-        private SystemColumnServiceInterface $systemColumnService,
+        private MetaDataRepositoryInterface $metaDataRepository,
     ) {
     }
 
     public function getCollectorName(): string
     {
-        return 'system';
+        return 'metadata';
     }
 
     /**
@@ -45,26 +45,63 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
      */
     public function getColumnDefinitions(array $availableColumnDefinitions): array
     {
-        $systemColumns = $this->systemColumnService->getSystemColumnsForAssets();
+        return array_merge(
+            $this->getDefaultMetaData(),
+            $this->getPredefinedMetaData($availableColumnDefinitions)
+        );
+    }
+
+    /**
+     *
+     * @return Column[]
+     */
+    private function getDefaultMetaData(): array
+    {
+        $defaultMetadata = ['title', 'alt', 'copyright'];
         $columns = [];
-        foreach ($systemColumns as $columnKey => $type) {
-            $type = $this->concatType($type);
+        foreach ($defaultMetadata as $metadata) {
+            $columns[] = new Column(
+                key: $metadata,
+                group: 'default_metadata',
+                sortable: true,
+                editable: true,
+                localizable: false,
+                locale: null,
+                type: 'metadata.string',
+                config: []
+            );
+        }
+
+        return $columns;
+    }
+
+
+    /**
+     * @param ColumnDefinitionInterface[] $availableColumnDefinitions
+     *
+     * @return Column[]
+     */
+    private function getPredefinedMetaData(array $availableColumnDefinitions): array
+    {
+        $predefinedMetaData = $this->metaDataRepository->getAllPredefinedMetaData();
+        $columns = [];
+
+        foreach ($predefinedMetaData as $item) {
+            $type = $this->concatType($item->getType());
             if (!array_key_exists($type, $availableColumnDefinitions)) {
                 continue;
             }
 
-            $column = new Column(
-                key: $columnKey,
-                group: $this->getCollectorName(),
+            $columns[] = new Column(
+                key: $item->getName(),
+                group: 'predefined_metadata',
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
-                editable: false,
+                editable: true,
                 localizable: false,
                 locale: null,
-                type: $availableColumnDefinitions[$type]->getType(),
-                config: []
+                type: $type,
+                config: $availableColumnDefinitions[$type]->getConfig($item->getConfig())
             );
-
-            $columns[] = $column;
         }
 
         return $columns;

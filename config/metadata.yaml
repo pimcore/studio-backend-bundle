@@ -1,0 +1,12 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  #
+  # Repository
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\MetaData\Repository\MetaDataRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\MetaData\Repository\MetaDataRepository
