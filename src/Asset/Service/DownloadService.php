@@ -21,7 +21,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInter
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DownloadPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
@@ -162,7 +161,7 @@ final readonly class DownloadService implements DownloadServiceInterface
         }
 
         if ($jobRun->getOwnerId() !== $this->securityService->getCurrentUser()->getId()) {
-           throw new ForbiddenException();
+            throw new ForbiddenException();
         }
 
         $path = $this->getTempFilePath($jobRun->getId(), CsvServiceInterface::CSV_FILE_PATH);
