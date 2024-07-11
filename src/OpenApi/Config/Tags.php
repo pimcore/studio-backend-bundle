@@ -66,6 +66,18 @@ use OpenApi\Attributes\Tag;
     description: 'Property operations to get/update/create/delete properties'
 )]
 #[Tag(
+    name: Tags::Tags->name,
+    description: 'Tag operations to get/list/create/update/delete tags'
+)]
+#[Tag(
+    name: Tags::TagsForElement->value,
+    description: 'Tag operations to get tags for an element'
+)]
+#[Tag(
+    name: Tags::Translation->name,
+    description: 'Get translations either for a single key or multiple keys'
+)]
+#[Tag(
     name: Tags::Schedule->name,
     description: 'Get schedules for an element'
 )]
@@ -108,6 +120,8 @@ enum Tags: string
     case Properties = 'Properties';
     case Schedule = 'Schedule';
     case Settings = 'Settings';
+    case Tags = 'Tags';
+    case TagsForElement = 'Tags for Element';
     case Translation = 'Translation';
     case User = 'User Management';
     case Role = 'Role Management';

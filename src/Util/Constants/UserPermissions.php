@@ -30,6 +30,9 @@ enum UserPermissions: string
     case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
     case PIMCORE_USER = 'ROLE_PIMCORE_USER';
     case PREDEFINED_PROPERTIES = 'predefined_properties';
+    case TAGS_CONFIGURATION = 'tags_configuration';
+    case TAGS_ASSIGNMENT = 'tags_assignment';
+    case TAGS_SEARCH = 'tags_search';
     case THUMBNAILS = 'thumbnails';
     case USER_MANAGEMENT = 'users';
 }

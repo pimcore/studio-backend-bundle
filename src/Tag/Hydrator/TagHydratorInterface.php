@@ -14,11 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\Hydrator;
 
-interface IconServiceInterface
+use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
+use Pimcore\Model\Element\Tag as ElementTag;
+
+/**
+ * @internal
+ */
+interface TagHydratorInterface
 {
-    public function getIconForAsset(string $assetType, string $mimeType): string;
+    public function hydrate(ElementTag $tag): Tag;
 
-    public function getIconForTag(): string;
+    public function hydrateRecursive(ElementTag $tag): Tag;
 }

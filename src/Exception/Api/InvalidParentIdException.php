@@ -14,11 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
-interface IconServiceInterface
+/**
+ * @internal
+ */
+final class InvalidParentIdException extends AbstractApiException
 {
-    public function getIconForAsset(string $assetType, string $mimeType): string;
-
-    public function getIconForTag(): string;
+    public function __construct(int $parentId)
+    {
+        parent::__construct(400, sprintf('Invalid parent id: %s', $parentId));
+    }
 }
