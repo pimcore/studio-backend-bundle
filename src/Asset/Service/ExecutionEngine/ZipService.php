@@ -20,7 +20,6 @@ use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StaticResolverBundle\Models\Tool\StorageResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage;
@@ -28,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVar
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -35,7 +35,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\StorageDirectories;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -53,7 +52,7 @@ final readonly class ZipService implements ZipServiceInterface
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent,
         private SecurityServiceInterface $securityService,
-        private StorageResolverInterface $storageResolver,
+        private StorageServiceInterface $storageService,
         private UploadServiceInterface $uploadService,
     ) {
     }
@@ -65,13 +64,12 @@ final readonly class ZipService implements ZipServiceInterface
     ): ?ZipArchive {
         $zip = $this->getTempFileName($id, $fileName);
         $zipStoragePath = $this->getTempFilePathFromName($id, $fileName);
-        $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
         $archive = new ZipArchive();
 
         $state = false;
 
         try {
-            if ($storage->fileExists($zip)) {
+            if ($this->storageService->getTempStorage()->fileExists($zip)) {
                 $state = $archive->open($zipStoragePath);
             }
 
@@ -185,10 +183,16 @@ final readonly class ZipService implements ZipServiceInterface
     public function cleanUpArchiveFolder(
         string $folder
     ): void {
-        $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
+        $storage = $this->storageService->getTempStorage();
         if (empty($storage->listContents($folder)->toArray())) {
             $storage->deleteDirectory($folder);
         }
+    }
+
+    public function cleanUpArchive(
+        string $archive
+    ): void {
+        $this->storageService->removeTempFile($archive);
     }
 
     private function copyUploadZipFile(

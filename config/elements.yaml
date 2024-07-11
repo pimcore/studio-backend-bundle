@@ -20,6 +20,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementFolderServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementFolderService
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageService
+
 
   #
   # Handler

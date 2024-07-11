@@ -124,7 +124,12 @@ final class ZipUploadHandler extends AbstractHandler
                 ['message' => $exception->getMessage()],
             ));
         } finally {
-            unlink($this->zipService->getTempFilePath($archiveId, ZipServiceInterface::UPLOAD_ZIP_FILE_PATH));
+            $this->zipService->cleanUpArchive(
+                $this->zipService->getTempFileName(
+                    $archiveId,
+                    ZipServiceInterface::UPLOAD_ZIP_FILE_NAME
+                )
+            );
         }
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());

@@ -74,6 +74,7 @@ final class AssetUploadHandler extends AbstractHandler
         try {
             $element = $validatedParameters->getSubject()->getType();
             $fileData = json_decode($element, true, 512, JSON_THROW_ON_ERROR);
+            $folderName = $environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_NAME->value];
             $file = new UploadedFile(
                 $fileData['sourcePath'],
                 $fileData['fileName'],
@@ -82,7 +83,8 @@ final class AssetUploadHandler extends AbstractHandler
             $this->uploadService->uploadAsset(
                 $environmentVariables[EnvironmentVariables::PARENT_ID->value],
                 $file,
-                $user
+                $user,
+                $folderName,
             );
 
             $this->zipService->cleanUpArchiveFolder(

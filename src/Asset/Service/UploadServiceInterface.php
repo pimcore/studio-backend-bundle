@@ -52,7 +52,8 @@ interface UploadServiceInterface
     public function uploadAsset(
         int $parentId,
         UploadedFile $file,
-        UserInterface $user
+        UserInterface $user,
+        ?string $pathPrefix = null
     ): int;
 
     /**

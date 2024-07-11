@@ -20,6 +20,7 @@ use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DownloadPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -27,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeExcep
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
@@ -50,6 +52,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     use TempFilePathTrait;
 
     public function __construct(
+        private StorageServiceInterface $storageService,
         private ThumbnailServiceInterface $thumbnailService,
         private JobRunRepositoryInterface $jobRunRepository,
         private SecurityServiceInterface $securityService,
@@ -144,15 +147,32 @@ final readonly class DownloadService implements DownloadServiceInterface
         );
     }
 
+    /**
+     * @throws StreamResourceNotFoundException
+     */
     public function downloadZipArchiveByPath(DownloadPathParameter $path): StreamedResponse
     {
-        return $this->getFileStreamedResponse($path->getPath(), 'application/zip', 'assets.zip');
+        $storage = $this->storageService->getTempStorage();
+        if (!$this->storageService->tempFileExists($path->getPath())) {
+            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $path->getPath()));
+        }
+
+        return $this->getFileStreamedResponse(
+            $path->getPath(),
+            'application/zip',
+            'assets.zip',
+            $storage
+        );
     }
 
     /**
      * @throws NotFoundException|ForbiddenException
      */
     public function downloadCsvByJobRunId(int $jobRunId): StreamedResponse
+    /**
+     * @throws StreamResourceNotFoundException
+     */
+    public function downloadCsvByPath(DownloadPathParameter $path): StreamedResponse
     {
         try {
             $jobRun = $this->jobRunRepository->getJobRunById($jobRunId);
@@ -167,5 +187,16 @@ final readonly class DownloadService implements DownloadServiceInterface
         $path = $this->getTempFilePath($jobRun->getId(), CsvServiceInterface::CSV_FILE_PATH);
 
         return $this->getFileStreamedResponse($path, 'application/csv', 'assets.csv');
+        $storage = $this->storageService->getTempStorage();
+        if (!$this->storageService->tempFileExists($path->getPath())) {
+            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $path->getPath()));
+        }
+
+        return $this->getFileStreamedResponse(
+            $path->getPath(),
+            'application/csv',
+            'assets.csv',
+            $storage
+        );
     }
 }
