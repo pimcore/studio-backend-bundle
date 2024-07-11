@@ -71,11 +71,7 @@ interface DownloadServiceInterface
     public function downloadZipArchiveByPath(DownloadPathParameter $path): StreamedResponse;
 
     /**
-     * @throws NotFoundException|ForbiddenException
+     * @throws NotFoundException|ForbiddenException|StreamResourceNotFoundException
      */
     public function downloadCsvByJobRunId(int $jobRunId): StreamedResponse;
-    /**
-     * @throws StreamResourceNotFoundException
-     */
-    public function downloadCsvByPath(DownloadPathParameter $path): StreamedResponse;
 }

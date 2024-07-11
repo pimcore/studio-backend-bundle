@@ -166,13 +166,9 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
-     * @throws NotFoundException|ForbiddenException
+     * @throws NotFoundException|ForbiddenException|StreamResourceNotFoundException
      */
     public function downloadCsvByJobRunId(int $jobRunId): StreamedResponse
-    /**
-     * @throws StreamResourceNotFoundException
-     */
-    public function downloadCsvByPath(DownloadPathParameter $path): StreamedResponse
     {
         try {
             $jobRun = $this->jobRunRepository->getJobRunById($jobRunId);
@@ -184,16 +180,15 @@ final readonly class DownloadService implements DownloadServiceInterface
             throw new ForbiddenException();
         }
 
-        $path = $this->getTempFilePath($jobRun->getId(), CsvServiceInterface::CSV_FILE_PATH);
+        $fileName = $this->getTempFileName($jobRun->getId(), CsvServiceInterface::CSV_FILE_NAME);
 
-        return $this->getFileStreamedResponse($path, 'application/csv', 'assets.csv');
         $storage = $this->storageService->getTempStorage();
-        if (!$this->storageService->tempFileExists($path->getPath())) {
-            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $path->getPath()));
+        if (!$this->storageService->tempFileExists($fileName)) {
+            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $fileName));
         }
 
         return $this->getFileStreamedResponse(
-            $path->getPath(),
+            $fileName,
             'application/csv',
             'assets.csv',
             $storage
