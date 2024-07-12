@@ -14,15 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
-interface ColumnDefinitionInterface
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
+
+/**
+ * @internal
+ */
+interface ColumnCollectorLoaderInterface
 {
-    public function getType(): string;
-
-    public function getConfig(mixed $config): array;
-
-    public function isSortable(): bool;
-
-    public function getFrontendType(): string;
+    /**
+     * @return array<string, ColumnCollectorInterface>
+     */
+    public function loadColumnCollectors(): array;
 }

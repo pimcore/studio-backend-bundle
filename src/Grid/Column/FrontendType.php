@@ -14,27 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
-
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
 /**
  * @internal
  */
-final readonly class ImageDefinition implements ColumnDefinitionInterface
+enum FrontendType: string
 {
-    public function getType(): string
-    {
-        return 'image';
-    }
-
-    public function getConfig(): array
-    {
-        return  [];
-    }
-
-    public function isSortable(): bool
-    {
-        return false;
-    }
+    case ELEMENT_DROPZONE = 'element_dropzone';
+    case INPUT = 'input';
+    case TEXTAREA = 'textarea';
+    case SELECT = 'select';
+    case CHECKBOX = 'checkbox';
+    case DATETIME = 'datetime';
+    case IMAGE = 'image';
 }

@@ -14,27 +14,33 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 
 /**
  * @internal
  */
-final readonly class FileSizeDefinition implements ColumnDefinitionInterface
+final readonly class ImageDefinition implements ColumnDefinitionInterface
 {
     public function getType(): string
     {
-        return 'fileSize';
+        return 'system.image';
     }
 
-    public function getConfig(): array
+    public function getConfig(mixed $config): array
     {
         return  [];
     }
 
     public function isSortable(): bool
     {
-        return true;
+        return false;
+    }
+
+    public function getFrontendType(): string
+    {
+        return FrontendType::IMAGE->value;
     }
 }

@@ -14,21 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 
 /**
  * @internal
  */
-final readonly class StringDefinition implements ColumnDefinitionInterface
+final readonly class DatetimeDefinition implements ColumnDefinitionInterface
 {
     public function getType(): string
     {
-        return 'string';
+        //TODO:  refactor to enum
+        return 'system.datetime';
     }
 
-    public function getConfig(): array
+    public function getConfig(mixed $config): array
     {
         return  [];
     }
@@ -36,5 +38,10 @@ final readonly class StringDefinition implements ColumnDefinitionInterface
     public function isSortable(): bool
     {
         return true;
+    }
+
+    public function getFrontendType(): string
+    {
+        return FrontendType::DATETIME->value;
     }
 }
