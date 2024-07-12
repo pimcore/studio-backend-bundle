@@ -21,17 +21,13 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
 /**
  * @internal
  */
-enum  MimeTypes: string
+enum MimeTypes: string
 {
     use EnumToValueArrayTrait;
 
     case JPEG = 'JPEG';
-
     case PNG = 'PNG';
-
     case PDF = 'application/pdf';
-
     case CSV = 'text/csv';
-
     case ZIP = 'application/zip';
 }

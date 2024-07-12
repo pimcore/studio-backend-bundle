@@ -16,9 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
-use Exception;
 use League\Flysystem\FilesystemException;
-use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -69,8 +67,9 @@ final readonly class ZipService implements ZipServiceInterface
         $archive = new ZipArchive();
 
         if (!file_exists($zipPath)) {
-           $archive->open($zipPath, ZipArchive::CREATE);
-           return $archive;
+            $archive->open($zipPath, ZipArchive::CREATE);
+
+            return $archive;
         }
 
         if ($archive->open($zipPath) === true) {
