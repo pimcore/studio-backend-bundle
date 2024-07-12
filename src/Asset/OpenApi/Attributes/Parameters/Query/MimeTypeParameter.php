@@ -34,10 +34,10 @@ final class MimeTypeParameter extends QueryParameter
             schema: new Schema(
                 type: 'string',
                 enum: [
-                    MimeTypes::JPEG,
-                    MimeTypes::PNG,
+                    MimeTypes::JPEG->value,
+                    MimeTypes::PNG->value,
                 ],
-                example: MimeTypes::JPEG
+                example: MimeTypes::JPEG->value
             ),
         );
     }

@@ -21,11 +21,14 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\AssetMe
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DownloadPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -46,16 +49,16 @@ final class DownloadZipController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/download/zip', name: 'pimcore_studio_api_zip_download_asset', methods: ['GET'])]
+    #[Route('/assets/download/zip/{jobRunId}', name: 'pimcore_studio_api_zip_download_asset', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/download/zip',
+        path: self::API_PATH . '/assets/download/zip/{jobRunId}',
         operationId: 'downloadZippedAssets',
         description: 'Downloading zipped assets',
         summary: 'Downloading the zip file with assets',
         tags: [Tags::Assets->name]
     )]
-    #[PathParameter]
+    #[IdParameter(type: 'JobRun', name: 'jobRunId')]
     #[SuccessResponse(
         description: 'Zip archive',
         content: [new AssetMediaType('application/zip')],
@@ -65,8 +68,13 @@ final class DownloadZipController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function downloadZippedAssets(#[MapQueryString] DownloadPathParameter $path): StreamedResponse
+    public function downloadZippedAssets(int $jobRunId): StreamedResponse
     {
-        return $this->downloadService->downloadZipArchiveByPath($path);
+        return $this->downloadService->downloadResourceByJobRunId(
+            $jobRunId,
+            ZipServiceInterface::DOWNLOAD_ZIP_FILE_NAME,
+            MimeTypes::ZIP->value,
+            'assets.zip'
+        );
     }
 }

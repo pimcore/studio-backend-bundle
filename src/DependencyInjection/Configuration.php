@@ -124,7 +124,7 @@ class Configuration implements ConfigurationInterface
                             ->integerNode('width')->isRequired()->end()
                             ->integerNode('dpi')->isRequired()->end()
                             ->enumNode('format')
-                                ->values(MimeTypes::ALLOWED_FORMATS)
+                                ->values([MimeTypes::JPEG->value, MimeTypes::PNG->value])
                                 ->isRequired()
                                 ->cannotBeEmpty()
                             ->end()

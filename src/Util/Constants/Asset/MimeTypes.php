@@ -16,19 +16,22 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
+
 /**
  * @internal
  */
-final readonly class MimeTypes
+enum  MimeTypes: string
 {
-    public const JPEG = 'JPEG';
+    use EnumToValueArrayTrait;
 
-    public const PNG = 'PNG';
+    case JPEG = 'JPEG';
 
-    public const PDF = 'application/pdf';
+    case PNG = 'PNG';
 
-    public const ALLOWED_FORMATS = [
-        self::JPEG,
-        self::PNG,
-    ];
+    case PDF = 'application/pdf';
+
+    case CSV = 'text/csv';
+
+    case ZIP = 'application/zip';
 }

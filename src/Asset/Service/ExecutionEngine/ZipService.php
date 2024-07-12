@@ -16,7 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
+use Exception;
 use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -59,32 +61,23 @@ final readonly class ZipService implements ZipServiceInterface
 
     public function getZipArchive(
         mixed $id,
-        string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
-        bool $create = true
+        string $filePath = self::DOWNLOAD_ZIP_FILE_PATH,
+        bool $create = true,
     ): ?ZipArchive {
-        $zip = $this->getTempFileName($id, $fileName);
-        $zipStoragePath = $this->getTempFilePathFromName($id, $fileName);
+        $zipPath = $this->getTempFilePath($id, $filePath);
+
         $archive = new ZipArchive();
 
-        $state = false;
-
-        try {
-            if ($this->storageService->getTempStorage()->fileExists($zip)) {
-                $state = $archive->open($zipStoragePath);
-            }
-
-            if (!$state && $create) {
-                $state = $archive->open($zipStoragePath, ZipArchive::CREATE);
-            }
-        } catch (FilesystemException) {
-            return null;
+        if (!file_exists($zipPath)) {
+           $archive->open($zipPath, ZipArchive::CREATE);
+           return $archive;
         }
 
-        if ($state !== true) {
-            return null;
+        if ($archive->open($zipPath) === true) {
+            return $archive;
         }
 
-        return $archive;
+        return null;
     }
 
     public function addFile(ZipArchive $archive, Asset $asset): void
@@ -155,7 +148,7 @@ final readonly class ZipService implements ZipServiceInterface
         return $jobRun->getId();
     }
 
-    public function generateZipFile(CreateAssetFileParameter $ids): string
+    public function generateZipFile(CreateAssetFileParameter $ids): int
     {
         $steps = [
             new JobStep(JobSteps::ZIP_COLLECTION->value, CollectionMessage::class, '', []),
@@ -174,7 +167,7 @@ final readonly class ZipService implements ZipServiceInterface
             Config::CONTEXT_STOP_ON_ERROR->value
         );
 
-        return $this->getTempFilePath($jobRun->getId(), self::DOWNLOAD_ZIP_FILE_PATH);
+        return $jobRun->getId();
     }
 
     /**
@@ -193,6 +186,17 @@ final readonly class ZipService implements ZipServiceInterface
         string $archive
     ): void {
         $this->storageService->removeTempFile($archive);
+    }
+
+    public function copyFileToTemp(int $jobRunId): void
+    {
+        $storage = $this->storageService->getTempStorage();
+
+        $storage->writeStream(
+            $this->getTempFileName($jobRunId, self::DOWNLOAD_ZIP_FILE_NAME),
+            fopen($this->getTempFilePath($jobRunId, self::DOWNLOAD_ZIP_FILE_PATH), 'rb')
+        );
+
     }
 
     private function copyUploadZipFile(

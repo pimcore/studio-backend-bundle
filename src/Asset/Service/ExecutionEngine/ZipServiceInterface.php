@@ -48,7 +48,7 @@ interface ZipServiceInterface
 
     public function getZipArchive(
         mixed $id,
-        string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
+        string $filePath = self::DOWNLOAD_ZIP_FILE_PATH,
         bool $create = true
     ): ?ZipArchive;
 
@@ -68,7 +68,7 @@ interface ZipServiceInterface
         int $parentId
     ): int;
 
-    public function generateZipFile(CreateAssetFileParameter $ids): string;
+    public function generateZipFile(CreateAssetFileParameter $ids): int;
 
     public function cleanUpArchive(
         string $archive
@@ -84,4 +84,6 @@ interface ZipServiceInterface
     public function getTempFilePath(mixed $id, string $path): string;
 
     public function getTempFileName(mixed $id, string $fileName): string;
+
+    public function copyFileToTemp(int $jobRunId): void;
 }

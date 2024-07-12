@@ -17,9 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
+use League\Flysystem\FilesystemOperator;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DownloadPathParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
@@ -148,27 +152,28 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
-     * @throws StreamResourceNotFoundException
+     * @throws NotFoundException|ForbiddenException|StreamResourceNotFoundException
      */
-    public function downloadZipArchiveByPath(DownloadPathParameter $path): StreamedResponse
+    public function downloadResourceByJobRunId(
+        int $jobRunId,
+        string $tempFileName,
+        string $mimeType,
+        string $downloadName,
+    ): StreamedResponse
     {
-        $storage = $this->storageService->getTempStorage();
-        if (!$this->storageService->tempFileExists($path->getPath())) {
-            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $path->getPath()));
-        }
+        $jobRun = $this->validateJobRun($jobRunId);
+
+        $fileName = $this->getTempFileName($jobRun->getId(), $tempFileName);
 
         return $this->getFileStreamedResponse(
-            $path->getPath(),
-            'application/zip',
-            'assets.zip',
-            $storage
+            $fileName,
+            $mimeType,
+            $downloadName,
+            $this->validateStorage($fileName)
         );
     }
 
-    /**
-     * @throws NotFoundException|ForbiddenException|StreamResourceNotFoundException
-     */
-    public function downloadCsvByJobRunId(int $jobRunId): StreamedResponse
+    private function validateJobRun(int $jobRunId): JobRun
     {
         try {
             $jobRun = $this->jobRunRepository->getJobRunById($jobRunId);
@@ -180,18 +185,16 @@ final readonly class DownloadService implements DownloadServiceInterface
             throw new ForbiddenException();
         }
 
-        $fileName = $this->getTempFileName($jobRun->getId(), CsvServiceInterface::CSV_FILE_NAME);
+        return $jobRun;
+    }
 
+    private function validateStorage(string $fileName): FilesystemOperator
+    {
         $storage = $this->storageService->getTempStorage();
         if (!$this->storageService->tempFileExists($fileName)) {
             throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $fileName));
         }
 
-        return $this->getFileStreamedResponse(
-            $fileName,
-            'application/csv',
-            'assets.csv',
-            $storage
-        );
+        return $storage;
     }
 }

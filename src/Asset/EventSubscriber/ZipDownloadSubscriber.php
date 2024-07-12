@@ -55,6 +55,9 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
             $event->getNewState() === JobRunStates::FINISHED->value &&
             $event->getJobName() === Jobs::CREATE_ZIP->value
         ) {
+            // TODO Move this to it's own step
+            $this->zipService->copyFileToTemp($event->getJobRunId());
+
             $this->publishService->publish(
                 Events::ZIP_DOWNLOAD_READY->value,
                 new DownloadReady(
