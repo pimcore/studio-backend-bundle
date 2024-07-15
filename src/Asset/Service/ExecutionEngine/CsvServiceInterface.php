@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 interface CsvServiceInterface
 {
     public const CSV_FILE_NAME = 'download-csv-{id}.csv';
+
     public const CSV_FOLDER_NAME = 'download-csv-{id}';
 
     public function getCsvFile(int $id, Configuration $configuration, array $settings): string;

@@ -63,7 +63,7 @@ final readonly class CsvService implements CsvServiceInterface
                 '',
                 array_merge(
                     [
-                        csv::ASSET_TO_EXPORT->value => $asset
+                        csv::ASSET_TO_EXPORT->value => $asset,
                     ],
                     $jobStepConfig
                 )
