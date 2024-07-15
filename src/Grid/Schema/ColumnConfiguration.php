@@ -28,29 +28,64 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
-    title: 'Grid Column Request',
-    required: ['key', 'locale', 'type', 'config'],
+    title: 'GridColumnDefinition',
+    required: ['key', 'group', 'sortable', 'editable', 'localizable', 'locale', 'type', 'config'],
     type: 'object'
 )]
-final class Column
+final class ColumnConfiguration implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
 
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]
         private readonly string $key,
+        #[Property(description: 'Group', type: 'string', example: 'system')]
+        private readonly string $group,
+        #[Property(description: 'Sortable', type: 'boolean', example: true)]
+        private readonly bool $sortable,
+        #[Property(description: 'Editable', type: 'boolean', example: false)]
+        private readonly bool $editable,
+        #[Property(description: 'Localizable', type: 'boolean', example: false)]
+        private readonly bool $localizable,
         #[Property(description: 'Locale', type: 'string', example: 'en')]
         private readonly ?string $locale,
         #[Property(description: 'Type', type: 'string', example: 'integer')]
         private readonly string $type,
+        #[Property(description: 'Frontend Type', type: 'string', example: 'integer')]
+        private readonly string $frontendType,
         #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
         private readonly array $config,
     ) {
     }
 
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
 
     public function getKey(): string
     {
         return $this->key;
+    }
+
+    public function getGroup(): string
+    {
+        return $this->group;
+    }
+
+    public function isSortable(): bool
+    {
+        return $this->sortable;
+    }
+
+    public function isEditable(): bool
+    {
+        return $this->editable;
+    }
+
+    public function isLocalizable(): bool
+    {
+        return $this->localizable;
     }
 
     public function getLocale(): ?string
@@ -61,5 +96,10 @@ final class Column
     public function getType(): string
     {
         return $this->type;
+    }
+
+    public function getFrontendType(): string
+    {
+        return $this->frontendType;
     }
 }

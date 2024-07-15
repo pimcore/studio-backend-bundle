@@ -17,10 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
 
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
@@ -60,7 +64,12 @@ final class GetController extends AbstractApiController
     #[SuccessResponse(
         description: 'Grid configuration',
         content: new JsonContent(
-            ref: Configuration::class
+            properties: [
+                new Property(
+                property: 'columns',
+                type: 'array',
+                items: new Items(ref: ColumnConfiguration::class),
+            )],
         )
     )]
     #[DefaultResponses([

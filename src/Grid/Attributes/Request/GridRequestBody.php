@@ -35,19 +35,13 @@ final class GridRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['folderId', 'gridConfig'],
+                required: ['folderId', 'columns'],
                 properties: [
                     new SingleInteger(propertyName: 'folderId'),
                     new Property(
-                        property: 'gridConfig',
-                        properties: [
-                            new Property(
-                                property: 'columns',
-                                type: 'array',
-                                items: new Items(ref: Column::class)
-                            ),
-                        ],
-                        type: 'object'
+                        property: 'columns',
+                        type: 'array',
+                        items: new Items(ref: Column::class)
                     ),
                 ],
                 type: 'object',
