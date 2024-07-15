@@ -21,7 +21,6 @@ use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -45,7 +44,6 @@ final class AssetUploadHandler extends AbstractHandler
         private readonly StorageServiceInterface $storageService,
         private readonly UserResolverInterface $userResolver,
         private readonly UploadServiceInterface $uploadService,
-        private readonly ZipServiceInterface $zipService,
     ) {
         parent::__construct();
     }

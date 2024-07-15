@@ -123,15 +123,18 @@ final class CsvCreationHandler extends AbstractHandler
     {
         $this->stepConfiguration->setRequired(Csv::ASSET_TO_EXPORT->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::ASSET_TO_EXPORT->value, self::ARRAY_TYPE
+            Csv::ASSET_TO_EXPORT->value,
+            self::ARRAY_TYPE
         );
         $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_SETTINGS->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::JOB_STEP_CONFIG_SETTINGS->value, self::ARRAY_TYPE
+            Csv::JOB_STEP_CONFIG_SETTINGS->value,
+            self::ARRAY_TYPE
         );
         $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::JOB_STEP_CONFIG_CONFIGURATION->value, self::ARRAY_TYPE
+            Csv::JOB_STEP_CONFIG_CONFIGURATION->value,
+            self::ARRAY_TYPE
         );
     }
 }

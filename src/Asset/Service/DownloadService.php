@@ -181,9 +181,9 @@ final readonly class DownloadService implements DownloadServiceInterface
                     $folderName
                 )
             );
-        } finally {
-            return $streamedResponse;
         }
+
+        return $streamedResponse;
     }
 
     private function validateJobRun(int $jobRunId): JobRun
