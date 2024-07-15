@@ -22,15 +22,13 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use function array_key_exists;
-use function in_array;
 
 /**
  * @internal
@@ -55,42 +53,35 @@ final class ZipCreationHandler extends AbstractHandler
     public function __invoke(ZipCreationMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
-
-        $validatedParameters = $this->validateJobParameters(
-            $message,
-            $jobRun,
-            $this->userResolver
-        );
-
-        if ($validatedParameters instanceof AbortActionData) {
-            $this->abort($validatedParameters);
-        }
-
-        $context = $jobRun->getContext();
-
-        if (!array_key_exists(ZipServiceInterface::ASSETS_INDEX, $context)) {
-            $this->abort(
-                $this->getAbortData(
-                    Config::NO_ASSETS_FOUND_FOR_JOB_RUN->value,
-                    [
-                        'jobRunId' => $jobRun->getId(),
-                    ]
-                )
-            );
-        }
-
-        $jobAsset = $validatedParameters->getSubject();
-
-        if (!in_array($jobAsset->getId(), $context[ZipServiceInterface::ASSETS_INDEX], true)) {
+        $user = $this->userResolver->getById($jobRun->getOwnerId());
+        if ($user === null) {
             $this->abort($this->getAbortData(
-                Config::ELEMENT_PERMISSION_MISSING_MESSAGE->value,
+                Config::USER_NOT_FOUND_MESSAGE->value,
                 [
                     'userId' => $jobRun->getOwnerId(),
-                    'permission' => ElementPermissions::VIEW_PERMISSION,
-                    'type' => ucfirst($jobAsset->getType()),
-                    'id' => $jobAsset->getId(),
-                ],
+                ]
             ));
+        }
+        $config = $this->getCurrentJobStepConfig($message);
+        $assetId = $config[ZipServiceInterface::ASSET_TO_ZIP];
+        $asset = $this->getElementById(
+            new ElementDescriptor(
+                ElementTypes::TYPE_ASSET,
+                $assetId
+            ),
+            $user,
+            $this->elementService
+        );
+
+        if (!$asset instanceof Asset || $asset->getType() === ElementTypes::TYPE_FOLDER) {
+            $this->abort($this->getAbortData(
+                Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
+                [
+                    'folderId' => $asset->getId(),
+                ]
+            ));
+
+            return;
         }
 
         $archive = $this->zipService->getZipArchive($jobRun->getId());
@@ -104,20 +95,15 @@ final class ZipCreationHandler extends AbstractHandler
             ));
         }
 
-        $asset = $this->getElementById(
-            $jobAsset,
-            $validatedParameters->getUser(),
-            $this->elementService
-        );
-
-        if (!$asset instanceof Asset) {
-            return;
-        }
-
         $this->zipService->addFile($archive, $asset);
-
         $archive->close();
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+    }
+
+    protected function configureStep(): void
+    {
+        $this->stepConfiguration->setRequired(ZipServiceInterface::ASSET_TO_ZIP);
+        $this->stepConfiguration->setAllowedTypes(ZipServiceInterface::ASSET_TO_ZIP, 'int');
     }
 }

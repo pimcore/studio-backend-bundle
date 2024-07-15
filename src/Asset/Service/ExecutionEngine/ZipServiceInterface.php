@@ -34,6 +34,8 @@ interface ZipServiceInterface
 {
     public const ASSETS_INDEX = 'assets';
 
+    public const ASSET_TO_ZIP = 'asset_to_zip';
+
     public const DOWNLOAD_ZIP_FILE_NAME = 'download-zip-{id}.zip';
 
     public const UPLOAD_ZIP_FILE_NAME = 'upload-zip-{id}.zip';
@@ -48,7 +50,7 @@ interface ZipServiceInterface
 
     public function getZipArchive(
         mixed $id,
-        string $filePath = self::DOWNLOAD_ZIP_FILE_PATH,
+        string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
         bool $create = true
     ): ?ZipArchive;
 
@@ -70,10 +72,6 @@ interface ZipServiceInterface
 
     public function generateZipFile(CreateAssetFileParameter $ids): int;
 
-    public function cleanUpArchive(
-        string $archive
-    ): void;
-
     /**
      * @throws FilesystemException
      */
@@ -81,9 +79,17 @@ interface ZipServiceInterface
         string $folder
     ): void;
 
+    public function cleanUpLocalArchive(
+        string $archivePath
+    ): void;
+
+    public function cleanUpFlysystemArchive(
+        string $archivePath
+    ): void;
+
     public function getTempFilePath(mixed $id, string $path): string;
 
     public function getTempFileName(mixed $id, string $fileName): string;
 
-    public function copyFileToTemp(int $jobRunId): void;
+    public function copyDownloadZipToFlysystem(int $jobRunId): void;
 }

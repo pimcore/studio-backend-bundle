@@ -5,6 +5,7 @@ studio_ee_environment_variable_not_found: Environment variable %variable% not fo
 studio_ee_element_locked: Element with type %type% with ID %id% is locked
 studio_ee_element_permission_missing: User with ID %userId% has missing permission %permission% on element with type %type% and ID %id%
 studio_ee_element_delete_failed: 'Element with type %type% with ID %id% could not be deleted: %message%'
+studio_ee_zip_file_copy_failed: 'Zip file could not be copied: %message%'
 studio_ee_zip_file_upload_failed: 'Zip file could not be uploaded: %message%'
 studio_ee_zip_cleanup_failed: 'Zip directory %directory% could not be removed: %message%'
 studio_ee_element_patch_failed: 'Element with type %type% with ID %id% could not be updated: %message%'
@@ -18,6 +19,7 @@ studio_ee_job_create_csv: Create CSV
 studio_ee_job_upload_assets: Upload Assets
 studio_ee_job_step_zip_collection: Zip Collection
 studio_ee_job_step_zip_creation: Zip Creation
+studio_ee_job_step_zip_copy: Zip Copy
 studio_ee_job_step_asset_deletion: Asset Deletion
 studio_ee_job_step_asset_cloning: Asset Cloning
 studio_ee_job_step_csv_file_not_found: CSV file not found

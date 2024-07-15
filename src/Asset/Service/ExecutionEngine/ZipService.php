@@ -20,7 +20,7 @@ use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCopyMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
@@ -59,24 +59,32 @@ final readonly class ZipService implements ZipServiceInterface
 
     public function getZipArchive(
         mixed $id,
-        string $filePath = self::DOWNLOAD_ZIP_FILE_PATH,
-        bool $create = true,
+        string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
+        bool $create = true
     ): ?ZipArchive {
-        $zipPath = $this->getTempFilePath($id, $filePath);
-
+        $zip = $this->getTempFileName($id, $fileName);
+        $zipStoragePath = $this->getTempFilePathFromName($id, $fileName);
         $archive = new ZipArchive();
 
-        if (!file_exists($zipPath)) {
-            $archive->open($zipPath, ZipArchive::CREATE);
+        $state = false;
 
-            return $archive;
+        try {
+            if ($this->storageService->getTempStorage()->fileExists($zip)) {
+                $state = $archive->open($zipStoragePath);
+            }
+
+            if (!$state && $create) {
+                $state = $archive->open($zipStoragePath, ZipArchive::CREATE);
+            }
+        } catch (FilesystemException) {
+            return null;
         }
 
-        if ($archive->open($zipPath) === true) {
-            return $archive;
+        if ($state !== true) {
+            return null;
         }
 
-        return null;
+        return $archive;
     }
 
     public function addFile(ZipArchive $archive, Asset $asset): void
@@ -149,15 +157,26 @@ final readonly class ZipService implements ZipServiceInterface
 
     public function generateZipFile(CreateAssetFileParameter $ids): int
     {
-        $steps = [
-            new JobStep(JobSteps::ZIP_COLLECTION->value, CollectionMessage::class, '', []),
-            new JobStep(JobSteps::ZIP_CREATION->value, ZipCreationMessage::class, '', []),
-        ];
+        $jobSteps = array_map(
+            static fn (int $id) => new JobStep(
+                JobSteps::ZIP_CREATION->value,
+                ZipCreationMessage::class,
+                '',
+                [self::ASSET_TO_ZIP => $id]
+            ),
+            $ids->getItems()
+        );
+
+        $jobSteps[] = new JobStep(
+            JobSteps::ZIP_COPY->value,
+            ZipCopyMessage::class,
+            '',
+            []
+        );
 
         $job = new Job(
             name: Jobs::CREATE_ZIP->value,
-            steps: $steps,
-            selectedElements: $ids->getItems()
+            steps: $jobSteps,
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -181,21 +200,52 @@ final readonly class ZipService implements ZipServiceInterface
         }
     }
 
-    public function cleanUpArchive(
-        string $archive
+    public function cleanUpLocalArchive(
+        string $archivePath
     ): void {
-        $this->storageService->removeTempFile($archive);
+        if (is_file($archivePath)) {
+            @unlink($archivePath);
+        }
     }
 
-    public function copyFileToTemp(int $jobRunId): void
+    public function cleanUpFlysystemArchive(
+        string $archivePath
+    ): void {
+        if ($this->storageService->tempFileExists($archivePath)) {
+            $this->storageService->removeTempFile($archivePath);
+        }
+    }
+
+    public function copyDownloadZipToFlysystem(int $jobRunId): void
     {
         $storage = $this->storageService->getTempStorage();
+        $archiveName = $this->getTempFileName($jobRunId, self::DOWNLOAD_ZIP_FILE_NAME);
+        $archiveLocalPath = $this->getTempFilePath($jobRunId, self::DOWNLOAD_ZIP_FILE_PATH);
+        if (!is_file($archiveLocalPath)) {
+            throw new EnvironmentException(
+                sprintf(
+                    'The zip archive %s could not be found.',
+                    $archiveName
+                )
+            );
+        }
 
-        $storage->writeStream(
-            $this->getTempFileName($jobRunId, self::DOWNLOAD_ZIP_FILE_NAME),
-            fopen($this->getTempFilePath($jobRunId, self::DOWNLOAD_ZIP_FILE_PATH), 'rb')
-        );
-
+        try {
+            $folderName = (string)$jobRunId;
+            $storage->createDirectory($folderName);
+            $storage->writeStream(
+                $folderName . '/' . $archiveName,
+                fopen($archiveLocalPath, 'rb')
+            );
+            @unlink($archiveLocalPath);
+        } catch (FilesystemException) {
+            throw new EnvironmentException(
+                sprintf(
+                    'Failed to copy zip archive %s to Flysystem.',
+                    $archiveName
+                )
+            );
+        }
     }
 
     private function copyUploadZipFile(

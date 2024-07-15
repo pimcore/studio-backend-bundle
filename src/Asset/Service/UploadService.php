@@ -89,7 +89,6 @@ final readonly class UploadService implements UploadServiceInterface
         int $parentId,
         UploadedFile $file,
         UserInterface $user,
-        ?string $pathPrefix = null
     ): int {
         $parent = $this->validateParent($user, $parentId);
         $sourcePath = $this->getValidSourcePath($file);
@@ -111,11 +110,7 @@ final readonly class UploadService implements UploadServiceInterface
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
         } finally {
-            $fileLocation = $file->getFilename();
-            if ($pathPrefix) {
-                $fileLocation = $pathPrefix . '/' . $fileLocation;
-            }
-            $this->storageService->removeTempFile($fileLocation);
+            @unlink($sourcePath);
         }
 
         return $asset->getId();

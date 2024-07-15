@@ -14,21 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
+
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-final readonly class CreateAssetFileParameter
+final class ZipCopyMessage extends AbstractExecutionEngineMessage
 {
-    /** @param array<int> $items */
-    public function __construct(
-        private array $items
-    ) {
-    }
-
-    public function getItems(): array
-    {
-        return $this->items;
-    }
 }
