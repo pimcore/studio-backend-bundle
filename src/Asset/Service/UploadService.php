@@ -27,7 +27,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -55,7 +54,6 @@ final readonly class UploadService implements UploadServiceInterface
         private AssetServiceResolverInterface $assetServiceResolver,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private ServiceResolverInterface $serviceResolver,
-        private StorageServiceInterface $storageService,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
     ) {
 

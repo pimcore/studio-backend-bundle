@@ -90,7 +90,10 @@ final class CsvService implements CsvServiceInterface
                 $headers = $this->getHeaders($configuration, $settings);
                 $storage->write(
                     $file,
-                    implode($settings[Csv::SETTINGS_DELIMITER->value] ?? ',', $headers). Csv::NEW_LINE->value
+                    implode(
+                        $settings[Csv::SETTINGS_DELIMITER->value] ?? ',',
+                        $headers
+                    ) . Csv::NEW_LINE->value
                 );
             }
 
