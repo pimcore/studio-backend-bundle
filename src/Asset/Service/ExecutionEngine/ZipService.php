@@ -188,34 +188,6 @@ final readonly class ZipService implements ZipServiceInterface
         return $jobRun->getId();
     }
 
-    /**
-     * @throws FilesystemException
-     */
-    public function cleanUpArchiveFolder(
-        string $folder
-    ): void {
-        $storage = $this->storageService->getTempStorage();
-        if (empty($storage->listContents($folder)->toArray())) {
-            $storage->deleteDirectory($folder);
-        }
-    }
-
-    public function cleanUpLocalArchive(
-        string $archivePath
-    ): void {
-        if (is_file($archivePath)) {
-            @unlink($archivePath);
-        }
-    }
-
-    public function cleanUpFlysystemArchive(
-        string $archivePath
-    ): void {
-        if ($this->storageService->tempFileExists($archivePath)) {
-            $this->storageService->removeTempFile($archivePath);
-        }
-    }
-
     public function copyDownloadZipToFlysystem(int $jobRunId): void
     {
         $storage = $this->storageService->getTempStorage();
@@ -231,7 +203,7 @@ final readonly class ZipService implements ZipServiceInterface
         }
 
         try {
-            $folderName = (string)$jobRunId;
+            $folderName = $this->getTempFilePath($jobRunId, self::DOWNLOAD_ZIP_FOLDER_NAME);
             $storage->createDirectory($folderName);
             $storage->writeStream(
                 $folderName . '/' . $archiveName,

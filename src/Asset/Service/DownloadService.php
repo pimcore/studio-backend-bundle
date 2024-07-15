@@ -17,12 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
+use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -39,6 +41,7 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Exception\NotFoundException as CoreNotFoundException;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function in_array;
@@ -153,19 +156,35 @@ final readonly class DownloadService implements DownloadServiceInterface
     public function downloadResourceByJobRunId(
         int $jobRunId,
         string $tempFileName,
+        string $tempFolderName,
         string $mimeType,
         string $downloadName,
     ): StreamedResponse {
         $jobRun = $this->validateJobRun($jobRunId);
 
         $fileName = $this->getTempFileName($jobRun->getId(), $tempFileName);
+        $folderName = $this->getTempFileName($jobRun->getId(), $tempFolderName);
+        $filePath = $folderName . '/' . $fileName;
 
-        return $this->getFileStreamedResponse(
-            $fileName,
+        $streamedResponse = $this->getFileStreamedResponse(
+            $filePath,
             $mimeType,
             $downloadName,
-            $this->validateStorage($fileName)
+            $this->validateStorage($filePath)
         );
+
+        try {
+            $this->storageService->cleanUpFolder($folderName);
+        } catch (FilesystemException) {
+            throw new EnvironmentException(
+                sprintf(
+                    'Failed to clean up temporary folder %s',
+                    $folderName
+                )
+            );
+        } finally {
+            return $streamedResponse;
+        }
     }
 
     private function validateJobRun(int $jobRunId): JobRun
@@ -177,7 +196,7 @@ final readonly class DownloadService implements DownloadServiceInterface
         }
 
         if ($jobRun->getOwnerId() !== $this->securityService->getCurrentUser()->getId()) {
-            throw new ForbiddenException();
+            throw new ForbiddenException('Only job owner can access the resource');
         }
 
         return $jobRun;

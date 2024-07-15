@@ -19,9 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Schema\DownloadReady;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -32,6 +33,7 @@ final readonly class ZipCreationSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private PublishServiceInterface $publishService,
+        private StorageServiceInterface $storageService,
         private ZipServiceInterface $zipService
     ) {
 
@@ -53,16 +55,14 @@ final readonly class ZipCreationSubscriber implements EventSubscriberInterface
         match ($event->getNewState()) {
             JobRunStates::FINISHED->value => $this->publishService->publish(
                 Events::ZIP_DOWNLOAD_READY->value,
-                new DownloadReady(
+                new Finished(
                     $event->getJobRunId(),
-                    $this->zipService->getTempFilePath(
-                        $event->getJobRunId(),
-                        ZipServiceInterface::DOWNLOAD_ZIP_FILE_PATH
-                    ),
-                    $event->getJobRunOwnerId()
+                    $event->getJobName(),
+                    $event->getJobRunOwnerId(),
+                    $event->getNewState()
                 )
             ),
-            JobRunStates::FAILED->value => $this->zipService->cleanUpLocalArchive(
+            JobRunStates::FAILED->value => $this->storageService->cleanUpLocalFile(
                 $this->zipService->getTempFilePath(
                     $event->getJobRunId(),
                     ZipServiceInterface::DOWNLOAD_ZIP_FILE_PATH

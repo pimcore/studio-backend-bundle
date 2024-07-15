@@ -76,6 +76,7 @@ final class DownloadCsvController extends AbstractApiController
         return $this->downloadService->downloadResourceByJobRunId(
             $jobRunId,
             CsvServiceInterface::CSV_FILE_NAME,
+            CsvServiceInterface::CSV_FOLDER_NAME,
             MimeTypes::CSV->value,
             'assets.csv'
         );

@@ -62,8 +62,8 @@ final class ZipCreationHandler extends AbstractHandler
                 ]
             ));
         }
-        $config = $this->getCurrentJobStepConfig($message);
-        $assetId = $config[ZipServiceInterface::ASSET_TO_ZIP];
+
+        $assetId = $this->extractConfigFieldFromJobStepConfig($message, ZipServiceInterface::ASSET_TO_ZIP);
         $asset = $this->getElementById(
             new ElementDescriptor(
                 ElementTypes::TYPE_ASSET,

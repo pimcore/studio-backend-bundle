@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -41,6 +42,7 @@ final class AssetUploadHandler extends AbstractHandler
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
+        private readonly StorageServiceInterface $storageService,
         private readonly UserResolverInterface $userResolver,
         private readonly UploadServiceInterface $uploadService,
         private readonly ZipServiceInterface $zipService,
@@ -85,7 +87,7 @@ final class AssetUploadHandler extends AbstractHandler
                 $user,
             );
 
-            $this->zipService->cleanUpArchiveFolder(
+            $this->storageService->cleanUpFolder(
                 $environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_NAME->value],
             );
 

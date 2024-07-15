@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Model\Asset;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -70,6 +71,7 @@ interface DownloadServiceInterface
     public function downloadResourceByJobRunId(
         int $jobRunId,
         string $tempFileName,
+        string $tempFolderName,
         string $mimeType,
         string $downloadName,
     ): StreamedResponse;

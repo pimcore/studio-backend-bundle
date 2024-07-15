@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -41,6 +42,7 @@ final class ZipUploadHandler extends AbstractHandler
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
+        private readonly StorageServiceInterface $storageService,
         private readonly UploadServiceInterface $uploadService,
         private readonly UserResolverInterface $userResolver,
         private readonly ZipServiceInterface $zipService,
@@ -124,7 +126,7 @@ final class ZipUploadHandler extends AbstractHandler
                 ['message' => $exception->getMessage()],
             ));
         } finally {
-            $this->zipService->cleanUpLocalArchive(
+            $this->storageService->cleanUpLocalFile(
                 $this->zipService->getTempFilePath(
                     $archiveId,
                     ZipServiceInterface::UPLOAD_ZIP_FILE_PATH

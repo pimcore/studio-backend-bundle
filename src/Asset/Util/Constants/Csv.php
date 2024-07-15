@@ -21,6 +21,7 @@ enum Csv: string
 {
     use EnumToValueArrayTrait;
 
+    case ASSET_TO_EXPORT = 'asset_to_export';
     case JOB_STEP_CONFIG_SETTINGS = 'settings';
     case JOB_STEP_CONFIG_CONFIGURATION = 'configuration';
     case SETTINGS_DELIMITER = 'delimiter';

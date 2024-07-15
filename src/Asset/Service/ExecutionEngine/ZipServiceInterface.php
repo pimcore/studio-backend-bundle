@@ -32,11 +32,11 @@ use ZipArchive;
  */
 interface ZipServiceInterface
 {
-    public const ASSETS_INDEX = 'assets';
-
     public const ASSET_TO_ZIP = 'asset_to_zip';
 
     public const DOWNLOAD_ZIP_FILE_NAME = 'download-zip-{id}.zip';
+
+    public const DOWNLOAD_ZIP_FOLDER_NAME = 'download-zip-{id}';
 
     public const UPLOAD_ZIP_FILE_NAME = 'upload-zip-{id}.zip';
 
@@ -71,21 +71,6 @@ interface ZipServiceInterface
     ): int;
 
     public function generateZipFile(CreateAssetFileParameter $ids): int;
-
-    /**
-     * @throws FilesystemException
-     */
-    public function cleanUpArchiveFolder(
-        string $folder
-    ): void;
-
-    public function cleanUpLocalArchive(
-        string $archivePath
-    ): void;
-
-    public function cleanUpFlysystemArchive(
-        string $archivePath
-    ): void;
 
     public function getTempFilePath(mixed $id, string $path): string;
 

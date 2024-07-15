@@ -75,6 +75,34 @@ final readonly class StorageService implements StorageServiceInterface
         }
     }
 
+    /**
+     * @throws FilesystemException
+     */
+    public function cleanUpFolder(
+        string $folder
+    ): void {
+        $storage = $this->getTempStorage();
+        if (empty($storage->listContents($folder)->toArray())) {
+            $storage->deleteDirectory($folder);
+        }
+    }
+
+    public function cleanUpLocalFile(
+        string $archivePath
+    ): void {
+        if (is_file($archivePath)) {
+            @unlink($archivePath);
+        }
+    }
+
+    public function cleanUpFlysystemFile(
+        string $archivePath
+    ): void {
+        if ($this->tempFileExists($archivePath)) {
+            $this->removeTempFile($archivePath);
+        }
+    }
+
     public function getThumbnailStorage(): FilesystemOperator
     {
         return $this->storageResolver->get(StorageDirectories::THUMBNAIL->value);

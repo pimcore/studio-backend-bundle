@@ -17,23 +17,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants\Csv;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use function array_key_exists;
-use function in_array;
 
 /**
  * @internal
@@ -42,6 +40,8 @@ use function in_array;
 final class CsvCreationHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
+
+    private const ARRAY_TYPE = 'array';
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
@@ -59,51 +59,38 @@ final class CsvCreationHandler extends AbstractHandler
     public function __invoke(CsvCreationMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
-
-        $validatedParameters = $this->validateJobParameters(
-            $message,
-            $jobRun,
-            $this->userResolver
-        );
-
-        if ($validatedParameters instanceof AbortActionData) {
-            $this->abort($validatedParameters);
-        }
-
-        $context = $jobRun->getContext();
-
-        if (!array_key_exists(ZipServiceInterface::ASSETS_INDEX, $context)) {
-            $this->abort(
-                $this->getAbortData(
-                    Config::NO_ASSETS_FOUND_FOR_JOB_RUN->value,
-                    [
-                        'jobRunId' => $jobRun->getId(),
-                    ]
-                )
-            );
-        }
-
-        $jobAsset = $validatedParameters->getSubject();
-
-        if (!in_array($jobAsset->getId(), $context[ZipServiceInterface::ASSETS_INDEX], true)) {
+        $user = $this->userResolver->getById($jobRun->getOwnerId());
+        if ($user === null) {
             $this->abort($this->getAbortData(
-                Config::ELEMENT_PERMISSION_MISSING_MESSAGE->value,
+                Config::USER_NOT_FOUND_MESSAGE->value,
                 [
                     'userId' => $jobRun->getOwnerId(),
-                    'permission' => ElementPermissions::VIEW_PERMISSION,
-                    'type' => ucfirst($jobAsset->getType()),
-                    'id' => $jobAsset->getId(),
-                ],
+                ]
             ));
         }
 
-        $settings = $this->extractConfigFieldFromJobStepConfig($message, 'settings');
+        $jobAsset = $this->extractConfigFieldFromJobStepConfig($message, Csv::ASSET_TO_EXPORT->value);
+        $asset = $this->getElementById(
+            new ElementDescriptor($jobAsset['type'], $jobAsset['id']),
+            $user,
+            $this->elementService
+        );
+        if (!$asset instanceof Asset || $asset->getType() === ElementTypes::TYPE_FOLDER) {
+            $this->abort($this->getAbortData(
+                Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
+                [
+                    'folderId' => $asset->getId(),
+                ]
+            ));
+
+            return;
+        }
+        $settings = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_SETTINGS->value);
         $configuration = $this->gridService->getConfigurationFromArray(
-            $this->extractConfigFieldFromJobStepConfig($message, 'configuration')
+            $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value)
         );
 
         $csv = $this->csvService->getCsvFile($jobRun->getId(), $configuration, $settings);
-
         if (!$csv) {
             $this->abort($this->getAbortData(
                 Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
@@ -114,32 +101,37 @@ final class CsvCreationHandler extends AbstractHandler
             ));
         }
 
-        $asset = $this->getElementById(
-            $jobAsset,
-            $validatedParameters->getUser(),
-            $this->elementService
-        );
+        try {
+            $assetData = $this->gridService->getGridValuesForElement(
+                $configuration,
+                $asset,
+                ElementTypes::TYPE_ASSET
+            );
 
-        if (!$asset instanceof Asset) {
-            return;
+            $this->csvService->addData($csv, $settings['delimiter'], $assetData);
+        } catch (Exception|FilesystemException $e) {
+            $this->abort($this->getAbortData(
+                Config::CSV_CREATION_FAILED_MESSAGE->value,
+                ['message' => $e->getMessage()]
+            ));
         }
-
-        $assetData = $this->gridService->getGridValuesForElement(
-            $configuration,
-            $asset,
-            ElementTypes::TYPE_ASSET
-        );
-
-        $this->csvService->addData($csv, $settings['delimiter'], $assetData);
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired('settings');
-        $this->stepConfiguration->setAllowedTypes('settings', 'array');
-        $this->stepConfiguration->setRequired('configuration');
-        $this->stepConfiguration->setAllowedTypes('configuration', 'array');
+        $this->stepConfiguration->setRequired(Csv::ASSET_TO_EXPORT->value);
+        $this->stepConfiguration->setAllowedTypes(
+            Csv::ASSET_TO_EXPORT->value, self::ARRAY_TYPE
+        );
+        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_SETTINGS->value);
+        $this->stepConfiguration->setAllowedTypes(
+            Csv::JOB_STEP_CONFIG_SETTINGS->value, self::ARRAY_TYPE
+        );
+        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
+        $this->stepConfiguration->setAllowedTypes(
+            Csv::JOB_STEP_CONFIG_CONFIGURATION->value, self::ARRAY_TYPE
+        );
     }
 }

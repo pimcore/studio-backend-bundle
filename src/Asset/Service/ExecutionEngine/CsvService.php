@@ -20,55 +20,60 @@ use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StaticResolverBundle\Models\Tool\StorageResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants\Csv;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\StorageDirectories;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
+use Pimcore\Model\Element\ElementDescriptor;
 
 /**
  * @internal
  */
-final class CsvService implements CsvServiceInterface
+final readonly class CsvService implements CsvServiceInterface
 {
     use TempFilePathTrait;
 
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent,
         private SecurityServiceInterface $securityService,
-        private StorageResolverInterface $storageResolver,
+        private StorageServiceInterface $storageService,
         private GridServiceInterface $gridService,
     ) {
     }
 
     public function generateCsvFile(ExportAssetParameter $exportAssetParameter): int
     {
-        $steps = [
-            new JobStep(JobSteps::CSV_COLLECTION->value, CollectionMessage::class, '', []),
-            new JobStep(
+        $jobStepConfig = [
+            Csv::JOB_STEP_CONFIG_SETTINGS->value => $exportAssetParameter->getSettings(),
+            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportAssetParameter->getGridConfig(),
+        ];
+
+        $jobSteps = array_map(
+            static fn (ElementDescriptor $asset) => new JobStep(
                 JobSteps::CSV_CREATION->value,
                 CsvCreationMessage::class,
                 '',
-                [
-                    Csv::JOB_STEP_CONFIG_SETTINGS->value => $exportAssetParameter->getSettings(),
-                    Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportAssetParameter->getGridConfig(),
-                ]
+                array_merge(
+                    [
+                        csv::ASSET_TO_EXPORT->value => $asset
+                    ],
+                    $jobStepConfig
+                )
             ),
-        ];
+            $exportAssetParameter->getAssets(),
+        );
 
         $job = new Job(
             name: Jobs::CREATE_CSV->value,
-            steps: $steps,
-            selectedElements: $exportAssetParameter->getAssets(),
+            steps: $jobSteps
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -82,14 +87,17 @@ final class CsvService implements CsvServiceInterface
 
     public function getCsvFile(int $id, Configuration $configuration, array $settings): string
     {
-        $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
+        $storage = $this->storageService->getTempStorage();
+        $folderName = $this->getTempFileName($id, self::CSV_FOLDER_NAME);
         $file = $this->getTempFileName($id, self::CSV_FILE_NAME);
 
         try {
-            if (!$storage->fileExists($file)) {
+            $storage->createDirectory($folderName);
+            $path = $folderName . '/' . $file;
+            if (!$storage->fileExists($path)) {
                 $headers = $this->getHeaders($configuration, $settings);
                 $storage->write(
-                    $file,
+                    $path,
                     implode(
                         $settings[Csv::SETTINGS_DELIMITER->value] ?? ',',
                         $headers
@@ -101,12 +109,15 @@ final class CsvService implements CsvServiceInterface
             throw new EnvironmentException('Could not create or read CSV file: ' . $e->getMessage());
         }
 
-        return $file;
+        return $path;
     }
 
+    /**
+     * @throws FilesystemException
+     */
     public function addData(string $filePath, string $delimiter, array $data): void
     {
-        $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
+        $storage = $this->storageService->getTempStorage();
         $fileStream = $storage->readStream($filePath);
 
         $temp = tmpfile();
