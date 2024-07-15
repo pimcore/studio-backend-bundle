@@ -16,13 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
-interface ColumnDefinitionInterface
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+
+interface ColumnCollectorInterface
 {
-    public function getType(): string;
+    public function getCollectorName(): string;
 
-    public function getConfig(mixed $config): array;
+    /**
+     * @param ColumnDefinitionInterface[] $availableColumnDefinitions
+     *
+     * @return Column[]
+     */
+    public function getColumnDefinitions(array $availableColumnDefinitions): array;
 
-    public function isSortable(): bool;
-
-    public function getFrontendType(): string;
+    public function supportedElementTypes(): array;
 }

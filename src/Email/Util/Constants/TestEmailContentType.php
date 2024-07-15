@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Pimcore
@@ -14,15 +13,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
+namespace Pimcore\Bundle\StudioBackendBundle\Email\Util\Constants;
 
-interface ColumnDefinitionInterface
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
+
+enum TestEmailContentType: string
 {
-    public function getType(): string;
+    use EnumToValueArrayTrait;
 
-    public function getConfig(mixed $config): array;
-
-    public function isSortable(): bool;
-
-    public function getFrontendType(): string;
+    case HTML = 'html';
+    case TEXT = 'text';
+    case DOCUMENT = 'document';
 }

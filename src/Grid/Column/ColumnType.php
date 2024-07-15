@@ -16,13 +16,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
-interface ColumnDefinitionInterface
+/**
+ * @internal
+ */
+enum ColumnType: string
 {
-    public function getType(): string;
-
-    public function getConfig(mixed $config): array;
-
-    public function isSortable(): bool;
-
-    public function getFrontendType(): string;
+    case SYSTEM_STRING = 'system.string';
+    case SYSTEM_FILE_SIZE = 'system.fileSize';
+    case METADATA_SELECT = 'metadata.select';
+    case METADATA_INPUT = 'metadata.input';
+    case METADATA_DATE = 'metadata.date';
+    case METADATA_ASSET = 'metadata.asset';
+    case METADATA_DOCUMENT = 'metadata.document';
+    case METADATA_DATA_OBJECT = 'metadata.object';
+    case METADATA_TEXTAREA = 'metadata.textarea';
+    case METADATA_CHECKBOX = 'metadata.checkbox';
 }

@@ -14,9 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\MetaData;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
@@ -27,7 +28,7 @@ use Pimcore\Model\Element\ElementInterface;
 /**
  * @internal
  */
-final class FileSizeResolver implements ColumnResolverInterface
+final class DateResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
 
@@ -36,13 +37,13 @@ final class FileSizeResolver implements ColumnResolverInterface
         /** @var Asset $element */
         return $this->getColumnData(
             $column,
-            $element->getFileSize(true)
+            (int)$element->getMetadata($column->getKey())
         );
     }
 
     public function getType(): string
     {
-        return 'fileSize';
+        return ColumnType::METADATA_DATE->value;
     }
 
     public function supportedElementTypes(): array

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
@@ -28,7 +28,7 @@ use Pimcore\Model\Element\ElementInterface;
 /**
  * @internal
  */
-final class IntegerResolver implements ColumnResolverInterface
+final class DatetimeResolver implements ColumnResolverInterface
 {
     use SimpleGetterTrait;
     use ColumnDataTrait;
@@ -46,7 +46,7 @@ final class IntegerResolver implements ColumnResolverInterface
 
     public function getType(): string
     {
-        return 'integer';
+        return 'system.datetime';
     }
 
     public function supportedElementTypes(): array

@@ -14,27 +14,34 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\MetaData;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 
 /**
  * @internal
  */
-final readonly class IntegerDefinition implements ColumnDefinitionInterface
+final readonly class TextareaDefinition implements ColumnDefinitionInterface
 {
     public function getType(): string
     {
-        return 'integer';
+        return ColumnType::METADATA_TEXTAREA->value;
     }
 
-    public function getConfig(): array
+    public function getConfig(mixed $config): array
     {
         return  [];
     }
 
     public function isSortable(): bool
     {
-        return true;
+        return false;
+    }
+
+    public function getFrontendType(): string
+    {
+        return FrontendType::TEXTAREA->value;
     }
 }

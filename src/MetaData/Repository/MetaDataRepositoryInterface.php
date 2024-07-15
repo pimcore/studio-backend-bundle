@@ -14,15 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
+namespace Pimcore\Bundle\StudioBackendBundle\MetaData\Repository;
 
-interface ColumnDefinitionInterface
+use Pimcore\Model\Metadata\Predefined;
+
+/**
+ * @internal
+ */
+interface MetaDataRepositoryInterface
 {
-    public function getType(): string;
-
-    public function getConfig(mixed $config): array;
-
-    public function isSortable(): bool;
-
-    public function getFrontendType(): string;
+    /**
+     * @return Predefined[]
+     */
+    public function getAllPredefinedMetaData(): array;
 }

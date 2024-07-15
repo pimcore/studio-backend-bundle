@@ -74,6 +74,7 @@ final class CollectionController extends AbstractApiController
     #[FilterParameter]
     #[ParentIdParameter(
         description: 'Filter tags by parent id.',
+        minimum: 0,
         example: null
     )]
     #[SuccessResponse(
