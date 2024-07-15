@@ -19,8 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
  * Column contains all data + values that is needed for the grid
@@ -34,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 )]
 final class Column
 {
-
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]
         private readonly string $key,
@@ -46,7 +43,6 @@ final class Column
         private readonly array $config,
     ) {
     }
-
 
     public function getKey(): string
     {

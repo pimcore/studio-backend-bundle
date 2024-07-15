@@ -24,8 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -66,10 +64,10 @@ final class GetController extends AbstractApiController
         content: new JsonContent(
             properties: [
                 new Property(
-                property: 'columns',
-                type: 'array',
-                items: new Items(ref: ColumnConfiguration::class),
-            )],
+                    property: 'columns',
+                    type: 'array',
+                    items: new Items(ref: ColumnConfiguration::class),
+                )],
         )
     )]
     #[DefaultResponses([
