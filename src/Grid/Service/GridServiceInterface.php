@@ -44,13 +44,13 @@ interface GridServiceInterface
     public function getGridDataForElement(
         ColumnCollection $configuration,
         ElementInterface $element,
-        string           $elementType
+        string $elementType
     ): array;
 
     public function getGridValuesForElement(
         ColumnCollection $configuration,
         ElementInterface $element,
-        string           $elementType
+        string $elementType
     ): array;
 
     public function getConfigurationFromArray(array $config): ColumnCollection;

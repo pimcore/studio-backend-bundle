@@ -107,7 +107,7 @@ final class GridService implements GridServiceInterface
     public function getGridDataForElement(
         ColumnCollection $configuration,
         ElementInterface $element,
-        string           $elementType
+        string $elementType
     ): array {
         $data = [];
         foreach ($configuration->getColumns() as $column) {
@@ -132,7 +132,7 @@ final class GridService implements GridServiceInterface
     public function getGridValuesForElement(
         ColumnCollection $configuration,
         ElementInterface $element,
-        string           $elementType
+        string $elementType
     ): array {
         $data = $this->getGridDataForElement($configuration, $element, $elementType);
 
