@@ -27,7 +27,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'Grid Column Request',
-    required: ['key', 'locale', 'type', 'config'],
+    required: ['key', 'type', 'config'],
     type: 'object'
 )]
 final readonly class Column
@@ -39,6 +39,8 @@ final readonly class Column
         private ?string $locale,
         #[Property(description: 'Type', type: 'string', example: 'system.integer')]
         private string $type,
+        #[Property(description: 'Group', type: 'string', example: 'system')]
+        private ?string $group,
         #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
         private array $config,
     ) {
@@ -57,6 +59,11 @@ final readonly class Column
     public function getType(): string
     {
         return $this->type;
+    }
+
+    public function getGroup(): string
+    {
+        return $this->group;
     }
 
     public function getConfig(): array

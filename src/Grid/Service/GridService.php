@@ -192,8 +192,9 @@ final class GridService implements GridServiceInterface
             try {
                 $columns[] = new Column(
                     key: $column['key'],
-                    locale: $column['locale'],
+                    locale: $column['locale'] ?? null,
                     type: $column['type'],
+                    group: $column['group'] ?? null,
                     config: $column['config']
                 );
             } catch (Exception $e) {
