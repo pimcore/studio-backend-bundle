@@ -19,73 +19,36 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
- * Column contains all data + values that is needed for the grid
+ * Contains all data that is needed to get all the data for the column.
  *
  * @internal
  */
 #[Schema(
-    title: 'GridColumnDefinition',
-    required: ['key', 'group', 'sortable', 'editable', 'localizable', 'locale', 'type', 'config'],
+    title: 'Grid Column Request',
+    required: ['key', 'type', 'config'],
     type: 'object'
 )]
-final class Column implements AdditionalAttributesInterface
+final readonly class Column
 {
-    use AdditionalAttributesTrait;
-
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]
-        private readonly string $key,
-        #[Property(description: 'Group', type: 'string', example: 'system')]
-        private readonly string $group,
-        #[Property(description: 'Sortable', type: 'boolean', example: true)]
-        private readonly bool $sortable,
-        #[Property(description: 'Editable', type: 'boolean', example: false)]
-        private readonly bool $editable,
-        #[Property(description: 'Localizable', type: 'boolean', example: false)]
-        private readonly bool $localizable,
+        private string $key,
         #[Property(description: 'Locale', type: 'string', example: 'en')]
-        private readonly ?string $locale,
-        #[Property(description: 'Type', type: 'string', example: 'integer')]
-        private readonly string $type,
-        #[Property(description: 'Frontend Type', type: 'string', example: 'integer')]
-        private readonly string $frontendType,
+        private ?string $locale,
+        #[Property(description: 'Type', type: 'string', example: 'system.integer')]
+        private string $type,
+        #[Property(description: 'Group', type: 'string', example: 'system')]
+        private ?string $group,
         #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
-        private readonly array $config,
+        private array $config,
     ) {
-    }
-
-    public function getConfig(): array
-    {
-        return $this->config;
     }
 
     public function getKey(): string
     {
         return $this->key;
-    }
-
-    public function getGroup(): string
-    {
-        return $this->group;
-    }
-
-    public function isSortable(): bool
-    {
-        return $this->sortable;
-    }
-
-    public function isEditable(): bool
-    {
-        return $this->editable;
-    }
-
-    public function isLocalizable(): bool
-    {
-        return $this->localizable;
     }
 
     public function getLocale(): ?string
@@ -98,8 +61,13 @@ final class Column implements AdditionalAttributesInterface
         return $this->type;
     }
 
-    public function getFrontendType(): string
+    public function getGroup(): string
     {
-        return $this->frontendType;
+        return $this->group;
+    }
+
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 }

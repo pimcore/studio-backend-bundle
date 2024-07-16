@@ -69,6 +69,7 @@ final class GetController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::BAD_REQUEST,
     ])]
     public function getAssetGrid(#[MapRequestPayload] GridParameter $gridParameter): JsonResponse
     {

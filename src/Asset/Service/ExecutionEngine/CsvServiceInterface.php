@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 
 /**
  * @internal
@@ -28,7 +28,7 @@ interface CsvServiceInterface
 
     public const CSV_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::CSV_FILE_NAME;
 
-    public function getCsvFile(int $id, Configuration $configuration, array $settings): string;
+    public function getCsvFile(int $id, ColumnCollection $columnCollection, array $settings): string;
 
     public function addData(string $filePath, string $delimiter, array $data): void;
 

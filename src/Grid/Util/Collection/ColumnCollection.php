@@ -14,30 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection;
 
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 
 /**
  * @internal
  */
-#[Schema(
-    title: 'GridConfiguration',
-    type: 'object'
-)]
-final readonly class Configuration
+final readonly class ColumnCollection
 {
     /**
      * @param array<int, Column> $columns
      */
     public function __construct(
-        #[Property(
-            property: 'columns',
-            type: 'array',
-            items: new Items(ref: Column::class)
-        )]
         private array $columns,
     ) {
     }
