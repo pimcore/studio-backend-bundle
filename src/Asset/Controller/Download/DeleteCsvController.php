@@ -48,7 +48,7 @@ final class DeleteCsvController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|ForbiddenException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException
      */
     #[Route('/assets/download/csv/{jobRunId}', name: 'pimcore_studio_api_csv_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::ASSETS->value)]

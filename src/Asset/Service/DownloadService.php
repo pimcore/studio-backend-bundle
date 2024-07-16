@@ -146,7 +146,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
-     * @throws NotFoundException|ForbiddenException|StreamResourceNotFoundException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
      */
     public function downloadResourceByJobRunId(
         int $jobRunId,
@@ -183,7 +183,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
-     * @throws FilesystemException|NotFoundException
+     * @throws FilesystemException|ForbiddenException|NotFoundException
      */
     public function cleanupDataByJobRunId(
         int $jobRunId,

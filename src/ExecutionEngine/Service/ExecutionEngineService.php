@@ -37,6 +37,9 @@ final readonly class ExecutionEngineService implements ExecutionEngineServiceInt
 
     }
 
+    /**
+     * @throws DatabaseException|ForbiddenException|NotFoundException
+     */
     public function abortAction(
         int $jobRunId,
     ): void {
@@ -54,6 +57,9 @@ final readonly class ExecutionEngineService implements ExecutionEngineServiceInt
         }
     }
 
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
     public function validateJobRun(int $jobRunId): void
     {
         try {
