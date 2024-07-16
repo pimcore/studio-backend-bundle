@@ -30,17 +30,17 @@ use OpenApi\Attributes\Schema;
     required: ['key', 'locale', 'type', 'config'],
     type: 'object'
 )]
-final class Column
+final readonly class Column
 {
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'id')]
-        private readonly string $key,
+        private string $key,
         #[Property(description: 'Locale', type: 'string', example: 'en')]
-        private readonly ?string $locale,
-        #[Property(description: 'Type', type: 'string', example: 'integer')]
-        private readonly string $type,
+        private ?string $locale,
+        #[Property(description: 'Type', type: 'string', example: 'system.integer')]
+        private string $type,
         #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
-        private readonly array $config,
+        private array $config,
     ) {
     }
 
@@ -57,5 +57,10 @@ final class Column
     public function getType(): string
     {
         return $this->type;
+    }
+
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 }

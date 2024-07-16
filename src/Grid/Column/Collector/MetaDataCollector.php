@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\MetaData\Repository\MetaDataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use function array_key_exists;
@@ -42,9 +42,9 @@ final readonly class MetaDataCollector implements ColumnCollectorInterface
     /**
      * @param ColumnDefinitionInterface[] $availableColumnDefinitions
      *
-     * @return Column[]
+     * @return ColumnConfiguration[]
      */
-    public function getColumnDefinitions(array $availableColumnDefinitions): array
+    public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
         return array_merge(
             $this->getDefaultMetaData(),
@@ -54,14 +54,14 @@ final readonly class MetaDataCollector implements ColumnCollectorInterface
 
     /**
      *
-     * @return Column[]
+     * @return ColumnConfiguration[]
      */
     private function getDefaultMetaData(): array
     {
         $defaultMetadata = ['title', 'alt', 'copyright'];
         $columns = [];
         foreach ($defaultMetadata as $metadata) {
-            $columns[] = new Column(
+            $columns[] = new ColumnConfiguration(
                 key: $metadata,
                 group: 'default_metadata',
                 sortable: true,
@@ -80,7 +80,7 @@ final readonly class MetaDataCollector implements ColumnCollectorInterface
     /**
      * @param ColumnDefinitionInterface[] $availableColumnDefinitions
      *
-     * @return Column[]
+     * @return ColumnConfiguration[]
      */
     private function getPredefinedMetaData(array $availableColumnDefinitions): array
     {
@@ -93,7 +93,7 @@ final readonly class MetaDataCollector implements ColumnCollectorInterface
                 continue;
             }
 
-            $columns[] = new Column(
+            $columns[] = new ColumnConfiguration(
                 key: $item->getName(),
                 group: 'predefined_metadata',
                 sortable: $availableColumnDefinitions[$type]->isSortable(),

@@ -17,14 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Event;
 
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 
-final class GridColumnDefinitionEvent extends AbstractPreResponseEvent
+final class GridColumnConfigurationEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.grid_column_definition';
+    public const EVENT_NAME = 'pre_response.grid_column_configuration';
 
     public function __construct(
-        private readonly Column $column
+        private readonly ColumnConfiguration $column
     ) {
         parent::__construct($column);
     }
@@ -32,7 +32,7 @@ final class GridColumnDefinitionEvent extends AbstractPreResponseEvent
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getConfiguration(): Column
+    public function getConfiguration(): ColumnConfiguration
     {
         return $this->column;
     }

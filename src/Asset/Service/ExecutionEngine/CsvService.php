@@ -29,8 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants\Csv;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\StorageDirectories;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
@@ -80,7 +80,7 @@ final class CsvService implements CsvServiceInterface
         return $this->getTempFilePath($jobRun->getId(), self::CSV_FILE_PATH);
     }
 
-    public function getCsvFile(int $id, Configuration $configuration, array $settings): string
+    public function getCsvFile(int $id, ColumnCollection $configuration, array $settings): string
     {
         $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
         $file = $this->getTempFileName($id, self::CSV_FILE_NAME);
@@ -125,7 +125,7 @@ final class CsvService implements CsvServiceInterface
         return '"' . $value . '"';
     }
 
-    private function getHeaders(Configuration $configuration, array $settings): array
+    private function getHeaders(ColumnCollection $configuration, array $settings): array
     {
         $header = $settings[Csv::SETTINGS_HEADER->value] ?? Csv::SETTINGS_HEADER_NO_HEADER->value;
         if ($header === Csv::SETTINGS_HEADER_NO_HEADER->value) {

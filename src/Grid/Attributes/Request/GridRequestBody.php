@@ -42,7 +42,7 @@ final class GridRequestBody extends RequestBody
                         property: 'columns',
                         type: 'array',
                         items: new Items(ref: Column::class)
-                    ),
+                    )
                 ],
                 type: 'object',
             ),
