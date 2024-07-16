@@ -98,11 +98,11 @@ final class CsvCreationHandler extends AbstractHandler
         }
 
         $settings = $this->extractConfigFieldFromJobStepConfig($message, 'settings');
-        $configuration = $this->gridService->getConfigurationFromArray(
+        $columnCollection = $this->gridService->getConfigurationFromArray(
             $this->extractConfigFieldFromJobStepConfig($message, 'configuration')
         );
 
-        $csv = $this->csvService->getCsvFile($jobRun->getId(), $configuration, $settings);
+        $csv = $this->csvService->getCsvFile($jobRun->getId(), $columnCollection, $settings);
 
         if (!$csv) {
             $this->abort($this->getAbortData(
@@ -125,7 +125,7 @@ final class CsvCreationHandler extends AbstractHandler
         }
 
         $assetData = $this->gridService->getGridValuesForElement(
-            $configuration,
+            $columnCollection,
             $asset,
             ElementTypes::TYPE_ASSET
         );

@@ -105,12 +105,12 @@ final class GridService implements GridServiceInterface
      * @throws InvalidArgumentException
      */
     public function getGridDataForElement(
-        ColumnCollection $configuration,
+        ColumnCollection $columnCollection,
         ElementInterface $element,
         string $elementType
     ): array {
         $data = [];
-        foreach ($configuration->getColumns() as $column) {
+        foreach ($columnCollection->getColumns() as $column) {
             // move this to the resolver
             if (!$this->supports($column, $elementType)) {
                 continue;
@@ -130,11 +130,11 @@ final class GridService implements GridServiceInterface
     }
 
     public function getGridValuesForElement(
-        ColumnCollection $configuration,
+        ColumnCollection $columnCollection,
         ElementInterface $element,
         string $elementType
     ): array {
-        $data = $this->getGridDataForElement($configuration, $element, $elementType);
+        $data = $this->getGridDataForElement($columnCollection, $element, $elementType);
 
         return array_map(
             static fn (ColumnData $columnData) => $columnData->getValue(),
@@ -205,13 +205,13 @@ final class GridService implements GridServiceInterface
         return new ColumnCollection($columns);
     }
 
-    public function getColumnKeys(ColumnCollection $configuration, bool $withGroup = false): array
+    public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array
     {
         return array_map(
             static function (Column $column) use ($withGroup) {
                 return $column->getKey() . ($withGroup ? '~' . $column->getGroup() : '');
             },
-            $configuration->getColumns()
+            $columnCollection->getColumns()
         );
     }
 

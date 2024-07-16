@@ -42,13 +42,13 @@ interface GridServiceInterface
      * @throws InvalidArgumentException
      */
     public function getGridDataForElement(
-        ColumnCollection $configuration,
+        ColumnCollection $columnCollection,
         ElementInterface $element,
         string $elementType
     ): array;
 
     public function getGridValuesForElement(
-        ColumnCollection $configuration,
+        ColumnCollection $columnCollection,
         ElementInterface $element,
         string $elementType
     ): array;
@@ -57,5 +57,5 @@ interface GridServiceInterface
 
     public function getAssetGrid(GridParameter $gridParameter): Collection;
 
-    public function getColumnKeys(ColumnCollection $configuration, bool $withGroup = false): array;
+    public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array;
 }
