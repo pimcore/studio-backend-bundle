@@ -20,6 +20,7 @@ use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Handler\AbstractAutomationActionHandler;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\GenericExecutionEngineMessageInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
@@ -40,6 +41,11 @@ use Pimcore\Model\UserInterface;
  */
 class AbstractHandler extends AbstractAutomationActionHandler
 {
+    protected function shouldBeExecuted(JobRun $jobRun): bool
+    {
+        return $jobRun->getState() === JobRunStates::RUNNING;
+    }
+
     /**
      * @throws ConsoleDependencyMissingException
      */

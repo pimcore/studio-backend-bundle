@@ -54,6 +54,10 @@ final class AssetUploadHandler extends AbstractHandler
     public function __invoke(AssetUploadMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
+        if (!$this->shouldBeExecuted($jobRun)) {
+            return;
+        }
+
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,
@@ -68,9 +72,7 @@ final class AssetUploadHandler extends AbstractHandler
             $this->abort($validatedParameters);
         }
 
-        $user = $validatedParameters->getUser();
         $environmentVariables = $validatedParameters->getEnvironmentData();
-
         try {
             $element = $validatedParameters->getSubject()->getType();
             $fileData = json_decode($element, true, 512, JSON_THROW_ON_ERROR);
@@ -82,7 +84,7 @@ final class AssetUploadHandler extends AbstractHandler
             $this->uploadService->uploadAsset(
                 $environmentVariables[EnvironmentVariables::PARENT_ID->value],
                 $file,
-                $user,
+                $validatedParameters->getUser(),
             );
 
             $this->storageService->cleanUpFolder(

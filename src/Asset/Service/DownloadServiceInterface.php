@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -74,4 +75,13 @@ interface DownloadServiceInterface
         string $mimeType,
         string $downloadName,
     ): StreamedResponse;
+
+    /**
+     * @throws FilesystemException
+     */
+    public function cleanupDataByJobRunId(
+        int $jobRunId,
+        string $folderName,
+        string $fileName
+    ): void;
 }

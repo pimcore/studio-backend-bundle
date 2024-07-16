@@ -53,6 +53,9 @@ final class ZipCreationHandler extends AbstractHandler
     public function __invoke(ZipCreationMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
+        if (!$this->shouldBeExecuted($jobRun)) {
+            return;
+        }
         $user = $this->userResolver->getById($jobRun->getOwnerId());
         if ($user === null) {
             $this->abort($this->getAbortData(

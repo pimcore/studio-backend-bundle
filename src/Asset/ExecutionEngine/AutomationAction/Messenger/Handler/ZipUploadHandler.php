@@ -56,6 +56,9 @@ final class ZipUploadHandler extends AbstractHandler
     public function __invoke(ZipUploadMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
+        if (!$this->shouldBeExecuted($jobRun)) {
+            return;
+        }
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,

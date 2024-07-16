@@ -6,15 +6,20 @@ services:
 
   # controllers are imported separately to make sure they're public
   # and have a tag that allows actions to type-hint services
-  Pimcore\Bundle\StudioBackendBundle\Asset\Controller\:
-    resource: '../src/Asset/Controller'
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Controller\:
+    resource: '../src/ExecutionEngine/Controller'
     public: true
     tags: [ 'controller.service_arguments' ]
 
-
+  #
   # Services
+  #
+
   Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberService
+
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineService
 
   #
   # Event Subscriber

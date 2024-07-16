@@ -46,7 +46,9 @@ final class ZipCopyHandler extends AbstractHandler
     public function __invoke(ZipCopyMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
-
+        if (!$this->shouldBeExecuted($jobRun)) {
+            return;
+        }
         try {
             $this->zipService->copyDownloadZipToFlysystem($jobRun->getId());
         } catch (Exception $exception) {
