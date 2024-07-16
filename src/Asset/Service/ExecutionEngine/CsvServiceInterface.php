@@ -28,7 +28,7 @@ interface CsvServiceInterface
 
     public const CSV_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::CSV_FILE_NAME;
 
-    public function getCsvFile(int $id, ColumnCollection $configuration, array $settings): string;
+    public function getCsvFile(int $id, ColumnCollection $columnCollection, array $settings): string;
 
     public function addData(string $filePath, string $delimiter, array $data): void;
 

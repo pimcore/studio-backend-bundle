@@ -80,14 +80,14 @@ final class CsvService implements CsvServiceInterface
         return $this->getTempFilePath($jobRun->getId(), self::CSV_FILE_PATH);
     }
 
-    public function getCsvFile(int $id, ColumnCollection $configuration, array $settings): string
+    public function getCsvFile(int $id, ColumnCollection $columnCollection, array $settings): string
     {
         $storage = $this->storageResolver->get(StorageDirectories::TEMP->value);
         $file = $this->getTempFileName($id, self::CSV_FILE_NAME);
 
         try {
             if (!$storage->fileExists($file)) {
-                $headers = $this->getHeaders($configuration, $settings);
+                $headers = $this->getHeaders($columnCollection, $settings);
                 $storage->write(
                     $file,
                     implode($settings[Csv::SETTINGS_DELIMITER->value] ?? ',', $headers). Csv::NEW_LINE->value
@@ -125,7 +125,7 @@ final class CsvService implements CsvServiceInterface
         return '"' . $value . '"';
     }
 
-    private function getHeaders(ColumnCollection $configuration, array $settings): array
+    private function getHeaders(ColumnCollection $columnCollection, array $settings): array
     {
         $header = $settings[Csv::SETTINGS_HEADER->value] ?? Csv::SETTINGS_HEADER_NO_HEADER->value;
         if ($header === Csv::SETTINGS_HEADER_NO_HEADER->value) {
@@ -133,7 +133,7 @@ final class CsvService implements CsvServiceInterface
         }
 
         return $this->gridService->getColumnKeys(
-            $configuration,
+            $columnCollection,
             $header === Csv::SETTINGS_HEADER_NAME->value
         );
     }
