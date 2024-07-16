@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 /**
- * Column contains all data + values that is needed for the grid
+ * Contains all data to configure a grid column
  *
  * @internal
  */

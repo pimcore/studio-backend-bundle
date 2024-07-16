@@ -21,7 +21,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 /**
- * Column contains all data + values that is needed for the grid
+ * Contains all data that is needed to get all the data for the column.
  *
  * @internal
  */
