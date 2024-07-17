@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
-    title: 'GridColumnDefinition',
+    title: 'GridColumnConfiguration',
     required: ['key', 'group', 'sortable', 'editable', 'localizable', 'locale', 'type', 'config'],
     type: 'object'
 )]
