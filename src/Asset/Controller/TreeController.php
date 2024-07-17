@@ -67,7 +67,7 @@ final class TreeController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/tree',
-        operationId: 'getAssets',
+        operationId: 'getAssetTree',
         description: 'Get paginated assets',
         summary: 'Get all assets for the tree',
         tags: [Tags::Assets->name]
@@ -91,7 +91,7 @@ final class TreeController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAssets(#[MapQueryString] ElementParameters $parameters): JsonResponse
+    public function getAssetTree(#[MapQueryString] ElementParameters $parameters): JsonResponse
     {
         $collection = $this->assetService->getAssets($parameters);
 
