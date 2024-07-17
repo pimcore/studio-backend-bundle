@@ -19,10 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\CustomTreeAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Schema\CustomTreeAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
 
@@ -44,7 +42,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
 class Asset extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
-
     use CustomTreeAttributesTrait;
 
     public function __construct(

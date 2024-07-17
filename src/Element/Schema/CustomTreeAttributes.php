@@ -50,6 +50,7 @@ final class CustomTreeAttributes
     ) {
 
     }
+
     public function getIcon(): ?string
     {
         return $this->icon;
@@ -105,4 +106,3 @@ final class CustomTreeAttributes
         return $this->additionalCssClasses = $classes;
     }
 }
-
