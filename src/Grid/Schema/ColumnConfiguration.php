@@ -28,8 +28,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
-    title: 'GridColumnDefinition',
-    required: ['key', 'group', 'sortable', 'editable', 'localizable', 'locale', 'type', 'config'],
+    title: 'GridColumnConfiguration',
+    required: ['key', 'group', 'sortable', 'editable', 'localizable', 'type', 'config'],
     type: 'object'
 )]
 final class ColumnConfiguration implements AdditionalAttributesInterface

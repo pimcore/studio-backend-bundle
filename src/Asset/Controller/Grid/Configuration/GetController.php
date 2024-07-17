@@ -76,6 +76,10 @@ final class GetController extends AbstractApiController
     ])]
     public function getAssetGridConfiguration(): JsonResponse
     {
-        return $this->jsonResponse($this->gridService->getAssetGridConfiguration());
+        $columns = $this->gridService->getAssetGridConfiguration();
+
+        return $this->jsonResponse([
+            'columns' => $columns,
+        ]);
     }
 }
