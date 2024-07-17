@@ -29,7 +29,11 @@ trait CustomTreeAttributesTrait
 
     public function getCustomTreeAttributes(): CustomTreeAttributes
     {
-        return $this->customTreeAttributes ?? new CustomTreeAttributes();
+        if($this->customTreeAttributes === null){
+            $this->customTreeAttributes = new CustomTreeAttributes();
+        }
+
+        return $this->customTreeAttributes;
     }
 
     public function setCustomTreeAttributes(CustomTreeAttributes $customTreeAttributes): void
