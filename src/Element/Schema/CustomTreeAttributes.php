@@ -76,9 +76,9 @@ final class CustomTreeAttributes
         return $this->additionalIcons;
     }
 
-    public function setAdditionalIcons(array $icons): array
+    public function setAdditionalIcons(array $icons): void
     {
-        return $this->additionalIcons = $icons;
+        $this->additionalIcons = $icons;
     }
 
     public function addAdditionalIcon(string $value): void
@@ -101,8 +101,8 @@ final class CustomTreeAttributes
         return $this->additionalCssClasses;
     }
 
-    public function setAdditionalCssClasses(array $classes): array
+    public function setAdditionalCssClasses(array $classes): void
     {
-        return $this->additionalCssClasses = $classes;
+        $this->additionalCssClasses = $classes;
     }
 }
