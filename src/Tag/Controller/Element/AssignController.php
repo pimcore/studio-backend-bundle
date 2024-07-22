@@ -48,10 +48,14 @@ final class AssignController extends AbstractApiController
     /**
      * @throws ElementSavingFailedException|NotFoundException
      */
-    #[Route('/tags/{elementType}/{id}/{tagId}', name: 'pimcore_studio_api_assign_element_tag', methods: ['POST'])]
+    #[Route(
+        '/tags/assign/{elementType}/{id}/{tagId}',
+        name: 'pimcore_studio_api_assign_element_tag',
+        methods: ['POST'])
+    ]
     #[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Post(
-        path: self::API_PATH . '/tags/{elementType}/{id}/{tagId}',
+        path: self::API_PATH . '/tags/assign/{elementType}/{id}/{tagId}',
         operationId: 'assignTagForElement',
         summary: 'Assign tag for element',
         tags: [Tags::TagsForElement->value]
