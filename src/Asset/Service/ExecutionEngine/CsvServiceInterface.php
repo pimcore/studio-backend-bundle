@@ -29,14 +29,16 @@ interface CsvServiceInterface
 
     public const CSV_FOLDER_NAME = 'download-csv-{id}';
 
-    public function getCsvFile(int $id, Configuration $configuration, array $settings): string;
-
     /**
      * @throws FilesystemException
      */
-    public function addData(string $filePath, string $delimiter, array $data): void;
-
-    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): int;
+    public function createCsvFile(
+        int $id,
+        string $delimiter,
+        Configuration $configuration,
+        array $settings,
+        array $assetData
+    ): void;
 
     public function getTempFileName(int $id, string $path): string;
 

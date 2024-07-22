@@ -8,7 +8,8 @@ studio_ee_element_delete_failed: 'Element with type %type% with ID %id% could no
 studio_ee_zip_file_copy_failed: 'Zip file could not be copied: %message%'
 studio_ee_zip_file_upload_failed: 'Zip file could not be uploaded: %message%'
 studio_ee_zip_cleanup_failed: 'Zip directory %directory% could not be removed: %message%'
-studio_ee_csv_creation_failed: 'Data could not be extracted into CSV file: %message%'
+studio_ee_csv_creation_failed: 'CSV Export failed: %message%'
+studio_ee_csv_data_collection_failed: 'Data for CSV export could not be extracted for asset %id%: %message%'
 studio_ee_element_patch_failed: 'Element with type %type% with ID %id% could not be updated: %message%'
 studio_ee_no_element_data_found: 'No data found'
 studio_ee_job_create_download_zip: Create Download Zip
