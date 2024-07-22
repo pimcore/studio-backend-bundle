@@ -25,9 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PathParameterInter
 /**
  * @internal
  */
-readonly class ElementParameters
-    extends CollectionParameters
-    implements ParentIdParameterInterface,
+readonly class ElementParameters extends CollectionParameters implements
+    ParentIdParameterInterface,
     IdSearchParameterInterface,
     ExcludeFolderParameterInterface,
     PathParameterInterface
