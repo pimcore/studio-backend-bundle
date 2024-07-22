@@ -92,7 +92,7 @@ final class CsvDataCollectionHandler extends AbstractHandler
                     $configuration,
                     $asset,
                     ElementTypes::TYPE_ASSET
-                )
+                ),
             ];
 
             if (isset($jobRun->getContext()[Csv::ASSET_EXPORT_DATA->value])) {
@@ -108,7 +108,7 @@ final class CsvDataCollectionHandler extends AbstractHandler
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                 [
                     'id' => $asset->getId(),
-                    'message' => $e->getMessage()
+                    'message' => $e->getMessage(),
                 ]
             ));
         }

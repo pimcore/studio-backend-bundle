@@ -53,10 +53,10 @@ final readonly class CsvService implements CsvServiceInterface
     public function generateCsvFile(ExportAssetParameter $exportAssetParameter): int
     {
         $jobStepConfigConfiguration = [
-            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportAssetParameter->getGridConfig()
+            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportAssetParameter->getGridConfig(),
         ];
         $jobStepConfigSettings = [
-            Csv::JOB_STEP_CONFIG_SETTINGS->value => $exportAssetParameter->getSettings()
+            Csv::JOB_STEP_CONFIG_SETTINGS->value => $exportAssetParameter->getSettings(),
         ];
 
         $jobSteps = array_map(
@@ -99,8 +99,7 @@ final readonly class CsvService implements CsvServiceInterface
         Configuration $configuration,
         array $settings,
         array $assetData
-    ): void
-    {
+    ): void {
         $storage = $this->storageService->getTempStorage();
         $headers = $this->getHeaders($configuration, $settings);
         $data[] = implode($delimiter, $headers) . Csv::NEW_LINE->value;
