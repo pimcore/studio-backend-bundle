@@ -17,11 +17,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Request;
 
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ExcludeFolderParameterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\IdSearchParameterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ParentIdParameterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PathParameterInterface;
 
 /**
  * @internal
  */
-readonly class ElementParameters extends CollectionParameters implements ElementParametersInterface
+readonly class ElementParameters extends CollectionParameters implements ParentIdParameterInterface, IdSearchParameterInterface, ExcludeFolderParameterInterface, PathParameterInterface
 {
     public function __construct(
         int $page = 1,

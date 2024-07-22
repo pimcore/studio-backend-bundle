@@ -14,14 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 
 /**
  * @internal
  */
-interface FilterInterface
+interface ExcludeFolderParameterInterface
 {
-    public function apply(mixed $parameters, QueryInterface $query): QueryInterface;
+    public function getExcludeFolders(): ?bool;
 }

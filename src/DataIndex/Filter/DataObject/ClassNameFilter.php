@@ -20,8 +20,7 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParametersInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassNameParametersInterface;
 
 /**
  * @internal
@@ -31,10 +30,10 @@ final class ClassNameFilter implements FilterInterface
     /**
      * @throws Exception
      */
-    public function apply(CollectionParametersInterface $parameters, QueryInterface $query): QueryInterface
+    public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         if (
-            !$parameters instanceof DataObjectParametersInterface ||
+            !$parameters instanceof ClassNameParametersInterface ||
             !$query instanceof DataObjectQuery ||
             !$parameters->getClassName()
         ) {

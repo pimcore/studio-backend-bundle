@@ -14,12 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Request;
+
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 
 /**
  * @internal
  */
-interface DataObjectParametersInterface extends ElementParametersInterface
+interface PathParameterInterface
 {
-    public function getClassName(): ?string;
+    public function getPath(): ?string;
+
+    public function getPathIncludeParent(): ?bool;
+
+    public function getPathIncludeDescendants(): ?bool;
 }

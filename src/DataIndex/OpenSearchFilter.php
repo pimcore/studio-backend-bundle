@@ -41,7 +41,7 @@ final readonly class OpenSearchFilter implements FilterServiceInterface, OpenSea
     /**
      * @throws InvalidQueryTypeException|InvalidFilterTypeException
      */
-    public function applyFilters(CollectionParametersInterface $parameters, string $type): QueryInterface
+    public function applyFilters(mixed $parameters, string $type): QueryInterface
     {
         $query = $this->queryFactory->create($type);
         // apply default filters
