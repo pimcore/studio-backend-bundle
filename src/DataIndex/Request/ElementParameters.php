@@ -25,7 +25,12 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PathParameterInter
 /**
  * @internal
  */
-readonly class ElementParameters extends CollectionParameters implements ParentIdParameterInterface, IdSearchParameterInterface, ExcludeFolderParameterInterface, PathParameterInterface
+readonly class ElementParameters
+    extends CollectionParameters
+    implements ParentIdParameterInterface,
+    IdSearchParameterInterface,
+    ExcludeFolderParameterInterface,
+    PathParameterInterface
 {
     public function __construct(
         int $page = 1,
