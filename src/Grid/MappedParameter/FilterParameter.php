@@ -14,22 +14,28 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 
 /**
  * @internal
  */
-final class PageFilter implements FilterInterface
+final readonly class FilterParameter implements CollectionParametersInterface
 {
-    public function apply(mixed $parameters, QueryInterface $query): QueryInterface
-    {
-        if (!$parameters instanceof CollectionParametersInterface) {
-            return $query;
-        }
+    public function __construct(
+        private int $page = 1,
+        private int $pageSize = 50
+    ) {
+    }
 
-        return $query->setPage($parameters->getPage());
+    public function getPage(): int
+    {
+        return $this->page;
+    }
+
+    public function getPageSize(): int
+    {
+        return $this->pageSize;
     }
 }

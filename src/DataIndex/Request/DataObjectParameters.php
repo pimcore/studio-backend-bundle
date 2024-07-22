@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Request;
 /**
  * @internal
  */
-final readonly class DataObjectParameters extends ElementParameters implements DataObjectParametersInterface
+final readonly class DataObjectParameters extends ElementParameters implements ClassNameParametersInterface
 {
     public function __construct(
         int $page = 1,

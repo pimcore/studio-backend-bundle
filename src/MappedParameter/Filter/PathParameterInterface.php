@@ -14,25 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Request;
-
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 
 /**
  * @internal
  */
-interface ElementParametersInterface extends CollectionParametersInterface
+interface PathParameterInterface
 {
-    public function getPage(): int;
-
-    public function getPageSize(): int;
-
-    public function getParentId(): ?int;
-
-    public function getIdSearchTerm(): ?string;
-
-    public function getExcludeFolders(): ?bool;
-
     public function getPath(): ?string;
 
     public function getPathIncludeParent(): ?bool;
