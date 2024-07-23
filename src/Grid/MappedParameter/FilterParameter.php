@@ -23,7 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PathParameterInter
 /**
  * @internal
  */
-final class FilterParameter implements CollectionParametersInterface, ExcludeFolderParameterInterface, PathParameterInterface
+final class FilterParameter implements
+    CollectionParametersInterface,
+    ExcludeFolderParameterInterface,
+    PathParameterInterface
 {
     private ?string $path = null;
 
