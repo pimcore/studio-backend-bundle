@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
 use League\Flysystem\FilesystemException;
-use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -207,8 +206,7 @@ final readonly class ZipService implements ZipServiceInterface
         string $folderName,
         string $archiveName,
         string $localPath
-    ): void
-    {
+    ): void {
         $storage = $this->storageService->getTempStorage();
         $archiveFileName = $this->getTempFileName($id, $archiveName);
         if (!is_file($localPath)) {
@@ -247,10 +245,10 @@ final readonly class ZipService implements ZipServiceInterface
         string $folderName,
         string $archiveName,
         string $localPath
-    ): ZipArchive
-    {
+    ): ZipArchive {
         $storage = $this->storageService->getTempStorage();
         $archiveFileName = $this->getTempFileName($id, $archiveName);
+
         try {
             $folderName = $this->getTempFileName($id, $folderName);
             $stream = $storage->readStream($folderName . '/' . $archiveFileName);
@@ -268,7 +266,7 @@ final readonly class ZipService implements ZipServiceInterface
             );
         }
 
-        return $this->createLocalArchive($archiveFileName, $localPath);;
+        return $this->createLocalArchive($archiveFileName, $localPath);
     }
 
     /**
@@ -277,8 +275,7 @@ final readonly class ZipService implements ZipServiceInterface
     private function createLocalArchive(
         string $archiveName,
         string $localPath
-    ): ZipArchive
-    {
+    ): ZipArchive {
         $archive = new ZipArchive();
         $state = $archive->open($localPath);
         if ($state !== true) {

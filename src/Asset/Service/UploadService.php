@@ -44,6 +44,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Mime\MimeTypes;
+use function dirname;
 
 /**
  * @internal
@@ -111,7 +112,6 @@ final readonly class UploadService implements UploadServiceInterface
 
         return $this->uploadAssetLocally($parentId, $assetParams, $filePath);
     }
-
 
     public function uploadParentFolder(string $filePath, int $rootParentId, UserInterface $user): int
     {
@@ -245,6 +245,7 @@ final readonly class UploadService implements UploadServiceInterface
         string $sourcePath,
     ): int {
         $assetParams['sourcePath'] = $this->getValidSourcePath($sourcePath);
+
         try {
             $asset = $this->assetResolver->create(
                 $parentId,

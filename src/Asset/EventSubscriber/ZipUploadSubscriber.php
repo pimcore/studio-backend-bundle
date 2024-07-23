@@ -45,8 +45,6 @@ final readonly class ZipUploadSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     */
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
         if (

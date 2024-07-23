@@ -47,6 +47,7 @@ final class ZipCopyHandler extends AbstractHandler
     {
         $jobRun = $this->getJobRun($message);
         $jobRunId = $jobRun->getId();
+
         try {
             $archiveLocalPath = $this->zipService->getTempFilePath(
                 $jobRunId,

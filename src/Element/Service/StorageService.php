@@ -63,6 +63,7 @@ final readonly class StorageService implements StorageServiceInterface
     public function tempFileExists(string $location): bool
     {
         $storage = $this->getTempStorage();
+
         try {
             return $storage->fileExists($location);
         } catch (FilesystemException $e) {
@@ -80,8 +81,7 @@ final readonly class StorageService implements StorageServiceInterface
         string $innerPath,
         string $localElementPath,
         string $targetPath,
-    ): void
-    {
+    ): void {
         match (true) {
             is_file($localElementPath) => $this->copyFileToFlysystem($innerPath, $localElementPath, $targetPath),
             is_dir($localElementPath) => $this->copyFolderToFlysystem($innerPath, $targetPath),
@@ -147,8 +147,7 @@ final readonly class StorageService implements StorageServiceInterface
         string $fileName,
         string $localFilePath,
         string $targetPath,
-    ): void
-    {
+    ): void {
         try {
             $this->getTempStorage()->writeStream(
                 $targetPath . '/' . $fileName,
@@ -171,10 +170,10 @@ final readonly class StorageService implements StorageServiceInterface
     private function copyFolderToFlysystem(
         string $folderName,
         string $targetPath
-    ): void
-    {
+    ): void {
         $storage = $this->getTempStorage();
         $storagePath = $targetPath . '/' . $folderName;
+
         try {
             if ($storage->directoryExists($storagePath)) {
                 return;
