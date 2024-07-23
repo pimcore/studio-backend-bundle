@@ -52,6 +52,11 @@ interface AssetServiceInterface
     public function getAsset(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video;
 
     /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getAssetFolder(int $id): Folder;
+
+    /**
      * @throws AccessDeniedException|NotFoundException
      */
     public function getAssetElement(

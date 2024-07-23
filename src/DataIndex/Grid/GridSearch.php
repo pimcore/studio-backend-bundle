@@ -16,13 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResult;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
-use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Model\User;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**
  * @internal
@@ -30,20 +31,30 @@ use Pimcore\Model\User;
 final readonly class GridSearch implements GridSearchInterface
 {
     public function __construct(
-        private SecurityServiceInterface $securityService,
+        private FilterServiceProviderInterface $filterServiceProvider,
         private AssetSearchServiceInterface $assetSearchService,
+        private AssetServiceInterface $assetService
     ) {
     }
 
+    /**
+     * @throws NotFoundException
+     */
     public function searchAssets(GridParameter $gridParameter): AssetSearchResult
     {
-        // TODO Try to repurpose filter concept from data-index
-        $search = new AssetSearch();
-        /** @var User $user */
-        $user = $this->securityService->getCurrentUser();
-        $search->setUser($user);
-        $search->addModifier(new ParentIdFilter($gridParameter->getFolderId()));
+        /** @var OpenSearchFilterInterface $filterService */
+        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
+        $filter = $gridParameter->getFilters();
 
-        return $this->assetSearchService->search($search);
+        $asset = $this->assetService->getAssetFolder($gridParameter->getFolderId());
+
+        $filter->setPath($asset->getFullPath());
+
+        $assetQuery = $filterService->applyFilters(
+            $filter,
+            ElementTypes::TYPE_ASSET
+        );
+
+        return $this->assetSearchService->searchAssets($assetQuery);
     }
 }

@@ -22,6 +22,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\SingleInteger;
 
 /**
@@ -43,6 +44,11 @@ final class GridRequestBody extends RequestBody
                         type: 'array',
                         items: new Items(ref: Column::class)
                     ),
+                    new Property(
+                        property: 'filters',
+                        ref: Filter::class,
+                        type: 'object'
+                    )
                 ],
                 type: 'object',
             ),

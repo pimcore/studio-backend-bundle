@@ -23,7 +23,7 @@ interface PathParameterInterface
 {
     public function getPath(): ?string;
 
-    public function getPathIncludeParent(): ?bool;
+    public function getPathIncludeParent(): bool;
 
-    public function getPathIncludeDescendants(): ?bool;
+    public function getPathIncludeDescendants(): bool;
 }

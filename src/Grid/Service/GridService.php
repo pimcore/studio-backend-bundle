@@ -18,13 +18,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
@@ -67,7 +71,7 @@ final class GridService implements GridServiceInterface
         private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
         private readonly GridSearchInterface $gridSearch,
         private readonly ServiceResolverInterface $serviceResolver,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -77,26 +81,24 @@ final class GridService implements GridServiceInterface
     public function getAssetGrid(GridParameter $gridParameter): Collection
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
+        $items = $result->getItems();
 
-        if (empty($result->getIds())) {
+        if (empty($items)) {
             return new Collection(totalItems: 0, items: []);
         }
 
         $data = [];
-
-        foreach ($result->getItems() as $item) {
-            $type = $item->getElementType()->value;
-            $asset = $this->getElement($this->serviceResolver, $type, $item->getId());
-
+        foreach ($items as $item) {
+            $asset = $this->getElement($this->serviceResolver, 'asset', $item->getId());
             $data[] = $this->getGridDataForElement(
                 $this->getConfigurationFromArray($gridParameter->getColumns()),
                 $asset,
-                $type
+                'asset'
             );
         }
 
         return new Collection(
-            totalItems: $result->getPagination()->getTotalItems(),
+            totalItems: $result->getTotalItems(),
             items: $data
         );
     }
