@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants\Csv;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -53,7 +53,7 @@ final class CsvDataCollectionHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(CsvDataCollectionMessage $message): void
+    public function __invoke(CsvCollectionMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         $user = $this->userResolver->getById($jobRun->getOwnerId());

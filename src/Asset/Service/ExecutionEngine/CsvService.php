@@ -22,7 +22,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants\Csv;
@@ -62,7 +62,7 @@ final readonly class CsvService implements CsvServiceInterface
         $jobSteps = array_map(
             static fn (ElementDescriptor $asset) => new JobStep(
                 JobSteps::CSV_COLLECTION->value,
-                CsvDataCollectionMessage::class,
+                CsvCollectionMessage::class,
                 '',
                 array_merge([csv::ASSET_TO_EXPORT->value => $asset], $jobStepConfigConfiguration)
             ),

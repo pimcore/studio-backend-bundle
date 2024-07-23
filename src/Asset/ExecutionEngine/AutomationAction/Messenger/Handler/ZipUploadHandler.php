@@ -99,7 +99,8 @@ final class ZipUploadHandler extends AbstractHandler
 
             if (empty($elements)) {
                 $this->abort($this->getAbortData(
-                    Config::FILE_NOT_FOUND_FOR_JOB_RUN->value, [
+                    Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
+                    [
                         'type' => ElementTypes::TYPE_ARCHIVE,
                         'id' => $archiveId,
                     ],
