@@ -20,7 +20,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
-use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
@@ -47,11 +46,9 @@ final readonly class ZipUploadSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @throws JsonEncodingException
      */
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-
         if (
             $event->getNewState() === JobRunStates::FINISHED->value &&
             $event->getJobName() === Jobs::ZIP_FILE_UPLOAD->value

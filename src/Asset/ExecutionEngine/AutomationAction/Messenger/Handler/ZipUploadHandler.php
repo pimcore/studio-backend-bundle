@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -41,10 +42,11 @@ final class ZipUploadHandler extends AbstractHandler
     use HandlerProgressTrait;
 
     public function __construct(
+        private readonly FileSystem $fileSystem,
         private readonly PublishServiceInterface $publishService,
         private readonly StorageServiceInterface $storageService,
-        private readonly UploadServiceInterface $uploadService,
         private readonly UserResolverInterface $userResolver,
+        private readonly UploadServiceInterface $uploadService,
         private readonly ZipServiceInterface $zipService,
     ) {
         parent::__construct();
@@ -69,47 +71,56 @@ final class ZipUploadHandler extends AbstractHandler
             $this->abort($validatedParameters);
         }
 
-        $user = $validatedParameters->getUser();
         $archiveId = $validatedParameters->getSubject()->getType();
-        $archiveExtractPath = $this->zipService->getTempFilePath(
+        $localPath = $this->zipService->getTempFilePath(
             $archiveId,
-            ZipServiceInterface::UPLOAD_ZIP_FOLDER_PATH
+            ZipServiceInterface::UPLOAD_ZIP_FILE_PATH
         );
+        $extractTargetPath = $this->zipService->getTempFilePath(
+            $archiveId,
+            ZipServiceInterface::UPLOAD_ZIP_FOLDER_NAME
+        );
+        $localExtractTargetPath = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . $extractTargetPath . '/local';
 
         try {
-            $archive = $this->zipService->getZipArchive(
+            $archive = $this->zipService->downloadZipFileFromFlysystem(
                 $archiveId,
+                ZipServiceInterface::UPLOAD_ZIP_FOLDER_NAME,
                 ZipServiceInterface::UPLOAD_ZIP_FILE_NAME,
-                false
+                $localPath
             );
 
-            if (!$archive) {
-                $this->abort($this->getAbortData(
-                    Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
-                    [
-                        'type' => ElementTypes::TYPE_ARCHIVE,
-                        'id' => $archiveId,
-                    ],
-                ));
-            }
+            $this->fileSystem->mkdir($localExtractTargetPath);
 
-            $files = $this->zipService->getArchiveFiles(
+            $elements = $this->zipService->extractArchiveFiles(
                 $archive,
-                $archiveExtractPath
+                $localExtractTargetPath
             );
 
-            if (empty($files)) {
+            if (empty($elements)) {
                 $this->abort($this->getAbortData(
-                    Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
-                    [
+                    Config::FILE_NOT_FOUND_FOR_JOB_RUN->value, [
                         'type' => ElementTypes::TYPE_ARCHIVE,
                         'id' => $archiveId,
                     ],
                 ));
             }
 
+            $files = [];
+            foreach ($elements as $element) {
+                $this->storageService->copyElementToFlysystem(
+                    $element['path'],
+                    $element['sourcePath'],
+                    $extractTargetPath
+                );
+
+                if ($element['type'] === ElementTypes::TYPE_ASSET) {
+                    $element['sourcePath'] = $extractTargetPath . '/' . $element['path'];
+                    $files[] = $element;
+                }
+            }
             $childJobRunId = $this->uploadService->uploadAssetsAsynchronously(
-                $user,
+                $validatedParameters->getUser(),
                 $files,
                 $validatedParameters->getEnvironmentData()[EnvironmentVariables::PARENT_ID->value],
                 $this->zipService->getTempFileName(
@@ -126,12 +137,8 @@ final class ZipUploadHandler extends AbstractHandler
                 ['message' => $exception->getMessage()],
             ));
         } finally {
-            $this->storageService->cleanUpLocalFile(
-                $this->zipService->getTempFilePath(
-                    $archiveId,
-                    ZipServiceInterface::UPLOAD_ZIP_FILE_PATH
-                )
-            );
+            $this->storageService->cleanUpLocalFile($localPath);
+            $this->storageService->cleanUpLocalFolder($localExtractTargetPath);
         }
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());

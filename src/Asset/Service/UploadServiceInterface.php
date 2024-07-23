@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -45,14 +46,17 @@ interface UploadServiceInterface
      * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws EnvironmentException
+     * @throws FilesystemException
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
     public function uploadAsset(
         int $parentId,
-        UploadedFile $file,
-        UserInterface $user
+        string $fileName,
+        string $filePath,
+        UserInterface $user,
+        bool $useFlysystem = false
     ): int;
 
     /**
@@ -64,6 +68,8 @@ interface UploadServiceInterface
         int $parentId,
         string $folderName,
     ): int;
+
+    public function uploadParentFolder(string $filePath, int $rootParentId, UserInterface $user): int;
 
     /**
      * @throws AccessDeniedException

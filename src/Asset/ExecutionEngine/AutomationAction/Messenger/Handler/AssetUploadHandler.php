@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -74,21 +73,24 @@ final class AssetUploadHandler extends AbstractHandler
         try {
             $element = $validatedParameters->getSubject()->getType();
             $fileData = json_decode($element, true, 512, JSON_THROW_ON_ERROR);
-            $file = new UploadedFile(
-                $fileData['sourcePath'],
-                $fileData['fileName'],
-            );
+            $folderLocation = dirname($fileData['path']);
+            $parentId = $environmentVariables[EnvironmentVariables::PARENT_ID->value];
+
+            if ($folderLocation !== '.') {
+                $parentId = $this->uploadService->uploadParentFolder(
+                    $fileData['path'],
+                    $parentId,
+                    $user,
+                );
+            }
 
             $this->uploadService->uploadAsset(
-                $environmentVariables[EnvironmentVariables::PARENT_ID->value],
-                $file,
+                $parentId,
+                $fileData['name'],
+                $fileData['sourcePath'],
                 $user,
+                true
             );
-
-            $this->storageService->cleanUpFolder(
-                $environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_NAME->value],
-            );
-
         } catch (Exception|FilesystemException $exception) {
             $this->abort($this->getAbortData(
                 Config::ASSET_UPLOAD_FAILED_MESSAGE->value,

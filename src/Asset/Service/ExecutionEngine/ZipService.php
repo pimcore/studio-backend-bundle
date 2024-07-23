@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
 use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -35,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -99,7 +101,7 @@ final readonly class ZipService implements ZipServiceInterface
         );
     }
 
-    public function getArchiveFiles(
+    public function extractArchiveFiles(
         ZipArchive $archive,
         string $targetPath
     ): array {
@@ -110,11 +112,14 @@ final readonly class ZipService implements ZipServiceInterface
         }
 
         foreach (range(0, $fileCount - 1) as $i) {
-            $fileName = $this->uploadService->sanitizeFileToUpload($archive->getNameIndex($i));
-            if ($fileName !== null) {
+            $path = $this->uploadService->sanitizeFileToUpload($archive->getNameIndex($i));
+            if ($path !== null) {
+                $sourcePath = $targetPath . '/' . $path;
                 $files[] = [
-                    'fileName' => $fileName,
-                    'sourcePath' => $targetPath . '/' . $fileName,
+                    'name' => basename($path),
+                    'path' => $path,
+                    'sourcePath' => $sourcePath,
+                    'type' => is_dir($sourcePath) ? ElementTypes::TYPE_FOLDER : ElementTypes::TYPE_ASSET,
                 ];
             }
         }
@@ -132,7 +137,13 @@ final readonly class ZipService implements ZipServiceInterface
     ): int {
         $this->uploadService->validateParent($user, $parentId);
         $archiveId = $parentId . '-' . time();
-        $this->copyUploadZipFile($zipArchive->getRealPath(), $archiveId);
+        $this->copyZipFileToFlysystem(
+            $archiveId,
+            self::UPLOAD_ZIP_FOLDER_NAME,
+            self::UPLOAD_ZIP_FILE_NAME,
+            $zipArchive->getRealPath(),
+        );
+
         $job = new Job(
             name: Jobs::ZIP_FILE_UPLOAD->value,
             steps: [
@@ -188,50 +199,97 @@ final readonly class ZipService implements ZipServiceInterface
         return $jobRun->getId();
     }
 
-    public function copyDownloadZipToFlysystem(int $jobRunId): void
+    /**
+     * @throws EnvironmentException
+     */
+    public function copyZipFileToFlysystem(
+        string $id,
+        string $folderName,
+        string $archiveName,
+        string $localPath
+    ): void
     {
         $storage = $this->storageService->getTempStorage();
-        $archiveName = $this->getTempFileName($jobRunId, self::DOWNLOAD_ZIP_FILE_NAME);
-        $archiveLocalPath = $this->getTempFilePath($jobRunId, self::DOWNLOAD_ZIP_FILE_PATH);
-        if (!is_file($archiveLocalPath)) {
+        $archiveFileName = $this->getTempFileName($id, $archiveName);
+        if (!is_file($localPath)) {
             throw new EnvironmentException(
                 sprintf(
-                    'The zip archive %s could not be found.',
-                    $archiveName
+                    'The zip archive %s could not be found at %s.',
+                    $archiveFileName,
+                    $localPath
                 )
             );
         }
 
         try {
-            $folderName = $this->getTempFilePath($jobRunId, self::DOWNLOAD_ZIP_FOLDER_NAME);
+            $folderName = $this->getTempFilePath($id, $folderName);
             $storage->createDirectory($folderName);
             $storage->writeStream(
-                $folderName . '/' . $archiveName,
-                fopen($archiveLocalPath, 'rb')
+                $folderName . '/' . $archiveFileName,
+                fopen($localPath, 'rb')
             );
-            @unlink($archiveLocalPath);
+            @unlink($localPath);
         } catch (FilesystemException) {
             throw new EnvironmentException(
                 sprintf(
                     'Failed to copy zip archive %s to Flysystem.',
-                    $archiveName
+                    $archiveFileName
                 )
             );
         }
     }
 
-    private function copyUploadZipFile(
-        string $zipArchivePath,
-        string $archiveId
-    ): void {
-        if (!is_file($zipArchivePath)) {
+    /**
+     * @throws EnvironmentException
+     */
+    public function downloadZipFileFromFlysystem(
+        string $id,
+        string $folderName,
+        string $archiveName,
+        string $localPath
+    ): ZipArchive
+    {
+        $storage = $this->storageService->getTempStorage();
+        $archiveFileName = $this->getTempFileName($id, $archiveName);
+        try {
+            $folderName = $this->getTempFileName($id, $folderName);
+            $stream = $storage->readStream($folderName . '/' . $archiveFileName);
+            $localArchive = fopen($localPath, 'wb');
+            stream_copy_to_stream($stream, $localArchive);
+            fclose($stream);
+            fclose($localArchive);
+            $storage->delete($folderName . '/' . $archiveFileName);
+        } catch (FilesystemException) {
             throw new EnvironmentException(
-                'Something went wrong, please check upload_max_filesize and post_max_size in your php.ini ' .
-                ' as well as the write permissions of your temporary directories.'
+                sprintf(
+                    'Failed to get zip archive %s from Flysystem.',
+                    $archiveFileName
+                )
             );
         }
 
-        $pathTarget = $this->getTempFilePath($archiveId, self::UPLOAD_ZIP_FILE_PATH);
-        copy($zipArchivePath, $pathTarget);
+        return $this->createLocalArchive($archiveFileName, $localPath);;
+    }
+
+    /**
+     * @throws EnvironmentException
+     */
+    private function createLocalArchive(
+        string $archiveName,
+        string $localPath
+    ): ZipArchive
+    {
+        $archive = new ZipArchive();
+        $state = $archive->open($localPath);
+        if ($state !== true) {
+            throw new EnvironmentException(
+                sprintf(
+                    'Failed to get zip archive %s locally.',
+                    $archiveName
+                )
+            );
+        }
+
+        return $archive;
     }
 }

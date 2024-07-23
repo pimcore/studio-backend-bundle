@@ -35,17 +35,21 @@ interface ZipServiceInterface
 
     public const DOWNLOAD_ZIP_FILE_NAME = 'download-zip-{id}.zip';
 
+    public const DOWNLOAD_ZIP_FILE_NAME_LOCAL = 'local-' . self::DOWNLOAD_ZIP_FILE_NAME;
+
     public const DOWNLOAD_ZIP_FOLDER_NAME = 'download-zip-{id}';
-
-    public const UPLOAD_ZIP_FILE_NAME = 'upload-zip-{id}.zip';
-
-    public const UPLOAD_ZIP_FOLDER_NAME = 'upload-zip-{id}';
 
     public const DOWNLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::DOWNLOAD_ZIP_FILE_NAME;
 
-    public const UPLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::UPLOAD_ZIP_FILE_NAME;
+    public const UPLOAD_ZIP_FILE_NAME = 'upload-zip-{id}.zip';
+
+    public const UPLOAD_ZIP_FILE_NAME_LOCAL = 'local-' . self::UPLOAD_ZIP_FILE_NAME;
+
+    public const UPLOAD_ZIP_FOLDER_NAME = 'upload-zip-{id}';
 
     public const UPLOAD_ZIP_FOLDER_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::UPLOAD_ZIP_FOLDER_NAME;
+
+    public const UPLOAD_ZIP_FILE_PATH = self::UPLOAD_ZIP_FOLDER_PATH . '/' . self::UPLOAD_ZIP_FILE_NAME_LOCAL;
 
     public function getZipArchive(
         mixed $id,
@@ -55,7 +59,7 @@ interface ZipServiceInterface
 
     public function addFile(ZipArchive $archive, Asset $asset): void;
 
-    public function getArchiveFiles(
+    public function extractArchiveFiles(
         ZipArchive $archive,
         string $targetPath
     ): array;
@@ -75,5 +79,23 @@ interface ZipServiceInterface
 
     public function getTempFileName(mixed $id, string $fileName): string;
 
-    public function copyDownloadZipToFlysystem(int $jobRunId): void;
+    /**
+     * @throws EnvironmentException
+     */
+    public function copyZipFileToFlysystem(
+        string $id,
+        string $folderName,
+        string $archiveName,
+        string $localPath
+    ): void;
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function downloadZipFileFromFlysystem(
+        string $id,
+        string $folderName,
+        string $archiveName,
+        string $localPath
+    ): ZipArchive;
 }
