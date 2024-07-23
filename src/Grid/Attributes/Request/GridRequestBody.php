@@ -48,7 +48,7 @@ final class GridRequestBody extends RequestBody
                         property: 'filters',
                         ref: Filter::class,
                         type: 'object'
-                    )
+                    ),
                 ],
                 type: 'object',
             ),
