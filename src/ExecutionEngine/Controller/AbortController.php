@@ -64,7 +64,7 @@ final class AbortController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function createZippedAssets(
+    public function abortJobRun(
         int $jobRunId
     ): Response {
         $this->executionEngineService->abortAction($jobRunId);

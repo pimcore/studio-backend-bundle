@@ -65,7 +65,7 @@ final class DeleteCsvController extends AbstractApiController
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteAssetsZip(int $jobRunId): Response
+    public function deleteAssetsCsv(int $jobRunId): Response
     {
         $this->downloadService->cleanupDataByJobRunId(
             $jobRunId,
