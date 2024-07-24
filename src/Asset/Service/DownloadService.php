@@ -19,8 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 use Exception;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
@@ -32,7 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
@@ -40,7 +38,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\Exception\NotFoundException as CoreNotFoundException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function in_array;
@@ -54,10 +51,9 @@ final readonly class DownloadService implements DownloadServiceInterface
     use TempFilePathTrait;
 
     public function __construct(
+        private ExecutionEngineServiceInterface $executionEngineService,
         private StorageServiceInterface $storageService,
         private ThumbnailServiceInterface $thumbnailService,
-        private JobRunRepositoryInterface $jobRunRepository,
-        private SecurityServiceInterface $securityService,
         private array $defaultFormats,
     ) {
     }
@@ -150,7 +146,7 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
-     * @throws NotFoundException|ForbiddenException|StreamResourceNotFoundException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
      */
     public function downloadResourceByJobRunId(
         int $jobRunId,
@@ -159,17 +155,16 @@ final readonly class DownloadService implements DownloadServiceInterface
         string $mimeType,
         string $downloadName,
     ): StreamedResponse {
-        $jobRun = $this->validateJobRun($jobRunId);
-
-        $fileName = $this->getTempFileName($jobRun->getId(), $tempFileName);
-        $folderName = $this->getTempFileName($jobRun->getId(), $tempFolderName);
+        $this->executionEngineService->validateJobRun($jobRunId);
+        $fileName = $this->getTempFileName($jobRunId, $tempFileName);
+        $folderName = $this->getTempFileName($jobRunId, $tempFolderName);
         $filePath = $folderName . '/' . $fileName;
 
         $streamedResponse = $this->getFileStreamedResponse(
             $filePath,
             $mimeType,
             $downloadName,
-            $this->validateStorage($filePath)
+            $this->validateStorage($filePath, $jobRunId)
         );
 
         try {
@@ -186,26 +181,49 @@ final readonly class DownloadService implements DownloadServiceInterface
         return $streamedResponse;
     }
 
-    private function validateJobRun(int $jobRunId): JobRun
-    {
+    /**
+     * @throws EnvironmentException|NotFoundException
+     */
+    public function cleanupDataByJobRunId(
+        int $jobRunId,
+        string $folderName,
+        string $fileName
+    ): void {
+        $this->executionEngineService->validateJobRun($jobRunId);
+        $this->validateStorage($this->getTempFilePath($jobRunId, $folderName . '/' . $fileName), $jobRunId);
+
         try {
-            $jobRun = $this->jobRunRepository->getJobRunById($jobRunId);
-        } catch (CoreNotFoundException) {
-            throw new NotFoundException('JobRun', $jobRunId);
+            $this->storageService->cleanUpFolder(
+                $this->getTempFileName(
+                    $jobRunId,
+                    $folderName
+                ),
+                true
+            );
+        } catch (FilesystemException $e) {
+            throw new EnvironmentException(
+                sprintf(
+                    'Failed to delete file based on jobRunId %d: %s',
+                    $jobRunId,
+                    $e->getMessage()
+                ),
+            );
         }
-
-        if ($jobRun->getOwnerId() !== $this->securityService->getCurrentUser()->getId()) {
-            throw new ForbiddenException('Only job owner can access the resource');
-        }
-
-        return $jobRun;
     }
 
-    private function validateStorage(string $fileName): FilesystemOperator
+    /**
+     * @throws EnvironmentException
+     */
+    private function validateStorage(string $filePath, int $jobRunId): FilesystemOperator
     {
         $storage = $this->storageService->getTempStorage();
-        if (!$this->storageService->tempFileExists($fileName)) {
-            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $fileName));
+        if (!$this->storageService->tempFileExists($filePath)) {
+            throw new EnvironmentException(
+                sprintf(
+                    'Resource not found for jobRun with Id %d',
+                    $jobRunId
+                )
+            );
         }
 
         return $storage;

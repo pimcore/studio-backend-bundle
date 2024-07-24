@@ -14,22 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
 
-use OpenApi\Attributes\Post;
-use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
+use OpenApi\Attributes\Delete;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ScalarItemsJson;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedResponse;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -37,41 +36,42 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CreateZipController extends AbstractApiController
+final class DeleteZipController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ZipServiceInterface $zipService
+        private readonly DownloadServiceInterface $downloadService
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/zip/create', name: 'pimcore_studio_api_create_zip_asset', methods: ['POST'])]
+    /**
+     * @throws NotFoundException|ForbiddenException
+     */
+    #[Route('/assets/download/zip/{jobRunId}', name: 'pimcore_studio_api_zip_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
-    #[Post(
-        path: self::API_PATH . '/assets/zip/create',
-        operationId: 'createZipAssets',
-        description: 'Creating zipped assets',
-        summary: 'Creating zip file for assets',
+    #[Delete(
+        path: self::API_PATH . '/assets/download/zip/{jobRunId}',
+        operationId: 'deleteAssetsZip',
+        description: 'Delete zip file with assets',
+        summary: 'Delete the zip file with assets based on jobRunId',
         tags: [Tags::Assets->name]
     )]
-    #[RequestBody(
-        content: new ScalarItemsJson('integer')
-    )]
-    #[CreatedResponse(
-        description: 'Successfully created jobRun for zip export',
-        content: new IdJson('ID of created jobRun', 'jobRunId')
-    )]
+    #[IdParameter(type: 'JobRun', name: 'jobRunId')]
+    #[SuccessResponse]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function createZippedAssets(
-        #[MapRequestPayload] CreateAssetFileParameter $createAssetFileParameter
-    ): Response {
-        return $this->jsonResponse(
-            ['jobRunId' => $this->zipService->generateZipFile($createAssetFileParameter)],
-            HttpResponseCodes::CREATED->value
+    public function deleteAssetsZip(int $jobRunId): Response
+    {
+        $this->downloadService->cleanupDataByJobRunId(
+            $jobRunId,
+            ZipServiceInterface::DOWNLOAD_ZIP_FOLDER_NAME,
+            ZipServiceInterface::DOWNLOAD_ZIP_FILE_NAME
         );
+
+        return new Response();
     }
 }

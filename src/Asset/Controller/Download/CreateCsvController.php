@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\CsvExportRequestBody;

@@ -53,6 +53,10 @@ final class AssetDeleteHandler extends AbstractHandler
      */
     public function __invoke(AssetDeleteMessage $message): void
     {
+        if (!$this->shouldBeExecuted($this->getJobRun($message))) {
+            return;
+        }
+
         $jobRun = $this->getJobRun($message);
         $validatedParameters = $this->validateJobParameters(
             $message,

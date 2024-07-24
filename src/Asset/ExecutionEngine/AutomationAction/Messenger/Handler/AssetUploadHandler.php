@@ -52,6 +52,10 @@ final class AssetUploadHandler extends AbstractHandler
     public function __invoke(AssetUploadMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
+        if (!$this->shouldBeExecuted($jobRun)) {
+            return;
+        }
+
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,
@@ -59,7 +63,7 @@ final class AssetUploadHandler extends AbstractHandler
             [
                 EnvironmentVariables::PARENT_ID->value,
                 EnvironmentVariables::UPLOAD_FOLDER_LOCATION->value,
-            ],
+            ]
         );
 
         if ($validatedParameters instanceof AbortActionData) {

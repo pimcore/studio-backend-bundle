@@ -14,22 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
 
-use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\AssetMediaType;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header\ContentDisposition;
+use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -37,7 +37,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class DownloadZipController extends AbstractApiController
+final class DeleteCsvController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -46,33 +46,33 @@ final class DownloadZipController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/download/zip/{jobRunId}', name: 'pimcore_studio_api_zip_download_asset', methods: ['GET'])]
+    /**
+     * @throws EnvironmentException|ForbiddenException|NotFoundException
+     */
+    #[Route('/assets/download/csv/{jobRunId}', name: 'pimcore_studio_api_csv_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
-    #[Get(
-        path: self::API_PATH . '/assets/download/zip/{jobRunId}',
-        operationId: 'downloadZippedAssets',
-        description: 'Downloading zipped assets',
-        summary: 'Downloading the zip file with assets',
+    #[Delete(
+        path: self::API_PATH . '/assets/download/csv/{jobRunId}',
+        operationId: 'deleteAssetsCsv',
+        description: 'Delete csv file with assets',
+        summary: 'Delete the csv file with assets based on jobRunId',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
-    #[SuccessResponse(
-        description: 'Zip archive',
-        content: [new AssetMediaType('application/zip')],
-        headers: [new ContentDisposition()]
-    )]
+    #[SuccessResponse]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function downloadZippedAssets(int $jobRunId): StreamedResponse
+    public function deleteAssetsCsv(int $jobRunId): Response
     {
-        return $this->downloadService->downloadResourceByJobRunId(
+        $this->downloadService->cleanupDataByJobRunId(
             $jobRunId,
-            ZipServiceInterface::DOWNLOAD_ZIP_FILE_NAME,
-            ZipServiceInterface::DOWNLOAD_ZIP_FOLDER_NAME,
-            MimeTypes::ZIP->value,
-            'assets.zip'
+            CsvServiceInterface::CSV_FOLDER_NAME,
+            CsvServiceInterface::CSV_FILE_NAME
         );
+
+        return new Response();
     }
 }

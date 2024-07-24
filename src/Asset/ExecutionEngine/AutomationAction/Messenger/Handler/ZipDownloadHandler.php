@@ -80,6 +80,9 @@ final class ZipDownloadHandler extends AbstractHandler
         );
 
         foreach ($assetIds as $assetId) {
+            if (!$this->shouldBeExecuted($jobRun)) {
+                return;
+            }
             $asset = $this->getElementById(
                 new ElementDescriptor(
                     ElementTypes::TYPE_ASSET,

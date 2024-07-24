@@ -14,24 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Controller;
 
-use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content\AssetMediaType;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header\ContentDisposition;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -39,46 +36,39 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class DownloadCsvController extends AbstractApiController
+final class AbortController extends AbstractApiController
 {
     public function __construct(
+        private readonly ExecutionEngineServiceInterface $executionEngineService,
         SerializerInterface $serializer,
-        private readonly DownloadServiceInterface $downloadService
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws NotFoundException|ForbiddenException
+     * @throws DatabaseException|ForbiddenException|NotFoundException
      */
-    #[Route('/assets/download/csv/{jobRunId}', name: 'pimcore_studio_api_csv_download_asset', methods: ['GET'])]
+    #[Route('/execution-engine/abort/{jobRunId}', name: 'pimcore_studio_api_execution_engine_abort', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
-    #[Get(
-        path: self::API_PATH . '/assets/download/csv/{jobRunId}',
-        operationId: 'downloadAssetsCsv',
-        description: 'Downloading csv file with assets',
-        summary: 'Downloading the csv file with assets',
-        tags: [Tags::Assets->name]
+    #[Post(
+        path: self::API_PATH . '/execution-engine/abort/{JobRunId}',
+        operationId: 'abortJobRun',
+        description: 'Abort Job Run',
+        summary: 'Abort Job Run by Id',
+        tags: [Tags::ExecutionEngine->name]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
-    #[SuccessResponse(
-        description: 'CSV File',
-        content: [new AssetMediaType('application/csv')],
-        headers: [new ContentDisposition()]
-    )]
+    #[SuccessResponse]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function downloadCsvAssets(int $jobRunId): StreamedResponse
-    {
-        return $this->downloadService->downloadResourceByJobRunId(
-            $jobRunId,
-            CsvServiceInterface::CSV_FILE_NAME,
-            CsvServiceInterface::CSV_FOLDER_NAME,
-            MimeTypes::CSV->value,
-            'assets.csv'
-        );
+    public function abortJobRun(
+        int $jobRunId
+    ): Response {
+        $this->executionEngineService->abortAction($jobRunId);
+
+        return new Response();
     }
 }

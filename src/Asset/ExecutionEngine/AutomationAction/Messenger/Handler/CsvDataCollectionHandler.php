@@ -56,6 +56,9 @@ final class CsvDataCollectionHandler extends AbstractHandler
     public function __invoke(CsvCollectionMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
+        if (!$this->shouldBeExecuted($jobRun)) {
+            return;
+        }
         $user = $this->userResolver->getById($jobRun->getOwnerId());
         if ($user === null) {
             $this->abort($this->getAbortData(
