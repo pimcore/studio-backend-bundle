@@ -49,7 +49,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class TreeController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
@@ -63,13 +63,13 @@ final class CollectionController extends AbstractApiController
     /**
      * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
      */
-    #[Route('/assets', name: 'pimcore_studio_api_assets', methods: ['GET'])]
+    #[Route('/assets/tree', name: 'pimcore_studio_api_assets_tree', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets',
-        operationId: 'getAssets',
+        path: self::API_PATH . '/assets/tree',
+        operationId: 'getAssetTree',
         description: 'Get paginated assets',
-        summary: 'Get all assets',
+        summary: 'Get all assets for the tree',
         tags: [Tags::Assets->name]
     )]
     #[PageParameter]
@@ -91,7 +91,7 @@ final class CollectionController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAssets(#[MapQueryString] ElementParameters $parameters): JsonResponse
+    public function getAssetTree(#[MapQueryString] ElementParameters $parameters): JsonResponse
     {
         $collection = $this->assetService->getAssets($parameters);
 

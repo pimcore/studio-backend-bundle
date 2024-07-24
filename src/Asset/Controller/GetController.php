@@ -49,7 +49,7 @@ final class GetController extends AbstractApiController
     /**
      * @throws NotFoundException|SearchException
      */
-    #[Route('/assets/{id}', name: 'pimcore_studio_api_get_asset', methods: ['GET'])]
+    #[Route('/assets/{id}', name: 'pimcore_studio_api_get_asset', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}',
