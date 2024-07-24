@@ -20,8 +20,8 @@ use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
@@ -33,8 +33,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private DownloadServiceInterface $downloadService,
+        private CsvServiceInterface $csvService,
         private PublishServiceInterface $publishService,
+        private StorageServiceInterface $storageService,
     ) {
 
     }
@@ -65,12 +66,25 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
                     $event->getNewState()
                 )
             ),
-            JobRunStates::FAILED->value => $this->downloadService->cleanupDataByJobRunId(
-                $event->getJobRunId(),
-                CsvServiceInterface::CSV_FOLDER_NAME,
-                CsvServiceInterface::CSV_FILE_NAME
-            ),
+            JobRunStates::FAILED->value => $this->cleanupOnFail($event->getJobRunId()),
             default => null,
         };
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    private function cleanupOnFail(int $jobRunId): void
+    {
+        $this->storageService->cleanUpFlysystemFile(
+            $this->csvService->getTempFilePath(
+                $jobRunId,
+                CsvServiceInterface::CSV_FOLDER_NAME . '/' . CsvServiceInterface::CSV_FILE_NAME
+            )
+        );
+
+        $this->storageService->cleanUpFolder(
+            $this->csvService->getTempFilePath($jobRunId, CsvServiceInterface::CSV_FOLDER_NAME)
+        );
     }
 }

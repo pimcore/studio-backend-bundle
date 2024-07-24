@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
 
 #[Schema(
     title: 'Asset',
@@ -31,15 +32,17 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
         'type',
         'filename',
         'mimeType',
-        'metaData',
+        'hasMetaData',
         'hasWorkflowWithPermissions',
         'fullPath',
+        'customTreeAttributes',
     ],
     type: 'object'
 )]
 class Asset extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
+    use CustomTreeAttributesTrait;
 
     public function __construct(
         #[Property(description: 'IconName', type: 'string', example: 'pimcore_icon_pdf')]

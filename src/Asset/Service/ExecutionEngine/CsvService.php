@@ -17,19 +17,20 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
 use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants\Csv;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -46,29 +47,34 @@ final readonly class CsvService implements CsvServiceInterface
         private SecurityServiceInterface $securityService,
         private StorageServiceInterface $storageService,
         private GridServiceInterface $gridService,
+        private string $defaultDelimiter,
     ) {
     }
 
     public function generateCsvFile(ExportAssetParameter $exportAssetParameter): int
     {
-        $jobStepConfig = [
-            Csv::JOB_STEP_CONFIG_SETTINGS->value => $exportAssetParameter->getSettings(),
+        $jobStepConfigConfiguration = [
             Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportAssetParameter->getGridConfig(),
+        ];
+        $jobStepConfigSettings = [
+            Csv::JOB_STEP_CONFIG_SETTINGS->value => $exportAssetParameter->getSettings(),
         ];
 
         $jobSteps = array_map(
             static fn (ElementDescriptor $asset) => new JobStep(
-                JobSteps::CSV_CREATION->value,
-                CsvCreationMessage::class,
+                JobSteps::CSV_COLLECTION->value,
+                CsvCollectionMessage::class,
                 '',
-                array_merge(
-                    [
-                        csv::ASSET_TO_EXPORT->value => $asset,
-                    ],
-                    $jobStepConfig
-                )
+                array_merge([csv::ASSET_TO_EXPORT->value => $asset], $jobStepConfigConfiguration)
             ),
             $exportAssetParameter->getAssets(),
+        );
+
+        $jobSteps[] = new JobStep(
+            JobSteps::CSV_CREATION->value,
+            CsvCreationMessage::class,
+            '',
+            array_merge($jobStepConfigSettings, $jobStepConfigConfiguration)
         );
 
         $job = new Job(
@@ -85,50 +91,42 @@ final readonly class CsvService implements CsvServiceInterface
         return $jobRun->getId();
     }
 
-    public function getCsvFile(int $id, Configuration $configuration, array $settings): string
-    {
+    /**
+     * @throws FilesystemException
+     */
+    public function createCsvFile(
+        int $id,
+        ColumnCollection $columnCollection,
+        array $settings,
+        array $assetData,
+        ?string $delimiter = null,
+    ): void {
         $storage = $this->storageService->getTempStorage();
-        $folderName = $this->getTempFileName($id, self::CSV_FOLDER_NAME);
-        $file = $this->getTempFileName($id, self::CSV_FILE_NAME);
-
-        try {
-            $storage->createDirectory($folderName);
-            $path = $folderName . '/' . $file;
-            if (!$storage->fileExists($path)) {
-                $headers = $this->getHeaders($configuration, $settings);
-                $storage->write(
-                    $path,
-                    implode(
-                        $settings[Csv::SETTINGS_DELIMITER->value] ?? ',',
-                        $headers
-                    ) . Csv::NEW_LINE->value
-                );
-            }
-
-        } catch (FilesystemException $e) {
-            throw new EnvironmentException('Could not create or read CSV file: ' . $e->getMessage());
+        $headers = $this->getHeaders($columnCollection, $settings);
+        if ($delimiter === null) {
+            $delimiter = $this->defaultDelimiter;
+        }
+        $data[] = implode($delimiter, $headers) . Csv::NEW_LINE->value;
+        foreach ($assetData as $row) {
+            $data[] = implode($delimiter, array_map([$this, 'encodeFunc'], $row)) . Csv::NEW_LINE->value;
         }
 
-        return $path;
+        $storage->write(
+            $this->getCsvFilePath($id, $storage),
+            implode($data)
+        );
     }
 
     /**
      * @throws FilesystemException
      */
-    public function addData(string $filePath, string $delimiter, array $data): void
+    private function getCsvFilePath(int $id, FilesystemOperator $storage): string
     {
-        $storage = $this->storageService->getTempStorage();
-        $fileStream = $storage->readStream($filePath);
+        $folderName = $this->getTempFileName($id, self::CSV_FOLDER_NAME);
+        $file = $this->getTempFileName($id, self::CSV_FILE_NAME);
+        $storage->createDirectory($folderName);
 
-        $temp = tmpfile();
-        stream_copy_to_stream($fileStream, $temp, null, 0);
-
-        fwrite(
-            $temp,
-            implode($delimiter, array_map([$this, 'encodeFunc'], $data)) . Csv::NEW_LINE->value
-        );
-
-        $storage->writeStream($filePath, $temp);
+        return $folderName . '/' . $file;
     }
 
     private function encodeFunc(?string $value): string
@@ -139,7 +137,7 @@ final readonly class CsvService implements CsvServiceInterface
         return '"' . $value . '"';
     }
 
-    private function getHeaders(Configuration $configuration, array $settings): array
+    private function getHeaders(ColumnCollection $columnCollection, array $settings): array
     {
         $header = $settings[Csv::SETTINGS_HEADER->value] ?? Csv::SETTINGS_HEADER_NO_HEADER->value;
         if ($header === Csv::SETTINGS_HEADER_NO_HEADER->value) {
@@ -147,7 +145,7 @@ final readonly class CsvService implements CsvServiceInterface
         }
 
         return $this->gridService->getColumnKeys(
-            $configuration,
+            $columnCollection,
             $header === Csv::SETTINGS_HEADER_NAME->value
         );
     }

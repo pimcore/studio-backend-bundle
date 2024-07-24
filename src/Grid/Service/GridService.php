@@ -16,18 +16,22 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\Element\ElementInterface;
@@ -52,13 +56,18 @@ final class GridService implements GridServiceInterface
      */
     private array $columnResolvers = [];
 
+    /**
+     * @param array<string, ColumnCollectorInterface> $columnCollectors
+     */
+    private array $columnCollectors = [];
+
     public function __construct(
         private readonly ColumnDefinitionLoaderInterface $columnDefinitionLoader,
         private readonly ColumnResolverLoaderInterface $columnResolverLoader,
-        private readonly SystemColumnServiceInterface $systemColumnService,
+        private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
         private readonly GridSearchInterface $gridSearch,
         private readonly ServiceResolverInterface $serviceResolver,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -68,26 +77,24 @@ final class GridService implements GridServiceInterface
     public function getAssetGrid(GridParameter $gridParameter): Collection
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
+        $items = $result->getItems();
 
-        if (empty($result->getIds())) {
+        if (empty($items)) {
             return new Collection(totalItems: 0, items: []);
         }
 
         $data = [];
-
-        foreach ($result->getItems() as $item) {
-            $type = $item->getElementType()->value;
-            $asset = $this->getElement($this->serviceResolver, $type, $item->getId());
-
+        foreach ($items as $item) {
+            $asset = $this->getElement($this->serviceResolver, 'asset', $item->getId());
             $data[] = $this->getGridDataForElement(
-                $this->getConfigurationFromArray($gridParameter->getGridConfig()),
+                $this->getConfigurationFromArray($gridParameter->getColumns()),
                 $asset,
-                $type
+                ElementTypes::TYPE_ASSET
             );
         }
 
         return new Collection(
-            totalItems: $result->getPagination()->getTotalItems(),
+            totalItems: $result->getTotalItems(),
             items: $data
         );
     }
@@ -96,12 +103,12 @@ final class GridService implements GridServiceInterface
      * @throws InvalidArgumentException
      */
     public function getGridDataForElement(
-        Configuration $configuration,
+        ColumnCollection $columnCollection,
         ElementInterface $element,
         string $elementType
     ): array {
         $data = [];
-        foreach ($configuration->getColumns() as $column) {
+        foreach ($columnCollection->getColumns() as $column) {
             // move this to the resolver
             if (!$this->supports($column, $elementType)) {
                 continue;
@@ -124,11 +131,11 @@ final class GridService implements GridServiceInterface
      * @throws InvalidArgumentException
      */
     public function getGridValuesForElement(
-        Configuration $configuration,
+        ColumnCollection $columnCollection,
         ElementInterface $element,
         string $elementType
     ): array {
-        $data = $this->getGridDataForElement($configuration, $element, $elementType);
+        $data = $this->getGridDataForElement($columnCollection, $element, $elementType);
 
         return array_map(
             static fn (ColumnData $columnData) => $columnData->getValue(),
@@ -136,73 +143,76 @@ final class GridService implements GridServiceInterface
         );
     }
 
-    public function getAssetGridConfiguration(): Configuration
+    /**
+     * @return ColumnConfiguration[]
+     */
+    public function getAssetGridConfiguration(): array
     {
-        $systemColumns = $this->systemColumnService->getSystemColumnsForAssets();
         $columns = [];
-        foreach ($systemColumns as $columnKey => $type) {
-            if (!array_key_exists($type, $this->getColumnDefinitions())) {
+        foreach ($this->getColumnCollectors() as $collector) {
+            // Only collect supported asset collectors
+            if (!in_array(ElementTypes::TYPE_ASSET, $collector->supportedElementTypes(), true)) {
                 continue;
             }
-            $column = new Column(
-                key: $columnKey,
-                group: 'system',
-                sortable: $this->getColumnDefinitions()[$type]->isSortable(),
-                editable: false,
-                localizable: false,
-                locale: null,
-                type: $type,
-                config: $this->getColumnDefinitions()[$type]->getConfig()
-            );
 
-            $this->eventDispatcher->dispatch(
-                new GridColumnDefinitionEvent($column),
-                GridColumnDefinitionEvent::EVENT_NAME
+            $columns = array_merge(
+                $columns,
+                $collector->getColumnConfigurations(
+                    $this->getColumnDefinitions()
+                )
             );
-
-            $columns[] = $column;
         }
 
-        return new Configuration($columns);
+        foreach ($columns as $column) {
+            $this->eventDispatcher->dispatch(
+                new GridColumnConfigurationEvent($column),
+                GridColumnConfigurationEvent::EVENT_NAME
+            );
+        }
+
+        return $columns;
     }
 
-    public function getDocumentGridColumns(): Configuration
+    public function getDocumentGridColumns(): ColumnCollection
     {
-        return new Configuration([]);
+        return new ColumnCollection([]);
     }
 
-    public function getDataObjectGridColumns(ClassDefinition $classDefinition): Configuration
+    public function getDataObjectGridColumns(ClassDefinition $classDefinition): ColumnCollection
     {
-        return new Configuration([]);
+        return new ColumnCollection([]);
     }
 
-    public function getConfigurationFromArray(array $config): Configuration
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function getConfigurationFromArray(array $config): ColumnCollection
     {
         $columns = [];
-
-        foreach ($config['columns'] as $column) {
-            $columns[] = new Column(
-                key: $column['key'],
-                group: $column['group'],
-                sortable: $column['sortable'],
-                editable: $column['editable'],
-                localizable: $column['localizable'],
-                locale: $column['locale'],
-                type: $column['type'],
-                config: $column['config']
-            );
+        foreach ($config as $column) {
+            try {
+                $columns[] = new Column(
+                    key: $column['key'],
+                    locale: $column['locale'] ?? null,
+                    type: $column['type'],
+                    group: $column['group'] ?? null,
+                    config: $column['config']
+                );
+            } catch (Exception $e) {
+                throw new InvalidArgumentException('Invalid column configuration');
+            }
         }
 
-        return new Configuration($columns);
+        return new ColumnCollection($columns);
     }
 
-    public function getColumnKeys(Configuration $configuration, bool $withGroup = false): array
+    public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array
     {
         return array_map(
             static function (Column $column) use ($withGroup) {
                 return $column->getKey() . ($withGroup ? '~' . $column->getGroup() : '');
             },
-            $configuration->getColumns()
+            $columnCollection->getColumns()
         );
     }
 
@@ -222,6 +232,9 @@ final class GridService implements GridServiceInterface
         return true;
     }
 
+    /**
+     * @return array<string, ColumnDefinitionInterface>
+     */
     private function getColumnDefinitions(): array
     {
         if ($this->columnDefinitions) {
@@ -230,6 +243,20 @@ final class GridService implements GridServiceInterface
         $this->columnDefinitions = $this->columnDefinitionLoader->loadColumnDefinitions();
 
         return $this->columnDefinitions;
+    }
+
+    /**
+     * @return array<string, ColumnCollectorInterface>
+     */
+    private function getColumnCollectors(): array
+    {
+        if ($this->columnCollectors) {
+            return $this->columnCollectors;
+        }
+
+        $this->columnCollectors = $this->columnCollectorLoader->loadColumnCollectors();
+
+        return $this->columnCollectors;
     }
 
     private function getColumnResolvers(): array

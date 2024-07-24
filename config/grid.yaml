@@ -24,40 +24,101 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnResolverLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnResolverLoader
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnCollectorLoader
+
   #
   # Column Definitions
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\IntegerDefinition:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\IntegerDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\StringDefinition:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\StringDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DatetimeDefinition:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\DatetimeDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\ImageDefinition:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\ImageDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\FileSizeDefinition:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\FileSizeDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\MetaData\SelectDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\MetaData\InputDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\MetaData\TextareaDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\MetaData\CheckboxDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\MetaData\DateDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\MetaData\AssetDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\MetaData\DocumentDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\MetaData\DataObjectDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
   #
   # Column Resolver
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\StringResolver:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\StringResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\IntegerResolver:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\IntegerResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\FileSizeResolver:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\FileSizeResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DatetimeResolver:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\DatetimeResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\ImageResolver:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\ImageResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\MetaData\SelectResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\MetaData\TextareaResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\MetaData\CheckboxResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\MetaData\DateResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\MetaData\AssetResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\MetaData\DocumentResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\MetaData\DataObjectResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\MetaData\InputResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  #
+  # Column Collector
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\SystemFieldCollector:
+    tags: [ 'pimcore.studio_backend.grid_column_collector' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\MetaDataCollector:
+    tags: [ 'pimcore.studio_backend.grid_column_collector' ]

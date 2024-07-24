@@ -17,12 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 
 /**
  * @internal
  */
 interface FilterInterface
 {
-    public function apply(CollectionParametersInterface $parameters, QueryInterface $query): QueryInterface;
+    public function apply(mixed $parameters, QueryInterface $query): QueryInterface;
 }

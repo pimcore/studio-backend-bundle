@@ -36,18 +36,32 @@ interface StorageServiceInterface
     public function tempFileExists(string $location): bool;
 
     /**
+     * @throws EnvironmentException
+     */
+    public function copyElementToFlysystem(
+        string $innerPath,
+        string $localElementPath,
+        string $targetPath,
+    ): void;
+
+    /**
      * @throws FilesystemException
      */
     public function cleanUpFolder(
-        string $folder
+        string $folder,
+        bool $removeContents = false
+    ): void;
+
+    public function cleanUpLocalFolder(
+        string $folderLocation
     ): void;
 
     public function cleanUpLocalFile(
-        string $archivePath
+        string $filePath
     ): void;
 
     public function cleanUpFlysystemFile(
-        string $archivePath
+        string $filePath
     ): void;
 
     public function getThumbnailStorage(): FilesystemOperator;

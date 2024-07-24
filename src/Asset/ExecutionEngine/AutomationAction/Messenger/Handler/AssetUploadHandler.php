@@ -22,14 +22,13 @@ use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function dirname;
 
 /**
  * @internal
@@ -41,7 +40,6 @@ final class AssetUploadHandler extends AbstractHandler
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
-        private readonly StorageServiceInterface $storageService,
         private readonly UserResolverInterface $userResolver,
         private readonly UploadServiceInterface $uploadService,
     ) {
@@ -64,33 +62,38 @@ final class AssetUploadHandler extends AbstractHandler
             $this->userResolver,
             [
                 EnvironmentVariables::PARENT_ID->value,
-                EnvironmentVariables::UPLOAD_FOLDER_NAME->value,
-            ],
+                EnvironmentVariables::UPLOAD_FOLDER_LOCATION->value,
+            ]
         );
 
         if ($validatedParameters instanceof AbortActionData) {
             $this->abort($validatedParameters);
         }
 
+        $user = $validatedParameters->getUser();
         $environmentVariables = $validatedParameters->getEnvironmentData();
+
         try {
             $element = $validatedParameters->getSubject()->getType();
             $fileData = json_decode($element, true, 512, JSON_THROW_ON_ERROR);
-            $file = new UploadedFile(
-                $fileData['sourcePath'],
-                $fileData['fileName'],
-            );
+            $folderLocation = dirname($fileData['path']);
+            $parentId = $environmentVariables[EnvironmentVariables::PARENT_ID->value];
+
+            if ($folderLocation !== '.') {
+                $parentId = $this->uploadService->uploadParentFolder(
+                    $fileData['path'],
+                    $parentId,
+                    $user,
+                );
+            }
 
             $this->uploadService->uploadAsset(
-                $environmentVariables[EnvironmentVariables::PARENT_ID->value],
-                $file,
-                $validatedParameters->getUser(),
+                $parentId,
+                $fileData['name'],
+                $fileData['sourcePath'],
+                $user,
+                true
             );
-
-            $this->storageService->cleanUpFolder(
-                $environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_NAME->value],
-            );
-
         } catch (Exception|FilesystemException $exception) {
             $this->abort($this->getAbortData(
                 Config::ASSET_UPLOAD_FAILED_MESSAGE->value,

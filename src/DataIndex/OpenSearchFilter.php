@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Factory\QueryFactoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 
@@ -41,7 +40,7 @@ final readonly class OpenSearchFilter implements FilterServiceInterface, OpenSea
     /**
      * @throws InvalidQueryTypeException|InvalidFilterTypeException
      */
-    public function applyFilters(CollectionParametersInterface $parameters, string $type): QueryInterface
+    public function applyFilters(mixed $parameters, string $type): QueryInterface
     {
         $query = $this->queryFactory->create($type);
         // apply default filters

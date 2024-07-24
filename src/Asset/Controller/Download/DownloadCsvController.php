@@ -22,10 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Header\ContentD
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -51,7 +49,7 @@ final class DownloadCsvController extends AbstractApiController
     }
 
     /**
-     * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
+     * @throws NotFoundException|ForbiddenException
      */
     #[Route('/assets/download/csv/{jobRunId}', name: 'pimcore_studio_api_csv_download_asset', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]

@@ -24,8 +24,12 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInter
  */
 final class PageSizeFilter implements FilterInterface
 {
-    public function apply(CollectionParametersInterface $parameters, QueryInterface $query): QueryInterface
+    public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
+        if (!$parameters instanceof CollectionParametersInterface) {
+            return $query;
+        }
+
         return $query->setPageSize($parameters->getPageSize());
     }
 }

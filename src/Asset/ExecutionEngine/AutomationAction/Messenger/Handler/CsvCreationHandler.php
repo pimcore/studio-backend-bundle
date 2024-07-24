@@ -18,19 +18,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 
 use Exception;
 use League\Flysystem\FilesystemException;
-use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants\Csv;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -45,8 +40,6 @@ final class CsvCreationHandler extends AbstractHandler
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
-        private readonly ElementServiceInterface $elementService,
-        private readonly UserResolverInterface $userResolver,
         private readonly CsvServiceInterface $csvService,
         private readonly GridServiceInterface $gridService
     ) {
@@ -62,56 +55,25 @@ final class CsvCreationHandler extends AbstractHandler
         if (!$this->shouldBeExecuted($jobRun)) {
             return;
         }
-        $user = $this->userResolver->getById($jobRun->getOwnerId());
-        if ($user === null) {
-            $this->abort($this->getAbortData(
-                Config::USER_NOT_FOUND_MESSAGE->value,
-                [
-                    'userId' => $jobRun->getOwnerId(),
-                ]
-            ));
-        }
-
-        $jobAsset = $this->extractConfigFieldFromJobStepConfig($message, Csv::ASSET_TO_EXPORT->value);
-        $asset = $this->getElementById(
-            new ElementDescriptor($jobAsset['type'], $jobAsset['id']),
-            $user,
-            $this->elementService
-        );
-        if (!$asset instanceof Asset || $asset->getType() === ElementTypes::TYPE_FOLDER) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
-                [
-                    'folderId' => $asset->getId(),
-                ]
-            ));
-
-            return;
-        }
         $settings = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_SETTINGS->value);
-        $configuration = $this->gridService->getConfigurationFromArray(
+        $columnCollection = $this->gridService->getConfigurationFromArray(
             $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value)
         );
-
-        $csv = $this->csvService->getCsvFile($jobRun->getId(), $configuration, $settings);
-        if (!$csv) {
+        if (!isset($jobRun->getContext()[Csv::ASSET_EXPORT_DATA->value])) {
             $this->abort($this->getAbortData(
-                Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
-                [
-                    'type' => 'csv',
-                    'jobRunId' => $jobRun->getId(),
-                ]
+                Config::CSV_CREATION_FAILED_MESSAGE->value,
+                ['message' => 'Asset export data not found in job run context']
             ));
         }
+        $assetData = $jobRun->getContext()[Csv::ASSET_EXPORT_DATA->value];
 
         try {
-            $assetData = $this->gridService->getGridValuesForElement(
-                $configuration,
-                $asset,
-                ElementTypes::TYPE_ASSET
+            $this->csvService->createCsvFile(
+                $jobRun->getId(),
+                $columnCollection,
+                $settings,
+                $assetData,
             );
-
-            $this->csvService->addData($csv, $settings['delimiter'], $assetData);
         } catch (Exception|FilesystemException $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,
@@ -124,11 +86,6 @@ final class CsvCreationHandler extends AbstractHandler
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(Csv::ASSET_TO_EXPORT->value);
-        $this->stepConfiguration->setAllowedTypes(
-            Csv::ASSET_TO_EXPORT->value,
-            self::ARRAY_TYPE
-        );
         $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_SETTINGS->value);
         $this->stepConfiguration->setAllowedTypes(
             Csv::JOB_STEP_CONFIG_SETTINGS->value,

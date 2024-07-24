@@ -31,6 +31,7 @@ enum Config: string
     case ZIP_FILE_UPLOAD_FAILED_MESSAGE = 'studio_ee_zip_file_upload_failed';
     case ZIP_CLEANUP_FAILED_MESSAGE = 'studio_ee_zip_cleanup_failed';
     case CSV_CREATION_FAILED_MESSAGE = 'studio_ee_csv_creation_failed';
+    case CSV_DATA_COLLECTION_FAILED_MESSAGE = 'studio_ee_csv_data_collection_failed';
     case ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED = 'studio_ee_element_folder_collection_not_supported';
     case FILE_NOT_FOUND_FOR_JOB_RUN = 'studio_ee_file_not_found_for_job_run';
     case NO_ASSETS_FOUND_FOR_JOB_RUN = 'studio_ee_no_assets_found_for_job_run';

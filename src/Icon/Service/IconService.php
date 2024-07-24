@@ -50,4 +50,9 @@ final class IconService implements IconServiceInterface
             default => $this->defaultIcon
         };
     }
+
+    public function getIconForTag(): string
+    {
+        return 'tag-02';
+    }
 }

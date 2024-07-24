@@ -50,6 +50,10 @@ use OpenApi\Attributes\Tag;
     description: 'Execution engine operations related to job runs.'
 )]
 #[Tag(
+    name: Tags::Emails->value,
+    description: 'Email operations to get/update/create/delete/test emails and email blocklist.'
+)]
+#[Tag(
     name: Tags::Grid->name,
     description: 'Grid operations'
 )]
@@ -64,6 +68,18 @@ use OpenApi\Attributes\Tag;
 #[Tag(
     name: Tags::Properties->name,
     description: 'Property operations to get/update/create/delete properties'
+)]
+#[Tag(
+    name: Tags::Tags->name,
+    description: 'Tag operations to get/list/create/update/delete tags'
+)]
+#[Tag(
+    name: Tags::TagsForElement->value,
+    description: 'Tag operations to get tags for an element'
+)]
+#[Tag(
+    name: Tags::Translation->name,
+    description: 'Get translations either for a single key or multiple keys'
 )]
 #[Tag(
     name: Tags::Schedule->name,
@@ -102,12 +118,15 @@ enum Tags: string
     case Dependencies = 'Dependencies';
     case Elements = 'Elements';
     case ExecutionEngine = 'Execution Engine';
+    case Emails = 'E-Mails';
     case Grid = 'Grid';
     case Mercure = 'Mercure';
     case Notes = 'Notes';
     case Properties = 'Properties';
     case Schedule = 'Schedule';
     case Settings = 'Settings';
+    case Tags = 'Tags';
+    case TagsForElement = 'Tags for Element';
     case Translation = 'Translation';
     case User = 'User Management';
     case Role = 'Role Management';

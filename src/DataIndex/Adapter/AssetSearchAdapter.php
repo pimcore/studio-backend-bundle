@@ -18,7 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\OpenSearch\SearchFailedException;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\Aggregation\FileSizeAggregationServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
@@ -34,6 +36,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
         private AssetSearchServiceInterface $searchService,
         private AssetHydratorServiceInterface $assetHydratorService,
         private SearchResultIdListServiceInterface $searchResultIdListService,
+        private FileSizeAggregationServiceInterface $fileSizeAggregationService,
     ) {
     }
 
@@ -94,5 +97,18 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
         } catch (AssetSearchException) {
             throw new SearchException('assets');
         }
+    }
+
+    /**
+     * @throws AssetSearchException
+     */
+    public function getTotalFileSizeByIds(QueryInterface $assetQuery): int
+    {
+        $search = $assetQuery->getSearch();
+        if (!$search instanceof AssetSearch) {
+            throw new AssetSearchException('Invalid search query');
+        }
+
+        return $this->fileSizeAggregationService->getFileSizeSum($search);
     }
 }
