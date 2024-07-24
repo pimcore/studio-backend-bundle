@@ -16,8 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -65,7 +67,7 @@ interface DownloadServiceInterface
     ): BinaryFileResponse;
 
     /**
-     * @throws NotFoundException|ForbiddenException|StreamResourceNotFoundException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
      */
     public function downloadResourceByJobRunId(
         int $jobRunId,
@@ -74,4 +76,13 @@ interface DownloadServiceInterface
         string $mimeType,
         string $downloadName,
     ): StreamedResponse;
+
+    /**
+     * @throws EnvironmentException|NotFoundException
+     */
+    public function cleanupDataByJobRunId(
+        int $jobRunId,
+        string $folderName,
+        string $fileName
+    ): void;
 }

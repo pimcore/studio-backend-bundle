@@ -16,13 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
 
-use League\Flysystem\FilesystemException;
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
@@ -69,21 +66,11 @@ final class DeleteZipController extends AbstractApiController
     ])]
     public function deleteAssetsZip(int $jobRunId): Response
     {
-        try {
-            $this->downloadService->cleanupDataByJobRunId(
-                $jobRunId,
-                ZipServiceInterface::DOWNLOAD_ZIP_FOLDER_NAME,
-                ZipServiceInterface::DOWNLOAD_ZIP_FILE_NAME
-            );
-        } catch (FilesystemException $e) {
-            throw new EnvironmentException(
-                sprintf(
-                    'Failed to delete ZIP archive based on jobRunId %d: %s',
-                    $jobRunId,
-                    $e->getMessage()
-                ),
-            );
-        }
+        $this->downloadService->cleanupDataByJobRunId(
+            $jobRunId,
+            ZipServiceInterface::DOWNLOAD_ZIP_FOLDER_NAME,
+            ZipServiceInterface::DOWNLOAD_ZIP_FILE_NAME
+        );
 
         return new Response();
     }

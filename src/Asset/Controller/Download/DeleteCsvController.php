@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
 
-use League\Flysystem\FilesystemException;
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
@@ -68,21 +67,11 @@ final class DeleteCsvController extends AbstractApiController
     ])]
     public function deleteAssetsZip(int $jobRunId): Response
     {
-        try {
-            $this->downloadService->cleanupDataByJobRunId(
-                $jobRunId,
-                CsvServiceInterface::CSV_FOLDER_NAME,
-                CsvServiceInterface::CSV_FILE_NAME
-            );
-        } catch (FilesystemException $e) {
-            throw new EnvironmentException(
-                sprintf(
-                    'Failed to delete csv file based on jobRunId %d: %s',
-                    $jobRunId,
-                    $e->getMessage()
-                ),
-            );
-        }
+        $this->downloadService->cleanupDataByJobRunId(
+            $jobRunId,
+            CsvServiceInterface::CSV_FOLDER_NAME,
+            CsvServiceInterface::CSV_FILE_NAME
+        );
 
         return new Response();
     }
