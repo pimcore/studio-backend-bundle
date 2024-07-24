@@ -55,6 +55,10 @@ final readonly class CustomMetadataVersionHydrator implements CustomMetadataVers
     {
         return match (true) {
             $data instanceof ElementInterface => $this->referenceResolver->resolve($data),
+            $type === 'manyToManyRelation' => array_map(
+                fn (ElementInterface $element): array => $this->referenceResolver->resolve($element),
+                $data
+            ),
             $type === 'checkbox' => (bool)$data,
             default => $data,
         };

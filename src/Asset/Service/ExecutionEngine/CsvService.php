@@ -29,8 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants\Csv;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -96,13 +96,13 @@ final readonly class CsvService implements CsvServiceInterface
      */
     public function createCsvFile(
         int $id,
-        Configuration $configuration,
+        ColumnCollection $columnCollection,
         array $settings,
         array $assetData,
         ?string $delimiter = null,
     ): void {
         $storage = $this->storageService->getTempStorage();
-        $headers = $this->getHeaders($configuration, $settings);
+        $headers = $this->getHeaders($columnCollection, $settings);
         if ($delimiter === null) {
             $delimiter = $this->defaultDelimiter;
         }
@@ -137,7 +137,7 @@ final readonly class CsvService implements CsvServiceInterface
         return '"' . $value . '"';
     }
 
-    private function getHeaders(Configuration $configuration, array $settings): array
+    private function getHeaders(ColumnCollection $columnCollection, array $settings): array
     {
         $header = $settings[Csv::SETTINGS_HEADER->value] ?? Csv::SETTINGS_HEADER_NO_HEADER->value;
         if ($header === Csv::SETTINGS_HEADER_NO_HEADER->value) {
@@ -145,7 +145,7 @@ final readonly class CsvService implements CsvServiceInterface
         }
 
         return $this->gridService->getColumnKeys(
-            $configuration,
+            $columnCollection,
             $header === Csv::SETTINGS_HEADER_NAME->value
         );
     }

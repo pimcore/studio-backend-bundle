@@ -53,7 +53,7 @@ final class CsvCreationHandler extends AbstractHandler
     {
         $jobRun = $this->getJobRun($message);
         $settings = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_SETTINGS->value);
-        $configuration = $this->gridService->getConfigurationFromArray(
+        $columnCollection = $this->gridService->getConfigurationFromArray(
             $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value)
         );
         if (!isset($jobRun->getContext()[Csv::ASSET_EXPORT_DATA->value])) {
@@ -67,7 +67,7 @@ final class CsvCreationHandler extends AbstractHandler
         try {
             $this->csvService->createCsvFile(
                 $jobRun->getId(),
-                $configuration,
+                $columnCollection,
                 $settings,
                 $assetData,
             );

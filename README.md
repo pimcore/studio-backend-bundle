@@ -16,3 +16,5 @@ Swagger-ui is available at `/studio/api/docs` and the OpenApi Specification is a
 ## Documentation Overview
 
 - [Installation](./doc/01_Installation.md)
+
+- [Grid](./doc/03_Grid.md)

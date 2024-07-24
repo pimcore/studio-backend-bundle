@@ -82,14 +82,14 @@ final class CsvDataCollectionHandler extends AbstractHandler
 
             return;
         }
-        $configuration = $this->gridService->getConfigurationFromArray(
+        $columnCollection = $this->gridService->getConfigurationFromArray(
             $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value)
         );
 
         try {
             $assetData = [
                 $asset->getId() => $this->gridService->getGridValuesForElement(
-                    $configuration,
+                    $columnCollection,
                     $asset,
                     ElementTypes::TYPE_ASSET
                 ),

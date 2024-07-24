@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
 use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 
 /**
  * @internal
@@ -36,7 +36,7 @@ interface CsvServiceInterface
      */
     public function createCsvFile(
         int $id,
-        Configuration $configuration,
+        ColumnCollection $columnCollection,
         array $settings,
         array $assetData,
         ?string $delimiter = null,

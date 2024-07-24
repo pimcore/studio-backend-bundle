@@ -22,7 +22,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constants\Csv;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 
 /**
  * @internal
@@ -36,7 +36,11 @@ final class CsvExportRequestBody extends RequestBody
             content: new JsonContent(
                 properties: [
                     new Property(property: 'assets', type: 'array', items: new Items(type: 'integer'), example: [83]),
-                    new Property(property: 'gridConfig', ref: Configuration::class),
+                    new Property(
+                        property: 'gridConfig',
+                        type: 'array',
+                        items: new Items(ref: Column::class)
+                    ),
                     new Property(property: 'settings', properties: [
                         new Property(property: Csv::SETTINGS_DELIMITER->value, type: 'string', example: ';'),
                         new Property(

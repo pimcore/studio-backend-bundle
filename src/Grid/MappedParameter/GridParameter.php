@@ -23,7 +23,8 @@ final readonly class GridParameter
 {
     public function __construct(
         private int $folderId,
-        private array $gridConfig,
+        private array $columns,
+        private ?FilterParameter $filters
     ) {
     }
 
@@ -32,8 +33,17 @@ final readonly class GridParameter
         return $this->folderId;
     }
 
-    public function getGridConfig(): array
+    public function getColumns(): array
     {
-        return $this->gridConfig;
+        return $this->columns;
+    }
+
+    public function getFilters(): FilterParameter
+    {
+        if ($this->filters === null) {
+            return new FilterParameter();
+        }
+
+        return $this->filters;
     }
 }

@@ -111,6 +111,25 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getAssetFolder(int $id): Folder
+    {
+        $asset = $this->assetSearchService->getAssetById($id);
+
+        if (!$asset instanceof Folder) {
+            throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
+        }
+
+        $this->eventDispatcher->dispatch(
+            new AssetEvent($asset),
+            AssetEvent::EVENT_NAME
+        );
+
+        return $asset;
+    }
+
+    /**
      * @throws AccessDeniedException|NotFoundException
      */
     public function getAssetElement(

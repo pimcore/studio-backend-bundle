@@ -19,4 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
 interface IconServiceInterface
 {
     public function getIconForAsset(string $assetType, string $mimeType): string;
+
+    public function getIconForTag(): string;
 }
