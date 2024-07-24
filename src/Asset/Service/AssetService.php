@@ -118,7 +118,7 @@ final readonly class AssetService implements AssetServiceInterface
         $asset = $this->assetSearchService->getAssetById($id);
 
         if (!$asset instanceof Folder) {
-            throw new NotFoundException('folder', $id);
+            throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
         }
 
         $this->eventDispatcher->dispatch(

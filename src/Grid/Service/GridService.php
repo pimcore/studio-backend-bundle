@@ -89,7 +89,7 @@ final class GridService implements GridServiceInterface
             $data[] = $this->getGridDataForElement(
                 $this->getConfigurationFromArray($gridParameter->getColumns()),
                 $asset,
-                'asset'
+                ElementTypes::TYPE_ASSET
             );
         }
 

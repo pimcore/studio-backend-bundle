@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 
 /**
@@ -25,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 interface GridSearchInterface
 {
     /**
-     * @throw NotFoundException
+     * @throws NotFoundException|SearchException
      */
     public function searchAssets(GridParameter $gridParameter): AssetSearchResult;
 }
