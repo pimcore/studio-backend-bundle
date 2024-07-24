@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Model\Element\Note;
 use Pimcore\Model\Element\Note\Listing as NoteListing;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -33,7 +34,7 @@ interface NoteRepositoryInterface
     /**
      * @throws ElementSavingFailedException
      */
-    public function createNote(NoteElementParameters $noteElement, CreateNote $createNote): Note;
+    public function createNote(NoteElementParameters $noteElement, CreateNote $createNote, UserInterface $user): Note;
 
     /**
      * @throws NotFoundException
