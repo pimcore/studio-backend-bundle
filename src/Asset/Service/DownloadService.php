@@ -17,21 +17,30 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\DownloadPathParameter;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Exception\NotFoundException as CoreNotFoundException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function in_array;
@@ -42,10 +51,13 @@ use function in_array;
 final readonly class DownloadService implements DownloadServiceInterface
 {
     use StreamedResponseTrait;
+    use TempFilePathTrait;
 
     public function __construct(
         private StorageServiceInterface $storageService,
         private ThumbnailServiceInterface $thumbnailService,
+        private JobRunRepositoryInterface $jobRunRepository,
+        private SecurityServiceInterface $securityService,
         private array $defaultFormats,
     ) {
     }
@@ -138,38 +150,64 @@ final readonly class DownloadService implements DownloadServiceInterface
     }
 
     /**
-     * @throws StreamResourceNotFoundException
+     * @throws NotFoundException|ForbiddenException|StreamResourceNotFoundException
      */
-    public function downloadZipArchiveByPath(DownloadPathParameter $path): StreamedResponse
-    {
-        $storage = $this->storageService->getTempStorage();
-        if (!$this->storageService->tempFileExists($path->getPath())) {
-            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $path->getPath()));
+    public function downloadResourceByJobRunId(
+        int $jobRunId,
+        string $tempFileName,
+        string $tempFolderName,
+        string $mimeType,
+        string $downloadName,
+    ): StreamedResponse {
+        $jobRun = $this->validateJobRun($jobRunId);
+
+        $fileName = $this->getTempFileName($jobRun->getId(), $tempFileName);
+        $folderName = $this->getTempFileName($jobRun->getId(), $tempFolderName);
+        $filePath = $folderName . '/' . $fileName;
+
+        $streamedResponse = $this->getFileStreamedResponse(
+            $filePath,
+            $mimeType,
+            $downloadName,
+            $this->validateStorage($filePath)
+        );
+
+        try {
+            $this->storageService->cleanUpFolder($folderName);
+        } catch (FilesystemException) {
+            throw new EnvironmentException(
+                sprintf(
+                    'Failed to clean up temporary folder %s',
+                    $folderName
+                )
+            );
         }
 
-        return $this->getFileStreamedResponse(
-            $path->getPath(),
-            'application/zip',
-            'assets.zip',
-            $storage
-        );
+        return $streamedResponse;
     }
 
-    /**
-     * @throws StreamResourceNotFoundException
-     */
-    public function downloadCsvByPath(DownloadPathParameter $path): StreamedResponse
+    private function validateJobRun(int $jobRunId): JobRun
     {
-        $storage = $this->storageService->getTempStorage();
-        if (!$this->storageService->tempFileExists($path->getPath())) {
-            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $path->getPath()));
+        try {
+            $jobRun = $this->jobRunRepository->getJobRunById($jobRunId);
+        } catch (CoreNotFoundException) {
+            throw new NotFoundException('JobRun', $jobRunId);
         }
 
-        return $this->getFileStreamedResponse(
-            $path->getPath(),
-            'application/csv',
-            'assets.csv',
-            $storage
-        );
+        if ($jobRun->getOwnerId() !== $this->securityService->getCurrentUser()->getId()) {
+            throw new ForbiddenException('Only job owner can access the resource');
+        }
+
+        return $jobRun;
+    }
+
+    private function validateStorage(string $fileName): FilesystemOperator
+    {
+        $storage = $this->storageService->getTempStorage();
+        if (!$this->storageService->tempFileExists($fileName)) {
+            throw new StreamResourceNotFoundException(sprintf('Resource not found: %s', $fileName));
+        }
+
+        return $storage;
     }
 }

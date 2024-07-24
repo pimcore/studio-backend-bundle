@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 
@@ -33,6 +34,35 @@ interface StorageServiceInterface
      * @throws EnvironmentException
      */
     public function tempFileExists(string $location): bool;
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function copyElementToFlysystem(
+        string $innerPath,
+        string $localElementPath,
+        string $targetPath,
+    ): void;
+
+    /**
+     * @throws FilesystemException
+     */
+    public function cleanUpFolder(
+        string $folder,
+        bool $removeContents = false
+    ): void;
+
+    public function cleanUpLocalFolder(
+        string $folderLocation
+    ): void;
+
+    public function cleanUpLocalFile(
+        string $filePath
+    ): void;
+
+    public function cleanUpFlysystemFile(
+        string $filePath
+    ): void;
 
     public function getThumbnailStorage(): FilesystemOperator;
 

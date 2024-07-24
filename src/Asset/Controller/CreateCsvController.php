@@ -16,15 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\CsvExportRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -56,17 +55,9 @@ final class CreateCsvController extends AbstractApiController
         tags: [Tags::Assets->name]
     )]
     #[CsvExportRequestBody]
-    #[SuccessResponse(
-        content: new JsonContent(
-            properties: [
-                new Property(
-                    property: 'path',
-                    description: 'Path to the csv file',
-                    type: 'string',
-                    example: '/var/www/html/var/assets.csv'
-                ),
-            ]
-        )
+    #[CreatedResponse(
+        description: 'Successfully created jobRun for csv export',
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -75,6 +66,9 @@ final class CreateCsvController extends AbstractApiController
     public function createCsvAssets(
         #[MapRequestPayload] ExportAssetParameter $exportAssetParameter
     ): Response {
-        return $this->jsonResponse(['path' => $this->csvService->generateCsvFile($exportAssetParameter)]);
+        return $this->jsonResponse(
+            ['jobRunId' => $this->csvService->generateCsvFile($exportAssetParameter)],
+            HttpResponseCodes::CREATED->value
+        );
     }
 }

@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
-use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -32,29 +31,29 @@ use ZipArchive;
  */
 interface ZipServiceInterface
 {
-    public const ASSETS_INDEX = 'assets';
+    public const ASSETS_TO_ZIP = 'assets_to_zip';
 
     public const DOWNLOAD_ZIP_FILE_NAME = 'download-zip-{id}.zip';
 
-    public const UPLOAD_ZIP_FILE_NAME = 'upload-zip-{id}.zip';
+    public const DOWNLOAD_ZIP_FILE_NAME_LOCAL = 'local-' . self::DOWNLOAD_ZIP_FILE_NAME;
 
-    public const UPLOAD_ZIP_FOLDER_NAME = 'upload-zip-{id}';
+    public const DOWNLOAD_ZIP_FOLDER_NAME = 'download-zip-{id}';
 
     public const DOWNLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::DOWNLOAD_ZIP_FILE_NAME;
 
-    public const UPLOAD_ZIP_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::UPLOAD_ZIP_FILE_NAME;
+    public const UPLOAD_ZIP_FILE_NAME = 'upload-zip-{id}.zip';
+
+    public const UPLOAD_ZIP_FILE_NAME_LOCAL = 'local-' . self::UPLOAD_ZIP_FILE_NAME;
+
+    public const UPLOAD_ZIP_FOLDER_NAME = 'upload-zip-{id}';
 
     public const UPLOAD_ZIP_FOLDER_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::UPLOAD_ZIP_FOLDER_NAME;
 
-    public function getZipArchive(
-        mixed $id,
-        string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
-        bool $create = true
-    ): ?ZipArchive;
+    public const UPLOAD_ZIP_FILE_PATH = self::UPLOAD_ZIP_FOLDER_PATH . '/' . self::UPLOAD_ZIP_FILE_NAME_LOCAL;
 
     public function addFile(ZipArchive $archive, Asset $asset): void;
 
-    public function getArchiveFiles(
+    public function extractArchiveFiles(
         ZipArchive $archive,
         string $targetPath
     ): array;
@@ -68,18 +67,35 @@ interface ZipServiceInterface
         int $parentId
     ): int;
 
-    public function generateZipFile(CreateAssetFileParameter $ids): string;
+    public function generateZipFile(CreateAssetFileParameter $parameter): int;
 
-    public function cleanUpArchive(
-        string $archive
+    /**
+     * @throws EnvironmentException
+     */
+    public function createLocalArchive(
+        string $localPath,
+        bool $create = false
+    ): ZipArchive;
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function copyZipFileToFlysystem(
+        string $id,
+        string $folderName,
+        string $archiveName,
+        string $localPath
     ): void;
 
     /**
-     * @throws FilesystemException
+     * @throws EnvironmentException
      */
-    public function cleanUpArchiveFolder(
-        string $folder
-    ): void;
+    public function downloadZipFileFromFlysystem(
+        string $id,
+        string $folderName,
+        string $archiveName,
+        string $localPath
+    ): ZipArchive;
 
     public function getTempFilePath(mixed $id, string $path): string;
 

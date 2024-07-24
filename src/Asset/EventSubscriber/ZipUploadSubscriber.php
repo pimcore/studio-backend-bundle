@@ -16,11 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber;
 
+use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
-use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
@@ -34,7 +37,9 @@ final readonly class ZipUploadSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private JobRunRepositoryInterface $jobRunRepository,
-        private PublishServiceInterface $publishService
+        private PublishServiceInterface $publishService,
+        private UploadServiceInterface $uploadService,
+        private ZipServiceInterface $zipService,
     ) {
 
     }
@@ -47,28 +52,45 @@ final readonly class ZipUploadSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @throws JsonEncodingException
+     * @throws FilesystemException
      */
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
+        if ($event->getJobName() !== Jobs::ZIP_FILE_UPLOAD->value) {
 
-        if (
-            $event->getNewState() === JobRunStates::FINISHED->value &&
-            $event->getJobName() === Jobs::ZIP_FILE_UPLOAD->value
-        ) {
-            $jobRun = $this->jobRunRepository->getJobRunById($event->getJobRunId());
-            $childJobRunId = $jobRun->getContext()[JobRunContext::CHILD_JOB_RUN->value];
+            return;
+        }
 
-            $this->publishService->publish(
+        $jobRun = $this->jobRunRepository->getJobRunById($event->getJobRunId());
+        match ($event->getNewState()) {
+            JobRunStates::FINISHED->value => $this->publishService->publish(
                 Events::ZIP_UPLOAD_FINISHED->value,
                 new Finished(
                     $event->getJobRunId(),
                     $event->getJobName(),
                     $event->getJobRunOwnerId(),
                     $event->getNewState(),
-                    ['childJobRunId' => $childJobRunId],
+                    ['childJobRunId' => $jobRun->getContext()[JobRunContext::CHILD_JOB_RUN->value]],
                 )
-            );
+            ),
+            JobRunStates::FAILED->value => $this->cleanupData($jobRun),
+            default => null,
+        };
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    private function cleanupData(JobRun $jobRun): void
+    {
+        $subject = $jobRun->getJob()?->getSelectedElements()[0];
+        if ($subject === null) {
+
+            return;
         }
+
+        $this->uploadService->cleanupTemporaryUploadFiles(
+            $this->zipService->getTempFilePath($subject->getType(), ZipServiceInterface::UPLOAD_ZIP_FOLDER_NAME)
+        );
     }
 }

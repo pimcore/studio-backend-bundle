@@ -120,6 +120,9 @@ final class GridService implements GridServiceInterface
         return $data;
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getGridValuesForElement(
         Configuration $configuration,
         ElementInterface $element,

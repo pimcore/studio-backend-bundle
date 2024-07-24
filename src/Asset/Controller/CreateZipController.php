@@ -16,16 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
-use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ScalarItemsJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -59,17 +58,9 @@ final class CreateZipController extends AbstractApiController
     #[RequestBody(
         content: new ScalarItemsJson('integer')
     )]
-    #[SuccessResponse(
-        content: new JsonContent(
-            properties: [
-                new Property(
-                    property: 'path',
-                    description: 'Path to the zip file',
-                    type: 'string',
-                    example: '/var/www/html/var/assets.zip'
-                ),
-            ]
-        )
+    #[CreatedResponse(
+        description: 'Successfully created jobRun for zip export',
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -78,6 +69,9 @@ final class CreateZipController extends AbstractApiController
     public function createZippedAssets(
         #[MapRequestPayload] CreateAssetFileParameter $createAssetFileParameter
     ): Response {
-        return $this->jsonResponse(['path' => $this->zipService->generateZipFile($createAssetFileParameter)]);
+        return $this->jsonResponse(
+            ['jobRunId' => $this->zipService->generateZipFile($createAssetFileParameter)],
+            HttpResponseCodes::CREATED->value
+        );
     }
 }
