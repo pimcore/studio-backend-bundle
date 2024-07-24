@@ -16,13 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ParentIdParameterInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\PositiveOrZero;
 
 /**
  * @internal
  */
-final readonly class ParentIdParameter
+final readonly class ParentIdParameter implements ParentIdParameterInterface
 {
     public function __construct(
         #[PositiveOrZero]

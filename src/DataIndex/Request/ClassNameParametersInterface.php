@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Request;
 /**
  * @internal
  */
-interface DataObjectParametersInterface extends ElementParametersInterface
+interface ClassNameParametersInterface
 {
     public function getClassName(): ?string;
 }

@@ -67,7 +67,7 @@ final class GridService implements GridServiceInterface
         private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
         private readonly GridSearchInterface $gridSearch,
         private readonly ServiceResolverInterface $serviceResolver,
-        private readonly EventDispatcherInterface $eventDispatcher
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -77,26 +77,24 @@ final class GridService implements GridServiceInterface
     public function getAssetGrid(GridParameter $gridParameter): Collection
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
+        $items = $result->getItems();
 
-        if (empty($result->getIds())) {
+        if (empty($items)) {
             return new Collection(totalItems: 0, items: []);
         }
 
         $data = [];
-
-        foreach ($result->getItems() as $item) {
-            $type = $item->getElementType()->value;
-            $asset = $this->getElement($this->serviceResolver, $type, $item->getId());
-
+        foreach ($items as $item) {
+            $asset = $this->getElement($this->serviceResolver, 'asset', $item->getId());
             $data[] = $this->getGridDataForElement(
                 $this->getConfigurationFromArray($gridParameter->getColumns()),
                 $asset,
-                $type
+                ElementTypes::TYPE_ASSET
             );
         }
 
         return new Collection(
-            totalItems: $result->getPagination()->getTotalItems(),
+            totalItems: $result->getTotalItems(),
             items: $data
         );
     }
