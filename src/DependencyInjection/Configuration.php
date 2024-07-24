@@ -50,6 +50,7 @@ class Configuration implements ConfigurationInterface
         $this->addRecycleBinThreshold($rootNode);
         $this->addMercureConfiguration($rootNode);
         $this->addAssetDownloadLimits($rootNode);
+        $this->addCsvSettings($rootNode);
 
         return $treeBuilder;
     }
@@ -183,6 +184,20 @@ class Configuration implements ConfigurationInterface
                     ->integerNode(DownloadLimits::MAX_ZIP_FILE_AMOUNT->value)
                         ->info('The maximum amount of assets that can be downloaded at once.')
                         ->defaultValue(1000)
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addCsvSettings(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('csv_settings')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->scalarNode('default_delimiter')
+                        ->info('Default delimiter to be used for csv operations.')
+                        ->defaultValue(',')
                     ->end()
                 ->end()
             ->end();

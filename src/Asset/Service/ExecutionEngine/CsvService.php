@@ -47,6 +47,7 @@ final readonly class CsvService implements CsvServiceInterface
         private SecurityServiceInterface $securityService,
         private StorageServiceInterface $storageService,
         private GridServiceInterface $gridService,
+        private string $defaultDelimiter,
     ) {
     }
 
@@ -95,13 +96,16 @@ final readonly class CsvService implements CsvServiceInterface
      */
     public function createCsvFile(
         int $id,
-        string $delimiter,
         Configuration $configuration,
         array $settings,
-        array $assetData
+        array $assetData,
+        ?string $delimiter = null,
     ): void {
         $storage = $this->storageService->getTempStorage();
         $headers = $this->getHeaders($configuration, $settings);
+        if ($delimiter === null) {
+            $delimiter = $this->defaultDelimiter;
+        }
         $data[] = implode($delimiter, $headers) . Csv::NEW_LINE->value;
         foreach ($assetData as $row) {
             $data[] = implode($delimiter, array_map([$this, 'encodeFunc'], $row)) . Csv::NEW_LINE->value;

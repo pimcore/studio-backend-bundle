@@ -36,10 +36,10 @@ interface CsvServiceInterface
      */
     public function createCsvFile(
         int $id,
-        string $delimiter,
         Configuration $configuration,
         array $settings,
-        array $assetData
+        array $assetData,
+        ?string $delimiter = null,
     ): void;
 
     public function getTempFileName(int $id, string $path): string;

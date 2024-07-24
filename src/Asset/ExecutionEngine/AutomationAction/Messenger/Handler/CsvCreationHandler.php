@@ -67,10 +67,9 @@ final class CsvCreationHandler extends AbstractHandler
         try {
             $this->csvService->createCsvFile(
                 $jobRun->getId(),
-                $settings[Csv::SETTINGS_DELIMITER->value] ?? ',',
                 $configuration,
                 $settings,
-                $assetData
+                $assetData,
             );
         } catch (Exception|FilesystemException $e) {
             $this->abort($this->getAbortData(
