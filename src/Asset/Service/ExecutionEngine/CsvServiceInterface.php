@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 
@@ -26,13 +27,22 @@ interface CsvServiceInterface
 {
     public const CSV_FILE_NAME = 'download-csv-{id}.csv';
 
-    public const CSV_FILE_PATH = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . self::CSV_FILE_NAME;
+    public const CSV_FOLDER_NAME = 'download-csv-{id}';
 
-    public function getCsvFile(int $id, ColumnCollection $columnCollection, array $settings): string;
+    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): int;
 
-    public function addData(string $filePath, string $delimiter, array $data): void;
+    /**
+     * @throws FilesystemException
+     */
+    public function createCsvFile(
+        int $id,
+        ColumnCollection $columnCollection,
+        array $settings,
+        array $assetData,
+        ?string $delimiter = null,
+    ): void;
 
-    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): string;
+    public function getTempFileName(int $id, string $path): string;
 
     public function getTempFilePath(int $id, string $path): string;
 }

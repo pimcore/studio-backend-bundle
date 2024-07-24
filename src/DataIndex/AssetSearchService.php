@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
@@ -36,7 +37,7 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
 {
     public function __construct(
         private AssetSearchAdapterInterface $assetSearchAdapter,
-        private AssetQueryProviderInterface $assetQueryProvider
+        private AssetQueryProviderInterface $assetQueryProvider,
     ) {
     }
 
@@ -90,5 +91,16 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     ): int {
 
         return count($this->getChildrenIds($parentPath, $sortDirection));
+    }
+
+    /**
+     * @throws AssetSearchException
+     */
+    public function getTotalFileSizeByIds(array $ids): int
+    {
+        $query = $this->assetQueryProvider->createAssetQuery();
+        $query->searchByIds($ids);
+
+        return $this->assetSearchAdapter->getTotalFileSizeByIds($query);
     }
 }

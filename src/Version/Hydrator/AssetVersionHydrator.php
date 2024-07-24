@@ -49,7 +49,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
     ): ImageVersion|AssetVersion {
         if (
             $asset instanceof Asset\Document &&
-            $asset->getMimeType() === MimeTypes::PDF &&
+            $asset->getMimeType() === MimeTypes::PDF->value &&
             $this->documentService->isScanningEnabled()
         ) {
             $this->documentService->validatePdfScanStatus(

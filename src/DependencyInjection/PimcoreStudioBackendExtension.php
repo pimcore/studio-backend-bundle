@@ -19,7 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 use Exception;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
@@ -79,6 +81,13 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(HubServiceInterface::class);
         $definition->setArgument('$cookieLifetime', $config['mercure_settings']['cookie_lifetime']);
+
+        $definition = $container->getDefinition(ZipServiceInterface::class);
+        $definition->setArgument('$downloadLimits', $config['asset_download_settings']);
+
+        $definition = $container->getDefinition(CsvServiceInterface::class);
+        $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
+
     }
 
     public function prepend(ContainerBuilder $container): void

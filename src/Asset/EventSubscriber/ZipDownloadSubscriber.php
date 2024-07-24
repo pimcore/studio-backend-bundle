@@ -19,10 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Schema\DownloadReady;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -33,6 +33,7 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private PublishServiceInterface $publishService,
+        private StorageServiceInterface $storageService,
         private ZipServiceInterface $zipService
     ) {
 
@@ -45,27 +46,29 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * @throws JsonEncodingException
-     */
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-
-        if (
-            $event->getNewState() === JobRunStates::FINISHED->value &&
-            $event->getJobName() === Jobs::CREATE_ZIP->value
-        ) {
-            $this->publishService->publish(
-                Events::ZIP_DOWNLOAD_READY->value,
-                new DownloadReady(
-                    $event->getJobRunId(),
-                    $this->zipService->getTempFilePath(
-                        $event->getJobRunId(),
-                        ZipServiceInterface::DOWNLOAD_ZIP_FILE_PATH
-                    ),
-                    $event->getJobRunOwnerId()
-                )
-            );
+        if ($event->getJobName() !== Jobs::CREATE_ZIP->value) {
+            return;
         }
+
+        match ($event->getNewState()) {
+            JobRunStates::FINISHED->value => $this->publishService->publish(
+                Events::ZIP_DOWNLOAD_READY->value,
+                new Finished(
+                    $event->getJobRunId(),
+                    $event->getJobName(),
+                    $event->getJobRunOwnerId(),
+                    $event->getNewState()
+                )
+            ),
+            JobRunStates::FAILED->value => $this->storageService->cleanUpLocalFile(
+                $this->zipService->getTempFilePath(
+                    $event->getJobRunId(),
+                    ZipServiceInterface::DOWNLOAD_ZIP_FILE_PATH
+                ),
+            ),
+            default => null,
+        };
     }
 }

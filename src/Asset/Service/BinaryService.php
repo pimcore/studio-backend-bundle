@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -28,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
 use Pimcore\Messenger\AssetPreviewImageMessage;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Video;
-use Pimcore\Tool\Storage;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -42,7 +42,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private ThumbnailServiceInterface $thumbnailService,
-        private Storage $storageTool
+        private StorageServiceInterface $storageService
     ) {
     }
 
@@ -152,7 +152,7 @@ final readonly class BinaryService implements BinaryServiceInterface
                 urldecode($thumbnail['formats']['mp4'])
             );
 
-        $storage = $this->storageTool->getStorage('thumbnail');
+        $storage = $this->storageService->getThumbnailStorage();
         if (!$storage->fileExists($storagePath)) {
             throw new InvalidThumbnailException($thumbnailName);
         }

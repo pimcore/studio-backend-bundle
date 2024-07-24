@@ -14,14 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
+
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-final class Thumbnails
+final class ZipDownloadMessage extends AbstractExecutionEngineMessage
 {
-    public const DEFAULT_THUMBNAIL_ID = 'pimcore-system-treepreview';
-
-    public const DEFAULT_THUMBNAIL_TEXT = 'original';
 }

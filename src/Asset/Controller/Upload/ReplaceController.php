@@ -38,8 +38,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -98,7 +98,7 @@ final class ReplaceController extends AbstractApiController
         int $id,
         // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
         Request $request
-    ): JsonResponse {
+    ): Response {
 
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
@@ -111,6 +111,6 @@ final class ReplaceController extends AbstractApiController
             $this->securityService->getCurrentUser()
         );
 
-        return new JsonResponse();
+        return new Response();
     }
 }

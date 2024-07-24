@@ -35,4 +35,6 @@ interface QueryInterface
     public function getSearch(): SearchInterface;
 
     public function orderByPath(string $direction): self;
+
+    public function searchByIds(array $ids): self;
 }
