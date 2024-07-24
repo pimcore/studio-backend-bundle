@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
-use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;

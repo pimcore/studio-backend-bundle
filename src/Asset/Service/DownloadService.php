@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 use Exception;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
