@@ -19,9 +19,7 @@ studio_ee_job_delete_assets: Delete Assets
 studio_ee_job_patch_elements: Patch Elements
 studio_ee_job_create_csv: Create CSV
 studio_ee_job_upload_assets: Upload Assets
-studio_ee_job_step_zip_collection: Zip Collection
-studio_ee_job_step_zip_creation: Zip Creation
-studio_ee_job_step_zip_copy: Zip Copy
+studio_ee_job_step_zip_creation: Zip Download Creation
 studio_ee_job_step_asset_deletion: Asset Deletion
 studio_ee_job_step_asset_cloning: Asset Cloning
 studio_ee_job_step_csv_file_not_found: CSV file not found

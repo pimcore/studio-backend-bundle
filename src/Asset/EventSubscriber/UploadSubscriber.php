@@ -91,7 +91,9 @@ final readonly class UploadSubscriber implements EventSubscriberInterface
         $environmentVariables = $this->jobRunRepository->getJobRunById(
             $jobRunId
         )->getJob()?->getEnvironmentData();
-        if ($environmentVariables && isset($environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_LOCATION->value])) {
+        if ($environmentVariables &&
+            isset($environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_LOCATION->value])
+        ) {
             $this->uploadService->cleanupTemporaryUploadFiles(
                 $environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_LOCATION->value]
             );
