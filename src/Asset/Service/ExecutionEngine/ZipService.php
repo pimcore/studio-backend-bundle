@@ -44,6 +44,7 @@ use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;
+use function count;
 
 /**
  * @internal
@@ -154,7 +155,7 @@ final readonly class ZipService implements ZipServiceInterface
                     ZipDownloadMessage::class,
                     '',
                     [self::ASSETS_TO_ZIP => $items]
-                )
+                ),
             ],
         );
 
@@ -277,7 +278,7 @@ final readonly class ZipService implements ZipServiceInterface
         }
 
         try {
-           $totalFileSize = $this->assetSearchService->getTotalFileSizeByIds($items);
+            $totalFileSize = $this->assetSearchService->getTotalFileSizeByIds($items);
         } catch (AssetSearchException) {
             throw new EnvironmentException('One or more selected assets could not be found.');
         }

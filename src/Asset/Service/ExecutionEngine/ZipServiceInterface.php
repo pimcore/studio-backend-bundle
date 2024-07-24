@@ -100,5 +100,4 @@ interface ZipServiceInterface
     public function getTempFilePath(mixed $id, string $path): string;
 
     public function getTempFileName(mixed $id, string $fileName): string;
-
 }

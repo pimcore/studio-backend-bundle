@@ -73,7 +73,7 @@ final class ZipUploadHandler extends AbstractHandler
             $this->abort($validatedParameters);
         }
 
-        $archiveId = $validatedParameters->getSubject()->getType();;
+        $archiveId = $validatedParameters->getSubject()->getType();
         $extractTargetPath = $this->zipService->getTempFilePath(
             $archiveId,
             ZipServiceInterface::UPLOAD_ZIP_FOLDER_NAME
