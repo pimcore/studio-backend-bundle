@@ -17,16 +17,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
 use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCopyMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipDownloadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -35,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
 use Pimcore\Model\Asset;
@@ -51,41 +53,13 @@ final readonly class ZipService implements ZipServiceInterface
     use TempFilePathTrait;
 
     public function __construct(
+        private AssetSearchServiceInterface $assetSearchService,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private SecurityServiceInterface $securityService,
         private StorageServiceInterface $storageService,
         private UploadServiceInterface $uploadService,
+        private array $downloadLimits,
     ) {
-    }
-
-    public function getZipArchive(
-        mixed $id,
-        string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
-        bool $create = true
-    ): ?ZipArchive {
-        $zip = $this->getTempFileName($id, $fileName);
-        $zipStoragePath = $this->getTempFilePathFromName($id, $fileName);
-        $archive = new ZipArchive();
-
-        $state = false;
-
-        try {
-            if ($this->storageService->getTempStorage()->fileExists($zip)) {
-                $state = $archive->open($zipStoragePath);
-            }
-
-            if (!$state && $create) {
-                $state = $archive->open($zipStoragePath, ZipArchive::CREATE);
-            }
-        } catch (FilesystemException) {
-            return null;
-        }
-
-        if ($state !== true) {
-            return null;
-        }
-
-        return $archive;
     }
 
     public function addFile(ZipArchive $archive, Asset $asset): void
@@ -165,28 +139,23 @@ final readonly class ZipService implements ZipServiceInterface
         return $jobRun->getId();
     }
 
-    public function generateZipFile(CreateAssetFileParameter $ids): int
+    /**
+     * @throws EnvironmentException
+     */
+    public function generateZipFile(CreateAssetFileParameter $parameter): int
     {
-        $jobSteps = array_map(
-            static fn (int $id) => new JobStep(
-                JobSteps::ZIP_CREATION->value,
-                ZipCreationMessage::class,
-                '',
-                [self::ASSET_TO_ZIP => $id]
-            ),
-            $ids->getItems()
-        );
-
-        $jobSteps[] = new JobStep(
-            JobSteps::ZIP_COPY->value,
-            ZipCopyMessage::class,
-            '',
-            []
-        );
-
+        $items = $parameter->getItems();
+        $this->validateDownloadItems($items);
         $job = new Job(
             name: Jobs::CREATE_ZIP->value,
-            steps: $jobSteps,
+            steps: [
+                new JobStep(
+                    JobSteps::ZIP_CREATION->value,
+                    ZipDownloadMessage::class,
+                    '',
+                    [self::ASSETS_TO_ZIP => $items]
+                )
+            ],
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -196,6 +165,30 @@ final readonly class ZipService implements ZipServiceInterface
         );
 
         return $jobRun->getId();
+    }
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function createLocalArchive(
+        string $localPath,
+        bool $create = false
+    ): ZipArchive {
+        $archive = new ZipArchive();
+        $flags = $create ? ZipArchive::CREATE : 0;
+        $state = $archive->open($localPath, $flags);
+
+        if ($state !== true) {
+            throw new EnvironmentException(
+                sprintf(
+                    'Failed to %s zip archive at %s.',
+                    $create ? 'create' : 'open',
+                    $localPath
+                )
+            );
+        }
+
+        return $archive;
     }
 
     /**
@@ -252,7 +245,7 @@ final readonly class ZipService implements ZipServiceInterface
         try {
             $folderName = $this->getTempFileName($id, $folderName);
             $stream = $storage->readStream($folderName . '/' . $archiveFileName);
-            $localArchive = fopen($localPath, 'wb');
+            $localArchive = fopen($localPath . '/' . $archiveFileName, 'wb');
             stream_copy_to_stream($stream, $localArchive);
             fclose($stream);
             fclose($localArchive);
@@ -266,27 +259,36 @@ final readonly class ZipService implements ZipServiceInterface
             );
         }
 
-        return $this->createLocalArchive($archiveFileName, $localPath);
+        return $this->createLocalArchive($localPath . '/' . $archiveFileName);
     }
 
     /**
      * @throws EnvironmentException
      */
-    private function createLocalArchive(
-        string $archiveName,
-        string $localPath
-    ): ZipArchive {
-        $archive = new ZipArchive();
-        $state = $archive->open($localPath);
-        if ($state !== true) {
+    private function validateDownloadItems(array $items): void
+    {
+        if (count($items) > $this->downloadLimits[DownloadLimits::MAX_ZIP_FILE_AMOUNT->value]) {
             throw new EnvironmentException(
                 sprintf(
-                    'Failed to get zip archive %s locally.',
-                    $archiveName
+                    'Too many assets selected. Maximum amount of assets, which can be processed at once is %s',
+                    $this->downloadLimits[DownloadLimits::MAX_ZIP_FILE_AMOUNT->value]
                 )
             );
         }
 
-        return $archive;
+        try {
+           $totalFileSize = $this->assetSearchService->getTotalFileSizeByIds($items);
+        } catch (AssetSearchException) {
+            throw new EnvironmentException('One or more selected assets could not be found.');
+        }
+
+        if ($totalFileSize > $this->downloadLimits[DownloadLimits::MAX_ZIP_FILE_SIZE->value]) {
+            throw new EnvironmentException(
+                sprintf(
+                    'The total size of the selected assets exceeds the maximum size of %s bytes.',
+                    $this->downloadLimits[DownloadLimits::MAX_ZIP_FILE_SIZE->value]
+                )
+            );
+        }
     }
 }

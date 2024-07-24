@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipDownloadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -34,7 +34,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class ZipCreationHandler extends AbstractHandler
+final class ZipDownloadHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
@@ -50,9 +50,10 @@ final class ZipCreationHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(ZipCreationMessage $message): void
+    public function __invoke(ZipDownloadMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
+        $jobRunId = $jobRun->getId();
         $user = $this->userResolver->getById($jobRun->getOwnerId());
         if ($user === null) {
             $this->abort($this->getAbortData(
@@ -63,47 +64,60 @@ final class ZipCreationHandler extends AbstractHandler
             ));
         }
 
-        $assetId = $this->extractConfigFieldFromJobStepConfig($message, ZipServiceInterface::ASSET_TO_ZIP);
-        $asset = $this->getElementById(
-            new ElementDescriptor(
-                ElementTypes::TYPE_ASSET,
-                $assetId
-            ),
-            $user,
-            $this->elementService
+        $assetIds = $this->extractConfigFieldFromJobStepConfig($message, ZipServiceInterface::ASSETS_TO_ZIP);
+        if (empty($assetIds)) {
+            $this->abort($this->getAbortData(
+                Config::NO_ASSETS_FOUND_FOR_JOB_RUN->value,
+                [
+                    'jobRunId' => $jobRunId,
+                ]
+            ));
+        }
+        $archiveLocalPath = $this->zipService->getTempFilePath($jobRunId, ZipServiceInterface::DOWNLOAD_ZIP_FILE_PATH);
+        $archive = $this->zipService->createLocalArchive(
+            $archiveLocalPath,
+            true
         );
 
-        if (!$asset instanceof Asset || $asset->getType() === ElementTypes::TYPE_FOLDER) {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
-                [
-                    'folderId' => $asset->getId(),
-                ]
-            ));
+        foreach ($assetIds as $assetId) {
+            $asset = $this->getElementById(
+                new ElementDescriptor(
+                    ElementTypes::TYPE_ASSET,
+                    $assetId
+                ),
+                $user,
+                $this->elementService
+            );
 
-            return;
+            if (!$asset instanceof Asset || $asset->getType() === ElementTypes::TYPE_FOLDER) {
+                $this->abort($this->getAbortData(
+                    Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
+                    [
+                        'folderId' => $asset->getId(),
+                    ]
+                ));
+
+                return;
+            }
+
+            $this->zipService->addFile($archive, $asset);
         }
 
-        $archive = $this->zipService->getZipArchive($jobRun->getId());
-        if (!$archive) {
-            $this->abort($this->getAbortData(
-                Config::FILE_NOT_FOUND_FOR_JOB_RUN->value,
-                [
-                    'type' => 'zip',
-                    'jobRunId' => $jobRun->getId(),
-                ]
-            ));
-        }
-
-        $this->zipService->addFile($archive, $asset);
         $archive->close();
+        $this->zipService->copyZipFileToFlysystem(
+            (string)$jobRunId,
+            ZipServiceInterface::DOWNLOAD_ZIP_FOLDER_NAME,
+            ZipServiceInterface::DOWNLOAD_ZIP_FILE_NAME,
+            $archiveLocalPath,
+        );
 
+        //ToDo: Update progress within step
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(ZipServiceInterface::ASSET_TO_ZIP);
-        $this->stepConfiguration->setAllowedTypes(ZipServiceInterface::ASSET_TO_ZIP, 'int');
+        $this->stepConfiguration->setRequired(ZipServiceInterface::ASSETS_TO_ZIP);
+        $this->stepConfiguration->setAllowedTypes(ZipServiceInterface::ASSETS_TO_ZIP, 'array');
     }
 }

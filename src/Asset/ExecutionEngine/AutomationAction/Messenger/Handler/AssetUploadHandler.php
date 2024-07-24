@@ -58,7 +58,7 @@ final class AssetUploadHandler extends AbstractHandler
             $this->userResolver,
             [
                 EnvironmentVariables::PARENT_ID->value,
-                EnvironmentVariables::UPLOAD_FOLDER_NAME->value,
+                EnvironmentVariables::UPLOAD_FOLDER_LOCATION->value,
             ],
         );
 

@@ -41,6 +41,8 @@ final class ZipUploadHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
+    private const LOCAL_ZIP_FOLDER_NAME = 'studio-backend-local';
+
     public function __construct(
         private readonly FileSystem $fileSystem,
         private readonly PublishServiceInterface $publishService,
@@ -71,26 +73,24 @@ final class ZipUploadHandler extends AbstractHandler
             $this->abort($validatedParameters);
         }
 
-        $archiveId = $validatedParameters->getSubject()->getType();
-        $localPath = $this->zipService->getTempFilePath(
-            $archiveId,
-            ZipServiceInterface::UPLOAD_ZIP_FILE_PATH
-        );
+        $archiveId = $validatedParameters->getSubject()->getType();;
         $extractTargetPath = $this->zipService->getTempFilePath(
             $archiveId,
             ZipServiceInterface::UPLOAD_ZIP_FOLDER_NAME
         );
-        $localExtractTargetPath = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . $extractTargetPath . '/local';
+        $localExtractTargetPath = PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' .
+            $extractTargetPath . '/' .
+            self::LOCAL_ZIP_FOLDER_NAME;
 
         try {
+            $this->fileSystem->mkdir($localExtractTargetPath);
+
             $archive = $this->zipService->downloadZipFileFromFlysystem(
                 $archiveId,
                 ZipServiceInterface::UPLOAD_ZIP_FOLDER_NAME,
                 ZipServiceInterface::UPLOAD_ZIP_FILE_NAME,
-                $localPath
+                $localExtractTargetPath
             );
-
-            $this->fileSystem->mkdir($localExtractTargetPath);
 
             $elements = $this->zipService->extractArchiveFiles(
                 $archive,
@@ -124,7 +124,7 @@ final class ZipUploadHandler extends AbstractHandler
                 $validatedParameters->getUser(),
                 $files,
                 $validatedParameters->getEnvironmentData()[EnvironmentVariables::PARENT_ID->value],
-                $this->zipService->getTempFileName(
+                $this->zipService->getTempFilePath(
                     $archiveId,
                     ZipServiceInterface::UPLOAD_ZIP_FOLDER_NAME
                 )
@@ -138,7 +138,6 @@ final class ZipUploadHandler extends AbstractHandler
                 ['message' => $exception->getMessage()],
             ));
         } finally {
-            $this->storageService->cleanUpLocalFile($localPath);
             $this->storageService->cleanUpLocalFolder($localExtractTargetPath);
         }
 

@@ -29,7 +29,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * @internal
  */
-final readonly class ZipCreationSubscriber implements EventSubscriberInterface
+final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private PublishServiceInterface $publishService,

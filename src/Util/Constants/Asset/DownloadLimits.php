@@ -16,12 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
+
 /**
  * @internal
  */
-final class Thumbnails
+enum DownloadLimits: string
 {
-    public const DEFAULT_THUMBNAIL_ID = 'pimcore-system-treepreview';
+    use EnumToValueArrayTrait;
 
-    public const DEFAULT_THUMBNAIL_TEXT = 'original';
+    case MAX_ZIP_FILE_SIZE = 'size_limit';
+    case MAX_ZIP_FILE_AMOUNT = 'amount_limit';
 }

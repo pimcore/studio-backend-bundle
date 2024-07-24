@@ -31,7 +31,7 @@ use ZipArchive;
  */
 interface ZipServiceInterface
 {
-    public const ASSET_TO_ZIP = 'asset_to_zip';
+    public const ASSETS_TO_ZIP = 'assets_to_zip';
 
     public const DOWNLOAD_ZIP_FILE_NAME = 'download-zip-{id}.zip';
 
@@ -51,12 +51,6 @@ interface ZipServiceInterface
 
     public const UPLOAD_ZIP_FILE_PATH = self::UPLOAD_ZIP_FOLDER_PATH . '/' . self::UPLOAD_ZIP_FILE_NAME_LOCAL;
 
-    public function getZipArchive(
-        mixed $id,
-        string $fileName = self::DOWNLOAD_ZIP_FILE_NAME,
-        bool $create = true
-    ): ?ZipArchive;
-
     public function addFile(ZipArchive $archive, Asset $asset): void;
 
     public function extractArchiveFiles(
@@ -73,11 +67,15 @@ interface ZipServiceInterface
         int $parentId
     ): int;
 
-    public function generateZipFile(CreateAssetFileParameter $ids): int;
+    public function generateZipFile(CreateAssetFileParameter $parameter): int;
 
-    public function getTempFilePath(mixed $id, string $path): string;
-
-    public function getTempFileName(mixed $id, string $fileName): string;
+    /**
+     * @throws EnvironmentException
+     */
+    public function createLocalArchive(
+        string $localPath,
+        bool $create = false
+    ): ZipArchive;
 
     /**
      * @throws EnvironmentException
@@ -98,4 +96,9 @@ interface ZipServiceInterface
         string $archiveName,
         string $localPath
     ): ZipArchive;
+
+    public function getTempFilePath(mixed $id, string $path): string;
+
+    public function getTempFileName(mixed $id, string $fileName): string;
+
 }

@@ -98,10 +98,12 @@ final readonly class StorageService implements StorageServiceInterface
      * @throws FilesystemException
      */
     public function cleanUpFolder(
-        string $folder
+        string $folder,
+        bool $removeContents = false
     ): void {
         $storage = $this->getTempStorage();
-        if (empty($storage->listContents($folder)->toArray())) {
+
+        if ($removeContents || empty($storage->listContents($folder)->toArray())) {
             $storage->deleteDirectory($folder);
         }
     }

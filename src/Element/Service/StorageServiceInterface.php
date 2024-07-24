@@ -48,7 +48,8 @@ interface StorageServiceInterface
      * @throws FilesystemException
      */
     public function cleanUpFolder(
-        string $folder
+        string $folder,
+        bool $removeContents = false
     ): void;
 
     public function cleanUpLocalFolder(

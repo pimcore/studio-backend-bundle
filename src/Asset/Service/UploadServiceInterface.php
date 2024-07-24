@@ -90,4 +90,9 @@ interface UploadServiceInterface
     public function validateParent(UserInterface $user, int $parentId): ElementInterface;
 
     public function sanitizeFileToUpload(string $fileName): ?string;
+
+    /**
+     * @throws FilesystemException
+     */
+    public function cleanupTemporaryUploadFiles(string $location): void;
 }

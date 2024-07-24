@@ -22,6 +22,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
@@ -38,7 +39,7 @@ final readonly class UploadSubscriber implements EventSubscriberInterface
         private EventSubscriberServiceInterface $eventSubscriberService,
         private JobRunRepositoryInterface $jobRunRepository,
         private PublishServiceInterface $publishService,
-        private StorageServiceInterface $storageService
+        private UploadServiceInterface $uploadService,
     ) {
 
     }
@@ -91,9 +92,9 @@ final readonly class UploadSubscriber implements EventSubscriberInterface
         $environmentVariables = $this->jobRunRepository->getJobRunById(
             $jobRunId
         )->getJob()?->getEnvironmentData();
-        if ($environmentVariables && isset($environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_NAME->value])) {
-            $this->storageService->getTempStorage()->deleteDirectory(
-                $environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_NAME->value]
+        if ($environmentVariables && isset($environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_LOCATION->value])) {
+            $this->uploadService->cleanupTemporaryUploadFiles(
+                $environmentVariables[EnvironmentVariables::UPLOAD_FOLDER_LOCATION->value]
             );
         }
     }

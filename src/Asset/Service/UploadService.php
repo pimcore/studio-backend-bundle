@@ -149,7 +149,7 @@ final readonly class UploadService implements UploadServiceInterface
             }, $files, array_keys($files)),
             environmentData: [
                 EnvironmentVariables::PARENT_ID->value => $parentId,
-                EnvironmentVariables::UPLOAD_FOLDER_NAME->value => $folderName,
+                EnvironmentVariables::UPLOAD_FOLDER_LOCATION->value => $folderName,
             ]
         );
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -233,6 +233,15 @@ final readonly class UploadService implements UploadServiceInterface
         }
 
         return $fileName;
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    public function cleanupTemporaryUploadFiles(string $location): void
+    {
+        $this->storageService->cleanUpFolder($location, true);
+        $this->storageService->cleanUpLocalFolder(PIMCORE_SYSTEM_TEMP_DIRECTORY . '/' . $location);
     }
 
     /**
