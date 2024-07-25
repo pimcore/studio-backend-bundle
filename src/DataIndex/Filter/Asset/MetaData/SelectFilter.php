@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
+use function is_string;
 
 /**
  * @internal
@@ -30,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 final class SelectFilter implements FilterInterface
 {
     use IsAssetMetaDataTrait;
+
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         /** @var ColumnFiltersParameterInterface $parameters */
@@ -48,7 +50,7 @@ final class SelectFilter implements FilterInterface
     private function applySelectFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
     {
         if (!is_string($column->getFilterValue())) {
-            throw new InvalidArgumentException("Filter value for select must be a string");
+            throw new InvalidArgumentException('Filter value for select must be a string');
         }
 
         $query->filterMetaDate($column->getKey(), FilterType::SELECT->value, $column->getFilterValue());

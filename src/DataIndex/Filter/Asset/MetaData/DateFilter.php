@@ -14,9 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\OpenSearch\Query\DateFilter as GenericDateFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\OpenSearch\Query\DateFilter as GenericDateFilter;
+use function is_array;
 
 /**
  * @internal
@@ -32,6 +32,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\OpenSearch\Query\DateFilter as G
 final class DateFilter implements FilterInterface
 {
     use IsAssetMetaDataTrait;
+
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         /** @var ColumnFiltersParameterInterface $parameters */
@@ -50,7 +51,7 @@ final class DateFilter implements FilterInterface
     private function applyDateFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
     {
         if (!is_array($column->getFilterValue())) {
-            throw new InvalidArgumentException("Filter value for date must be an array");
+            throw new InvalidArgumentException('Filter value for date must be an array');
         }
 
         $filterValue = $column->getFilterValue();

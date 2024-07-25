@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
@@ -24,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
+use function is_int;
 
 /**
  * @internal
@@ -31,11 +31,11 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 final class AssetFilter implements FilterInterface
 {
     use IsAssetMetaDataTrait;
+
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         /** @var ColumnFiltersParameterInterface $parameters */
         /** @var AssetQuery $query */
-
         if (!$this->isAssetMetaData($parameters, $query)) {
             return $query;
         }
@@ -50,7 +50,7 @@ final class AssetFilter implements FilterInterface
     private function applyAssetFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
     {
         if (!is_int($column->getFilterValue())) {
-            throw new InvalidArgumentException("Filter value for asset must be a integer (ID of the asset)");
+            throw new InvalidArgumentException('Filter value for asset must be a integer (ID of the asset)');
         }
 
         $query->filterMetaDate($column->getKey(), FilterType::ASSET->value, $column->getFilterValue());

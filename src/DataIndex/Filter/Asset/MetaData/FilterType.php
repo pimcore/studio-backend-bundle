@@ -11,28 +11,20 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
-
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData;
 
 enum FilterType: string
 {
     case SELECT = 'select';
-
     case INPUT = 'input';
-
     case TEXTAREA = 'textarea';
-
     case CHECKBOX = 'checkbox';
-
     case DATE = 'date';
-
     case ASSET = 'asset';
-
     case DOCUMENT = 'document';
-
     case OBJECT = 'object';
 }

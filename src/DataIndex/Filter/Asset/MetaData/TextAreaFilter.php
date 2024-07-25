@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
+use function is_string;
 
 /**
  * @internal
@@ -30,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 final class TextAreaFilter implements FilterInterface
 {
     use IsAssetMetaDataTrait;
+
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         /** @var ColumnFiltersParameterInterface $parameters */
@@ -48,7 +50,7 @@ final class TextAreaFilter implements FilterInterface
     private function applyTextAreaFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
     {
         if (!is_string($column->getFilterValue())) {
-            throw new InvalidArgumentException("Filter value for textarea must be a string");
+            throw new InvalidArgumentException('Filter value for textarea must be a string');
         }
 
         $query->filterMetaDate($column->getKey(), FilterType::TEXTAREA->value, $column->getFilterValue());

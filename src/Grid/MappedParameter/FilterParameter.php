@@ -82,7 +82,7 @@ final class FilterParameter implements
      */
     public function getColumnFilterByType(string $type): iterable
     {
-        $columns  = array_filter($this->columnFilters, fn($columnFilter) => $columnFilter['type'] === $type);
+        $columns  = array_filter($this->columnFilters, fn ($columnFilter) => $columnFilter['type'] === $type);
 
         foreach ($columns as $column) {
             if (!isset($column['key'], $column['type'], $column['filterValue'])) {
