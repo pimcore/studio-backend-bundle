@@ -54,7 +54,7 @@ final class ObjectFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for object must be a integer (ID of the object)');
         }
 
-        $query->filterMetaDate($column->getKey(), FilterType::OBJECT->value, $column->getFilterValue());
+        $query->filterMetaData($column->getKey(), FilterType::OBJECT->value, $column->getFilterValue());
 
         return $query;
     }

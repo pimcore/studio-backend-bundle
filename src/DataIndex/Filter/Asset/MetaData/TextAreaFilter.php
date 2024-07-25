@@ -54,7 +54,7 @@ final class TextAreaFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for textarea must be a string');
         }
 
-        $query->filterMetaDate($column->getKey(), FilterType::TEXTAREA->value, $column->getFilterValue());
+        $query->filterMetaData($column->getKey(), FilterType::TEXTAREA->value, $column->getFilterValue());
 
         return $query;
     }

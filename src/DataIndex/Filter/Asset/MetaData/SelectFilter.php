@@ -54,7 +54,7 @@ final class SelectFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for select must be a string');
         }
 
-        $query->filterMetaDate($column->getKey(), FilterType::SELECT->value, $column->getFilterValue());
+        $query->filterMetaData($column->getKey(), FilterType::SELECT->value, $column->getFilterValue());
 
         return $query;
     }

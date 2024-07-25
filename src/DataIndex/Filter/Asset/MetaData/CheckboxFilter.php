@@ -54,7 +54,7 @@ final class CheckboxFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for checkbox must be a boolean');
         }
 
-        $query->filterMetaDate($column->getKey(), FilterType::CHECKBOX->value, $column->getFilterValue());
+        $query->filterMetaData($column->getKey(), FilterType::CHECKBOX->value, $column->getFilterValue());
 
         return $query;
     }

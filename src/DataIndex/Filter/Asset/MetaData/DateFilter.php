@@ -58,7 +58,7 @@ final class DateFilter implements FilterInterface
         $filterValue = $column->getFilterValue();
 
         if (isset($filterValue['on'])) {
-            $query->filterMetaDate(
+            $query->filterMetaData(
                 $column->getKey(),
                 FilterType::DATE->value,
                 [GenericDateFilter::PARAM_ON => $filterValue['on']]
@@ -66,7 +66,7 @@ final class DateFilter implements FilterInterface
         }
 
         if (isset($filterValue['to'])) {
-            $query->filterMetaDate(
+            $query->filterMetaData(
                 $column->getKey(),
                 FilterType::DATE->value,
                 [GenericDateFilter::PARAM_END => $filterValue['to']]
@@ -74,7 +74,7 @@ final class DateFilter implements FilterInterface
         }
 
         if (isset($filterValue['from'])) {
-            $query->filterMetaDate(
+            $query->filterMetaData(
                 $column->getKey(),
                 FilterType::DATE->value,
                 [GenericDateFilter::PARAM_START => $filterValue['from']]

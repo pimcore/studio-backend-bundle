@@ -52,7 +52,7 @@ final class InputFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for input must be a string');
         }
 
-        $query->filterMetaDate($column->getKey(), FilterType::INPUT->value, $column->getFilterValue());
+        $query->filterMetaData($column->getKey(), FilterType::INPUT->value, $column->getFilterValue());
 
         return $query;
     }

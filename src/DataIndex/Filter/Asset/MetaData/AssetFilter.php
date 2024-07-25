@@ -54,7 +54,7 @@ final class AssetFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for asset must be a integer (ID of the asset)');
         }
 
-        $query->filterMetaDate($column->getKey(), FilterType::ASSET->value, $column->getFilterValue());
+        $query->filterMetaData($column->getKey(), FilterType::ASSET->value, $column->getFilterValue());
 
         return $query;
     }

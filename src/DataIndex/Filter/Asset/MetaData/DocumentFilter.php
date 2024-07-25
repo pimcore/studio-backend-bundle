@@ -54,7 +54,7 @@ final class DocumentFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for document must be a integer (ID of the document)');
         }
 
-        $query->filterMetaDate($column->getKey(), FilterType::DOCUMENT->value, $column->getFilterValue());
+        $query->filterMetaData($column->getKey(), FilterType::DOCUMENT->value, $column->getFilterValue());
 
         return $query;
     }
