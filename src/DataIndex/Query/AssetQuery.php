@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Asset\AssetMetaDataFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
@@ -94,6 +95,13 @@ final class AssetQuery implements QueryInterface
     public function searchByIds(array $ids): self
     {
         $this->search->addModifier(new IdsFilter($ids));
+
+        return $this;
+    }
+
+    public function filterMetaData(string $name, string $type, mixed $data): self
+    {
+        $this->search->addModifier(new AssetMetaDataFilter($name, $type, $data));
 
         return $this;
     }

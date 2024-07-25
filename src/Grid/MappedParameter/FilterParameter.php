@@ -16,7 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ExcludeFolderParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PathParameterInterface;
 
@@ -26,14 +29,16 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PathParameterInter
 final class FilterParameter implements
     CollectionParametersInterface,
     ExcludeFolderParameterInterface,
-    PathParameterInterface
+    PathParameterInterface,
+    ColumnFiltersParameterInterface
 {
     private ?string $path = null;
 
     public function __construct(
         private readonly int $page = 1,
         private readonly int $pageSize = 50,
-        private readonly bool $includeDescendants = true
+        private readonly bool $includeDescendants = true,
+        private readonly array $columnFilters = []
     ) {
     }
 
@@ -70,5 +75,25 @@ final class FilterParameter implements
     public function getPathIncludeDescendants(): bool
     {
         return $this->includeDescendants;
+    }
+
+    /**
+     * @return ColumnFilter[]
+     */
+    public function getColumnFilterByType(string $type): iterable
+    {
+        $columns  = array_filter($this->columnFilters, fn ($columnFilter) => $columnFilter['type'] === $type);
+
+        foreach ($columns as $column) {
+            if (!isset($column['key'], $column['type'], $column['filterValue'])) {
+                throw new InvalidArgumentException('Invalid column filter');
+            }
+
+            yield new ColumnFilter(
+                $column['key'],
+                $column['type'],
+                $column['filterValue']
+            );
+        }
     }
 }
