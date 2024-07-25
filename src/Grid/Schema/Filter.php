@@ -38,6 +38,13 @@ final readonly class Filter
         private int $pageSize,
         #[Property(description: 'Include Descendant Items', type: 'boolean', example: false)]
         private string $includeDescendants,
+        #[Property(
+            description: 'Column Filter',
+            type: 'object',
+            example: '[{"key":"name","type": "metadata.object","value": 1}]'
+        )]
+        private array $columnFilters = [],
+
     ) {
     }
 
@@ -54,5 +61,10 @@ final readonly class Filter
     public function getIncludeDescendants(): string
     {
         return $this->includeDescendants;
+    }
+
+    public function getColumnFilters(): array
+    {
+        return $this->columnFilters;
     }
 }
