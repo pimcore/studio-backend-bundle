@@ -20,6 +20,7 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Request\CreateNoteRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
@@ -49,7 +50,7 @@ final class CreateController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws ElementSavingFailedException|NotFoundException|UserNotFoundException
      */
     #[Route('/notes/{elementType}/{id}', name: 'pimcore_studio_api_create_element_note', methods: ['POST'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
