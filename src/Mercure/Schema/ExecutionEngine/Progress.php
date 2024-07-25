@@ -26,10 +26,12 @@ use OpenApi\Attributes\Schema;
     title: 'SSEHandlerProgress',
     required: [
         'progress',
-        'user',
-        'jobRunId',
-        'jobName',
+        'currentStep',
+        'totalSteps',
         'jobStepName',
+        'jobName',
+        'jobRunId',
+        'user',
     ],
     type: 'object'
 )]
@@ -38,14 +40,18 @@ final readonly class Progress
     public function __construct(
         #[Property(description: 'progress', type: 'integer', example: 69)]
         private int $progress,
-        #[Property(description: 'user', type: 'integer', example: 2)]
-        private int $user,
-        #[Property(description: 'jobRunId', type: 'integer', example: 73)]
-        private int $jobRunId,
-        #[Property(description: 'jobName', type: 'string', example: 'Job Name')]
-        private string $jobName,
+        #[Property(description: 'currentStep', type: 'integer', example: 1)]
+        private int $currentStep,
+        #[Property(description: 'totalSteps', type: 'integer', example: 3)]
+        private int $totalSteps,
         #[Property(description: 'jobStepName', type: 'string', example: 'Job Step Name')]
         private string $jobStepName,
+        #[Property(description: 'jobName', type: 'string', example: 'Job Name')]
+        private string $jobName,
+        #[Property(description: 'jobRunId', type: 'integer', example: 73)]
+        private int $jobRunId,
+        #[Property(description: 'user', type: 'integer', example: 2)]
+        private int $user,
     ) {
     }
 
@@ -54,14 +60,19 @@ final readonly class Progress
         return $this->progress;
     }
 
-    public function getUser(): int
+    public function getCurrentStep(): int
     {
-        return $this->user;
+        return $this->currentStep;
     }
 
-    public function getJobRunId(): int
+    public function getTotalSteps(): int
     {
-        return $this->jobRunId;
+        return $this->totalSteps;
+    }
+
+    public function getJobStepName(): string
+    {
+        return $this->jobStepName;
     }
 
     public function getJobName(): string
@@ -69,8 +80,13 @@ final readonly class Progress
         return $this->jobName;
     }
 
-    public function getCurrentStep(): string
+    public function getJobRunId(): int
     {
-        return $this->jobStepName;
+        return $this->jobRunId;
+    }
+
+    public function getUser(): int
+    {
+        return $this->user;
     }
 }

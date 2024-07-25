@@ -23,9 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceI
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -65,7 +65,8 @@ final class ZipDownloadHandler extends AbstractHandler
         }
 
         $assetIds = $this->extractConfigFieldFromJobStepConfig($message, ZipServiceInterface::ASSETS_TO_ZIP);
-        if (empty($assetIds)) {
+        $assetCount = count($assetIds);
+        if ($assetCount === 0) {
             $this->abort($this->getAbortData(
                 Config::NO_ASSETS_FOUND_FOR_JOB_RUN->value,
                 [
@@ -104,6 +105,13 @@ final class ZipDownloadHandler extends AbstractHandler
             }
 
             $this->zipService->addFile($archive, $asset);
+
+            $this->updateProgress(
+                $this->publishService,
+                $jobRun,
+                $this->getJobStep($message)->getName(),
+                $assetCount + 1
+            );
         }
 
         $archive->close();
@@ -114,8 +122,12 @@ final class ZipDownloadHandler extends AbstractHandler
             $archiveLocalPath,
         );
 
-        //ToDo: Update progress within step
-        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+        $this->updateProgress(
+            $this->publishService,
+            $jobRun,
+            $this->getJobStep($message)->getName(),
+            $assetCount + 1
+        );
     }
 
     protected function configureStep(): void
