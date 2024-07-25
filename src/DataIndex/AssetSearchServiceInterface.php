@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
@@ -66,4 +67,9 @@ interface AssetSearchServiceInterface
         string $parentPath,
         ?string $sortDirection = null
     ): int;
+
+    /**
+     * @throws AssetSearchException
+     */
+    public function getTotalFileSizeByIds(array $ids): int;
 }

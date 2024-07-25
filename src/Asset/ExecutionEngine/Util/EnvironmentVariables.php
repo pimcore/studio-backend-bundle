@@ -23,5 +23,5 @@ enum EnvironmentVariables: string
 {
     case ORIGINAL_PARENT_ID = 'originalParentId';
     case PARENT_ID = 'parentId';
-    case UPLOAD_FOLDER_NAME = 'uploadFolderName';
+    case UPLOAD_FOLDER_LOCATION = 'uploadFolderLocation';
 }

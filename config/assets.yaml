@@ -89,24 +89,24 @@ services:
   # Handler
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\CollectionHandler: ~
-  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipCreationHandler: ~
-  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCreationHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetCloneHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetDeleteHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\AssetUploadHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCreationHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\CsvDataCollectionHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipDownloadHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler\ZipUploadHandler: ~
 
   #
   # Event Subscriber
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\CloneSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\CsvCreationSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\DeletionSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\UploadSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\ZipDownloadSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\ZipUploadSubscriber: ~
-  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\CsvDownloadSubscriber: ~
-  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\DeletionSubscriber: ~
-  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\CloneSubscriber: ~
-  Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber\UploadSubscriber: ~
 
   #
   # Mercure SSE

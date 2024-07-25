@@ -52,6 +52,10 @@ final class AssetCloneHandler extends AbstractHandler
     public function __invoke(AssetCloneMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
+        if (!$this->shouldBeExecuted($jobRun)) {
+            return;
+        }
+
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,

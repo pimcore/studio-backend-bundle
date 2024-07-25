@@ -16,24 +16,26 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber;
 
+use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Schema\DownloadReady;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * @internal
  */
-final readonly class CsvDownloadSubscriber implements EventSubscriberInterface
+final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 {
     public function __construct(
+        private CsvServiceInterface $csvService,
         private PublishServiceInterface $publishService,
-        private CsvServiceInterface $csvService
+        private StorageServiceInterface $storageService,
     ) {
 
     }
@@ -46,23 +48,43 @@ final readonly class CsvDownloadSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @throws JsonEncodingException
+     * @throws FilesystemException
      */
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-
-        if (
-            $event->getNewState() === JobRunStates::FINISHED->value &&
-            $event->getJobName() === Jobs::CREATE_CSV->value
-        ) {
-            $this->publishService->publish(
-                Events::CSV_DOWNLOAD_READY->value,
-                new DownloadReady(
-                    $event->getJobRunId(),
-                    $this->csvService->getTempFilePath($event->getJobRunId(), CsvServiceInterface::CSV_FILE_PATH),
-                    $event->getJobRunOwnerId()
-                )
-            );
+        if ($event->getJobName() !== Jobs::CREATE_CSV->value) {
+            return;
         }
+
+        match ($event->getNewState()) {
+            JobRunStates::FINISHED->value => $this->publishService->publish(
+                Events::CSV_DOWNLOAD_READY->value,
+                new Finished(
+                    $event->getJobRunId(),
+                    $event->getJobName(),
+                    $event->getJobRunOwnerId(),
+                    $event->getNewState()
+                )
+            ),
+            JobRunStates::FAILED->value => $this->cleanupOnFail($event->getJobRunId()),
+            default => null,
+        };
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    private function cleanupOnFail(int $jobRunId): void
+    {
+        $this->storageService->cleanUpFlysystemFile(
+            $this->csvService->getTempFilePath(
+                $jobRunId,
+                CsvServiceInterface::CSV_FOLDER_NAME . '/' . CsvServiceInterface::CSV_FILE_NAME
+            )
+        );
+
+        $this->storageService->cleanUpFolder(
+            $this->csvService->getTempFilePath($jobRunId, CsvServiceInterface::CSV_FOLDER_NAME)
+        );
     }
 }

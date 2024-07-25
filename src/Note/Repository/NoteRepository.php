@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\FilterServiceInterface;
 use Pimcore\Model\Element\Note;
 use Pimcore\Model\Element\Note\Listing as NoteListing;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -42,7 +43,7 @@ final readonly class NoteRepository implements NoteRepositoryInterface
     /**
      * @throws ElementSavingFailedException
      */
-    public function createNote(NoteElementParameters $noteElement, CreateNote $createNote): Note
+    public function createNote(NoteElementParameters $noteElement, CreateNote $createNote, UserInterface $user): Note
     {
         $note = new Note();
         $note->setCid($noteElement->getId());
@@ -52,6 +53,7 @@ final readonly class NoteRepository implements NoteRepositoryInterface
         $note->setDescription($createNote->getDescription());
         $note->setType($createNote->getType());
         $note->setLocked(false);
+        $note->setUser($user->getId());
 
         try {
             $note->save();

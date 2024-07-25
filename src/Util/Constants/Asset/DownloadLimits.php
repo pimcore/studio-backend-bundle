@@ -14,13 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset;
 
-use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
 
 /**
  * @internal
  */
-final class CollectionMessage extends AbstractExecutionEngineMessage
+enum DownloadLimits: string
 {
+    use EnumToValueArrayTrait;
+
+    case MAX_ZIP_FILE_SIZE = 'size_limit';
+    case MAX_ZIP_FILE_AMOUNT = 'amount_limit';
 }

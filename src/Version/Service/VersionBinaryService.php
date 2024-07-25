@@ -120,7 +120,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         $document = $this->repository->getElementFromVersion($version, $user);
 
         if (!$document instanceof Document ||
-            $document->getMimeType() !== MimeTypes::PDF
+            $document->getMimeType() !== MimeTypes::PDF->value
         ) {
             throw new InvalidElementTypeException($document->getType());
         }

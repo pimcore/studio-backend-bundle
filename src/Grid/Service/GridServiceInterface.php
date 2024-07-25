@@ -47,6 +47,9 @@ interface GridServiceInterface
         string $elementType
     ): array;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
         ElementInterface $element,
