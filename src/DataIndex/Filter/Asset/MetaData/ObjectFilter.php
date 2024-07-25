@@ -34,17 +34,17 @@ final class ObjectFilter implements FilterInterface
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         $parameters = $this->validateParameterType($parameters);
-        $query = $this->validateQueryType($query);
+        $assetQuery = $this->validateQueryType($query);
 
-        if (!$parameters || !$query) {
+        if (!$parameters || !$assetQuery) {
             return $query;
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::METADATA_DATA_OBJECT->value) as $column) {
-            $query = $this->applyAssetFilter($column, $query);
+            $assetQuery = $this->applyAssetFilter($column, $assetQuery);
         }
 
-        return $query;
+        return $assetQuery;
     }
 
     private function applyAssetFilter(ColumnFilter $column, AssetQuery $query): AssetQuery

@@ -34,17 +34,17 @@ final class TextAreaFilter implements FilterInterface
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         $parameters = $this->validateParameterType($parameters);
-        $query = $this->validateQueryType($query);
+        $assetQuery = $this->validateQueryType($query);
 
-        if (!$parameters || !$query) {
+        if (!$parameters || !$assetQuery) {
             return $query;
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::METADATA_TEXTAREA->value) as $column) {
-            $query = $this->applyTextAreaFilter($column, $query);
+            $assetQuery = $this->applyTextAreaFilter($column, $assetQuery);
         }
 
-        return $query;
+        return $assetQuery;
     }
 
     private function applyTextAreaFilter(ColumnFilter $column, AssetQuery $query): AssetQuery

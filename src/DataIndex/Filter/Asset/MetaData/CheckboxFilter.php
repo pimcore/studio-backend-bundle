@@ -34,17 +34,17 @@ final class CheckboxFilter implements FilterInterface
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         $parameters = $this->validateParameterType($parameters);
-        $query = $this->validateQueryType($query);
+        $assetQuery = $this->validateQueryType($query);
 
-        if (!$parameters || !$query) {
+        if (!$parameters || !$assetQuery) {
             return $query;
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::METADATA_CHECKBOX->value) as $column) {
-            $query = $this->applyCheckboxFilter($column, $query);
+            $assetQuery = $this->applyCheckboxFilter($column, $assetQuery);
         }
 
-        return $query;
+        return $assetQuery;
     }
 
     private function applyCheckboxFilter(ColumnFilter $column, AssetQuery $query): AssetQuery

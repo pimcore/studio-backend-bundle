@@ -34,17 +34,17 @@ final class InputFilter implements FilterInterface
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         $parameters = $this->validateParameterType($parameters);
-        $query = $this->validateQueryType($query);
+        $assetQuery = $this->validateQueryType($query);
 
-        if (!$parameters || !$query) {
+        if (!$parameters || !$assetQuery) {
             return $query;
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::METADATA_INPUT->value) as $column) {
-            $query = $this->applyInputFilter($column, $query);
+            $assetQuery = $this->applyInputFilter($column, $assetQuery);
         }
 
-        return $query;
+        return $assetQuery;
     }
 
     private function applyInputFilter(ColumnFilter $column, AssetQuery $query): AssetQuery

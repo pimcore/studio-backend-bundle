@@ -35,17 +35,17 @@ final class DateFilter implements FilterInterface
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         $parameters = $this->validateParameterType($parameters);
-        $query = $this->validateQueryType($query);
+        $assetQuery = $this->validateQueryType($query);
 
-        if (!$parameters || !$query) {
+        if (!$parameters || !$assetQuery) {
             return $query;
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::METADATA_DATE->value) as $column) {
-            $query = $this->applyDateFilter($column, $query);
+            $assetQuery = $this->applyDateFilter($column, $assetQuery);
         }
 
-        return $query;
+        return $assetQuery;
     }
 
     private function applyDateFilter(ColumnFilter $column, AssetQuery $query): AssetQuery

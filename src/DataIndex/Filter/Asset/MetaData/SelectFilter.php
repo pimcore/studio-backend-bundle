@@ -34,17 +34,17 @@ final class SelectFilter implements FilterInterface
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         $parameters = $this->validateParameterType($parameters);
-        $query = $this->validateQueryType($query);
+        $assetQuery = $this->validateQueryType($query);
 
-        if (!$parameters || !$query) {
+        if (!$parameters || !$assetQuery) {
             return $query;
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::METADATA_SELECT->value) as $column) {
-            $query = $this->applySelectFilter($column, $query);
+            $assetQuery = $this->applySelectFilter($column, $assetQuery);
         }
 
-        return $query;
+        return $assetQuery;
     }
 
     private function applySelectFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
