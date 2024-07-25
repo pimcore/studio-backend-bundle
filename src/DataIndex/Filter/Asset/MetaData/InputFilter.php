@@ -30,6 +30,7 @@ use function is_string;
 final class InputFilter implements FilterInterface
 {
     use IsAssetMetaDataTrait;
+
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         $parameters = $this->validateParameterType($parameters);
