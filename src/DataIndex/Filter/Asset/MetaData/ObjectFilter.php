@@ -34,9 +34,10 @@ final class ObjectFilter implements FilterInterface
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
-        /** @var ColumnFiltersParameterInterface $parameters */
-        /** @var AssetQuery $query */
-        if (!$this->isAssetMetaData($parameters, $query)) {
+        $parameters = $this->validateParameterType($parameters);
+        $query = $this->validateQueryType($query);
+
+        if (!$parameters || !$query) {
             return $query;
         }
 

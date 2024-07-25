@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 use function is_string;
 
 /**
@@ -31,12 +30,12 @@ use function is_string;
 final class InputFilter implements FilterInterface
 {
     use IsAssetMetaDataTrait;
-
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
-        /** @var ColumnFiltersParameterInterface $parameters */
-        /** @var AssetQuery $query */
-        if (!$this->isAssetMetaData($parameters, $query)) {
+        $parameters = $this->validateParameterType($parameters);
+        $query = $this->validateQueryType($query);
+
+        if (!$parameters || !$query) {
             return $query;
         }
 

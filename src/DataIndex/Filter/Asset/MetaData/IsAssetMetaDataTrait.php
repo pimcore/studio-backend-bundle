@@ -25,16 +25,21 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
  */
 trait IsAssetMetaDataTrait
 {
-    public function isAssetMetaData(mixed $parameters, QueryInterface $query): bool
+    public function validateParameterType(mixed $parameters): ?ColumnFiltersParameterInterface
     {
         if (!$parameters instanceof ColumnFiltersParameterInterface) {
-            return false;
+            return $parameters;
         }
 
+        return null;
+    }
+
+    public function validateQueryType(mixed $query): ?AssetQuery
+    {
         if (!$query instanceof AssetQuery) {
-            return false;
+            return $query;
         }
 
-        return true;
+        return null;
     }
 }
