@@ -26,7 +26,7 @@ trait IsAssetMetaDataTrait
 {
     public function validateParameterType(mixed $parameters): ?ColumnFiltersParameterInterface
     {
-        if (!$parameters instanceof ColumnFiltersParameterInterface) {
+        if ($parameters instanceof ColumnFiltersParameterInterface) {
             return $parameters;
         }
 
@@ -35,7 +35,7 @@ trait IsAssetMetaDataTrait
 
     public function validateQueryType(mixed $query): ?AssetQuery
     {
-        if (!$query instanceof AssetQuery) {
+        if ($query instanceof AssetQuery) {
             return $query;
         }
 
