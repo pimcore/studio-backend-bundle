@@ -21,6 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 use function count;
 
+/**
+ * @internal
+ */
 trait HandlerProgressTrait
 {
     private const FREQUENCY = 10;
