@@ -30,6 +30,7 @@ use Pimcore\Mail;
 use Pimcore\Model\Document\Email;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Mime\Address;
+use function sprintf;
 
 /**
  * @internal

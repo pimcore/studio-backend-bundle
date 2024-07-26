@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorServiceIn
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use function sprintf;
 
 final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 {

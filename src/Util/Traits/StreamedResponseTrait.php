@@ -28,6 +28,7 @@ use Pimcore\Model\Asset\Video;
 use Pimcore\Model\Asset\Video\ImageThumbnailInterface as VideoImageThumbnailInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function is_resource;
+use function sprintf;
 
 /**
  * @internal

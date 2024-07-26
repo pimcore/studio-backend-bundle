@@ -45,6 +45,7 @@ use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;
 use function count;
+use function sprintf;
 
 /**
  * @internal

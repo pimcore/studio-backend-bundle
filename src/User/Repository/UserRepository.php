@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User;
 use Pimcore\Model\User\Listing as UserListing;
 use Pimcore\Model\UserInterface;
+use function sprintf;
 
 /**
  * @internal

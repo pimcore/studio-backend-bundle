@@ -41,6 +41,7 @@ use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Asset\Service as AssetService;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\UserInterface;
+use function sprintf;
 
 /**
  * @internal

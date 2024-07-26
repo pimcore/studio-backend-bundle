@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NonPublicTranslationExcepti
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\PublicTranslations;
 use Symfony\Component\HttpFoundation\InputBag;
 use function array_key_exists;
+use function sprintf;
 
 /**
  * @internal
