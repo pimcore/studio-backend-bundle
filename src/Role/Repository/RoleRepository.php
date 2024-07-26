@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User\Role;
 use Pimcore\Model\User\Role\Listing;
 use Pimcore\Model\User\UserRoleInterface;
+use function sprintf;
 
 /**
  * @internal

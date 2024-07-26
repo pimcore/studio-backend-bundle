@@ -41,6 +41,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal

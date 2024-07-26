@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Model\Exception\NotFoundException;
 use Pimcore\Model\Tool\Email\Blocklist;
 use Pimcore\Model\Tool\Email\Blocklist\Listing;
+use function sprintf;
 
 /**
  * @internal

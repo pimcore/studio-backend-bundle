@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParame
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
+use function sprintf;
 use function strlen;
 
 /**

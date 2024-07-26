@@ -37,6 +37,7 @@ use Pimcore\Model\Element\Recyclebin\Item;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @internal

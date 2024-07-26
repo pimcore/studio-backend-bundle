@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
+use function sprintf;
 
 /**
  * @internal
