@@ -24,6 +24,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\Ids
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 
 final class AssetQuery implements QueryInterface
@@ -105,4 +106,11 @@ final class AssetQuery implements QueryInterface
 
         return $this;
     }
+
+    /*public function wildcardSearch(string $term): self
+    {
+        $this->search->addModifier(new WildcardSearch($fieldName, )));
+
+        return $this;
+    }*/
 }
