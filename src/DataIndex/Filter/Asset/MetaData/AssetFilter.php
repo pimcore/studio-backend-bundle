@@ -29,7 +29,7 @@ use function is_int;
  */
 final class AssetFilter implements FilterInterface
 {
-    use IsAssetMetaDataTrait;
+    use IsAssetFilterTrait;
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {

@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 /**
  * @internal
  */
-trait IsAssetMetaDataTrait
+trait IsAssetFilterTrait
 {
     public function validateParameterType(mixed $parameters): ?ColumnFiltersParameterInterface
     {

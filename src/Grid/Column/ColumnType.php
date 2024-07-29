@@ -23,6 +23,8 @@ enum ColumnType: string
 {
     case SYSTEM_STRING = 'system.string';
     case SYSTEM_FILE_SIZE = 'system.fileSize';
+    case SYSTEM_INTEGER = 'system.integer';
+    case SYSTEM_DATETIME = 'system.datetime';
     case METADATA_SELECT = 'metadata.select';
     case METADATA_INPUT = 'metadata.input';
     case METADATA_DATE = 'metadata.date';
@@ -31,4 +33,5 @@ enum ColumnType: string
     case METADATA_DATA_OBJECT = 'metadata.object';
     case METADATA_TEXTAREA = 'metadata.textarea';
     case METADATA_CHECKBOX = 'metadata.checkbox';
+    case METADATA_STRING = 'metadata.string';
 }
