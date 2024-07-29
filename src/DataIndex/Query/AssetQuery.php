@@ -112,8 +112,7 @@ final class AssetQuery implements QueryInterface
         string $fieldName,
         string $searchTerm,
         bool $enablePqlFieldNameResolution = true
-    ): self
-    {
+    ): self {
         $this->search->addModifier(new WildcardSearch($fieldName, $searchTerm, $enablePqlFieldNameResolution));
 
         return $this;
@@ -126,8 +125,7 @@ final class AssetQuery implements QueryInterface
         int|null $onDate = null,
         bool $roundToDay = true,
         bool $enablePqlFieldNameResolution = true
-    ): self
-    {
+    ): self {
         $this->search->addModifier(new DateFilter(
             $field,
             $startDate,
@@ -139,5 +137,4 @@ final class AssetQuery implements QueryInterface
 
         return $this;
     }
-
 }

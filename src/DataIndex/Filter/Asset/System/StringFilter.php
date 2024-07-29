@@ -35,8 +35,7 @@ final class StringFilter implements FilterInterface
 
     public function __construct(
         private readonly OpenSearchFieldMappingInterface $openSearchFieldMapping,
-    )
-    {
+    ) {
     }
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface

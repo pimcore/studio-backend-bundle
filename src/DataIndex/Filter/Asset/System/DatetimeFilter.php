@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\OpenSearchFieldMappingI
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
+use function is_array;
 
 /**
  * @internal
@@ -34,8 +35,7 @@ final class DatetimeFilter implements FilterInterface
 
     public function __construct(
         private readonly OpenSearchFieldMappingInterface $openSearchFieldMapping,
-    )
-    {
+    ) {
     }
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
