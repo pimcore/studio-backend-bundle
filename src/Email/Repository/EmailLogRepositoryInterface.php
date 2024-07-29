@@ -25,7 +25,6 @@ use Pimcore\Model\Tool\Email\Log\Listing;
  */
 interface EmailLogRepositoryInterface
 {
-
     public function getListing(
         CollectionParameters $parameters,
         string $email = null,
