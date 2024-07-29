@@ -78,6 +78,7 @@ final class CollectionController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getBlocklistEntries(
         #[MapQueryString] CollectionParameters $parameters,
