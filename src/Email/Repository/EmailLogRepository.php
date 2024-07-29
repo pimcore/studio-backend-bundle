@@ -31,8 +31,7 @@ final readonly class EmailLogRepository implements EmailLogRepositoryInterface
 
     public function __construct(
         private EmailLogResolverInterface $emailLogResolver,
-    )
-    {
+    ) {
     }
 
     public function getListing(
