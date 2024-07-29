@@ -60,3 +60,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\ObjectFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+
+  # Asset
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\SortFilter:
+    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]

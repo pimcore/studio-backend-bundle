@@ -44,6 +44,12 @@ final readonly class Filter
             example: '[{"key":"name","type": "metadata.object","value": 1}]'
         )]
         private array $columnFilters = [],
+        #[Property(
+            description: 'Sort Filter',
+            type: 'object',
+            example: '{"key":"name","direction": "ASC"}'
+        )]
+        private array $sortFilter = []
 
     ) {
     }
@@ -66,5 +72,10 @@ final readonly class Filter
     public function getColumnFilters(): array
     {
         return $this->columnFilters;
+    }
+
+    public function getSortFilter(): array
+    {
+        return $this->sortFilter;
     }
 }

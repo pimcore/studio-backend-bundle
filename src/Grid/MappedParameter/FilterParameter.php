@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ExcludeFolderParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PathParameterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
 
 /**
  * @internal
@@ -30,7 +32,8 @@ final class FilterParameter implements
     CollectionParametersInterface,
     ExcludeFolderParameterInterface,
     PathParameterInterface,
-    ColumnFiltersParameterInterface
+    ColumnFiltersParameterInterface,
+    SortFilterParameterInterface
 {
     private ?string $path = null;
 
@@ -38,7 +41,8 @@ final class FilterParameter implements
         private readonly int $page = 1,
         private readonly int $pageSize = 50,
         private readonly bool $includeDescendants = true,
-        private readonly array $columnFilters = []
+        private readonly array $columnFilters = [],
+        private readonly ?SortFilter $sortFilter = null
     ) {
     }
 
@@ -95,5 +99,10 @@ final class FilterParameter implements
                 $column['filterValue']
             );
         }
+    }
+
+    public function getSortFilter() : ?SortFilter
+    {
+        return $this->sortFilter;
     }
 }

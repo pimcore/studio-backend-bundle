@@ -69,3 +69,8 @@ services:
         Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Text: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\TextHydratorInterface'
         Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\UnknownHydratorInterface'
         Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydratorInterface'
+
+
+  #Services
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\OpenSearchFieldMappingInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\OpenSearchFieldMapping
