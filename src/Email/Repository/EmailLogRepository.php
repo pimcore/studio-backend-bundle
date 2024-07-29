@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Tool\EmailLogResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Model\Tool\Email\Log;
@@ -27,6 +28,12 @@ use Pimcore\Model\Tool\Email\Log\Listing;
 final readonly class EmailLogRepository implements EmailLogRepositoryInterface
 {
     private const DEFAULT_ORDER_KEY = 'sentDate';
+
+    public function __construct(
+        private EmailLogResolverInterface $emailLogResolver,
+    )
+    {
+    }
 
     public function getListing(
         CollectionParameters $parameters,
@@ -69,6 +76,6 @@ final readonly class EmailLogRepository implements EmailLogRepositoryInterface
 
     private function getEntry(int $id): ?Log
     {
-        return Log::getById($id);
+        return $this->emailLogResolver->getById($id);
     }
 }

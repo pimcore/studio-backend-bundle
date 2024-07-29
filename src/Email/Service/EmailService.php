@@ -63,6 +63,8 @@ final readonly class EmailService implements EmailServiceInterface
                 $listEntry->getTo(),
                 $listEntry->getSubject(),
                 $listEntry->getSentDate(),
+                $listEntry->getEmailLogExistsHtml() === 1,
+                $listEntry->getEmailLogExistsText() === 1,
                 $listEntry->getError()
             );
 

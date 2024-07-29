@@ -41,6 +41,10 @@ final class EmailLogEntry implements AdditionalAttributesInterface
         private readonly string $subject,
         #[Property(description: 'sent date', type: 'integer', example: 1707312457)]
         private readonly int $sentDate,
+        #[Property(description: 'HTML log exists', type: 'bool', example: true)]
+        private readonly bool $hasHtmlLog,
+        #[Property(description: 'Text log exists', type: 'bool', example: true)]
+        private readonly bool $hasTextLog,
         #[Property(description: 'error', type: 'string', example: 'Some error occurred')]
         private readonly ?string $error = null,
     ) {
@@ -70,6 +74,16 @@ final class EmailLogEntry implements AdditionalAttributesInterface
     public function getSentDate(): int
     {
         return $this->sentDate;
+    }
+
+    public function hasHtmlLog(): bool
+    {
+        return $this->hasHtmlLog;
+    }
+
+    public function hasTextLog(): bool
+    {
+        return $this->hasTextLog;
     }
 
     public function getError(): ?string
