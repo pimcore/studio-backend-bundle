@@ -21,6 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -28,6 +30,8 @@ use Pimcore\Model\UserInterface;
  */
 interface EmailServiceInterface
 {
+    public function listEntries(CollectionParameters $parameters): Collection;
+
     /**
      * @throws AccessDeniedException
      * @throws EnvironmentException
