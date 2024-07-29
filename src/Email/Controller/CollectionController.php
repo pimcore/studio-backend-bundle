@@ -14,17 +14,16 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller\Blocklist;
+namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property\BlocklistCollection;
-use Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -33,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -48,7 +46,7 @@ final class CollectionController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly BlocklistServiceInterface $blocklistService,
+        private readonly EmailServiceInterface $emailService,
     ) {
         parent::__construct($serializer);
     }
@@ -56,35 +54,30 @@ final class CollectionController extends AbstractApiController
     /**
      * @throws AccessDeniedException
      */
-    #[Route('/emails/blocklist', name: 'pimcore_studio_api_emails_blocklist_list', methods: ['GET'])]
+    #[Route('/emails', name: 'pimcore_studio_api_emails_list', methods: ['GET'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
+    #[IsGranted(UserPermissions::GDPR->value)]
     #[Get(
-        path: self::API_PATH . '/emails/blocklist',
-        operationId: 'getBlocklistEntries',
-        description: 'Get paginated blocklist entries',
-        summary: 'Get all blocklist entries',
+        path: self::API_PATH . '/emails',
+        operationId: 'getEmailLogEntries',
+        description: 'Get paginated E-Mail log entries',
+        summary: 'Get all E-Mail log entries',
         tags: [Tags::Emails->value]
     )]
     #[PageParameter]
     #[PageSizeParameter]
-    #[TextFieldParameter(
-        name: 'email',
-        description: 'Email address to be filtered by',
-        required: false
-    )]
     #[SuccessResponse(
-        description: 'Paginated blocklist entries with total count as header param',
+        description: 'Paginated E-Mail log entries with total count as header param',
         content: new CollectionJson(new BlocklistCollection())
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getBlocklistEntries(
-        #[MapQueryString] CollectionParameters $parameters,
-        #[MapQueryParameter] ?string $email = null
+    public function getEmailLogEntries(
+        #[MapQueryString] CollectionParameters $parameters
     ): JsonResponse {
-        $collection = $this->blocklistService->listEntries($parameters, $email);
+        $collection = $this->emailService->listEntries($parameters);
 
         return $this->getPaginatedCollection(
             $this->serializer,
