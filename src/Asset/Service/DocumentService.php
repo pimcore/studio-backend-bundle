@@ -33,6 +33,7 @@ use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Enum\PdfScanStatus;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use function sprintf;
 
 /**
  * @internal

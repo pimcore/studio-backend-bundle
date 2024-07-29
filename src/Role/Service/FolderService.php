@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Role\Hydrator\RoleTreeNodeHydratorInterfa
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\FolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @internal

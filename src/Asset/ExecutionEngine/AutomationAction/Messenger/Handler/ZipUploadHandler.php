@@ -27,11 +27,12 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\JobRunContext;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
 
 /**
  * @internal
@@ -110,6 +111,7 @@ final class ZipUploadHandler extends AbstractHandler
                 ));
             }
 
+            $stepElementsForProgress = count($elements) + 1;
             $files = [];
             foreach ($elements as $element) {
                 if (!$this->shouldBeExecuted($jobRun)) {
@@ -125,6 +127,13 @@ final class ZipUploadHandler extends AbstractHandler
                     $element['sourcePath'] = $extractTargetPath . '/' . $element['path'];
                     $files[] = $element;
                 }
+
+                $this->updateProgress(
+                    $this->publishService,
+                    $jobRun,
+                    $this->getJobStep($message)->getName(),
+                    $stepElementsForProgress
+                );
             }
             $childJobRunId = $this->uploadService->uploadAssetsAsynchronously(
                 $validatedParameters->getUser(),
@@ -138,6 +147,13 @@ final class ZipUploadHandler extends AbstractHandler
 
             $this->updateJobRunContext($jobRun, JobRunContext::CHILD_JOB_RUN->value, $childJobRunId);
 
+            $this->updateProgress(
+                $this->publishService,
+                $jobRun,
+                $this->getJobStep($message)->getName(),
+                $stepElementsForProgress
+            );
+
         } catch (Exception $exception) {
             $this->abort($this->getAbortData(
                 Config::ZIP_FILE_UPLOAD_FAILED_MESSAGE->value,
@@ -146,7 +162,5 @@ final class ZipUploadHandler extends AbstractHandler
         } finally {
             $this->storageService->cleanUpLocalFolder($localExtractTargetPath);
         }
-
-        $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 }

@@ -22,6 +22,7 @@ use OpenApi\Attributes\Response;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schemas;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use function sprintf;
 
 /**
  * @internal

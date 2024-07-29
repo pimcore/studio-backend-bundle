@@ -23,10 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**

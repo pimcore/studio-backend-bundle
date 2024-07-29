@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
+use function sprintf;
 
 /**
  * @internal
