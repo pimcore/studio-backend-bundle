@@ -28,11 +28,9 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParamete
  */
 final class SortFilter implements FilterInterface
 {
-
     public function __construct(
         private readonly OpenSearchFieldMappingInterface $openSearchFieldMapping
-    )
-    {
+    ) {
     }
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
@@ -50,9 +48,6 @@ final class SortFilter implements FilterInterface
         if (!$sortFilter) {
             return $query;
         }
-
-
-
 
         $sortDirection = SortDirection::ASC;
 

@@ -101,7 +101,7 @@ final class FilterParameter implements
         }
     }
 
-    public function getSortFilter() : ?SortFilter
+    public function getSortFilter(): ?SortFilter
     {
         return $this->sortFilter;
     }
