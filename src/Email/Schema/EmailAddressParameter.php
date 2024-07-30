@@ -25,10 +25,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
     required: ['email'],
     type: 'object'
 )]
-final readonly class BlocklistEntryRequest
+final readonly class EmailAddressParameter
 {
     public function __construct(
-        #[Property(description: 'email address', type: 'string', example: 'blockedEmail@fishy-domain.com')]
+        #[Property(description: 'email address', type: 'string', example: 'someEmail@email-domain.com')]
         private string $email
     ) {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {

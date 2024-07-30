@@ -33,6 +33,8 @@ final readonly class ElementTypes
 
     public const TYPE_FOLDER = 'folder';
 
+    public const TYPE_EMAIL = 'E-Mail';
+
     public const ALLOWED_TYPES = [
         self::TYPE_DATA_OBJECT,
         self::TYPE_OBJECT,

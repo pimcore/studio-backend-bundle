@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Request;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Email\Schema\BlocklistEntryRequest;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailAddressParameter;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class BlocklistRequestBody extends RequestBody
@@ -28,7 +28,7 @@ final class BlocklistRequestBody extends RequestBody
     {
         parent::__construct(
             required: true,
-            content: new JsonContent(ref: BlocklistEntryRequest::class)
+            content: new JsonContent(ref: EmailAddressParameter::class)
         );
     }
 }

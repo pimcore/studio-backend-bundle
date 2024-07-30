@@ -18,22 +18,19 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Request\TestEmailRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Email\Schema\SendEmailParameters;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailSendServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -41,12 +38,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class TestEmailController extends AbstractApiController
+final class ResendController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
         private readonly EmailSendServiceInterface $emailSendService,
-        private readonly SecurityServiceInterface $securityService,
     ) {
         parent::__construct($serializer);
     }
@@ -56,30 +52,27 @@ final class TestEmailController extends AbstractApiController
      * @throws EnvironmentException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
-     * @throws UserNotFoundException
      */
-    #[Route('/emails/test', name: 'pimcore_studio_api_emails_test', methods: ['POST'])]
+    #[Route('/emails/{id}/resend', name: 'pimcore_studio_api_emails_resend', methods: ['POST'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Post(
-        path: self::API_PATH . '/emails/test',
-        operationId: 'sendTestEmail',
-        summary: 'Send a test email.',
+        path: self::API_PATH . '/emails/{id}/resend',
+        operationId: 'resendEmail',
+        summary: 'Resend an email.',
         tags: [Tags::Emails->value]
     )]
-    #[TestEmailRequestBody]
+    #[IdParameter(type: ElementTypes::TYPE_EMAIL)]
     #[SuccessResponse(
         description: 'Mail was successfully sent',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function sendTestEmail(
-        #[MapRequestPayload] SendEmailParameters $parameters
+        int $id
     ): Response {
-        $this->emailSendService->sendTestEmail(
-            $parameters,
-            $this->securityService->getCurrentUser()
-        );
+        $this->emailSendService->resendEmail($id);
 
         return new Response();
     }
