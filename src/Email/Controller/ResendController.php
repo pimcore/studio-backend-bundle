@@ -69,7 +69,7 @@ final class ResendController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function sendTestEmail(
+    public function resendEmail(
         int $id
     ): Response {
         $this->emailSendService->resendEmail($id);
