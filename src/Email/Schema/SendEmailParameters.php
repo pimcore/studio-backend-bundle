@@ -19,16 +19,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Email\Util\Constants\TestEmailContentType;
+use Pimcore\Bundle\StudioBackendBundle\Email\Util\Constants\EmailContentType;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use function in_array;
 
 #[Schema(
-    title: 'TestEmailRequest',
+    title: 'SendEmailParameters',
     required: ['from', 'to', 'subject', 'contentType'],
     type: 'object'
 )]
-final readonly class TestEmailRequest
+final readonly class SendEmailParameters
 {
     public function __construct(
         #[Property(description: 'from email address(es)', type: 'string', example: 'from@sender.com')]
@@ -41,11 +41,11 @@ final readonly class TestEmailRequest
             description: 'email content type',
             type: 'enum',
             enum: [
-                TestEmailContentType::DOCUMENT->value,
-                TestEmailContentType::HTML->value,
-                TestEmailContentType::TEXT->value,
+                EmailContentType::DOCUMENT->value,
+                EmailContentType::HTML->value,
+                EmailContentType::TEXT->value,
             ],
-            example: TestEmailContentType::TEXT->value
+            example: EmailContentType::TEXT->value
         )]
         private string $contentType,
         #[Property(description: 'email content', type: 'string', example: 'My email message')]
@@ -111,16 +111,16 @@ final readonly class TestEmailRequest
     private function validateContentParameters(): void
     {
         match (true) {
-            ($this->contentType === TestEmailContentType::TEXT->value ||
-                $this->contentType === TestEmailContentType::HTML->value) &&
+            ($this->contentType === EmailContentType::TEXT->value ||
+                $this->contentType === EmailContentType::HTML->value) &&
             $this->content === null =>
             throw new EnvironmentException('Content is required for text and HTML emails'),
-            $this->contentType === TestEmailContentType::DOCUMENT->value && $this->documentPath === null =>
+            $this->contentType === EmailContentType::DOCUMENT->value && $this->documentPath === null =>
             throw new EnvironmentException('Document path is required for document emails'),
             !in_array($this->contentType, [
-                TestEmailContentType::DOCUMENT->value,
-                TestEmailContentType::HTML->value,
-                TestEmailContentType::TEXT->value,
+                EmailContentType::DOCUMENT->value,
+                EmailContentType::HTML->value,
+                EmailContentType::TEXT->value,
             ], true) =>
             throw new EnvironmentException('Invalid content type'),
             default => null

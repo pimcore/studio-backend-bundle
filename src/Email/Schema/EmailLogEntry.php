@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'EmailLog',
-    required: ['from', 'to', 'subject', 'sentDate', 'error'],
+    required: ['id', 'sentDate', 'hasHtmlLog', 'hasTextLog', 'from', 'to', 'subject', 'error'],
     type: 'object'
 )]
 final class EmailLogEntry implements AdditionalAttributesInterface
@@ -33,18 +33,18 @@ final class EmailLogEntry implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'id', type: 'int', example: 23)]
         private readonly int $id,
-        #[Property(description: 'from', type: 'string', example: 'from@pimcore.com')]
-        private readonly string $from,
-        #[Property(description: 'to', type: 'string', example: 'to@pimcore.com')]
-        private readonly string $to,
-        #[Property(description: 'subject', type: 'string', example: 'E-Mail subject')]
-        private readonly string $subject,
         #[Property(description: 'sent date', type: 'integer', example: 1707312457)]
         private readonly int $sentDate,
         #[Property(description: 'HTML log exists', type: 'bool', example: true)]
         private readonly bool $hasHtmlLog,
         #[Property(description: 'Text log exists', type: 'bool', example: true)]
         private readonly bool $hasTextLog,
+        #[Property(description: 'from', type: 'string', example: 'from@pimcore.com')]
+        private readonly ?string $from = null,
+        #[Property(description: 'to', type: 'string', example: 'to@pimcore.com')]
+        private readonly ?string $to = null,
+        #[Property(description: 'subject', type: 'string', example: 'E-Mail subject')]
+        private readonly ?string $subject = null,
         #[Property(description: 'error', type: 'string', example: 'Some error occurred')]
         private readonly ?string $error = null,
     ) {
@@ -56,17 +56,17 @@ final class EmailLogEntry implements AdditionalAttributesInterface
         return $this->id;
     }
 
-    public function getFrom(): string
+    public function getFrom(): ?string
     {
         return $this->from;
     }
 
-    public function getTo(): string
+    public function getTo(): ?string
     {
         return $this->to;
     }
 
-    public function getSubject(): string
+    public function getSubject(): ?string
     {
         return $this->subject;
     }

@@ -43,6 +43,7 @@ final readonly class EmailLogRepository implements EmailLogRepositoryInterface
         $listing->setLimit($limit);
         $listing->setOffset(($parameters->getPage() - 1) * $limit);
         $listing->setOrderKey(self::DEFAULT_ORDER_KEY);
+        $listing->setOrder('DESC');
 
         return $listing;
     }
@@ -59,7 +60,7 @@ final readonly class EmailLogRepository implements EmailLogRepositoryInterface
     /**
      * @throws NotFoundException
      */
-    private function getExistingEntry(int $id): Log
+    public function getExistingEntry(int $id): Log
     {
         $entry = $this->getEntry($id);
 

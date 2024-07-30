@@ -17,7 +17,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Util\Constants;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
 
-enum TestEmailContentType: string
+enum EmailContentType: string
 {
     use EnumToValueArrayTrait;
 

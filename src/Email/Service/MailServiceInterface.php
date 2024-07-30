@@ -16,27 +16,39 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Email\Schema\TestEmailRequest;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Mail;
+use Pimcore\Model\Document;
 use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-interface EmailServiceInterface
+interface MailServiceInterface
 {
-    public function listEntries(CollectionParameters $parameters): Collection;
+    /**
+     * @throws EnvironmentException
+     */
+    public function setMailFromAddress(string $from, Mail $mail): void;
 
     /**
-     * @throws AccessDeniedException
+     * @throws EnvironmentException
+     */
+    public function addMailAddress(?string $address, string $addressType, Mail $mail): void;
+
+    /**
      * @throws EnvironmentException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
      */
-    public function sendTestEmail(TestEmailRequest $parameters, UserInterface $user): void;
+    public function setMailDocumentContent(Document $document, Mail $mail): void;
+
+    /**
+     * @throws AccessDeniedException
+     * @throws NotFoundException
+     */
+    public function addMailAttachment(?int $attachmentId, Mail $mail, UserInterface $user): void;
 }

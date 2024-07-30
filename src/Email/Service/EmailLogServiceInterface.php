@@ -14,22 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Email\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Email\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Mail;
 use Pimcore\Model\Tool\Email\Log;
-use Pimcore\Model\Tool\Email\Log\Listing;
 
 /**
  * @internal
  */
-interface EmailLogRepositoryInterface
+interface EmailLogServiceInterface
 {
-    public function getListing(
-        CollectionParameters $parameters,
-        string $email = null,
-    ): Listing;
+    public function listEntries(CollectionParameters $parameters): Collection;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getEntry(int $id): Log;
 
     /**
      * @throws NotFoundException
@@ -37,7 +42,9 @@ interface EmailLogRepositoryInterface
     public function deleteEntry(int $id): void;
 
     /**
+     * @throws EnvironmentException
+     * @throws InvalidElementTypeException
      * @throws NotFoundException
      */
-    public function getExistingEntry(int $id): Log;
+    public function getEmailFromLogEntry(Log $emailLogEntry): Mail;
 }
