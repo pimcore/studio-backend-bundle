@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Service;
+
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;

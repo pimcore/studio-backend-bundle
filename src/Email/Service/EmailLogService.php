@@ -31,6 +31,9 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Tool\Email\Log;
 use Pimcore\Twig\Extension\Templating\Placeholder\Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function is_array;
+use function sprintf;
+
 /**
  * @internal
  */
@@ -105,8 +108,8 @@ final readonly class EmailLogService implements EmailLogServiceInterface
 
         return $mail;
     }
-    
-     /**
+
+    /**
      * @throws EnvironmentException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
@@ -145,13 +148,14 @@ final readonly class EmailLogService implements EmailLogServiceInterface
             throw new NotFoundException('email document', $documentId);
         }
         $this->mailService->setMailDocumentContent($document, $mail);
+
         try {
             $params = $emailLogEntry->getParams();
             foreach ($params as $entry) {
                 $value = isset($entry['children']) && is_array($entry['children'])
                     ? array_column(
                         array_map([$this, 'parseParamValueFromLog'], $entry['children']),
-                        null, 
+                        null,
                         'key'
                     )
                     : $this->parseParamValueFromLog($entry);

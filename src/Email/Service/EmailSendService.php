@@ -57,6 +57,7 @@ final readonly class EmailSendService implements EmailSendServiceInterface
         $this->mailService->addMailAddress($parameters->getTo(), EmailAddressType::TO->value, $mail);
         $this->mailService->addMailAttachment($parameters->getAttachmentId(), $mail, $user);
         $mail->setIgnoreDebugMode(true);
+
         try {
             $mail->send();
         } catch (Exception $exception) {

@@ -84,6 +84,7 @@ final readonly class MailService implements MailServiceInterface
             $currentAddresses = $mail->$getter();
             if (empty($currentAddresses)) {
                 $mail->$setter($newAddress);
+
                 return;
             }
 
