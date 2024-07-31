@@ -20,7 +20,6 @@ use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\OpenSearchFieldMappingInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
 
 /**
@@ -28,10 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParamete
  */
 final class SortFilter implements FilterInterface
 {
-    public function __construct(
-        private readonly OpenSearchFieldMappingInterface $openSearchFieldMapping
-    ) {
-    }
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
@@ -56,7 +51,7 @@ final class SortFilter implements FilterInterface
         }
 
         $query->orderByField(
-            $this->openSearchFieldMapping->getOpenSearchKey($sortFilter->getKey()),
+            $sortFilter->getKey(),
             $sortDirection
         );
 

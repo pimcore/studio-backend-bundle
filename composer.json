@@ -19,7 +19,7 @@
   "require": {
     "php": "~8.2.0 || ~8.3.0",
     "pimcore/static-resolver-bundle": "1.x-dev",
-    "pimcore/generic-data-index-bundle": "dev-sort-modifier",
+    "pimcore/generic-data-index-bundle": "dev-synonym-field-name-transformer",
     "pimcore/pimcore": "^11.x-dev",
     "zircote/swagger-php": "^4.8",
     "ext-zip": "*",
