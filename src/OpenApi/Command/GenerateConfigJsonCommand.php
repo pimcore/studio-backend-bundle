@@ -70,8 +70,14 @@ final class GenerateConfigJsonCommand extends Command
             return Command::FAILURE;
         }
 
+        $io->info(
+            sprintf('Creating JSON file %s with Open API schema config...', $fileName)
+        );
         try {
-            $storage->write($fileName, json_encode($config, JSON_THROW_ON_ERROR));
+            $storage->write(
+                $fileName,
+                json_encode($config, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+            );
         } catch (Exception|FilesystemException $e) {
             $io->error(
                 sprintf('Could not create JSON file: %s', $e->getMessage())
