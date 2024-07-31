@@ -21,9 +21,11 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterfac
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Asset\AssetMetaDataFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 
 final class AssetQuery implements QueryInterface
@@ -102,6 +104,36 @@ final class AssetQuery implements QueryInterface
     public function filterMetaData(string $name, string $type, mixed $data): self
     {
         $this->search->addModifier(new AssetMetaDataFilter($name, $type, $data));
+
+        return $this;
+    }
+
+    public function wildcardSearch(
+        string $fieldName,
+        string $searchTerm,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new WildcardSearch($fieldName, $searchTerm, $enablePqlFieldNameResolution));
+
+        return $this;
+    }
+
+    public function filterDatetime(
+        string $field,
+        int|null $startDate = null,
+        int|null $endDate = null,
+        int|null $onDate = null,
+        bool $roundToDay = true,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new DateFilter(
+            $field,
+            $startDate,
+            $endDate,
+            $onDate,
+            $roundToDay,
+            $enablePqlFieldNameResolution
+        ));
 
         return $this;
     }

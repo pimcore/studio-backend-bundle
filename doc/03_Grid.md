@@ -27,16 +27,18 @@ A `columnFilter` has a reference to the column and the value you want to filter 
 
 Available filters are:
 
-|       Type        |     filterValue     |        Options        |
-|:-----------------:|:-------------------:|:---------------------:|
-|  metadata.select  |       string        |                       |
-|   metadata.date   | object of timestamp | `from`, `to`, or `on` |
-|  metadata.input   |       string        |                       |
-| metadata.checkbox |       boolean       |                       |
-| metadata.textarea |       string        |                       |
-|  metadata.object  |       integer       |   ID of the object    |
-| metadata.document |       integer       |  ID fo the document   |
-|  metadata.asset   |       integer       |    ID fo the asset    |
+|       Type        |     filterValue     |           Options           |
+|:-----------------:|:-------------------:|:---------------------------:|
+|  metadata.select  |       string        |                             |
+|   metadata.date   | object of timestamp |    `from`, `to`, or `on`    |
+|  metadata.input   |       string        |                             |
+| metadata.checkbox |       boolean       |                             |
+| metadata.textarea |       string        |                             |
+|  metadata.object  |       integer       |      ID of the object       |
+| metadata.document |       integer       |     ID fo the document      |
+|  metadata.asset   |       integer       |       ID fo the asset       |
+|   system.string   |       string        | Wildcard search can be used |
+|  system.datetime  |       integer       |    `from`, `to`, or `on`    |
 
 
 

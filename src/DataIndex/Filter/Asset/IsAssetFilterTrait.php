@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParam
 /**
  * @internal
  */
-trait IsAssetMetaDataTrait
+trait IsAssetFilterTrait
 {
     public function validateParameterType(mixed $parameters): ?ColumnFiltersParameterInterface
     {

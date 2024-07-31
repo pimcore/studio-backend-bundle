@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 
 /**
@@ -26,7 +27,7 @@ final readonly class StringDefinition implements ColumnDefinitionInterface
 {
     public function getType(): string
     {
-        return 'system.string';
+        return ColumnType::SYSTEM_STRING->value;
     }
 
     public function getConfig(mixed $config): array

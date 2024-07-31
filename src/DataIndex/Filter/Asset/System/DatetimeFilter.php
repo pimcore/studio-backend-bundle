@@ -14,9 +14,8 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\OpenSearch\Query\DateFilter as GenericDateFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
@@ -29,7 +28,7 @@ use function is_array;
 /**
  * @internal
  */
-final class DateFilter implements FilterInterface
+final class DatetimeFilter implements FilterInterface
 {
     use IsAssetFilterTrait;
 
@@ -42,43 +41,31 @@ final class DateFilter implements FilterInterface
             return $query;
         }
 
-        foreach ($parameters->getColumnFilterByType(ColumnType::METADATA_DATE->value) as $column) {
-            $assetQuery = $this->applyDateFilter($column, $assetQuery);
+        foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_DATETIME->value) as $column) {
+            $assetQuery = $this->applyDatetimeFilter($column, $assetQuery);
         }
 
         return $assetQuery;
     }
 
-    private function applyDateFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
+    private function applyDatetimeFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
     {
         if (!is_array($column->getFilterValue())) {
-            throw new InvalidArgumentException('Filter value for date must be an array');
+            throw new InvalidArgumentException('Filter value for this filter must be an array');
         }
 
         $filterValue = $column->getFilterValue();
 
         if (isset($filterValue['on'])) {
-            $query->filterMetaData(
-                $column->getKey(),
-                FilterType::DATE->value,
-                [GenericDateFilter::PARAM_ON => $filterValue['on']]
-            );
+            $query->filterDatetime($column->getKey(), null, $filterValue['on']);
         }
 
         if (isset($filterValue['to'])) {
-            $query->filterMetaData(
-                $column->getKey(),
-                FilterType::DATE->value,
-                [GenericDateFilter::PARAM_END => $filterValue['to']]
-            );
+            $query->filterDatetime($column->getKey(), null, $filterValue['to']);
         }
 
         if (isset($filterValue['from'])) {
-            $query->filterMetaData(
-                $column->getKey(),
-                FilterType::DATE->value,
-                [GenericDateFilter::PARAM_START => $filterValue['from']]
-            );
+            $query->filterDatetime($column->getKey(), $filterValue['from']);
         }
 
         return $query;

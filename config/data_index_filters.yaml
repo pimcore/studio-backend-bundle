@@ -60,3 +60,10 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\ObjectFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+
+  # Asset System Data
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System\StringFilter:
+    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System\DatetimeFilter:
+    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
