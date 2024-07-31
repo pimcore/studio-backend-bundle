@@ -26,6 +26,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\Pare
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByField;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 
 final class AssetQuery implements QueryInterface
@@ -104,6 +105,13 @@ final class AssetQuery implements QueryInterface
     public function filterMetaData(string $name, string $type, mixed $data): self
     {
         $this->search->addModifier(new AssetMetaDataFilter($name, $type, $data));
+
+        return $this;
+    }
+
+    public function orderByField(string $fieldName, SortDirection $direction): self
+    {
+        $this->search->addModifier(new OrderByField($fieldName, $direction));
 
         return $this;
     }

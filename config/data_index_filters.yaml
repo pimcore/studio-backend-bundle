@@ -67,3 +67,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System\DatetimeFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+
+  # Asset
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\SortFilter:
+    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
