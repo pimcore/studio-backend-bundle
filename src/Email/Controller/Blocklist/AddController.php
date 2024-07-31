@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller\Blocklist;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Request\BlocklistRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Email\Schema\BlocklistEntryRequest;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailAddressParameter;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -66,7 +66,7 @@ final class AddController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function addBlocklistEntry(
-        #[MapRequestPayload] BlocklistEntryRequest $request
+        #[MapRequestPayload] EmailAddressParameter $request
     ): Response {
         $this->blocklistService->addEntry($request->getEmail());
 

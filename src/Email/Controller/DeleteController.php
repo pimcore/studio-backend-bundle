@@ -16,23 +16,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property\BlocklistCollection;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailLogServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -40,10 +36,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class DeleteController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly EmailLogServiceInterface $emailLogService,
@@ -53,36 +47,29 @@ final class CollectionController extends AbstractApiController
 
     /**
      * @throws AccessDeniedException
+     * @throws NotFoundException
      */
-    #[Route('/emails', name: 'pimcore_studio_api_emails_list', methods: ['GET'])]
+    #[Route('/emails/{id}', name: 'pimcore_studio_api_emails_list_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
-    #[IsGranted(UserPermissions::GDPR->value)]
-    #[Get(
-        path: self::API_PATH . '/emails',
-        operationId: 'getEmailLogEntries',
-        description: 'Get paginated E-Mail log entries',
-        summary: 'Get all E-Mail log entries',
+    #[Delete(
+        path: self::API_PATH . '/emails/{id}',
+        operationId: 'deleteEmailLogEntry',
+        description: 'Delete E-Mail log entry based on the provided ID',
+        summary: 'Delete E-Mail log entry',
         tags: [Tags::Emails->value]
     )]
-    #[PageParameter]
-    #[PageSizeParameter]
+    #[IdParameter(type: ElementTypes::TYPE_EMAIL)]
     #[SuccessResponse(
-        description: 'Paginated E-Mail log entries with total count as header param',
-        content: new CollectionJson(new BlocklistCollection())
+        description: 'Successfully deleted E-Mail log entry',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getEmailLogEntries(
-        #[MapQueryString] CollectionParameters $parameters
-    ): JsonResponse {
-        $collection = $this->emailLogService->listEntries($parameters);
+    public function deleteEmailLogEntry(int $id): Response
+    {
+        $this->emailLogService->deleteEntry($id);
 
-        return $this->getPaginatedCollection(
-            $this->serializer,
-            $collection->getItems(),
-            $collection->getTotalItems()
-        );
+        return new Response();
     }
 }
