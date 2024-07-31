@@ -27,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParamete
  */
 final class SortFilter implements FilterInterface
 {
-
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         if (!$query instanceof AssetQuery) {
