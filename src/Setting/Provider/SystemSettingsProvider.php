@@ -35,12 +35,10 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
 
     public function getSettings(): array
     {
-        $requiredLanguages =
-            $this->systemSettings['general']['required_languages'] ??
-            $this->systemSettings['general']['valid_languages'];
-
         return [
-            'requiredLanguages' => $requiredLanguages,
+            'requiredLanguages' => $this->systemSettings['general']['required_languages'] ??
+                $this->systemSettings['general']['valid_languages'],
+            'validLanguages' => $this->systemSettings['general']['valid_languages'],
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
             'main_domain' => $this->systemSettings['general']['domain'],
         ];
