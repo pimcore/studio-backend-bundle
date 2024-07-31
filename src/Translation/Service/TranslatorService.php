@@ -25,20 +25,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * @internal
  */
-final class TranslatorService implements TranslatorServiceInterface
+final readonly class TranslatorService implements TranslatorServiceInterface
 {
-    private TranslatorBagInterface $translator;
-
     public const DOMAIN = 'studio';
 
-    public function __construct(
-        TranslatorInterface $translator
-    ) {
-        if (!$translator instanceof TranslatorBagInterface) {
-            throw new InvalidArgumentException('Translator must implement TranslatorBagInterface');
-        }
+    private TranslatorBagInterface $translatorBag;
 
-        $this->translator = $translator;
+    public function __construct(
+        private TranslatorInterface $translator
+    ) {
+        $this->translatorBag = $this->getTranslatorBag();
     }
 
     /**
@@ -47,7 +43,7 @@ final class TranslatorService implements TranslatorServiceInterface
     public function getAllTranslations(string $locale): Translation
     {
         try {
-            $catalogue = $this->translator->getCatalogue($locale)->all(self::DOMAIN);
+            $catalogue = $this->translatorBag->getCatalogue($locale)->all(self::DOMAIN);
         } catch (InvalidArgumentException) {
             throw new InvalidLocaleException($locale);
         }
@@ -64,7 +60,7 @@ final class TranslatorService implements TranslatorServiceInterface
     public function getTranslationsForKeys(string $locale, array $keys): Translation
     {
         try {
-            $catalogue = $this->translator->getCatalogue($locale);
+            $catalogue = $this->translatorBag->getCatalogue($locale);
         } catch (InvalidArgumentException) {
             throw new InvalidLocaleException($locale);
         }
@@ -76,5 +72,19 @@ final class TranslatorService implements TranslatorServiceInterface
         }
 
         return new Translation($locale, $translations);
+    }
+
+    public function translate(string $message, array $params = []): string
+    {
+        return $this->translator->trans($message, $params, self::DOMAIN);
+    }
+
+    private function getTranslatorBag(): TranslatorBagInterface
+    {
+        if (!$this->translator instanceof TranslatorBagInterface) {
+            throw new InvalidArgumentException('Translator must implement TranslatorBagInterface');
+        }
+
+        return $this->translator;
     }
 }
