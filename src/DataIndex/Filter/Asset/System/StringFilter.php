@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\IsAssetFilterTrait;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
