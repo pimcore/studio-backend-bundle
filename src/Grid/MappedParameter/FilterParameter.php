@@ -42,7 +42,7 @@ final class FilterParameter implements
         private readonly int $pageSize = 50,
         private readonly bool $includeDescendants = true,
         private readonly array $columnFilters = [],
-        private readonly ?SortFilter $sortFilter = null
+        private readonly SortFilter $sortFilter = new SortFilter()
     ) {
     }
 
@@ -101,7 +101,7 @@ final class FilterParameter implements
         }
     }
 
-    public function getSortFilter(): ?SortFilter
+    public function getSortFilter(): SortFilter
     {
         return $this->sortFilter;
     }

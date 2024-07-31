@@ -39,10 +39,6 @@ final class SortFilter implements FilterInterface
 
         $sortFilter = $parameters->getSortFilter();
 
-        if (!$sortFilter) {
-            return $query;
-        }
-
         $sortDirection = SortDirection::ASC;
 
         if (strtolower($sortFilter->getDirection()) === SortDirection::DESC->value) {

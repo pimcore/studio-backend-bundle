@@ -16,14 +16,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
+
 /**
  * @internal
  */
 final readonly class SortFilter
 {
     public function __construct(
-        private string $key,
-        private string $direction,
+        private string $key = 'id',
+        private string $direction = SortDirection::ASC->value,
     ) {
     }
 

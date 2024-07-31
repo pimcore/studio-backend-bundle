@@ -21,5 +21,5 @@ namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
  */
 interface SortFilterParameterInterface
 {
-    public function getSortFilter(): ?SortFilter;
+    public function getSortFilter(): SortFilter;
 }
