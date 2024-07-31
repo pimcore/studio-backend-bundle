@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\IsAssetFi
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\OpenSearchFieldMappingInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
@@ -32,11 +31,6 @@ use function is_string;
 final class StringFilter implements FilterInterface
 {
     use IsAssetFilterTrait;
-
-    public function __construct(
-        private readonly OpenSearchFieldMappingInterface $openSearchFieldMapping,
-    ) {
-    }
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
@@ -60,9 +54,7 @@ final class StringFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for this filter must be a string');
         }
 
-        $key = $this->openSearchFieldMapping->getOpenSearchKey($column->getKey());
-
-        $query->wildcardSearch($key, $column->getFilterValue());
+        $query->wildcardSearch($column->getKey(), $column->getFilterValue());
 
         return $query;
     }

@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\IsAssetFi
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\OpenSearchFieldMappingInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
@@ -32,11 +31,6 @@ use function is_array;
 final class DatetimeFilter implements FilterInterface
 {
     use IsAssetFilterTrait;
-
-    public function __construct(
-        private readonly OpenSearchFieldMappingInterface $openSearchFieldMapping,
-    ) {
-    }
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
@@ -60,20 +54,18 @@ final class DatetimeFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for this filter must be an array');
         }
 
-        $key = $this->openSearchFieldMapping->getOpenSearchKey($column->getKey());
-
         $filterValue = $column->getFilterValue();
 
         if (isset($filterValue['on'])) {
-            $query->filterDatetime($key, null, $filterValue['on']);
+            $query->filterDatetime($column->getKey(), null, $filterValue['on']);
         }
 
         if (isset($filterValue['to'])) {
-            $query->filterDatetime($key, null, $filterValue['to']);
+            $query->filterDatetime($column->getKey(), null, $filterValue['to']);
         }
 
         if (isset($filterValue['from'])) {
-            $query->filterDatetime($key, $filterValue['from']);
+            $query->filterDatetime($column->getKey(), $filterValue['from']);
         }
 
         return $query;
