@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapter
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\Folder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use function count;
 
@@ -36,7 +37,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
         return $this->dataObjectSearchAdapter->searchDataObjects($dataObjectQuery);
     }
 
-    public function getDataObjectById(int $id): DataObject
+    public function getDataObjectById(int $id): DataObject|Folder
     {
         return $this->dataObjectSearchAdapter->getDataObjectById($id);
     }

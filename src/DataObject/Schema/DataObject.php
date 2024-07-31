@@ -18,30 +18,107 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Response\Element;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
 
 #[Schema(
     title: 'DataObject',
-    required: ['id', 'className'],
+    required: [
+        'key',
+        'className',
+        'type',
+        'published',
+        'hasChildren',
+        'hasWorkflowWithPermissions',
+        'fullPath',
+    ],
     type: 'object'
 )]
-readonly class DataObject
+class DataObject extends Element implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+    use CustomTreeAttributesTrait;
+    
     public function __construct(
-        #[Property(description: 'ID', type: 'integer', example: 83)]
-        private int $id,
-        #[Property(description: 'className', type: 'string', example: 'car')]
-        private string $className
+        #[Property(description: 'Key', type: 'string', example: 'Giulietta')]
+        private readonly string $key,
+        #[Property(description: 'Class name', type: 'string', example: 'car')]
+        private readonly string $className,
+        #[Property(description: 'Type', type: 'string', example: 'image')]
+        private readonly string $type,
+        #[Property(description: 'Published', type: 'bool', example: false)]
+        private readonly bool $published,
+        #[Property(description: 'Has children', type: 'bool', example: false)]
+        private readonly bool $hasChildren,
+        #[Property(description: 'Workflow permissions', type: 'bool', example: false)]
+        private readonly bool $hasWorkflowWithPermissions,
+        #[Property(description: 'Full path', type: 'string', example: '/path/to/dataObject')]
+        private readonly string $fullPath,
+        int $id,
+        int $parentId,
+        string $path,
+        int $userOwner,
+        int $userModification,
+        ?string $locked,
+        bool $isLocked,
+        ?int $creationDate,
+        ?int $modificationDate,
+        Permissions $permissions
     ) {
-
+        parent::__construct(
+            $id,
+            $parentId,
+            $path,
+            $userOwner,
+            $userModification,
+            $locked,
+            $isLocked,
+            $creationDate,
+            $modificationDate,
+            $permissions
+        );
     }
 
-    public function getId(): int
+    public function getKey(): string
     {
-        return $this->id;
+        return $this->key;
     }
 
     public function getClassName(): string
     {
         return $this->className;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->published;
+    }
+
+    public function getFullPath(): string
+    {
+        return $this->fullPath;
+    }
+
+    public function getIconName(): string
+    {
+        return $this->className;
+    }
+
+    public function getHasChildren(): bool
+    {
+        return $this->hasChildren;
+    }
+
+    public function getHasWorkflowWithPermissions(): bool
+    {
+        return $this->hasWorkflowWithPermissions;
     }
 }

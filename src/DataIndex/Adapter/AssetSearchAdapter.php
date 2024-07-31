@@ -66,7 +66,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     }
 
     /**
-     * @throws SearchFailedException|NotFoundException
+     * @throws SearchException|NotFoundException
      */
     public function getAssetById(int $id): Asset
     {
