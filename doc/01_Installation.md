@@ -19,7 +19,7 @@ composer require pimcore/studio-backend-bundle
 
 2) Enable Firewall settings
 
-To enable the firewall settingsin your project, add the following configuration to your `config/packages/security.yaml` file:
+To enable the firewall settings in your project, add the following configuration to your `config/packages/security.yaml` file:
 
 ```yaml
 security:
@@ -47,6 +47,26 @@ return [
 ```bash
 bin/console pimcore:bundle:install PimcoreStudioBackendBundle
 ```
+
+## OpenApi Documentation
+
+The Studio Backend Bundle provides an OpenApi documentation for the API. To access the documentation, navigate to the following URL:
+
+```
+https://<your-pimcore-host>/studio/api/docs
+```
+
+You can also access the OpenApi documentation in JSON format by navigating to the following URL:
+```
+https://<your-pimcore-host>/studio/api/docs.json
+```
+
+It is also possible to export the OpenApi documentation as a JSON file by running the following command:
+```bash
+bin/console studio-backend-bundle:generate-openapi-config-json --file-name=<your-file-name>.json
+```
+Filename is optional. If not provided, the default filename is `studio-backend-openapi.json`. 
+The file will be saved in the `temp` directory of your Pimcore project. If the file with the same name already exists, it will be overwritten
 
 ## Setting up generic data index
 Pimcore Studio Backend also requires the installation and setup of the generic data index. 
