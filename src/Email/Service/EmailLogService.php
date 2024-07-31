@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse\EmailLogEntryDetailEvent;
 use Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse\EmailLogEntryEvent;
+use Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse\EmailLogEntryParamsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Email\Repository\EmailLogRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntry;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryDetail;
@@ -72,7 +74,8 @@ final readonly class EmailLogService implements EmailLogServiceInterface
             );
 
             $this->eventDispatcher->dispatch(
-                new EmailLogEntryEvent($entry)
+                new EmailLogEntryEvent($entry),
+                EmailLogEntryEvent::EVENT_NAME
             );
 
             $list[] = $entry;
@@ -113,7 +116,10 @@ final readonly class EmailLogService implements EmailLogServiceInterface
             $error
         );
 
-        $this->eventDispatcher->dispatch($emailLogEntry);
+        $this->eventDispatcher->dispatch(
+            new EmailLogEntryDetailEvent($emailLogEntry),
+            EmailLogEntryDetailEvent::EVENT_NAME
+        );
 
         return $emailLogEntry;
     }
@@ -173,7 +179,10 @@ final readonly class EmailLogService implements EmailLogServiceInterface
                 $value
             );
 
-            $this->eventDispatcher->dispatch($parsedParam);
+            $this->eventDispatcher->dispatch(
+                new EmailLogEntryParamsEvent($parsedParam),
+                EmailLogEntryParamsEvent::EVENT_NAME
+            );
             $parsedParams[] = $parsedParam;
         }
 
@@ -300,7 +309,10 @@ final readonly class EmailLogService implements EmailLogServiceInterface
             )
         );
 
-        $this->eventDispatcher->dispatch($parsedParam);
+        $this->eventDispatcher->dispatch(
+            new EmailLogEntryParamsEvent($parsedParam),
+            EmailLogEntryParamsEvent::EVENT_NAME
+        );
 
         return $parsedParam;
     }
