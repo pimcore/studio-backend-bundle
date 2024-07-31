@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
@@ -23,12 +23,12 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
-use function is_int;
+use function is_string;
 
 /**
  * @internal
  */
-final class ObjectFilter implements FilterInterface
+final class StringFilter implements FilterInterface
 {
     use IsAssetFilterTrait;
 
@@ -41,20 +41,20 @@ final class ObjectFilter implements FilterInterface
             return $query;
         }
 
-        foreach ($parameters->getColumnFilterByType(ColumnType::METADATA_DATA_OBJECT->value) as $column) {
-            $assetQuery = $this->applyAssetFilter($column, $assetQuery);
+        foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_STRING->value) as $column) {
+            $assetQuery = $this->applyStringFilter($column, $assetQuery);
         }
 
         return $assetQuery;
     }
 
-    private function applyAssetFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
+    private function applyStringFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
     {
-        if (!is_int($column->getFilterValue())) {
-            throw new InvalidArgumentException('Filter value for object must be a integer (ID of the object)');
+        if (!is_string($column->getFilterValue())) {
+            throw new InvalidArgumentException('Filter value for this filter must be a string');
         }
 
-        $query->filterMetaData($column->getKey(), FilterType::OBJECT->value, $column->getFilterValue());
+        $query->wildcardSearch($column->getKey(), $column->getFilterValue());
 
         return $query;
     }

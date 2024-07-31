@@ -14,24 +14,32 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Content;
 
 use OpenApi\Attributes\Items;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Email\Schema\BlocklistEntry;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryParameter;
 
 /**
  * @internal
  */
-final class BlocklistCollection extends Property
+final class ParametersJson extends JsonContent
 {
     public function __construct()
     {
         parent::__construct(
-            'items',
-            title: 'items',
-            type: 'array',
-            items: new Items(ref: BlocklistEntry::class)
+            required: ['data'],
+            properties: [
+                new Property(
+                    'data',
+                    title: 'data',
+                    description: 'Email log entry parameters',
+                    type: 'array',
+                    items: new Items(ref: EmailLogEntryParameter::class)
+                ),
+            ],
+            type: 'object',
         );
     }
 }

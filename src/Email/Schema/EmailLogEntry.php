@@ -23,10 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'EmailLog',
-    required: ['id', 'sentDate', 'hasHtmlLog', 'hasTextLog', 'from', 'to', 'subject', 'error'],
+    required: ['id', 'sentDate', 'hasHtmlLog', 'hasTextLog', 'hasError', 'from', 'to', 'subject', ],
     type: 'object'
 )]
-final class EmailLogEntry implements AdditionalAttributesInterface
+class EmailLogEntry implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 
@@ -39,14 +39,14 @@ final class EmailLogEntry implements AdditionalAttributesInterface
         private readonly bool $hasHtmlLog,
         #[Property(description: 'Text log exists', type: 'bool', example: true)]
         private readonly bool $hasTextLog,
+        #[Property(description: 'Error occurred', type: 'bool', example: true)]
+        private readonly bool $hasError,
         #[Property(description: 'from', type: 'string', example: 'from@pimcore.com')]
         private readonly ?string $from = null,
         #[Property(description: 'to', type: 'string', example: 'to@pimcore.com')]
         private readonly ?string $to = null,
         #[Property(description: 'subject', type: 'string', example: 'E-Mail subject')]
         private readonly ?string $subject = null,
-        #[Property(description: 'error', type: 'string', example: 'Some error occurred')]
-        private readonly ?string $error = null,
     ) {
 
     }
@@ -54,6 +54,26 @@ final class EmailLogEntry implements AdditionalAttributesInterface
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getSentDate(): int
+    {
+        return $this->sentDate;
+    }
+
+    public function getHasHtmlLog(): bool
+    {
+        return $this->hasHtmlLog;
+    }
+
+    public function getHasTextLog(): bool
+    {
+        return $this->hasTextLog;
+    }
+
+    public function getHasError(): bool
+    {
+        return $this->hasError;
     }
 
     public function getFrom(): ?string
@@ -69,25 +89,5 @@ final class EmailLogEntry implements AdditionalAttributesInterface
     public function getSubject(): ?string
     {
         return $this->subject;
-    }
-
-    public function getSentDate(): int
-    {
-        return $this->sentDate;
-    }
-
-    public function hasHtmlLog(): bool
-    {
-        return $this->hasHtmlLog;
-    }
-
-    public function hasTextLog(): bool
-    {
-        return $this->hasTextLog;
-    }
-
-    public function getError(): ?string
-    {
-        return $this->error;
     }
 }

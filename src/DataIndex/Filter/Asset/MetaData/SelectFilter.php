@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData;
 
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
@@ -29,7 +30,7 @@ use function is_string;
  */
 final class SelectFilter implements FilterInterface
 {
-    use IsAssetMetaDataTrait;
+    use IsAssetFilterTrait;
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
