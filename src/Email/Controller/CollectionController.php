@@ -18,12 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property\EmailListCollection;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntry;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailLogServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -68,7 +69,7 @@ final class CollectionController extends AbstractApiController
     #[PageSizeParameter]
     #[SuccessResponse(
         description: 'Paginated E-Mail log entries with total count as header param',
-        content: new CollectionJson(new EmailListCollection())
+        content: new CollectionJson(new GenericCollection(EmailLogEntry::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
