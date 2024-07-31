@@ -33,4 +33,6 @@ interface TranslatorServiceInterface
      * @throws InvalidLocaleException
      */
     public function getTranslationsForKeys(string $locale, array $keys): Translation;
+
+    public function translate(string $message, array $params = []): string;
 }

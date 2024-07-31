@@ -14,26 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller\Detail;
 
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property\BlocklistCollection;
-use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property\EmailListCollection;
+use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Content\ParametersJson;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryDetail;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailLogServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\DataJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -41,7 +41,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class EmailParamsController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
@@ -54,36 +54,29 @@ final class CollectionController extends AbstractApiController
 
     /**
      * @throws AccessDeniedException
+     * @throws NotFoundException
      */
-    #[Route('/emails', name: 'pimcore_studio_api_emails_log_list', methods: ['GET'])]
+    #[Route('/emails/{id}/params', name: 'pimcore_studio_api_emails_log_params', methods: ['GET'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
-    #[IsGranted(UserPermissions::GDPR->value)]
     #[Get(
-        path: self::API_PATH . '/emails',
-        operationId: 'getEmailLogEntries',
-        description: 'Get paginated E-Mail log entries',
-        summary: 'Get all E-Mail log entries',
+        path: self::API_PATH . '/emails/{id}/params',
+        operationId: 'getEmailLogParams',
+        description: 'Get E-Mail log entry params by ID',
+        summary: 'Get E-Mail log entry params',
         tags: [Tags::Emails->value]
     )]
-    #[PageParameter]
-    #[PageSizeParameter]
     #[SuccessResponse(
-        description: 'Paginated E-Mail log entries with total count as header param',
-        content: new CollectionJson(new EmailListCollection())
+        content: new ParametersJson()
     )]
+    #[IdParameter(type: ElementTypes::TYPE_EMAIL)]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getEmailLogEntries(
-        #[MapQueryString] CollectionParameters $parameters
+    public function getEmailLogParams(
+        int $id
     ): JsonResponse {
-        $collection = $this->emailLogService->listEntries($parameters);
 
-        return $this->getPaginatedCollection(
-            $this->serializer,
-            $collection->getItems(),
-            $collection->getTotalItems()
-        );
+        return $this->jsonResponse(['data' => $this->emailLogService->getEntryParams($id)]);
     }
 }

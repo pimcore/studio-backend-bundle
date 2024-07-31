@@ -77,4 +77,9 @@ final class TranslatorService implements TranslatorServiceInterface
 
         return new Translation($locale, $translations);
     }
+
+    public function translate(string $message, array $params = []): string
+    {
+        return $this->translator->trans($message, $params, self::DOMAIN);
+    }
 }

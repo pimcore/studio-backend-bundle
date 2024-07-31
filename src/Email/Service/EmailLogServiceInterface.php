@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Email\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryDetail;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -35,6 +37,27 @@ interface EmailLogServiceInterface
      * @throws NotFoundException
      */
     public function getEntry(int $id): Log;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getEntryDetails(int $id): EmailLogEntryDetail;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getEntryText(int $id): string;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getEntryHtml(int $id): string;
+
+    /**
+     * @throws NotFoundException
+     * @return EmailLogEntryParameter[]
+     */
+    public function getEntryParams(int $id): array;
 
     /**
      * @throws NotFoundException

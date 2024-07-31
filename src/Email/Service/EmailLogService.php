@@ -20,11 +20,15 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterfac
 use Pimcore\Bundle\StudioBackendBundle\Email\Event\PreResponse\EmailLogEntryEvent;
 use Pimcore\Bundle\StudioBackendBundle\Email\Repository\EmailLogRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntry;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryDetail;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryParameter;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\ObjectParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Mail;
 use Pimcore\Model\Element\ElementInterface;
@@ -39,11 +43,14 @@ use function sprintf;
  */
 final readonly class EmailLogService implements EmailLogServiceInterface
 {
+    private const CHILDREN_PARAMS_KEY = 'children';
+
     public function __construct(
         private DocumentResolverInterface $documentResolver,
         private EmailLogRepositoryInterface $emailLogRepository,
         private EventDispatcherInterface $eventDispatcher,
-        private MailServiceInterface $mailService
+        private MailServiceInterface $mailService,
+        private TranslatorServiceInterface $translatorService,
     ) {
     }
 
@@ -57,10 +64,10 @@ final readonly class EmailLogService implements EmailLogServiceInterface
                 $listEntry->getSentDate(),
                 $listEntry->getEmailLogExistsHtml() === 1,
                 $listEntry->getEmailLogExistsText() === 1,
+                (bool) $listEntry->getError(),
                 $this->sanitizeEmailAddress($listEntry->getFrom()),
                 $this->sanitizeEmailAddress($listEntry->getTo()),
                 $listEntry->getSubject(),
-                $listEntry->getError(),
             );
 
             $this->eventDispatcher->dispatch(
@@ -82,6 +89,92 @@ final readonly class EmailLogService implements EmailLogServiceInterface
     public function getEntry(int $id): Log
     {
         return $this->emailLogRepository->getExistingEntry($id);
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getEntryDetails(int $id): EmailLogEntryDetail
+    {
+        $entry = $this->getEntry($id);
+        $error = $entry->getError();
+        $emailLogEntry = new EmailLogEntryDetail(
+            $entry->getId(),
+            $entry->getSentDate(),
+            $entry->getEmailLogExistsHtml() === 1,
+            $entry->getEmailLogExistsText() === 1,
+            (bool)$error,
+            $this->sanitizeEmailAddress($entry->getFrom()),
+            $this->sanitizeEmailAddress($entry->getTo()),
+            $entry->getSubject(),
+            $entry->getBcc(),
+            $entry->getCc(),
+            $error
+        );
+
+        $this->eventDispatcher->dispatch($emailLogEntry);
+
+        return $emailLogEntry;
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getEntryText(int $id): string
+    {
+        $text = $this->getEntry($id)->getTextLog();
+        if ($text === false) {
+            throw new NotFoundException('email text', $id);
+        }
+
+        return $text;
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getEntryHtml(int $id): string
+    {
+        $html = $this->getEntry($id)->getHtmlLog();
+        if ($html === false) {
+            throw new NotFoundException('email html', $id);
+        }
+
+        return $html;
+    }
+
+    /**
+     * @throws NotFoundException
+     * @return EmailLogEntryParameter[]
+     */
+    public function getEntryParams(int $id): array
+    {
+        $params = $this->getEntry($id)->getParams();
+        $parsedParams = [];
+
+        foreach ($params as $entry) {
+            $value = isset($entry[self::CHILDREN_PARAMS_KEY]) && is_array($entry[self::CHILDREN_PARAMS_KEY])
+                ? $this->translatorService->translate(
+                    'studio_email_param_children',
+                    ['%count%' => count($entry[self::CHILDREN_PARAMS_KEY])]
+                )
+                : $this->parseParamValueFromLog($entry);
+
+            if ($value instanceof ElementInterface) {
+                $parsedParams[] = $this->handleObjectParam($value, $entry['key']);
+                continue;
+            }
+
+            $parsedParam = new EmailLogEntryParameter(
+                $entry['key'],
+                $value
+            );
+
+            $this->eventDispatcher->dispatch($parsedParam);
+            $parsedParams[] = $parsedParam;
+        }
+
+        return $parsedParams;
     }
 
     /**
@@ -152,9 +245,9 @@ final readonly class EmailLogService implements EmailLogServiceInterface
         try {
             $params = $emailLogEntry->getParams();
             foreach ($params as $entry) {
-                $value = isset($entry['children']) && is_array($entry['children'])
+                $value = isset($entry[self::CHILDREN_PARAMS_KEY]) && is_array($entry[self::CHILDREN_PARAMS_KEY])
                     ? array_column(
-                        array_map([$this, 'parseParamValueFromLog'], $entry['children']),
+                        array_map([$this, 'parseParamValueFromLog'], $entry[self::CHILDREN_PARAMS_KEY]),
                         null,
                         'key'
                     )
@@ -188,6 +281,25 @@ final readonly class EmailLogService implements EmailLogServiceInterface
         }
 
         return null;
+    }
+
+    private function handleObjectParam(ElementInterface $object, string $name): EmailLogEntryParameter
+    {
+        $path = $object->getRealFullPath();
+        $parsedParam = new EmailLogEntryParameter(
+            $name,
+            $path,
+            new ObjectParameter(
+                $object->getId(),
+                $object->getType(),
+                $object::class,
+                $path,
+            )
+        );
+
+        $this->eventDispatcher->dispatch($parsedParam);
+
+        return $parsedParam;
     }
 
     private function sanitizeEmailAddress(?string $email): ?string
