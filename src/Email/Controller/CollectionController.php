@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property\BlocklistCollection;
 use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property\EmailListCollection;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailLogServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;

@@ -55,6 +55,7 @@ interface EmailLogServiceInterface
 
     /**
      * @throws NotFoundException
+     *
      * @return EmailLogEntryParameter[]
      */
     public function getEntryParams(int $id): array;

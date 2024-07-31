@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'EmailLog',
-    required: ['id', 'sentDate', 'hasHtmlLog', 'hasTextLog', 'hasError', 'from', 'to', 'subject',],
+    required: ['id', 'sentDate', 'hasHtmlLog', 'hasTextLog', 'hasError', 'from', 'to', 'subject', ],
     type: 'object'
 )]
 class EmailLogEntry implements AdditionalAttributesInterface

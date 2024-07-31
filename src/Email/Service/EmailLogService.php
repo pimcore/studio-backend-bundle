@@ -35,6 +35,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Tool\Email\Log;
 use Pimcore\Twig\Extension\Templating\Placeholder\Exception;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
 use function is_array;
 use function sprintf;
 
@@ -145,6 +146,7 @@ final readonly class EmailLogService implements EmailLogServiceInterface
 
     /**
      * @throws NotFoundException
+     *
      * @return EmailLogEntryParameter[]
      */
     public function getEntryParams(int $id): array
@@ -162,6 +164,7 @@ final readonly class EmailLogService implements EmailLogServiceInterface
 
             if ($value instanceof ElementInterface) {
                 $parsedParams[] = $this->handleObjectParam($value, $entry['key']);
+
                 continue;
             }
 

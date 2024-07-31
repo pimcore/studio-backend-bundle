@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Content;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Email\Schema\BlocklistEntry;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryParameter;
 
 /**
