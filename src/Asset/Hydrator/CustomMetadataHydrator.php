@@ -46,6 +46,10 @@ final readonly class CustomMetadataHydrator implements CustomMetadataHydratorInt
     {
         return match (true) {
             $data instanceof ElementInterface => $this->referenceResolver->resolve($data),
+            $type === 'manyToManyRelation' => array_map(
+                fn (ElementInterface $element): array => $this->referenceResolver->resolve($element),
+                $data
+            ),
             $type === 'checkbox' => (bool)$data,
             default => $data,
         };
