@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Command;
 
 use Exception;
@@ -27,6 +26,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use function sprintf;
 
 /**
  * @internal
@@ -42,8 +42,7 @@ final class GenerateConfigJsonCommand extends Command
     public function __construct(
         private readonly OpenApiServiceInterface $openApiService,
         private readonly StorageServiceInterface $storageService
-    )
-    {
+    ) {
         parent::__construct();
     }
 
@@ -73,6 +72,7 @@ final class GenerateConfigJsonCommand extends Command
         $io->info(
             sprintf('Creating JSON file %s with Open API schema config...', $fileName)
         );
+
         try {
             $storage->write(
                 $fileName,
@@ -82,12 +82,14 @@ final class GenerateConfigJsonCommand extends Command
             $io->error(
                 sprintf('Could not create JSON file: %s', $e->getMessage())
             );
+
             return Command::FAILURE;
         }
 
         $io->success(
             sprintf('JSON file %s was successfully created in temp folder.', $fileName)
         );
+
         return Command::SUCCESS;
     }
 
