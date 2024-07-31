@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
@@ -53,7 +52,7 @@ final class ColumnConfiguration implements AdditionalAttributesInterface
         private readonly string $type,
         #[Property(description: 'Frontend Type', type: 'string', example: 'integer')]
         private readonly string $frontendType,
-        #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
+        #[Property(description: 'Config', type: 'object', example: ['key' => 'value'])]
         private readonly array $config,
     ) {
     }

@@ -25,8 +25,14 @@ services:
   # Services
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailService
+  Pimcore\Bundle\StudioBackendBundle\Email\Service\MailServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Email\Service\MailService
+
+  Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailLogServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailLogService
+
+  Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailSendServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailSendService
 
   Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistService
