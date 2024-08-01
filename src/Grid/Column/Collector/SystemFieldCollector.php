@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -61,7 +62,10 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
                 localizable: false,
                 locale: null,
                 type: $availableColumnDefinitions[$type]->getType(),
-                frontendType: $availableColumnDefinitions[$type]->getFrontendType(),
+                frontendType: $this->getCustomFrontendAdapter(
+                    $columnKey,
+                    $availableColumnDefinitions[$type]->getFrontendType()
+                ),
                 config: []
             );
 
@@ -81,5 +85,19 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
     private function concatType(string $type): string
     {
         return $this->getCollectorName() . '.' . $type;
+    }
+
+    private function getCustomFrontendAdapter(string $columnKey, string $defaultAdapter): string
+    {
+        $customFrontendAdapters = [
+            'fullpath' => FrontendType::ASSET_LINK->value,
+            'preview' => FrontendType::ASSET_PREVIEW->value,
+        ];
+
+        if (array_key_exists($columnKey, $customFrontendAdapters)) {
+            return $customFrontendAdapters[$columnKey];
+        }
+
+        return $defaultAdapter;
     }
 }
