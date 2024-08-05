@@ -54,8 +54,8 @@ final class UpdateController extends AbstractApiController
     #[Put(
         path: self::API_PATH . '/assets/{id}',
         operationId: 'updateAssetById',
-        description: 'Update assets by id',
-        summary: 'Update asset',
+        description: 'updateAssetById_description',
+        summary: 'updateAssetById_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
