@@ -55,28 +55,47 @@ final readonly class OpenApiService implements OpenApiServiceInterface
 
     private function translateConfig(OpenApi $config): void
     {
-        $this->translatePaths($config);
-        $this->translateTags($config);
+        $this->translatePathProperties($config);
+        $this->translateTagsProperties($config);
+        $this->translateSchemaDescriptions($config);
 
     }
 
-    private function translatePaths(OpenApi $config): void
+    private function translatePathProperties(OpenApi $config): void
     {
         foreach ($config->paths as $path) {
             foreach (self::TRANSLATABLE_CRUD_METHODS as $method) {
-                if (isset($path->{$method}) && $path->{$method} !== Generator::UNDEFINED) {
-                    foreach (self::TRANSLATABLE_PATH_PROPERTIES as $property) {
-                        $path->{$method}->{$property} = $this->translate($path->{$method}->{$property});
+                if (is_string($path->{$method})) {
+                    continue;
+                }
+
+                foreach (self::TRANSLATABLE_PATH_PROPERTIES as $property) {
+                    if ((string)$path->{$method}->{$property} === Generator::UNDEFINED) {
+                        continue;
                     }
+                    $path->{$method}->{$property} = $this->translate((string)$path->{$method}->{$property});
                 }
             }
         }
     }
 
-    private function translateTags(OpenApi $config): void
+    private function translateSchemaDescriptions(OpenApi $config): void
+    {
+        foreach ($config->components->schemas as $schema) {
+            if ($schema->description === Generator::UNDEFINED) {
+                continue;
+            }
+            $schema->description = $this->translate($schema->description);
+        }
+    }
+
+    private function translateTagsProperties(OpenApi $config): void
     {
         foreach ($config->tags as $tag) {
             foreach (self::TRANSLATABLE_TAG_PROPERTIES as $property) {
+                if ((string)$tag->{$property} === Generator::UNDEFINED) {
+                    continue;
+                }
                 $tag->{$property} = $this->translate((string)$tag->{$property});
             }
         }
