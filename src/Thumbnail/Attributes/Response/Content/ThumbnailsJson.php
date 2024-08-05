@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Attributes\Response\Content;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\Thumbnail;
@@ -32,8 +33,8 @@ final class ThumbnailsJson extends JsonContent
             properties: [
                 new Property(
                     'items',
-                    ref: Thumbnail::class,
-                    type: 'object'
+                    type: 'array',
+                    items: new Items(ref: Thumbnail::class)
                 ),
             ],
             type: 'object',
