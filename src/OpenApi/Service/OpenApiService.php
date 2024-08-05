@@ -31,7 +31,8 @@ final readonly class OpenApiService implements OpenApiServiceInterface
 
     public function __construct(
         private TranslatorServiceInterface $translator,
-        private array $openApiScanPaths = [])
+        private array $openApiScanPaths = []
+    )
     {
     }
 
@@ -63,9 +64,9 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     private function translatePaths(OpenApi $config): void
     {
         foreach ($config->paths as $path) {
-            foreach(self::TRANSLATABLE_CRUD_METHODS as $method) {
+            foreach (self::TRANSLATABLE_CRUD_METHODS as $method) {
                 if (isset($path->{$method}) && $path->{$method} !== Generator::UNDEFINED) {
-                    foreach(self::TRANSLATABLE_PATH_PROPERTIES as $property) {
+                    foreach (self::TRANSLATABLE_PATH_PROPERTIES as $property) {
                         $path->{$method}->{$property} = $this->translate($path->{$method}->{$property});
                     }
                 }
@@ -76,8 +77,8 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     private function translateTags(OpenApi $config): void
     {
         foreach ($config->tags as $tag) {
-            foreach(self::TRANSLATABLE_TAG_PROPERTIES as $property) {
-                $tag->{$property} = $this->translate($tag->{$property});
+            foreach (self::TRANSLATABLE_TAG_PROPERTIES as $property) {
+                $tag->{$property} = $this->translate((string)$tag->{$property});
             }
         }
     }
