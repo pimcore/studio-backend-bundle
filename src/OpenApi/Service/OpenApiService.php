@@ -20,6 +20,7 @@ use OpenApi\Annotations\OpenApi;
 use OpenApi\Attributes\Schema;
 use OpenApi\Generator;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
+use function is_string;
 
 final readonly class OpenApiService implements OpenApiServiceInterface
 {
