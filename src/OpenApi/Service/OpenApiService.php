@@ -16,9 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Service;
 
+use JsonException;
 use OpenApi\Annotations\OpenApi;
 use OpenApi\Attributes\Schema;
 use OpenApi\Generator;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use function is_string;
 
@@ -45,33 +47,25 @@ final readonly class OpenApiService implements OpenApiServiceInterface
 
     public function translateConfig(OpenApi $config): array
     {
-        $configArray = json_decode(
-            json_encode(
-                $config,
+        try {
+
+            $configArray = json_decode(
+                json_encode(
+                    $config,
+                    JSON_THROW_ON_ERROR
+                ),
+                true,
+                512,
                 JSON_THROW_ON_ERROR
-            ),
-            true,
-            512,
-            JSON_THROW_ON_ERROR
-        );
+            );
+        } catch (JsonException) {
+            throw new EnvironmentException('Failed to convert OpenAPI config to array');
+        }
+
 
         $this->translateRecursive($configArray);
 
         return $configArray;
-    }
-
-    private function translateRecursive(array &$config): void
-    {
-          foreach ($config as $key => &$value) {
-              if (!is_array($value) && is_string($key) && in_array($key, self::TRANSLATABLE_PROPERTIES)) {
-                  $value = $this->translate($value);
-                  continue;
-              }
-
-              if (is_array($value)) {
-                $this->translateRecursive($value); //Recurse into sub-array
-              }
-          }
     }
 
     private function sortSchemas(Schema $a, Schema $b): int
@@ -79,64 +73,22 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         return $a->title <=> $b->title;
     }
 
+    private function translateRecursive(array &$config): void
+    {
+        foreach ($config as $key => &$value) {
+            if (!is_array($value) && is_string($key) && in_array($key, self::TRANSLATABLE_PROPERTIES)) {
+                $value = $this->translate($value);
+                continue;
+            }
 
-  // private function translatePathProperties(OpenApi $config): void
-  // {
-  //     $responses = [];
-  //     foreach ($config->paths as $path) {
-  //         foreach (self::TRANSLATABLE_CRUD_METHODS as $method) {
-  //             if (is_string($path->{$method})) {
-  //                 continue;
-  //             }
+            if (is_array($value)) {
+                $this->translateRecursive($value); //Recurse into sub-array
+            }
+        }
+    }
 
-  //             $responses = [...$responses, ...$path->{$method}->responses];
-
-  //             foreach (self::TRANSLATABLE_PATH_PROPERTIES as $property) {
-  //                 if ((string)$path->{$method}->{$property} === Generator::UNDEFINED) {
-  //                     continue;
-  //                 }
-  //                 $path->{$method}->{$property} = $this->translate((string)$path->{$method}->{$property});
-  //             }
-  //         }
-  //     }
-  //     $this->translateResponseDescriptions($responses);
-  // }
-
-  // private function translateSchemaDescriptions(OpenApi $config): void
-  // {
-  //     foreach ($config->components->schemas as $schema) {
-  //         if ($schema->description === Generator::UNDEFINED) {
-  //             continue;
-  //         }
-  //         $schema->description = $this->translate($schema->description);
-  //     }
-  // }
-
-  // private function translateTagsProperties(OpenApi $config): void
-  // {
-  //     foreach ($config->tags as $tag) {
-  //         foreach (self::TRANSLATABLE_TAG_PROPERTIES as $property) {
-  //             if ((string)$tag->{$property} === Generator::UNDEFINED) {
-  //                 continue;
-  //             }
-  //             $tag->{$property} = $this->translate((string)$tag->{$property});
-  //         }
-  //     }
-  // }
-
-  // private function translateResponseDescriptions(array $responses): void
-  // {
-  //     foreach ($responses as $response) {
-  //         if ($response->description === Generator::UNDEFINED) {
-  //             continue;
-  //         }
-
-  //         $response->description = $this->translate($response->description);
-  //     }
-  // }
-
-   private function translate(string $message): string
-   {
-       return $this->translator->translateApiDocs($message);
-   }
+    private function translate(string $message): string
+    {
+        return $this->translator->translateApiDocs($message);
+    }
 }
