@@ -20,9 +20,7 @@ use OpenApi\Annotations\OpenApi;
 use OpenApi\Attributes\Schema;
 use OpenApi\Generator;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
-use ReflectionClass;
-use function PHPUnit\Framework\isInstanceOf;
-use function Sabre\Event\Loop\instance;
+use function is_string;
 
 final readonly class OpenApiService implements OpenApiServiceInterface
 {
