@@ -14,15 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
-use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 
-#[Schema(
-    title: 'Folder',
-    type: 'object'
-)]
-final class Folder extends Asset
+interface DataObjectHydratorInterface
 {
+    public function hydrate(DataObjectSearchResultItem $dataObject): DataObject;
 }

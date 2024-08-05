@@ -23,9 +23,9 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderB
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\Folder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -37,6 +37,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
 {
     public function __construct(
         private DataObjectSearchServiceInterface $searchService,
+        private HydratorServiceInterface $hydratorService,
         private SearchResultIdListServiceInterface $searchResultIdListService,
     ) {
     }
@@ -60,8 +61,8 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         }
         $searchResult = $this->searchService->search($search);
 
-        $result = array_map(static function (DataObjectSearchResultItem $item) {
-            return new DataObject($item->getId(), $item->getClassName());
+        $result = array_map(function (DataObjectSearchResultItem $item) {
+            return $this->hydratorService->hydrateDataObjects($item);
         }, $searchResult->getItems());
 
         return new DataObjectSearchResult(
@@ -87,7 +88,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
             throw new NotFoundException('DataObject', $id);
         }
 
-        return new DataObject($dataObject->getId(), $dataObject->getClassName());
+        return $this->hydratorService->hydrateDataObjects($dataObject);
     }
 
     /**
@@ -95,7 +96,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
      *
      * @return array<int>
      */
-    public function fetchAssetIds(QueryInterface $dataObjectQuery): array
+    public function fetchDataObjectIds(QueryInterface $dataObjectQuery): array
     {
         try {
             $search = $dataObjectQuery->getSearch();

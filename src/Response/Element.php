@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Response;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 
 /**
  * @internal
@@ -60,8 +60,6 @@ class Element
         private readonly ?int $creationDate,
         #[Property(description: 'Modification date', type: 'integer', example: 327417600)]
         private readonly ?int $modificationDate,
-        #[Property(ref: Permissions::class)]
-        private readonly Permissions $permissions
     ) {
     }
 
@@ -108,10 +106,5 @@ class Element
     public function getIsLocked(): bool
     {
         return $this->isLocked;
-    }
-
-    public function getPermissions(): Permissions
-    {
-        return $this->permissions;
     }
 }

@@ -14,15 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 
-use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\GenericDataIndexBundle\Permission\AssetPermissions as SearchAssetPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetPermissions;
 
-#[Schema(
-    title: 'Folder',
-    type: 'object'
-)]
-final class Folder extends DataObject
+interface PermissionsHydratorInterface
 {
+    public function hydrate(SearchAssetPermissions $permissions): AssetPermissions;
 }

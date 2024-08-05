@@ -17,17 +17,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Attributes\Response\Content\OneOfDataObjectsJson;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -37,13 +38,18 @@ final class GetController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly DataObjectSearchServiceInterface $dataObjectSearchService,
+        private readonly DataObjectServiceInterface $dataObjectService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/data-objects/{id}', name: 'pimcore_studio_api_get_data_object', methods: ['GET'])]
-    //#[IsGranted('STUDIO_API')]
+    #[Route(
+        path: '/data-objects/{id}',
+        name: 'pimcore_studio_api_get_data_object',
+        requirements: ['id' => '\d+'],
+        methods: ['GET']
+    )]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::API_PATH . '/data-objects/{id}',
         operationId: 'getDataObjectById',
@@ -54,14 +60,14 @@ final class GetController extends AbstractApiController
     #[IdParameter(type: 'data-object')]
     #[SuccessResponse(
         description: 'Data object response',
-        content: new JsonContent(ref: DataObject::class)
+        content: new OneOfDataObjectsJson()
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAssetById(int $id): JsonResponse
+    public function getDataObjectById(int $id): JsonResponse
     {
-        return $this->jsonResponse($this->dataObjectSearchService->getDataObjectById($id));
+        return $this->jsonResponse($this->dataObjectService->getDataObject($id));
     }
 }

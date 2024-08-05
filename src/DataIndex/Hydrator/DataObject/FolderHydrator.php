@@ -14,30 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\PermissionsHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\SearchResultItem\Folder;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 
-final readonly class AssetHydrator implements AssetHydratorInterface
+final readonly class FolderHydrator implements FolderHydratorInterface
 {
     public function __construct(
-        private IconServiceInterface $iconService,
         private PermissionsHydratorInterface $permissionsHydrator
     ) {
     }
 
-    public function hydrate(AssetSearchResultItem $item): Asset
+    public function hydrate(Folder $item): DataObjectFolder
     {
-        return new Asset(
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
-            $item->isHasChildren(),
-            $item->getType(),
+        return new DataObjectFolder(
             $item->getKey(),
-            $item->getMimeType(),
-            !empty($item->getMetaData()),
+            $item->getClassName(),
+            $item->getType(),
+            $item->isPublished(),
+            $item->isHasChildren(),
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
             $this->permissionsHydrator->hydrate($item->getPermissions()),

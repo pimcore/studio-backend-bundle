@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\Folder;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
@@ -80,7 +80,6 @@ final readonly class DataObjectService implements DataObjectServiceInterface
                 new DataObjectEvent($item),
                 DataObjectEvent::EVENT_NAME
             );
-
         }
 
         return new Collection($result->getTotalItems(), $items);
@@ -104,11 +103,11 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDataObjectFolder(int $id): Folder
+    public function getDataObjectFolder(int $id): DataObjectFolder
     {
         $dataObject = $this->dataObjectSearchService->getDataObjectById($id);
 
-        if (!$dataObject instanceof Folder) {
+        if (!$dataObject instanceof DataObjectFolder) {
             throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
         }
 

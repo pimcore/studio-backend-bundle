@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\Folder;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
@@ -47,7 +47,7 @@ interface DataObjectServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDataObjectFolder(int $id): Folder;
+    public function getDataObjectFolder(int $id): DataObjectFolder;
 
     /**
      * @throws AccessDeniedException|NotFoundException

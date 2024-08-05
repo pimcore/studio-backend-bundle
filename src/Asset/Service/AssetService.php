@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Folder;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
@@ -98,7 +98,7 @@ final readonly class AssetService implements AssetServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAsset(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
+    public function getAsset(int $id): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video
     {
         $asset = $this->assetSearchService->getAssetById($id);
 
@@ -113,11 +113,11 @@ final readonly class AssetService implements AssetServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAssetFolder(int $id): Folder
+    public function getAssetFolder(int $id): AssetFolder
     {
         $asset = $this->assetSearchService->getAssetById($id);
 
-        if (!$asset instanceof Folder) {
+        if (!$asset instanceof AssetFolder) {
             throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
         }
 

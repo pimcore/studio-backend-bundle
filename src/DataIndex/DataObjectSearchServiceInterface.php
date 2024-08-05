@@ -18,14 +18,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\Folder;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 
 interface DataObjectSearchServiceInterface
 {
     public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult;
 
-    public function getDataObjectById(int $id): DataObject|Folder;
+    public function getDataObjectById(int $id): DataObject|DataObjectFolder;
 
     /**
      * @throws SearchException

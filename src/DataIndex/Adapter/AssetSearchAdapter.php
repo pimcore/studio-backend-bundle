@@ -25,7 +25,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\Ass
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -35,7 +35,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 {
     public function __construct(
         private AssetSearchServiceInterface $searchService,
-        private AssetHydratorServiceInterface $assetHydratorService,
+        private HydratorServiceInterface $hydratorService,
         private SearchResultIdListServiceInterface $searchResultIdListService,
         private FileSizeAggregationServiceInterface $fileSizeAggregationService,
     ) {
@@ -54,7 +54,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 
         $result = [];
         foreach ($searchResult->getItems() as $item) {
-            $result[] = $this->assetHydratorService->hydrate($item);
+            $result[] = $this->hydratorService->hydrateAssets($item);
         }
 
         return new AssetSearchResult(
@@ -80,7 +80,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
             throw new NotFoundException('Asset', $id);
         }
 
-        return $this->assetHydratorService->hydrate($asset);
+        return $this->hydratorService->hydrateAssets($asset);
     }
 
     /**

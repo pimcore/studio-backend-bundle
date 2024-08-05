@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
@@ -34,6 +33,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
         'hasChildren',
         'hasWorkflowWithPermissions',
         'fullPath',
+        'customTreeAttributes',
+        'permissions'
     ],
     type: 'object'
 )]
@@ -57,6 +58,8 @@ class DataObject extends Element implements AdditionalAttributesInterface
         private readonly bool $hasWorkflowWithPermissions,
         #[Property(description: 'Full path', type: 'string', example: '/path/to/dataObject')]
         private readonly string $fullPath,
+        #[Property(ref: DataObjectPermissions::class)]
+        private readonly DataObjectPermissions $permissions,
         int $id,
         int $parentId,
         string $path,
@@ -65,8 +68,7 @@ class DataObject extends Element implements AdditionalAttributesInterface
         ?string $locked,
         bool $isLocked,
         ?int $creationDate,
-        ?int $modificationDate,
-        Permissions $permissions
+        ?int $modificationDate
     ) {
         parent::__construct(
             $id,
@@ -77,8 +79,7 @@ class DataObject extends Element implements AdditionalAttributesInterface
             $locked,
             $isLocked,
             $creationDate,
-            $modificationDate,
-            $permissions
+            $modificationDate
         );
     }
 
@@ -102,16 +103,6 @@ class DataObject extends Element implements AdditionalAttributesInterface
         return $this->published;
     }
 
-    public function getFullPath(): string
-    {
-        return $this->fullPath;
-    }
-
-    public function getIconName(): string
-    {
-        return $this->className;
-    }
-
     public function getHasChildren(): bool
     {
         return $this->hasChildren;
@@ -120,5 +111,15 @@ class DataObject extends Element implements AdditionalAttributesInterface
     public function getHasWorkflowWithPermissions(): bool
     {
         return $this->hasWorkflowWithPermissions;
+    }
+
+    public function getFullPath(): string
+    {
+        return $this->fullPath;
+    }
+
+    public function getPermissions(): DataObjectPermissions
+    {
+        return $this->permissions;
     }
 }

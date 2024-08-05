@@ -19,12 +19,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Attributes\Response\Prop
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\Response\Schemas;
 
 /**
  * @internal
  */
-final class DataObjectCollection extends Property
+final class AnyOfDataObjects extends Property
 {
     public function __construct()
     {
@@ -33,9 +33,9 @@ final class DataObjectCollection extends Property
             title: 'items',
             type: 'array',
             items: new Items(
-                anyOf: [
-                    new Schema(ref: DataObject::class),
-                ]
+                anyOf: array_map(static function ($class) {
+                    return new Schema(ref: $class);
+                }, Schemas::DATA_OBJECTS)
             )
         );
     }
