@@ -37,9 +37,14 @@ final class OpenApiController extends AbstractController
         return $this->render('@PimcoreStudioBackend/swagger-ui/index.html.twig');
     }
 
+    /**
+     * @throws \JsonException
+     */
     #[Route('/docs.json', name: 'pimcore_studio_api_docs_json', methods: ['GET'])]
     public function openapi(): JsonResponse
     {
-        return new JsonResponse($this->openApiService->getConfig());
+        $config = $this->openApiService->getConfig();
+
+        return new JsonResponse($this->openApiService->translateConfig($config));
     }
 }

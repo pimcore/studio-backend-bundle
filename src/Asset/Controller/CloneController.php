@@ -65,14 +65,15 @@ final class CloneController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/assets/{id}/clone/{parentId}',
         operationId: 'cloneElement',
-        summary: 'Clone a specific asset.',
+        description: 'cloneElement_description',
+        summary: 'cloneElement_summary',
         tags: [Tags::Assets->value]
     )]
     #[SuccessResponse(
-        description: 'Successfully copied asset',
+        description: 'cloneElement_200_response',
     )]
     #[CreatedResponse(
-        description: 'Successfully copied parent asset and created jobRun for copying child assets',
+        description: 'cloneElement_created_response',
         content: new IdJson('ID of created jobRun')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]

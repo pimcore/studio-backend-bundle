@@ -5,3 +5,9 @@ updateAssetById_description:  >
   You can create/update/delete list entries like metadata, custom settings and properties. <br> 
   E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br> 
   If you want to update only a single field, use the PATCH method.
+cloneElement_summary: Clone a specific asset
+cloneElement_description:  > 
+  Clones a specific asset with the given id. <br>
+  The parentId must be a folder
+cloneElement_success_response: Successfully copied asset
+cloneElement_created_response: Successfully copied parent asset and created jobRun for copying child assets
