@@ -22,6 +22,8 @@ use OpenApi\Attributes\Schema;
 use OpenApi\Generator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
+use function in_array;
+use function is_array;
 use function is_string;
 
 final readonly class OpenApiService implements OpenApiServiceInterface
@@ -62,7 +64,6 @@ final readonly class OpenApiService implements OpenApiServiceInterface
             throw new EnvironmentException('Failed to convert OpenAPI config to array');
         }
 
-
         $this->translateRecursive($configArray);
 
         return $configArray;
@@ -78,6 +79,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         foreach ($config as $key => &$value) {
             if (!is_array($value) && is_string($key) && in_array($key, self::TRANSLATABLE_PROPERTIES)) {
                 $value = $this->translate($value);
+
                 continue;
             }
 
