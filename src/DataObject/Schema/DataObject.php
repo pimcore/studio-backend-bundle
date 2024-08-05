@@ -26,6 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
 #[Schema(
     title: 'DataObject',
     required: [
+        'iconName',
+        'classDefinitionIcon',
         'key',
         'className',
         'type',
@@ -44,6 +46,10 @@ class DataObject extends Element implements AdditionalAttributesInterface
     use CustomTreeAttributesTrait;
 
     public function __construct(
+        #[Property(description: 'IconName', type: 'string', example: 'pimcore_icon_object')]
+        private readonly ?string $iconName,
+        #[Property(description: 'Class definition icon path', type: 'string', example: '/path/to/icon')]
+        private readonly ?string $classDefinitionIcon,
         #[Property(description: 'Key', type: 'string', example: 'Giulietta')]
         private readonly string $key,
         #[Property(description: 'Class name', type: 'string', example: 'car')]
@@ -81,6 +87,16 @@ class DataObject extends Element implements AdditionalAttributesInterface
             $creationDate,
             $modificationDate
         );
+    }
+
+    public function getIconName(): ?string
+    {
+        return $this->iconName;
+    }
+
+    public function getClassDefinitionIcon(): ?string
+    {
+        return $this->classDefinitionIcon;
     }
 
     public function getKey(): string

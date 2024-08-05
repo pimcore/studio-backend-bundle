@@ -20,5 +20,7 @@ interface IconServiceInterface
 {
     public function getIconForAsset(string $assetType, string $mimeType): string;
 
+    public function getIconForDataObject(string $type): string;
+
     public function getIconForTag(): string;
 }

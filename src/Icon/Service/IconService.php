@@ -51,6 +51,16 @@ final class IconService implements IconServiceInterface
         };
     }
 
+    public function getIconForDataObject(string $type): string
+    {
+        return match ($type) {
+            'object' => 'vector',
+            'variant' => 'variant-icon',
+            'folder' => 'folder',
+            default => $this->defaultIcon
+        };
+    }
+
     public function getIconForTag(): string
     {
         return 'tag-02';
