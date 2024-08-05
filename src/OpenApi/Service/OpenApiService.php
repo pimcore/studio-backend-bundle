@@ -23,7 +23,6 @@ use OpenApi\Generator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use function in_array;
-use function is_array;
 use function is_string;
 
 final readonly class OpenApiService implements OpenApiServiceInterface
