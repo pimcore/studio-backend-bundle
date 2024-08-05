@@ -32,8 +32,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     public function __construct(
         private TranslatorServiceInterface $translator,
         private array $openApiScanPaths = []
-    )
-    {
+    ) {
     }
 
     public function getConfig(): OpenApi
