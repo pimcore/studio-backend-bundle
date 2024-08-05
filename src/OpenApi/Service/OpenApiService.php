@@ -26,6 +26,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     private const TRANSLATABLE_CRUD_METHODS = ['get', 'put', 'post', 'delete', 'options'];
 
     private const TRANSLATABLE_PATH_PROPERTIES = ['summary', 'description'];
+
     private const TRANSLATABLE_TAG_PROPERTIES = ['description'];
 
     public function __construct(
