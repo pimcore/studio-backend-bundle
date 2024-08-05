@@ -39,6 +39,7 @@ final readonly class AudioHydrator implements AudioHydratorInterface
             !empty($item->getMetaData()),
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
+            $this->permissionsHydrator->hydrate($item->getPermissions()),
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
@@ -48,7 +49,6 @@ final readonly class AudioHydrator implements AudioHydratorInterface
             $item->isLocked(),
             $item->getCreationDate(),
             $item->getModificationDate(),
-            $this->permissionsHydrator->hydrate($item->getPermissions())
         );
     }
 }

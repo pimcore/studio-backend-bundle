@@ -46,7 +46,7 @@ final readonly class HydratorService implements HydratorServiceInterface
         AssetSearchResultItem $item
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
         $class = get_class($item);
-        if($this->assetHydratorLocator->has($class)) {
+        if ($this->assetHydratorLocator->has($class)) {
             return $this->assetHydratorLocator->get($class)->hydrate($item);
         }
 
@@ -56,7 +56,7 @@ final readonly class HydratorService implements HydratorServiceInterface
     public function hydrateDataObjects(DataObjectSearchResultItem $item): DataObject|DataObjectFolder
     {
         $class = get_class($item);
-        if($this->dataObjectHydratorLocator->has($class)) {
+        if ($this->dataObjectHydratorLocator->has($class)) {
             return $this->dataObjectHydratorLocator->get($class)->hydrate($item);
         }
 

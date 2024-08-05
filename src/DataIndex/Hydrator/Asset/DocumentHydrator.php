@@ -41,6 +41,7 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
             !empty($item->getMetaData()),
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
+            $this->permissionsHydrator->hydrate($item->getPermissions()),
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
@@ -50,7 +51,6 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
             $item->isLocked(),
             $item->getCreationDate(),
             $item->getModificationDate(),
-            $this->permissionsHydrator->hydrate($item->getPermissions())
         );
     }
 }
