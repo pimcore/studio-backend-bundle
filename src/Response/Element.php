@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Response;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 
 /**
  * @internal

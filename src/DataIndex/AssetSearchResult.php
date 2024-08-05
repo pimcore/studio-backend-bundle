@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;

@@ -35,7 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
         'hasWorkflowWithPermissions',
         'fullPath',
         'customTreeAttributes',
-        'permissions'
+        'permissions',
     ],
     type: 'object'
 )]

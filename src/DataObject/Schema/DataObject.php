@@ -34,7 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
         'hasWorkflowWithPermissions',
         'fullPath',
         'customTreeAttributes',
-        'permissions'
+        'permissions',
     ],
     type: 'object'
 )]
@@ -42,7 +42,7 @@ class DataObject extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
     use CustomTreeAttributesTrait;
-    
+
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'Giulietta')]
         private readonly string $key,

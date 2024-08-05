@@ -17,9 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Response;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
@@ -51,7 +51,7 @@ final readonly class Schemas
 
     public const DATA_OBJECTS = [
         DataObject::class,
-        DataObjectFolder::class
+        DataObjectFolder::class,
     ];
 
     public const VERSIONS = [

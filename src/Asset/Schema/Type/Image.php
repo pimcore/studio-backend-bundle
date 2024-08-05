@@ -20,7 +20,6 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 
 #[Schema(
     title: 'Image',
