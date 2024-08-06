@@ -60,7 +60,7 @@ final class GetConfigurationController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/assets/grid/configuration/{folderId}/{configurationId}',
         operationId: 'getAssetGridConfiguration',
-        description: 'Get asset saved grid configuration for a specific folder if a configuration-id is set otherwise 
+        description: 'Get asset saved grid configuration for a specific folder if a configuration-id is set otherwise
         get the default configuration will be returned.',
         summary: 'Get asset grid configuration for a specific folder',
         tags: [Tags::Grid->name]
