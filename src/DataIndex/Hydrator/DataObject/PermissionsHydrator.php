@@ -14,16 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Permission\AssetPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
+use Pimcore\Bundle\GenericDataIndexBundle\Permission\DataObjectPermissions as ObjectPermissions;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectPermissions;
 
 final class PermissionsHydrator implements PermissionsHydratorInterface
 {
-    public function hydrate(AssetPermissions $permissions): Permissions
+    public function hydrate(ObjectPermissions $permissions): DataObjectPermissions
     {
-        return new Permissions(
+        return new DataObjectPermissions(
+            $permissions->isSave(),
+            $permissions->isUnpublish(),
+            $permissions->isLocalizedEdit(),
+            $permissions->isLocalizedView(),
+            $permissions->isLayouts(),
             $permissions->isList(),
             $permissions->isView(),
             $permissions->isPublish(),

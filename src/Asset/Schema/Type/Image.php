@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetPermissions;
 
 #[Schema(
     title: 'Image',
@@ -55,6 +56,7 @@ final class Image extends Asset
         bool $hasMetaData,
         bool $workflowWithPermissions,
         string $fullPath,
+        AssetPermissions $permissions,
         int $id,
         int $parentId,
         string $path,
@@ -63,8 +65,7 @@ final class Image extends Asset
         ?string $locked,
         bool $isLocked,
         ?int $creationDate,
-        ?int $modificationDate,
-        Permissions $permissions
+        ?int $modificationDate
     ) {
         parent::__construct(
             $iconName,
@@ -75,6 +76,7 @@ final class Image extends Asset
             $hasMetaData,
             $workflowWithPermissions,
             $fullPath,
+            $permissions,
             $id,
             $parentId,
             $path,
@@ -84,7 +86,6 @@ final class Image extends Asset
             $isLocked,
             $creationDate,
             $modificationDate,
-            $permissions
         );
     }
 

@@ -14,63 +14,54 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Model\Asset as AssetModel;
+use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 /**
  * @internal
  */
-interface AssetServiceInterface
+interface DataObjectServiceInterface
 {
     /**
      * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
      */
-    public function getAssets(ElementParameters $parameters): Collection;
+    public function getDataObjects(ElementParameters $parameters): Collection;
 
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAsset(int $id): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
+    public function getDataObject(int $id): DataObject;
 
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAssetFolder(int $id): AssetFolder;
+    public function getDataObjectFolder(int $id): DataObjectFolder;
 
     /**
      * @throws AccessDeniedException|NotFoundException
      */
-    public function getAssetElement(
+    public function getDataObjectElement(
         UserInterface $user,
-        int $assetId,
-    ): AssetModel;
+        int $dataObjectId,
+    ): DataObjectModel;
 
     /**
      * @throws AccessDeniedException|NotFoundException
      */
-    public function getAssetElementByPath(
+    public function getDataObjectElementByPath(
         UserInterface $user,
         string $path,
-    ): AssetModel;
-
-    public function getUniqueAssetName(string $targetPath, string $filename): string;
+    ): DataObjectModel;
 }

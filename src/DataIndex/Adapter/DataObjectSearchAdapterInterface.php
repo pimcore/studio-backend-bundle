@@ -36,5 +36,5 @@ interface DataObjectSearchAdapterInterface
      *
      * @return array<int>
      */
-    public function fetchAssetIds(QueryInterface $dataObjectQuery): array;
+    public function fetchDataObjectIds(QueryInterface $dataObjectQuery): array;
 }
