@@ -24,7 +24,7 @@ use OpenApi\Attributes\Property;
  */
 final class DataJson extends JsonContent
 {
-    public function __construct(string $description = '')
+    public function __construct(string $description = '', string $example = 'Test content')
     {
         parent::__construct(
             required: ['data'],
@@ -34,7 +34,7 @@ final class DataJson extends JsonContent
                     title: 'data',
                     description: $description,
                     type: 'string',
-                    example: 'Test content'
+                    example: $example
                 ),
             ],
             type: 'object',

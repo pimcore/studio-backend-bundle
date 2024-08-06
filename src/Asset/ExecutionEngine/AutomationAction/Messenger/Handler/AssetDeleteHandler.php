@@ -25,9 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -53,6 +53,10 @@ final class AssetDeleteHandler extends AbstractHandler
      */
     public function __invoke(AssetDeleteMessage $message): void
     {
+        if (!$this->shouldBeExecuted($this->getJobRun($message))) {
+            return;
+        }
+
         $jobRun = $this->getJobRun($message);
         $validatedParameters = $this->validateJobParameters(
             $message,
@@ -80,7 +84,6 @@ final class AssetDeleteHandler extends AbstractHandler
         if ($assetElement->getId() === $parentAsset->getId()) {
             try {
                 $this->elementDeleteService->deleteParentElement($assetElement, $user);
-
                 $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
             } catch (Exception $exception) {
                 $this->abort($this->getAbortData(

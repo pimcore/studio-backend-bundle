@@ -18,13 +18,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller\Blocklist;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Response\Property\BlocklistCollection;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\BlocklistEntry;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\TextFieldParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -74,10 +75,11 @@ final class CollectionController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'Paginated blocklist entries with total count as header param',
-        content: new CollectionJson(new BlocklistCollection())
+        content: new CollectionJson(new GenericCollection(BlocklistEntry::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getBlocklistEntries(
         #[MapQueryString] CollectionParameters $parameters,

@@ -24,14 +24,14 @@ use OpenApi\Attributes\Property;
  */
 final class IdJson extends JsonContent
 {
-    public function __construct(string $description = '')
+    public function __construct(string $description = '', string $property = 'id')
     {
         parent::__construct(
-            required: ['id'],
+            required: [$property],
             properties: [
                 new Property(
-                    'id',
-                    title: 'id',
+                    property: $property,
+                    title: $property,
                     description: $description,
                     type: 'integer',
                     example: 66

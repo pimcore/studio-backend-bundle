@@ -18,10 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
 
 #[Schema(
     title: 'Asset',
@@ -31,15 +31,18 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
         'type',
         'filename',
         'mimeType',
-        'metaData',
+        'hasMetaData',
         'hasWorkflowWithPermissions',
         'fullPath',
+        'customTreeAttributes',
+        'permissions',
     ],
     type: 'object'
 )]
 class Asset extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
+    use CustomTreeAttributesTrait;
 
     public function __construct(
         #[Property(description: 'IconName', type: 'string', example: 'pimcore_icon_pdf')]
@@ -58,6 +61,8 @@ class Asset extends Element implements AdditionalAttributesInterface
         private readonly bool $hasWorkflowWithPermissions,
         #[Property(description: 'Full path', type: 'string', example: '/path/to/asset.jpg')]
         private readonly string $fullPath,
+        #[Property(ref: AssetPermissions::class)]
+        private readonly AssetPermissions $permissions,
         int $id,
         int $parentId,
         string $path,
@@ -66,8 +71,7 @@ class Asset extends Element implements AdditionalAttributesInterface
         ?string $locked,
         bool $isLocked,
         ?int $creationDate,
-        ?int $modificationDate,
-        Permissions $permissions
+        ?int $modificationDate
     ) {
         parent::__construct(
             $id,
@@ -78,8 +82,7 @@ class Asset extends Element implements AdditionalAttributesInterface
             $locked,
             $isLocked,
             $creationDate,
-            $modificationDate,
-            $permissions
+            $modificationDate
         );
     }
 
@@ -121,5 +124,10 @@ class Asset extends Element implements AdditionalAttributesInterface
     public function getFullPath(): string
     {
         return $this->fullPath;
+    }
+
+    public function getPermissions(): AssetPermissions
+    {
+        return $this->permissions;
     }
 }

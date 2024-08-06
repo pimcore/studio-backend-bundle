@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video as VideoItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
 final readonly class VideoHydrator implements VideoHydratorInterface
@@ -44,6 +43,7 @@ final readonly class VideoHydrator implements VideoHydratorInterface
             !empty($item->getMetaData()),
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
+            $this->permissionsHydrator->hydrate($item->getPermissions()),
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
@@ -53,7 +53,6 @@ final readonly class VideoHydrator implements VideoHydratorInterface
             $item->isLocked(),
             $item->getCreationDate(),
             $item->getModificationDate(),
-            $this->permissionsHydrator->hydrate($item->getPermissions())
         );
     }
 }

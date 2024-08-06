@@ -16,11 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Folder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
@@ -36,7 +37,7 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
 {
     public function __construct(
         private AssetSearchAdapterInterface $assetSearchAdapter,
-        private AssetQueryProviderInterface $assetQueryProvider
+        private AssetQueryProviderInterface $assetQueryProvider,
     ) {
     }
 
@@ -51,7 +52,7 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAssetById(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video
+    public function getAssetById(int $id): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video
     {
         return $this->assetSearchAdapter->getAssetById($id);
     }
@@ -90,5 +91,16 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
     ): int {
 
         return count($this->getChildrenIds($parentPath, $sortDirection));
+    }
+
+    /**
+     * @throws AssetSearchException
+     */
+    public function getTotalFileSizeByIds(array $ids): int
+    {
+        $query = $this->assetQueryProvider->createAssetQuery();
+        $query->searchByIds($ids);
+
+        return $this->assetSearchAdapter->getTotalFileSizeByIds($query);
     }
 }

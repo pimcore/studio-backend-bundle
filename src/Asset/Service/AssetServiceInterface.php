@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Folder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
@@ -49,7 +49,12 @@ interface AssetServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAsset(int $id): Asset|Archive|Audio|Document|Folder|Image|Text|Unknown|Video;
+    public function getAsset(int $id): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
+
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getAssetFolder(int $id): AssetFolder;
 
     /**
      * @throws AccessDeniedException|NotFoundException

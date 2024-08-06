@@ -17,13 +17,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Response;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Folder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schema\DevError;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schema\Error;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
@@ -43,8 +45,13 @@ final readonly class Schemas
        Video::class,
        Archive::class,
        Text::class,
-       Folder::class,
+       AssetFolder::class,
        Unknown::class,
+    ];
+
+    public const DATA_OBJECTS = [
+        DataObject::class,
+        DataObjectFolder::class,
     ];
 
     public const VERSIONS = [

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
@@ -40,4 +41,9 @@ interface AssetSearchAdapterInterface
      * @return array<int>
      */
     public function fetchAssetIds(QueryInterface $assetQuery): array;
+
+    /**
+     * @throws AssetSearchException
+     */
+    public function getTotalFileSizeByIds(QueryInterface $assetQuery): int;
 }

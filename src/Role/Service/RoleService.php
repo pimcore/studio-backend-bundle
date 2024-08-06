@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UpdateServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
+use function sprintf;
 
 /**
  * @internal

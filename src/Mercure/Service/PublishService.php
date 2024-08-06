@@ -22,6 +22,7 @@ use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
 use function is_string;
+use function sprintf;
 
 final readonly class PublishService implements PublishServiceInterface
 {

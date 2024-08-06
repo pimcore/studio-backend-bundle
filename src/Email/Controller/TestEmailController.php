@@ -19,8 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Request\TestEmailRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Email\Schema\TestEmailRequest;
-use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\SendEmailParameters;
+use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailSendServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -45,7 +45,7 @@ final class TestEmailController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly EmailServiceInterface $emailService,
+        private readonly EmailSendServiceInterface $emailSendService,
         private readonly SecurityServiceInterface $securityService,
     ) {
         parent::__construct($serializer);
@@ -74,9 +74,9 @@ final class TestEmailController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function sendTestEmail(
-        #[MapRequestPayload] TestEmailRequest $parameters
+        #[MapRequestPayload] SendEmailParameters $parameters
     ): Response {
-        $this->emailService->sendTestEmail(
+        $this->emailSendService->sendTestEmail(
             $parameters,
             $this->securityService->getCurrentUser()
         );

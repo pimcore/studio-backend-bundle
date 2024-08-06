@@ -22,6 +22,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\SingleInteger;
 
 /**
@@ -35,18 +36,17 @@ final class GridRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['folderId', 'gridConfig'],
+                required: ['folderId', 'columns'],
                 properties: [
                     new SingleInteger(propertyName: 'folderId'),
                     new Property(
-                        property: 'gridConfig',
-                        properties: [
-                            new Property(
-                                property: 'columns',
-                                type: 'array',
-                                items: new Items(ref: Column::class)
-                            ),
-                        ],
+                        property: 'columns',
+                        type: 'array',
+                        items: new Items(ref: Column::class)
+                    ),
+                    new Property(
+                        property: 'filters',
+                        ref: Filter::class,
                         type: 'object'
                     ),
                 ],

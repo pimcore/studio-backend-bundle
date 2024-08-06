@@ -57,7 +57,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         $thumbnailConfig = $this->getImageThumbnailConfig($image, $parameters);
         $thumbnail = $image->getThumbnail($thumbnailConfig);
         $dpi = $parameters->getDpi();
-        if ($dpi && $thumbnailConfig->getFormat() === MimeTypes::JPEG) {
+        if ($dpi && $thumbnailConfig->getFormat() === MimeTypes::JPEG->value) {
             $this->resizeThumbnailFile($thumbnail, $dpi);
         }
 
@@ -137,7 +137,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         }
 
         $thumbnailConfig->setRasterizeSVG(true);
-        if ($parameters->getMimeType() === MimeTypes::JPEG) {
+        if ($parameters->getMimeType() === MimeTypes::JPEG->value) {
             $thumbnailConfig->setPreserveMetaData(true);
 
             if ($quality === null) {

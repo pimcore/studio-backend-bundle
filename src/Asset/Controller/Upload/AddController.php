@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 
+use League\Flysystem\FilesystemException;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\AddAssetRequestBody;
@@ -66,6 +67,7 @@ final class AddController extends AbstractApiController
      * @throws ForbiddenException
      * @throws NotFoundException
      * @throws UserNotFoundException
+     * @throws FilesystemException
      */
     #[Route('/assets/add/{parentId}', name: 'pimcore_studio_api_assets_add', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
@@ -110,7 +112,8 @@ final class AddController extends AbstractApiController
             [
                 'id' => $this->uploadService->uploadAsset(
                     $parentId,
-                    $file,
+                    $file->getClientOriginalName(),
+                    $file->getRealPath(),
                     $this->securityService->getCurrentUser()
                 ),
             ]

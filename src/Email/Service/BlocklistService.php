@@ -58,7 +58,8 @@ final readonly class BlocklistService implements BlocklistServiceInterface
             );
 
             $this->eventDispatcher->dispatch(
-                new BlocklistEntryEvent($entry)
+                new BlocklistEntryEvent($entry),
+                BlocklistEntryEvent::EVENT_NAME
             );
 
             $list[] = $entry;

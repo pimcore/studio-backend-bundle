@@ -24,8 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServic
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\HandlerProgressTrait;
 use Pimcore\Model\Asset;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -52,6 +52,10 @@ final class AssetCloneHandler extends AbstractHandler
     public function __invoke(AssetCloneMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
+        if (!$this->shouldBeExecuted($jobRun)) {
+            return;
+        }
+
         $validatedParameters = $this->validateJobParameters(
             $message,
             $jobRun,

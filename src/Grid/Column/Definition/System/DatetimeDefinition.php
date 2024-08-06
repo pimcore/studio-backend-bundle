@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 
 /**
@@ -26,8 +27,7 @@ final readonly class DatetimeDefinition implements ColumnDefinitionInterface
 {
     public function getType(): string
     {
-        //TODO:  refactor to enum
-        return 'system.datetime';
+        return ColumnType::SYSTEM_DATETIME->value;
     }
 
     public function getConfig(mixed $config): array

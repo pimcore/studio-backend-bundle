@@ -12,6 +12,11 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
+  Pimcore\Bundle\StudioBackendBundle\OpenApi\Command\:
+    resource: '../src/OpenApi/Command'
+    public: true
+    tags: ['console.command']
+
 
   Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiService

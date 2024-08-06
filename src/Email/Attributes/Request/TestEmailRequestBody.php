@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Attributes\Request;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Email\Schema\TestEmailRequest;
+use Pimcore\Bundle\StudioBackendBundle\Email\Schema\SendEmailParameters;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class TestEmailRequestBody extends RequestBody
@@ -28,7 +28,7 @@ final class TestEmailRequestBody extends RequestBody
     {
         parent::__construct(
             required: true,
-            content: new JsonContent(ref: TestEmailRequest::class)
+            content: new JsonContent(ref: SendEmailParameters::class)
         );
     }
 }

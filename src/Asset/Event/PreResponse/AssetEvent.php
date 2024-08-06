@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\CustomTreeAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
 final class AssetEvent extends AbstractPreResponseEvent
@@ -35,5 +36,15 @@ final class AssetEvent extends AbstractPreResponseEvent
     public function getAsset(): Asset
     {
         return $this->asset;
+    }
+
+    public function getCustomTreeAttributes(): ?CustomTreeAttributes
+    {
+        return $this->asset->getCustomTreeAttributes();
+    }
+
+    public function setCustomTreeAttributes(CustomTreeAttributes $customTreeAttributes): void
+    {
+        $this->asset->setCustomTreeAttributes($customTreeAttributes);
     }
 }

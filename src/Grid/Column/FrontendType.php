@@ -28,4 +28,6 @@ enum FrontendType: string
     case CHECKBOX = 'checkbox';
     case DATETIME = 'datetime';
     case IMAGE = 'image';
+    case ASSET_LINK = 'asset-link';
+    case ASSET_PREVIEW = 'asset-preview';
 }

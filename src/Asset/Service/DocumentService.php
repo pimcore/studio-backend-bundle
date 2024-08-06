@@ -33,6 +33,7 @@ use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Enum\PdfScanStatus;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use function sprintf;
 
 /**
  * @internal
@@ -56,7 +57,7 @@ final readonly class DocumentService implements DocumentServiceInterface
      */
     public function getPreviewStream(Document $asset): StreamedResponse
     {
-        if ($asset->getMimeType() !== MimeTypes::PDF) {
+        if ($asset->getMimeType() !== MimeTypes::PDF->value) {
             return $this->getStreamFromDocument($asset);
         }
 
@@ -160,7 +161,7 @@ final readonly class DocumentService implements DocumentServiceInterface
                 },
                 HttpResponseCodes::SUCCESS->value,
                 [
-                    HttpResponseHeaders::HEADER_CONTENT_TYPE->value => MimeTypes::PDF,
+                    HttpResponseHeaders::HEADER_CONTENT_TYPE->value => MimeTypes::PDF->value,
                     HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value => sprintf(
                         '%s; filename="%s"',
                         HttpResponseHeaders::INLINE_TYPE->value,

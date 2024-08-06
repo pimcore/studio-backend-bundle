@@ -17,17 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParametersInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\IdSearchParameterInterface;
 
 /**
  * @internal
  */
 final class IdSearchFilter implements FilterInterface
 {
-    public function apply(CollectionParametersInterface $parameters, QueryInterface $query): QueryInterface
+    public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
-        if (!$parameters instanceof ElementParametersInterface) {
+        if (!$parameters instanceof IdSearchParameterInterface) {
             return $query;
         }
 

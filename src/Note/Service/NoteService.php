@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
@@ -27,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -37,16 +39,21 @@ final readonly class NoteService implements NoteServiceInterface
     public function __construct(
         private NoteRepositoryInterface $noteRepository,
         private NoteHydratorInterface $noteHydrator,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private SecurityServiceInterface $securityService
     ) {
     }
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws ElementSavingFailedException|NotFoundException|UserNotFoundException
      */
     public function createNote(NoteElementParameters $noteElement, CreateNote $createNote): Note
     {
-        $note = $this->noteRepository->createNote($noteElement, $createNote);
+        $note = $this->noteRepository->createNote(
+            $noteElement,
+            $createNote,
+            $this->securityService->getCurrentUser()
+        );
 
         return $this->getNote($note->getId());
     }

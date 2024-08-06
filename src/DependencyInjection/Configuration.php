@@ -17,11 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\ResizeModes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use function sprintf;
 
 /**
  * This is the class that validates and merges configuration from your app/config files.
@@ -48,6 +50,8 @@ class Configuration implements ConfigurationInterface
         $this->addDefaultAssetFormats($rootNode);
         $this->addRecycleBinThreshold($rootNode);
         $this->addMercureConfiguration($rootNode);
+        $this->addAssetDownloadLimits($rootNode);
+        $this->addCsvSettings($rootNode);
 
         return $treeBuilder;
     }
@@ -124,7 +128,7 @@ class Configuration implements ConfigurationInterface
                             ->integerNode('width')->isRequired()->end()
                             ->integerNode('dpi')->isRequired()->end()
                             ->enumNode('format')
-                                ->values(MimeTypes::ALLOWED_FORMATS)
+                                ->values([MimeTypes::JPEG->value, MimeTypes::PNG->value])
                                 ->isRequired()
                                 ->cannotBeEmpty()
                             ->end()
@@ -166,6 +170,38 @@ class Configuration implements ConfigurationInterface
                         ->info('Lifetime of the mercure cookie in seconds. Default is one hour.')
                         ->defaultValue(3600)
                         ->isRequired()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addAssetDownloadLimits(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('asset_download_settings')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->integerNode(DownloadLimits::MAX_ZIP_FILE_SIZE->value)
+                        ->info('The maximum size of all assets together that can be downloaded in bytes.')
+                        ->defaultValue(5 * 1024 * 1024 * 1024)
+                    ->end()
+                    ->integerNode(DownloadLimits::MAX_ZIP_FILE_AMOUNT->value)
+                        ->info('The maximum amount of assets that can be downloaded at once.')
+                        ->defaultValue(1000)
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addCsvSettings(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('csv_settings')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->scalarNode('default_delimiter')
+                        ->info('Default delimiter to be used for csv operations.')
+                        ->defaultValue(',')
                     ->end()
                 ->end()
             ->end();
