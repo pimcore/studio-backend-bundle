@@ -21,12 +21,12 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 #[Schema(
-    title: 'CustomTreeAttributes',
-    description: 'Custom attributes for the tree',
+    title: 'CustomAttributes',
+    description: 'Custom attributes used mainly for the tree',
     required: ['icon', 'tooltip', 'additionalIcons', 'key', 'additionalCssClasses'],
     type: 'object'
 )]
-final class CustomTreeAttributes
+final class CustomAttributes
 {
     public function __construct(
         #[Property(description: 'Custom Icon', type: 'string', example: 'my_custom_icon')]
