@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Response;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementIconTypes;
 
 /**
  * @internal
@@ -33,11 +35,19 @@ use OpenApi\Attributes\Schema;
 final readonly class ElementIcon
 {
     public function __construct(
-        #[Property(description: 'type', type: 'string', example: 'path')]
+        #[Property(
+            description: 'Icon type',
+            type: 'enum',
+            enum: ElementIconTypes::class,
+            example: ElementIconTypes::PATH->value
+        )]
         private string $type,
-        #[Property(description: 'icon value', type: 'string', example: '/path/to/icon')]
+        #[Property(description: 'Icon value', type: 'string', example: '/path/to/icon')]
         private string $value,
     ) {
+        if (!in_array($this->type, ElementIconTypes::values(), true)) {
+            throw new EnvironmentException('Invalid icon type');
+        }
     }
 
     public function getType(): string
