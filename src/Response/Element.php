@@ -47,7 +47,7 @@ class Element
         private readonly int $parentId,
         #[Property(description: 'path', type: 'string', example: '/path/to/element')]
         private readonly string $path,
-        #[Property(description: 'icon', type: 'object', example: ElementIcon::class)]
+        #[Property(description: 'icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
         #[Property(description: 'ID of owner', type: 'integer', example: 1)]
         private readonly int $userOwner,
