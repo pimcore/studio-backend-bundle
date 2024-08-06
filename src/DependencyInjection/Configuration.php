@@ -149,7 +149,8 @@ class Configuration implements ConfigurationInterface
             ->end();
     }
 
-    private function addGridConfiguration(ArrayNodeDefinition $node) {
+    private function addGridConfiguration(ArrayNodeDefinition $node)
+    {
         $node->children()
             ->arrayNode('grid')
                 ->children()

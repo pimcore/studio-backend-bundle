@@ -14,13 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
+use function in_array;
 
 /**
  * @internal
@@ -31,8 +32,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private GridServiceInterface $gridService,
         private EventDispatcherInterface $eventDispatcher,
         private array $predefinedColumns
-    )
-    {
+    ) {
     }
 
     /**

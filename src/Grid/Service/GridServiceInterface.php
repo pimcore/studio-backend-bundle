@@ -31,7 +31,6 @@ use Pimcore\Model\Element\ElementInterface;
  */
 interface GridServiceInterface
 {
-
     public function getDocumentGridColumns(): ColumnCollection;
 
     public function getDataObjectGridColumns(ClassDefinition $classDefinition): ColumnCollection;
