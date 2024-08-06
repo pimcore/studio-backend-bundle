@@ -20,9 +20,6 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetS
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementIconTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 final readonly class AssetHydrator implements AssetHydratorInterface
 {

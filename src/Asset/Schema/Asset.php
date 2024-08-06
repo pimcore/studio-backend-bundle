@@ -86,6 +86,7 @@ class Asset extends Element implements AdditionalAttributesInterface
             $modificationDate
         );
     }
+
     public function getHasChildren(): bool
     {
         return $this->hasChildren;
