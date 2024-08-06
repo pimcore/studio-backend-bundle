@@ -155,12 +155,8 @@ final class GridService implements GridServiceInterface
                 continue;
             }
 
-            $columns = array_merge(
-                $columns,
-                $collector->getColumnConfigurations(
-                    $this->getColumnDefinitions()
-                )
-            );
+            // rather use the spread operator instead of array_merge in a loop
+            $columns = [...$columns, ...$collector->getColumnConfigurations($this->getColumnDefinitions())];
         }
 
         foreach ($columns as $column) {
@@ -186,10 +182,14 @@ final class GridService implements GridServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function getConfigurationFromArray(array $config): ColumnCollection
+    public function getConfigurationFromArray(array $config, bool $isExport = false): ColumnCollection
     {
         $columns = [];
         foreach ($config as $column) {
+            if ($isExport && !$this->isExportable($column['type'])) {
+                throw new InvalidArgumentException('Column type is not exportable');
+            }
+
             try {
                 $columns[] = new Column(
                     key: $column['key'],
@@ -198,7 +198,7 @@ final class GridService implements GridServiceInterface
                     group: $column['group'] ?? null,
                     config: $column['config']
                 );
-            } catch (Exception $e) {
+            } catch (Exception) {
                 throw new InvalidArgumentException('Invalid column configuration');
             }
         }
@@ -267,5 +267,14 @@ final class GridService implements GridServiceInterface
         $this->columnResolvers = $this->columnResolverLoader->loadColumnResolvers();
 
         return $this->columnResolvers;
+    }
+
+    private function isExportable(string $type): bool
+    {
+        if (!array_key_exists($type, $this->getColumnDefinitions())) {
+            return false;
+        }
+
+        return $this->getColumnDefinitions()[$type]->isExportable();
     }
 }

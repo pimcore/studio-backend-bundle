@@ -85,8 +85,10 @@ final class CsvDataCollectionHandler extends AbstractHandler
 
             return;
         }
+
         $columnCollection = $this->gridService->getConfigurationFromArray(
-            $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value)
+            $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value),
+            true
         );
 
         try {

@@ -46,4 +46,9 @@ final readonly class SelectDefinition implements ColumnDefinitionInterface
     {
         return FrontendType::SELECT->value;
     }
+
+    public function isExportable(): bool
+    {
+        return true;
+    }
 }

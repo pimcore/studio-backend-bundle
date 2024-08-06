@@ -8,6 +8,7 @@ in addition, it has a configuration which can be used to configure the column, l
 
 ## ColumnConfiguration
 A column configuration represents how the column should behave, for example if it should be sort-able or editable. 
+For the column to be exportable please make sure that it can be represented as a string.
 
 ## ColumnData
 A column data is the actual data for a column. It has a reference to the column and the actual data.
