@@ -73,12 +73,15 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $availableColumns = $this->getAvailableAssetGridConfiguration();
         $defaultColumns = [];
         foreach ($this->predefinedColumns as $predefinedColumn) {
-            $filteredColumns = array_filter($availableColumns, function (ColumnConfiguration $column) use ($predefinedColumn) {
-                if ($column->getKey() === $predefinedColumn['key'] && $column->getGroup() === $predefinedColumn['group']) {
-                    return true;
-                }
+            $filteredColumns =
+                array_filter($availableColumns, function (ColumnConfiguration $column) use ($predefinedColumn) {
+                    if ($column->getKey() === $predefinedColumn['key'] &&
+                        $column->getGroup() === $predefinedColumn['group']
+                    ) {
+                        return true;
+                    }
 
-                return false;
+                    return false;
             });
 
             if (count($filteredColumns) === 1) {

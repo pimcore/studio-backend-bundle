@@ -51,12 +51,17 @@ final class GetConfigurationController extends AbstractApiController
     /**
      * @throws NotFoundException|SearchException
      */
-    #[Route('/assets/grid/configuration/{folderId}/{configurationId}', name: 'pimcore_studio_api_get_asset_grid_configuration', methods: ['GET'])]
+    #[Route(
+        '/assets/grid/configuration/{folderId}/{configurationId}',
+        name: 'pimcore_studio_api_get_asset_grid_configuration',
+        methods: ['GET'],
+    )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/grid/configuration/{folderId}/{configurationId}',
         operationId: 'getAssetGridConfiguration',
-        description: 'Get asset saved grid configuration for a specific folder if a configuration-id is set otherwise get the default configuration will be returned.',
+        description: 'Get asset saved grid configuration for a specific folder if a configuration-id is set otherwise 
+        get the default configuration will be returned.',
         summary: 'Get asset grid configuration for a specific folder',
         tags: [Tags::Grid->name]
     )]
