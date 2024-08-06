@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Document as DocumentItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
 final readonly class DocumentHydrator implements DocumentHydratorInterface
@@ -42,6 +41,7 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
             !empty($item->getMetaData()),
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
+            $this->permissionsHydrator->hydrate($item->getPermissions()),
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
@@ -51,7 +51,6 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
             $item->isLocked(),
             $item->getCreationDate(),
             $item->getModificationDate(),
-            $this->permissionsHydrator->hydrate($item->getPermissions())
         );
     }
 }

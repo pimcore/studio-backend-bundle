@@ -18,13 +18,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attributes\Parameters\Query\ClassNameParameter;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Attributes\Response\Property\DataObjectCollection;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Attributes\Response\Property\AnyOfDataObjects;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\IdSearchTermParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
@@ -37,42 +38,43 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\Colle
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
-final class CollectionController extends AbstractApiController
+final class TreeController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly DataObjectSearchServiceInterface $dataObjectSearchService,
-        private readonly FilterServiceProviderInterface $filterServiceProvider
+        private readonly DataObjectServiceInterface $dataObjectSearchService
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws InvalidQueryTypeException
+     * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
      */
-    #[Route('/data-objects', name: 'pimcore_studio_api_data_objects', methods: ['GET'])]
-    //#[IsGranted(self::VOTER_STUDIO_API)]
+    #[Route('/data-objects/tree', name: 'pimcore_studio_api_data_objects_tree', methods: ['GET'])]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::API_PATH . '/data-objects',
-        operationId: 'getDataObjects',
+        path: self::API_PATH . '/data-objects/tree',
+        operationId: 'getDataObjectTree',
         description: 'Get paginated data objects',
-        summary: 'Get all DataObjects',
+        summary: 'Get all DataObjects for the tree',
         tags: [Tags::DataObjects->name],
     )]
     #[PageParameter]
     #[PageSizeParameter]
     #[ParentIdParameter(
-        description: 'Filter data objects by parent id.'
+        description: 'Filter data objects by parent id.',
+        example: null
     )]
     #[IdSearchTermParameter]
     #[ExcludeFoldersParameter]
@@ -82,18 +84,15 @@ final class CollectionController extends AbstractApiController
     #[ClassNameParameter]
     #[SuccessResponse(
         description: 'Paginated data objects with total count as header param',
-        content: new CollectionJson(new DataObjectCollection())
+        content: new CollectionJson(new AnyOfDataObjects())
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getDataObjects(#[MapQueryString] DataObjectParameters $parameters): JsonResponse
+    public function getDataObjectTree(#[MapQueryString] DataObjectParameters $parameters): JsonResponse
     {
-        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
-
-        $dataObjectQuery = $filterService->applyFilters($parameters, ElementTypes::TYPE_DATA_OBJECT);
-
-        $result = $this->dataObjectSearchService->searchDataObjects($dataObjectQuery);
+        $result = $this->dataObjectSearchService->getDataObjects($parameters);
 
         return $this->getPaginatedCollection(
             $this->serializer,

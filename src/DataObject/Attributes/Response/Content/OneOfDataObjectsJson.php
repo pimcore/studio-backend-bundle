@@ -14,30 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Attributes\Response\Content;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Attributes\Response\Content;
 
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\Thumbnail;
+use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Response\Schemas;
 
 /**
  * @internal
  */
-final class ThumbnailsJson extends JsonContent
+final class OneOfDataObjectsJson extends JsonContent
 {
     public function __construct()
     {
         parent::__construct(
-            required: ['items'],
-            properties: [
-                new Property(
-                    'items',
-                    type: 'array',
-                    items: new Items(ref: Thumbnail::class)
-                ),
-            ],
             type: 'object',
+            oneOf: array_map(static function ($class) {
+                return new Schema(ref: $class);
+            }, Schemas::DATA_OBJECTS),
         );
     }
 }

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -23,7 +23,7 @@ use OpenApi\Attributes\Schema;
     title: 'Permissions',
     type: 'object'
 )]
-final readonly class Permissions
+readonly class Permissions
 {
     public function __construct(
         #[Property(description: 'List', type: 'bool', example: true)]
