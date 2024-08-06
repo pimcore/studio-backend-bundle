@@ -82,7 +82,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
                     }
 
                     return false;
-            });
+                });
 
             if (count($filteredColumns) === 1) {
                 $defaultColumns[] = array_pop($filteredColumns);
