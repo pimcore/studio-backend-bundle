@@ -44,4 +44,9 @@ final readonly class DataObjectDefinition implements ColumnDefinitionInterface
     {
         return FrontendType::ELEMENT_DROPZONE->value;
     }
+
+    public function isExportable(): bool
+    {
+        return true;
+    }
 }

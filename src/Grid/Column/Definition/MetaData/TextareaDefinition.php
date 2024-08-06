@@ -44,4 +44,9 @@ final readonly class TextareaDefinition implements ColumnDefinitionInterface
     {
         return FrontendType::TEXTAREA->value;
     }
+
+    public function isExportable(): bool
+    {
+        return true;
+    }
 }

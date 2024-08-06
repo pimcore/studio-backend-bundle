@@ -44,4 +44,9 @@ final readonly class InputDefinition implements ColumnDefinitionInterface
     {
         return FrontendType::INPUT->value;
     }
+
+    public function isExportable(): bool
+    {
+        return true;
+    }
 }
