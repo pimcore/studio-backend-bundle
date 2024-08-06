@@ -57,8 +57,17 @@ final class CsvCreationHandler extends AbstractHandler
         }
         $settings = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_SETTINGS->value);
         $columnCollection = $this->gridService->getConfigurationFromArray(
-            $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value)
+            $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value),
+            true
         );
+
+        if (empty($columnCollection->getColumns())) {
+            $this->abort($this->getAbortData(
+                Config::CSV_CREATION_FAILED_MESSAGE->value,
+                ['message' => 'No export columns found in given configuration.']
+            ));
+        }
+
         if (!isset($jobRun->getContext()[Csv::ASSET_EXPORT_DATA->value])) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,

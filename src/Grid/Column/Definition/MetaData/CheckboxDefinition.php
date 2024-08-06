@@ -44,4 +44,9 @@ final readonly class CheckboxDefinition implements ColumnDefinitionInterface
     {
         return FrontendType::CHECKBOX->value;
     }
+
+    public function isExportable(): bool
+    {
+        return true;
+    }
 }

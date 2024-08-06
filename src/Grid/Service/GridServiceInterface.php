@@ -56,7 +56,7 @@ interface GridServiceInterface
         string $elementType
     ): array;
 
-    public function getConfigurationFromArray(array $config): ColumnCollection;
+    public function getConfigurationFromArray(array $config, bool $isExport = false): ColumnCollection;
 
     public function getAssetGrid(GridParameter $gridParameter): Collection;
 

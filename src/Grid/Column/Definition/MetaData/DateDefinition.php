@@ -44,4 +44,9 @@ final readonly class DateDefinition implements ColumnDefinitionInterface
     {
         return FrontendType::DATETIME->value;
     }
+
+    public function isExportable(): bool
+    {
+        return true;
+    }
 }
