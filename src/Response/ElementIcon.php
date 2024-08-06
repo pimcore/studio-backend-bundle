@@ -20,6 +20,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementIconTypes;
+use function in_array;
 
 /**
  * @internal
