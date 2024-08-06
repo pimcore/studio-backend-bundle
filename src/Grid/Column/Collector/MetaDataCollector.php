@@ -66,9 +66,9 @@ final readonly class MetaDataCollector implements ColumnCollectorInterface
                 group: 'default_metadata',
                 sortable: true,
                 editable: true,
-                localizable: false,
+                localizable: true,
                 locale: null,
-                type: 'metadata.string',
+                type: 'metadata.input',
                 frontendType: FrontendType::INPUT->value,
                 config: []
             );

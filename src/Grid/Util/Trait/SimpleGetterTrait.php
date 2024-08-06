@@ -26,20 +26,24 @@ trait SimpleGetterTrait
     /**
      * @throws InvalidArgumentException
      */
-    private function getValue(Column $columnDefinition, ElementInterface $element): mixed
+    private function getValue(Column $column, ElementInterface $element): mixed
     {
-        $getter = $this->getGetter($columnDefinition);
+        $getter = $this->getGetter($column);
         if (method_exists($element, $getter) === false) {
             throw new InvalidArgumentException(
                 'Method ' . $getter . ' does not exist on ' . get_class($element)
             );
         }
 
+        if ($column->getLocale()) {
+            return $element->$getter($column->getLocale());
+        }
+
         return $element->$getter();
     }
 
-    private function getGetter(Column $columnDefinition): string
+    private function getGetter(Column $column): string
     {
-        return 'get' . ucfirst($columnDefinition->getKey());
+        return 'get' . ucfirst($column->getKey());
     }
 }

@@ -136,7 +136,6 @@ final class GridService implements GridServiceInterface
         string $elementType
     ): array {
         $data = $this->getGridDataForElement($columnCollection, $element, $elementType);
-
         return array_map(
             static fn (ColumnData $columnData) => $columnData->getValue(),
             $data['columns']
