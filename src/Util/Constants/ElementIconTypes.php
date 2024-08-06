@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Pimcore
@@ -14,15 +13,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
 
-interface IconServiceInterface
+enum ElementIconTypes: string
 {
-    public function getIconForAsset(string $assetType, string $mimeType): ElementIcon;
+    use EnumToValueArrayTrait;
 
-    public function getIconForDataObject(string $type): ElementIcon;
-
-    public function getIconForTag(): string;
+    case NAME = 'name';
+    case PATH = 'path';
 }

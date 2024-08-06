@@ -37,7 +37,6 @@ final readonly class ImageHydrator implements ImageHydratorInterface
             false, // TODO: Implement isVectorGraphic
             false,// TODO: Implement isAnimated
             $item->getThumbnail(),
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->isHasChildren(),
             $item->getType(),
             $item->getKey(),
@@ -49,6 +48,7 @@ final readonly class ImageHydrator implements ImageHydratorInterface
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
+            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),

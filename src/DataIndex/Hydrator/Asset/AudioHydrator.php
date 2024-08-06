@@ -31,7 +31,6 @@ final readonly class AudioHydrator implements AudioHydratorInterface
     public function hydrate(AudioItem $item): Audio
     {
         return new Audio(
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->isHasChildren(),
             $item->getType(),
             $item->getKey(),
@@ -43,6 +42,7 @@ final readonly class AudioHydrator implements AudioHydratorInterface
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
+            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),

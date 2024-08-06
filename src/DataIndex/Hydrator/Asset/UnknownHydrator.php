@@ -31,7 +31,6 @@ final readonly class UnknownHydrator implements UnknownHydratorInterface
     public function hydrate(UnknownItem $item): Unknown
     {
         return new Unknown(
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->isHasChildren(),
             $item->getType(),
             $item->getKey(),
@@ -43,6 +42,7 @@ final readonly class UnknownHydrator implements UnknownHydratorInterface
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
+            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),

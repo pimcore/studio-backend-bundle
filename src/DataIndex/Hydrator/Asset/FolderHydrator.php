@@ -31,7 +31,6 @@ final readonly class FolderHydrator implements FolderHydratorInterface
     public function hydrate(FolderItem $item): AssetFolder
     {
         return new AssetFolder(
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->isHasChildren(),
             $item->getType(),
             $item->getKey(),
@@ -43,6 +42,7 @@ final readonly class FolderHydrator implements FolderHydratorInterface
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
+            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),

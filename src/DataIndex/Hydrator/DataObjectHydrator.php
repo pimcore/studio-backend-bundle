@@ -19,10 +19,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
 final readonly class DataObjectHydrator implements DataObjectHydratorInterface
 {
     public function __construct(
+        private IconServiceInterface $iconService,
         private PermissionsHydratorInterface $permissionsHydrator
     ) {
     }
@@ -41,6 +43,7 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
             $dataObject->getId(),
             $dataObject->getParentId(),
             $dataObject->getPath(),
+            $this->iconService->getIconForDataObject($dataObject->getType()),
             $dataObject->getUserOwner(),
             $dataObject->getUserModification(),
             $dataObject->getLocked(),
