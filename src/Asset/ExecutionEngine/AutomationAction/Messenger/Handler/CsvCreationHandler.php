@@ -61,13 +61,6 @@ final class CsvCreationHandler extends AbstractHandler
             true
         );
 
-        if (empty($columnCollection->getColumns())) {
-            $this->abort($this->getAbortData(
-                Config::CSV_CREATION_FAILED_MESSAGE->value,
-                ['message' => 'No export columns found in given configuration.']
-            ));
-        }
-
         if (!isset($jobRun->getContext()[Csv::ASSET_EXPORT_DATA->value])) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,

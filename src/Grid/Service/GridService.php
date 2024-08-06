@@ -155,12 +155,8 @@ final class GridService implements GridServiceInterface
                 continue;
             }
 
-            $columns = array_merge(
-                $columns,
-                $collector->getColumnConfigurations(
-                    $this->getColumnDefinitions()
-                )
-            );
+            // rather use the spread operator instead of array_merge in a loop
+            $columns = [...$columns, ...$collector->getColumnConfigurations($this->getColumnDefinitions())];
         }
 
         foreach ($columns as $column) {
@@ -191,7 +187,7 @@ final class GridService implements GridServiceInterface
         $columns = [];
         foreach ($config as $column) {
             if ($isExport && !$this->isExportable($column['type'])) {
-                continue;
+                throw new InvalidArgumentException('Column type is not exportable');
             }
 
             try {
