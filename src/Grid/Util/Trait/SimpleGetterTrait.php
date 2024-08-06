@@ -23,6 +23,7 @@ use function get_class;
 
 trait SimpleGetterTrait
 {
+    use LocalizedValueTrait;
     /**
      * @throws InvalidArgumentException
      */
@@ -35,11 +36,7 @@ trait SimpleGetterTrait
             );
         }
 
-        if ($column->getLocale()) {
-            return $element->$getter($column->getLocale());
-        }
-
-        return $element->$getter();
+        return $this->getLocalizedValue($column, $element, $getter);
     }
 
     private function getGetter(Column $column): string
