@@ -50,7 +50,11 @@ final class GetAvailableConfigurationController extends AbstractApiController
     /**
      * @throws NotFoundException|SearchException
      */
-    #[Route('/assets/grid/available-configuration', name: 'pimcore_studio_api_get_asset_grid_available_configuration', methods: ['GET'])]
+    #[Route(
+        '/assets/grid/available-configuration',
+        name: 'pimcore_studio_api_get_asset_grid_available_configuration',
+        methods: ['GET']
+    )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/grid/available-configuration',
