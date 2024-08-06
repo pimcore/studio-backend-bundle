@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\MetaData;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -26,6 +27,7 @@ trait LocalizedValueTrait
 {
     private function getLocalizedValue(Column $column, ElementInterface $element): ?string
     {
+        /** @var Asset $element */
         if ($column->getLocale()) {
             return $element->getMetadata($column->getKey(), $column->getLocale());
         }

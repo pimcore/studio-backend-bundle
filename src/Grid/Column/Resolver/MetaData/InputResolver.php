@@ -36,7 +36,6 @@ final class InputResolver implements ColumnResolverInterface
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        /** @var Asset $element */
         return $this->getColumnData(
             $column,
             $this->getLocalizedValue($column, $element)
