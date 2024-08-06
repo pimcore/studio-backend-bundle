@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\MetaData\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
