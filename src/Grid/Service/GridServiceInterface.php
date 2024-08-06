@@ -17,8 +17,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -29,10 +31,6 @@ use Pimcore\Model\Element\ElementInterface;
  */
 interface GridServiceInterface
 {
-    /**
-     * @return ColumnConfiguration[]
-     */
-    public function getAssetGridConfiguration(): array;
 
     public function getDocumentGridColumns(): ColumnCollection;
 
@@ -61,4 +59,19 @@ interface GridServiceInterface
     public function getAssetGrid(GridParameter $gridParameter): Collection;
 
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array;
+
+    /**
+     * @return array<string, ColumnDefinitionInterface>
+     */
+    public function getColumnDefinitions(): array;
+
+    /**
+     * @return array<string, ColumnCollectorInterface>
+     */
+    public function getColumnCollectors(): array;
+
+    /**
+     * @return array<string, ColumnResolverInterface>
+     */
+    public function getColumnResolvers(): array;
 }

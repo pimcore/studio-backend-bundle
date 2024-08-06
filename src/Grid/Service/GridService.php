@@ -143,36 +143,6 @@ final class GridService implements GridServiceInterface
         );
     }
 
-    /**
-     * @return ColumnConfiguration[]
-     */
-    public function getAssetGridConfiguration(): array
-    {
-        $columns = [];
-        foreach ($this->getColumnCollectors() as $collector) {
-            // Only collect supported asset collectors
-            if (!in_array(ElementTypes::TYPE_ASSET, $collector->supportedElementTypes(), true)) {
-                continue;
-            }
-
-            $columns = array_merge(
-                $columns,
-                $collector->getColumnConfigurations(
-                    $this->getColumnDefinitions()
-                )
-            );
-        }
-
-        foreach ($columns as $column) {
-            $this->eventDispatcher->dispatch(
-                new GridColumnConfigurationEvent($column),
-                GridColumnConfigurationEvent::EVENT_NAME
-            );
-        }
-
-        return $columns;
-    }
-
     public function getDocumentGridColumns(): ColumnCollection
     {
         return new ColumnCollection([]);
@@ -235,7 +205,7 @@ final class GridService implements GridServiceInterface
     /**
      * @return array<string, ColumnDefinitionInterface>
      */
-    private function getColumnDefinitions(): array
+    public function getColumnDefinitions(): array
     {
         if ($this->columnDefinitions) {
             return $this->columnDefinitions;
@@ -248,7 +218,7 @@ final class GridService implements GridServiceInterface
     /**
      * @return array<string, ColumnCollectorInterface>
      */
-    private function getColumnCollectors(): array
+    public function getColumnCollectors(): array
     {
         if ($this->columnCollectors) {
             return $this->columnCollectors;
@@ -259,7 +229,10 @@ final class GridService implements GridServiceInterface
         return $this->columnCollectors;
     }
 
-    private function getColumnResolvers(): array
+    /**
+     * @return array<string, ColumnResolverInterface>
+     */
+    public function getColumnResolvers(): array
     {
         if ($this->columnResolvers) {
             return $this->columnResolvers;
