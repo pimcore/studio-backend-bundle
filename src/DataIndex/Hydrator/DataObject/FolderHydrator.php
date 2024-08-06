@@ -18,12 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\SearchResultItem\Folder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
-use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
 final readonly class FolderHydrator implements FolderHydratorInterface
 {
     public function __construct(
-        private IconServiceInterface $iconService,
         private PermissionsHydratorInterface $permissionsHydrator
     ) {
     }
@@ -31,8 +29,6 @@ final readonly class FolderHydrator implements FolderHydratorInterface
     public function hydrate(Folder $item): DataObjectFolder
     {
         return new DataObjectFolder(
-            $this->iconService->getIconForDataObject($item->getType()),
-            null,
             $item->getKey(),
             $item->getClassName(),
             $item->getType(),
