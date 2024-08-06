@@ -50,7 +50,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             // rather use the spread operator instead of array_merge in a loop
             $columns = [
                 ...$columns,
-                ...$collector->getColumnConfigurations($this->gridService->getColumnDefinitions())
+                ...$collector->getColumnConfigurations($this->gridService->getColumnDefinitions()),
             ];
         }
 
