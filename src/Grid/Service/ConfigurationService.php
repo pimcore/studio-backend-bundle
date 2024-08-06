@@ -47,12 +47,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
                 continue;
             }
 
-            $columns = array_merge(
-                $columns,
-                $collector->getColumnConfigurations(
-                    $this->gridService->getColumnDefinitions()
-                )
-            );
+            // rather use the spread operator instead of array_merge in a loop
+            $columns = [...$columns, ...$collector->getColumnConfigurations($this->gridService->getColumnDefinitions())];
         }
 
         foreach ($columns as $column) {
