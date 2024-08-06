@@ -24,6 +24,7 @@ use function get_class;
 trait SimpleGetterTrait
 {
     use LocalizedValueTrait;
+
     /**
      * @throws InvalidArgumentException
      */
