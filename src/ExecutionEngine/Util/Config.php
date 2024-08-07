@@ -38,4 +38,5 @@ enum Config: string
     case ASSET_UPLOAD_FAILED_MESSAGE = 'studio_ee_asset_upload_failed';
     case ELEMENT_PATCH_FAILED_MESSAGE = 'studio_ee_element_patch_failed';
     case NO_ELEMENT_DATA_FOUND = 'studio_ee_no_element_data_found';
+    case ELEMENT_REWRITE_REFERENCES_FAILED_MESSAGE = 'studio_ee_element_rewrite_references_failed';
 }

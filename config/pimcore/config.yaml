@@ -31,6 +31,25 @@ pimcore_studio_backend:
             format: "JPEG"
             quality: 90
     element_recycle_bin_threshold: 100
+    grid:
+        asset:
+            predefined_columns:
+                - key: preview
+                  group: system
+                - key: id
+                  group: system
+                - key: type
+                  group: system
+                - key: fullpath
+                  group: system
+                - key: filename
+                  group: system
+                - key: creationDate
+                  group: system
+                - key: modificationDate
+                  group: system
+                - key: size
+                  group: system
 
 mercure:
     hubs:

@@ -21,7 +21,7 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomAttributesTrait;
 
 #[Schema(
     title: 'Asset',
@@ -31,10 +31,10 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
         'type',
         'filename',
         'mimeType',
-        'hasMetaData',
+        'hasMetadata',
         'hasWorkflowWithPermissions',
         'fullPath',
-        'customTreeAttributes',
+        'customAttributes',
         'permissions',
     ],
     type: 'object'
@@ -42,7 +42,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
 class Asset extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
-    use CustomTreeAttributesTrait;
+    use CustomAttributesTrait;
 
     public function __construct(
         #[Property(description: 'IconName', type: 'string', example: 'pimcore_icon_pdf')]
@@ -56,7 +56,7 @@ class Asset extends Element implements AdditionalAttributesInterface
         #[Property(description: 'Mimetype', type: 'string', example: 'image/jpeg')]
         private readonly ?string $mimeType,
         #[Property(description: 'Has metadata', type: 'bool', example: false)]
-        private readonly bool $hasMetaData,
+        private readonly bool $hasMetadata,
         #[Property(description: 'Workflow permissions', type: 'bool', example: false)]
         private readonly bool $hasWorkflowWithPermissions,
         #[Property(description: 'Full path', type: 'string', example: '/path/to/asset.jpg')]
@@ -116,9 +116,9 @@ class Asset extends Element implements AdditionalAttributesInterface
         return $this->mimeType;
     }
 
-    public function getHasMetaData(): bool
+    public function getHasMetadata(): bool
     {
-        return $this->hasMetaData;
+        return $this->hasMetadata;
     }
 
     public function getFullPath(): string

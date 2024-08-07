@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\CustomTreeAttributes;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\CustomAttributes;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
 final class DataObjectEvent extends AbstractPreResponseEvent
@@ -38,13 +38,13 @@ final class DataObjectEvent extends AbstractPreResponseEvent
         return $this->dataObject;
     }
 
-    public function getCustomTreeAttributes(): ?CustomTreeAttributes
+    public function getCustomAttributes(): ?CustomAttributes
     {
-        return $this->dataObject->getCustomTreeAttributes();
+        return $this->dataObject->getCustomAttributes();
     }
 
-    public function setCustomTreeAttributes(CustomTreeAttributes $customTreeAttributes): void
+    public function setCustomAttributes(CustomAttributes $customAttributes): void
     {
-        $this->dataObject->setCustomTreeAttributes($customTreeAttributes);
+        $this->dataObject->setCustomAttributes($customAttributes);
     }
 }

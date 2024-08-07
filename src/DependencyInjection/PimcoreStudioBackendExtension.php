@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceI
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Symfony\Component\Config\FileLocator;
@@ -88,6 +89,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(CsvServiceInterface::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
+
+        $definition = $container->getDefinition(ConfigurationServiceInterface::class);
+        $definition->setArgument('$predefinedColumns', $config['grid']['asset']['predefined_columns']);
 
     }
 

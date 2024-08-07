@@ -52,6 +52,7 @@ class Configuration implements ConfigurationInterface
         $this->addMercureConfiguration($rootNode);
         $this->addAssetDownloadLimits($rootNode);
         $this->addCsvSettings($rootNode);
+        $this->addGridConfiguration($rootNode);
 
         return $treeBuilder;
     }
@@ -144,6 +145,27 @@ class Configuration implements ConfigurationInterface
         $node->children()
                 ->integerNode('element_recycle_bin_threshold')
                     ->defaultValue(100)
+                ->end()
+            ->end();
+    }
+
+    private function addGridConfiguration(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('grid')
+                ->children()
+                    ->arrayNode('asset')
+                        ->children()
+                            ->arrayNode('predefined_columns')
+                                ->arrayPrototype()
+                                    ->children()
+                                        ->scalarNode('group')->end()
+                                        ->scalarNode('key')->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
                 ->end()
             ->end();
     }

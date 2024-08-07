@@ -21,7 +21,7 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomAttributesTrait;
 
 #[Schema(
     title: 'DataObject',
@@ -33,7 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
         'hasChildren',
         'hasWorkflowWithPermissions',
         'fullPath',
-        'customTreeAttributes',
+        'customAttributes',
         'permissions',
     ],
     type: 'object'
@@ -41,7 +41,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomTreeAttributesTrait;
 class DataObject extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
-    use CustomTreeAttributesTrait;
+    use CustomAttributesTrait;
 
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'Giulietta')]

@@ -23,11 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -143,36 +141,6 @@ final class GridService implements GridServiceInterface
         );
     }
 
-    /**
-     * @return ColumnConfiguration[]
-     */
-    public function getAssetGridConfiguration(): array
-    {
-        $columns = [];
-        foreach ($this->getColumnCollectors() as $collector) {
-            // Only collect supported asset collectors
-            if (!in_array(ElementTypes::TYPE_ASSET, $collector->supportedElementTypes(), true)) {
-                continue;
-            }
-
-            $columns = array_merge(
-                $columns,
-                $collector->getColumnConfigurations(
-                    $this->getColumnDefinitions()
-                )
-            );
-        }
-
-        foreach ($columns as $column) {
-            $this->eventDispatcher->dispatch(
-                new GridColumnConfigurationEvent($column),
-                GridColumnConfigurationEvent::EVENT_NAME
-            );
-        }
-
-        return $columns;
-    }
-
     public function getDocumentGridColumns(): ColumnCollection
     {
         return new ColumnCollection([]);
@@ -186,10 +154,14 @@ final class GridService implements GridServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function getConfigurationFromArray(array $config): ColumnCollection
+    public function getConfigurationFromArray(array $config, bool $isExport = false): ColumnCollection
     {
         $columns = [];
         foreach ($config as $column) {
+            if ($isExport && !$this->isExportable($column['type'])) {
+                throw new InvalidArgumentException('Column type is not exportable');
+            }
+
             try {
                 $columns[] = new Column(
                     key: $column['key'],
@@ -198,7 +170,7 @@ final class GridService implements GridServiceInterface
                     group: $column['group'] ?? null,
                     config: $column['config']
                 );
-            } catch (Exception $e) {
+            } catch (Exception) {
                 throw new InvalidArgumentException('Invalid column configuration');
             }
         }
@@ -235,7 +207,7 @@ final class GridService implements GridServiceInterface
     /**
      * @return array<string, ColumnDefinitionInterface>
      */
-    private function getColumnDefinitions(): array
+    public function getColumnDefinitions(): array
     {
         if ($this->columnDefinitions) {
             return $this->columnDefinitions;
@@ -248,7 +220,7 @@ final class GridService implements GridServiceInterface
     /**
      * @return array<string, ColumnCollectorInterface>
      */
-    private function getColumnCollectors(): array
+    public function getColumnCollectors(): array
     {
         if ($this->columnCollectors) {
             return $this->columnCollectors;
@@ -259,7 +231,10 @@ final class GridService implements GridServiceInterface
         return $this->columnCollectors;
     }
 
-    private function getColumnResolvers(): array
+    /**
+     * @return array<string, ColumnResolverInterface>
+     */
+    public function getColumnResolvers(): array
     {
         if ($this->columnResolvers) {
             return $this->columnResolvers;
@@ -267,5 +242,14 @@ final class GridService implements GridServiceInterface
         $this->columnResolvers = $this->columnResolverLoader->loadColumnResolvers();
 
         return $this->columnResolvers;
+    }
+
+    private function isExportable(string $type): bool
+    {
+        if (!array_key_exists($type, $this->getColumnDefinitions())) {
+            return false;
+        }
+
+        return $this->getColumnDefinitions()[$type]->isExportable();
     }
 }
