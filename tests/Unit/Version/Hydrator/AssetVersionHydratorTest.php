@@ -20,7 +20,7 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\AssetVersionHydrator;
-use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\CustomMetaDataVersionHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\CustomMetadataVersionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
 use Pimcore\Model\Asset\Document;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -44,7 +44,7 @@ final class AssetVersionHydratorTest extends Unit
             $this->makeEmpty(DocumentServiceInterface::class),
             $this->makeEmpty(EventDispatcherInterface::class),
             $this->makeEmpty(VersionDetailServiceInterface::class),
-            $this->makeEmpty(CustomMetaDataVersionHydratorInterface::class)
+            $this->makeEmpty(CustomMetadataVersionHydratorInterface::class)
         );
 
         $hydrated = $assetVersionHydrator->hydrate($asset);

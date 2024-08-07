@@ -14,22 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 
 /**
  * @internal
  */
-trait LocalizedValueTrait
+interface CustomMetadataServiceInterface
 {
-    private function getLocalizedValue(Column $column, ElementInterface $element, string $getter): mixed
-    {
-        if ($column->getLocale()) {
-            return $element->$getter($column->getLocale());
-        }
-
-        return $element->$getter();
-    }
+    /**
+     * @return array<int, CustomMetadata>
+     *
+     * @throws AccessDeniedException
+     *
+     */
+    public function getCustomMetadata(int $id): array;
 }

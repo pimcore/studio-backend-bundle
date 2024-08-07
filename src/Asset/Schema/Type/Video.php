@@ -27,8 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetPermissions;
 )]
 class Video extends Asset
 {
-    //use MetaData\EmbeddedMetaDataTrait;
-
     public function __construct(
         #[Property(description: 'Duration', type: 'float', example: 43560.5)]
         private readonly ?float $duration,
@@ -47,7 +45,7 @@ class Video extends Asset
         string $type,
         string $filename,
         string $mimeType,
-        bool $hasMetaData,
+        bool $hasMetadata,
         bool $workflowWithPermissions,
         string $fullPath,
         AssetPermissions $permissions,
@@ -67,7 +65,7 @@ class Video extends Asset
             $type,
             $filename,
             $mimeType,
-            $hasMetaData,
+            $hasMetadata,
             $workflowWithPermissions,
             $fullPath,
             $permissions,

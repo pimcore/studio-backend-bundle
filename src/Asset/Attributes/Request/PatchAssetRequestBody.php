@@ -21,8 +21,8 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\CustomMetaData;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\PatchCustomMetaData;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\PatchCustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateIntegerProperty;
 
 /**
@@ -46,7 +46,7 @@ final class PatchAssetRequestBody extends RequestBody
                             properties: [
                                 new Property(property: 'id', description: 'Asset ID', type: 'integer', example: 83),
                                 new UpdateIntegerProperty('parentId'),
-                                new CustomMetaData(PatchCustomMetaData::class),
+                                new CustomMetadata(PatchCustomMetadata::class),
                             ],
                             type: 'object',
                         ),

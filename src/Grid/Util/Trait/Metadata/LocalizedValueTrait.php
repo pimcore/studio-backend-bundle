@@ -14,9 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -24,12 +26,19 @@ use Pimcore\Model\Element\ElementInterface;
  */
 trait LocalizedValueTrait
 {
-    private function getLocalizedValue(Column $column, ElementInterface $element, string $getter): mixed
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getLocalizedValue(Column $column, ElementInterface $element): string
     {
-        if ($column->getLocale()) {
-            return $element->$getter($column->getLocale());
+        if (!$element instanceof Asset) {
+            throw new InvalidArgumentException('Element must be an instance of Asset');
         }
 
-        return $element->$getter();
+        if ($column->getLocale()) {
+            return $element->getMetadata($column->getKey(), $column->getLocale());
+        }
+
+        return $element->getMetadata($column->getKey());
     }
 }

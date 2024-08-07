@@ -14,22 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Metadata\Predefined;
 
 /**
  * @internal
  */
-trait LocalizedValueTrait
+interface MetadataRepositoryInterface
 {
-    private function getLocalizedValue(Column $column, ElementInterface $element, string $getter): mixed
-    {
-        if ($column->getLocale()) {
-            return $element->$getter($column->getLocale());
-        }
-
-        return $element->$getter();
-    }
+    /**
+     * @return Predefined[]
+     */
+    public function getAllPredefinedMetadata(): array;
 }

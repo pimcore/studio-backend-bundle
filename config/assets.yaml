@@ -15,8 +15,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydrator
 
-  Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetaDataHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetaDataHydrator
+  Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetadataHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetadataHydrator
 
   # Encoder
   Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface:
@@ -28,8 +28,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomSettingsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomSettingsService
 
-  Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetaDataServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetaDataService
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataService
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\TextServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\TextService
@@ -69,7 +69,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\ImageAdapter:
     tags: [ 'pimcore.studio_backend.update_adapter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\CustomMetaDataAdapter:
+  Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\CustomMetadataAdapter:
     tags: [ 'pimcore.studio_backend.update_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter\CustomSettingsAdapter:
@@ -82,7 +82,7 @@ services:
   # Patcher
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter\MetaDataAdapter:
+  Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter\MetadataAdapter:
     tags: [ 'pimcore.studio_backend.patch_adapter' ]
 
   #

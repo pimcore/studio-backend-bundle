@@ -36,29 +36,29 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_backend.open_search.data_object.filter' ]
 
-  # Asset MetaData
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\SelectFilter:
+  # Asset Metadata
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\SelectFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\InputFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\InputFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\TextAreaFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\TextAreaFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\CheckboxFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\CheckboxFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\DateFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\DateFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\AssetFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\AssetFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\DocumentFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\DocumentFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\MetaData\ObjectFilter:
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\ObjectFilter:
     tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
 
   # Asset System Data

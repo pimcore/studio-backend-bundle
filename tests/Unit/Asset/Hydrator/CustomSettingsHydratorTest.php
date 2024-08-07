@@ -62,8 +62,8 @@ final class CustomSettingsHydratorTest extends Unit
         $this->assertEquals([
             'FileSize' => '6.9 MB',
             'FileType' => 'PNG',
-        ], $hydratedCustomSettings->getFixedCustomSettings()->getEmbeddedMetaData());
-        $this->assertTrue($hydratedCustomSettings->getFixedCustomSettings()->isEmbeddedMetaDataExtracted());
+        ], $hydratedCustomSettings->getFixedCustomSettings()->getEmbeddedMetadata());
+        $this->assertTrue($hydratedCustomSettings->getFixedCustomSettings()->isEmbeddedMetadataExtracted());
         $this->assertEquals([
             'imageDimensionsCalculated' => true,
             'imageWidth' => 932,

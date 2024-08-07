@@ -14,22 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
 
 /**
  * @internal
  */
-trait LocalizedValueTrait
+interface CustomMetadataHydratorInterface
 {
-    private function getLocalizedValue(Column $column, ElementInterface $element, string $getter): mixed
-    {
-        if ($column->getLocale()) {
-            return $element->$getter($column->getLocale());
-        }
-
-        return $element->$getter();
-    }
+    public function hydrate(array $customMetadata): CustomMetadata;
 }

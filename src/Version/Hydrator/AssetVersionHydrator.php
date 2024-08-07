@@ -37,7 +37,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
         private DocumentServiceInterface $documentService,
         private EventDispatcherInterface $eventDispatcher,
         private VersionDetailServiceInterface $versionDetailService,
-        private CustomMetaDataVersionHydratorInterface $customMetadataVersionHydrator,
+        private CustomMetadataVersionHydratorInterface $customMetadataVersionHydrator,
     ) {
     }
 
