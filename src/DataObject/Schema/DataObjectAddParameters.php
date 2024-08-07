@@ -22,7 +22,7 @@ use Pimcore\Model\DataObject\AbstractObject;
 
 #[Schema(
     title: 'Add Data Object Parameters',
-    required: ['key'],
+    required: ['key', 'classId', 'type'],
     type: 'object'
 )]
 final readonly class DataObjectAddParameters
