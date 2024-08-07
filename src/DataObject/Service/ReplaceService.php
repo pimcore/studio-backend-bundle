@@ -63,7 +63,7 @@ final class ReplaceService implements ReplaceServiceInterface
                 $source = $source->getLatestVersion()->loadData();
                 $source->setPublished(false);
             }
-            $this->coreDataObjectService->copyContents($source, $target);
+            $this->coreDataObjectService->copyContents($target, $source);
         } catch (Exception $e) {
             throw new ElementSavingFailedException($targetId, $e->getMessage());
         }
