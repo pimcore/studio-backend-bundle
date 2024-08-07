@@ -27,7 +27,10 @@ trait LocalizedValueTrait
 {
     private function getLocalizedValue(Column $column, ElementInterface $element): ?string
     {
-        /** @var Asset $element */
+        if (!$element instanceof Asset) {
+            return null;
+        }
+
         if ($column->getLocale()) {
             return $element->getMetadata($column->getKey(), $column->getLocale());
         }
