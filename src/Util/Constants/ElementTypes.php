@@ -21,19 +21,21 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
  */
 final readonly class ElementTypes
 {
-    public const TYPE_DATA_OBJECT = 'data-object';
-
-    public const TYPE_OBJECT = 'object';
-
     public const TYPE_ASSET = 'asset';
 
     public const TYPE_DOCUMENT = 'document';
+
+    public const TYPE_DATA_OBJECT = 'data-object';
+
+    public const TYPE_OBJECT = 'object';
 
     public const TYPE_ARCHIVE = 'zip archive';
 
     public const TYPE_FOLDER = 'folder';
 
     public const TYPE_EMAIL = 'E-Mail';
+
+    public const TYPE_CLASS_DEFINITION = 'class definition';
 
     public const ALLOWED_TYPES = [
         self::TYPE_DATA_OBJECT,
