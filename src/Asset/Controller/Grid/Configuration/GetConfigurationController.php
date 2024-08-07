@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter As IdParameterPath;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter as IdParameterPath;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\IdParameter as IdParameterQuery;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
@@ -88,8 +88,7 @@ final class GetConfigurationController extends AbstractApiController
     public function getAssetGridConfiguration(
         int $folderId,
         #[MapQueryString] GridConfigurationIdParameter $configurationId = new GridConfigurationIdParameter()
-    ): JsonResponse
-    {
+    ): JsonResponse {
         /**
          * @todo: implement usage of $folderId and $configurationId
          * If a configurationId is set, return the saved configuration for the folder.
