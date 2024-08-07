@@ -20,18 +20,21 @@ use OpenApi\Attributes\Get;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\GridConfigurationIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter as IdParameterPath;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\IdParameter as IdParameterQuery;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -52,21 +55,21 @@ final class GetConfigurationController extends AbstractApiController
      * @throws NotFoundException|SearchException
      */
     #[Route(
-        '/assets/grid/configuration/{folderId}/{configurationId}',
+        '/assets/grid/configuration/{folderId}',
         name: 'pimcore_studio_api_get_asset_grid_configuration',
         methods: ['GET'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/grid/configuration/{folderId}/{configurationId}',
+        path: self::API_PATH . '/assets/grid/configuration/{folderId}',
         operationId: 'getAssetGridConfiguration',
         description: 'Get asset saved grid configuration for a specific folder if a configuration-id is set otherwise
         get the default configuration will be returned.',
         summary: 'Get asset grid configuration for a specific folder',
         tags: [Tags::Grid->name]
     )]
-    #[IdParameter(name: 'folderId')]
-    #[IdParameter(name: 'configurationId', required: false)]
+    #[IdParameterPath(name: 'folderId')]
+    #[IdParameterQuery(description: 'Configuration ID', namePrefix: 'configuration', required: false)]
     #[SuccessResponse(
         description: 'Grid configuration',
         content: new JsonContent(
@@ -82,8 +85,10 @@ final class GetConfigurationController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAssetGridConfiguration(int $folderId, ?int $configurationId = null): JsonResponse
-    {
+    public function getAssetGridConfiguration(
+        int $folderId,
+        #[MapQueryString] GridConfigurationIdParameter $configurationId = new GridConfigurationIdParameter()
+    ): JsonResponse {
         /**
          * @todo: implement usage of $folderId and $configurationId
          * If a configurationId is set, return the saved configuration for the folder.
