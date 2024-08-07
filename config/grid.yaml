@@ -15,6 +15,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationService
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnService
 
