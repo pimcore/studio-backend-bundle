@@ -90,16 +90,12 @@ final class CloneController extends AbstractApiController
         int $parentId,
         #[MapRequestPayload] CloneParameters $parameters
     ): Response {
-        $status = HttpResponseCodes::SUCCESS->value;
-        $data = null;
         $jobRunId = $this->cloneService->cloneDataObjects($id, $parentId, $parameters);
-
         if ($jobRunId) {
-            $status = HttpResponseCodes::CREATED->value;
 
-            return $this->jsonResponse(['id' => $jobRunId], $status);
+            return $this->jsonResponse(['id' => $jobRunId], HttpResponseCodes::CREATED->value);
         }
 
-        return new Response($data, $status);
+        return new Response();
     }
 }
