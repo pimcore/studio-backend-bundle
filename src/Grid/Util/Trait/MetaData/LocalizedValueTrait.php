@@ -14,34 +14,31 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\MetaData;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
-use function get_class;
 
-trait SimpleGetterTrait
+/**
+ * @internal
+ */
+trait LocalizedValueTrait
 {
-    use LocalizedValueTrait;
-
     /**
      * @throws InvalidArgumentException
      */
-    private function getValue(Column $column, ElementInterface $element): mixed
+    private function getLocalizedValue(Column $column, ElementInterface $element): string
     {
-        $getter = $this->getGetter($column);
-        if (method_exists($element, $getter) === false) {
-            throw new InvalidArgumentException(
-                'Method ' . $getter . ' does not exist on ' . get_class($element)
-            );
+        if (!$element instanceof Asset) {
+            throw new InvalidArgumentException('Element must be an instance of Asset');
         }
 
-        return $this->getLocalizedValue($column, $element, $getter);
-    }
+        if ($column->getLocale()) {
+            return $element->getMetadata($column->getKey(), $column->getLocale());
+        }
 
-    private function getGetter(Column $column): string
-    {
-        return 'get' . ucfirst($column->getKey());
+        return $element->getMetadata($column->getKey());
     }
 }

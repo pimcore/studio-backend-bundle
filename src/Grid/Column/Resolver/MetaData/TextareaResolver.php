@@ -21,8 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\MetaData\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
@@ -31,13 +31,13 @@ use Pimcore\Model\Element\ElementInterface;
 final class TextareaResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
+    use LocalizedValueTrait;
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        /** @var Asset $element */
         return $this->getColumnData(
             $column,
-            $element->getMetadata($column->getKey())
+            $this->getLocalizedValue($column, $element)
         );
     }
 
