@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property;
 
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\UpdateCustomMetadata as UpdateCustomMetadataSchema;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\UpdateCustomMetaData as UpdateCustomMetaDataSchema;
 
 /**
  * @internal
@@ -28,9 +28,9 @@ final class UpdateCustomMetaData extends Property
     public function __construct()
     {
         parent::__construct(
-            'metadata',
+            property: 'metadata',
             type: 'array',
-            items: new Items(ref: UpdateCustomMetadataSchema::class),
+            items: new Items(ref: UpdateCustomMetaDataSchema::class),
             nullable: true,
         );
     }

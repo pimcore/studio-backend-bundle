@@ -14,20 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\CustomMetaDataVersion;
 
 /**
  * @internal
  */
-interface CustomMetadataServiceInterface
+interface CustomMetaDataVersionHydratorInterface
 {
-    /**
-     * @throws AccessDeniedException
-     *
-     * @return array<int, CustomMetadata>
-     */
-    public function getCustomMetadata(int $id): array;
+    /** @return array<int, CustomMetaDataVersion> */
+    public function hydrate(array $customMetadata): array;
 }

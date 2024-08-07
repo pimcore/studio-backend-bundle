@@ -18,13 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreSet;
 
 use Symfony\Contracts\EventDispatcher\Event;
 
-final class CustomMetadataEvent extends Event
+final class CustomMetaDataEvent extends Event
 {
     public const EVENT_NAME = 'pre_set.asset_custom_metadata';
 
     public function __construct(
         private readonly int $id,
-        private array $customMetadata
+        private array $customMetaData
     ) {
     }
 
@@ -33,13 +33,13 @@ final class CustomMetadataEvent extends Event
         return $this->id;
     }
 
-    public function getCustomMetadata(): array
+    public function getCustomMetaData(): array
     {
-        return $this->customMetadata;
+        return $this->customMetaData;
     }
 
-    public function setCustomMetadata(array $customMetadata): void
+    public function setCustomMetaData(array $customMetaData): void
     {
-        $this->customMetadata = $customMetadata;
+        $this->customMetaData = $customMetaData;
     }
 }

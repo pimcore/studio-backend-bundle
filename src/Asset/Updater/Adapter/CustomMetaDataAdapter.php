@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreSet\CustomMetadataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreSet\CustomMetaDataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Asset;
@@ -29,7 +29,7 @@ use function array_key_exists;
  * @internal
  */
 #[AutoconfigureTag('pimcore.studio_backend.update_adapter')]
-final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
+final readonly class CustomMetaDataAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'metadata';
 
@@ -44,11 +44,11 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
             return;
         }
 
-        $metadataEvent = new CustomMetadataEvent($element->getId(), $data[$this->getIndexKey()]);
+        $metaDataEvent = new CustomMetaDataEvent($element->getId(), $data[$this->getIndexKey()]);
 
-        $this->eventDispatcher->dispatch($metadataEvent, CustomMetadataEvent::EVENT_NAME);
+        $this->eventDispatcher->dispatch($metaDataEvent, CustomMetaDataEvent::EVENT_NAME);
 
-        $element->setMetadata($metadataEvent->getCustomMetadata());
+        $element->setMetadata($metaDataEvent->getCustomMetaData());
     }
 
     public function getIndexKey(): string

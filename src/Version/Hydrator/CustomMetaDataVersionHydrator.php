@@ -17,30 +17,30 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\CustomMetadataVersion;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\CustomMetaDataVersion;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
-final readonly class CustomMetadataVersionHydrator implements CustomMetadataVersionHydratorInterface
+final readonly class CustomMetaDataVersionHydrator implements CustomMetaDataVersionHydratorInterface
 {
     public function __construct(private ReferenceResolverInterface $referenceResolver)
     {
     }
 
-    /** @return array<int, CustomMetadataVersion> */
+    /** @return array<int, CustomMetaDataVersion> */
     public function hydrate(array $customMetadata): array
     {
         return array_map(
-            fn (array $customMetadata): CustomMetadataVersion => $this->hydrateSingle($customMetadata),
+            fn (array $customMetadata): CustomMetaDataVersion => $this->hydrateSingle($customMetadata),
             $customMetadata
         );
     }
 
-    private function hydrateSingle(array $customMetadata): CustomMetadataVersion
+    private function hydrateSingle(array $customMetadata): CustomMetaDataVersion
     {
-        return new CustomMetadataVersion(
+        return new CustomMetaDataVersion(
             $customMetadata['name'],
             $customMetadata['language'],
             $customMetadata['type'],

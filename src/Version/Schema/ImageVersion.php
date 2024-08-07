@@ -42,7 +42,7 @@ final class ImageVersion implements AdditionalAttributesInterface
         private readonly int $fileSize,
         #[Property(description: 'mime type', type: 'string', example: 'image/png')]
         private readonly string $mimeType,
-        #[Property(description: 'Metadata', type: 'array', items: new Items(ref: CustomMetadataVersion::class))]
+        #[Property(description: 'Metadata', type: 'array', items: new Items(ref: CustomMetaDataVersion::class))]
         private readonly array $metadata,
         #[Property(description: 'dimensions', type: Dimensions::class, example: '{"width":1920,"height":1080}')]
         private readonly ?Dimensions $dimensions = null,

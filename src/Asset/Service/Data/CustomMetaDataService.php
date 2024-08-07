@@ -17,9 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\CustomMetadataEvent;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetadataHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\CustomMetaDataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetaDataHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetaData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
@@ -31,12 +31,12 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * @internal
  */
-final readonly class CustomMetadataService implements CustomMetadataServiceInterface
+final readonly class CustomMetaDataService implements CustomMetaDataServiceInterface
 {
     use ElementProviderTrait;
 
     public function __construct(
-        private CustomMetadataHydratorInterface $hydrator,
+        private CustomMetaDataHydratorInterface $hydrator,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private EventDispatcherInterface $eventDispatcher
@@ -44,11 +44,11 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
     }
 
     /**
-     * @throws AccessDeniedException
+     * @return array<int, CustomMetaData>
+     *@throws AccessDeniedException
      *
-     * @return array<int, CustomMetadata>
      */
-    public function getCustomMetadata(int $id): array
+    public function getCustomMetaData(int $id): array
     {
         /** @var Asset $asset */
         $asset = $this->getElement($this->serviceResolver, ElementTypes::TYPE_ASSET, $id);
@@ -61,17 +61,17 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
 
         $customMetadata = [];
 
-        $originalCustomMetadata = $asset->getMetadata();
+        $originalCustomMetaData = $asset->getMetadata();
 
-        foreach ($originalCustomMetadata as $metadata) {
-            $metadata = $this->hydrator->hydrate($metadata);
+        foreach ($originalCustomMetaData as $metaData) {
+            $metaData = $this->hydrator->hydrate($metaData);
 
             $this->eventDispatcher->dispatch(
-                new CustomMetadataEvent($metadata),
-                CustomMetadataEvent::EVENT_NAME
+                new CustomMetaDataEvent($metaData),
+                CustomMetaDataEvent::EVENT_NAME
             );
 
-            $customMetadata[] = $metadata;
+            $customMetadata[] = $metaData;
         }
 
         return $customMetadata;

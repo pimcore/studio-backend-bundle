@@ -27,8 +27,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\DocumentVersionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\DocumentVersionHydrator
 
-  Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\CustomMetadataVersionHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\CustomMetadataVersionHydrator
+  Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\CustomMetaDataVersionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Version\Hydrator\CustomMetaDataVersionHydrator
 
   # Publishers
   Pimcore\Bundle\StudioBackendBundle\Version\Publisher\AssetVersionPublisherInterface:

@@ -16,12 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetaData;
 
 /**
  * @internal
  */
-interface CustomMetadataHydratorInterface
+interface CustomMetaDataHydratorInterface
 {
-    public function hydrate(array $customMetadata): CustomMetadata;
+    public function hydrate(array $customMetadata): CustomMetaData;
 }

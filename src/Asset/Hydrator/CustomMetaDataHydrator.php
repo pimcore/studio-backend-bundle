@@ -16,22 +16,22 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetaData;
 use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
-final readonly class CustomMetadataHydrator implements CustomMetadataHydratorInterface
+final readonly class CustomMetaDataHydrator implements CustomMetaDataHydratorInterface
 {
     public function __construct(private ReferenceResolverInterface $referenceResolver)
     {
     }
 
-    public function hydrate(array $customMetadata): CustomMetadata
+    public function hydrate(array $customMetadata): CustomMetaData
     {
-        return new CustomMetadata(
+        return new CustomMetaData(
             $customMetadata['name'],
             $customMetadata['language'],
             $customMetadata['type'],

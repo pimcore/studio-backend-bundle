@@ -14,31 +14,30 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 
+/**
+ * @internal
+ */
 #[Schema(
-    title: 'CustomMetadata',
+    title: 'CustomMetadataVersion',
     required: ['name', 'language', 'type', 'data'],
     type: 'object'
 )]
-final class CustomMetadata implements AdditionalAttributesInterface
+final readonly class CustomMetaDataVersion
 {
-    use AdditionalAttributesTrait;
-
     public function __construct(
         #[Property(description: 'Name', type: 'string', example: 'custom_metadata')]
-        private readonly string $name,
+        private string $name,
         #[Property(description: 'Language', type: 'string', example: 'en')]
-        private readonly string $language,
+        private string $language,
         #[Property(description: 'Type', type: 'string', example: 'input')]
-        private readonly string $type,
+        private string $type,
         #[Property(description: 'Data', type: 'string', example: 'data')]
-        private readonly mixed $data
+        private mixed $data
     ) {
     }
 

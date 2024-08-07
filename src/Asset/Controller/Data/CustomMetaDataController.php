@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Data;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetaData;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetaDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
@@ -38,13 +38,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CustomMetadataController extends AbstractApiController
+final class CustomMetaDataController extends AbstractApiController
 {
     use ElementProviderTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomMetadataServiceInterface $customMetadataService
+        private readonly CustomMetaDataServiceInterface $customMetadataService
     ) {
         parent::__construct($serializer);
     }
@@ -64,7 +64,7 @@ final class CustomMetadataController extends AbstractApiController
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[SuccessResponse(
         description: 'Array of custom metadata',
-        content: new ItemsJson(CustomMetadata::class)
+        content: new ItemsJson(CustomMetaData::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -72,6 +72,6 @@ final class CustomMetadataController extends AbstractApiController
     ])]
     public function getAssetCustomSettingsById(int $id): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->customMetadataService->getCustomMetadata($id)]);
+        return $this->jsonResponse(['items' => $this->customMetadataService->getCustomMetaData($id)]);
     }
 }

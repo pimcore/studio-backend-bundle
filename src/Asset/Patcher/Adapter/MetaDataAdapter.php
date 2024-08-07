@@ -28,7 +28,7 @@ use function array_key_exists;
  * @internal
  */
 #[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
-final class MetadataAdapter implements PatchAdapterInterface
+final class MetaDataAdapter implements PatchAdapterInterface
 {
     private const INDEX_KEY = 'metadata';
 
@@ -43,30 +43,30 @@ final class MetadataAdapter implements PatchAdapterInterface
             return;
         }
 
-        $metadataForPatch = $data[self::INDEX_KEY];
-        $currentMetadata = $element->getMetadata();
-        $patchedMetadata = [];
+        $metaDataForPatch = $data[self::INDEX_KEY];
+        $currentMetaData = $element->getMetadata();
+        $patchedMetaData = [];
 
-        foreach ($currentMetadata as $metadata) {
-            $index = array_search($metadata['name'], array_column($metadataForPatch, 'name'), true);
+        foreach ($currentMetaData as $metaData) {
+            $index = array_search($metaData['name'], array_column($metaDataForPatch, 'name'), true);
 
             if ($index === false) {
-                $patchedMetadata[] = $metadata;
+                $patchedMetaData[] = $metaData;
 
                 continue;
             }
 
-            // check for every single metadata if it is in the patch data
+            // check for every single metaData if it is in the patch data
             foreach (self::PATCHABLE_KEYS as $patchKeys) {
-                if (array_key_exists($patchKeys, $metadataForPatch[$index])) {
-                    $metadata[$patchKeys] = $metadataForPatch[$index][$patchKeys];
+                if (array_key_exists($patchKeys, $metaDataForPatch[$index])) {
+                    $metaData[$patchKeys] = $metaDataForPatch[$index][$patchKeys];
                 }
             }
-            $patchedMetadata[] = $metadata;
+            $patchedMetaData[] = $metaData;
         }
 
-        if (!empty($patchedMetadata)) {
-            $element->setMetadata($patchedMetadata);
+        if (!empty($patchedMetaData)) {
+            $element->setMetadata($patchedMetaData);
         }
     }
 

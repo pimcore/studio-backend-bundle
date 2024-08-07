@@ -16,24 +16,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetaData;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
-final class CustomMetadataEvent extends AbstractPreResponseEvent
+final class CustomMetaDataEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.asset_custom_metadata';
 
     public function __construct(
-        private readonly CustomMetadata $customMetadata
+        private readonly CustomMetaData $customMetaData
     ) {
-        parent::__construct($customMetadata);
+        parent::__construct($customMetaData);
     }
 
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getCustomMetadata(): CustomMetadata
+    public function getCustomMetaData(): CustomMetaData
     {
-        return $this->customMetadata;
+        return $this->customMetaData;
     }
 }

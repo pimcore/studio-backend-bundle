@@ -20,20 +20,18 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 #[Schema(
-    title: 'UpdateCustomMetadata',
-    required: ['name', 'language', 'type', 'data'],
+    title: 'PatchCustomMetaData',
+    required: ['name'],
     type: 'object'
 )]
-final readonly class UpdateCustomMetadata
+final readonly class PatchCustomMetaData
 {
     public function __construct(
-        #[Property(description: 'Name', type: 'string', example: 'custom_metadata')]
+        #[Property(description: 'Name', type: 'string', example: 'custom_metadata', nullable: false)]
         private string $name,
-        #[Property(description: 'Language', type: 'string', example: 'en')]
-        private string $language,
-        #[Property(description: 'Type', type: 'string', example: 'input')]
-        private string $type,
-        #[Property(description: 'Data', type: 'mixed', example: 'data')]
+        #[Property(description: 'Language', type: 'string', example: 'en', nullable: true)]
+        private ?string $language,
+        #[Property(description: 'Data', type: 'string', example: 'data', nullable: true)]
         private mixed $data
     ) {
     }
@@ -43,14 +41,9 @@ final readonly class UpdateCustomMetadata
         return $this->name;
     }
 
-    public function getLanguage(): string
+    public function getLanguage(): ?string
     {
         return $this->language;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
     }
 
     public function getData(): mixed

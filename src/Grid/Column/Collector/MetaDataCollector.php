@@ -58,11 +58,11 @@ final readonly class MetaDataCollector implements ColumnCollectorInterface
      */
     private function getDefaultMetaData(): array
     {
-        $defaultMetadata = ['title', 'alt', 'copyright'];
+        $defaultMetaData = ['title', 'alt', 'copyright'];
         $columns = [];
-        foreach ($defaultMetadata as $metadata) {
+        foreach ($defaultMetaData as $metaData) {
             $columns[] = new ColumnConfiguration(
-                key: $metadata,
+                key: $metaData,
                 group: 'default_metadata',
                 sortable: true,
                 editable: true,
