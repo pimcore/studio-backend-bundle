@@ -41,6 +41,7 @@ services:
   #
 
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\PatchSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\RewriteReferencesSubscriber: ~
 
   #
   # Mercure SSE

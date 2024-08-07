@@ -34,3 +34,9 @@ services:
   #
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler\CloneHandler: ~
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\EventSubscriber\CloneSubscriber: ~
