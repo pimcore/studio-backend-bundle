@@ -16,19 +16,30 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Repository;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Metadata\Predefined\PredefinedResolver;
+use Pimcore\Bundle\StaticResolverBundle\Models\Metadata\Predefined\PredefinedResolverInterface;
 use Pimcore\Model\Metadata\Predefined;
 use Pimcore\Model\Metadata\Predefined\Listing;
 
 /**
  * @internal
  */
-final class MetadataRepository implements MetadataRepositoryInterface
+final readonly class MetadataRepository implements MetadataRepositoryInterface
 {
+    public function __construct(private PredefinedResolverInterface $predefinedResolver)
+    {
+    }
+
     /**
      * @return Predefined[]
      */
     public function getAllPredefinedMetadata(): array
     {
         return (new Listing())->load();
+    }
+
+    public function getPredefinedMetadataById(string $name): ?Predefined
+    {
+        return $this->predefinedResolver->getByName($name);
     }
 }

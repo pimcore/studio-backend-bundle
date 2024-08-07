@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Metadata\Predefined\PredefinedResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -37,6 +39,13 @@ final class MetadataAdapter implements PatchAdapterInterface
         'data',
     ];
 
+    public function __construct(private readonly PredefinedResolverInterface $predefinedResolver)
+    {
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
     public function patch(ElementInterface $element, array $data): void
     {
         if (!$element instanceof Asset || !isset($data[self::INDEX_KEY])) {
@@ -44,14 +53,14 @@ final class MetadataAdapter implements PatchAdapterInterface
         }
 
         $metadataForPatch = $data[self::INDEX_KEY];
-        $currentMetadata = $element->getMetadata();
+        $currentMetadata = $element->getMetadata(null, null, false, true);
         $patchedMetadata = [];
 
-        foreach ($currentMetadata as $metadata) {
-            $index = array_search($metadata['name'], array_column($metadataForPatch, 'name'), true);
+        foreach ($currentMetadata as $metaData) {
+            $index = array_search($metaData['name'], array_column($metadataForPatch, 'name'), true);
 
             if ($index === false) {
-                $patchedMetadata[] = $metadata;
+                $patchedMetadata[] = $metaData;
 
                 continue;
             }
@@ -59,11 +68,22 @@ final class MetadataAdapter implements PatchAdapterInterface
             // check for every single metadata if it is in the patch data
             foreach (self::PATCHABLE_KEYS as $patchKeys) {
                 if (array_key_exists($patchKeys, $metadataForPatch[$index])) {
-                    $metadata[$patchKeys] = $metadataForPatch[$index][$patchKeys];
+                    $metaData[$patchKeys] = $metadataForPatch[$index][$patchKeys];
                 }
             }
-            $patchedMetadata[] = $metadata;
+            $patchedMetadata[] = $metaData;
+
+            // unset them, everything that is still in there needs to be added
+            unset($metadataForPatch[$index]);
         }
+
+        $patchedMetadata = [
+            ...$patchedMetadata,
+            ...array_map(
+                fn(array $metaData) => $this->processNewMetadataEntry($metaData),
+                $metadataForPatch
+            )
+        ];
 
         if (!empty($patchedMetadata)) {
             $element->setMetadata($patchedMetadata);
@@ -79,6 +99,29 @@ final class MetadataAdapter implements PatchAdapterInterface
     {
         return [
             ElementTypes::TYPE_ASSET,
+        ];
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function processNewMetadataEntry(array $metadata): array
+    {
+        if (!isset($metadata['name'])) {
+            throw new InvalidArgumentException('Metadata name is required');
+        }
+
+        $predefined = $this->predefinedResolver->getByName($metadata['name']);
+
+        if (!$predefined) {
+            throw new InvalidArgumentException('Predefined metadata not found');
+        }
+
+        return [
+            'name' => $predefined->getName(),
+            'language' => $metadata['language'] ?? null,
+            'type' => $predefined->getType(),
+            'data' => $metadata['data'] ?? null,
         ];
     }
 }
