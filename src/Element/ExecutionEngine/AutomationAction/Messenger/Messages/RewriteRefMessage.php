@@ -14,17 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Mercure;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-enum Events: string
+final class RewriteRefMessage extends AbstractExecutionEngineMessage
 {
-    use EnumToValueArrayTrait;
-    case CLONING_FINISHED = 'cloning-finished';
-    case PATCH_FINISHED = 'patch-finished';
-    case REWRITE_REFERENCES_FINISHED = 'rewrite-references-finished';
 }

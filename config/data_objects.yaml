@@ -23,5 +23,14 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ExecutionEngine\CloneServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ExecutionEngine\CloneService
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectService
+
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler\CloneHandler: ~

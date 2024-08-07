@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\EventSubscriber;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
@@ -46,7 +46,7 @@ final readonly class CloneSubscriber implements EventSubscriberInterface
     {
         if (
             $event->getNewState() === JobRunStates::FINISHED->value &&
-            $event->getJobName() === Jobs::CLONE_ASSETS->value
+            $event->getJobName() === Jobs::CLONE_DATA_OBJECTS->value
         ) {
             $this->publishService->publish(
                 Events::CLONING_FINISHED->value,

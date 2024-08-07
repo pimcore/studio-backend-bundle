@@ -14,17 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ExecutionEngine;
 
-use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CloneMessage;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\CloneParameters;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -35,11 +35,8 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Asset\Folder;
-use Pimcore\Model\Asset\Service as AssetService;
-use Pimcore\Model\Element\ElementDescriptor;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\DataObject\Service as DataObjectService;
 use Pimcore\Model\UserInterface;
 use function sprintf;
 
@@ -49,8 +46,8 @@ use function sprintf;
 final readonly class CloneService implements CloneServiceInterface
 {
     public function __construct(
-        private AssetServiceInterface $assetService,
-        private AssetSearchServiceInterface $assetSearchService,
+        private DataObjectServiceInterface $dataObjectService,
+        private DataObjectSearchServiceInterface $dataObjectSearchService,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private SecurityServiceInterface $securityService,
         private SynchronousProcessingServiceInterface $synchronousProcessingService
@@ -64,25 +61,26 @@ final readonly class CloneService implements CloneServiceInterface
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
-    public function cloneAssetRecursively(
+    public function cloneDataObjects(
         int $sourceId,
-        int $parentId
+        int $parentId,
+        CloneParameters $parameters,
     ): ?int {
         $user = $this->securityService->getCurrentUser();
-        $source = $this->assetService->getAssetElement(
+        $source = $this->dataObjectService->getDataObjectElement(
             $user,
             $sourceId,
         );
-        $newParent = $this->cloneElement(
+        $newParent = $this->cloneDataObject(
             $source,
-            $this->assetService->getAssetElement(
+            $this->dataObjectService->getDataObjectElement(
                 $user,
                 $parentId,
             ),
             $this->securityService->getCurrentUser()
         );
 
-        if (!$source->hasChildren()) {
+        if (!$parameters->isRecursive() || !$source->hasChildren()) {
             return null;
         }
 
@@ -90,6 +88,7 @@ final readonly class CloneService implements CloneServiceInterface
             user: $user,
             originalParent: $source,
             newParent: $newParent,
+            updateReferences: $parameters->isUpdateReferences(),
         );
 
     }
@@ -97,11 +96,11 @@ final readonly class CloneService implements CloneServiceInterface
     /**
      * @throws ElementSavingFailedException|ForbiddenException
      */
-    public function cloneElement(
-        Asset $source,
-        Asset $parent,
+    public function cloneDataObject(
+        DataObject $source,
+        DataObject $parent,
         UserInterface $user
-    ): Asset {
+    ): DataObject {
         if (!$parent->isAllowed(ElementPermissions::CREATE_PERMISSION)) {
             throw new ForbiddenException(
                 sprintf(
@@ -111,26 +110,18 @@ final readonly class CloneService implements CloneServiceInterface
             );
         }
 
-        if (!$parent instanceof Folder) {
-            throw new ElementSavingFailedException(
-                null,
-                sprintf('Invalid parent type (%s)', $parent->getType())
-            );
+        $this->synchronousProcessingService->enable();
+
+        $dataObject = (new DataObjectService())->copyAsChild(
+            $parent,
+            $source,
+        );
+
+        if (!$dataObject instanceof DataObject) {
+            throw new ElementSavingFailedException($source->getId(), 'Failed to clone data object');
         }
 
-        try {
-            $this->synchronousProcessingService->enable();
-
-            return (new AssetService())->copyAsChild(
-                $parent,
-                $source,
-            );
-        } catch (Exception $e) {
-            throw new ElementSavingFailedException(
-                null,
-                $e->getMessage()
-            );
-        }
+        return $dataObject;
     }
 
     /**
@@ -138,42 +129,43 @@ final readonly class CloneService implements CloneServiceInterface
      */
     public function getNewCloneTarget(
         UserInterface $user,
-        Asset $source,
+        DataObject $source,
         int $originalParentId,
         int $parentId,
-    ): Asset {
-        $originalParent = $this->assetService->getAssetElement($user, $originalParentId);
-        $parent = $this->assetService->getAssetElement($user, $parentId);
+    ): DataObject {
+        $originalParent = $this->dataObjectService->getDataObjectElement($user, $originalParentId);
+        $parent = $this->dataObjectService->getDataObjectElement($user, $parentId);
         $parentPath = preg_replace(
             '@^' . $originalParent->getRealFullPath() . '@',
             $parent . '/',
             $source->getRealPath()
         );
 
-        return $this->assetService->getAssetElementByPath($user, $parentPath);
+        return $this->dataObjectService->getDataObjectElementByPath($user, $parentPath);
     }
 
     private function cloneChildrenWithExecutionEngine(
         UserInterface $user,
-        Asset $originalParent,
-        Asset $newParent,
+        DataObject $originalParent,
+        DataObject $newParent,
+        bool $updateReferences
     ): int {
-        $ids = $this->assetSearchService->getChildrenIds($originalParent->getRealFullPath(), 'asc');
+        $ids = $this->dataObjectSearchService->getChildrenIds($originalParent->getRealFullPath(), 'asc');
         $job = new Job(
-            name: Jobs::CLONE_ASSETS->value,
-            steps: [
-                new JobStep(JobSteps::ASSET_CLONING->value, AssetCloneMessage::class, '', []),
-            ],
-            selectedElements: array_map(
-                static fn (int $id) => new ElementDescriptor(
-                    ElementTypes::TYPE_ASSET,
-                    $id
+            name: Jobs::CLONE_DATA_OBJECTS->value,
+            steps: array_map(
+                static fn (int $id) => new JobStep(
+                    JobSteps::DATA_OBJECT_CLONING->value,
+                    CloneMessage::class,
+                    '',
+                    [self::OBJECT_TO_CLONE => $id]
                 ),
                 $ids
             ),
             environmentData: [
                 EnvironmentVariables::ORIGINAL_PARENT_ID->value => $originalParent->getId(),
                 EnvironmentVariables::PARENT_ID->value => $newParent->getId(),
+                EnvironmentVariables::UPDATE_REFERENCES->value => $updateReferences,
             ]
         );
         $jobRun = $this->jobExecutionAgent->startJobExecution(

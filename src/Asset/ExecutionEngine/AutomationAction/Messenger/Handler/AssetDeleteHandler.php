@@ -58,7 +58,7 @@ final class AssetDeleteHandler extends AbstractHandler
         }
 
         $jobRun = $this->getJobRun($message);
-        $validatedParameters = $this->validateJobParameters(
+        $validatedParameters = $this->validateFullParameters(
             $message,
             $jobRun,
             $this->userResolver

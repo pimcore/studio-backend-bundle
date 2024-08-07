@@ -11,6 +11,7 @@ studio_ee_zip_cleanup_failed: 'Zip directory %directory% could not be removed: %
 studio_ee_csv_creation_failed: 'CSV Export failed: %message%'
 studio_ee_csv_data_collection_failed: 'Data for CSV export could not be extracted for asset %id%: %message%'
 studio_ee_element_patch_failed: 'Element with type %type% with ID %id% could not be updated: %message%'
+studio_ee_element_rewrite_references_failed: 'Element references with type %type% with ID %id% could not be rewritten: %message%'
 studio_ee_no_element_data_found: 'No data found'
 studio_ee_job_create_download_zip: Create Download Zip
 studio_ee_job_clone_assets: Clone Assets
@@ -19,6 +20,8 @@ studio_ee_job_delete_assets: Delete Assets
 studio_ee_job_patch_elements: Patch Elements
 studio_ee_job_create_csv: Create CSV
 studio_ee_job_upload_assets: Upload Assets
+studio_ee_job_clone_data_objects: Clone Data Objects
+studio_ee_job_rewrite_element_references: Rewrite Element References
 studio_ee_job_step_zip_creation: Zip Download Creation
 studio_ee_job_step_asset_deletion: Asset Deletion
 studio_ee_job_step_asset_cloning: Asset Cloning
@@ -28,6 +31,8 @@ studio_ee_job_step_asset_uploading: Asset Uploading
 studio_ee_job_step_csv_creation: CSV Creation
 studio_ee_job_step_csv_collection: CSV Collection
 studio_ee_job_step_element_patching: Element Patching
+studio_ee_job_step_element_rewrite_references: Rewrite Element References
+studio_ee_job_step_data_object_cloning: Data Object Cloning
 studio_ee_element_folder_collection_not_supported: 'Collection for folders is not supported. ID: %folderId%'
 studio_ee_file_not_found_for_job_run: 'File %type% not found for job run. ID: %jobRunId%'
 studio_ee_no_assets_found_for_job_run: 'No assets found for job run. ID: %jobRunId%'

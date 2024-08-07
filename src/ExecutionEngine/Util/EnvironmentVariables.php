@@ -14,17 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Mercure;
-
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
+namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
 
 /**
  * @internal
  */
-enum Events: string
+enum EnvironmentVariables: string
 {
-    use EnumToValueArrayTrait;
-    case CLONING_FINISHED = 'cloning-finished';
-    case PATCH_FINISHED = 'patch-finished';
-    case REWRITE_REFERENCES_FINISHED = 'rewrite-references-finished';
+    case ORIGINAL_PARENT_ID = 'originalParentId';
+    case PARENT_ID = 'parentId';
+    case UPLOAD_FOLDER_LOCATION = 'uploadFolderLocation';
+    case UPDATE_REFERENCES = 'updateReferences';
+    case REWRITE_CONFIGURATION = 'rewriteConfiguration';
+    case REWRITE_PARAMETERS = 'rewriteParameters';
 }

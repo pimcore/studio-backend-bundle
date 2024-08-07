@@ -100,14 +100,7 @@ final class CsvDataCollectionHandler extends AbstractHandler
                 ),
             ];
 
-            if (isset($jobRun->getContext()[Csv::ASSET_EXPORT_DATA->value])) {
-                $assetData = array_merge(
-                    $jobRun->getContext()[Csv::ASSET_EXPORT_DATA->value],
-                    $assetData
-                );
-            }
-
-            $this->updateJobRunContext($jobRun, Csv::ASSET_EXPORT_DATA->value, $assetData);
+            $this->updateContextArrayValues($jobRun, Csv::ASSET_EXPORT_DATA->value, $assetData);
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,

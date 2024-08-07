@@ -22,22 +22,19 @@ use Pimcore\Model\UserInterface;
 /**
  * @internal
  */
-readonly class ExecuteActionData
+final readonly class FullExecuteActionData extends ExecuteActionData
 {
     public function __construct(
-        private UserInterface $user,
-        private array $environmentData = []
+        private ElementDescriptor $subject,
+        UserInterface $user,
+        array $environmentData = []
     ) {
+        parent::__construct($user, $environmentData);
 
     }
 
-    public function getUser(): UserInterface
+    public function getSubject(): ElementDescriptor
     {
-        return $this->user;
-    }
-
-    public function getEnvironmentData(): array
-    {
-        return $this->environmentData;
+        return $this->subject;
     }
 }
