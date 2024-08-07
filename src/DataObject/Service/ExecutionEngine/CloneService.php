@@ -45,6 +45,8 @@ use function sprintf;
  */
 final readonly class CloneService implements CloneServiceInterface
 {
+    private DataObjectService $coreDataObjectService;
+
     public function __construct(
         private DataObjectServiceInterface $dataObjectService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
@@ -52,6 +54,7 @@ final readonly class CloneService implements CloneServiceInterface
         private SecurityServiceInterface $securityService,
         private SynchronousProcessingServiceInterface $synchronousProcessingService
     ) {
+        $this->coreDataObjectService = new DataObjectService();
     }
 
     /**
@@ -112,7 +115,7 @@ final readonly class CloneService implements CloneServiceInterface
 
         $this->synchronousProcessingService->enable();
 
-        $dataObject = (new DataObjectService())->copyAsChild(
+        $dataObject = $this->coreDataObjectService->copyAsChild(
             $parent,
             $source,
         );

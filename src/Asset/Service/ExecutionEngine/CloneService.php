@@ -46,15 +46,18 @@ use function sprintf;
 /**
  * @internal
  */
-final readonly class CloneService implements CloneServiceInterface
+final class CloneService implements CloneServiceInterface
 {
+    private AssetService $coreAssetService;
+
     public function __construct(
-        private AssetServiceInterface $assetService,
-        private AssetSearchServiceInterface $assetSearchService,
-        private JobExecutionAgentInterface $jobExecutionAgent,
-        private SecurityServiceInterface $securityService,
-        private SynchronousProcessingServiceInterface $synchronousProcessingService
+        private readonly AssetServiceInterface $assetService,
+        private readonly AssetSearchServiceInterface $assetSearchService,
+        private readonly JobExecutionAgentInterface $jobExecutionAgent,
+        private readonly SecurityServiceInterface $securityService,
+        private readonly SynchronousProcessingServiceInterface $synchronousProcessingService
     ) {
+        $this->coreAssetService = new AssetService();
     }
 
     /**
@@ -121,7 +124,7 @@ final readonly class CloneService implements CloneServiceInterface
         try {
             $this->synchronousProcessingService->enable();
 
-            return (new AssetService())->copyAsChild(
+            return $this->coreAssetService->copyAsChild(
                 $parent,
                 $source,
             );
