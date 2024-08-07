@@ -38,8 +38,7 @@ final class ReplaceService implements ReplaceServiceInterface
     public function __construct(
         private readonly DataObjectServiceInterface $dataObjectService,
         private readonly SecurityServiceInterface $securityService,
-    )
-    {
+    ) {
         $this->coreDataObjectService = new DataObjectService();
     }
 
@@ -53,12 +52,12 @@ final class ReplaceService implements ReplaceServiceInterface
     public function replaceContents(
         int $sourceId,
         int $targetId,
-    ): void
-    {
+    ): void {
         $user = $this->securityService->getCurrentUser();
         $source = $this->getConcreteElement($user, $sourceId);
         $target = $this->getConcreteElement($user, $targetId);
         $this->securityService->hasElementPermission($target, $user, ElementPermissions::CREATE_PERMISSION);
+
         try {
             if ($source->getLatestVersion()) {
                 $source = $source->getLatestVersion()->loadData();

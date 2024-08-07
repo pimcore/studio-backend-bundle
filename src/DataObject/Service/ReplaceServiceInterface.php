@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 
 interface ReplaceServiceInterface
 {
-
     /**
      * @throws AccessDeniedException
      * @throws ElementSavingFailedException
