@@ -43,13 +43,15 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
-use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\AbstractObject;
+use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\FactoryInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -86,8 +88,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function addDataObject(
         int $parentId,
         DataObjectAddParameters $parameters,
-    ): int
-    {
+    ): int {
         $user = $this->securityService->getCurrentUser();
         $parent = $this->getValidParent($user, $parentId);
         if ($this->dataObjectServiceResolver->pathExists($parent->getFullPath() . '/' . $parameters->getKey())) {
@@ -96,6 +97,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
 
         $class = $this->getValidClass($parameters->getClassId());
         $object = $this->getValidObjectByClass($parameters->getType(), $class->getName());
+
         return $this->createNewObject(
             $parent->getId(),
             $object,
@@ -257,8 +259,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         ClassDefinition $class,
         UserInterface $user,
         DataObjectAddParameters $parameters,
-    ): int
-    {
+    ): int {
         try {
             $object->setClassId($class->getId());
             $object->setClassName($class->getName());
