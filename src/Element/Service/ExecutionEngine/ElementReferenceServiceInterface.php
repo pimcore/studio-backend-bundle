@@ -22,7 +22,6 @@ use Pimcore\Model\UserInterface;
 
 interface ElementReferenceServiceInterface
 {
-
     /**
      * @throws Exception
      */

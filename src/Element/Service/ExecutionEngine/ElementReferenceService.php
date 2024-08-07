@@ -30,8 +30,8 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Model\Asset;
-use Pimcore\Model\Document;
 use Pimcore\Model\DataObject\AbstractObject;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -57,8 +57,7 @@ final readonly class ElementReferenceService implements ElementReferenceServiceI
         ElementInterface $element,
         array $rewriteConfiguration,
         array $parameters = []
-    ): void
-    {
+    ): void {
         match (true) {
             $element instanceof AbstractObject => $this->rewriteDataObjectReferences(
                 $user,
@@ -105,7 +104,7 @@ final readonly class ElementReferenceService implements ElementReferenceServiceI
             ),
             environmentData: [
                 EnvironmentVariables::REWRITE_CONFIGURATION->value => [$type => $rewriteConfiguration],
-                EnvironmentVariables::REWRITE_PARAMETERS->value => []
+                EnvironmentVariables::REWRITE_PARAMETERS->value => [],
             ]
         );
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -120,8 +119,7 @@ final readonly class ElementReferenceService implements ElementReferenceServiceI
     private function rewriteAssetReferences(
         Asset $element,
         array $rewriteConfiguration
-    ): void
-    {
+    ): void {
         $this->assetServiceResolver->rewriteIds(
             $element,
             $rewriteConfiguration
@@ -136,8 +134,7 @@ final readonly class ElementReferenceService implements ElementReferenceServiceI
         Document $element,
         array $rewriteConfiguration,
         array $parameters = [],
-    ): void
-    {
+    ): void {
         $object = $this->documentServiceResolver->rewriteIds(
             $element,
             $rewriteConfiguration,
@@ -156,8 +153,7 @@ final readonly class ElementReferenceService implements ElementReferenceServiceI
         AbstractObject $element,
         array $rewriteConfiguration,
         array $parameters = [],
-    ): void
-    {
+    ): void {
         $object = $this->dataObjectServiceResolver->rewriteIds(
             $element,
             $rewriteConfiguration,

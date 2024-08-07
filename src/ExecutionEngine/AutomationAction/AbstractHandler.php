@@ -24,7 +24,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConsoleDependencyMissingException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
@@ -33,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\FullExecuteActionDa
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -56,8 +54,7 @@ class AbstractHandler extends AbstractAutomationActionHandler
         JobRun $jobRun,
         UserResolverInterface $userResolver,
         ?array $requiredEnvironmentVariables = null,
-    ): AbortActionData|FullExecuteActionData
-    {
+    ): AbortActionData|FullExecuteActionData {
         $parameters = $this->validateJobParameters($message, $jobRun, $userResolver, $requiredEnvironmentVariables);
         if ($parameters instanceof FullExecuteActionData || $parameters instanceof AbortActionData) {
             return $parameters;
@@ -179,8 +176,7 @@ class AbstractHandler extends AbstractAutomationActionHandler
         UserInterface $user,
         array $jobEnvironmentData,
         ?ElementDescriptor $element
-    ): ExecuteActionData|FullExecuteActionData
-    {
+    ): ExecuteActionData|FullExecuteActionData {
         if ($element === null) {
             return new ExecuteActionData($user, $jobEnvironmentData);
         }

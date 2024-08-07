@@ -30,7 +30,7 @@ final readonly class CloneParameters
         private bool $recursive = false,
         #[Property(description: 'Update References', type: 'bool', example: false)]
         private bool $updateReferences = false,
-    ){
+    ) {
     }
 
     public function isRecursive(): bool
