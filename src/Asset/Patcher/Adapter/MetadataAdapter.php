@@ -80,9 +80,9 @@ final class MetadataAdapter implements PatchAdapterInterface
         $patchedMetadata = [
             ...$patchedMetadata,
             ...array_map(
-                fn(array $metaData) => $this->processNewMetadataEntry($metaData),
+                fn (array $metaData) => $this->processNewMetadataEntry($metaData),
                 $metadataForPatch
-            )
+            ),
         ];
 
         if (!empty($patchedMetadata)) {

@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Repository;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\Metadata\Predefined\PredefinedResolver;
 use Pimcore\Bundle\StaticResolverBundle\Models\Metadata\Predefined\PredefinedResolverInterface;
 use Pimcore\Model\Metadata\Predefined;
 use Pimcore\Model\Metadata\Predefined\Listing;
