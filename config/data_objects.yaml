@@ -29,6 +29,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectService
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceService
+
   #
   # Handler
   #
