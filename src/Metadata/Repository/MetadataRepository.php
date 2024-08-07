@@ -37,7 +37,7 @@ final readonly class MetadataRepository implements MetadataRepositoryInterface
         return (new Listing())->load();
     }
 
-    public function getPredefinedMetadataById(string $name): ?Predefined
+    public function getPredefinedMetadataByName(string $name): ?Predefined
     {
         return $this->predefinedResolver->getByName($name);
     }

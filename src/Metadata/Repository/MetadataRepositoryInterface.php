@@ -28,5 +28,5 @@ interface MetadataRepositoryInterface
      */
     public function getAllPredefinedMetadata(): array;
 
-    public function getPredefinedMetadataById(string $name): ?Predefined;
+    public function getPredefinedMetadataByName(string $name): ?Predefined;
 }
