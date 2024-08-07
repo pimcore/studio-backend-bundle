@@ -24,7 +24,7 @@ use Pimcore\Model\Element\ElementInterface;
  */
 trait LocalizedValueTrait
 {
-    private function getLocalizedValue(Column $column, ElementInterface $element, string $getter): ?string
+    private function getLocalizedValue(Column $column, ElementInterface $element, string $getter): mixed
     {
         if ($column->getLocale()) {
             return $element->$getter($column->getLocale());

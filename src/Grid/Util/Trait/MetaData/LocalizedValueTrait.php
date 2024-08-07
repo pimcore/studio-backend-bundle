@@ -29,7 +29,7 @@ trait LocalizedValueTrait
     /**
      * @throws InvalidArgumentException
      */
-    private function getLocalizedValue(Column $column, ElementInterface $element): string
+    private function getLocalizedValue(Column $column, ElementInterface $element): ?string
     {
         if (!$element instanceof Asset) {
             throw new InvalidArgumentException('Element must be an instance of Asset');
