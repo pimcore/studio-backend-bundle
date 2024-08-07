@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Pimcore
@@ -14,18 +13,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Mercure;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Util;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
-
-/**
- * @internal
- */
-enum Events: string
+enum JobSteps: string
 {
-    use EnumToValueArrayTrait;
-
-    case CLONING_FINISHED = 'cloning-finished';
-    case PATCH_FINISHED = 'patch-finished';
-    case REWRITE_REFERENCES_FINISHED = 'rewrite-references-finished';
+    case DATA_OBJECT_CLONING = 'studio_ee_job_step_data_object_cloning';
 }

@@ -24,11 +24,11 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ConsoleDependencyMissingException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\ExecuteActionData;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\FullExecuteActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
@@ -47,16 +47,31 @@ class AbstractHandler extends AbstractAutomationActionHandler
     }
 
     /**
-     * @throws ConsoleDependencyMissingException
+     * @throws Exception
      */
+    protected function validateFullParameters(
+        GenericExecutionEngineMessageInterface $message,
+        JobRun $jobRun,
+        UserResolverInterface $userResolver,
+        ?array $requiredEnvironmentVariables = null,
+    ): AbortActionData|FullExecuteActionData {
+        $parameters = $this->validateJobParameters($message, $jobRun, $userResolver, $requiredEnvironmentVariables);
+        if ($parameters instanceof FullExecuteActionData || $parameters instanceof AbortActionData) {
+            return $parameters;
+        }
+
+        return $this->getAbortData(Config::NO_ELEMENT_PROVIDED->value);
+    }
+
     protected function validateJobParameters(
         GenericExecutionEngineMessageInterface $message,
         JobRun $jobRun,
         UserResolverInterface $userResolver,
         ?array $requiredEnvironmentVariables = null,
-    ): AbortActionData|ExecuteActionData {
+    ): AbortActionData|FullExecuteActionData|ExecuteActionData {
+        $hasElements = $jobRun->getTotalElements() > 0;
         $element = $message->getElement();
-        if (!$element) {
+        if ($hasElements && !$element) {
             return $this->getAbortData(Config::NO_ELEMENT_PROVIDED->value);
         }
 
@@ -83,11 +98,7 @@ class AbstractHandler extends AbstractAutomationActionHandler
             }
         }
 
-        return new ExecuteActionData(
-            $user,
-            $element,
-            $jobEnvironmentData
-        );
+        return $this->getExecutionActionData($user, $jobEnvironmentData, $element);
     }
 
     protected function getAbortData(string $message, array $messageParams = []): AbortActionData
@@ -146,5 +157,30 @@ class AbstractHandler extends AbstractAutomationActionHandler
         }
 
         throw new EnvironmentException('How did I get here?');
+    }
+
+    protected function updateContextArrayValues(JobRun $jobRun, string $key, array $value): void
+    {
+        $context = $jobRun->getContext();
+        $contextValue = $value;
+
+        if (isset($context[$key])) {
+            $contextValue = $context[$key];
+            $contextValue[key($value)] = reset($value);
+        }
+
+        $this->updateJobRunContext($jobRun, $key, $contextValue);
+    }
+
+    private function getExecutionActionData(
+        UserInterface $user,
+        array $jobEnvironmentData,
+        ?ElementDescriptor $element
+    ): ExecuteActionData|FullExecuteActionData {
+        if ($element === null) {
+            return new ExecuteActionData($user, $jobEnvironmentData);
+        }
+
+        return new FullExecuteActionData($element, $user, $jobEnvironmentData);
     }
 }

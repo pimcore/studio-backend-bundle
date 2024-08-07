@@ -14,29 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model;
-
-use Pimcore\Model\UserInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
 
 /**
  * @internal
  */
-readonly class ExecuteActionData
+enum EnvironmentVariables: string
 {
-    public function __construct(
-        private UserInterface $user,
-        private array $environmentData = []
-    ) {
-
-    }
-
-    public function getUser(): UserInterface
-    {
-        return $this->user;
-    }
-
-    public function getEnvironmentData(): array
-    {
-        return $this->environmentData;
-    }
+    case ORIGINAL_PARENT_ID = 'originalParentId';
+    case PARENT_ID = 'parentId';
+    case UPLOAD_FOLDER_LOCATION = 'uploadFolderLocation';
+    case UPDATE_REFERENCES = 'updateReferences';
+    case REWRITE_CONFIGURATION = 'rewriteConfiguration';
+    case REWRITE_PARAMETERS = 'rewriteParameters';
 }

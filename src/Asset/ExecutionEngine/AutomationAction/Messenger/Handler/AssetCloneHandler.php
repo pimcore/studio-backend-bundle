@@ -19,11 +19,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Model\Asset;
@@ -56,7 +56,7 @@ final class AssetCloneHandler extends AbstractHandler
             return;
         }
 
-        $validatedParameters = $this->validateJobParameters(
+        $validatedParameters = $this->validateFullParameters(
             $message,
             $jobRun,
             $this->userResolver,

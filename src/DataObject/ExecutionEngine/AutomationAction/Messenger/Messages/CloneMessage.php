@@ -14,14 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages;
+
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-enum EnvironmentVariables: string
+final class CloneMessage extends AbstractExecutionEngineMessage
 {
-    case ORIGINAL_PARENT_ID = 'originalParentId';
-    case PARENT_ID = 'parentId';
-    case UPLOAD_FOLDER_LOCATION = 'uploadFolderLocation';
 }

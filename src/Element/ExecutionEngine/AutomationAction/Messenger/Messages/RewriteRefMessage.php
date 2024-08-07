@@ -14,29 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-use Pimcore\Model\UserInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-readonly class ExecuteActionData
+final class RewriteRefMessage extends AbstractExecutionEngineMessage
 {
-    public function __construct(
-        private UserInterface $user,
-        private array $environmentData = []
-    ) {
-
-    }
-
-    public function getUser(): UserInterface
-    {
-        return $this->user;
-    }
-
-    public function getEnvironmentData(): array
-    {
-        return $this->environmentData;
-    }
 }

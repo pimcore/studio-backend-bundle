@@ -70,7 +70,9 @@ final readonly class ZipUploadSubscriber implements EventSubscriberInterface
                     $event->getJobName(),
                     $event->getJobRunOwnerId(),
                     $event->getNewState(),
-                    ['childJobRunId' => $jobRun->getContext()[JobRunContext::CHILD_JOB_RUN->value]],
+                    [JobRunContext::CHILD_JOB_RUN->value =>
+                        $jobRun->getContext()[JobRunContext::CHILD_JOB_RUN->value] ?? null,
+                    ]
                 )
             ),
             JobRunStates::FAILED->value => $this->cleanupData($jobRun),

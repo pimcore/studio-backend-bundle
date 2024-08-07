@@ -14,34 +14,36 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\RewriteRefMessage;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\ElementReferenceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use function dirname;
 
 /**
  * @internal
  */
 #[AsMessageHandler]
-final class AssetUploadHandler extends AbstractHandler
+final class RewriteRefHandler extends AbstractHandler
 {
+    use ElementProviderTrait;
     use HandlerProgressTrait;
 
     public function __construct(
+        private readonly ElementReferenceServiceInterface $elementReferenceService,
+        private readonly ElementServiceInterface $elementService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
-        private readonly UploadServiceInterface $uploadService,
     ) {
         parent::__construct();
     }
@@ -49,55 +51,49 @@ final class AssetUploadHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(AssetUploadMessage $message): void
+    public function __invoke(RewriteRefMessage $message): void
     {
-        $jobRun = $this->getJobRun($message);
-        if (!$this->shouldBeExecuted($jobRun)) {
+        if (!$this->shouldBeExecuted($this->getJobRun($message))) {
             return;
         }
 
+        $jobRun = $this->getJobRun($message);
         $validatedParameters = $this->validateFullParameters(
             $message,
             $jobRun,
             $this->userResolver,
             [
-                EnvironmentVariables::PARENT_ID->value,
-                EnvironmentVariables::UPLOAD_FOLDER_LOCATION->value,
-            ]
+                EnvironmentVariables::REWRITE_CONFIGURATION->value,
+                EnvironmentVariables::REWRITE_PARAMETERS->value,
+            ],
         );
 
         if ($validatedParameters instanceof AbortActionData) {
             $this->abort($validatedParameters);
         }
 
-        $user = $validatedParameters->getUser();
         $environmentVariables = $validatedParameters->getEnvironmentData();
+        $element = $this->getElementById(
+            $validatedParameters->getSubject(),
+            $validatedParameters->getUser(),
+            $this->elementService
+        );
 
         try {
-            $element = $validatedParameters->getSubject()->getType();
-            $fileData = json_decode($element, true, 512, JSON_THROW_ON_ERROR);
-            $folderLocation = dirname($fileData['path']);
-            $parentId = $environmentVariables[EnvironmentVariables::PARENT_ID->value];
-
-            if ($folderLocation !== '.') {
-                $parentId = $this->uploadService->uploadParentFolder(
-                    $fileData['path'],
-                    $parentId,
-                    $user,
-                );
-            }
-
-            $this->uploadService->uploadAsset(
-                $parentId,
-                $fileData['name'],
-                $fileData['sourcePath'],
-                $user,
-                true
+            $this->elementReferenceService->rewriteElementReferences(
+                $validatedParameters->getUser(),
+                $element,
+                $environmentVariables[EnvironmentVariables::REWRITE_CONFIGURATION->value],
+                $environmentVariables[EnvironmentVariables::REWRITE_PARAMETERS->value],
             );
-        } catch (Exception|FilesystemException $exception) {
+        } catch (Exception $exception) {
             $this->abort($this->getAbortData(
-                Config::ASSET_UPLOAD_FAILED_MESSAGE->value,
-                ['message' => $exception->getMessage()],
+                Config::ELEMENT_REWRITE_REFERENCES_FAILED_MESSAGE->value,
+                [
+                    'type' => $element->getType(),
+                    'id' => $element->getId(),
+                    'message' => $exception->getMessage(),
+                ],
             ));
         }
 

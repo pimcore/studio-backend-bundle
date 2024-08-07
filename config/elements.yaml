@@ -24,10 +24,15 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageService
 
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\ElementReferenceServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\ElementReferenceService
+
+
   #
   # Handler
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\RewriteRefHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\PatchHandler: ~
 
 
@@ -36,6 +41,7 @@ services:
   #
 
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\PatchSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\RewriteReferencesSubscriber: ~
 
   #
   # Mercure SSE
