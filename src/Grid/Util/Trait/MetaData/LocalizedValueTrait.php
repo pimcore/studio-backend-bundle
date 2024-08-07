@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\MetaData;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
@@ -25,10 +26,13 @@ use Pimcore\Model\Element\ElementInterface;
  */
 trait LocalizedValueTrait
 {
-    private function getLocalizedValue(Column $column, ElementInterface $element): ?string
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getLocalizedValue(Column $column, ElementInterface $element): string
     {
         if (!$element instanceof Asset) {
-            return null;
+            throw new InvalidArgumentException('Element must be an instance of Asset');
         }
 
         if ($column->getLocale()) {
