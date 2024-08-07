@@ -45,6 +45,7 @@ final readonly class CustomMetaDataService implements CustomMetaDataServiceInter
 
     /**
      * @return array<int, CustomMetaData>
+     *
      *@throws AccessDeniedException
      *
      */

@@ -26,6 +26,7 @@ interface CustomMetaDataServiceInterface
 {
     /**
      * @return array<int, CustomMetaData>
+     *
      *@throws AccessDeniedException
      *
      */
