@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
@@ -37,6 +39,13 @@ final class MetadataAdapter implements PatchAdapterInterface
         'data',
     ];
 
+    public function __construct(private readonly MetadataRepositoryInterface $metadataRepository)
+    {
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
     public function patch(ElementInterface $element, array $data): void
     {
         if (!$element instanceof Asset || !isset($data[self::INDEX_KEY])) {
@@ -44,7 +53,7 @@ final class MetadataAdapter implements PatchAdapterInterface
         }
 
         $metadataForPatch = $data[self::INDEX_KEY];
-        $currentMetadata = $element->getMetadata();
+        $currentMetadata = $element->getMetadata(null, null, false, true);
         $patchedMetadata = [];
 
         foreach ($currentMetadata as $metadata) {
@@ -63,7 +72,18 @@ final class MetadataAdapter implements PatchAdapterInterface
                 }
             }
             $patchedMetadata[] = $metadata;
+
+            // unset them, everything that is still in there needs to be added
+            unset($metadataForPatch[$index]);
         }
+
+        $patchedMetadata = [
+            ...$patchedMetadata,
+            ...array_map(
+                fn (array $metaData) => $this->processNewMetadataEntry($metaData),
+                $metadataForPatch
+            ),
+        ];
 
         if (!empty($patchedMetadata)) {
             $element->setMetadata($patchedMetadata);
@@ -79,6 +99,29 @@ final class MetadataAdapter implements PatchAdapterInterface
     {
         return [
             ElementTypes::TYPE_ASSET,
+        ];
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function processNewMetadataEntry(array $metadata): array
+    {
+        if (!isset($metadata['name'])) {
+            throw new InvalidArgumentException('Metadata name is required');
+        }
+
+        $predefined = $this->metadataRepository->getPredefinedMetadataByName($metadata['name']);
+
+        if (!$predefined) {
+            throw new InvalidArgumentException('Predefined metadata not found');
+        }
+
+        return [
+            'name' => $predefined->getName(),
+            'language' => $metadata['language'] ?? null,
+            'type' => $predefined->getType(),
+            'data' => $metadata['data'] ?? null,
         ];
     }
 }

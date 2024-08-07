@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
@@ -46,7 +47,7 @@ final class PatchService implements PatchServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|ElementSavingFailedException|NotFoundException
+     * @throws AccessDeniedException|ElementSavingFailedException|NotFoundException|InvalidArgumentException
      */
     public function patch(
         string $elementType,
