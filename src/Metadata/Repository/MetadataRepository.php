@@ -14,21 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Model\Metadata\Predefined;
+use Pimcore\Model\Metadata\Predefined\Listing;
 
 /**
  * @internal
  */
-interface CustomMetadataServiceInterface
+final class MetadataRepository implements MetadataRepositoryInterface
 {
     /**
-     * @return array<int, CustomMetadata>
-     *
-     * @throws AccessDeniedException
-     *
+     * @return Predefined[]
      */
-    public function getCustomMetadata(int $id): array;
+    public function getAllPredefinedMetadata(): array
+    {
+        return (new Listing())->load();
+    }
 }

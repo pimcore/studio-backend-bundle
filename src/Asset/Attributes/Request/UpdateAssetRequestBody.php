@@ -21,7 +21,7 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateAssetImage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateCustomMetaData;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateCustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\UpdateCustomSettingsData;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateStringProperty;
@@ -46,7 +46,7 @@ final class UpdateAssetRequestBody extends RequestBody
                             new UpdateStringProperty('key'),
                             new UpdateStringProperty('locked'),
                             new UpdateStringProperty('data'),
-                            new UpdateCustomMetaData(),
+                            new UpdateCustomMetadata(),
                             new UpdateCustomSettingsData(),
                             new UpdateElementProperties(),
                             new UpdateAssetImage(),

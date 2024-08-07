@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -14,21 +15,16 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-
-/**
- * @internal
- */
-interface CustomMetadataServiceInterface
+enum FilterType: string
 {
-    /**
-     * @return array<int, CustomMetadata>
-     *
-     * @throws AccessDeniedException
-     *
-     */
-    public function getCustomMetadata(int $id): array;
+    case SELECT = 'select';
+    case INPUT = 'input';
+    case TEXTAREA = 'textarea';
+    case CHECKBOX = 'checkbox';
+    case DATE = 'date';
+    case ASSET = 'asset';
+    case DOCUMENT = 'document';
+    case OBJECT = 'object';
 }
