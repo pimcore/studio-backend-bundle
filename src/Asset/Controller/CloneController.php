@@ -70,7 +70,7 @@ final class CloneController extends AbstractApiController
         tags: [Tags::Assets->value]
     )]
     #[SuccessResponse(
-        description: 'cloneElement_200_response',
+        description: 'cloneElement_success_response',
     )]
     #[CreatedResponse(
         description: 'cloneElement_created_response',
