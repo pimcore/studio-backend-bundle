@@ -65,14 +65,15 @@ final class CloneController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/data-objects/{id}/clone/{parentId}',
         operationId: 'cloneDataObject',
-        summary: 'Clone a specific data object.',
+        description: 'clone_data_object_description',
+        summary: 'clone_data_object_summary',
         tags: [Tags::DataObjects->value]
     )]
     #[SuccessResponse(
-        description: 'Successfully copied data object',
+        description: 'clone_data_object_success_response',
     )]
     #[CreatedResponse(
-        description: 'Successfully copied parent data object and created jobRun for copying child elements',
+        description: 'clone_data_object_created_response',
         content: new IdJson('ID of created jobRun')
     )]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT)]
