@@ -42,8 +42,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ReplaceController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly ReplaceServiceInterface $replaceService,

@@ -47,8 +47,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class CloneController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly CloneServiceInterface $cloneService,

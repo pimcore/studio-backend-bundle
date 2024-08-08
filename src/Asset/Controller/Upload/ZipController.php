@@ -48,8 +48,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ZipController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     private const FILE_KEY = 'zipFile';
 
     public function __construct(

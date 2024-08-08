@@ -47,8 +47,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class AddController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         private readonly DataObjectServiceInterface $dataObjectService,
         SerializerInterface $serializer,
@@ -82,7 +80,7 @@ final class AddController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function addAsset(
+    public function addDataObject(
         int $parentId,
         #[MapRequestPayload] DataObjectAddParameters $parameters
     ): JsonResponse {
