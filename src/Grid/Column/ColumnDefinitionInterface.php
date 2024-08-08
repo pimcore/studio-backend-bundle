@@ -25,4 +25,6 @@ interface ColumnDefinitionInterface
     public function isSortable(): bool;
 
     public function getFrontendType(): string;
+
+    public function isExportable(): bool;
 }

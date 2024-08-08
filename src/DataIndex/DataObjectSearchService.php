@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapter
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use function count;
 
@@ -36,7 +37,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
         return $this->dataObjectSearchAdapter->searchDataObjects($dataObjectQuery);
     }
 
-    public function getDataObjectById(int $id): DataObject
+    public function getDataObjectById(int $id): DataObject|DataObjectFolder
     {
         return $this->dataObjectSearchAdapter->getDataObjectById($id);
     }
@@ -48,7 +49,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
      */
     public function fetchDataObjectIds(QueryInterface $assetQuery): array
     {
-        return $this->dataObjectSearchAdapter->fetchAssetIds($assetQuery);
+        return $this->dataObjectSearchAdapter->fetchDataObjectIds($assetQuery);
     }
 
     /**
@@ -66,7 +67,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
             $query->orderByPath($sortDirection);
         }
 
-        return $this->dataObjectSearchAdapter->fetchAssetIds($query);
+        return $this->dataObjectSearchAdapter->fetchDataObjectIds($query);
     }
 
     public function countChildren(

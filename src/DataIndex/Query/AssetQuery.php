@@ -102,7 +102,7 @@ final class AssetQuery implements QueryInterface
         return $this;
     }
 
-    public function filterMetaData(string $name, string $type, mixed $data): self
+    public function filterMetadata(string $name, string $type, mixed $data): self
     {
         $this->search->addModifier(new AssetMetaDataFilter($name, $type, $data));
 

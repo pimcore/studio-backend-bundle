@@ -24,15 +24,22 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\PermissionsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\PermissionsHydrator
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\PermissionsHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\PermissionsHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObjectHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObjectHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\FolderHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\FolderHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\PermissionsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\PermissionsHydrator
 
   # Services
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorService
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorService
     arguments:
       $assetHydratorLocator: '@open_search.asset_hydrator.service_locator'
+      $dataObjectHydratorLocator: '@open_search.data_object_hydrator.service_locator'
 
 
   # Assets
@@ -69,3 +76,10 @@ services:
         Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Text: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\TextHydratorInterface'
         Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\UnknownHydratorInterface'
         Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydratorInterface'
+
+  #Service Locator
+  open_search.data_object_hydrator.service_locator:
+    class: Symfony\Component\DependencyInjection\ServiceLocator
+    tags: [ 'container.service_locator' ]
+    arguments:
+      - Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\SearchResultItem\Folder: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\FolderHydratorInterface'

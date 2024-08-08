@@ -36,7 +36,6 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -49,8 +48,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ReplaceController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         private readonly SecurityServiceInterface $securityService,
         private readonly UploadServiceInterface $uploadService,

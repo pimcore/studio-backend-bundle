@@ -47,11 +47,11 @@ final class CustomSettingsHydratorTest extends Unit
     public function testHydrate(): void
     {
         $assetCustomSettings = [
-            'embeddedMetaData' => [
+            'embeddedMetadata' => [
                 'FileSize' => '6.9 MB',
                 'FileType' => 'PNG',
             ],
-            'embeddedMetaDataExtracted' => true,
+            'embeddedMetadataExtracted' => true,
             'imageDimensionsCalculated' => true,
             'imageWidth' => 932,
             'imageHeight' => 327,
@@ -62,8 +62,8 @@ final class CustomSettingsHydratorTest extends Unit
         $this->assertEquals([
             'FileSize' => '6.9 MB',
             'FileType' => 'PNG',
-        ], $hydratedCustomSettings->getFixedCustomSettings()->getEmbeddedMetaData());
-        $this->assertTrue($hydratedCustomSettings->getFixedCustomSettings()->isEmbeddedMetaDataExtracted());
+        ], $hydratedCustomSettings->getFixedCustomSettings()->getEmbeddedMetadata());
+        $this->assertTrue($hydratedCustomSettings->getFixedCustomSettings()->isEmbeddedMetadataExtracted());
         $this->assertEquals([
             'imageDimensionsCalculated' => true,
             'imageWidth' => 932,

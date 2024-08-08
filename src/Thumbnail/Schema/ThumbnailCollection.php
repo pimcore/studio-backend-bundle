@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
@@ -31,9 +32,9 @@ final readonly class ThumbnailCollection
 {
     public function __construct(
         #[Property(
-            ref: Thumbnail::class,
             description: 'items',
-            type: Thumbnail::class,
+            type: 'array',
+            items: new Items(ref: Thumbnail::class)
         )]
         private array $items
     ) {

@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetPermissions;
 
 #[Schema(
     title: 'Document',
@@ -30,8 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 )]
 class Document extends Asset
 {
-    //use MetaData\EmbeddedMetaDataTrait;
-
     public function __construct(
         #[Property(description: 'Page count', type: 'integer', example: 2)]
         private readonly ?int $pageCount,
@@ -46,9 +45,10 @@ class Document extends Asset
         string $type,
         string $filename,
         string $mimeType,
-        bool $hasMetaData,
+        bool $hasMetadata,
         bool $workflowWithPermissions,
         string $fullPath,
+        AssetPermissions $permissions,
         int $id,
         int $parentId,
         string $path,
@@ -58,7 +58,6 @@ class Document extends Asset
         bool $isLocked,
         ?int $creationDate,
         ?int $modificationDate,
-        Permissions $permissions
     ) {
         parent::__construct(
             $iconName,
@@ -66,9 +65,10 @@ class Document extends Asset
             $type,
             $filename,
             $mimeType,
-            $hasMetaData,
+            $hasMetadata,
             $workflowWithPermissions,
             $fullPath,
+            $permissions,
             $id,
             $parentId,
             $path,
@@ -77,8 +77,7 @@ class Document extends Asset
             $locked,
             $isLocked,
             $creationDate,
-            $modificationDate,
-            $permissions
+            $modificationDate
         );
     }
 

@@ -25,9 +25,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 interface CustomMetadataServiceInterface
 {
     /**
+     * @return array<int, CustomMetadata>
+     *
      * @throws AccessDeniedException
      *
-     * @return array<int, CustomMetadata>
      */
     public function getCustomMetadata(int $id): array;
 }

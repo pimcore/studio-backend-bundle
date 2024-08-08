@@ -43,4 +43,9 @@ final readonly class ImageDefinition implements ColumnDefinitionInterface
     {
         return FrontendType::IMAGE->value;
     }
+
+    public function isExportable(): bool
+    {
+        return false;
+    }
 }

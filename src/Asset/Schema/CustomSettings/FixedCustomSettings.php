@@ -25,7 +25,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'FixedCustomSettings',
-    required: ['embeddedMetaData', 'embeddedMetaDataExtracted'],
+    required: ['embeddedMetadata', 'embeddedMetadataExtracted'],
     type: 'object'
 )]
 final readonly class FixedCustomSettings
@@ -37,23 +37,23 @@ final readonly class FixedCustomSettings
             items: new Items(),
             example: '{ FileSize: "265 KiB", MIMEType: "image/jpeg" }'
         )]
-        private array $embeddedMetaData = [],
+        private array $embeddedMetadata = [],
         #[Property(
             description: 'flag to indicate if the embedded meta data has been extracted from the asset',
             type: 'bool',
             example: true
         )]
-        private bool $embeddedMetaDataExtracted = false,
+        private bool $embeddedMetadataExtracted = false,
     ) {
     }
 
-    public function getEmbeddedMetaData(): array
+    public function getEmbeddedMetadata(): array
     {
-        return $this->embeddedMetaData;
+        return $this->embeddedMetadata;
     }
 
-    public function isEmbeddedMetaDataExtracted(): bool
+    public function isEmbeddedMetadataExtracted(): bool
     {
-        return $this->embeddedMetaDataExtracted;
+        return $this->embeddedMetadataExtracted;
     }
 }

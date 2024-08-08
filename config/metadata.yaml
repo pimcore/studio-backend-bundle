@@ -8,5 +8,5 @@ services:
   # Repository
   #
 
-  Pimcore\Bundle\StudioBackendBundle\MetaData\Repository\MetaDataRepositoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\MetaData\Repository\MetaDataRepository
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepository

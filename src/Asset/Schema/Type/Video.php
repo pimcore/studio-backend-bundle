@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetPermissions;
 
 #[Schema(
     title: 'Video',
@@ -26,8 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 )]
 class Video extends Asset
 {
-    //use MetaData\EmbeddedMetaDataTrait;
-
     public function __construct(
         #[Property(description: 'Duration', type: 'float', example: 43560.5)]
         private readonly ?float $duration,
@@ -46,9 +45,10 @@ class Video extends Asset
         string $type,
         string $filename,
         string $mimeType,
-        bool $hasMetaData,
+        bool $hasMetadata,
         bool $workflowWithPermissions,
         string $fullPath,
+        AssetPermissions $permissions,
         int $id,
         int $parentId,
         string $path,
@@ -58,7 +58,6 @@ class Video extends Asset
         bool $isLocked,
         ?int $creationDate,
         ?int $modificationDate,
-        Permissions $permissions
     ) {
         parent::__construct(
             $iconName,
@@ -66,9 +65,10 @@ class Video extends Asset
             $type,
             $filename,
             $mimeType,
-            $hasMetaData,
+            $hasMetadata,
             $workflowWithPermissions,
             $fullPath,
+            $permissions,
             $id,
             $parentId,
             $path,
@@ -78,7 +78,6 @@ class Video extends Asset
             $isLocked,
             $creationDate,
             $modificationDate,
-            $permissions
         );
     }
 

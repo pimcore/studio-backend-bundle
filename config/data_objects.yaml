@@ -18,3 +18,28 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Repository\ClassDefinitionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Repository\ClassDefinitionRepository
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ExecutionEngine\CloneServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ExecutionEngine\CloneService
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectService
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceService
+
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler\CloneHandler: ~
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\EventSubscriber\CloneSubscriber: ~

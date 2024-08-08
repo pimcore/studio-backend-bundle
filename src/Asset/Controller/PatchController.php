@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchAssetParameter
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
@@ -54,7 +55,8 @@ final class PatchController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|ElementSavingFailedException|NotFoundException|UserNotFoundException
+     * @throws AccessDeniedException|ElementSavingFailedException
+     * @throws NotFoundException|UserNotFoundException|InvalidArgumentException
      */
     #[Route('/assets', name: 'pimcore_studio_api_patch_asset', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::ASSETS->value)]

@@ -44,9 +44,10 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
     }
 
     /**
+     * @return array<int, CustomMetadata>
+     *
      * @throws AccessDeniedException
      *
-     * @return array<int, CustomMetadata>
      */
     public function getCustomMetadata(int $id): array
     {
