@@ -72,8 +72,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     public function deleteElements(
         ElementParameters $elementParameters,
         UserInterface $user
-    ): ?int
-    {
+    ): ?int {
         $element = $this->elementService->getAllowedElementById(
             $elementParameters->getType(),
             $elementParameters->getId(),
@@ -206,6 +205,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     private function getChildrenIds(ElementInterface $element, string $sortDirection): array
     {
         $path = $element->getRealFullPath();
+
         // ToDo Implement For Documents
         return match (true) {
             $element instanceof Asset => $this->assetSearchService->getChildrenIds($path, $sortDirection),
