@@ -33,4 +33,32 @@ tag_versions_description: Versions operations to get/list/publish/delete and cle
 tag_workflows_description: Workflows operations to get element workflow details
 update_asset_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
+clone_data_object_created_response: Successfully copied parent data object and created
+  <strong>jobRun</strong> for copying child objects
+clone_data_object_description: |
+  Clones a specific data object with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder or another data object
+clone_data_object_success_response: Successfully copied data object
+clone_data_object_summary: Clone a specific data object
+create_csv_assets_created_response: Successfully created <strong>jobRun</strong> for
+  csv export
+create_csv_assets_description: |
+  Creating the CSV file for assets. <br> Parameters are: <ul>
+    <li><strong>assets</strong>: Array of asset ids</li>
+    <li><strong>gridConfig</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
+    <li><strong>settings</strong>: Delimiter and header options</li>
+  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
+  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
+create_csv_assets_summary: Creating CSV file for assets
+delete_element_created_response: Successfully created jobRun for deleting element
+  and its children
+delete_element_description: |
+  Deletes a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing element of the provided <strong>{elementType}</strong>. <br> If element is a folder, all child elements will be deleted as well. Elements are moved into the Recycle Bin before deletion.
+delete_element_success_response: Successfully deleted element
+delete_element_summary: Delete a specific element and its children
+download_assets_csv_description: |
+  Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
+download_assets_csv_success_response: CSV File as attachment
+download_assets_csv_summary: Download CSV file for assets
+update_asset_by_id_description: |
+  Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
 update_asset_by_id_summary: Update an asset by ID

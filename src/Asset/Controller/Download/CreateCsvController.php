@@ -50,13 +50,13 @@ final class CreateCsvController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/assets/csv/create',
         operationId: 'createCsvAssets',
-        description: 'Creating csv for assets',
-        summary: 'Creating CSV file for assets',
+        description: 'create_csv_assets_description',
+        summary: 'create_csv_assets_summary',
         tags: [Tags::Assets->name]
     )]
     #[CsvExportRequestBody]
     #[CreatedResponse(
-        description: 'Successfully created jobRun for csv export',
+        description: 'create_csv_assets_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([

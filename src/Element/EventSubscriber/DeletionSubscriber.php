@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
@@ -46,7 +46,10 @@ final readonly class DeletionSubscriber implements EventSubscriberInterface
 
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
-        if ($event->getJobName() !== Jobs::DELETE_ASSETS->value) {
+        if ($event->getJobName() !== Jobs::DELETE_ASSETS->value &&
+            $event->getJobName() !== Jobs::DELETE_DATA_OBJECTS->value &&
+            $event->getJobName() !== Jobs::DELETE_DOCUMENTS->value
+        ) {
             return;
         }
 
