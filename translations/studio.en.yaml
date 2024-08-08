@@ -21,9 +21,10 @@ studio_ee_job_patch_elements: Patch Elements
 studio_ee_job_create_csv: Create CSV
 studio_ee_job_upload_assets: Upload Assets
 studio_ee_job_clone_data_objects: Clone Data Objects
+studio_ee_job_delete_data_objects: Delete Data Objects
+studio_ee_job_delete_documents: Delete Documents
 studio_ee_job_rewrite_element_references: Rewrite Element References
 studio_ee_job_step_zip_creation: Zip Download Creation
-studio_ee_job_step_asset_deletion: Asset Deletion
 studio_ee_job_step_asset_cloning: Asset Cloning
 studio_ee_job_step_csv_file_not_found: CSV file not found
 studio_ee_jop_step_zip_uploading: Zip Uploading
@@ -32,6 +33,8 @@ studio_ee_job_step_csv_creation: CSV Creation
 studio_ee_job_step_csv_collection: CSV Collection
 studio_ee_job_step_element_patching: Element Patching
 studio_ee_job_step_element_rewrite_references: Rewrite Element References
+studio_ee_job_step_element_deletion: Element Deletion
+studio_ee_job_step_element_recycling: Adding Element to Recycle Bin
 studio_ee_job_step_data_object_cloning: Data Object Cloning
 studio_ee_element_folder_collection_not_supported: 'Collection for folders is not supported. ID: %folderId%'
 studio_ee_file_not_found_for_job_run: 'File %type% not found for job run. ID: %jobRunId%'

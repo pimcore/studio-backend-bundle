@@ -14,18 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-use Pimcore\Model\Asset;
-use Pimcore\Model\UserInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-interface DeleteServiceInterface
+final class ElementBinMessage extends AbstractExecutionEngineMessage
 {
-    public function deleteAssets(
-        Asset $asset,
-        UserInterface $user
-    ): ?int;
 }

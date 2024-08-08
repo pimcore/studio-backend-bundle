@@ -23,15 +23,19 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageService
 
-
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\ElementReferenceServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\ElementReferenceService
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteService
 
 
   #
   # Handler
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\ElementDeleteHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\ElementBinHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\RewriteRefHandler: ~
   Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler\PatchHandler: ~
 
@@ -42,6 +46,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\PatchSubscriber: ~
   Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\RewriteReferencesSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Element\EventSubscriber\DeletionSubscriber: ~
 
   #
   # Mercure SSE

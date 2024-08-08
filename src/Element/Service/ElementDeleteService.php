@@ -23,20 +23,24 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\DataObjectDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
-use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\Recyclebin\Item;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
 use function sprintf;
 
 /**
@@ -49,11 +53,47 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
+        private DeleteServiceInterface $deleteService,
         private ElementServiceInterface $elementService,
         private EventDispatcherInterface $eventDispatcher,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
         private int $recycleBinThreshold
     ) {
+    }
+
+    /**
+     * @throws AccessDeniedException
+     * @throws ElementDeletionFailedException
+     * @throws EnvironmentException
+     * @throws ForbiddenException
+     * @throws InvalidElementTypeException
+     * @throws NotFoundException
+     */
+    public function deleteElements(
+        ElementParameters $elementParameters,
+        UserInterface $user
+    ): ?int
+    {
+        $element = $this->elementService->getAllowedElementById(
+            $elementParameters->getType(),
+            $elementParameters->getId(),
+            $user
+        );
+        if (!$this->elementService->hasElementDependencies($element)) {
+            $this->addElementToRecycleBin($element, $user);
+            $this->deleteParentElement($element, $user);
+
+            return null;
+        }
+        $childrenIds = $this->getChildrenIds($element, 'desc');
+
+        return $this->deleteService->deleteElementsWithExecutionEngine(
+            $element,
+            $user,
+            $elementParameters->getType(),
+            $childrenIds,
+            count($childrenIds) <= $this->recycleBinThreshold,
+        );
     }
 
     /**
@@ -104,11 +144,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
             );
         }
 
-        if (($element instanceof Asset ||
-            $element instanceof Document ||
-            $element instanceof DataObject) &&
-            $element->hasChildren()
-        ) {
+        if ($this->elementService->hasElementDependencies($element)) {
             throw new EnvironmentException(
                 'Element has existing children'
             );
@@ -162,6 +198,20 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         $canUseRecycleBin = $this->useRecycleBinForElement($element, $user);
 
         return new DeleteInfo($hasDependencies, $canUseRecycleBin);
+    }
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    private function getChildrenIds(ElementInterface $element, string $sortDirection): array
+    {
+        $path = $element->getRealFullPath();
+        // ToDo Implement For Documents
+        return match (true) {
+            $element instanceof Asset => $this->assetSearchService->getChildrenIds($path, $sortDirection),
+            $element instanceof DataObject => $this->dataObjectSearchService->getChildrenIds($path, $sortDirection),
+            default => throw new InvalidElementTypeException($element->getType())
+        };
     }
 
     /**
