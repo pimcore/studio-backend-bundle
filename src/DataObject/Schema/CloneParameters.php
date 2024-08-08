@@ -20,7 +20,8 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
 #[Schema(
-    title: 'Data Object Permissions',
+    title: 'Data Object Clone Parameters',
+    required: ['recursive', 'updateReferences'],
     type: 'object'
 )]
 final readonly class CloneParameters
