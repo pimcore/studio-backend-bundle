@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementBinMessage;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\RecycleBinMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementDeleteMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -51,7 +51,7 @@ final readonly class DeleteService implements DeleteServiceInterface
         if ($useRecycleBin) {
             $jobSteps[] = new JobStep(
                 JobSteps::ELEMENT_RECYCLING->value,
-                ElementBinMessage::class,
+                RecycleBinMessage::class,
                 '',
                 []
             );

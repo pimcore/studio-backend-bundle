@@ -21,6 +21,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecu
 /**
  * @internal
  */
-final class ElementBinMessage extends AbstractExecutionEngineMessage
+final class RecycleBinMessage extends AbstractExecutionEngineMessage
 {
 }
