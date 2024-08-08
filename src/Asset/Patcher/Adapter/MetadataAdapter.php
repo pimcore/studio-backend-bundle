@@ -56,9 +56,9 @@ final class MetadataAdapter implements PatchAdapterInterface
         $currentMetadata = $element->getMetadata(null, null, false, true);
         $patchedMetadata = [];
 
-        foreach($currentMetadata as $metadata) {
+        foreach ($currentMetadata as $metadata) {
             $index = $this->findIndexOfMatch($metadata, $metadataForPatch);
-            if($index === false) {
+            if ($index === false) {
                 $patchedMetadata[] = $metadata;
 
                 continue;
