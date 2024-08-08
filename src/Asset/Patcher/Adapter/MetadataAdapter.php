@@ -60,6 +60,7 @@ final class MetadataAdapter implements PatchAdapterInterface
             $index = $this->findIndexOfMatch($metadata, $metadataForPatch);
             if($index === false) {
                 $patchedMetadata[] = $metadata;
+
                 continue;
             }
 
@@ -125,12 +126,13 @@ final class MetadataAdapter implements PatchAdapterInterface
     private function findIndexOfMatch(array $metadata, array $patchMetadata): int|bool
     {
         // Try to find a match. array_filter keeps the original index which we can get with array_keys
-        $match = array_keys(array_filter($patchMetadata, static function($patch) use ($metadata) {
+        $match = array_keys(array_filter($patchMetadata, static function ($patch) use ($metadata) {
             $language = $patch['language'] ?? '';
+
             return $patch['name'] === $metadata['name'] && $language === $metadata['language'];
         }));
 
         // Return the key of the first match
-        return !empty($match) ? current($match): false;
+        return !empty($match) ? current($match) : false;
     }
 }
