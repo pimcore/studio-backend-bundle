@@ -14,20 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetDeleteMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteService;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\ElementDeleteMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -35,7 +34,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class AssetDeleteHandler extends AbstractHandler
+final class ElementDeleteHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
@@ -51,7 +50,7 @@ final class AssetDeleteHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(AssetDeleteMessage $message): void
+    public function __invoke(ElementDeleteMessage $message): void
     {
         if (!$this->shouldBeExecuted($this->getJobRun($message))) {
             return;
@@ -69,28 +68,26 @@ final class AssetDeleteHandler extends AbstractHandler
         }
 
         $user = $validatedParameters->getUser();
-        $config = $this->getCurrentJobStepConfig($message);
-        $assetId = $config[DeleteService::ASSET_TO_DELETE];
-        $parentAsset = $validatedParameters->getSubject();
-        $assetElement = $this->getElementById(
+        $parentElement = $validatedParameters->getSubject();
+        $element = $this->getElementById(
             new ElementDescriptor(
-                ElementTypes::TYPE_ASSET,
-                $assetId
+                $parentElement->getType(),
+                $this->extractConfigFieldFromJobStepConfig($message, DeleteServiceInterface::ELEMENT_TO_DELETE)
             ),
             $user,
             $this->elementService
         );
 
-        if ($assetElement->getId() === $parentAsset->getId()) {
+        if ($element->getId() === $parentElement->getId()) {
             try {
-                $this->elementDeleteService->deleteParentElement($assetElement, $user);
+                $this->elementDeleteService->deleteParentElement($element, $user);
                 $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
             } catch (Exception $exception) {
                 $this->abort($this->getAbortData(
                     Config::ELEMENT_DELETE_FAILED_MESSAGE->value,
                     [
-                        'type' => ElementTypes::TYPE_ASSET,
-                        'id' => $assetId,
+                        'type' => $element->getType(),
+                        'id' => $element->getId(),
                         'message' => $exception->getMessage(),
                     ],
                 ));
@@ -100,13 +97,13 @@ final class AssetDeleteHandler extends AbstractHandler
         }
 
         try {
-            $this->elementDeleteService->deleteElement($assetElement, $user);
+            $this->elementDeleteService->deleteElement($element, $user);
         } catch (Exception $exception) {
             $this->abort($this->getAbortData(
                 Config::ELEMENT_DELETE_FAILED_MESSAGE->value,
                 [
-                    'type' => ElementTypes::TYPE_ASSET,
-                    'id' => $assetId,
+                    'type' => $element->getType(),
+                    'id' => $element->getId(),
                     'message' => $exception->getMessage(),
                 ],
             ));
@@ -117,7 +114,7 @@ final class AssetDeleteHandler extends AbstractHandler
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(DeleteService::ASSET_TO_DELETE);
-        $this->stepConfiguration->setAllowedTypes(DeleteService::ASSET_TO_DELETE, 'int');
+        $this->stepConfiguration->setRequired(DeleteServiceInterface::ELEMENT_TO_DELETE);
+        $this->stepConfiguration->setAllowedTypes(DeleteServiceInterface::ELEMENT_TO_DELETE, 'int');
     }
 }

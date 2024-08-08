@@ -20,7 +20,6 @@ use Exception;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
@@ -74,9 +73,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(DownloadServiceInterface::class);
         $definition->setArgument('$defaultFormats', $config['asset_default_formats']);
-
-        $definition = $container->getDefinition(DeleteServiceInterface::class);
-        $definition->setArgument('$recycleBinThreshold', $config['element_recycle_bin_threshold']);
 
         $definition = $container->getDefinition(ElementDeleteServiceInterface::class);
         $definition->setArgument('$recycleBinThreshold', $config['element_recycle_bin_threshold']);

@@ -14,9 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine;
 
-use Pimcore\Model\Asset;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -24,8 +24,13 @@ use Pimcore\Model\UserInterface;
  */
 interface DeleteServiceInterface
 {
-    public function deleteAssets(
-        Asset $asset,
-        UserInterface $user
-    ): ?int;
+    public const ELEMENT_TO_DELETE = 'element_to_delete';
+
+    public function deleteElementsWithExecutionEngine(
+        ElementInterface $element,
+        UserInterface $user,
+        string $elementType,
+        array $childrenIds,
+        bool $useRecycleBin
+    ): int;
 }
