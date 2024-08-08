@@ -58,13 +58,13 @@ final class DownloadCsvController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/assets/download/csv/{jobRunId}',
         operationId: 'downloadAssetsCsv',
-        description: 'Downloading csv file with assets',
-        summary: 'Downloading the csv file with assets',
+        description: 'download_assets_csv_description',
+        summary: 'download_assets_csv_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
     #[SuccessResponse(
-        description: 'CSV File',
+        description: 'download_assets_csv_success_response',
         content: [new AssetMediaType('application/csv')],
         headers: [new ContentDisposition()]
     )]
