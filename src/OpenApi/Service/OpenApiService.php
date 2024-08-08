@@ -16,14 +16,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Service;
 
+use JsonException;
 use OpenApi\Annotations\OpenApi;
 use OpenApi\Attributes\Schema;
 use OpenApi\Generator;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
+use function in_array;
+use function is_array;
+use function is_string;
 
 final readonly class OpenApiService implements OpenApiServiceInterface
 {
-    public function __construct(private array $openApiScanPaths = [])
-    {
+    private const TRANSLATABLE_PROPERTIES = ['summary', 'description'];
+
+    public function __construct(
+        private TranslatorServiceInterface $translator,
+        private array $openApiScanPaths = []
+    ) {
     }
 
     public function getConfig(): OpenApi
@@ -37,8 +47,50 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         return $config;
     }
 
+    public function translateConfig(OpenApi $config): array
+    {
+        try {
+
+            $configArray = json_decode(
+                json_encode(
+                    $config,
+                    JSON_THROW_ON_ERROR
+                ),
+                true,
+                512,
+                JSON_THROW_ON_ERROR
+            );
+        } catch (JsonException) {
+            throw new EnvironmentException('Failed to convert OpenAPI config to array');
+        }
+
+        $this->translateRecursive($configArray);
+
+        return $configArray;
+    }
+
     private function sortSchemas(Schema $a, Schema $b): int
     {
         return $a->title <=> $b->title;
+    }
+
+    private function translateRecursive(array &$config): void
+    {
+        foreach ($config as $key => &$value) {
+            if (!is_array($value) && is_string($key) && in_array($key, self::TRANSLATABLE_PROPERTIES)) {
+                $value = $this->translate($value);
+
+                continue;
+            }
+
+            if (is_array($value)) {
+                $this->translateRecursive($value); //Recurse into sub-array
+            }
+        }
+    }
+
+    private function translate(string $message): string
+    {
+        return $this->translator->translateApiDocs($message);
     }
 }

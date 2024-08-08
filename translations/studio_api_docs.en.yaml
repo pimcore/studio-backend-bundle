@@ -1,0 +1,13 @@
+asset_tag_description:  Asset operations to get/update/create/delete assets
+clone_asset_created_response: Successfully copied parent asset and created <strong>jobRun</strong> for copying child assets
+clone_asset_description:  >
+  Clones a specific asset with the given <strong>{id}</strong>. <br>
+  The <strong>{parentId}</strong> must be a folder
+clone_asset_success_response: Successfully copied asset
+clone_asset_summary: Clone a specific asset
+update_asset_by_id_description:  >
+  Update needs to have the complete data present. <br>
+  You can create/update/delete list entries like metadata, custom settings and properties. <br> 
+  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br> 
+  If you want to update only a single field, use the PATCH method.
+update_asset_by_id_summary: Update an asset by ID

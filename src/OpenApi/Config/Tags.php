@@ -23,7 +23,7 @@ use OpenApi\Attributes\Tag;
  */
 #[Tag(
     name: Tags::Assets->name,
-    description: 'Asset operations to get/update/create/delete assets'
+    description: 'asset_tag_description',
 )]
 #[Tag(
     name: Tags::AssetThumbnails->name,
