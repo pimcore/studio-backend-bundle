@@ -64,16 +64,16 @@ final class CloneController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/{id}/clone/{parentId}',
-        operationId: 'cloneElement',
-        description: 'cloneElement_description',
-        summary: 'cloneElement_summary',
+        operationId: 'cloneAsset',
+        description: 'clone_asset_description',
+        summary: 'clone_asset_summary',
         tags: [Tags::Assets->value]
     )]
     #[SuccessResponse(
-        description: 'cloneElement_success_response',
+        description: 'clone_asset_success_response',
     )]
     #[CreatedResponse(
-        description: 'cloneElement_created_response',
+        description: 'clone_asset_created_response',
         content: new IdJson('ID of created jobRun')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
