@@ -57,15 +57,18 @@ final readonly class DeleteService implements DeleteServiceInterface
             );
         }
 
-        $jobSteps = array_merge($jobSteps, array_map(
-            static fn (int $id) => new JobStep(
-                JobSteps::ELEMENT_DELETION->value,
-                ElementDeleteMessage::class,
-                '',
-                [self::ELEMENT_TO_DELETE => $id]
-            ),
+        $jobSteps = array_merge(
+            $jobSteps,
+            array_map(
+                static fn (int $id) => new JobStep(
+                    JobSteps::ELEMENT_DELETION->value,
+                    ElementDeleteMessage::class,
+                    '',
+                    [self::ELEMENT_TO_DELETE => $id]
+                ),
             $childrenIds
-        ));
+            )
+        );
 
         $jobSteps[] = new JobStep(
             JobSteps::ELEMENT_DELETION->value,
