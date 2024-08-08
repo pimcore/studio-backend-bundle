@@ -66,7 +66,7 @@ final readonly class DeleteService implements DeleteServiceInterface
                     '',
                     [self::ELEMENT_TO_DELETE => $id]
                 ),
-            $childrenIds
+                $childrenIds
             )
         );
 
