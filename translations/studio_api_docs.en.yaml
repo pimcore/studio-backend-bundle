@@ -30,6 +30,18 @@ download_assets_csv_description: |
   Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
 download_assets_csv_success_response: CSV File as attachment
 download_assets_csv_summary: Download CSV file for assets
+patch_asset_by_id_created_response: Successfully created jobRun for patching multiple
+  assets
+patch_asset_by_id_description: |
+  Patching assets based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
+patch_asset_by_id_success_response: Successfully patched asset
+patch_asset_by_id_summary: Patch assets by ID
+patch_data_object_by_id_created_response: Successfully created jobRun for patching
+  multiple data objects
+patch_data_object_by_id_description: |
+  Patching data objects based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
+patch_data_object_by_id_success_response: Successfully patched data object
+patch_data_object_by_id_summary: Patch data objects by ID
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
 tag_authorization_description: Session-based login via username and password or logout
@@ -60,3 +72,7 @@ tag_workflows_description: Workflows operations to get element workflow details
 update_asset_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
 update_asset_by_id_summary: Update an asset by ID
+update_data_object_by_id_description: |
+  Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
+update_data_object_by_id_summary: Update a data object by ID
+update_data_object_success_response: Successfully updated data object

@@ -53,6 +53,9 @@ final class PatchHandler extends AbstractHandler
     public function __invoke(PatchMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
+        if (!$this->shouldBeExecuted($jobRun)) {
+            return;
+        }
 
         $validatedParameters = $this->validateFullParameters(
             $message,
