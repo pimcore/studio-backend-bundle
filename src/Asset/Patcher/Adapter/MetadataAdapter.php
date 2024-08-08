@@ -56,16 +56,13 @@ final class MetadataAdapter implements PatchAdapterInterface
         $currentMetadata = $element->getMetadata(null, null, false, true);
         $patchedMetadata = [];
 
-        foreach ($currentMetadata as $metadata) {
-            $index = array_search($metadata['name'], array_column($metadataForPatch, 'name'), true);
-
-            if ($index === false) {
+        foreach($currentMetadata as $metadata) {
+            $index = $this->findIndexOfMatch($metadata, $metadataForPatch);
+            if($index === false) {
                 $patchedMetadata[] = $metadata;
-
                 continue;
             }
 
-            // check for every single metadata if it is in the patch data
             foreach (self::PATCHABLE_KEYS as $patchKeys) {
                 if (array_key_exists($patchKeys, $metadataForPatch[$index])) {
                     $metadata[$patchKeys] = $metadataForPatch[$index][$patchKeys];
@@ -119,9 +116,21 @@ final class MetadataAdapter implements PatchAdapterInterface
 
         return [
             'name' => $predefined->getName(),
-            'language' => $metadata['language'] ?? null,
+            'language' => $metadata['language'] ?? '',
             'type' => $predefined->getType(),
             'data' => $metadata['data'] ?? null,
         ];
+    }
+
+    private function findIndexOfMatch(array $metadata, array $patchMetadata): int|bool
+    {
+        // Try to find a match. array_filter keeps the original index which we can get with array_keys
+        $match = array_keys(array_filter($patchMetadata, static function($patch) use ($metadata) {
+            $language = $patch['language'] ?? '';
+            return $patch['name'] === $metadata['name'] && $language === $metadata['language'];
+        }));
+
+        // Return the key of the first match
+        return !empty($match) ? current($match): false;
     }
 }
