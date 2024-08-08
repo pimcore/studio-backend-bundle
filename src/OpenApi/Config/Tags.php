@@ -23,91 +23,87 @@ use OpenApi\Attributes\Tag;
  */
 #[Tag(
     name: Tags::Assets->name,
-    description: 'asset_tag_description',
+    description: 'tag_assets_description',
 )]
 #[Tag(
     name: Tags::AssetThumbnails->name,
-    description: 'List thumbnails for assets like videos and images'
+    description: 'tag_asset_thumbnail_description'
 )]
 #[Tag(
     name: Tags::Authorization->name,
-    description: 'Session-based login via username and password or logout and invalidate the session'
+    description: 'tag_authorization_description'
 )]
 #[Tag(
     name: Tags::DataObjects->name,
-    description: 'DataObject operations to get/update/create/delete data objects'
+    description: 'tag_dataobjects_description'
 )]
 #[Tag(
     name: Tags::Dependencies->name,
-    description: 'Get dependencies for a single element.'
+    description: 'tag_dependencies_description'
 )]
 #[Tag(
     name: Tags::Elements->name,
-    description: 'Get element properties for a single element based on its type and provided parameters.'
+    description: 'tag_elements_description'
 )]
 #[Tag(
     name: Tags::ExecutionEngine->name,
-    description: 'Execution engine operations related to job runs.'
+    description: 'tag_execution_engine_description'
 )]
 #[Tag(
     name: Tags::Emails->value,
-    description: 'Email operations to get/update/create/delete/test emails and email blocklist.'
+    description: 'tag_emails_description'
 )]
 #[Tag(
     name: Tags::Grid->name,
-    description: 'Grid operations'
+    description: 'tag_grid_description'
 )]
 #[Tag(
     name: Tags::Mercure->name,
-    description: 'Retrieve JWT token for Mercure hub as cookie'
+    description: 'tag_mercure_description'
 )]
 #[Tag(
     name: Tags::Notes->name,
-    description: 'Note operations to list/delete notes'
+    description: 'tag_notes_description'
 )]
 #[Tag(
     name: Tags::Properties->name,
-    description: 'Property operations to get/update/create/delete properties'
-)]
-#[Tag(
-    name: Tags::Tags->name,
-    description: 'Tag operations to get/list/create/update/delete tags'
-)]
-#[Tag(
-    name: Tags::TagsForElement->value,
-    description: 'Tag operations to get tags for an element'
-)]
-#[Tag(
-    name: Tags::Translation->name,
-    description: 'Get translations either for a single key or multiple keys'
-)]
-#[Tag(
-    name: Tags::Schedule->name,
-    description: 'Get schedules for an element'
-)]
-#[Tag(
-    name: Tags::Settings->name,
-    description: 'Get Settings'
-)]
-#[Tag(
-    name: Tags::Translation->name,
-    description: 'Get translations either for a single key or multiple keys'
-)]
-#[Tag(
-    name: Tags::User->value,
-    description: 'User Management operations'
+    description: 'tag_properties_description'
 )]
 #[Tag(
     name: Tags::Role->value,
-    description: 'Role Management operations'
+    description: 'tag_role_description'
+)]
+#[Tag(
+    name: Tags::Schedule->name,
+    description: 'tag_schedule_description'
+)]
+#[Tag(
+    name: Tags::Settings->name,
+    description: 'tag_settings_description'
+)]
+#[Tag(
+    name: Tags::Tags->name,
+    description: 'tag_tags_description'
+)]
+#[Tag(
+    name: Tags::TagsForElement->value,
+    description: 'tag_tags_for_element_description'
+)]
+#[Tag(
+    name: Tags::Translation->name,
+    description: 'tag_translation_description'
+)]
+#[Tag(
+    name: Tags::User->value,
+    description: 'tag_user_description'
 )]
 #[Tag(
     name: Tags::Versions->name,
-    description: 'Versions operations to get/list/publish/delete and cleanup versions'
+    description: 'tag_versions_description'
 )]
 #[Tag(
     name: Tags::Workflows->name,
-    description: 'Workflows operations to get element workflow details'
+    description: 'tag_workflows_description'
 )]
 enum Tags: string
 {
@@ -123,13 +119,13 @@ enum Tags: string
     case Mercure = 'Mercure';
     case Notes = 'Notes';
     case Properties = 'Properties';
+    case Role = 'Role Management';
     case Schedule = 'Schedule';
     case Settings = 'Settings';
     case Tags = 'Tags';
     case TagsForElement = 'Tags for Element';
     case Translation = 'Translation';
     case User = 'User Management';
-    case Role = 'Role Management';
     case Versions = 'Versions';
     case Workflows = 'Workflows';
 }

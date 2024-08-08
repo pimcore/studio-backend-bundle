@@ -1,4 +1,3 @@
-asset_tag_description: Asset operations to get/update/create/delete assets
 clone_asset_created_response: Successfully copied parent asset and created <strong>jobRun</strong>
   for copying child assets
 clone_asset_description: |
@@ -31,6 +30,33 @@ download_assets_csv_description: |
   Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
 download_assets_csv_success_response: CSV File as attachment
 download_assets_csv_summary: Download CSV file for assets
+tag_asset_thumbnail_description: List thumbnails for assets like videos and images
+tag_assets_description: Asset operations to get/update/create/delete assets
+tag_authorization_description: Session-based login via username and password or logout
+  and invalidate the session
+tag_dataobjects_description: DataObject operations to get/update/create/delete data
+  objects
+tag_dependencies_description: Get dependencies for a single element
+tag_elements_description: Get element properties for a single element based on its
+  type and provided parameters
+tag_emails_description: Email operations to get/update/create/delete/test emails and
+  email blocklist
+tag_execution_engine_description: Execution engine operations related to job runs
+tag_grid_description: Grid operations
+tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
+tag_notes_description: Note operations to list/delete notes
+tag_properties_description: Property operations to get/update/create/delete properties
+tag_role_description: Role Management operations
+tag_schedule_description: Get schedules for an element
+tag_settings_description: Get System Settings
+tag_tags_description: Tag operations to get/list/create/update/delete tags
+tag_tags_for_element_description: Tag operations to get tags for an element
+tag_translation_description: Get translations either for a single key or multiple
+  keys
+tag_user_description: User Management operations
+tag_versions_description: Versions operations to get/list/publish/delete and cleanup
+  versions
+tag_workflows_description: Workflows operations to get element workflow details
 update_asset_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
 update_asset_by_id_summary: Update an asset by ID
