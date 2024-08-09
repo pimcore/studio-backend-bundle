@@ -22,7 +22,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
@@ -32,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
@@ -46,15 +46,18 @@ use function sprintf;
 /**
  * @internal
  */
-final readonly class CloneService implements CloneServiceInterface
+final class CloneService implements CloneServiceInterface
 {
+    private AssetService $coreAssetService;
+
     public function __construct(
-        private AssetServiceInterface $assetService,
-        private AssetSearchServiceInterface $assetSearchService,
-        private JobExecutionAgentInterface $jobExecutionAgent,
-        private SecurityServiceInterface $securityService,
-        private SynchronousProcessingServiceInterface $synchronousProcessingService
+        private readonly AssetServiceInterface $assetService,
+        private readonly AssetSearchServiceInterface $assetSearchService,
+        private readonly JobExecutionAgentInterface $jobExecutionAgent,
+        private readonly SecurityServiceInterface $securityService,
+        private readonly SynchronousProcessingServiceInterface $synchronousProcessingService
     ) {
+        $this->coreAssetService = new AssetService();
     }
 
     /**
@@ -121,7 +124,7 @@ final readonly class CloneService implements CloneServiceInterface
         try {
             $this->synchronousProcessingService->enable();
 
-            return (new AssetService())->copyAsChild(
+            return $this->coreAssetService->copyAsChild(
                 $parent,
                 $source,
             );

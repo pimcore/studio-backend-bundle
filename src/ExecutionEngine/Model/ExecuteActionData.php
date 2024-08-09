@@ -16,17 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model;
 
-use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-final class ExecuteActionData
+readonly class ExecuteActionData
 {
     public function __construct(
         private UserInterface $user,
-        private ElementDescriptor $subject,
         private array $environmentData = []
     ) {
 
@@ -37,28 +35,8 @@ final class ExecuteActionData
         return $this->user;
     }
 
-    public function setUser(UserInterface $user): void
-    {
-        $this->user = $user;
-    }
-
-    public function getSubject(): ElementDescriptor
-    {
-        return $this->subject;
-    }
-
-    public function setSubject(ElementDescriptor $subject): void
-    {
-        $this->subject = $subject;
-    }
-
     public function getEnvironmentData(): array
     {
         return $this->environmentData;
-    }
-
-    public function setEnvironmentData(array $environmentData): void
-    {
-        $this->environmentData = $environmentData;
     }
 }

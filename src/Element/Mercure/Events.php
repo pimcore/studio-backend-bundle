@@ -25,5 +25,7 @@ enum Events: string
 {
     use EnumToValueArrayTrait;
 
+    case CLONING_FINISHED = 'cloning-finished';
     case PATCH_FINISHED = 'patch-finished';
+    case REWRITE_REFERENCES_FINISHED = 'rewrite-references-finished';
 }

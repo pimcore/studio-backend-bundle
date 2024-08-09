@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Property;
 
 use Codeception\Test\Unit;
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\Predefined\PredefinedResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Property\Predefined\PredefinedResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;

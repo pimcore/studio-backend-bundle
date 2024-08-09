@@ -32,8 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 )]
 class Document extends Asset
 {
-    //use MetaData\EmbeddedMetaDataTrait;
-
     public function __construct(
         #[Property(description: 'Page count', type: 'integer', example: 2)]
         private readonly ?int $pageCount,
@@ -47,7 +45,7 @@ class Document extends Asset
         string $type,
         string $filename,
         string $mimeType,
-        bool $hasMetaData,
+        bool $hasMetadata,
         bool $workflowWithPermissions,
         string $fullPath,
         AssetPermissions $permissions,
@@ -67,7 +65,7 @@ class Document extends Asset
             $type,
             $filename,
             $mimeType,
-            $hasMetaData,
+            $hasMetadata,
             $workflowWithPermissions,
             $fullPath,
             $permissions,
