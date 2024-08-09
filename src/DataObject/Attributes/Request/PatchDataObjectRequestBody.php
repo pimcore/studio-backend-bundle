@@ -52,6 +52,7 @@ final class PatchDataObjectRequestBody extends RequestBody
                                 new UpdateIntegerProperty('parentId'),
                                 new UpdateStringProperty('key'),
                                 new UpdateStringProperty('locked'),
+                                new UpdateBooleanProperty('published'),
                             ],
                             type: 'object',
                         ),
