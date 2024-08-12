@@ -70,7 +70,7 @@ final class CustomMetadataController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAssetCustomSettingsById(int $id): JsonResponse
+    public function getAssetCustomMetadataById(int $id): JsonResponse
     {
         return $this->jsonResponse(['items' => $this->customMetadataService->getCustomMetadata($id)]);
     }
