@@ -32,7 +32,6 @@ final readonly class AssetHydrator implements AssetHydratorInterface
     public function hydrate(AssetSearchResultItem $item): Asset
     {
         return new Asset(
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->isHasChildren(),
             $item->getType(),
             $item->getKey(),
@@ -44,6 +43,7 @@ final readonly class AssetHydrator implements AssetHydratorInterface
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
+            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),

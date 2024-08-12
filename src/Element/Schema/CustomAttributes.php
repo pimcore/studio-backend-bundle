@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 
 #[Schema(
     title: 'CustomAttributes',
@@ -29,8 +30,8 @@ use OpenApi\Attributes\Schema;
 final class CustomAttributes
 {
     public function __construct(
-        #[Property(description: 'Custom Icon', type: 'string', example: 'my_custom_icon')]
-        private ?string $icon = null,
+        #[Property(description: 'Custom Icon', type: ElementIcon::class)]
+        private ?ElementIcon $icon = null,
         #[Property(description: 'Custom Tooltip', type: 'string', example: '<b>My Tooltip</b>')]
         private ?string $tooltip = null,
         #[Property(
@@ -51,12 +52,12 @@ final class CustomAttributes
 
     }
 
-    public function getIcon(): ?string
+    public function getIcon(): ?ElementIcon
     {
         return $this->icon;
     }
 
-    public function setIcon(string $icon): void
+    public function setIcon(ElementIcon $icon): void
     {
         $this->icon = $icon;
     }

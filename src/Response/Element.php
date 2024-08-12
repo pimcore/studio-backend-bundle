@@ -47,6 +47,8 @@ class Element
         private readonly int $parentId,
         #[Property(description: 'path', type: 'string', example: '/path/to/element')]
         private readonly string $path,
+        #[Property(description: 'icon', type: ElementIcon::class)]
+        private readonly ElementIcon $icon,
         #[Property(description: 'ID of owner', type: 'integer', example: 1)]
         private readonly int $userOwner,
         #[Property(description: 'User that modified the element', type: 'integer', example: 1)]
@@ -75,6 +77,11 @@ class Element
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    public function getIcon(): ElementIcon
+    {
+        return $this->icon;
     }
 
     public function getUserModification(): ?int

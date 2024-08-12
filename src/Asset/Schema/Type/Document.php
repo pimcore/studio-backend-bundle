@@ -20,6 +20,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 
 #[Schema(
     title: 'Document',
@@ -40,7 +41,6 @@ class Document extends Asset
             example: '/path/to/document/imagethumbnail.jpg'
         )]
         private readonly ?string $imageThumbnailPath,
-        string $iconName,
         bool $hasChildren,
         string $type,
         string $filename,
@@ -52,6 +52,7 @@ class Document extends Asset
         int $id,
         int $parentId,
         string $path,
+        ElementIcon $icon,
         int $userOwner,
         int $userModification,
         ?string $locked,
@@ -60,7 +61,6 @@ class Document extends Asset
         ?int $modificationDate,
     ) {
         parent::__construct(
-            $iconName,
             $hasChildren,
             $type,
             $filename,
@@ -72,6 +72,7 @@ class Document extends Asset
             $id,
             $parentId,
             $path,
+            $icon,
             $userOwner,
             $userModification,
             $locked,
