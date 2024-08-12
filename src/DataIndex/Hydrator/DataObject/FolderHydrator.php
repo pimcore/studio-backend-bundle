@@ -42,7 +42,7 @@ final readonly class FolderHydrator implements FolderHydratorInterface
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
-            $this->iconService->getIconForDataObject($item->getType()),
+            $this->iconService->getIconForDataObject($item),
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),

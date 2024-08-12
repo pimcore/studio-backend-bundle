@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementIconTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 final class IconService implements IconServiceInterface
 {
@@ -68,9 +69,9 @@ final class IconService implements IconServiceInterface
         }
 
         $value = match ($dataObject->getType()) {
-            'object' => 'vector',
-            'variant' => 'variant-icon',
-            'folder' => 'folder',
+            ElementTypes::TYPE_OBJECT => 'vector',
+            ElementTypes::TYPE_VARIANT => 'variant-icon',
+            ElementTypes::TYPE_FOLDER => 'folder',
             default => $this->defaultIcon
         };
 
