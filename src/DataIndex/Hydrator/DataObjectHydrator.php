@@ -43,7 +43,7 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
             $dataObject->getId(),
             $dataObject->getParentId(),
             $dataObject->getPath(),
-            $this->iconService->getIconForDataObject($dataObject->getType()),
+            $this->iconService->getIconForDataObject($dataObject),
             $dataObject->getUserOwner(),
             $dataObject->getUserModification(),
             $dataObject->getLocked(),

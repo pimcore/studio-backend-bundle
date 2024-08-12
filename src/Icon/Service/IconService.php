@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementIconTypes;
 
@@ -60,10 +61,13 @@ final class IconService implements IconServiceInterface
         return new ElementIcon(ElementIconTypes::NAME->value, $value);
     }
 
-    public function getIconForDataObject(string $type): ElementIcon
+    public function getIconForDataObject(DataObjectSearchResultItem $dataObject): ElementIcon
     {
-        //ToDo: Get class icon from GDI, if set override the value and type
-        $value = match ($type) {
+        if ($dataObject->getClassDefinitionIcon() !== null) {
+            return new ElementIcon(ElementIconTypes::PATH->value, $dataObject->getClassDefinitionIcon());
+        }
+
+        $value = match ($dataObject->getType()) {
             'object' => 'vector',
             'variant' => 'variant-icon',
             'folder' => 'folder',
