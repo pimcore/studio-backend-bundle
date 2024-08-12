@@ -51,12 +51,13 @@ final class DeleteController extends AbstractApiController
     #[Delete(
         path: self::API_PATH . '/notes/{id}',
         operationId: 'note_delete_by_id',
-        summary: 'Deleting note by id',
+        description: 'note_delete_by_id_description',
+        summary: 'note_delete_by_id_summary',
         tags: [Tags::Notes->name]
     )]
     #[IdParameter]
     #[SuccessResponse(
-        description: 'Successfully deleted note',
+        description: 'note_delete_by_id_success_description',
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
