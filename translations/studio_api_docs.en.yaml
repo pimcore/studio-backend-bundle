@@ -110,3 +110,39 @@ tag_user_description: User Management operations
 tag_versions_description: Versions operations to get/list/publish/delete and cleanup
   versions
 tag_workflows_description: Workflows operations to get element workflow details
+version_asset_download_by_id_description: |
+  Download the asset version based on the provided version <strong>{id}</strong>.
+version_asset_download_by_id_success_response: Asset version binary file
+version_asset_download_by_id_summary: Download asset version by ID
+version_cleanup_for_element_by_type_and_id_description: |
+  Cleans up all versions for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing element of the provided <strong>{elementType}</strong>.
+version_cleanup_for_element_by_type_and_id_summary: Cleanup all versions for an element
+version_cleanup_for_element_by_type_and_id_success_response: IDs of the removed versions
+version_delete_by_id_description: |
+  Deletes a specific version based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version.
+version_delete_by_id_success_response: Successfully deleted version
+version_delete_by_id_summary: Delete a specific version
+version_get_by_id_description: |
+  Retrieves a specific version data based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version.
+version_get_by_id_success_response: Successfully retrieved version data as JSON
+version_get_by_id_summary: Get a specific version by ID
+version_get_collection_for_element_by_type_and_id_description: |
+  List all the versions of the element. <br> The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
+version_get_collection_for_element_by_type_and_id_summary: Get versions for an element
+version_get_collection_for_element_by_type_and_id_success_response: Paginated element Versions data as JSON with total count as header param
+version_image_stream_by_id_description: |
+  Stream the image version thumbnail based on the provided version <strong>{id}</strong>.
+version_image_stream_by_id_success_response: Image thumbnail version stream
+version_image_stream_by_id_summary: Stream image version thumbnail by ID
+version_pdf_stream_by_id_description: |
+  Stream the PDF version based on the provided version <strong>{id}</strong>.
+version_pdf_stream_by_id_success_response: PDF version stream
+version_pdf_stream_by_id_summary: Stream PDF version by ID
+version_publish_by_id_description: |
+  Publishes a specific version based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version.
+version_publish_by_id_summary: Publish a specific version by ID
+version_publish_by_id_success_response: ID of the published version
+version_update_by_id_description: |
+  Updates a version based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version. <br> See the full description of updatable fields with the schema <strong>UpdateVersion</strong>
+version_update_by_id_success_response: Successfully updated version
+version_update_by_id_summary: Update a version by ID

@@ -58,13 +58,13 @@ final class DownloadController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/versions/{id}/asset/download',
         operationId: 'version_asset_download_by_id',
-        description: 'Download asset version based on the version ID',
-        summary: 'Download asset version by ID',
+        description: 'version_asset_download_by_id_description',
+        summary: 'version_asset_download_by_id_summary',
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
     #[SuccessResponse(
-        description: 'Asset version binary file',
+        description: 'version_asset_download_by_id_success_response',
         content: new AssetMediaType('application/*'),
         headers: [new ContentDisposition()]
     )]

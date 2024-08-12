@@ -59,13 +59,13 @@ final class ImageStreamController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/versions/{id}/image/stream',
         operationId: 'version_image_stream_by_id',
-        description: 'Get thumbnail image version stream based on the version ID',
-        summary: 'Get thumbnail image version stream by ID',
+        description: 'version_image_stream_by_id_description',
+        summary: 'version_image_stream_by_id_summary',
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
     #[SuccessResponse(
-        description: 'Image thumbnail version stream',
+        description: 'version_image_stream_by_id_success_response',
         content: new AssetMediaType('image/*'),
         headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]
