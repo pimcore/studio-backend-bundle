@@ -73,7 +73,7 @@ final class FormatDownloadController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}/image/download/format/{format}',
-        operationId: 'downloadImageByFormat',
+        operationId: 'asset_image_download_by_format',
         description: 'Download image by id and format by path parameters',
         summary: 'Download image by id and format',
         tags: [Tags::Assets->name]

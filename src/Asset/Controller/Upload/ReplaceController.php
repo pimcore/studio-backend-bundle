@@ -68,7 +68,7 @@ final class ReplaceController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/{id}/replace',
-        operationId: 'replaceAsset',
+        operationId: 'asset_replace',
         summary: 'Replace existing asset binary.',
         tags: [Tags::Assets->value]
     )]

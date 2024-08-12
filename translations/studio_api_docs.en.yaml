@@ -1,47 +1,88 @@
-clone_asset_created_response: Successfully copied parent asset and created <strong>jobRun</strong>
+asset_clone_created_response: Successfully copied parent asset and created <strong>jobRun</strong>
   for copying child assets
-clone_asset_description: |
+asset_clone_description: |
   Clones a specific asset with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder
-clone_asset_success_response: Successfully copied asset
-clone_asset_summary: Clone a specific asset
-clone_data_object_created_response: Successfully copied parent data object and created
-  <strong>jobRun</strong> for copying child objects
-clone_data_object_description: |
-  Clones a specific data object with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder or another data object
-clone_data_object_success_response: Successfully copied data object
-clone_data_object_summary: Clone a specific data object
-create_csv_assets_created_response: Successfully created <strong>jobRun</strong> for
+asset_clone_success_response: Successfully copied asset
+asset_clone_summary: Clone a specific asset
+asset_create_csv_created_response: Successfully created <strong>jobRun</strong> for
   csv export
-create_csv_assets_description: |
+asset_create_csv_description: |
   Creating the CSV file for assets. <br> Parameters are: <ul>
     <li><strong>assets</strong>: Array of asset ids</li>
     <li><strong>gridConfig</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
     <li><strong>settings</strong>: Delimiter and header options</li>
   </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
-create_csv_assets_summary: Creating CSV file for assets
-delete_element_created_response: Successfully created jobRun for deleting element
-  and its children
-delete_element_description: |
-  Deletes a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing element of the provided <strong>{elementType}</strong>. <br> If element is a folder, all child elements will be deleted as well. Elements are moved into the Recycle Bin before deletion.
-delete_element_success_response: Successfully deleted element
-delete_element_summary: Delete a specific element and its children
-download_assets_csv_description: |
+asset_create_csv_summary: Creating CSV file for assets
+asset_download_csv_description: |
   Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
-download_assets_csv_success_response: CSV File as attachment
-download_assets_csv_summary: Download CSV file for assets
-patch_asset_by_id_created_response: Successfully created jobRun for patching multiple
+asset_download_csv_success_response: CSV File as attachment
+asset_download_csv_summary: Download CSV file for assets
+asset_patch_by_id_created_response: Successfully created jobRun for patching multiple
   assets
-patch_asset_by_id_description: |
+asset_patch_by_id_description: |
   Patching assets based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
-patch_asset_by_id_success_response: Successfully patched asset
-patch_asset_by_id_summary: Patch assets by ID
-patch_data_object_by_id_created_response: Successfully created jobRun for patching
+asset_patch_by_id_success_response: Successfully patched asset
+asset_patch_by_id_summary: Patch assets by ID
+asset_update_by_id_description: |
+  Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
+asset_update_by_id_summary: Update an asset by ID
+data_object_clone_created_response: Successfully copied parent data object and created
+  <strong>jobRun</strong> for copying child objects
+data_object_clone_description: |
+  Clones a specific data object with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder or another data object
+data_object_clone_success_response: Successfully copied data object
+data_object_clone_summary: Clone a specific data object
+data_object_patch_by_id_created_response: Successfully created jobRun for patching
   multiple data objects
-patch_data_object_by_id_description: |
+data_object_patch_by_id_description: |
   Patching data objects based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
-patch_data_object_by_id_success_response: Successfully patched data object
-patch_data_object_by_id_summary: Patch data objects by ID
+data_object_patch_by_id_success_response: Successfully patched data object
+data_object_patch_by_id_summary: Patch data objects by ID
+data_object_update_by_id_description: |
+  Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
+data_object_update_by_id_success_response: Successfully updated data object
+data_object_update_by_id_summary: Update a data object by ID
+element_delete_created_response: Successfully created jobRun for deleting element
+  and its children
+element_delete_description: |
+  Deletes a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing element of the provided <strong>{elementType}</strong>. <br> If element is a folder, all child elements will be deleted as well. Elements are moved into the Recycle Bin before deletion.
+element_delete_success_response: Successfully deleted element
+element_delete_summary: Delete a specific element and its children
+properties_get_for_element_by_type_and_id_description: |
+  List all the saved properties of the element. <br>
+  Keep in mind  that inherited properties should not be send back in an update request. <br>
+  This will result in the loss of the inheritance. <br>
+properties_get_for_element_by_type_and_id_summary: Get properties for an element based on the element type and the element id
+properties_get_for_element_by_type_and_id_success_response:  Element Properties data as json
+properties_get_description: |
+  Listing all the predefined properties that are currently stored in the system. <br>
+  To list specific properties for a type you can use the <strong>elementType</strong> query parameter.<br>
+  You can also created element type specific listings for this, to show in the context of the element. <br>
+  The <strong>filter</strong> query parameter is applied on the name of the property. <br>
+  Keep in mind that the name is language specific.
+properties_get_summary: Get all predefined properties. You can filter by type and query
+properties_get_success_response: Predefined properties filtered based on type and query parameters
+property_create_summary: Creating new property with default values
+property_create_description: |
+  Creating the property with default values. <br>
+  <ul>
+    <li>Name: New Property</li>
+    <li>Key: new_key</li>
+    <li>Type: Text</li>
+    <li>Element Type: Document (Ctype)</li>
+  </ul>
+property_create_success_response: Created predefined property with default values
+property_delete_summary: Delete property with given id
+property_delete_description: |
+  Deleting the property with the given <strong>{id}</strong>. <br>
+  If the property is used in any element, it will not be deleted.
+property_delete_success_response: Successfully deleted property with given id
+property_update_summary: Updating a property
+property_update_description: |
+  Updating the property with the given <strong>{id}</strong>. <br>
+  See the full description of updatable fields with the schema <strong>UpdatePredefinedProperty</strong>
+property_update_success_response: Updated predefined property
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
 tag_authorization_description: Session-based login via username and password or logout
@@ -69,45 +110,3 @@ tag_user_description: User Management operations
 tag_versions_description: Versions operations to get/list/publish/delete and cleanup
   versions
 tag_workflows_description: Workflows operations to get element workflow details
-update_asset_by_id_description: |
-  Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
-update_asset_by_id_summary: Update an asset by ID
-update_data_object_by_id_description: |
-  Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
-update_data_object_by_id_summary: Update a data object by ID
-update_data_object_success_response: Successfully updated data object
-properties_get_for_element_by_type_and_id_description: |
-  List all the saved properties of the element. <br>
-  Keep in mind  that inherited properties should not be send back in an update request. <br>
-  This will result in the loss of the inheritance. <br>
-
-properties_get_for_element_by_type_and_id_summary: Get properties for an element based on the element type and the element id
-properties_get_for_element_by_type_and_id_success_response:  Element Properties data as json
-properties_get_description: |
-  Listing all the predefined properties that are currently stored in the system. <br>
-  To list specific properties for a type you can use the <strong>elementType</strong> query parameter.<br>
-  You can also created element type specific listings for this, to show in the context of the element. <br>
-  The <strong>filter</strong> query parameter is applied on the name of the property. <br>
-  Keep in mind that the name is language specific.
-properties_get_summary: Get all predefined properties. You can filter by type and query
-properties_get_success_response: Predefined properties filtered based on type and query parameters
-property_create_summary: Creating new property with default values
-property_create_description: | 
-  Creating the property with default values. <br>
-  <ul>
-    <li>Name: New Property</li>
-    <li>Key: new_key</li>
-    <li>Type: Text</li>
-    <li>Element Type: Document (Ctype)</li>
-  </ul>
-property_create_success_response: Created predefined property with default values
-property_delete_summary: Delete property with given id
-property_delete_description: |
-  Deleting the property with the given <strong>{id}</strong>. <br>
-  If the property is used in any element, it will not be deleted.
-property_delete_success_response: Successfully deleted property with given id
-property_update_summary: Updating a property
-property_update_description: |
-  Updating the property with the given <strong>{id}</strong>. <br>
-  See the full description of updatable fields with the schema <strong>UpdatePredefinedProperty</strong>
-property_update_success_response: Updated predefined property
