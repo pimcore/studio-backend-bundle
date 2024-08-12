@@ -62,24 +62,24 @@ final class PatchController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Patch(
         path: self::API_PATH . '/assets',
-        operationId: 'patchAssetById',
-        description: 'patch_asset_by_id_description',
-        summary: 'patch_asset_by_id_summary',
+        operationId: 'assetPatchById',
+        description: 'asset_patch_by_id_description',
+        summary: 'asset_patch_by_id_summary',
         tags: [Tags::Assets->name]
     )]
     #[PatchAssetRequestBody]
     #[SuccessResponse(
-        description: 'patch_asset_by_id_success_response',
+        description: 'asset_patch_by_id_success_response',
     )]
     #[CreatedResponse(
-        description: 'patch_asset_by_id_created_response',
+        description: 'asset_patch_by_id_created_response',
         content: new IdJson('ID of created jobRun')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function patchAssets(#[MapRequestPayload] PatchAssetParameter $patchAssetParameter): Response
+    public function assetPatchById(#[MapRequestPayload] PatchAssetParameter $patchAssetParameter): Response
     {
         $status = HttpResponseCodes::SUCCESS->value;
         $data = null;

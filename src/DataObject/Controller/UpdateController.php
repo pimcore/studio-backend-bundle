@@ -53,22 +53,22 @@ final class UpdateController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Put(
         path: self::API_PATH . '/data-objects/{id}',
-        operationId: 'updateDataObjectById',
-        description: 'update_data_object_by_id_description',
-        summary: 'update_data_object_by_id_summary',
+        operationId: 'dataObjectUpdateById',
+        description: 'data_object_update_by_id_description',
+        summary: 'data_object_update_by_id_summary',
         tags: [Tags::DataObjects->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT)]
     #[UpdateDataObjectRequestBody]
     #[SuccessResponse(
-        description: 'update_data_object_success_response',
+        description: 'data_object_update_by_id_success_response',
         content: new OneOfDataObjectsJson()
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function updateDataObjectById(int $id, #[MapRequestPayload] DataParameter $parameter): JsonResponse
+    public function dataObjectUpdateById(int $id, #[MapRequestPayload] DataParameter $parameter): JsonResponse
     {
         $this->updateService->update(ElementTypes::TYPE_OBJECT, $id, $parameter->getData());
 

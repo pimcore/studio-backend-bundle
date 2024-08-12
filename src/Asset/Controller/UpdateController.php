@@ -53,9 +53,9 @@ final class UpdateController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Put(
         path: self::API_PATH . '/assets/{id}',
-        operationId: 'updateAssetById',
-        description: 'update_asset_by_id_description',
-        summary: 'update_asset_by_id_summary',
+        operationId: 'assetUpdateById',
+        description: 'asset_update_by_id_description',
+        summary: 'asset_update_by_id_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
@@ -68,7 +68,7 @@ final class UpdateController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function updateAsset(int $id, #[MapRequestPayload] UpdateAssetParameter $updateAsset): JsonResponse
+    public function assetUpdateById(int $id, #[MapRequestPayload] UpdateAssetParameter $updateAsset): JsonResponse
     {
         $this->updateService->update(ElementTypes::TYPE_ASSET, $id, $updateAsset->getData());
 

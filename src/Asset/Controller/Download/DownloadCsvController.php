@@ -57,14 +57,14 @@ final class DownloadCsvController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/download/csv/{jobRunId}',
-        operationId: 'downloadAssetsCsv',
-        description: 'download_assets_csv_description',
-        summary: 'download_assets_csv_summary',
+        operationId: 'assetDownloadCsv',
+        description: 'asset_download_csv_description',
+        summary: 'asset_download_csv_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
     #[SuccessResponse(
-        description: 'download_assets_csv_success_response',
+        description: 'asset_download_csv_success_response',
         content: [new AssetMediaType('application/csv')],
         headers: [new ContentDisposition()]
     )]
@@ -73,7 +73,7 @@ final class DownloadCsvController extends AbstractApiController
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function downloadCsvAssets(int $jobRunId): StreamedResponse
+    public function assetDownloadCsv(int $jobRunId): StreamedResponse
     {
         return $this->downloadService->downloadResourceByJobRunId(
             $jobRunId,

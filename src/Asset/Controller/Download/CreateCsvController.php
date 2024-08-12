@@ -49,21 +49,21 @@ final class CreateCsvController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/csv/create',
-        operationId: 'createCsvAssets',
-        description: 'create_csv_assets_description',
-        summary: 'create_csv_assets_summary',
+        operationId: 'assetCreateCsv',
+        description: 'asset_create_csv_description',
+        summary: 'asset_create_csv_summary',
         tags: [Tags::Assets->name]
     )]
     #[CsvExportRequestBody]
     #[CreatedResponse(
-        description: 'create_csv_assets_created_response',
+        description: 'asset_create_csv_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function createCsvAssets(
+    public function assetCreateCsv(
         #[MapRequestPayload] ExportAssetParameter $exportAssetParameter
     ): Response {
         return $this->jsonResponse(
