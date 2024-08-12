@@ -31,7 +31,6 @@ final readonly class ArchiveHydrator implements ArchiveHydratorInterface
     public function hydrate(ArchiveItem $item): Archive
     {
         return new Archive(
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->isHasChildren(),
             $item->getType(),
             $item->getKey(),
@@ -43,6 +42,7 @@ final readonly class ArchiveHydrator implements ArchiveHydratorInterface
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
+            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),

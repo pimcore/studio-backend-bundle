@@ -47,7 +47,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         return $config;
     }
 
-    public function translateConfig(OpenApi $config): array
+    public function translateConfig(OpenApi $config, string $locale = 'en'): array
     {
         try {
 
@@ -64,7 +64,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
             throw new EnvironmentException('Failed to convert OpenAPI config to array');
         }
 
-        $this->translateRecursive($configArray);
+        $this->translateRecursive($configArray, $locale);
 
         return $configArray;
     }
@@ -74,23 +74,23 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         return $a->title <=> $b->title;
     }
 
-    private function translateRecursive(array &$config): void
+    private function translateRecursive(array &$config, string $locale = 'en'): void
     {
         foreach ($config as $key => &$value) {
             if (!is_array($value) && is_string($key) && in_array($key, self::TRANSLATABLE_PROPERTIES)) {
-                $value = $this->translate($value);
+                $value = $this->translate($value, $locale);
 
                 continue;
             }
 
             if (is_array($value)) {
-                $this->translateRecursive($value); //Recurse into sub-array
+                $this->translateRecursive($value, $locale); //Recurse into sub-array
             }
         }
     }
 
-    private function translate(string $message): string
+    private function translate(string $message, string $locale = 'en'): string
     {
-        return $this->translator->translateApiDocs($message);
+        return $this->translator->translateApiDocs($message, $locale);
     }
 }

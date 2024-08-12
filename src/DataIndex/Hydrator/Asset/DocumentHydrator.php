@@ -33,7 +33,6 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
         return new Document(
             $item->getPageCount(),
             $item->getImageThumbnail(),
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->isHasChildren(),
             $item->getType(),
             $item->getKey(),
@@ -45,6 +44,7 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
+            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),

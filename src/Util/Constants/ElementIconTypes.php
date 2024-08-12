@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Pimcore
@@ -14,13 +13,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constants;
 
-use OpenApi\Annotations\OpenApi;
+use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
 
-interface OpenApiServiceInterface
+enum ElementIconTypes: string
 {
-    public function getConfig(): OpenApi;
+    use EnumToValueArrayTrait;
 
-    public function translateConfig(OpenApi $config, string $locale = 'en'): array;
+    case NAME = 'name';
+    case PATH = 'path';
 }

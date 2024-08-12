@@ -29,6 +29,8 @@ final readonly class ElementTypes
 
     public const TYPE_OBJECT = 'object';
 
+    public const TYPE_VARIANT = 'variant';
+
     public const TYPE_ARCHIVE = 'zip archive';
 
     public const TYPE_FOLDER = 'folder';
