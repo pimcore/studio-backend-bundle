@@ -14,13 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\MappedParameter;
 
-use OpenApi\Annotations\OpenApi;
-
-interface OpenApiServiceInterface
+/**
+ * @internal
+ */
+final readonly class LocaleParameter
 {
-    public function getConfig(): OpenApi;
+    public function __construct(private ?string $locale = 'en')
+    {
+    }
 
-    public function translateConfig(OpenApi $config, string $locale = 'en'): array;
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
 }
