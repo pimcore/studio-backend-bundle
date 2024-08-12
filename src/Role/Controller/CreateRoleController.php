@@ -55,7 +55,7 @@ final class CreateRoleController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
         path: self::API_PATH . '/role',
-        operationId: 'createRole',
+        operationId: 'role_create',
         summary: 'Create a new role.',
         tags: [Tags::Role->value]
     )]

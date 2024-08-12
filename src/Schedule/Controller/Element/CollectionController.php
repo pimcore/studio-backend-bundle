@@ -53,7 +53,7 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
-        operationId: 'getSchedulesForElementByTypeAndId',
+        operationId: 'schedule_get_collection_for_element_by_type_and_id',
         summary: 'Get schedules for an element',
         tags: [Tags::Schedule->name]
     )]

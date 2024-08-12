@@ -59,7 +59,7 @@ final class PublishController extends AbstractApiController
     //#[IsGranted('STUDIO_API')]
     #[Post(
         path: self::API_PATH . '/versions/{id}',
-        operationId: 'publishVersion',
+        operationId: 'version_publish_by_id',
         description: 'Publish element version data based on the version ID',
         summary: 'Publish version data',
         tags: [Tags::Versions->name]

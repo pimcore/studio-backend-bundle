@@ -64,7 +64,7 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Get(
         path: self::API_PATH . '/notes',
-        operationId: 'getNotes',
+        operationId: 'note_get_collection',
         summary: 'Get notes',
         tags: [Tags::Notes->name]
     )]

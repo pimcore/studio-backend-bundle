@@ -58,7 +58,7 @@ final class BatchAssignController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Post(
         path: self::API_PATH . '/tags/batch/assign/{elementType}',
-        operationId: 'batchAssignTagsForElements',
+        operationId: 'tag_batch_assign_to_elements_by_type',
         summary: 'Batch assign tags for elements',
         tags: [Tags::TagsForElement->value]
     )]

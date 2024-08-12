@@ -52,7 +52,7 @@ final class UnassignController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Delete(
         path: self::API_PATH . '/tags/{elementType}/{id}/{tagId}',
-        operationId: 'unassignTagFromElement',
+        operationId: 'tag_unassign_from_element',
         summary: 'Unassign tag from element',
         tags: [Tags::TagsForElement->value]
     )]

@@ -58,7 +58,7 @@ final class ImageStreamController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/versions/{id}/image/stream',
-        operationId: 'streamImageVersionById',
+        operationId: 'version_image_stream_by_id',
         description: 'Get thumbnail image version stream based on the version ID',
         summary: 'Get thumbnail image version stream by ID',
         tags: [Tags::Versions->name]

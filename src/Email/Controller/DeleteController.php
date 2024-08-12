@@ -53,7 +53,7 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Delete(
         path: self::API_PATH . '/emails/{id}',
-        operationId: 'deleteEmailLogEntry',
+        operationId: 'email_log_delete',
         description: 'Delete E-Mail log entry based on the provided ID',
         summary: 'Delete E-Mail log entry',
         tags: [Tags::Emails->value]

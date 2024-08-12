@@ -56,7 +56,7 @@ final class GetUserController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::API_PATH . '/user/{id}',
-        operationId: 'getUserById',
+        operationId: 'user_get_by_id',
         summary: 'Get user by id.',
         tags: [Tags::User->value]
     )]
@@ -68,7 +68,7 @@ final class GetUserController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getUsers(int $id): JsonResponse
+    public function getUserById(int $id): JsonResponse
     {
         return $this->jsonResponse(
             $this->userService->getUserById($id)

@@ -64,7 +64,7 @@ final class UpdateUserController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Put(
         path: self::API_PATH . '/user/{id}',
-        operationId: 'updateUserById',
+        operationId: 'user_update_by_id',
         summary: 'Update user by id.',
         tags: [Tags::User->value]
     )]

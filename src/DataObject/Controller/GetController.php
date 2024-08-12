@@ -52,7 +52,7 @@ final class GetController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::API_PATH . '/data-objects/{id}',
-        operationId: 'getDataObjectById',
+        operationId: 'data_object_get_by_id',
         description: 'Get data object by id by path parameter',
         summary: 'Get data object by id',
         tags: [Tags::DataObjects->name]

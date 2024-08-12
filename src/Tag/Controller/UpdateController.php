@@ -50,7 +50,7 @@ final class UpdateController extends AbstractApiController
     #[Route('/tags/{id}', name: 'pimcore_studio_api_update_tag', methods: ['PUT'])]
     #[Put(
         path: self::API_PATH . '/tags/{id}',
-        operationId: 'updateTag',
+        operationId: 'tag_update_by_id',
         summary: 'Update a tag',
         tags: [Tags::Tags->name]
     )]

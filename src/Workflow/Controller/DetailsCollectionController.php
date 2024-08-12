@@ -54,7 +54,7 @@ final class DetailsCollectionController extends AbstractApiController
     //#[IsGranted('STUDIO_API')]
     #[Get(
         path: self::API_PATH . '/workflows/details',
-        operationId: 'getWorkflowsDetails',
+        operationId: 'workflow_get_details',
         description: 'Get details of the element workflows',
         summary: 'Get all workflow details of an element',
         tags: [Tags::Workflows->name]

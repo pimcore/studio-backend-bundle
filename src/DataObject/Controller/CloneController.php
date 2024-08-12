@@ -64,7 +64,7 @@ final class CloneController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
         path: self::API_PATH . '/data-objects/{id}/clone/{parentId}',
-        operationId: 'dataObjectClone',
+        operationId: 'data_object_clone',
         description: 'data_object_clone_description',
         summary: 'data_object_clone_summary',
         tags: [Tags::DataObjects->value]

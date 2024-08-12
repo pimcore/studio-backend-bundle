@@ -65,7 +65,7 @@ final class TreeController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::API_PATH . '/data-objects/tree',
-        operationId: 'getDataObjectTree',
+        operationId: 'data_object_get_tree',
         description: 'Get paginated data objects',
         summary: 'Get all DataObjects for the tree',
         tags: [Tags::DataObjects->name],

@@ -67,7 +67,7 @@ final class PdfStreamController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/versions/{id}/pdf/stream',
-        operationId: 'streamPdfVersionById',
+        operationId: 'version_pdf_stream_by_id',
         description: 'Get PDF version stream based on the version ID',
         summary: 'Get PDF version stream by ID',
         tags: [Tags::Versions->name]

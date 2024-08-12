@@ -49,20 +49,20 @@ element_delete_description: |
   Deletes a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing element of the provided <strong>{elementType}</strong>. <br> If element is a folder, all child elements will be deleted as well. Elements are moved into the Recycle Bin before deletion.
 element_delete_success_response: Successfully deleted element
 element_delete_summary: Delete a specific element and its children
-properties_get_for_element_by_type_and_id_description: |
+property_get_collection_for_element_by_type_and_id_description: |
   List all the saved properties of the element. <br>
   Keep in mind  that inherited properties should not be send back in an update request. <br>
   This will result in the loss of the inheritance. <br>
-properties_get_for_element_by_type_and_id_summary: Get properties for an element based on the element type and the element id
-properties_get_for_element_by_type_and_id_success_response:  Element Properties data as json
-properties_get_description: |
+property_get_collection_for_element_by_type_and_id_summary: Get properties for an element based on the element type and the element id
+property_get_collection_for_element_by_type_and_id_success_response:  Element Properties data as json
+property_get_collection_description: |
   Listing all the predefined properties that are currently stored in the system. <br>
   To list specific properties for a type you can use the <strong>elementType</strong> query parameter.<br>
   You can also created element type specific listings for this, to show in the context of the element. <br>
   The <strong>filter</strong> query parameter is applied on the name of the property. <br>
   Keep in mind that the name is language specific.
-properties_get_summary: Get all predefined properties. You can filter by type and query
-properties_get_success_response: Predefined properties filtered based on type and query parameters
+property_get_collection_summary: Get all predefined properties. You can filter by type and query
+property_get_collection_success_response: Predefined properties filtered based on type and query parameters
 property_create_summary: Creating new property with default values
 property_create_description: |
   Creating the property with default values. <br>

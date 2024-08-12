@@ -51,7 +51,7 @@ final class ResetPasswordController extends AbstractApiController
     #[Route('/user/reset-password', name: 'pimcore_studio_api_user_reset_password', methods: ['POST'])]
     #[Post(
         path: self::API_PATH . '/user/reset-password',
-        operationId: 'reset-password',
+        operationId: 'user_reset_password',
         summary: 'Sending username to reset password',
         tags: [Tags::User->value]
     )]

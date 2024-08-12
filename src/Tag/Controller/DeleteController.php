@@ -52,7 +52,7 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[Delete(
         path: self::API_PATH . '/tags/{id}',
-        operationId: 'deleteTag',
+        operationId: 'tag_delete_by_id',
         summary: 'Delete a tag with a given id',
         tags: [Tags::Tags->name]
     )]

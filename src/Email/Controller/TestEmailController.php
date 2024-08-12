@@ -62,7 +62,7 @@ final class TestEmailController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Post(
         path: self::API_PATH . '/emails/test',
-        operationId: 'sendTestEmail',
+        operationId: 'email_send_test',
         summary: 'Send a test email.',
         tags: [Tags::Emails->value]
     )]

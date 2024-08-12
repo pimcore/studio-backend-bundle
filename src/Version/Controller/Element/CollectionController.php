@@ -65,7 +65,7 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
         path: self::API_PATH . '/versions/{elementType}/{id}',
-        operationId: 'getVersions',
+        operationId: 'version_get_collection_for_element_by_type_and_id',
         description: 'Get paginated versions',
         summary: 'Get all versions of element',
         tags: [Tags::Versions->name]
