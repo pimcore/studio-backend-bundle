@@ -28,6 +28,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
+use function sprintf;
 
 /**
  * @internal
@@ -39,8 +40,7 @@ final readonly class PublishAdapter implements PatchAdapterInterface
 
     public function __construct(
         private SecurityServiceInterface $securityService
-    )
-    {
+    ) {
 
     }
 
