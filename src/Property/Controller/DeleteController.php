@@ -51,7 +51,7 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[Delete(
         path: self::API_PATH . '/properties/{id}',
-        operationId: 'propertyDelete',
+        operationId: 'property_delete',
         description: 'property_delete_description',
         summary: 'property_delete_summary',
         tags: [Tags::Properties->name]

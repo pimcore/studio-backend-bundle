@@ -55,7 +55,7 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
         path: self::API_PATH . '/properties/{elementType}/{id}',
-        operationId: 'propertiesGetForElementByTypeAndId',
+        operationId: 'properties_get_for_element_by_type_and_id',
         description: 'properties_get_for_element_by_type_and_id_description',
         summary: 'properties_get_for_element_by_type_and_id_summary',
         tags: [Tags::Properties->value]

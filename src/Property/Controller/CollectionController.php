@@ -51,7 +51,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/properties', name: 'pimcore_studio_api_properties', methods: ['GET'])]
     #[Get(
         path: self::API_PATH . '/properties',
-        operationId: 'propertiesGet',
+        operationId: 'properties_get',
         description: 'properties_get_description',
         summary: 'properties_get_summary',
         tags: [Tags::Properties->name]

@@ -51,7 +51,7 @@ final class CreateController extends AbstractApiController
     #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[POST(
         path: self::API_PATH . '/property',
-        operationId: 'propertyCreate',
+        operationId: 'property_create',
         description: 'property_create_description',
         summary: 'property_create_summary',
         tags: [Tags::Properties->name]
