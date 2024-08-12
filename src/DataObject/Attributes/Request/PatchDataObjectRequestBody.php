@@ -14,15 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Attributes\Request;
 
 use Attribute;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\CustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\PatchCustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateBooleanProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateStringProperty;
 
@@ -30,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateStringP
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class PatchAssetRequestBody extends RequestBody
+final class PatchDataObjectRequestBody extends RequestBody
 {
     public function __construct()
     {
@@ -45,11 +44,16 @@ final class PatchAssetRequestBody extends RequestBody
                         items: new Items(
                             required: ['id'],
                             properties: [
-                                new Property(property: 'id', description: 'Asset ID', type: 'integer', example: 83),
+                                new Property(
+                                    property: 'id',
+                                    description: 'Data Object ID',
+                                    type: 'integer',
+                                    example: 83
+                                ),
                                 new UpdateIntegerProperty('parentId'),
                                 new UpdateStringProperty('key'),
                                 new UpdateStringProperty('locked'),
-                                new CustomMetadata(PatchCustomMetadata::class),
+                                new UpdateBooleanProperty('published'),
                             ],
                             type: 'object',
                         ),

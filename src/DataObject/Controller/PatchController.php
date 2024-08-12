@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 
 use OpenApi\Attributes\Patch;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\PatchAssetRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Attributes\Request\PatchDataObjectRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\DataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -58,43 +58,39 @@ final class PatchController extends AbstractApiController
      * @throws AccessDeniedException|ElementSavingFailedException
      * @throws NotFoundException|UserNotFoundException|InvalidArgumentException
      */
-    #[Route('/assets', name: 'pimcore_studio_api_patch_asset', methods: ['PATCH'])]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[Route('/data-objects', name: 'pimcore_studio_api_patch_data_object', methods: ['PATCH'])]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Patch(
-        path: self::API_PATH . '/assets',
-        operationId: 'patchAssetById',
-        description: 'patch_asset_by_id_description',
-        summary: 'patch_asset_by_id_summary',
-        tags: [Tags::Assets->name]
+        path: self::API_PATH . '/data-objects',
+        operationId: 'patchDataObjectById',
+        description: 'patch_data_object_by_id_description',
+        summary: 'patch_data_object_by_id_summary',
+        tags: [Tags::DataObjects->name]
     )]
-    #[PatchAssetRequestBody]
+    #[PatchDataObjectRequestBody]
     #[SuccessResponse(
-        description: 'patch_asset_by_id_success_response',
+        description: 'patch_data_object_success_response',
     )]
     #[CreatedResponse(
-        description: 'patch_asset_by_id_created_response',
+        description: 'patch_data_object_created_response',
         content: new IdJson('ID of created jobRun')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function patchAssets(#[MapRequestPayload] PatchAssetParameter $patchAssetParameter): Response
+    public function patchDataObjectById(#[MapRequestPayload] DataParameter $parameter): Response
     {
-        $status = HttpResponseCodes::SUCCESS->value;
-        $data = null;
         $jobRunId = $this->patchService->patch(
-            ElementTypes::TYPE_ASSET,
-            $patchAssetParameter->getData(),
+            ElementTypes::TYPE_OBJECT,
+            $parameter->getData(),
             $this->securityService->getCurrentUser()
         );
 
         if ($jobRunId) {
-            $status = HttpResponseCodes::CREATED->value;
-
-            return $this->jsonResponse(['id' => $jobRunId], $status);
+            return $this->jsonResponse(['id' => $jobRunId], HttpResponseCodes::CREATED->value);
         }
 
-        return new Response($data, $status);
+        return new Response();
     }
 }
