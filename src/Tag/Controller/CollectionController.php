@@ -64,7 +64,7 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
         path: self::API_PATH . '/tags',
-        operationId: 'getTags',
+        operationId: 'tag_get_collection',
         summary: 'Get all tags for a parent id. You can filter by type and query',
         tags: [Tags::Tags->name]
     )]

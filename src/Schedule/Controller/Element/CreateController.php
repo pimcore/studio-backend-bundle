@@ -55,7 +55,7 @@ final class CreateController extends AbstractApiController
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[POST(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
-        operationId: 'createSchedule',
+        operationId: 'schedule_create_for_element_by_type_and_id',
         summary: 'Create schedule for element',
         tags: [Tags::Schedule->name]
     )]

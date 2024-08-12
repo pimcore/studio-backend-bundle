@@ -57,7 +57,7 @@ final class CreateController extends AbstractApiController
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Post(
         path: self::API_PATH . '/notes/{elementType}/{id}',
-        operationId: 'createNoteForElement',
+        operationId: 'note_element_create',
         summary: 'Creating new note for element',
         tags: [Tags::Notes->name]
     )]

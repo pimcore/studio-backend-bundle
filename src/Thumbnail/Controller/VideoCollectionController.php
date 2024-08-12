@@ -54,7 +54,7 @@ final class VideoCollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::THUMBNAILS->value)]
     #[Get(
         path: self::API_PATH . '/thumbnails/video',
-        operationId: 'getVideoThumbnails',
+        operationId: 'thumbnail_video_get_collection',
         description: 'Get video thumbnails',
         summary: 'Get all video thumbnails',
         tags: [Tags::AssetThumbnails->name]

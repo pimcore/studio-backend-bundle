@@ -54,7 +54,7 @@ final class UserTreeController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::API_PATH . '/users/tree',
-        operationId: 'getUserTree',
+        operationId: 'user_get_tree',
         summary: 'Get collection of users for tree view',
         tags: [Tags::User->value]
     )]

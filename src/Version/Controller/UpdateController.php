@@ -56,7 +56,7 @@ final class UpdateController extends AbstractApiController
     #[Route('/versions/{id}', name: 'pimcore_studio_api_update_version', methods: ['PUT'])]
     #[Put(
         path: self::API_PATH . '/versions/{id}',
-        operationId: 'updateVersion',
+        operationId: 'version_update_by_id',
         description: 'Update version based on the version ID',
         summary: 'Update version',
         tags: [Tags::Versions->name]

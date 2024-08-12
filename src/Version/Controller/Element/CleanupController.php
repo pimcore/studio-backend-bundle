@@ -57,7 +57,7 @@ final class CleanupController extends AbstractApiController
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Delete(
         path: self::API_PATH . '/versions/{elementType}/{id}',
-        operationId: 'cleanupVersion',
+        operationId: 'version_cleanup_for_element_by_type_and_id',
         description: 'Cleanup versions based on the provided parameters',
         summary: 'Cleanup versions',
         tags: [Tags::Versions->name]

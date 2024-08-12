@@ -60,7 +60,7 @@ final class ForwardController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Post(
         path: self::API_PATH . '/emails/{id}/forward',
-        operationId: 'forwardEmail',
+        operationId: 'email_log_forward_by_id',
         summary: 'Forward an existing email.',
         tags: [Tags::Emails->value]
     )]

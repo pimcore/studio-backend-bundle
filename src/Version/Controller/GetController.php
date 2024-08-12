@@ -54,7 +54,7 @@ final class GetController extends AbstractApiController
     //#[IsGranted('STUDIO_API')]
     #[Get(
         path: self::API_PATH . '/versions/{id}',
-        operationId: 'getVersionById',
+        operationId: 'version_get_by_id',
         description: 'Get version based on the version ID',
         summary: 'Get version by ID',
         tags: [Tags::Versions->name]

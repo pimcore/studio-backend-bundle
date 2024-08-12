@@ -53,7 +53,7 @@ final class DeleteController extends AbstractApiController
     //#[IsGranted('STUDIO_API')]
     #[Delete(
         path: self::API_PATH . '/versions/{id}',
-        operationId: 'deleteVersion',
+        operationId: 'version_delete_by_id',
         description: 'Delete version based on the version ID',
         summary: 'Delete version',
         tags: [Tags::Versions->name]

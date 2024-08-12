@@ -57,7 +57,7 @@ final class RoleTreeController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::API_PATH . '/roles/tree',
-        operationId: 'getRoleTree',
+        operationId: 'role_get_tree',
         summary: 'Get collection of roles for tree view',
         tags: [Tags::Role->value]
     )]

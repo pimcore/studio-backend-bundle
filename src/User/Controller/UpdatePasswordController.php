@@ -58,7 +58,7 @@ final class UpdatePasswordController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Put(
         path: self::API_PATH . '/user/{id}/password',
-        operationId: 'updateUserPasswordById',
+        operationId: 'user_update_password_by_id',
         summary: 'Update password for a User by the User id.',
         tags: [Tags::User->value]
     )]

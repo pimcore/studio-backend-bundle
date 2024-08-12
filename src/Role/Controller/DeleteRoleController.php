@@ -52,7 +52,7 @@ final class DeleteRoleController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Delete(
         path: self::API_PATH . '/role/{id}',
-        operationId: 'deleteRole',
+        operationId: 'role_delete_by_id',
         summary: 'Delete a specific role.',
         tags: [Tags::Role->value]
     )]

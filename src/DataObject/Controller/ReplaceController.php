@@ -63,7 +63,7 @@ final class ReplaceController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
         path: self::API_PATH . '/data-objects/{sourceId}/replace/{targetId}',
-        operationId: 'replaceContent',
+        operationId: 'data_object_replace_content',
         summary: 'Replace content of a specific data object.',
         tags: [Tags::DataObjects->value]
     )]

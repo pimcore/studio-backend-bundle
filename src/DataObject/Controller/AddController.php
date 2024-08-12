@@ -65,7 +65,7 @@ final class AddController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
         path: self::API_PATH . '/data-objects/add/{parentId}',
-        operationId: 'addDataObject',
+        operationId: 'data_object_add',
         summary: 'Add a new data object.',
         tags: [Tags::DataObjects->value]
     )]

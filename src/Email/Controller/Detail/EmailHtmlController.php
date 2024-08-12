@@ -57,7 +57,7 @@ final class EmailHtmlController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
         path: self::API_PATH . '/emails/{id}/html',
-        operationId: 'getEmailLogHtml',
+        operationId: 'email_log_get_html',
         description: 'Get E-Mail log entry HTML by ID',
         summary: 'Get E-Mail log entry HTML',
         tags: [Tags::Emails->value]

@@ -68,7 +68,7 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Delete(
         path: self::API_PATH . '/elements/{elementType}/delete/{id}',
-        operationId: 'elementDelete',
+        operationId: 'element_delete',
         description: 'element_delete_description',
         summary: 'element_delete_summary',
         tags: [Tags::Elements->value]

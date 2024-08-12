@@ -58,7 +58,7 @@ final class GetController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
         path: self::API_PATH . '/emails/{id}',
-        operationId: 'getEmailLogEntry',
+        operationId: 'email_log_get',
         description: 'Get E-Mail log entry by ID',
         summary: 'Get E-Mail log entry',
         tags: [Tags::Emails->value]

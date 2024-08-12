@@ -56,7 +56,7 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
         path: self::API_PATH . '/tags/{elementType}/{id}',
-        operationId: 'getTagsForElementByTypeAndId',
+        operationId: 'tag_get_collection_for_element_by_type_and_id',
         summary: 'Get tags for an element',
         tags: [Tags::TagsForElement->value]
     )]

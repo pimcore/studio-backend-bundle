@@ -58,7 +58,7 @@ final class CreateUserController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
         path: self::API_PATH . '/user/',
-        operationId: 'createUser',
+        operationId: 'user_create',
         summary: 'Create a new user.',
         tags: [Tags::User->value]
     )]

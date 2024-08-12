@@ -56,7 +56,7 @@ final class AssignController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Post(
         path: self::API_PATH . '/tags/assign/{elementType}/{id}/{tagId}',
-        operationId: 'assignTagForElement',
+        operationId: 'tag_assign_to_element',
         summary: 'Assign tag for element',
         tags: [Tags::TagsForElement->value]
     )]

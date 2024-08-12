@@ -62,7 +62,7 @@ final class PatchController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Patch(
         path: self::API_PATH . '/data-objects',
-        operationId: 'dataObjectPatchById',
+        operationId: 'data_object_patch_by_id',
         description: 'data_object_patch_by_id_description',
         summary: 'data_object_patch_by_id_summary',
         tags: [Tags::DataObjects->name]

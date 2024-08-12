@@ -57,7 +57,7 @@ final class EmailTextController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
         path: self::API_PATH . '/emails/{id}/text',
-        operationId: 'getEmailLogText',
+        operationId: 'email_log_get_text',
         description: 'Get E-Mail log entry text by ID',
         summary: 'Get E-Mail log entry text',
         tags: [Tags::Emails->value]

@@ -50,7 +50,7 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Delete(
         path: self::API_PATH . '/notes/{id}',
-        operationId: 'deleteNote',
+        operationId: 'note_delete_by_id',
         summary: 'Deleting note by id',
         tags: [Tags::Notes->name]
     )]
