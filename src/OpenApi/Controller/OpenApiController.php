@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Controller;
 
-use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\MappedParameter\LocaleParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
