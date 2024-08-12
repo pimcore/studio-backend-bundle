@@ -47,16 +47,17 @@ final class CreateController extends AbstractApiController
     /**
      * @throws NotWriteableException
      */
-    #[Route('/property', name: 'pimcore_studio_api_create_property', methods: ['POST'])]
+    #[Route('/property', name: 'pimcore_studio_api_property_create', methods: ['POST'])]
     #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[POST(
         path: self::API_PATH . '/property',
-        operationId: 'createProperty',
-        summary: 'Creating new property with default values',
+        operationId: 'propertyCreate',
+        description: 'property_create_description',
+        summary: 'property_create_summary',
         tags: [Tags::Properties->name]
     )]
     #[SuccessResponse(
-        description: 'Created predefined property',
+        description: 'property_create_success_response',
         content: new JsonContent(ref: PredefinedProperty::class, type: 'object')
     )]
     #[DefaultResponses([
