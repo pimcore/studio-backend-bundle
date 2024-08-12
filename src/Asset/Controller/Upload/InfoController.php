@@ -60,7 +60,7 @@ final class InfoController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/exists/{parentId}',
-        operationId: 'getAssetExists',
+        operationId: 'asset_upload_info',
         description: 'Get information if asset already exists by parentId path parameter and fileName query string',
         summary: 'Get asset info by parentId and fileName',
         tags: [Tags::Assets->name]

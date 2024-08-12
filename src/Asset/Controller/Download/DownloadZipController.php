@@ -57,7 +57,7 @@ final class DownloadZipController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/download/zip/{jobRunId}',
-        operationId: 'downloadZippedAssets',
+        operationId: 'asset_download_zip',
         description: 'Downloading zipped assets',
         summary: 'Downloading the zip file with assets',
         tags: [Tags::Assets->name]

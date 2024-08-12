@@ -64,7 +64,7 @@ final class CloneController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/{id}/clone/{parentId}',
-        operationId: 'assetClone',
+        operationId: 'asset_clone',
         description: 'asset_clone_description',
         summary: 'asset_clone_summary',
         tags: [Tags::Assets->value]

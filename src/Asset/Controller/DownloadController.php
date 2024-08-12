@@ -65,7 +65,7 @@ final class DownloadController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}/download',
-        operationId: 'downloadAssetById',
+        operationId: 'asset_download_by_id',
         description: 'Download assets by id by path parameters',
         summary: 'Download asset by id',
         tags: [Tags::Assets->name]

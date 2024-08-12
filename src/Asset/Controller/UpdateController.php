@@ -53,7 +53,7 @@ final class UpdateController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Put(
         path: self::API_PATH . '/assets/{id}',
-        operationId: 'assetUpdateById',
+        operationId: 'asset_update_by_id',
         description: 'asset_update_by_id_description',
         summary: 'asset_update_by_id_summary',
         tags: [Tags::Assets->name]

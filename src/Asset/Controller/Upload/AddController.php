@@ -70,7 +70,7 @@ final class AddController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/add/{parentId}',
-        operationId: 'addAsset',
+        operationId: 'asset_add',
         summary: 'Add a new asset.',
         tags: [Tags::Assets->value]
     )]

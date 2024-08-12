@@ -58,7 +58,7 @@ final class TextController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}/text',
-        operationId: 'getAssetDataTextById',
+        operationId: 'asset_get_text_data_by_id',
         summary: 'Get asset data in text UTF8 representation by id',
         tags: [Tags::Assets->name]
     )]

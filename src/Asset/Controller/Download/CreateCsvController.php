@@ -49,7 +49,7 @@ final class CreateCsvController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/csv/create',
-        operationId: 'assetCreateCsv',
+        operationId: 'asset_create_csv',
         description: 'asset_create_csv_description',
         summary: 'asset_create_csv_summary',
         tags: [Tags::Assets->name]

@@ -68,7 +68,7 @@ final class ZipController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/add-zip/{parentId}',
-        operationId: 'addAssetsZip',
+        operationId: 'asset_upload_zip',
         summary: 'Add a new asset via zip file.',
         tags: [Tags::Assets->value]
     )]

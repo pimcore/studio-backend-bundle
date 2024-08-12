@@ -58,7 +58,7 @@ final class GetAvailableConfigurationController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/grid/available-configuration',
-        operationId: 'getAvailableAssetGridConfiguration',
+        operationId: 'asset_get_available_grid_configuration',
         description: 'Get all available grid configurations for assets',
         summary: 'Get all available grid configurations for assets',
         tags: [Tags::Grid->name]

@@ -62,7 +62,7 @@ final class PatchController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Patch(
         path: self::API_PATH . '/assets',
-        operationId: 'assetPatchById',
+        operationId: 'asset_patch_by_id',
         description: 'asset_patch_by_id_description',
         summary: 'asset_patch_by_id_summary',
         tags: [Tags::Assets->name]

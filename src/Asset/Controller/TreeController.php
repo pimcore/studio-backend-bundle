@@ -67,7 +67,7 @@ final class TreeController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/tree',
-        operationId: 'getAssetTree',
+        operationId: 'asset_get_tree',
         description: 'Get paginated assets',
         summary: 'Get all assets for the tree',
         tags: [Tags::Assets->name]

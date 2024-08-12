@@ -57,7 +57,7 @@ final class DownloadCsvController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/download/csv/{jobRunId}',
-        operationId: 'assetDownloadCsv',
+        operationId: 'asset_download_csv',
         description: 'asset_download_csv_description',
         summary: 'asset_download_csv_summary',
         tags: [Tags::Assets->name]

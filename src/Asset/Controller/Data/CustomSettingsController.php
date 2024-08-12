@@ -55,7 +55,7 @@ final class CustomSettingsController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[GET(
         path: self::API_PATH . '/assets/{id}/custom-settings',
-        operationId: 'getAssetCustomSettingsById',
+        operationId: 'asset_custom_settings_get_by_id',
         description: 'Get custom settings of an asset by its id by path parameter',
         summary: 'Get custom settings of an asset by id',
         tags: [Tags::Assets->name]
