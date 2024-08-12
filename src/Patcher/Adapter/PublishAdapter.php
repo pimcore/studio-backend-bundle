@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -24,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 
@@ -42,6 +44,9 @@ final readonly class PublishAdapter implements PatchAdapterInterface
 
     }
 
+    /**
+     * @throws ElementSavingFailedException
+     */
     public function patch(ElementInterface $element, array $data): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {
@@ -51,20 +56,19 @@ final readonly class PublishAdapter implements PatchAdapterInterface
         if (!$element instanceof Concrete && !$element instanceof Document) {
             return;
         }
-
-        $value = $data[$this->getIndexKey()];
         $user = $this->securityService->getCurrentUser();
-        if ($value === true) {
-            $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
-            $element->deleteAutoSaveVersions($user->getId());
-        }
-
-        if ($value === false) {
-            $this->securityService->hasElementPermission($element, $user, ElementPermissions::UNPUBLISH_PERMISSION);
-            $element->setOmitMandatoryCheck(true);
-        }
-
-        $element->setPublished($data[$this->getIndexKey()]);
+        match ($data[$this->getIndexKey()]) {
+            true => $this->publishElement($element, $user),
+            false => $this->unpublishElement($element, $user),
+            default => throw new ElementSavingFailedException(
+                $element->getId(),
+                sprintf(
+                    'Invalid value (%s) provided for %s',
+                    $data[$this->getIndexKey()],
+                    $this->getIndexKey()
+                )
+            )
+        };
     }
 
     public function getIndexKey(): string
@@ -78,5 +82,19 @@ final readonly class PublishAdapter implements PatchAdapterInterface
             ElementTypes::TYPE_DOCUMENT,
             ElementTypes::TYPE_OBJECT,
         ];
+    }
+
+    private function publishElement(Concrete|Document $element, UserInterface $user): void
+    {
+        $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
+        $element->deleteAutoSaveVersions($user->getId());
+        $element->setPublished(true);
+    }
+
+    private function unpublishElement(Concrete|Document $element, UserInterface $user): void
+    {
+        $this->securityService->hasElementPermission($element, $user, ElementPermissions::UNPUBLISH_PERMISSION);
+        $element->setOmitMandatoryCheck(true);
+        $element->setPublished(false);
     }
 }
