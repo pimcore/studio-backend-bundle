@@ -16,11 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Controller;
 
-use JsonException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\MappedParameter\LocaleParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
@@ -33,19 +34,24 @@ final class OpenApiController extends AbstractController
     }
 
     #[Route('/docs', name: 'pimcore_studio_api_docs', methods: ['GET'], condition: "'dev' === '%kernel.environment%'")]
-    public function index(): Response
+    public function index(#[MapQueryString] LocaleParameter $localeParameter = new LocaleParameter()): Response
     {
-        return $this->render('@PimcoreStudioBackend/swagger-ui/index.html.twig');
+        return $this->render(
+            '@PimcoreStudioBackend/swagger-ui/index.html.twig',
+            ['locale' => $localeParameter->getLocale()]
+        );
     }
 
-    /**
-     * @throws JsonException
-     */
     #[Route('/docs.json', name: 'pimcore_studio_api_docs_json', methods: ['GET'])]
-    public function openapi(): JsonResponse
+    public function openapi(#[MapQueryString] LocaleParameter $localeParameter = new LocaleParameter()): JsonResponse
     {
         $config = $this->openApiService->getConfig();
 
-        return new JsonResponse($this->openApiService->translateConfig($config));
+        return new JsonResponse(
+            $this->openApiService->translateConfig(
+                $config,
+                $localeParameter->getLocale()
+            )
+        );
     }
 }

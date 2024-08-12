@@ -36,5 +36,5 @@ interface TranslatorServiceInterface
 
     public function translate(string $message, array $params = []): string;
 
-    public function translateApiDocs(string $message): string;
+    public function translateApiDocs(string $message, string $locale = 'en'): string;
 }

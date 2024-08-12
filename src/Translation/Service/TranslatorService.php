@@ -81,9 +81,9 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         return $this->translator->trans($message, $params, self::DOMAIN);
     }
 
-    public function translateApiDocs(string $message): string
+    public function translateApiDocs(string $message, string $locale = 'en'): string
     {
-        return $this->translator->trans($message, [], self::API_DOCS_DOMAIN);
+        return $this->translator->trans($message, [], self::API_DOCS_DOMAIN, $locale);
     }
 
     private function getTranslatorBag(): TranslatorBagInterface
