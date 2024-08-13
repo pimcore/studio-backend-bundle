@@ -45,12 +45,12 @@ final class GetController extends AbstractApiController
     #[Get(
         path: self::API_PATH . self::ROUTE,
         operationId: 'system_settings_get',
-        description: 'Get system settings',
-        summary: 'Get system settings',
+        description: 'system_settings_get_description',
+        summary: 'system_settings_get_summary',
         tags: [Tags::Settings->name]
     )]
     #[SuccessResponse(
-        description: 'System settings',
+        description: 'system_settings_get_success_response',
         content: new JsonContent(type: 'object', additionalProperties: true)
     )]
     #[DefaultResponses]

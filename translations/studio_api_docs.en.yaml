@@ -165,3 +165,8 @@ version_update_by_id_description: |
   Updates a version based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version. <br> See the full description of updatable fields with the schema <strong>UpdateVersion</strong>
 version_update_by_id_success_response: Successfully updated version
 version_update_by_id_summary: Update a version by ID
+system_settings_get_description: |
+  Get system settings from different providers. <br>
+  System settings are public and need no login.
+system_settings_get_summary: Get system settings
+system_settings_get_success_response: System settings data
