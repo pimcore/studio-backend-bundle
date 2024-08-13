@@ -52,7 +52,7 @@ final class DeleteZipController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
         path: self::API_PATH . '/assets/download/zip/{jobRunId}',
-        operationId: 'deleteAssetsZip',
+        operationId: 'asset_delete_zip',
         description: 'Delete zip file with assets',
         summary: 'Delete the zip file with assets based on jobRunId',
         tags: [Tags::Assets->name]

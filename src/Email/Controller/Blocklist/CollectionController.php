@@ -61,7 +61,7 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
         path: self::API_PATH . '/emails/blocklist',
-        operationId: 'getBlocklistEntries',
+        operationId: 'email_blocklist_get_collection',
         description: 'Get paginated blocklist entries',
         summary: 'Get all blocklist entries',
         tags: [Tags::Emails->value]

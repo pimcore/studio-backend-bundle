@@ -51,7 +51,7 @@ final class DeleteFolderController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Delete(
         path: self::API_PATH . '/role/folder/{id}',
-        operationId: 'deleteRoleFolder',
+        operationId: 'role_folder_delete_by_id',
         summary: 'delete_role_folder_summary',
         tags: [Tags::Role->value]
     )]

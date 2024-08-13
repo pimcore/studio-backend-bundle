@@ -69,7 +69,7 @@ final class ThumbnailDownloadController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}/image/download/thumbnail/{thumbnailName}',
-        operationId: 'downloadImageByThumbnail',
+        operationId: 'asset_image_download_by_thumbnail',
         description: 'Download image by id and thumbnail name by path parameter',
         summary: 'Download image by id and thumbnail name',
         tags: [Tags::Assets->name]

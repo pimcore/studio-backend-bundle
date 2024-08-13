@@ -73,7 +73,7 @@ final class CustomDownloadController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}/image/download/custom',
-        operationId: 'downloadCustomImage',
+        operationId: 'asset_image_download_custom',
         description: 'Download custom image by configuration',
         summary: 'Download custom image by configuration',
         tags: [Tags::Assets->name]

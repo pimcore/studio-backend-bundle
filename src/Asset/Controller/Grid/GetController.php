@@ -54,7 +54,7 @@ final class GetController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/grid',
-        operationId: 'getAssetGrid',
+        operationId: 'asset_get_grid',
         description: 'Get assets for grid',
         summary: 'Get assets for grid',
         tags: [Tags::Grid->name]

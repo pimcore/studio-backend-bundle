@@ -55,7 +55,7 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Delete(
         path: self::API_PATH . '/emails/blocklist',
-        operationId: 'deleteBlocklistEntry',
+        operationId: 'email_blocklist_delete',
         description: 'Delete blocklist entry based on the provided email address',
         summary: 'Delete blocklist entry',
         tags: [Tags::Emails->value]

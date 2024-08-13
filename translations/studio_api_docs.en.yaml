@@ -1,47 +1,106 @@
-clone_asset_created_response: Successfully copied parent asset and created <strong>jobRun</strong>
+asset_clone_created_response: Successfully copied parent asset and created <strong>jobRun</strong>
   for copying child assets
-clone_asset_description: |
+asset_clone_description: |
   Clones a specific asset with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder
-clone_asset_success_response: Successfully copied asset
-clone_asset_summary: Clone a specific asset
-clone_data_object_created_response: Successfully copied parent data object and created
-  <strong>jobRun</strong> for copying child objects
-clone_data_object_description: |
-  Clones a specific data object with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder or another data object
-clone_data_object_success_response: Successfully copied data object
-clone_data_object_summary: Clone a specific data object
-create_csv_assets_created_response: Successfully created <strong>jobRun</strong> for
+asset_clone_success_response: Successfully copied asset
+asset_clone_summary: Clone a specific asset
+asset_create_csv_created_response: Successfully created <strong>jobRun</strong> for
   csv export
-create_csv_assets_description: |
+asset_create_csv_description: |
   Creating the CSV file for assets. <br> Parameters are: <ul>
     <li><strong>assets</strong>: Array of asset ids</li>
     <li><strong>gridConfig</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
     <li><strong>settings</strong>: Delimiter and header options</li>
   </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
-create_csv_assets_summary: Creating CSV file for assets
-delete_element_created_response: Successfully created jobRun for deleting element
-  and its children
-delete_element_description: |
-  Deletes a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing element of the provided <strong>{elementType}</strong>. <br> If element is a folder, all child elements will be deleted as well. Elements are moved into the Recycle Bin before deletion.
-delete_element_success_response: Successfully deleted element
-delete_element_summary: Delete a specific element and its children
-download_assets_csv_description: |
+asset_create_csv_summary: Creating CSV file for assets
+asset_download_csv_description: |
   Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
-download_assets_csv_success_response: CSV File as attachment
-download_assets_csv_summary: Download CSV file for assets
-patch_asset_by_id_created_response: Successfully created jobRun for patching multiple
+asset_download_csv_success_response: CSV File as attachment
+asset_download_csv_summary: Download CSV file for assets
+asset_patch_by_id_created_response: Successfully created jobRun for patching multiple
   assets
-patch_asset_by_id_description: |
+asset_patch_by_id_description: |
   Patching assets based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
-patch_asset_by_id_success_response: Successfully patched asset
-patch_asset_by_id_summary: Patch assets by ID
-patch_data_object_by_id_created_response: Successfully created jobRun for patching
+asset_patch_by_id_success_response: Successfully patched asset
+asset_patch_by_id_summary: Patch assets by ID
+asset_update_by_id_description: |
+  Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
+asset_update_by_id_summary: Update an asset by ID
+data_object_add_description: |
+  Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DataObjectAdd</strong>
+data_object_add_success_response: ID of added data object
+data_object_add_summary: Successfully added a new data object
+data_object_clone_created_response: Successfully copied parent data object and created
+  <strong>jobRun</strong> for copying child objects
+data_object_clone_description: |
+  Clones a specific data object with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder or another data object
+data_object_clone_success_response: Successfully copied data object
+data_object_clone_summary: Clone a specific data object
+data_object_get_by_id_description: |
+  Retrieves a specific data object based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing data object or folder.
+data_object_get_by_id_success_response: Successfully retrieved data object data as JSON
+data_object_get_by_id_summary: Get a specific data object by ID
+data_object_get_tree_description: |
+  Listing of all data objects and data object folders in the system. <br>
+  Returns only data which are relevant for the tree <br>
+  You can use different query parameters to filter the data objects and it is possible to exclude folders from the result completely
+data_object_get_tree_success_response: Paginated data objects with total count as header param as JSON
+data_object_get_tree_summary: Get all data object data for the tree
+data_object_patch_by_id_created_response: Successfully created jobRun for patching
   multiple data objects
-patch_data_object_by_id_description: |
+data_object_patch_by_id_description: |
   Patching data objects based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
-patch_data_object_by_id_success_response: Successfully patched data object
-patch_data_object_by_id_summary: Patch data objects by ID
+data_object_patch_by_id_success_response: Successfully patched data object
+data_object_patch_by_id_summary: Patch data objects by ID
+data_object_replace_content_description: |
+    Replace the content of the data object with the given <strong>{targetId}</strong> with the content of the data object matching the <strong>{sourceId}</strong>. <br> The <strong>{targetId}</strong> and <strong>{sourceId}</strong> must be an ID of existing data objects
+data_object_replace_content_success_response: Successfully replaced content of data object
+data_object_replace_content_summary: Replace content of a data object
+data_object_update_by_id_description: |
+  Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
+data_object_update_by_id_success_response: Successfully updated data object
+data_object_update_by_id_summary: Update a data object by ID
+element_delete_created_response: Successfully created jobRun for deleting element
+  and its children
+element_delete_description: |
+  Deletes a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing element of the provided <strong>{elementType}</strong>. <br> If element is a folder, all child elements will be deleted as well. Elements are moved into the Recycle Bin before deletion.
+element_delete_success_response: Successfully deleted element
+element_delete_summary: Delete a specific element and its children
+property_get_collection_for_element_by_type_and_id_description: |
+  List all the saved properties of the element. <br>
+  Keep in mind  that inherited properties should not be send back in an update request. <br>
+  This will result in the loss of the inheritance. <br>
+property_get_collection_for_element_by_type_and_id_summary: Get properties for an element based on the element type and the element id
+property_get_collection_for_element_by_type_and_id_success_response:  Element Properties data as json
+property_get_collection_description: |
+  Listing all the predefined properties that are currently stored in the system. <br>
+  To list specific properties for a type you can use the <strong>elementType</strong> query parameter.<br>
+  You can also created element type specific listings for this, to show in the context of the element. <br>
+  The <strong>filter</strong> query parameter is applied on the name of the property. <br>
+  Keep in mind that the name is language specific.
+property_get_collection_summary: Get all predefined properties. You can filter by type and query
+property_get_collection_success_response: Predefined properties filtered based on type and query parameters
+property_create_summary: Creating new property with default values
+property_create_description: |
+  Creating the property with default values. <br>
+  <ul>
+    <li>Name: New Property</li>
+    <li>Key: new_key</li>
+    <li>Type: Text</li>
+    <li>Element Type: Document (Ctype)</li>
+  </ul>
+property_create_success_response: Created predefined property with default values
+property_delete_summary: Delete property with given id
+property_delete_description: |
+  Deleting the property with the given <strong>{id}</strong>. <br>
+  If the property is used in any element, it will not be deleted.
+property_delete_success_response: Successfully deleted property with given id
+property_update_summary: Updating a property
+property_update_description: |
+  Updating the property with the given <strong>{id}</strong>. <br>
+  See the full description of updatable fields with the schema <strong>UpdatePredefinedProperty</strong>
+property_update_success_response: Updated predefined property
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
 tag_authorization_description: Session-based login via username and password or logout
@@ -69,46 +128,63 @@ tag_user_description: User Management operations
 tag_versions_description: Versions operations to get/list/publish/delete and cleanup
   versions
 tag_workflows_description: Workflows operations to get element workflow details
-update_asset_by_id_description: |
-  Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
-update_asset_by_id_summary: Update an asset by ID
-update_data_object_by_id_description: |
-  Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
-update_data_object_by_id_summary: Update a data object by ID
-update_data_object_success_response: Successfully updated data object
-clone_user_summary: Clone a specific user.
-clone_user_success_response: Node of the cloned user.
-create_user_summary: Create a new user.
-create_user_success_response: Node of the new created User.
-create_user_folder_summary: Create a new user folder.
-create_user_folder_success_response: Node of the new created Folder.
-current_user_summary: Retrieve information's about the current logged in user.
-current_user_success_response: Current user information's.
-delete_user_summary: Delete a specific user.
-delete_user_folder_summary: Delete a specific user folder with all users in this folder.
-get_user_summary: Retrieve a specific user by ID.
-get_user_success_response: Node of the requested user.
-get_available_user_permissions_summary: Get all available user permissions.
-get_available_user_permissions_success_response: List of available user permissions.
-reset_user_password_summary: Sending username to reset password.
-update_user_password_summary: Update password for a User by the User id.
-update_user_summary: Update user by id.
-update_user_success_response: Updated data.
-user_tree_summary: Get collection of users for tree view.
-user_tree_success_response: Collection of users including folders for the given parent id.
-clone_role_summary: Clone a specific Role.
-clone_role_success_response: Node of the cloned Role.
-role_folder_create_summary: Create a new role folder.
-role_folder_create_success_response: Node of the new created Folder
-create_role_summary: Create a new role.
-create_role_success_response: Node of the new created Role.
-delete_role_folder_summary: Delete a specific folder with all sub roles.
-delete_role_summary: Delete a specific role.
-get_role_summary: Get role by id.
-get_role_success_response: Role data.
-get_roles_summary: Get all available user roles.
-get_roles_success_response: List of available user roles.
-get_role_tree_node_summary: Get collection of roles for tree view.
-get_role_tree_node_success_response: Collection of roles including folders for the given parent id.
-update_role_summary: Update role by id.
-update_role_success_response: Updated data.
+note_element_get_collection_summary: Get paginated notes for an element by id
+note_element_get_collection_description: |
+    Get paginated notes for a specific element by its <strong>{id}</strong>. <br>
+    You can use different query parameters to filter the notes
+note_element_get_collection_success_response: Paginated notes with total count
+note_element_create_summary: Create a new note for element with given id
+note_element_create_description: |
+    Create a new note for the element with the given <strong>{id}</strong>. <br>
+    The note will be created for the current user.
+note_element_create_success_response: Created note for element
+note_get_collection_description: |
+    Get paginated notes. <br>
+    You can use different query parameters to filter the notes
+note_get_collection_summary: Get paginated notes
+note_get_collection_success_response: Paginated notes with total count
+note_delete_by_id_summary: Delete note with given id
+note_delete_by_id_description: |
+    Delete the note with the given <strong>{id}</strong>
+note_delete_by_id_success_response: Successfully deleted note
+version_asset_download_by_id_description: |
+  Download the asset version based on the provided version <strong>{id}</strong>.
+version_asset_download_by_id_success_response: Asset version binary file
+version_asset_download_by_id_summary: Download asset version by ID
+version_cleanup_for_element_by_type_and_id_description: |
+  Cleans up all versions for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing element of the provided <strong>{elementType}</strong>.
+version_cleanup_for_element_by_type_and_id_summary: Cleanup all versions for an element
+version_cleanup_for_element_by_type_and_id_success_response: IDs of the removed versions
+version_delete_by_id_description: |
+  Deletes a specific version based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version.
+version_delete_by_id_success_response: Successfully deleted version
+version_delete_by_id_summary: Delete a specific version
+version_get_by_id_description: |
+  Retrieves a specific version data based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version.
+version_get_by_id_success_response: Successfully retrieved version data as JSON
+version_get_by_id_summary: Get a specific version by ID
+version_get_collection_for_element_by_type_and_id_description: |
+  List all the versions of the element. <br> The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
+version_get_collection_for_element_by_type_and_id_summary: Get versions for an element
+version_get_collection_for_element_by_type_and_id_success_response: Paginated element Versions data as JSON with total count as header param
+version_image_stream_by_id_description: |
+  Stream the image version thumbnail based on the provided version <strong>{id}</strong>.
+version_image_stream_by_id_success_response: Image thumbnail version stream
+version_image_stream_by_id_summary: Stream image version thumbnail by ID
+version_pdf_stream_by_id_description: |
+  Stream the PDF version based on the provided version <strong>{id}</strong>.
+version_pdf_stream_by_id_success_response: PDF version stream
+version_pdf_stream_by_id_summary: Stream PDF version by ID
+version_publish_by_id_description: |
+  Publishes a specific version based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version.
+version_publish_by_id_summary: Publish a specific version by ID
+version_publish_by_id_success_response: ID of the published version
+version_update_by_id_description: |
+  Updates a version based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version. <br> See the full description of updatable fields with the schema <strong>UpdateVersion</strong>
+version_update_by_id_success_response: Successfully updated version
+version_update_by_id_summary: Update a version by ID
+system_settings_get_description: |
+  Get system settings from different providers. <br>
+  System settings are public and need no login.
+system_settings_get_summary: Get system settings
+system_settings_get_success_response: System settings data

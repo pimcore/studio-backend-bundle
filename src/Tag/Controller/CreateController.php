@@ -56,7 +56,7 @@ final class CreateController extends AbstractApiController
     #[Route('/tag', name: 'pimcore_studio_api_create_tag', methods: ['POST'])]
     #[POST(
         path: self::API_PATH . '/tag',
-        operationId: 'createTag',
+        operationId: 'tag_create',
         summary: 'Creating a new tag',
         tags: [Tags::Tags->name]
     )]

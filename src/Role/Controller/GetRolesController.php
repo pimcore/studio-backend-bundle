@@ -50,7 +50,7 @@ final class GetRolesController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::API_PATH . '/roles',
-        operationId: 'getUserRoles',
+        operationId: 'role_get_collection',
         summary: 'get_roles_summary',
         tags: [Tags::Role->value]
     )]

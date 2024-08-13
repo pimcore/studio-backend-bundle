@@ -55,7 +55,7 @@ final class DeleteUserFolderController extends AbstractApiController
     #[IsGranted(UserPermissions::PIMCORE_ADMIN->value)]
     #[Delete(
         path: self::API_PATH . '/user/folder/{id}',
-        operationId: 'deleteUserFolder',
+        operationId: 'user_folder_delete_by_id',
         summary: 'delete_user_folder_summary',
         tags: [Tags::User->value]
     )]

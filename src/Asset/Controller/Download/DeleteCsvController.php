@@ -53,7 +53,7 @@ final class DeleteCsvController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
         path: self::API_PATH . '/assets/download/csv/{jobRunId}',
-        operationId: 'deleteAssetsCsv',
+        operationId: 'asset_delete_csv',
         description: 'Delete csv file with assets',
         summary: 'Delete the csv file with assets based on jobRunId',
         tags: [Tags::Assets->name]

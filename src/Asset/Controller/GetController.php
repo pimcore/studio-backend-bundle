@@ -53,7 +53,7 @@ final class GetController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}',
-        operationId: 'getAssetById',
+        operationId: 'asset_get_by_id',
         description: 'Get assets by id by path parameter',
         summary: 'Get assets by id',
         tags: [Tags::Assets->name]

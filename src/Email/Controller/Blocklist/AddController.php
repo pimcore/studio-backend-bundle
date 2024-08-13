@@ -54,7 +54,7 @@ final class AddController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Post(
         path: self::API_PATH . '/emails/blocklist',
-        operationId: 'addBlocklistEntry',
+        operationId: 'email_blocklist_add',
         summary: 'Add a new blocklist entry.',
         tags: [Tags::Emails->value]
     )]

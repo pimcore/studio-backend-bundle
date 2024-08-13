@@ -57,7 +57,7 @@ final class ResendController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Post(
         path: self::API_PATH . '/emails/{id}/resend',
-        operationId: 'resendEmail',
+        operationId: 'email_log_resend_by_id',
         summary: 'Resend an email.',
         tags: [Tags::Emails->value]
     )]

@@ -56,14 +56,15 @@ final class UpdateController extends AbstractApiController
     #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[Put(
         path: self::API_PATH . '/properties/{id}',
-        operationId: 'updateProperty',
-        summary: 'Updating a property',
+        operationId: 'property_update',
+        description: 'property_update_description',
+        summary: 'property_update_summary',
         tags: [Tags::Properties->name]
     )]
     #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]
     #[PredefinedPropertyRequestBody]
     #[SuccessResponse(
-        description: 'Updated predefined property',
+        description: 'property_update_success_response',
         content: new JsonContent(ref: PredefinedProperty::class, type: 'object')
     )]
     #[DefaultResponses([

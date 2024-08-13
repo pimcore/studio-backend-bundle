@@ -37,7 +37,7 @@ final class CurrentUserController extends AbstractApiController
     #[Route('/user/current-user-information', name: 'pimcore_studio_api_current_user', methods: ['GET'])]
     #[Get(
         path: self::API_PATH . '/user/current-user-information',
-        operationId: 'current-user-information',
+        operationId: 'user_get_current_information',
         summary: 'current_user_summary',
         tags: [Tags::User->value]
     )]
@@ -48,7 +48,7 @@ final class CurrentUserController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function login(#[CurrentUser] User $user): JsonResponse
+    public function getCurrentUserInformation(#[CurrentUser] User $user): JsonResponse
     {
         return $this->jsonResponse([
             'username' => $user->getUserIdentifier(),

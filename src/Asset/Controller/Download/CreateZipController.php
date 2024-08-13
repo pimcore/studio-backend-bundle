@@ -57,7 +57,7 @@ final class CreateZipController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/zip/create',
-        operationId: 'createZipAssets',
+        operationId: 'asset_create_zip',
         description: 'Creating zipped assets',
         summary: 'Creating zip file for assets',
         tags: [Tags::Assets->name]

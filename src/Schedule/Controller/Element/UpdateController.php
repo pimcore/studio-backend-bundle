@@ -60,7 +60,7 @@ final class UpdateController extends AbstractApiController
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Put(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
-        operationId: 'updateSchedulesForElementByTypeAndId',
+        operationId: 'schedule_update_for_element_by_type_and_id',
         summary: 'Update schedules for an element',
         tags: [Tags::Schedule->name]
     )]
