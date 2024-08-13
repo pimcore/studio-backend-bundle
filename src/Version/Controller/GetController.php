@@ -55,13 +55,13 @@ final class GetController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/versions/{id}',
         operationId: 'version_get_by_id',
-        description: 'Get version based on the version ID',
-        summary: 'Get version by ID',
+        description: 'version_get_by_id_description',
+        summary: 'version_get_by_id_summary',
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
     #[SuccessResponse(
-        description: 'Version data as json',
+        description: 'version_get_by_id_success_response',
         content: new OneOfVersionJson()
     )]
     #[DefaultResponses([

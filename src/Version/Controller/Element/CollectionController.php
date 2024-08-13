@@ -66,8 +66,8 @@ final class CollectionController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/versions/{elementType}/{id}',
         operationId: 'version_get_collection_for_element_by_type_and_id',
-        description: 'Get paginated versions',
-        summary: 'Get all versions of element',
+        description: 'version_get_collection_for_element_by_type_and_id_description',
+        summary: 'version_get_collection_for_element_by_type_and_id_summary',
         tags: [Tags::Versions->name]
     )]
     #[ElementTypeParameter]
@@ -75,7 +75,7 @@ final class CollectionController extends AbstractApiController
     #[PageParameter]
     #[PageSizeParameter]
     #[SuccessResponse(
-        description: 'Paginated versions with total count as header param',
+        description: 'version_get_collection_for_element_by_type_and_id_success_response',
         content: new CollectionJson(new VersionCollection())
     )]
     #[DefaultResponses([
