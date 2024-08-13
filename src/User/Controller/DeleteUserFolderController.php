@@ -56,7 +56,7 @@ final class DeleteUserFolderController extends AbstractApiController
     #[Delete(
         path: self::API_PATH . '/user/folder/{id}',
         operationId: 'user_folder_delete_by_id',
-        summary: 'Delete a specific user folder with all users in this folder.',
+        summary: 'user_folder_delete_by_id_summary',
         tags: [Tags::User->value]
     )]
     #[SuccessResponse]

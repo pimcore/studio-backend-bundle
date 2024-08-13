@@ -57,12 +57,12 @@ final class GetRoleController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/role/{id}',
         operationId: 'role_get_by_id',
-        summary: 'Get role by id.',
+        summary: 'role_get_by_id_summary',
         tags: [Tags::Role->value]
     )]
     #[IdParameter(type: 'role')]
     #[SuccessResponse(
-        description: 'Role data.',
+        description: 'role_get_by_id_success_response',
         content: new JsonContent(ref: DetailedRoleSchema::class)
     )]
     #[DefaultResponses([

@@ -56,7 +56,7 @@ final class DeleteUserController extends AbstractApiController
     #[Delete(
         path: self::API_PATH . '/user/{id}',
         operationId: 'user_delete_by_id',
-        summary: 'Delete a specific user.',
+        summary: 'user_delete_by_id_summary',
         tags: [Tags::User->value]
     )]
     #[SuccessResponse]

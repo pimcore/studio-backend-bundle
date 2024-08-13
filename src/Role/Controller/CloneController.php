@@ -57,11 +57,11 @@ final class CloneController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/role/clone/{id}',
         operationId: 'role_clone_by_id',
-        summary: 'Clone a specific Role.',
+        summary: 'role_clone_by_id_summary',
         tags: [Tags::Role->value]
     )]
     #[SuccessResponse(
-        description: 'Node of the cloned Role.',
+        description: 'role_clone_by_id_success_response',
         content: new JsonContent(ref: TreeNode::class)
     )]
     #[IdParameter(type: 'role')]

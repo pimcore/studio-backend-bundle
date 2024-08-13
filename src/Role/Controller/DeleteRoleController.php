@@ -53,7 +53,7 @@ final class DeleteRoleController extends AbstractApiController
     #[Delete(
         path: self::API_PATH . '/role/{id}',
         operationId: 'role_delete_by_id',
-        summary: 'Delete a specific role.',
+        summary: 'role_delete_by_id_summary',
         tags: [Tags::Role->value]
     )]
     #[SuccessResponse]

@@ -57,12 +57,12 @@ final class GetUserController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/user/{id}',
         operationId: 'user_get_by_id',
-        summary: 'Get user by id.',
+        summary: 'user_get_by_id_summary',
         tags: [Tags::User->value]
     )]
     #[IdParameter(type: 'user')]
     #[SuccessResponse(
-        description: 'User data.',
+        description: 'user_get_by_id_success_response',
         content: new JsonContent(ref: UserSchema::class)
     )]
     #[DefaultResponses([

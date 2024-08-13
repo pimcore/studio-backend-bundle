@@ -38,11 +38,11 @@ final class CurrentUserController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/user/current-user-information',
         operationId: 'user_get_current_information',
-        summary: 'Retrieve informations about the current logged in user.',
+        summary: 'user_get_current_information_summary',
         tags: [Tags::User->value]
     )]
     #[SuccessResponse(
-        description: 'Current user informations.',
+        description: 'user_get_current_information_success_response',
         content: new JsonContent(ref: UserInformation::class)
     )]
     #[DefaultResponses([
