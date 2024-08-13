@@ -61,14 +61,15 @@ final class UpdateController extends AbstractApiController
     #[Put(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
         operationId: 'schedule_update_for_element_by_type_and_id',
-        summary: 'Update schedules for an element',
+        description: 'schedule_update_for_element_by_type_and_id_description',
+        summary: 'schedule_update_for_element_by_type_and_id_summary',
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
     #[ElementScheduleRequestBody]
     #[SuccessResponse(
-        description: 'List of schedules',
+        description: 'schedule_update_for_element_by_type_and_id_success_response',
         content: new ItemsJson(Schedule::class)
     )]
     #[DefaultResponses([

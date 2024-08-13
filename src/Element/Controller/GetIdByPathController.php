@@ -58,13 +58,14 @@ final class GetIdByPathController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/elements/{elementType}/path',
         operationId: 'element_get_id_by_path',
-        summary: 'Get id of the element by path query parameter and element type path parameter',
+        description: 'element_get_id_by_path_description',
+        summary: 'element_get_id_by_path_summary',
         tags: [Tags::Elements->name]
     )]
     #[ElementTypeParameter]
     #[ElementPathParameter]
     #[SuccessResponse(
-        description: 'Id of the element',
+        description: 'element_get_id_by_path_response_description',
         content: new IdJson('ID of the element')
     )]
     #[DefaultResponses([

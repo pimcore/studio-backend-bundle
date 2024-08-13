@@ -55,12 +55,12 @@ final class VideoCollectionController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/thumbnails/video',
         operationId: 'thumbnail_video_get_collection',
-        description: 'Get video thumbnails',
-        summary: 'Get all video thumbnails',
+        description: 'thumbnail_video_get_collection_description',
+        summary: 'thumbnail_video_get_collection_summary',
         tags: [Tags::AssetThumbnails->name]
     )]
     #[SuccessResponse(
-        description: 'All video thumbnails',
+        description: 'thumbnail_video_get_collection_success_response',
         content: new ThumbnailsJson()
     )]
     #[DefaultResponses([
