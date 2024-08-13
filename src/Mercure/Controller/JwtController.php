@@ -42,11 +42,12 @@ final class JwtController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/mercure/auth',
         operationId: 'mercure_create_cookie',
-        summary: 'Retrieve JWT token for Mercure hub as cookie',
+        description: 'mercure_create_cookie_description',
+        summary: 'mercure_create_cookie_summary',
         tags: [Tags::Mercure->name]
     )]
     #[SuccessResponse(
-        description: 'Auth successful',
+        description: 'mercure_create_cookie_success_response',
     )]
     #[DefaultResponses]
     public function auth(): Response

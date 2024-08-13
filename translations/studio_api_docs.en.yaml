@@ -321,3 +321,17 @@ workflow_get_details_success_response: Detail data of element workflows
 workflow_action_submit_summary: Submit workflow action
 workflow_action_submit_description: Submit action based on the workflow name, action name and action type.
 workflow_action_submit_success_response: Json encoded name of workflow, name and type of submitted action.
+mercure_create_cookie_description: Retrieve JWT token for Mercure hub as cookie
+mercure_create_cookie_summary: Retrieve JWT token for Mercure hub as cookie
+mercure_create_cookie_success_response: Retrieve JWT token for Mercure hub as cookie
+execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
+execution_engine_abort_job_run_by_id_description: Abort Job Run
+login_summary: Session-based login with user credentials.
+login_description: Logs in a user with the provided credentials and returns the user information.
+login_success_response: Login successful.
+logout_summary: Logout and invalidate current session for active user.
+logout_description: Logout and invalidate current session for active user.
+logout_success_response: Logout successful.
+translation_get_collection_summary: Get translations
+translation_get_collection_description: Get translations for given keys and locale
+translation_get_collection_success_response: Key value pairs for given keys and locale
