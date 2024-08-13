@@ -68,13 +68,13 @@ final class PdfStreamController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/versions/{id}/pdf/stream',
         operationId: 'version_pdf_stream_by_id',
-        description: 'Get PDF version stream based on the version ID',
-        summary: 'Get PDF version stream by ID',
+        description: 'version_pdf_stream_by_id_description',
+        summary: 'version_pdf_stream_by_id_summary',
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
     #[SuccessResponse(
-        description: 'PDF version stream',
+        description: 'version_pdf_stream_by_id_success_response',
         content: new AssetMediaType('application/pdf'),
         headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]

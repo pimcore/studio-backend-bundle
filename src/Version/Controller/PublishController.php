@@ -60,13 +60,13 @@ final class PublishController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/versions/{id}',
         operationId: 'version_publish_by_id',
-        description: 'Publish element version data based on the version ID',
-        summary: 'Publish version data',
+        description: 'version_publish_by_id_description',
+        summary: 'version_publish_by_id_summary',
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
     #[SuccessResponse(
-        description: 'ID of latest published version',
+        description: 'version_publish_by_id_success_response',
         content: new IdJson('ID of published version')
     )]
     #[DefaultResponses([

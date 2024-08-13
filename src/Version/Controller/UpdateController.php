@@ -57,14 +57,14 @@ final class UpdateController extends AbstractApiController
     #[Put(
         path: self::API_PATH . '/versions/{id}',
         operationId: 'version_update_by_id',
-        description: 'Update version based on the version ID',
-        summary: 'Update version',
+        description: 'version_update_by_id_description',
+        summary: 'version_update_by_id_summary',
         tags: [Tags::Versions->name]
     )]
     #[IdParameter(type: 'version')]
     #[UpdateVersionRequestBody]
     #[SuccessResponse(
-        description: 'Successfully updated version',
+        description: 'version_update_by_id_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
