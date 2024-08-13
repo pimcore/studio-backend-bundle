@@ -110,6 +110,25 @@ tag_user_description: User Management operations
 tag_versions_description: Versions operations to get/list/publish/delete and cleanup
   versions
 tag_workflows_description: Workflows operations to get element workflow details
+note_element_get_collection_summary: Get paginated notes for an element by id
+note_element_get_collection_description: |
+    Get paginated notes for a specific element by its <strong>{id}</strong>. <br>
+    You can use different query parameters to filter the notes
+note_element_get_collection_success_response: Paginated notes with total count
+note_element_create_summary: Create a new note for element with given id
+note_element_create_description: |
+    Create a new note for the element with the given <strong>{id}</strong>. <br>
+    The note will be created for the current user.
+note_element_create_success_response: Created note for element
+note_get_collection_description: |
+    Get paginated notes. <br>
+    You can use different query parameters to filter the notes
+note_get_collection_summary: Get paginated notes
+note_get_collection_success_response: Paginated notes with total count
+note_delete_by_id_summary: Delete note with given id
+note_delete_by_id_description: |
+    Delete the note with the given <strong>{id}</strong>
+note_delete_by_id_success_response: Successfully deleted note
 version_asset_download_by_id_description: |
   Download the asset version based on the provided version <strong>{id}</strong>.
 version_asset_download_by_id_success_response: Asset version binary file
