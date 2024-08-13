@@ -66,8 +66,8 @@ final class TreeController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/data-objects/tree',
         operationId: 'data_object_get_tree',
-        description: 'Get paginated data objects',
-        summary: 'Get all DataObjects for the tree',
+        description: 'data_object_get_tree_description',
+        summary: 'data_object_get_tree_summary',
         tags: [Tags::DataObjects->name],
     )]
     #[PageParameter]
@@ -83,7 +83,7 @@ final class TreeController extends AbstractApiController
     #[PathIncludeDescendantsParameter]
     #[ClassNameParameter]
     #[SuccessResponse(
-        description: 'Paginated data objects with total count as header param',
+        description: 'data_object_get_tree_success_response',
         content: new CollectionJson(new AnyOfDataObjects())
     )]
     #[DefaultResponses([

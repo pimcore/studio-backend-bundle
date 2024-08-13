@@ -27,18 +27,36 @@ asset_patch_by_id_summary: Patch assets by ID
 asset_update_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
 asset_update_by_id_summary: Update an asset by ID
+data_object_add_description: |
+  Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DataObjectAdd</strong>
+data_object_add_success_response: ID of added data object
+data_object_add_summary: Successfully added a new data object
 data_object_clone_created_response: Successfully copied parent data object and created
   <strong>jobRun</strong> for copying child objects
 data_object_clone_description: |
   Clones a specific data object with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder or another data object
 data_object_clone_success_response: Successfully copied data object
 data_object_clone_summary: Clone a specific data object
+data_object_get_by_id_description: |
+  Retrieves a specific data object based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing data object or folder.
+data_object_get_by_id_success_response: Successfully retrieved data object data as JSON
+data_object_get_by_id_summary: Get a specific data object by ID
+data_object_get_tree_description: |
+  Listing of all data objects and data object folders in the system. <br>
+  Returns only data which are relevant for the tree <br>
+  You can use different query parameters to filter the data objects and it is possible to exclude folders from the result completely
+data_object_get_tree_success_response: Paginated data objects with total count as header param as JSON
+data_object_get_tree_summary: Get all data object data for the tree
 data_object_patch_by_id_created_response: Successfully created jobRun for patching
   multiple data objects
 data_object_patch_by_id_description: |
   Patching data objects based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
 data_object_patch_by_id_success_response: Successfully patched data object
 data_object_patch_by_id_summary: Patch data objects by ID
+data_object_replace_content_description: |
+    Replace the content of the data object with the given <strong>{targetId}</strong> with the content of the data object matching the <strong>{sourceId}</strong>. <br> The <strong>{targetId}</strong> and <strong>{sourceId}</strong> must be an ID of existing data objects
+data_object_replace_content_success_response: Successfully replaced content of data object
+data_object_replace_content_summary: Replace content of a data object
 data_object_update_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
 data_object_update_by_id_success_response: Successfully updated data object
