@@ -54,13 +54,13 @@ final class SubmitActionController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/workflows/action',
         operationId: 'workflow_action_submit',
-        description: 'Submit action based on the workflow name, action name and action type',
-        summary: 'Submit workflow action',
+        description: 'workflow_action_submit_description',
+        summary: 'workflow_action_submit_summary',
         tags: [Tags::Workflows->name]
     )]
     #[WorkflowActionRequestBody]
     #[SuccessResponse(
-        description: 'Json encoded name of workflow, name and type of submitted action',
+        description: 'workflow_action_submit_success_response',
         content: new WorkflowActionSubmissionJson()
     )]
     #[DefaultResponses([
