@@ -54,13 +54,14 @@ final class CollectionController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/schedules/{elementType}/{id}',
         operationId: 'schedule_get_collection_for_element_by_type_and_id',
-        summary: 'Get schedules for an element',
+        description: 'schedule_get_collection_for_element_by_type_and_id_description',
+        summary: 'schedule_get_collection_for_element_by_type_and_id_summary',
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
     #[SuccessResponse(
-        description: 'List of schedules',
+        description: 'schedule_get_collection_for_element_by_type_and_id_success_response',
         content: new ItemsJson(Schedule::class)
     )]
     #[DefaultResponses([
