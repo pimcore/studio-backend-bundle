@@ -58,11 +58,12 @@ final class EmailHtmlController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/emails/{id}/html',
         operationId: 'email_log_get_html',
-        description: 'Get E-Mail log entry HTML by ID',
-        summary: 'Get E-Mail log entry HTML',
+        description: 'email_log_get_html_description',
+        summary: 'email_log_get_html_summary',
         tags: [Tags::Emails->value]
     )]
     #[SuccessResponse(
+        description: 'email_log_get_html_success_response',
         content: new DataJson('Email log entry HTML data.', '<p>Some email HTML content</p>')
     )]
     #[IdParameter(type: ElementTypes::TYPE_EMAIL)]

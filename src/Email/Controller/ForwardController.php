@@ -61,13 +61,14 @@ final class ForwardController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/emails/{id}/forward',
         operationId: 'email_log_forward_by_id',
-        summary: 'Forward an existing email.',
+        description: 'email_log_forward_by_id_description',
+        summary: 'email_log_forward_by_id_summary',
         tags: [Tags::Emails->value]
     )]
     #[IdParameter(type: ElementTypes::TYPE_EMAIL)]
     #[ForwardEmailRequestBody]
     #[SuccessResponse(
-        description: 'Mail was successfully forwarded',
+        description: 'email_log_forward_by_id_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
