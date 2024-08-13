@@ -59,12 +59,12 @@ final class CreateUserController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/user/',
         operationId: 'user_create',
-        summary: 'create_user_summary',
+        summary: 'user_create_summary',
         tags: [Tags::User->value]
     )]
     #[CreateRequestBody]
     #[SuccessResponse(
-        description: 'create_user_success_response',
+        description: 'user_create_success_response',
         content: new JsonContent(ref: TreeNode::class)
     )]
     #[DefaultResponses([

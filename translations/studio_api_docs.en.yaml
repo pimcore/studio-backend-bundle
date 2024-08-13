@@ -230,8 +230,8 @@ schedule_delete_by_id_summary: Delete schedule with given id
 schedule_delete_by_id_success_response: Successfully deleted schedule
 user_clone_by_id_summary: Clone a specific user.
 user_clone_by_id_success_response: Node of the cloned user.
-create_user_summary: Create a new user.
-create_user_success_response: Node of the new created User.
+user_create_summary: Create a new user.
+user_create_success_response: Node of the new created User.
 user_folder_create_summary: Create a new user folder.
 user_folder_create_success_response: Node of the new created Folder.
 user_get_current_information_summary: Retrieve information's about the current logged in user.
