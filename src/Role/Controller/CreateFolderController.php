@@ -56,12 +56,12 @@ final class CreateFolderController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/role/folder',
         operationId: 'createRoleFolder',
-        summary: 'Create a new role folder.',
+        summary: 'role_folder_create_summary',
         tags: [Tags::Role->value]
     )]
     #[CreateRequestBody]
     #[SuccessResponse(
-        description: 'Node of the new created Folder',
+        description: 'role_folder_create_success_response',
         content: new JsonContent(ref: TreeNode::class)
     )]
     #[DefaultResponses([

@@ -76,3 +76,39 @@ update_data_object_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
 update_data_object_by_id_summary: Update a data object by ID
 update_data_object_success_response: Successfully updated data object
+clone_user_summary: Clone a specific user.
+clone_user_success_response: Node of the cloned user.
+create_user_summary: Create a new user.
+create_user_success_response: Node of the new created User.
+create_user_folder_summary: Create a new user folder.
+create_user_folder_success_response: Node of the new created Folder.
+current_user_summary: Retrieve information's about the current logged in user.
+current_user_success_response: Current user information's.
+delete_user_summary: Delete a specific user.
+delete_user_folder_summary: Delete a specific user folder with all users in this folder.
+get_user_summary: Retrieve a specific user by ID.
+get_user_success_response: Node of the requested user.
+get_available_user_permissions_summary: Get all available user permissions.
+get_available_user_permissions_success_response: List of available user permissions.
+reset_user_password_summary: Sending username to reset password.
+update_user_password_summary: Update password for a User by the User id.
+update_user_summary: Update user by id.
+update_user_success_response: Updated data.
+user_tree_summary: Get collection of users for tree view.
+user_tree_success_response: Collection of users including folders for the given parent id.
+clone_role_summary: Clone a specific Role.
+clone_role_success_response: Node of the cloned Role.
+role_folder_create_summary: Create a new role folder.
+role_folder_create_success_response: Node of the new created Folder
+create_role_summary: Create a new role.
+create_role_success_response: Node of the new created Role.
+delete_role_folder_summary: Delete a specific folder with all sub roles.
+delete_role_summary: Delete a specific role.
+get_role_summary: Get role by id.
+get_role_success_response: Role data.
+get_roles_summary: Get all available user roles.
+get_roles_success_response: List of available user roles.
+get_role_tree_node_summary: Get collection of roles for tree view.
+get_role_tree_node_success_response: Collection of roles including folders for the given parent id.
+update_role_summary: Update role by id.
+update_role_success_response: Updated data.

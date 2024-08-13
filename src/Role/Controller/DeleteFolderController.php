@@ -52,7 +52,7 @@ final class DeleteFolderController extends AbstractApiController
     #[Delete(
         path: self::API_PATH . '/role/folder/{id}',
         operationId: 'deleteRoleFolder',
-        summary: 'Delete a specific folder with all sub roles.',
+        summary: 'delete_role_folder_summary',
         tags: [Tags::Role->value]
     )]
     #[SuccessResponse]

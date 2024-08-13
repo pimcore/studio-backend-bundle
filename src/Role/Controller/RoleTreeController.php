@@ -58,7 +58,7 @@ final class RoleTreeController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/roles/tree',
         operationId: 'getRoleTree',
-        summary: 'Get collection of roles for tree view',
+        summary: 'get_role_tree_node_summary',
         tags: [Tags::Role->value]
     )]
     #[ParentIdParameter(
@@ -68,7 +68,7 @@ final class RoleTreeController extends AbstractApiController
         example: 0
     )]
     #[SuccessResponse(
-        description: 'Collection of roles including folders for the given parent id.',
+        description: 'get_role_tree_node_success_response',
         content: new CollectionJson(new GenericCollection(TreeNode::class))
     )]
     #[DefaultResponses]

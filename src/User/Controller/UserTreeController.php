@@ -55,7 +55,7 @@ final class UserTreeController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/users/tree',
         operationId: 'getUserTree',
-        summary: 'Get collection of users for tree view',
+        summary: 'user_tree_summary',
         tags: [Tags::User->value]
     )]
     #[ParentIdParameter(
@@ -65,7 +65,7 @@ final class UserTreeController extends AbstractApiController
         example: 0
     )]
     #[SuccessResponse(
-        description: 'Collection of users including folders for the given parent id.',
+        description: 'user_tree_success_response',
         content: new CollectionJson(new GenericCollection(TreeNode::class))
     )]
     #[DefaultResponses([

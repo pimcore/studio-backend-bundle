@@ -51,11 +51,11 @@ final class GetRolesController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/roles',
         operationId: 'getUserRoles',
-        summary: 'Get all available user roles.',
+        summary: 'get_roles_summary',
         tags: [Tags::Role->value]
     )]
     #[SuccessResponse(
-        description: 'List of available user roles.',
+        description: 'get_roles_success_response',
         content: new CollectionJson(new GenericCollection(SimpleRole::class))
     )]
     #[DefaultResponses]

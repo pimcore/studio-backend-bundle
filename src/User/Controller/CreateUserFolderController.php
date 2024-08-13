@@ -59,12 +59,12 @@ final class CreateUserFolderController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/user/folder',
         operationId: 'createUserFolder',
-        summary: 'Create a new user folder.',
+        summary: 'create_user_folder_summary',
         tags: [Tags::User->value]
     )]
     #[CreateRequestBody]
     #[SuccessResponse(
-        description: 'Node of the new created Folder',
+        description: 'create_user_folder_success_response',
         content: new JsonContent(ref: TreeNode::class)
     )]
     #[DefaultResponses([

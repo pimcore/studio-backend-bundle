@@ -56,12 +56,12 @@ final class CreateRoleController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/role',
         operationId: 'createRole',
-        summary: 'Create a new role.',
+        summary: 'create_role_summary',
         tags: [Tags::Role->value]
     )]
     #[CreateRequestBody]
     #[SuccessResponse(
-        description: 'Node of the new created Role',
+        description: 'create_role_success_response',
         content: new JsonContent(ref: TreeNode::class)
     )]
     #[DefaultResponses([

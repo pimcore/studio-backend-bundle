@@ -52,7 +52,7 @@ final class ResetPasswordController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/user/reset-password',
         operationId: 'reset-password',
-        summary: 'Sending username to reset password',
+        summary: 'reset_user_password_summary',
         tags: [Tags::User->value]
     )]
     #[ResetPasswordRequestBody]

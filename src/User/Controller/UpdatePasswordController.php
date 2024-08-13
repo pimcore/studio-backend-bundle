@@ -59,7 +59,7 @@ final class UpdatePasswordController extends AbstractApiController
     #[Put(
         path: self::API_PATH . '/user/{id}/password',
         operationId: 'updateUserPasswordById',
-        summary: 'Update password for a User by the User id.',
+        summary: 'update_user_password_summary',
         tags: [Tags::User->value]
     )]
     #[IdParameter(type: 'User')]
