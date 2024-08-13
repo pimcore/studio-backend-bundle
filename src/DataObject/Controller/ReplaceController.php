@@ -64,11 +64,12 @@ final class ReplaceController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/data-objects/{sourceId}/replace/{targetId}',
         operationId: 'data_object_replace_content',
-        summary: 'Replace content of a specific data object.',
+        description: 'data_object_replace_content_description',
+        summary: 'data_object_replace_content_summary',
         tags: [Tags::DataObjects->value]
     )]
     #[SuccessResponse(
-        description: 'Successfully replaced data object content',
+        description: 'data_object_replace_content_success_response',
     )]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'sourceId')]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'targetId')]

@@ -53,13 +53,13 @@ final class GetController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/data-objects/{id}',
         operationId: 'data_object_get_by_id',
-        description: 'Get data object by id by path parameter',
-        summary: 'Get data object by id',
+        description: 'data_object_get_by_id_description',
+        summary: 'data_object_get_by_id_summary',
         tags: [Tags::DataObjects->name]
     )]
     #[IdParameter(type: 'data-object')]
     #[SuccessResponse(
-        description: 'Data object response',
+        description: 'data_object_get_by_id_success_response',
         content: new OneOfDataObjectsJson()
     )]
     #[DefaultResponses([
