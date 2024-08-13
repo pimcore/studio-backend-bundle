@@ -65,12 +65,12 @@ final class UpdateUserController extends AbstractApiController
     #[Put(
         path: self::API_PATH . '/user/{id}',
         operationId: 'user_update_by_id',
-        summary: 'update_user_summary',
+        summary: 'user_update_by_id_summary',
         tags: [Tags::User->value]
     )]
     #[IdParameter(type: 'User')]
     #[SuccessResponse(
-        description: 'update_success_response',
+        description: 'user_update_by_id_success_response',
         content: new JsonContent(ref: UserSchema::class)
     )]
     #[RequestBody(

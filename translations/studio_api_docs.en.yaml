@@ -188,3 +188,39 @@ system_settings_get_description: |
   System settings are public and need no login.
 system_settings_get_summary: Get system settings
 system_settings_get_success_response: System settings data
+user_clone_by_id_summary: Clone a specific user.
+user_clone_by_id_success_response: Node of the cloned user.
+create_user_summary: Create a new user.
+create_user_success_response: Node of the new created User.
+user_folder_create_summary: Create a new user folder.
+user_folder_create_success_response: Node of the new created Folder.
+user_get_current_information_summary: Retrieve information's about the current logged in user.
+user_get_current_information_success_response: Current user information's.
+user_delete_by_id_summary: Delete a specific user.
+user_folder_delete_by_id_summary: Delete a specific user folder with all users in this folder.
+user_get_by_id_summary: Retrieve a specific user by ID.
+user_get_by_id_success_response: Node of the requested user.
+user_get_available_permissions_summary: Get all available user permissions.
+user_get_available_permissions_success_response: List of available user permissions.
+user_reset_password_summary: Sending username to reset password.
+user_update_password_by_id_summary: Update password for a User by the User id.
+user_update_by_id_summary: Update user by id.
+user_update_by_id_success_response: Updated data.
+user_get_tree_summary: Get collection of users for tree view.
+user_get_tree_success_response: Collection of users including folders for the given parent id.
+role_clone_by_id_summary: Clone a specific Role.
+role_clone_by_id_success_response: Node of the cloned Role.
+role_folder_create_summary: Create a new role folder.
+role_folder_create_success_response: Node of the new created Folder
+role_create_summary: Create a new role.
+role_create_success_response: Node of the new created Role.
+role_folder_delete_by_id_summary: Delete a specific folder with all sub roles.
+role_delete_by_id_summary: Delete a specific role.
+role_get_collection_summary: Get role by id.
+role_get_collection_success_response: Role data.
+role_get_by_id_summary: Get all available user roles.
+role_get_by_id_success_response: List of available user roles.
+role_get_tree_summary: Get collection of roles for tree view.
+role_get_tree_success_response: Collection of roles including folders for the given parent id.
+role_update_by_id_summary: Update role by id.
+role_update_by_id_response: Updated data.

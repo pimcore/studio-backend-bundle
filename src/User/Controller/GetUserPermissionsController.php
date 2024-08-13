@@ -51,11 +51,11 @@ final class GetUserPermissionsController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/user/available-permissions',
         operationId: 'user_get_available_permissions',
-        summary: 'get_available_user_permissions_summary',
+        summary: 'user_get_available_permissions_summary',
         tags: [Tags::User->value]
     )]
     #[SuccessResponse(
-        description: 'get_available_user_permissions_success_response',
+        description: 'user_get_available_permissions_success_response',
         content: new CollectionJson(new GenericCollection(UserPermission::class))
     )]
     #[DefaultResponses]

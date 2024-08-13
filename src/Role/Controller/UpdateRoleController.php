@@ -61,12 +61,12 @@ final class UpdateRoleController extends AbstractApiController
     #[Put(
         path: self::API_PATH . '/role/{id}',
         operationId: 'role_update_by_id',
-        summary: 'update_role_summary',
+        summary: 'role_update_by_id_summary',
         tags: [Tags::Role->value]
     )]
     #[IdParameter(type: 'Role')]
     #[SuccessResponse(
-        description: 'update_role_success_response',
+        description: 'role_update_by_id_response',
         content: new JsonContent(ref: DetailedRole::class)
     )]
     #[RequestBody(
