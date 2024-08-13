@@ -191,6 +191,52 @@ tag_user_description: User Management operations
 tag_versions_description: Versions operations to get/list/publish/delete and cleanup
   versions
 tag_workflows_description: Workflows operations to get element workflow details
+tag_assign_to_element_description: |
+  Assign a specific tag based on the given <strong>{tagId}</strong> to an element based on <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
+  The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
+tag_assign_to_element_success_response: Successfully assigned tag to element
+tag_assign_to_element_summary: Assign a tag to an element
+tag_batch_assign_to_elements_by_type_description: |
+  Batch assign multiple tags based based on the given <strong>{tagIds}</strong> to multiple elements based on <strong>{elementType}</strong> and <strong>{elementIds}</strong>. <br>
+  To see the full description of request fields see the schema <strong>Collection of Element and Tag ids</strong>
+tag_batch_assign_to_elements_by_type_success_response: Successfully assigned tags to elements
+tag_batch_assign_to_elements_by_type_summary: Batch assign tags to elements
+tag_batch_replace_for_elements_by_type_description: |
+  Batch replace multiple tags based based on the given <strong>{tagIds}</strong> to multiple elements based on <strong>{elementType}</strong> and <strong>{elementIds}</strong>. <br>
+  To see the full description of request fields see the schema <strong>Collection of Element and Tag ids</strong>
+tag_batch_replace_for_elements_by_type_success_response: Successfully replaced tags for elements
+tag_batch_replace_for_elements_by_type_summary: Batch replace tags for elements
+tag_create_description: |
+  Create a new tag. <br> See the full description of request fields with the schema <strong>Create Tag Parameters</strong>
+tag_create_success_response: Created tag data as JSON
+tag_create_summary: Create a new tag
+tag_delete_by_id_description: |
+  Delete a specific tag based on the given <strong>{id}</strong>
+tag_delete_by_id_success_response: ID of successfully deleted tag
+tag_delete_by_id_summary: Delete a specific tag
+tag_get_by_id_description: |
+  Retrieves a specific tag data based on the given <strong>{id}</strong>
+tag_get_by_id_success_response: Successfully retrieved tag data as JSON
+tag_get_by_id_summary: Get a tag by ID
+tag_get_collection_for_element_by_type_and_id_description: |
+  Get paginated tag collection for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>
+tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
+tag_get_collection_for_element_by_type_and_id_success_response: Paginated tags for element
+tag_get_collection_description: |
+  Get all tags for a <strong>{parentId}</strong>. <br>
+  You can use different query parameters to filter the tags
+tag_get_collection_summary: Get all tags for a parent
+tag_get_collection_success_response: All tags for a parent filtered based on type and query parameters
+tag_unassign_from_element_description: |
+    Unassign a specific tag based on the given <strong>{tagId}</strong> from an element based on <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
+    The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
+tag_unassign_from_element_success_response: Successfully unassigned tag from element
+tag_unassign_from_element_summary: Unassign a tag from an element
+tag_update_by_id_description: |
+  Update a specific tag based on the given <strong>{id}</strong>. <br>
+  See the full description of updatable fields with the schema <strong>Change Tag Parameters</strong>
+tag_update_by_id_success_response: Successfully updated tag data as JSON
+tag_update_by_id_summary: Update a tag by ID
 thumbnail_image_get_collection_description: |
   Get collection of thumbnails for images. <br>
   The thumbnails have to be defined as downloadable in order to be listed in the collection.

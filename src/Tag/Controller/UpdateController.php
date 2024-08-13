@@ -51,14 +51,15 @@ final class UpdateController extends AbstractApiController
     #[Put(
         path: self::API_PATH . '/tags/{id}',
         operationId: 'tag_update_by_id',
-        summary: 'Update a tag',
+        description: 'tag_update_by_id_description',
+        summary: 'tag_update_by_id_summary',
         tags: [Tags::Tags->name]
     )]
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[IdParameter(type: 'tag')]
     #[UpdateTagRequestBody]
     #[SuccessResponse(
-        description: 'Updated tag data as json',
+        description: 'tag_update_by_id_success_response',
         content: new JsonContent(ref: Tag::class, type: 'object')
     )]
     #[DefaultResponses([

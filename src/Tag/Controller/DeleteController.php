@@ -53,12 +53,13 @@ final class DeleteController extends AbstractApiController
     #[Delete(
         path: self::API_PATH . '/tags/{id}',
         operationId: 'tag_delete_by_id',
-        summary: 'Delete a tag with a given id',
+        description: 'tag_delete_by_id_description',
+        summary: 'tag_delete_by_id_summary',
         tags: [Tags::Tags->name]
     )]
     #[IdParameter(type: 'tag', schema: new Schema(type: 'integer', example: 10))]
     #[SuccessResponse(
-        description: 'Id of deleted tag',
+        description: 'tag_delete_by_id_success_response',
         content: new IdJson('ID of deleted tag')
     )]
     #[DefaultResponses([

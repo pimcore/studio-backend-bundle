@@ -57,13 +57,14 @@ final class CreateController extends AbstractApiController
     #[POST(
         path: self::API_PATH . '/tag',
         operationId: 'tag_create',
-        summary: 'Creating a new tag',
+        description: 'tag_create_description',
+        summary: 'tag_create_summary',
         tags: [Tags::Tags->name]
     )]
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[CreateTagRequestBody]
     #[SuccessResponse(
-        description: 'Tag data as json',
+        description: 'tag_create_success_description',
         content: new JsonContent(ref: Tag::class, type: 'object')
     )]
     #[BadRequestResponse]
