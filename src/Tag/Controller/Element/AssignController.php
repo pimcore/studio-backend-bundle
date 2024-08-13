@@ -57,7 +57,8 @@ final class AssignController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/tags/assign/{elementType}/{id}/{tagId}',
         operationId: 'tag_assign_to_element',
-        summary: 'Assign tag for element',
+        description: 'tag_assign_to_element_description',
+        summary: 'tag_assign_to_element_summary',
         tags: [Tags::TagsForElement->value]
     )]
     #[ElementTypeParameter]

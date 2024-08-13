@@ -53,7 +53,8 @@ final class UnassignController extends AbstractApiController
     #[Delete(
         path: self::API_PATH . '/tags/{elementType}/{id}/{tagId}',
         operationId: 'tag_unassign_from_element',
-        summary: 'Unassign tag from element',
+        description: 'tag_unassign_from_element_description',
+        summary: 'tag_unassign_from_element_summary',
         tags: [Tags::TagsForElement->value]
     )]
     #[ElementTypeParameter]
