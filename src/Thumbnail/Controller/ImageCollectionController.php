@@ -55,12 +55,12 @@ final class ImageCollectionController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/thumbnails/image',
         operationId: 'thumbnail_image_get_collection',
-        description: 'Get image thumbnails',
-        summary: 'Get all downloadable image thumbnails',
+        description: 'thumbnail_image_get_collection_description',
+        summary: 'thumbnail_image_get_collection_summary',
         tags: [Tags::AssetThumbnails->name]
     )]
     #[SuccessResponse(
-        description: 'All downloadable image thumbnails',
+        description: 'thumbnail_image_get_collection_success_response',
         content: new ThumbnailsJson()
     )]
     #[DefaultResponses([

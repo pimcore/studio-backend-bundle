@@ -70,15 +70,15 @@ final class FolderController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/elements/{elementType}/folder/{parentId}',
         operationId: 'element_folder_create',
-        description: 'Create folder by parent id and element type path parameter and folder name body parameter',
-        summary: 'Create element folder',
+        description: 'element_folder_create_description',
+        summary: 'element_folder_create_summary',
         tags: [Tags::Elements->name]
     )]
     #[IdParameter(name: 'parentId')]
     #[ElementTypeParameter]
     #[FolderDataRequestBody]
     #[SuccessResponse(
-        description: 'Successfully created folder',
+        description: 'element_folder_create_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

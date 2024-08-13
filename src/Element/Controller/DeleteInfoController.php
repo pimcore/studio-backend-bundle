@@ -59,13 +59,14 @@ final class DeleteInfoController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/elements/{elementType}/delete-info/{id}',
         operationId: 'element_get_delete_info',
-        summary: 'Get delete info of the element by id and element type path parameter',
+        description: 'element_get_delete_info_description',
+        summary: 'element_get_delete_info_summary',
         tags: [Tags::Elements->name]
     )]
     #[IdParameter]
     #[ElementTypeParameter]
     #[SuccessResponse(
-        description: 'Delete info of the element',
+        description: 'element_get_delete_info_success_response',
         content: new JsonContent(ref: DeleteInfo::class)
     )]
     #[DefaultResponses([
