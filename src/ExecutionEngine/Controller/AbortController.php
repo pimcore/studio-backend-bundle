@@ -53,8 +53,8 @@ final class AbortController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/execution-engine/abort/{JobRunId}',
         operationId: 'execution_engine_abort_job_run_by_id',
-        description: 'Abort Job Run',
-        summary: 'Abort Job Run by Id',
+        description: 'execution_engine_abort_job_run_by_id_description',
+        summary: 'execution_engine_abort_job_run_by_id_summary',
         tags: [Tags::ExecutionEngine->name]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]

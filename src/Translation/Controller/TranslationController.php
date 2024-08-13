@@ -55,13 +55,13 @@ final class TranslationController extends AbstractApiController
     #[POST(
         path: self::API_PATH . self::ROUTE,
         operationId: 'translation_get_collection',
-        description: 'Get translations for given keys and locale',
-        summary: 'Get translations',
+        description: 'translation_get_collection_description',
+        summary: 'translation_get_collection_summary',
         tags: [Tags::Translation->name]
     )]
     #[TranslationRequestBody]
     #[SuccessResponse(
-        description: 'Key value pairs for given keys and locale',
+        description: 'translation_get_collection_success_response',
         content: new JsonContent(ref: Translation::class)
     )]
     #[DefaultResponses([
