@@ -55,14 +55,14 @@ final class DetailsCollectionController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/workflows/details',
         operationId: 'workflow_get_details',
-        description: 'Get details of the element workflows',
-        summary: 'Get all workflow details of an element',
+        description: 'workflow_get_details_description',
+        summary: 'workflow_get_details_summary',
         tags: [Tags::Workflows->name]
     )]
     #[IdParameter('ID of the element', 'element')]
     #[ElementTypeParameter]
     #[SuccessResponse(
-        description: 'Detail data of element workflows',
+        description: 'workflow_get_details_success_response',
         content: new JsonContent(
             properties: [new WorkflowDetailsCollection()],
             type: 'object'

@@ -314,3 +314,10 @@ role_get_tree_summary: Get collection of roles for tree view.
 role_get_tree_success_response: Collection of roles including folders for the given parent id.
 role_update_by_id_summary: Update role by id.
 role_update_by_id_response: Updated data.
+workflow_get_details_summary: Get all workflow details of an element
+workflow_get_details_description: | 
+  Get details of the element workflows based on the given <strong>{elementType}</strong> and <strong>{elementId}</strong>.
+workflow_get_details_success_response: Detail data of element workflows
+workflow_action_submit_summary: Submit workflow action
+workflow_action_submit_description: Submit action based on the workflow name, action name and action type.
+workflow_action_submit_success_response: Json encoded name of workflow, name and type of submitted action.
