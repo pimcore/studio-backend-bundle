@@ -170,3 +170,21 @@ system_settings_get_description: |
   System settings are public and need no login.
 system_settings_get_summary: Get system settings
 system_settings_get_success_response: System settings data
+schedule_get_collection_for_element_by_type_and_id_description: |
+  Get all schedules for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
+schedule_get_collection_for_element_by_type_and_id_summary: Get schedules for an element
+schedule_get_collection_for_element_by_type_and_id_success_response: List of schedules for element
+schedule_create_for_element_by_type_and_id_description: |
+  Create a new schedule with default values for the element with the given type <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
+  The schedule will be created for the current user.
+schedule_create_for_element_by_type_and_id_success_response: Created schedule for element
+schedule_create_for_element_by_type_and_id_summary: Create a schedule for element
+schedule_update_for_element_by_type_and_id_description: |
+    Update schedules for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
+    See the full description of updatable fields with the schema <strong>UpdateSchedule</strong>
+schedule_update_for_element_by_type_and_id_summary: Update schedules for an element
+schedule_update_for_element_by_type_and_id_success_response: List of updated schedules
+schedule_delete_by_id_description: |
+    Deletes a specific schedule based on the given <strong>{id}</strong>.
+schedule_delete_by_id_summary: Delete schedule with given id
+schedule_delete_by_id_success_response: Successfully deleted schedule

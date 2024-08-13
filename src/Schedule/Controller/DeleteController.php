@@ -53,12 +53,13 @@ final class DeleteController extends AbstractApiController
     #[Delete(
         path: self::API_PATH . '/schedules/{id}',
         operationId: 'schedule_delete_by_id',
-        summary: 'Delete schedule with given id',
+        description: 'schedule_delete_by_id_description',
+        summary: 'schedule_delete_by_id_summary',
         tags: [Tags::Schedule->name]
     )]
     #[IdParameter(type: 'schedule', schema: new Schema(type: 'integer', example: 123))]
     #[SuccessResponse(
-        description: 'Successfully deleted schedule',
+        description: 'schedule_delete_by_id_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
