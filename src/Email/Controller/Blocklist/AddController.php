@@ -55,12 +55,13 @@ final class AddController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/emails/blocklist',
         operationId: 'email_blocklist_add',
-        summary: 'Add a new blocklist entry.',
+        description: 'email_blocklist_add_description',
+        summary: 'email_blocklist_add_summary',
         tags: [Tags::Emails->value]
     )]
     #[BlocklistRequestBody]
     #[SuccessResponse(
-        description: 'Successfully added a new blocklist entry',
+        description: 'email_blocklist_add_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

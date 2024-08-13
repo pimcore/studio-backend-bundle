@@ -61,14 +61,14 @@ final class CollectionController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/emails',
         operationId: 'email_log_get_collection',
-        description: 'Get paginated E-Mail log entries',
-        summary: 'Get all E-Mail log entries',
+        description: 'email_log_get_collection_description',
+        summary: 'email_log_get_collection_summary',
         tags: [Tags::Emails->value]
     )]
     #[PageParameter]
     #[PageSizeParameter]
     #[SuccessResponse(
-        description: 'Paginated E-Mail log entries with total count as header param',
+        description: 'email_log_get_collection_success_response',
         content: new CollectionJson(new GenericCollection(EmailLogEntry::class))
     )]
     #[DefaultResponses([

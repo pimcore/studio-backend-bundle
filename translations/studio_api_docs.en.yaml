@@ -80,6 +80,56 @@ element_get_id_by_path_description: |
   Get the element ID based on the given <strong>{path}</strong> and <strong>{elementType}</strong>. <br> The <strong>{path}</strong> must be a valid path of an existing element with provided <strong>{elementType}</strong>
 element_get_id_by_path_success_response: ID of the element
 element_get_id_by_path_summary: Get ID of the element by path query parameter and element type path parameter
+email_blocklist_add_description: |
+  Add an E-mail address to the blocklist. <br> The E-mail address has to be compliant with the PHP validate filter.
+email_blocklist_add_success_response: Successfully added E-mail address to blocklist
+email_blocklist_add_summary: Add an E-mail address to the blocklist
+email_blocklist_delete_description: |
+  Delete an E-mail address from the blocklist with the given <strong>{email}</strong> <br> The E-mail address has to be present in the blocklist.
+email_blocklist_delete_success_response: Successfully deleted E-mail address from blocklist
+email_blocklist_delete_summary: Delete an E-mail address from the blocklist
+email_blocklist_get_collection_description: |
+  Get paginated E-Mail blocklist entries. <br>
+  You can use different query parameters to filter the E-Mail blocklist
+email_blocklist_get_collection_success_response: Paginated E-Mail blocklist entries with total count as header param
+email_blocklist_get_collection_summary: Get paginated collection of blocklist entries
+email_log_delete_description: |
+  Delete the E-Mail log entry with the given <strong>{id}</strong>
+email_log_delete_success_response: Successfully deleted E-Mail log entry
+email_log_delete_summary: Delete E-Mail log entry
+email_log_forward_by_id_description: |
+  Forward the E-Mail log entry with the given <strong>{id}</strong> to the given <strong>{email}</strong>
+email_log_forward_by_id_success_response: E-Mail was successfully forwarded
+email_log_forward_by_id_summary: Forward and existing E-Mail log entry
+email_log_get_collection_description: |
+  Get paginated E-Mail log entries. <br>
+  You can use different query parameters to filter the E-Mail logs
+email_log_get_collection_success_response: Paginated E-Mail log entries with total count as header param
+email_log_get_collection_summary: Get paginated collection of E-Mail log entries
+email_log_get_by_id_description: |
+  Get the E-Mail log entry with the given <strong>{id}</strong>
+email_log_get_by_id_success_response: E-Mail log entry data as JSON
+email_log_get_by_id_summary: Get an E-Mail log entry by ID
+email_log_get_html_description: |
+  Get the HTML content of the E-Mail log entry with the given <strong>{id}</strong>
+email_log_get_html_success_response: HTML content of the E-Mail log entry
+email_log_get_html_summary: Get HTML content of an E-Mail log entry by ID
+email_log_get_params_description: |
+  Get the parameters of the E-Mail log entry with the given <strong>{id}</strong>
+email_log_get_params_success_response: Parameters of the E-Mail log entry
+email_log_get_params_summary: Get parameters of an E-Mail log entry by ID
+email_log_get_text_description: |
+  Get the text content of the E-Mail log entry with the given <strong>{id}</strong>
+email_log_get_text_success_response: Text content of the E-Mail log entry
+email_log_get_text_summary: Get text content of an E-Mail log entry by ID
+email_log_resend_by_id_description: |
+  Resend the E-Mail log entry with the given <strong>{id}</strong>
+email_log_resend_by_id_success_response: E-Mail was successfully resent
+email_log_resend_by_id_summary: Resend an existing E-Mail log entry
+email_send_test_description: |
+  Send a test E-Mail based on the provided query parameters. <br> See the full description of request fields with the schema <strong>SendEmailParameters</strong>
+email_send_test_success_response: E-Mail was successfully sent
+email_send_test_summary: Send a test E-Mail
 property_get_collection_for_element_by_type_and_id_description: |
   List all the saved properties of the element. <br>
   Keep in mind  that inherited properties should not be send back in an update request. <br>
@@ -123,8 +173,8 @@ tag_dataobjects_description: DataObject operations to get/update/create/delete d
 tag_dependencies_description: Get dependencies for a single element
 tag_elements_description: Get element properties for a single element based on its
   type and provided parameters
-tag_emails_description: Email operations to get/update/create/delete/test emails and
-  email blocklist
+tag_emails_description: E-mail operations to get/update/create/delete/test emails and
+  E-mail blocklist
 tag_execution_engine_description: Execution engine operations related to job runs
 tag_grid_description: Grid operations
 tag_mercure_description: Retrieve JWT token for Mercure hub as cookie

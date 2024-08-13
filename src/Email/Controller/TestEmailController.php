@@ -63,12 +63,13 @@ final class TestEmailController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/emails/test',
         operationId: 'email_send_test',
-        summary: 'Send a test email.',
+        description: 'email_send_test_description',
+        summary: 'email_send_test_summary',
         tags: [Tags::Emails->value]
     )]
     #[TestEmailRequestBody]
     #[SuccessResponse(
-        description: 'Mail was successfully sent',
+        description: 'email_send_test_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

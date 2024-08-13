@@ -58,11 +58,12 @@ final class EmailTextController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/emails/{id}/text',
         operationId: 'email_log_get_text',
-        description: 'Get E-Mail log entry text by ID',
-        summary: 'Get E-Mail log entry text',
+        description: 'email_log_get_text_description',
+        summary: 'email_log_get_text_summary',
         tags: [Tags::Emails->value]
     )]
     #[SuccessResponse(
+        description: 'email_log_get_text_success_response',
         content: new DataJson('Email log entry text data.', 'Some email text content')
     )]
     #[IdParameter(type: ElementTypes::TYPE_EMAIL)]

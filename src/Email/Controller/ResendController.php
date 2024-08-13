@@ -58,12 +58,13 @@ final class ResendController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/emails/{id}/resend',
         operationId: 'email_log_resend_by_id',
-        summary: 'Resend an email.',
+        description: 'email_log_resend_by_id_description',
+        summary: 'email_log_resend_by_id_summary',
         tags: [Tags::Emails->value]
     )]
     #[IdParameter(type: ElementTypes::TYPE_EMAIL)]
     #[SuccessResponse(
-        description: 'Mail was successfully sent',
+        description: 'email_log_resend_by_id_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
