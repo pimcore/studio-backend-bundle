@@ -57,13 +57,13 @@ final class CustomMetadataController extends AbstractApiController
     #[GET(
         path: self::API_PATH . '/assets/{id}/custom-metadata',
         operationId: 'asset_custom_metadata_get_by_id',
-        description: 'Get custom metadata of an asset by its id by path parameter',
-        summary: 'Get custom metadata of an asset by id',
+        description: 'asset_custom_metadata_get_by_id_description',
+        summary: 'asset_custom_metadata_get_by_id_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[SuccessResponse(
-        description: 'Array of custom metadata',
+        description: 'asset_custom_metadata_get_by_id_success_response',
         content: new ItemsJson(CustomMetadata::class)
     )]
     #[DefaultResponses([

@@ -75,13 +75,13 @@ final class PreviewStreamController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/assets/{id}/document/stream/pdf-preview',
         operationId: 'asset_document_stream_preview',
-        description: 'Get asset document PDF preview stream by id by path parameter',
-        summary: 'Get asset document PDF preview stream by id',
+        description: 'asset_document_stream_preview_description',
+        summary: 'asset_document_stream_preview_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'document')]
     #[SuccessResponse(
-        description: 'Asset PDF preview stream',
+        description: 'asset_document_stream_preview_success_response',
         content: new AssetMediaType('application/pdf'),
         headers: [new ContentDisposition('inline')]
     )]

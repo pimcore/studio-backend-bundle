@@ -58,13 +58,13 @@ final class DownloadZipController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/assets/download/zip/{jobRunId}',
         operationId: 'asset_download_zip',
-        description: 'Downloading zipped assets',
-        summary: 'Downloading the zip file with assets',
+        description: 'asset_download_zip_description',
+        summary: 'asset_download_zip_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
     #[SuccessResponse(
-        description: 'Zip archive',
+        description: 'asset_download_zip_success_response',
         content: [new AssetMediaType('application/zip')],
         headers: [new ContentDisposition()]
     )]

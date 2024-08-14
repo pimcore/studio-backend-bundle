@@ -59,12 +59,12 @@ final class GetAvailableConfigurationController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/assets/grid/available-configuration',
         operationId: 'asset_get_available_grid_configuration',
-        description: 'Get all available grid configurations for assets',
-        summary: 'Get all available grid configurations for assets',
+        description: 'asset_get_available_grid_configuration_description',
+        summary: 'asset_get_available_grid_configuration_summary',
         tags: [Tags::Grid->name]
     )]
     #[SuccessResponse(
-        description: 'Grid configuration',
+        description: 'asset_get_available_grid_configuration_success_response',
         content: new JsonContent(
             properties: [
                 new Property(

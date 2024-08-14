@@ -54,13 +54,13 @@ final class GetController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/assets/{id}',
         operationId: 'asset_get_by_id',
-        description: 'Get assets by id by path parameter',
-        summary: 'Get assets by id',
+        description: 'asset_get_by_id_description',
+        summary: 'asset_get_by_id_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[SuccessResponse(
-        description: 'One of asset types',
+        description: 'asset_get_by_id_success_response',
         content: new OneOfAssetJson()
     )]
     #[DefaultResponses([

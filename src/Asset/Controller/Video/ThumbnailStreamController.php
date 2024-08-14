@@ -74,14 +74,14 @@ final class ThumbnailStreamController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/assets/{id}/video/stream/{thumbnailName}',
         operationId: 'asset_video_stream_by_thumbnail',
-        description: 'Get video stream by id and thumbnail name by path parameter',
-        summary: 'Get video stream by id and thumbnail name',
+        description: 'asset_video_stream_by_thumbnail_description',
+        summary: 'asset_video_stream_by_thumbnail_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'video')]
     #[ThumbnailNameParameter]
     #[SuccessResponse(
-        description: 'Video stream based on thumbnail name',
+        description: 'asset_video_stream_by_thumbnail_success_response',
         content: new AssetMediaType('video/mp4'),
         headers: [new ContentDisposition('inline')]
     )]

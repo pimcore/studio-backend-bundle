@@ -59,12 +59,13 @@ final class TextController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/assets/{id}/text',
         operationId: 'asset_get_text_data_by_id',
-        summary: 'Get asset data in text UTF8 representation by id',
+        description: 'asset_get_text_data_by_id_description',
+        summary: 'asset_get_text_data_by_id_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[SuccessResponse(
-        description: 'UTF8 encoded text data',
+        description: 'asset_get_text_data_by_id_success_response',
         content: new DataJson('UTF 8 encoded text data')
     )]
     #[DefaultResponses([

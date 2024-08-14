@@ -62,16 +62,15 @@ final class GetConfigurationController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/grid/configuration/{folderId}',
-        operationId: 'asset_get_grid_configuration',
-        description: 'Get asset saved grid configuration for a specific folder if a configuration-id is set otherwise
-        get the default configuration will be returned.',
-        summary: 'Get asset grid configuration for a specific folder',
+        operationId: 'asset_get_grid_configuration_by_folderId',
+        description: 'asset_get_grid_configuration_by_folderId_description',
+        summary: 'asset_get_grid_configuration_by_folderId_summary',
         tags: [Tags::Grid->name]
     )]
     #[IdParameterPath(name: 'folderId')]
     #[IdParameterQuery(description: 'Configuration ID', namePrefix: 'configuration', required: false)]
     #[SuccessResponse(
-        description: 'Grid configuration',
+        description: 'asset_get_grid_configuration_by_folderId_success_response',
         content: new JsonContent(
             properties: [
                 new Property(

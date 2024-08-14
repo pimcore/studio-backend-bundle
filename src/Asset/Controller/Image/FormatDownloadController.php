@@ -74,14 +74,14 @@ final class FormatDownloadController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/assets/{id}/image/download/format/{format}',
         operationId: 'asset_image_download_by_format',
-        description: 'Download image by id and format by path parameters',
-        summary: 'Download image by id and format',
+        description: 'asset_image_download_by_format_description',
+        summary: 'asset_image_download_by_format_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'image')]
     #[FormatTypeParameter]
     #[SuccessResponse(
-        description: 'Image based on format',
+        description: 'asset_image_download_by_format_success_response',
         content: new AssetMediaType('image/jpeg'),
         headers: [new ContentDisposition()]
     )]
