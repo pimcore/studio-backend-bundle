@@ -32,7 +32,7 @@ final readonly class ElementListingFilter implements ElementListingFilterInterfa
     ): AbstractListing|CallableFilterListingInterface {
         $filters = $this->filterLoader->loadFilters();
 
-        foreach($filters->getFilters() as $filter) {
+        foreach ($filters->getFilters() as $filter) {
             $listing = $filter->apply($parameters, $listing);
         }
 

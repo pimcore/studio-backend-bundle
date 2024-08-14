@@ -66,6 +66,8 @@ final class CollectionController extends AbstractApiController
     public function getProperties(
         #[MapRequestPayload] PropertiesParameters $parameters
     ): JsonResponse {
-        return $this->jsonResponse(['items' => $this->propertyService->getPredefinedProperties($parameters->getFilters())]);
+        return $this->jsonResponse(
+            ['items' => $this->propertyService->getPredefinedProperties($parameters->getFilters())]
+        );
     }
 }

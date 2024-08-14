@@ -64,7 +64,11 @@ final readonly class PropertyFilter implements FilterInterface
             if ($typeFilter && !str_contains($predefined->getCtype(), $typeFilter)) {
                 return false;
             }
-            if ($nameFilter && stripos($translator->trans($predefined->getName(), [], 'admin'), $nameFilter) === false) {
+            
+            if (
+                $nameFilter &&
+                stripos($translator->trans($predefined->getName(), [], 'admin'), $nameFilter) === false
+            ) {
                 return false;
             }
 
