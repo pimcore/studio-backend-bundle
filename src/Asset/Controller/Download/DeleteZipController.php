@@ -53,8 +53,8 @@ final class DeleteZipController extends AbstractApiController
     #[Delete(
         path: self::API_PATH . '/assets/download/zip/{jobRunId}',
         operationId: 'asset_delete_zip',
-        description: 'Delete zip file with assets',
-        summary: 'Delete the zip file with assets based on jobRunId',
+        description: 'asset_delete_zip_description',
+        summary: 'asset_delete_zip_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]

@@ -69,11 +69,12 @@ final class ReplaceController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/assets/{id}/replace',
         operationId: 'asset_replace',
-        summary: 'Replace existing asset binary.',
+        description: 'asset_replace_description',
+        summary: 'asset_replace_summary',
         tags: [Tags::Assets->value]
     )]
     #[SuccessResponse(
-        description: 'Successfully replaced asset binary',
+        description: 'asset_replace_success_response',
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[AddAssetRequestBody(

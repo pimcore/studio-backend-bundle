@@ -55,13 +55,13 @@ final class GetController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/assets/grid',
         operationId: 'asset_get_grid',
-        description: 'Get assets for grid',
-        summary: 'Get assets for grid',
+        description: 'asset_get_grid_description',
+        summary: 'asset_get_grid_summary',
         tags: [Tags::Grid->name]
     )]
     #[GridRequestBody]
     #[SuccessResponse(
-        description: 'Grid data',
+        description: 'asset_get_grid_success_response',
         content: new CollectionJson(
             collection: new GridCollection()
         )

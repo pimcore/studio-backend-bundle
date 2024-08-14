@@ -69,11 +69,12 @@ final class ZipController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/assets/add-zip/{parentId}',
         operationId: 'asset_upload_zip',
-        summary: 'Add a new asset via zip file.',
+        description: 'asset_upload_zip_description',
+        summary: 'asset_upload_zip_summary',
         tags: [Tags::Assets->value]
     )]
     #[CreatedResponse(
-        description: 'Successfully created jobRun to upload multiple assets',
+        description: 'asset_upload_zip_created_response',
         content: new IdJson('ID of created jobRun')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
