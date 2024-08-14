@@ -177,7 +177,10 @@ class Configuration implements ConfigurationInterface
                 ->addDefaultsIfNotSet()
                 ->children()
                     ->scalarNode('hub_url_server')
-                        ->info('The url to the mercure hub for the server. This can also be the docker container name. (e.g. http://mercure/.well-known/mercure)')
+                        ->info(
+                            'The url to the mercure hub for the server. This can also be the docker container name.'.
+                            ' (e.g. http://mercure/.well-known/mercure)'
+                        )
                         ->defaultValue('http://mercure/.well-known/mercure')
                     ->end()
                     ->scalarNode('hub_url_client')
