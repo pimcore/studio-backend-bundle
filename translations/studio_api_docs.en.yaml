@@ -1,0 +1,78 @@
+clone_asset_created_response: Successfully copied parent asset and created <strong>jobRun</strong>
+  for copying child assets
+clone_asset_description: |
+  Clones a specific asset with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder
+clone_asset_success_response: Successfully copied asset
+clone_asset_summary: Clone a specific asset
+clone_data_object_created_response: Successfully copied parent data object and created
+  <strong>jobRun</strong> for copying child objects
+clone_data_object_description: |
+  Clones a specific data object with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder or another data object
+clone_data_object_success_response: Successfully copied data object
+clone_data_object_summary: Clone a specific data object
+create_csv_assets_created_response: Successfully created <strong>jobRun</strong> for
+  csv export
+create_csv_assets_description: |
+  Creating the CSV file for assets. <br> Parameters are: <ul>
+    <li><strong>assets</strong>: Array of asset ids</li>
+    <li><strong>gridConfig</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
+    <li><strong>settings</strong>: Delimiter and header options</li>
+  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
+  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
+create_csv_assets_summary: Creating CSV file for assets
+delete_element_created_response: Successfully created jobRun for deleting element
+  and its children
+delete_element_description: |
+  Deletes a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing element of the provided <strong>{elementType}</strong>. <br> If element is a folder, all child elements will be deleted as well. Elements are moved into the Recycle Bin before deletion.
+delete_element_success_response: Successfully deleted element
+delete_element_summary: Delete a specific element and its children
+download_assets_csv_description: |
+  Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
+download_assets_csv_success_response: CSV File as attachment
+download_assets_csv_summary: Download CSV file for assets
+patch_asset_by_id_created_response: Successfully created jobRun for patching multiple
+  assets
+patch_asset_by_id_description: |
+  Patching assets based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
+patch_asset_by_id_success_response: Successfully patched asset
+patch_asset_by_id_summary: Patch assets by ID
+patch_data_object_by_id_created_response: Successfully created jobRun for patching
+  multiple data objects
+patch_data_object_by_id_description: |
+  Patching data objects based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
+patch_data_object_by_id_success_response: Successfully patched data object
+patch_data_object_by_id_summary: Patch data objects by ID
+tag_asset_thumbnail_description: List thumbnails for assets like videos and images
+tag_assets_description: Asset operations to get/update/create/delete assets
+tag_authorization_description: Session-based login via username and password or logout
+  and invalidate the session
+tag_dataobjects_description: DataObject operations to get/update/create/delete data
+  objects
+tag_dependencies_description: Get dependencies for a single element
+tag_elements_description: Get element properties for a single element based on its
+  type and provided parameters
+tag_emails_description: Email operations to get/update/create/delete/test emails and
+  email blocklist
+tag_execution_engine_description: Execution engine operations related to job runs
+tag_grid_description: Grid operations
+tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
+tag_notes_description: Note operations to list/delete notes
+tag_properties_description: Property operations to get/update/create/delete properties
+tag_role_description: Role Management operations
+tag_schedule_description: Get schedules for an element
+tag_settings_description: Get System Settings
+tag_tags_description: Tag operations to get/list/create/update/delete tags
+tag_tags_for_element_description: Tag operations to get tags for an element
+tag_translation_description: Get translations either for a single key or multiple
+  keys
+tag_user_description: User Management operations
+tag_versions_description: Versions operations to get/list/publish/delete and cleanup
+  versions
+tag_workflows_description: Workflows operations to get element workflow details
+update_asset_by_id_description: |
+  Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
+update_asset_by_id_summary: Update an asset by ID
+update_data_object_by_id_description: |
+  Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
+update_data_object_by_id_summary: Update a data object by ID
+update_data_object_success_response: Successfully updated data object

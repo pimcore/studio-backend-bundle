@@ -27,6 +27,8 @@ final class ElementPermissions
 
     public const PUBLISH_PERMISSION = 'publish';
 
+    public const UNPUBLISH_PERMISSION = 'unpublish';
+
     public const DELETE_PERMISSION = 'delete';
 
     public const RENAME_PERMISSION = 'rename';

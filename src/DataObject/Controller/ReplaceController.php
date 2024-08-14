@@ -31,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -42,8 +41,6 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ReplaceController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly ReplaceServiceInterface $replaceService,

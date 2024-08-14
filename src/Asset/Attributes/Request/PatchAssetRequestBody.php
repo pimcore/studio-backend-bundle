@@ -24,6 +24,7 @@ use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\PatchCustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateIntegerProperty;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateStringProperty;
 
 /**
  * @internal
@@ -46,6 +47,8 @@ final class PatchAssetRequestBody extends RequestBody
                             properties: [
                                 new Property(property: 'id', description: 'Asset ID', type: 'integer', example: 83),
                                 new UpdateIntegerProperty('parentId'),
+                                new UpdateStringProperty('key'),
+                                new UpdateStringProperty('locked'),
                                 new CustomMetadata(PatchCustomMetadata::class),
                             ],
                             type: 'object',

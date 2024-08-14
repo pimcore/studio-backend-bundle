@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomAttributesTrait;
@@ -45,8 +46,6 @@ class Asset extends Element implements AdditionalAttributesInterface
     use CustomAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'IconName', type: 'string', example: 'pimcore_icon_pdf')]
-        private readonly string $iconName,
         #[Property(description: 'Has children', type: 'bool', example: false)]
         private readonly bool $hasChildren,
         #[Property(description: 'Type', type: 'string', example: 'image')]
@@ -66,6 +65,7 @@ class Asset extends Element implements AdditionalAttributesInterface
         int $id,
         int $parentId,
         string $path,
+        ElementIcon $icon,
         int $userOwner,
         int $userModification,
         ?string $locked,
@@ -77,6 +77,7 @@ class Asset extends Element implements AdditionalAttributesInterface
             $id,
             $parentId,
             $path,
+            $icon,
             $userOwner,
             $userModification,
             $locked,
@@ -84,11 +85,6 @@ class Asset extends Element implements AdditionalAttributesInterface
             $creationDate,
             $modificationDate
         );
-    }
-
-    public function getIconName(): string
-    {
-        return $this->iconName;
     }
 
     public function getHasChildren(): bool

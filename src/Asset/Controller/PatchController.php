@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchAssetParameter
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
@@ -54,23 +55,24 @@ final class PatchController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|ElementSavingFailedException|NotFoundException|UserNotFoundException
+     * @throws AccessDeniedException|ElementSavingFailedException
+     * @throws NotFoundException|UserNotFoundException|InvalidArgumentException
      */
     #[Route('/assets', name: 'pimcore_studio_api_patch_asset', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Patch(
         path: self::API_PATH . '/assets',
         operationId: 'patchAssetById',
-        description: 'Patch multiple assets by id and data',
-        summary: 'Patch multiple asset',
+        description: 'patch_asset_by_id_description',
+        summary: 'patch_asset_by_id_summary',
         tags: [Tags::Assets->name]
     )]
     #[PatchAssetRequestBody]
     #[SuccessResponse(
-        description: 'Successfully patched asset',
+        description: 'patch_asset_by_id_success_response',
     )]
     #[CreatedResponse(
-        description: 'Successfully created jobRun for patching multiple assets',
+        description: 'patch_asset_by_id_created_response',
         content: new IdJson('ID of created jobRun')
     )]
     #[DefaultResponses([

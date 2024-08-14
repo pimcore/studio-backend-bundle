@@ -21,4 +21,6 @@ use OpenApi\Annotations\OpenApi;
 interface OpenApiServiceInterface
 {
     public function getConfig(): OpenApi;
+
+    public function translateConfig(OpenApi $config, string $locale = 'en'): array;
 }

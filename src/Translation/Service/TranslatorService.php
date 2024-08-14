@@ -29,6 +29,8 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 {
     public const DOMAIN = 'studio';
 
+    private const API_DOCS_DOMAIN = 'studio_api_docs';
+
     private TranslatorBagInterface $translatorBag;
 
     public function __construct(
@@ -77,6 +79,11 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     public function translate(string $message, array $params = []): string
     {
         return $this->translator->trans($message, $params, self::DOMAIN);
+    }
+
+    public function translateApiDocs(string $message, string $locale = 'en'): string
+    {
+        return $this->translator->trans($message, [], self::API_DOCS_DOMAIN, $locale);
     }
 
     private function getTranslatorBag(): TranslatorBagInterface

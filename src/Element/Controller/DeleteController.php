@@ -14,12 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Controller;
 
 use OpenApi\Attributes\Delete;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\DeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -27,6 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\CreatedResponse;
@@ -34,10 +35,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -48,12 +47,9 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class DeleteController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         SerializerInterface $serializer,
-        private readonly AssetServiceInterface $assetService,
-        private readonly DeleteServiceInterface $deleteService,
+        private readonly ElementDeleteServiceInterface $elementDeleteService,
         private readonly SecurityServiceInterface $securityService
     ) {
         parent::__construct($serializer);
@@ -68,44 +64,42 @@ final class DeleteController extends AbstractApiController
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
-    #[Route('/assets/{id}/delete', name: 'pimcore_studio_api_assets_delete', methods: ['DELETE'])]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[Route('/elements/{elementType}/delete/{id}', name: 'pimcore_studio_api_elements_delete', methods: ['DELETE'])]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Delete(
-        path: self::API_PATH . '/assets/{id}/delete',
-        operationId: 'deleteAsset',
-        summary: 'Delete a specific asset and its children.',
-        tags: [Tags::Assets->value]
+        path: self::API_PATH . '/elements/{elementType}/delete/{id}',
+        operationId: 'deleteElement',
+        description: 'delete_element_description',
+        summary: 'delete_element_summary',
+        tags: [Tags::Elements->value]
     )]
     #[SuccessResponse(
-        description: 'Successfully deleted asset',
+        description: 'delete_element_success_response',
     )]
     #[CreatedResponse(
-        description: 'Successfully created jobRun for deleting assets',
+        description: 'delete_element_created_response',
         content: new IdJson('ID of created jobRun')
     )]
-    #[IdParameter(type: ElementTypes::TYPE_ASSET)]
+    #[IdParameter]
+    #[ElementTypeParameter]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteAsset(
-        int $id
+    public function deleteElement(
+        int $id,
+        string $elementType
     ): Response {
-        $user = $this->securityService->getCurrentUser();
-        $asset = $this->assetService->getAssetElement(
-            $user,
-            $id
+        $jobRunId = $this->elementDeleteService->deleteElements(
+            new ElementParameters($elementType, $id),
+            $this->securityService->getCurrentUser()
         );
-        $status = HttpResponseCodes::SUCCESS->value;
-        $data = null;
-        $jobRunId = $this->deleteService->deleteAssets($asset, $user);
 
         if ($jobRunId) {
-            $status = HttpResponseCodes::CREATED->value;
 
-            return $this->jsonResponse(['id' => $jobRunId], $status);
+            return $this->jsonResponse(['id' => $jobRunId], HttpResponseCodes::CREATED->value);
         }
 
-        return new Response($data, $status);
+        return new Response();
     }
 }

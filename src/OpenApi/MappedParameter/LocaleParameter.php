@@ -14,18 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
-
-use Pimcore\Model\Asset;
-use Pimcore\Model\UserInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\MappedParameter;
 
 /**
  * @internal
  */
-interface DeleteServiceInterface
+final readonly class LocaleParameter
 {
-    public function deleteAssets(
-        Asset $asset,
-        UserInterface $user
-    ): ?int;
+    public function __construct(private ?string $locale = 'en')
+    {
+    }
+
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
 }

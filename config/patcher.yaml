@@ -23,3 +23,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\LockAdapter:
     tags : ['pimcore.studio_backend.patch_adapter']
 
+  Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\PublishAdapter:
+    tags : ['pimcore.studio_backend.patch_adapter']
+

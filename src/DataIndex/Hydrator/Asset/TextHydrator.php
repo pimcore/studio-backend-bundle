@@ -31,7 +31,6 @@ final readonly class TextHydrator implements TextHydratorInterface
     public function hydrate(TextItem $item): Text
     {
         return new Text(
-            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->isHasChildren(),
             $item->getType(),
             $item->getKey(),
@@ -43,6 +42,7 @@ final readonly class TextHydrator implements TextHydratorInterface
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),
+            $this->iconService->getIconForAsset($item->getType(), $item->getMimeType()),
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),

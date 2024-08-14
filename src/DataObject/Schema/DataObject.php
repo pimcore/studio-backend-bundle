@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomAttributesTrait;
@@ -63,6 +64,7 @@ class DataObject extends Element implements AdditionalAttributesInterface
         int $id,
         int $parentId,
         string $path,
+        ElementIcon $icon,
         int $userOwner,
         int $userModification,
         ?string $locked,
@@ -74,6 +76,7 @@ class DataObject extends Element implements AdditionalAttributesInterface
             $id,
             $parentId,
             $path,
+            $icon,
             $userOwner,
             $userModification,
             $locked,
