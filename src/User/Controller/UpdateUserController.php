@@ -64,13 +64,13 @@ final class UpdateUserController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Put(
         path: self::API_PATH . '/user/{id}',
-        operationId: 'updateUserById',
-        summary: 'Update user by id.',
+        operationId: 'user_update_by_id',
+        summary: 'user_update_by_id_summary',
         tags: [Tags::User->value]
     )]
     #[IdParameter(type: 'User')]
     #[SuccessResponse(
-        description: 'Updated data.',
+        description: 'user_update_by_id_success_response',
         content: new JsonContent(ref: UserSchema::class)
     )]
     #[RequestBody(

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Note\Controller\Element;
 
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -24,10 +25,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Attributes\Request\CreateNoteRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
+use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
@@ -57,13 +60,18 @@ final class CreateController extends AbstractApiController
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Post(
         path: self::API_PATH . '/notes/{elementType}/{id}',
-        operationId: 'createNoteForElement',
-        summary: 'Creating new note for element',
+        operationId: 'note_element_create',
+        description: 'note_element_create_description',
+        summary: 'note_element_create_summary',
         tags: [Tags::Notes->name]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
     #[CreateNoteRequestBody]
+    #[SuccessResponse(
+        description: 'note_element_create_success_response',
+        content: new JsonContent(ref: Note::class, type: 'object')
+    )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
     ])]
@@ -72,8 +80,12 @@ final class CreateController extends AbstractApiController
         int $id,
         #[MapRequestPayload] CreateNote $createNote
     ): JsonResponse {
-        $note = $this->noteService->createNote(new NoteElementParameters($elementType, $id), $createNote);
 
-        return $this->jsonResponse(['id' => $note->getId()]);
+        return $this->jsonResponse(
+            $this->noteService->createNote(
+                new NoteElementParameters($elementType, $id),
+                $createNote
+            )
+        );
     }
 }

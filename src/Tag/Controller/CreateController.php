@@ -56,14 +56,15 @@ final class CreateController extends AbstractApiController
     #[Route('/tag', name: 'pimcore_studio_api_create_tag', methods: ['POST'])]
     #[POST(
         path: self::API_PATH . '/tag',
-        operationId: 'createTag',
-        summary: 'Creating a new tag',
+        operationId: 'tag_create',
+        description: 'tag_create_description',
+        summary: 'tag_create_summary',
         tags: [Tags::Tags->name]
     )]
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[CreateTagRequestBody]
     #[SuccessResponse(
-        description: 'Tag data as json',
+        description: 'tag_create_success_description',
         content: new JsonContent(ref: Tag::class, type: 'object')
     )]
     #[BadRequestResponse]

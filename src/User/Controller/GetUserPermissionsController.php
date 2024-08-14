@@ -50,12 +50,12 @@ final class GetUserPermissionsController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::API_PATH . '/user/available-permissions',
-        operationId: 'getAvailableUserPermissions',
-        summary: 'Get all available user permissions.',
+        operationId: 'user_get_available_permissions',
+        summary: 'user_get_available_permissions_summary',
         tags: [Tags::User->value]
     )]
     #[SuccessResponse(
-        description: 'List of available user permissions.',
+        description: 'user_get_available_permissions_success_response',
         content: new CollectionJson(new GenericCollection(UserPermission::class))
     )]
     #[DefaultResponses]

@@ -57,16 +57,16 @@ final class CreateZipController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/zip/create',
-        operationId: 'createZipAssets',
-        description: 'Creating zipped assets',
-        summary: 'Creating zip file for assets',
+        operationId: 'asset_create_zip',
+        description: 'asset_create_zip_description',
+        summary: 'asset_create_zip_summary',
         tags: [Tags::Assets->name]
     )]
     #[RequestBody(
         content: new ScalarItemsJson('integer')
     )]
     #[CreatedResponse(
-        description: 'Successfully created jobRun for zip export',
+        description: 'asset_create_zip_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([

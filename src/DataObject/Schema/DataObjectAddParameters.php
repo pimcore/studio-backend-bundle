@@ -21,7 +21,7 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Model\DataObject\AbstractObject;
 
 #[Schema(
-    title: 'Add Data Object Parameters',
+    title: 'DataObjectAdd',
     required: ['key', 'classId', 'type'],
     type: 'object'
 )]

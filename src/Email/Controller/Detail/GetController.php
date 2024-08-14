@@ -58,13 +58,13 @@ final class GetController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
         path: self::API_PATH . '/emails/{id}',
-        operationId: 'getEmailLogEntry',
-        description: 'Get E-Mail log entry by ID',
-        summary: 'Get E-Mail log entry',
+        operationId: 'email_log_get_by_id',
+        description: 'email_log_get_by_id_description',
+        summary: 'email_log_get_by_id_summary',
         tags: [Tags::Emails->value]
     )]
     #[SuccessResponse(
-        description: 'Email log entry data.',
+        description: 'email_log_get_by_id_success_response',
         content: new JsonContent(ref: EmailLogEntryDetail::class)
     )]
     #[IdParameter(type: ElementTypes::TYPE_EMAIL)]

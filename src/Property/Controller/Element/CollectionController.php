@@ -55,14 +55,15 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
         path: self::API_PATH . '/properties/{elementType}/{id}',
-        operationId: 'getPropertiesForElementByTypeAndId',
-        summary: 'Get properties for an element based on the element type and the element id',
+        operationId: 'property_get_collection_for_element_by_type_and_id',
+        description: 'property_get_collection_for_element_by_type_and_id_description',
+        summary: 'property_get_collection_for_element_by_type_and_id_summary',
         tags: [Tags::Properties->value]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
     #[SuccessResponse(
-        description: 'Element Properties data as json',
+        description: 'property_get_collection_for_element_by_type_and_id_success_response',
         content: new ItemsJson(ElementProperty::class)
     )]
     #[DefaultResponses([

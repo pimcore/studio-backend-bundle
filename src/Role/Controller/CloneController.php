@@ -56,12 +56,12 @@ final class CloneController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
         path: self::API_PATH . '/role/clone/{id}',
-        operationId: 'cloneRole',
-        summary: 'Clone a specific Role.',
+        operationId: 'role_clone_by_id',
+        summary: 'role_clone_by_id_summary',
         tags: [Tags::Role->value]
     )]
     #[SuccessResponse(
-        description: 'Node of the cloned Role.',
+        description: 'role_clone_by_id_success_response',
         content: new JsonContent(ref: TreeNode::class)
     )]
     #[IdParameter(type: 'role')]

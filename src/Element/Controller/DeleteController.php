@@ -68,16 +68,16 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Delete(
         path: self::API_PATH . '/elements/{elementType}/delete/{id}',
-        operationId: 'deleteElement',
-        description: 'delete_element_description',
-        summary: 'delete_element_summary',
+        operationId: 'element_delete',
+        description: 'element_delete_description',
+        summary: 'element_delete_summary',
         tags: [Tags::Elements->value]
     )]
     #[SuccessResponse(
-        description: 'delete_element_success_response',
+        description: 'element_delete_success_response',
     )]
     #[CreatedResponse(
-        description: 'delete_element_created_response',
+        description: 'element_delete_created_response',
         content: new IdJson('ID of created jobRun')
     )]
     #[IdParameter]
@@ -86,7 +86,7 @@ final class DeleteController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteElement(
+    public function elementDelete(
         int $id,
         string $elementType
     ): Response {

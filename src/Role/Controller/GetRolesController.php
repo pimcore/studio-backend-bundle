@@ -50,12 +50,12 @@ final class GetRolesController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::API_PATH . '/roles',
-        operationId: 'getUserRoles',
-        summary: 'Get all available user roles.',
+        operationId: 'role_get_collection',
+        summary: 'role_get_collection_summary',
         tags: [Tags::Role->value]
     )]
     #[SuccessResponse(
-        description: 'List of available user roles.',
+        description: 'role_get_collection_success_response',
         content: new CollectionJson(new GenericCollection(SimpleRole::class))
     )]
     #[DefaultResponses]

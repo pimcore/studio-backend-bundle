@@ -60,13 +60,13 @@ final class UpdateRoleController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Put(
         path: self::API_PATH . '/role/{id}',
-        operationId: 'updateRoleById',
-        summary: 'Update role by id.',
+        operationId: 'role_update_by_id',
+        summary: 'role_update_by_id_summary',
         tags: [Tags::Role->value]
     )]
     #[IdParameter(type: 'Role')]
     #[SuccessResponse(
-        description: 'Updated data.',
+        description: 'role_update_by_id_response',
         content: new JsonContent(ref: DetailedRole::class)
     )]
     #[RequestBody(

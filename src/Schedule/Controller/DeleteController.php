@@ -52,13 +52,14 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::PIMCORE_USER->value)]
     #[Delete(
         path: self::API_PATH . '/schedules/{id}',
-        operationId: 'deleteSchedule',
-        summary: 'Delete schedule with given id',
+        operationId: 'schedule_delete_by_id',
+        description: 'schedule_delete_by_id_description',
+        summary: 'schedule_delete_by_id_summary',
         tags: [Tags::Schedule->name]
     )]
     #[IdParameter(type: 'schedule', schema: new Schema(type: 'integer', example: 123))]
     #[SuccessResponse(
-        description: 'Successfully deleted schedule',
+        description: 'schedule_delete_by_id_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

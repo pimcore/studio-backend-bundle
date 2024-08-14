@@ -39,12 +39,13 @@ final class LoginController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/login',
         operationId: 'login',
-        summary: 'Session-based login with user credentials',
+        description: 'login_description',
+        summary: 'login_summary',
         tags: [Tags::Authorization->name]
     )]
     #[CredentialsRequestBody]
     #[SuccessResponse(
-        description: 'Login successful',
+        description: 'login_success_response',
         content: new JsonContent(ref: UserInformation::class)
     )]
     #[InvalidCredentialsResponse]

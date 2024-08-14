@@ -60,7 +60,7 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
         path: self::API_PATH . '/dependencies/{elementType}/{id}',
-        operationId: 'getDependencies',
+        operationId: 'dependency_get_collection_by_element_type',
         description: 'Get paginated dependencies.
         Pass dependency mode to get either all elements that depend on the provided element
         or all dependencies for the provided element.',

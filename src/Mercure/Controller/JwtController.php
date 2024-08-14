@@ -41,12 +41,13 @@ final class JwtController extends AbstractApiController
     #[Route('/mercure/auth', name: 'pimcore_studio_mercure_auth', methods: ['POST'])]
     #[Post(
         path: self::API_PATH . '/mercure/auth',
-        operationId: 'mercureAuth',
-        summary: 'Retrieve JWT token for Mercure hub as cookie',
+        operationId: 'mercure_create_cookie',
+        description: 'mercure_create_cookie_description',
+        summary: 'mercure_create_cookie_summary',
         tags: [Tags::Mercure->name]
     )]
     #[SuccessResponse(
-        description: 'Auth successful',
+        description: 'mercure_create_cookie_success_response',
     )]
     #[DefaultResponses]
     public function auth(): Response

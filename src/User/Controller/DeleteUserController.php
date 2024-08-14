@@ -55,8 +55,8 @@ final class DeleteUserController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Delete(
         path: self::API_PATH . '/user/{id}',
-        operationId: 'deleteUser',
-        summary: 'Delete a specific user.',
+        operationId: 'user_delete_by_id',
+        summary: 'user_delete_by_id_summary',
         tags: [Tags::User->value]
     )]
     #[SuccessResponse]
@@ -65,7 +65,7 @@ final class DeleteUserController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::FORBIDDEN,
     ])]
-    public function cloneUser(int $id): Response
+    public function deleteUser(int $id): Response
     {
         $this->userService->deleteUser($id);
 

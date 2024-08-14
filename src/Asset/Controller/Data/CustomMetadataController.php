@@ -56,21 +56,21 @@ final class CustomMetadataController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[GET(
         path: self::API_PATH . '/assets/{id}/custom-metadata',
-        operationId: 'getAssetCustomMetadataById',
-        description: 'Get custom metadata of an asset by its id by path parameter',
-        summary: 'Get custom metadata of an asset by id',
+        operationId: 'asset_custom_metadata_get_by_id',
+        description: 'asset_custom_metadata_get_by_id_description',
+        summary: 'asset_custom_metadata_get_by_id_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[SuccessResponse(
-        description: 'Array of custom metadata',
+        description: 'asset_custom_metadata_get_by_id_success_response',
         content: new ItemsJson(CustomMetadata::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAssetCustomSettingsById(int $id): JsonResponse
+    public function getAssetCustomMetadataById(int $id): JsonResponse
     {
         return $this->jsonResponse(['items' => $this->customMetadataService->getCustomMetadata($id)]);
     }
