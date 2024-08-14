@@ -52,5 +52,4 @@ final readonly class NotificationHydrator implements NotificationHydratorInterfa
 
         return $name;
     }
-
 }

@@ -30,8 +30,7 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
     public function getListingForCurrentUser(
         UserInterface $user,
         CollectionParameters $parameters
-    ): Listing
-    {
+    ): Listing {
         $listing = $this->getListing($parameters);
         $listing->addConditionParam(
             'recipient = :recipientId',
