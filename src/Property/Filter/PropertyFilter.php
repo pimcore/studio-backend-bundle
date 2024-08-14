@@ -39,7 +39,7 @@ final readonly class PropertyFilter implements FilterInterface
             return $listing;
         }
 
-        if(!$parameters instanceof FilterParameter) {
+        if (!$parameters instanceof FilterParameter) {
             return $listing;
         }
 
