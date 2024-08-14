@@ -37,7 +37,7 @@ final readonly class Filter
         #[Property(description: 'Page Size', type: 'integer', example: 50)]
         private int $pageSize,
         #[Property(description: 'Include Descendant Items', type: 'boolean', example: false)]
-        private string $includeDescendants,
+        private bool $includeDescendants,
         #[Property(
             description: 'Column Filter',
             type: 'object',
@@ -64,7 +64,7 @@ final readonly class Filter
         return $this->pageSize;
     }
 
-    public function getIncludeDescendants(): string
+    public function getIncludeDescendants(): bool
     {
         return $this->includeDescendants;
     }
