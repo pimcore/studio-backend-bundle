@@ -54,10 +54,6 @@ asset_download_zip_description: |
   Download the ZIP archive with assets based on the given <strong>{jobRunId}</strong> returned in the response of the create zip endpoint
 asset_download_zip_success_response: ZIP archive as attachment
 asset_download_zip_summary: Download ZIP archive for assets
-asset_get_grid_configuration_by_folderId_description: |
-  Get asset saved grid configuration by <strong>{folderId}</strong> if a configuration-id is set, otherwise get the default configuration will be returned.
-asset_get_grid_configuration_by_folderId_success_response: Asset grid configuration
-asset_get_grid_configuration_by_folderId_summary: Get asset grid configuration for a specific folder
 asset_get_available_grid_configuration_description: |
   Get all available grid configurations for assets
 asset_get_available_grid_configuration_success_response: All available grid configurations for assets
@@ -66,6 +62,10 @@ asset_get_by_id_description: |
   Retrieves a specific asset data based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset.
 asset_get_by_id_success_response: Successfully retrieved one of asset type data as JSON
 asset_get_by_id_summary: Get asset by ID
+asset_get_grid_configuration_by_folderId_description: |
+  Get asset saved grid configuration by <strong>{folderId}</strong> if a configuration-id is set, otherwise get the default configuration will be returned.
+asset_get_grid_configuration_by_folderId_success_response: Asset grid configuration
+asset_get_grid_configuration_by_folderId_summary: Get asset grid configuration for a specific folder
 asset_get_grid_description: |
   Retrieve assets data for grid. <br>
   You can use different query parameters to filter the asset data: <br>
@@ -214,15 +214,15 @@ email_log_forward_by_id_description: |
   Forward the E-Mail log entry with the given <strong>{id}</strong> to the given <strong>{email}</strong>
 email_log_forward_by_id_success_response: E-Mail was successfully forwarded
 email_log_forward_by_id_summary: Forward and existing E-Mail log entry
+email_log_get_by_id_description: |
+  Get the E-Mail log entry with the given <strong>{id}</strong>
+email_log_get_by_id_success_response: E-Mail log entry data as JSON
+email_log_get_by_id_summary: Get an E-Mail log entry by ID
 email_log_get_collection_description: |
   Get paginated E-Mail log entries. <br>
   You can use different query parameters to filter the E-Mail logs
 email_log_get_collection_success_response: Paginated E-Mail log entries with total count as header param
 email_log_get_collection_summary: Get paginated collection of E-Mail log entries
-email_log_get_by_id_description: |
-  Get the E-Mail log entry with the given <strong>{id}</strong>
-email_log_get_by_id_success_response: E-Mail log entry data as JSON
-email_log_get_by_id_summary: Get an E-Mail log entry by ID
 email_log_get_html_description: |
   Get the HTML content of the E-Mail log entry with the given <strong>{id}</strong>
 email_log_get_html_success_response: HTML content of the E-Mail log entry
@@ -243,21 +243,36 @@ email_send_test_description: |
   Send a test E-Mail based on the provided query parameters. <br> See the full description of request fields with the schema <strong>SendEmailParameters</strong>
 email_send_test_success_response: E-Mail was successfully sent
 email_send_test_summary: Send a test E-Mail
-property_get_collection_for_element_by_type_and_id_description: |
-  List all the saved properties of the element. <br>
-  Keep in mind  that inherited properties should not be send back in an update request. <br>
-  This will result in the loss of the inheritance. <br>
-property_get_collection_for_element_by_type_and_id_summary: Get properties for an element based on the element type and the element id
-property_get_collection_for_element_by_type_and_id_success_response:  Element Properties data as json
-property_get_collection_description: |
-  Listing all the predefined properties that are currently stored in the system. <br>
-  To list specific properties for a type you can use the <strong>elementType</strong> query parameter.<br>
-  You can also created element type specific listings for this, to show in the context of the element. <br>
-  The <strong>filter</strong> query parameter is applied on the name of the property. <br>
-  Keep in mind that the name is language specific.
-property_get_collection_summary: Get all predefined properties. You can filter by type and query
-property_get_collection_success_response: Predefined properties filtered based on type and query parameters
-property_create_summary: Creating new property with default values
+execution_engine_abort_job_run_by_id_description: Abort Job Run
+execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
+login_description: Logs in a user with the provided credentials and returns the user information.
+login_success_response: Login successful.
+login_summary: Session-based login with user credentials.
+logout_description: Logout and invalidate current session for active user.
+logout_success_response: Logout successful.
+logout_summary: Logout and invalidate current session for active user.
+mercure_create_cookie_description: Retrieve JWT token for Mercure hub as cookie
+mercure_create_cookie_success_response: Retrieve JWT token for Mercure hub as cookie
+mercure_create_cookie_summary: Retrieve JWT token for Mercure hub as cookie
+note_delete_by_id_description: |
+  Delete the note with the given <strong>{id}</strong>
+note_delete_by_id_success_response: Successfully deleted note
+note_delete_by_id_summary: Delete note with given id
+note_element_create_description: |
+  Create a new note for the element with the given <strong>{id}</strong>. <br>
+  The note will be created for the current user.
+note_element_create_success_response: Created note for element
+note_element_create_summary: Create a new note for element with given id
+note_element_get_collection_description: |
+  Get paginated notes for a specific element by its <strong>{id}</strong>. <br>
+  You can use different query parameters to filter the notes
+note_element_get_collection_success_response: Paginated notes with total count
+note_element_get_collection_summary: Get paginated notes for an element by id
+note_get_collection_description: |
+  Get paginated notes. <br>
+  You can use different query parameters to filter the notes
+note_get_collection_success_response: Paginated notes with total count
+note_get_collection_summary: Get paginated notes
 property_create_description: |
   Creating the property with default values. <br>
   <ul>
@@ -267,48 +282,79 @@ property_create_description: |
     <li>Element Type: Document (Ctype)</li>
   </ul>
 property_create_success_response: Created predefined property with default values
-property_delete_summary: Delete property with given id
+property_create_summary: Creating new property with default values
 property_delete_description: |
   Deleting the property with the given <strong>{id}</strong>. <br>
   If the property is used in any element, it will not be deleted.
 property_delete_success_response: Successfully deleted property with given id
-property_update_summary: Updating a property
+property_delete_summary: Delete property with given id
+property_get_collection_description: |
+  Listing all the predefined properties that are currently stored in the system. <br>
+  To list specific properties for a type you can use the <strong>elementType</strong> query parameter.<br>
+  You can also created element type specific listings for this, to show in the context of the element. <br>
+  The <strong>filter</strong> query parameter is applied on the name of the property. <br>
+  Keep in mind that the name is language specific.
+property_get_collection_for_element_by_type_and_id_description: |
+  List all the saved properties of the element. <br>
+  Keep in mind  that inherited properties should not be send back in an update request. <br>
+  This will result in the loss of the inheritance. <br>
+property_get_collection_for_element_by_type_and_id_success_response:  Element Properties data as json
+property_get_collection_for_element_by_type_and_id_summary: Get properties for an element based on the element type and the element id
+property_get_collection_success_response: Predefined properties filtered based on type and query parameters
+property_get_collection_summary: Get all predefined properties. You can filter by type and query
 property_update_description: |
   Updating the property with the given <strong>{id}</strong>. <br>
   See the full description of updatable fields with the schema <strong>UpdatePredefinedProperty</strong>
 property_update_success_response: Updated predefined property
+property_update_summary: Updating a property
+role_clone_by_id_success_response: Node of the cloned Role.
+role_clone_by_id_summary: Clone a specific Role.
+role_create_success_response: Node of the new created Role.
+role_create_summary: Create a new role.
+role_delete_by_id_summary: Delete a specific role.
+role_folder_create_success_response: Node of the new created Folder
+role_folder_create_summary: Create a new role folder.
+role_folder_delete_by_id_summary: Delete a specific folder with all sub roles.
+role_get_by_id_success_response: List of available user roles.
+role_get_by_id_summary: Get all available user roles.
+role_get_collection_success_response: Role data.
+role_get_collection_summary: Get role by id.
+role_get_tree_success_response: Collection of roles including folders for the given parent id.
+role_get_tree_summary: Get collection of roles for tree view.
+role_update_by_id_response: Updated data.
+role_update_by_id_summary: Update role by id.
+schedule_create_for_element_by_type_and_id_description: |
+  Create a new schedule with default values for the element with the given type <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
+  The schedule will be created for the current user.
+schedule_create_for_element_by_type_and_id_success_response: Created schedule for element
+schedule_create_for_element_by_type_and_id_summary: Create a schedule for element
+schedule_delete_by_id_description: |
+  Deletes a specific schedule based on the given <strong>{id}</strong>.
+schedule_delete_by_id_success_response: Successfully deleted schedule
+schedule_delete_by_id_summary: Delete schedule with given id
+schedule_get_collection_for_element_by_type_and_id_description: |
+  Get all schedules for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
+schedule_get_collection_for_element_by_type_and_id_success_response: List of schedules for element
+schedule_get_collection_for_element_by_type_and_id_summary: Get schedules for an element
+schedule_update_for_element_by_type_and_id_description: |
+  Update schedules for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
+  See the full description of updatable fields with the schema <strong>UpdateSchedule</strong>
+schedule_update_for_element_by_type_and_id_success_response: List of updated schedules
+schedule_update_for_element_by_type_and_id_summary: Update schedules for an element
+system_settings_get_description: |
+  Get system settings from different providers. <br>
+  System settings are public and need no login.
+system_settings_get_success_response: System settings data
+system_settings_get_summary: Get system settings
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
-tag_authorization_description: Session-based login via username and password or logout
-  and invalidate the session
-tag_dataobjects_description: DataObject operations to get/update/create/delete data
-  objects
-tag_dependencies_description: Get dependencies for a single element
-tag_elements_description: Get element properties for a single element based on its
-  type and provided parameters
-tag_emails_description: E-mail operations to get/update/create/delete/test emails and
-  E-mail blocklist
-tag_execution_engine_description: Execution engine operations related to job runs
-tag_grid_description: Grid operations
-tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
-tag_notes_description: Note operations to list/delete notes
-tag_properties_description: Property operations to get/update/create/delete properties
-tag_role_description: Role Management operations
-tag_schedule_description: Get schedules for an element
-tag_settings_description: Get System Settings
-tag_tags_description: Tag operations to get/list/create/update/delete tags
-tag_tags_for_element_description: Tag operations to get tags for an element
-tag_translation_description: Get translations either for a single key or multiple
-  keys
-tag_user_description: User Management operations
-tag_versions_description: Versions operations to get/list/publish/delete and cleanup
-  versions
-tag_workflows_description: Workflows operations to get element workflow details
 tag_assign_to_element_description: |
   Assign a specific tag based on the given <strong>{tagId}</strong> to an element based on <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
 tag_assign_to_element_success_response: Successfully assigned tag to element
 tag_assign_to_element_summary: Assign a tag to an element
+tag_authorization_description: Session-based login via username and password or logout
+  and invalidate the session
 tag_batch_assign_to_elements_by_type_description: |
   Batch assign multiple tags based based on the given <strong>{tagIds}</strong> to multiple elements based on <strong>{elementType}</strong> and <strong>{elementIds}</strong>. <br>
   To see the full description of request fields see the schema <strong>Collection of Element and Tag ids</strong>
@@ -323,23 +369,42 @@ tag_create_description: |
   Create a new tag. <br> See the full description of request fields with the schema <strong>Create Tag Parameters</strong>
 tag_create_success_response: Created tag data as JSON
 tag_create_summary: Create a new tag
+tag_dataobjects_description: DataObject operations to get/update/create/delete data
+  objects
 tag_delete_by_id_description: |
   Delete a specific tag based on the given <strong>{id}</strong>
 tag_delete_by_id_success_response: ID of successfully deleted tag
 tag_delete_by_id_summary: Delete a specific tag
+tag_dependencies_description: Get dependencies for a single element
+tag_elements_description: Get element properties for a single element based on its
+  type and provided parameters
+tag_emails_description: E-mail operations to get/update/create/delete/test emails and
+  E-mail blocklist
+tag_execution_engine_description: Execution engine operations related to job runs
 tag_get_by_id_description: |
   Retrieves a specific tag data based on the given <strong>{id}</strong>
 tag_get_by_id_success_response: Successfully retrieved tag data as JSON
 tag_get_by_id_summary: Get a tag by ID
-tag_get_collection_for_element_by_type_and_id_description: |
-  Get paginated tag collection for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>
-tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
-tag_get_collection_for_element_by_type_and_id_success_response: Paginated tags for element
 tag_get_collection_description: |
   Get all tags for a <strong>{parentId}</strong>. <br>
   You can use different query parameters to filter the tags
-tag_get_collection_summary: Get all tags for a parent
+tag_get_collection_for_element_by_type_and_id_description: |
+  Get paginated tag collection for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>
+tag_get_collection_for_element_by_type_and_id_success_response: Paginated tags for element
+tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
 tag_get_collection_success_response: All tags for a parent filtered based on type and query parameters
+tag_get_collection_summary: Get all tags for a parent
+tag_grid_description: Grid operations
+tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
+tag_notes_description: Note operations to list/delete notes
+tag_properties_description: Property operations to get/update/create/delete properties
+tag_role_description: Role Management operations
+tag_schedule_description: Get schedules for an element
+tag_settings_description: Get System Settings
+tag_tags_description: Tag operations to get/list/create/update/delete tags
+tag_tags_for_element_description: Tag operations to get tags for an element
+tag_translation_description: Get translations either for a single key or multiple
+  keys
 tag_unassign_from_element_description: |
   Unassign a specific tag based on the given <strong>{tagId}</strong> from an element based on <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
@@ -350,42 +415,50 @@ tag_update_by_id_description: |
   See the full description of updatable fields with the schema <strong>Change Tag Parameters</strong>
 tag_update_by_id_success_response: Successfully updated tag data as JSON
 tag_update_by_id_summary: Update a tag by ID
+tag_user_description: User Management operations
+tag_versions_description: Versions operations to get/list/publish/delete and cleanup
+  versions
+tag_workflows_description: Workflows operations to get element workflow details
 thumbnail_image_get_collection_description: |
   Get collection of thumbnails for images. <br>
   The thumbnails have to be defined as downloadable in order to be listed in the collection.
-thumbnail_image_get_collection_summary: Get collection of thumbnails for images
 thumbnail_image_get_collection_success_response: All downloadable image thumbnails
+thumbnail_image_get_collection_summary: Get collection of thumbnails for images
 thumbnail_video_get_collection_description: |
   Get collection of all thumbnails for videos.
-thumbnail_video_get_collection_summary: Get collection of thumbnails for videos
 thumbnail_video_get_collection_success_response: All video thumbnails
-note_element_get_collection_summary: Get paginated notes for an element by id
-note_element_get_collection_description: |
-  Get paginated notes for a specific element by its <strong>{id}</strong>. <br>
-  You can use different query parameters to filter the notes
-note_element_get_collection_success_response: Paginated notes with total count
-note_element_create_summary: Create a new note for element with given id
-note_element_create_description: |
-  Create a new note for the element with the given <strong>{id}</strong>. <br>
-  The note will be created for the current user.
-note_element_create_success_response: Created note for element
-note_get_collection_description: |
-  Get paginated notes. <br>
-  You can use different query parameters to filter the notes
-note_get_collection_summary: Get paginated notes
-note_get_collection_success_response: Paginated notes with total count
-note_delete_by_id_summary: Delete note with given id
-note_delete_by_id_description: |
-  Delete the note with the given <strong>{id}</strong>
-note_delete_by_id_success_response: Successfully deleted note
+thumbnail_video_get_collection_summary: Get collection of thumbnails for videos
+translation_get_collection_description: Get translations for given keys and locale
+translation_get_collection_success_response: Key value pairs for given keys and locale
+translation_get_collection_summary: Get translations
+user_clone_by_id_success_response: Node of the cloned user.
+user_clone_by_id_summary: Clone a specific user.
+user_create_success_response: Node of the new created User.
+user_create_summary: Create a new user.
+user_delete_by_id_summary: Delete a specific user.
+user_folder_create_success_response: Node of the new created Folder.
+user_folder_create_summary: Create a new user folder.
+user_folder_delete_by_id_summary: Delete a specific user folder with all users in this folder.
+user_get_available_permissions_success_response: List of available user permissions.
+user_get_available_permissions_summary: Get all available user permissions.
+user_get_by_id_success_response: Node of the requested user.
+user_get_by_id_summary: Retrieve a specific user by ID.
+user_get_current_information_success_response: Current user information's.
+user_get_current_information_summary: Retrieve information's about the current logged in user.
+user_get_tree_success_response: Collection of users including folders for the given parent id.
+user_get_tree_summary: Get collection of users for tree view.
+user_reset_password_summary: Sending username to reset password.
+user_update_by_id_success_response: Updated data.
+user_update_by_id_summary: Update user by id.
+user_update_password_by_id_summary: Update password for a User by the User id.
 version_asset_download_by_id_description: |
   Download the asset version based on the provided version <strong>{id}</strong>.
 version_asset_download_by_id_success_response: Asset version binary file
 version_asset_download_by_id_summary: Download asset version by ID
 version_cleanup_for_element_by_type_and_id_description: |
   Cleans up all versions for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing element of the provided <strong>{elementType}</strong>.
-version_cleanup_for_element_by_type_and_id_summary: Cleanup all versions for an element
 version_cleanup_for_element_by_type_and_id_success_response: IDs of the removed versions
+version_cleanup_for_element_by_type_and_id_summary: Cleanup all versions for an element
 version_delete_by_id_description: |
   Deletes a specific version based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version.
 version_delete_by_id_success_response: Successfully deleted version
@@ -396,8 +469,8 @@ version_get_by_id_success_response: Successfully retrieved version data as JSON
 version_get_by_id_summary: Get a specific version by ID
 version_get_collection_for_element_by_type_and_id_description: |
   List all the versions of the element. <br> The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
-version_get_collection_for_element_by_type_and_id_summary: Get versions for an element
 version_get_collection_for_element_by_type_and_id_success_response: Paginated element Versions data as JSON with total count as header param
+version_get_collection_for_element_by_type_and_id_summary: Get versions for an element
 version_image_stream_by_id_description: |
   Stream the image version thumbnail based on the provided version <strong>{id}</strong>.
 version_image_stream_by_id_success_response: Image thumbnail version stream
@@ -408,89 +481,16 @@ version_pdf_stream_by_id_success_response: PDF version stream
 version_pdf_stream_by_id_summary: Stream PDF version by ID
 version_publish_by_id_description: |
   Publishes a specific version based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version.
-version_publish_by_id_summary: Publish a specific version by ID
 version_publish_by_id_success_response: ID of the published version
+version_publish_by_id_summary: Publish a specific version by ID
 version_update_by_id_description: |
   Updates a version based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an id of existing version. <br> See the full description of updatable fields with the schema <strong>UpdateVersion</strong>
 version_update_by_id_success_response: Successfully updated version
 version_update_by_id_summary: Update a version by ID
-system_settings_get_description: |
-  Get system settings from different providers. <br>
-  System settings are public and need no login.
-system_settings_get_summary: Get system settings
-system_settings_get_success_response: System settings data
-schedule_get_collection_for_element_by_type_and_id_description: |
-  Get all schedules for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
-schedule_get_collection_for_element_by_type_and_id_summary: Get schedules for an element
-schedule_get_collection_for_element_by_type_and_id_success_response: List of schedules for element
-schedule_create_for_element_by_type_and_id_description: |
-  Create a new schedule with default values for the element with the given type <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
-  The schedule will be created for the current user.
-schedule_create_for_element_by_type_and_id_success_response: Created schedule for element
-schedule_create_for_element_by_type_and_id_summary: Create a schedule for element
-schedule_update_for_element_by_type_and_id_description: |
-  Update schedules for a specific element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
-  See the full description of updatable fields with the schema <strong>UpdateSchedule</strong>
-schedule_update_for_element_by_type_and_id_summary: Update schedules for an element
-schedule_update_for_element_by_type_and_id_success_response: List of updated schedules
-schedule_delete_by_id_description: |
-  Deletes a specific schedule based on the given <strong>{id}</strong>.
-schedule_delete_by_id_summary: Delete schedule with given id
-schedule_delete_by_id_success_response: Successfully deleted schedule
-user_clone_by_id_summary: Clone a specific user.
-user_clone_by_id_success_response: Node of the cloned user.
-user_create_summary: Create a new user.
-user_create_success_response: Node of the new created User.
-user_folder_create_summary: Create a new user folder.
-user_folder_create_success_response: Node of the new created Folder.
-user_get_current_information_summary: Retrieve information's about the current logged in user.
-user_get_current_information_success_response: Current user information's.
-user_delete_by_id_summary: Delete a specific user.
-user_folder_delete_by_id_summary: Delete a specific user folder with all users in this folder.
-user_get_by_id_summary: Retrieve a specific user by ID.
-user_get_by_id_success_response: Node of the requested user.
-user_get_available_permissions_summary: Get all available user permissions.
-user_get_available_permissions_success_response: List of available user permissions.
-user_reset_password_summary: Sending username to reset password.
-user_update_password_by_id_summary: Update password for a User by the User id.
-user_update_by_id_summary: Update user by id.
-user_update_by_id_success_response: Updated data.
-user_get_tree_summary: Get collection of users for tree view.
-user_get_tree_success_response: Collection of users including folders for the given parent id.
-role_clone_by_id_summary: Clone a specific Role.
-role_clone_by_id_success_response: Node of the cloned Role.
-role_folder_create_summary: Create a new role folder.
-role_folder_create_success_response: Node of the new created Folder
-role_create_summary: Create a new role.
-role_create_success_response: Node of the new created Role.
-role_folder_delete_by_id_summary: Delete a specific folder with all sub roles.
-role_delete_by_id_summary: Delete a specific role.
-role_get_collection_summary: Get role by id.
-role_get_collection_success_response: Role data.
-role_get_by_id_summary: Get all available user roles.
-role_get_by_id_success_response: List of available user roles.
-role_get_tree_summary: Get collection of roles for tree view.
-role_get_tree_success_response: Collection of roles including folders for the given parent id.
-role_update_by_id_summary: Update role by id.
-role_update_by_id_response: Updated data.
-workflow_get_details_summary: Get all workflow details of an element
+workflow_action_submit_description: Submit action based on the workflow name, action name and action type.
+workflow_action_submit_success_response: Json encoded name of workflow, name and type of submitted action.
+workflow_action_submit_summary: Submit workflow action
 workflow_get_details_description: | 
   Get details of the element workflows based on the given <strong>{elementType}</strong> and <strong>{elementId}</strong>.
 workflow_get_details_success_response: Detail data of element workflows
-workflow_action_submit_summary: Submit workflow action
-workflow_action_submit_description: Submit action based on the workflow name, action name and action type.
-workflow_action_submit_success_response: Json encoded name of workflow, name and type of submitted action.
-mercure_create_cookie_description: Retrieve JWT token for Mercure hub as cookie
-mercure_create_cookie_summary: Retrieve JWT token for Mercure hub as cookie
-mercure_create_cookie_success_response: Retrieve JWT token for Mercure hub as cookie
-execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
-execution_engine_abort_job_run_by_id_description: Abort Job Run
-login_summary: Session-based login with user credentials.
-login_description: Logs in a user with the provided credentials and returns the user information.
-login_success_response: Login successful.
-logout_summary: Logout and invalidate current session for active user.
-logout_description: Logout and invalidate current session for active user.
-logout_success_response: Logout successful.
-translation_get_collection_summary: Get translations
-translation_get_collection_description: Get translations for given keys and locale
-translation_get_collection_success_response: Key value pairs for given keys and locale
+workflow_get_details_summary: Get all workflow details of an element
