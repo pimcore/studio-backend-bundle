@@ -66,6 +66,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_notes_description'
 )]
 #[Tag(
+    name: Tags::Notifications->name,
+    description: 'tag_notifications_description'
+)]
+#[Tag(
     name: Tags::Properties->name,
     description: 'tag_properties_description'
 )]
@@ -118,6 +122,7 @@ enum Tags: string
     case Grid = 'Grid';
     case Mercure = 'Mercure';
     case Notes = 'Notes';
+    case Notifications = 'Notifications';
     case Properties = 'Properties';
     case Role = 'Role Management';
     case Schedule = 'Schedule';

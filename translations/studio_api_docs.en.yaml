@@ -273,6 +273,10 @@ note_get_collection_description: |
   You can use different query parameters to filter the notes
 note_get_collection_success_response: Paginated notes with total count
 note_get_collection_summary: Get paginated notes
+notification_get_collection_description: |
+  Get all paginated notifications for current user
+notification_get_collection_success_response: Paginated notifications with total count
+notification_get_collection_summary: Get paginated notifications
 property_create_description: |
   Creating the property with default values. <br>
   <ul>
@@ -397,6 +401,7 @@ tag_get_collection_summary: Get all tags for a parent
 tag_grid_description: Grid operations
 tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
 tag_notes_description: Note operations to list/delete notes
+tag_notifications_description: Notification operations to get/delete/send notifications
 tag_properties_description: Property operations to get/update/create/delete properties
 tag_role_description: Role Management operations
 tag_schedule_description: Get schedules for an element
