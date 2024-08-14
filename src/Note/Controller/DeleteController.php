@@ -50,13 +50,14 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Delete(
         path: self::API_PATH . '/notes/{id}',
-        operationId: 'deleteNote',
-        summary: 'Deleting note by id',
+        operationId: 'note_delete_by_id',
+        description: 'note_delete_by_id_description',
+        summary: 'note_delete_by_id_summary',
         tags: [Tags::Notes->name]
     )]
     #[IdParameter]
     #[SuccessResponse(
-        description: 'Successfully deleted note',
+        description: 'note_delete_by_id_success_description',
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,

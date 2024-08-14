@@ -51,14 +51,14 @@ final class GetController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
         path: self::API_PATH . '/tags/{id}',
-        operationId: 'getTagById',
-        description: 'Get tag based on the tag ID',
-        summary: 'Get tag by ID',
+        operationId: 'tag_get_by_id',
+        description: 'tag_get_by_id_description',
+        summary: 'tag_get_by_id_summary',
         tags: [Tags::Tags->name]
     )]
     #[IdParameter(type: 'tag')]
     #[SuccessResponse(
-        description: 'Tag data as json',
+        description: 'tag_get_by_id_success_response',
         content: new JsonContent(ref: Tag::class)
     )]
     #[UnauthorizedResponse]

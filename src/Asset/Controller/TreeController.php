@@ -67,9 +67,9 @@ final class TreeController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/tree',
-        operationId: 'getAssetTree',
-        description: 'Get paginated assets',
-        summary: 'Get all assets for the tree',
+        operationId: 'asset_get_tree',
+        description: 'asset_get_tree_description',
+        summary: 'asset_get_tree_summary',
         tags: [Tags::Assets->name]
     )]
     #[PageParameter]
@@ -84,7 +84,7 @@ final class TreeController extends AbstractApiController
     #[PathIncludeParentParameter]
     #[PathIncludeDescendantsParameter]
     #[SuccessResponse(
-        description: 'Paginated assets with total count as header param',
+        description: 'asset_get_tree_success_description',
         content: new CollectionJson(new AnyOfAsset())
     )]
     #[DefaultResponses([

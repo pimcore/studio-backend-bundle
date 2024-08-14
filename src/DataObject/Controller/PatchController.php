@@ -62,24 +62,24 @@ final class PatchController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Patch(
         path: self::API_PATH . '/data-objects',
-        operationId: 'patchDataObjectById',
-        description: 'patch_data_object_by_id_description',
-        summary: 'patch_data_object_by_id_summary',
+        operationId: 'data_object_patch_by_id',
+        description: 'data_object_patch_by_id_description',
+        summary: 'data_object_patch_by_id_summary',
         tags: [Tags::DataObjects->name]
     )]
     #[PatchDataObjectRequestBody]
     #[SuccessResponse(
-        description: 'patch_data_object_success_response',
+        description: 'data_object_patch_by_id_success_response',
     )]
     #[CreatedResponse(
-        description: 'patch_data_object_created_response',
+        description: 'data_object_patch_by_id_created_response',
         content: new IdJson('ID of created jobRun')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function patchDataObjectById(#[MapRequestPayload] DataParameter $parameter): Response
+    public function dataObjectPatchById(#[MapRequestPayload] DataParameter $parameter): Response
     {
         $jobRunId = $this->patchService->patch(
             ElementTypes::TYPE_OBJECT,

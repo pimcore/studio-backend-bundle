@@ -53,14 +53,14 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Delete(
         path: self::API_PATH . '/emails/{id}',
-        operationId: 'deleteEmailLogEntry',
-        description: 'Delete E-Mail log entry based on the provided ID',
-        summary: 'Delete E-Mail log entry',
+        operationId: 'email_log_delete',
+        description: 'email_log_delete_description',
+        summary: 'email_log_delete_summary',
         tags: [Tags::Emails->value]
     )]
     #[IdParameter(type: ElementTypes::TYPE_EMAIL)]
     #[SuccessResponse(
-        description: 'Successfully deleted E-Mail log entry',
+        description: 'email_log_delete_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

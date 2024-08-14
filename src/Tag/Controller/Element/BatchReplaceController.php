@@ -58,8 +58,9 @@ final class BatchReplaceController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Post(
         path: self::API_PATH . '/tags/batch/replace/{elementType}',
-        operationId: 'batchReplaceTagsForElements',
-        summary: 'Batch replace tags for elements',
+        operationId: 'tag_batch_replace_for_elements_by_type',
+        description: 'tag_batch_replace_for_elements_by_type_description',
+        summary: 'tag_batch_replace_for_elements_by_type_summary',
         tags: [Tags::TagsForElement->value]
     )]
     #[ElementTypeParameter]

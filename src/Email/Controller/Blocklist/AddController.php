@@ -54,13 +54,14 @@ final class AddController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Post(
         path: self::API_PATH . '/emails/blocklist',
-        operationId: 'addBlocklistEntry',
-        summary: 'Add a new blocklist entry.',
+        operationId: 'email_blocklist_add',
+        description: 'email_blocklist_add_description',
+        summary: 'email_blocklist_add_summary',
         tags: [Tags::Emails->value]
     )]
     #[BlocklistRequestBody]
     #[SuccessResponse(
-        description: 'Successfully added a new blocklist entry',
+        description: 'email_blocklist_add_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

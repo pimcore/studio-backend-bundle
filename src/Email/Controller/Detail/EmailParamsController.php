@@ -57,12 +57,13 @@ final class EmailParamsController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
         path: self::API_PATH . '/emails/{id}/params',
-        operationId: 'getEmailLogParams',
-        description: 'Get E-Mail log entry params by ID',
-        summary: 'Get E-Mail log entry params',
+        operationId: 'email_log_get_params',
+        description: 'email_log_get_params_description',
+        summary: 'email_log_get_params_summary',
         tags: [Tags::Emails->value]
     )]
     #[SuccessResponse(
+        description: 'email_log_get_params_success_response',
         content: new ParametersJson()
     )]
     #[IdParameter(type: ElementTypes::TYPE_EMAIL)]

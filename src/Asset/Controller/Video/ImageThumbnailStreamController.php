@@ -78,9 +78,9 @@ final class ImageThumbnailStreamController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}/video/stream/image-thumbnail',
-        operationId: 'getVideoImageThumbnail',
-        description: 'Get video image thumbnail by configuration and by id path parameter',
-        summary: 'Get video image thumbnail by configuration',
+        operationId: 'asset_video_image_thumbnail_stream',
+        description: 'asset_video_image_thumbnail_stream_description',
+        summary: 'asset_video_image_thumbnail_stream_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'video')]
@@ -90,7 +90,7 @@ final class ImageThumbnailStreamController extends AbstractApiController
     #[FrameParameter]
     #[AsyncGenerationParameter]
     #[SuccessResponse(
-        description: 'Streamed video image thumbnail',
+        description: 'asset_video_image_thumbnail_stream_success_response',
         content: [new AssetMediaType('image/*')],
         headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]

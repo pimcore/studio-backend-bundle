@@ -51,13 +51,14 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[Delete(
         path: self::API_PATH . '/properties/{id}',
-        operationId: 'deleteProperty',
-        summary: 'Delete property with given id',
+        operationId: 'property_delete',
+        description: 'property_delete_description',
+        summary: 'property_delete_summary',
         tags: [Tags::Properties->name]
     )]
     #[IdParameter(type: 'property', schema: new Schema(type: 'string', example: 'alpha-numerical'))]
     #[SuccessResponse(
-        description: 'Successfully deleted property',
+        description: 'property_delete_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

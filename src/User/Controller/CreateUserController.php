@@ -58,13 +58,13 @@ final class CreateUserController extends AbstractApiController
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
         path: self::API_PATH . '/user/',
-        operationId: 'createUser',
-        summary: 'Create a new user.',
+        operationId: 'user_create',
+        summary: 'user_create_summary',
         tags: [Tags::User->value]
     )]
     #[CreateRequestBody]
     #[SuccessResponse(
-        description: 'Node of the new created User',
+        description: 'user_create_success_response',
         content: new JsonContent(ref: TreeNode::class)
     )]
     #[DefaultResponses([

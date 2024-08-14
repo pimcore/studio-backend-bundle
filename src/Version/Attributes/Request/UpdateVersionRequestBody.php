@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Attributes\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\UpdateVersion;
 
 /**
  * @internal
@@ -29,14 +29,6 @@ final class UpdateVersionRequestBody extends RequestBody
 {
     public function __construct()
     {
-        parent::__construct(
-            content: new JsonContent(
-                properties: [
-                    new Property(property: 'public', type: 'boolean', example: null),
-                    new Property(property: 'note', type: 'string', example: null),
-                ],
-                type: 'object'
-            )
-        );
+        parent::__construct(content: new JsonContent(ref: UpdateVersion::class));
     }
 }
