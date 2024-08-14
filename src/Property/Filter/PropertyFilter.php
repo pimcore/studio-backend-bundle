@@ -32,10 +32,9 @@ final readonly class PropertyFilter implements FilterInterface
     }
 
     public function apply(
-        mixed $parameters, 
+        mixed $parameters,
         AbstractListing|CallableFilterListingInterface $listing
-    ): AbstractListing|CallableFilterListingInterface
-    {
+    ): AbstractListing|CallableFilterListingInterface {
         if (!$listing instanceof PropertyListing) {
             return $listing;
         }
@@ -47,12 +46,14 @@ final readonly class PropertyFilter implements FilterInterface
         $nameFilter = null;
         foreach ($parameters->getColumnFilterByType(ColumnType::PROPERTY_NAME->value) as $column) {
             $nameFilter = $column->getFilterValue();
+
             break;
         }
 
         $typeFilter = null;
         foreach ($parameters->getColumnFilterByType(ColumnType::PROPERTY_ELEMENT_TYPE->value) as $column) {
             $typeFilter = $column->getFilterValue();
+
             break;
         }
 
@@ -69,7 +70,7 @@ final readonly class PropertyFilter implements FilterInterface
 
             return true;
         });
-        
+
         return $listing;
     }
 }

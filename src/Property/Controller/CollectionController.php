@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;

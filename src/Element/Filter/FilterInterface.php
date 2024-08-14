@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Filter;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Model\Listing\AbstractListing;
 use Pimcore\Model\Listing\CallableFilterListingInterface;
 
