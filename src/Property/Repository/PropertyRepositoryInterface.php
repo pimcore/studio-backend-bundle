@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property\Predefined;
@@ -41,7 +41,7 @@ interface PropertyRepositoryInterface
      */
     public function getPredefinedProperty(string $id): Predefined;
 
-    public function listProperties(PropertiesParameters $parameters): PropertiesListing;
+    public function listProperties(FilterParameter $parameters): PropertiesListing;
 
     public function updateElementProperties(ElementInterface $element, array $data): void;
 

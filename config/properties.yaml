@@ -21,3 +21,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Property\Filter\PropertyFilter:
+    tags: [ 'pimcore.studio_backend.element_listing.filter' ]
+

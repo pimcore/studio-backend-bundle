@@ -14,22 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Filter;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Model\Listing\AbstractListing;
+use Pimcore\Model\Listing\CallableFilterListingInterface;
 
 /**
  * @internal
  */
-final readonly class PropertiesParameters
+interface FilterInterface
 {
-    public function __construct(
-        private ?FilterParameter $filters = null
-    ) {
-    }
-
-    public function getFilters(): FilterParameter
-    {
-        return $this->filters ?? new FilterParameter();
-    }
+    public function apply(
+        mixed $parameters,
+        AbstractListing|CallableFilterListingInterface $listing
+    ): AbstractListing|CallableFilterListingInterface;
 }

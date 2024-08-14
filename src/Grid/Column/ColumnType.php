@@ -34,4 +34,6 @@ enum ColumnType: string
     case METADATA_TEXTAREA = 'metadata.textarea';
     case METADATA_CHECKBOX = 'metadata.checkbox';
     case METADATA_STRING = 'metadata.string';
+    case PROPERTY_NAME = 'property.name';
+    case PROPERTY_ELEMENT_TYPE = 'property.element.type';
 }

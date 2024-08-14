@@ -14,22 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter;
-
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Filter;
 
 /**
  * @internal
  */
-final readonly class PropertiesParameters
+final readonly class Filters
 {
     public function __construct(
-        private ?FilterParameter $filters = null
+        private array $filters = [],
     ) {
     }
 
-    public function getFilters(): FilterParameter
+    public function getFilters(): array
     {
-        return $this->filters ?? new FilterParameter();
+        return $this->filters;
     }
 }
