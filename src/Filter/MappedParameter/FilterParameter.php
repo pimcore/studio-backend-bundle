@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
@@ -99,6 +99,13 @@ final class FilterParameter implements
                 $column['filterValue']
             );
         }
+    }
+    
+    public function getFirstColumnFilterByType(string $type): ?ColumnFilter
+    {
+        $columns = iterator_to_array($this->getColumnFilterByType($type));
+        $column = reset($columns);
+        return $column ?: null;
     }
 
     public function getSortFilter(): SortFilter

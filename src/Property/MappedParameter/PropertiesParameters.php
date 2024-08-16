@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 
 /**
  * @internal

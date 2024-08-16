@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Filter\Loader;
+namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter\Loader;
 
-use Pimcore\Bundle\StudioBackendBundle\Element\Filter\FilterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Filter\Filters;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\Filters;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 /**
@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
  */
 final class TaggedIteratorAdapter implements FilterLoaderInterface
 {
-    public const FILTER_TAG = 'pimcore.studio_backend.element_listing.filter';
+    public const FILTER_TAG = 'pimcore.studio_backend.listing.filter';
 
     public function __construct(
         #[TaggedIterator(self::FILTER_TAG)]

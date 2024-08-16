@@ -1,0 +1,15 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  #Filter
+
+  #Common
+  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterLoaderInterface:
+    class:  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\Loader\TaggedIteratorAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilter
+    tags: [ 'pimcore.studio_backend.filter_service' ]

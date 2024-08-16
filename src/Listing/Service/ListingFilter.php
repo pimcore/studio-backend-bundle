@@ -13,16 +13,18 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Listing\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Element\Filter\FilterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterLoaderInterface;
 use Pimcore\Model\Listing\AbstractListing;
 use Pimcore\Model\Listing\CallableFilterListingInterface;
 
-final readonly class ElementListingFilter implements ElementListingFilterInterface
+final readonly class ListingFilter implements ListingFilterInterface
 {
-    public function __construct(private FilterLoaderInterface $filterLoader)
+    public function __construct(
+        private FilterLoaderInterface $filterLoader
+    )
     {
     }
 
@@ -30,6 +32,7 @@ final readonly class ElementListingFilter implements ElementListingFilterInterfa
         FilterParameter $parameters,
         AbstractListing|CallableFilterListingInterface $listing
     ): AbstractListing|CallableFilterListingInterface {
+        /** @var ListingFilterInterface $filterService */
         $filters = $this->filterLoader->loadFilters();
 
         foreach ($filters->getFilters() as $filter) {
@@ -41,6 +44,6 @@ final readonly class ElementListingFilter implements ElementListingFilterInterfa
 
     public function getType(): string
     {
-        return ElementListingFilterInterface::SERVICE_TYPE;
+        return ListingFilterInterface::SERVICE_TYPE;
     }
 }

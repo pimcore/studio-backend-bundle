@@ -17,11 +17,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Property\Predefined\PredefinedResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -38,7 +37,7 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private FilterServiceProviderInterface $filterServiceProvider,
+        private ListingFilterInterface $filterService,
         private PredefinedResolverInterface $predefinedResolver,
     ) {
     }
@@ -79,11 +78,8 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     {
         $listing = new PropertiesListing();
 
-        /** @var ElementListingFilterInterface $filterService */
-        $filterService = $this->filterServiceProvider->create(ElementListingFilterInterface::SERVICE_TYPE);
-
         /** @var PropertiesListing $filteredListing */
-        $filteredListing = $filterService->applyFilters(
+        $filteredListing = $this->filterService->applyFilters(
             $parameters,
             $listing
         );

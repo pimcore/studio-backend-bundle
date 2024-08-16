@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property\Predefined;

@@ -13,14 +13,14 @@
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Listing\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
 use Pimcore\Model\Listing\AbstractListing;
 use Pimcore\Model\Listing\CallableFilterListingInterface;
 
-interface ElementListingFilterInterface extends FilterServiceInterface
+interface ListingFilterInterface extends FilterServiceInterface
 {
     public const SERVICE_TYPE = 'element_listing_filter';
 

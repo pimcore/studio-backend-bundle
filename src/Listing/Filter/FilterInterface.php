@@ -14,12 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
+
+use Pimcore\Model\Listing\AbstractListing;
+use Pimcore\Model\Listing\CallableFilterListingInterface;
 
 /**
  * @internal
  */
-interface FilterLoaderInterface
+interface FilterInterface
 {
-    public function loadFilters(): Filters;
+    public function apply(
+        mixed $parameters,
+        AbstractListing|CallableFilterListingInterface $listing
+    ): AbstractListing|CallableFilterListingInterface;
 }

@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Service;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\ElementPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Event\PredefinedPropertyEvent;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;

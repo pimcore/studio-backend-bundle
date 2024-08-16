@@ -14,20 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
 
 /**
  * @internal
  */
-final readonly class Filters
+interface FilterLoaderInterface
 {
-    public function __construct(
-        private array $filters = [],
-    ) {
-    }
-
-    public function getFilters(): array
-    {
-        return $this->filters;
-    }
+    public function loadFilters(): Filters;
 }

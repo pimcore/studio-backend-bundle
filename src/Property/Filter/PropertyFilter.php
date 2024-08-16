@@ -16,9 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Filter;
 
-use Pimcore\Bundle\StudioBackendBundle\Element\Filter\FilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Model\Listing\AbstractListing;
 use Pimcore\Model\Listing\CallableFilterListingInterface;
 use Pimcore\Model\Property\Predefined;
@@ -43,31 +44,27 @@ final readonly class PropertyFilter implements FilterInterface
             return $listing;
         }
 
-        $nameFilter = null;
-        foreach ($parameters->getColumnFilterByType(ColumnType::PROPERTY_NAME->value) as $column) {
-            $nameFilter = $column->getFilterValue();
+        /** @var ColumnFilter $name */
+        $name = $parameters->getFirstColumnFilterByType(ColumnType::PROPERTY_NAME->value);
 
-            break;
-        }
-
-        $typeFilter = null;
-        foreach ($parameters->getColumnFilterByType(ColumnType::PROPERTY_ELEMENT_TYPE->value) as $column) {
-            $typeFilter = $column->getFilterValue();
-
-            break;
-        }
+        /** @var ColumnFilter $name */
+        $type = $parameters->getFirstColumnFilterByType(ColumnType::PROPERTY_ELEMENT_TYPE->value);
 
         $translator = $this->translator;
 
-        $listing->setFilter(static function (Predefined $predefined) use ($typeFilter, $nameFilter, $translator) {
+        $listing->setFilter(static function (Predefined $predefined) use ($type, $name, $translator) {
 
-            if ($typeFilter && !str_contains($predefined->getCtype(), $typeFilter)) {
+            if (
+                $type &&
+                $type->getFilterValue() &&
+                !str_contains($predefined->getCtype(), $type->getFilterValue())) {
                 return false;
             }
 
             if (
-                $nameFilter &&
-                stripos($translator->trans($predefined->getName(), [], 'admin'), $nameFilter) === false
+                $name &&
+                $name->getFilterValue() &&
+                stripos($translator->trans($predefined->getName(), [], 'admin'), $name->getFilterValue()) === false
             ) {
                 return false;
             }
