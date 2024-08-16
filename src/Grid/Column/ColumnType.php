@@ -36,5 +36,4 @@ enum ColumnType: string
     case METADATA_STRING = 'metadata.string';
     case PROPERTY_NAME = 'property.name';
     case PROPERTY_ELEMENT_TYPE = 'property.element.type';
-    case USER_FILTER = 'listing.user';
 }
