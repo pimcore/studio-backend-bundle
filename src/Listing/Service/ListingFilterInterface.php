@@ -23,7 +23,7 @@ use Pimcore\Model\Listing\CallableFilterListingInterface;
 
 interface ListingFilterInterface extends FilterServiceInterface
 {
-    public const SERVICE_TYPE = 'element_listing_filter';
+    public const SERVICE_TYPE = 'listing_filter';
 
     public function applyFilters(
         FilterParameter $parameters,

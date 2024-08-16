@@ -19,9 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle;
 use Pimcore\Bundle\GenericDataIndexBundle\PimcoreGenericDataIndexBundle;
 use Pimcore\Bundle\GenericExecutionEngineBundle\PimcoreGenericExecutionEngineBundle;
 use Pimcore\Bundle\StaticResolverBundle\PimcoreStaticResolverBundle;
-use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\FilterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\DataIndexFilterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColumnDefinitionPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColumnResolverPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\ListingFilterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\MercureTopicsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PatchAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
@@ -71,7 +72,8 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
 
     public function build(ContainerBuilder $container): void
     {
-        $container->addCompilerPass(new FilterPass());
+        $container->addCompilerPass(new DataIndexFilterPass());
+        $container->addCompilerPass(new ListingFilterPass());
         $container->addCompilerPass(new PatchAdapterPass());
         $container->addCompilerPass(new GridColumnDefinitionPass());
         $container->addCompilerPass(new GridColumnResolverPass());
