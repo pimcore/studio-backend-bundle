@@ -31,7 +31,6 @@ final readonly class ListingFilter implements ListingFilterInterface
         FilterParameter $parameters,
         AbstractListing|CallableFilterListingInterface $listing
     ): AbstractListing|CallableFilterListingInterface {
-        /** @var ListingFilterInterface $filterService */
         $filters = $this->filterLoader->loadFilters();
 
         foreach ($filters->getFilters() as $filter) {

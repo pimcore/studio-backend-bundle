@@ -47,7 +47,7 @@ final readonly class PropertyFilter implements FilterInterface
         /** @var ColumnFilter $name */
         $name = $parameters->getFirstColumnFilterByType(ColumnType::PROPERTY_NAME->value);
 
-        /** @var ColumnFilter $name */
+        /** @var ColumnFilter $type */
         $type = $parameters->getFirstColumnFilterByType(ColumnType::PROPERTY_ELEMENT_TYPE->value);
 
         $translator = $this->translator;
