@@ -24,8 +24,7 @@ final readonly class ListingFilter implements ListingFilterInterface
 {
     public function __construct(
         private FilterLoaderInterface $filterLoader
-    )
-    {
+    ) {
     }
 
     public function applyFilters(

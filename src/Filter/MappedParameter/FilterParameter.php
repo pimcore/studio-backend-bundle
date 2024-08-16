@@ -100,11 +100,12 @@ final class FilterParameter implements
             );
         }
     }
-    
+
     public function getFirstColumnFilterByType(string $type): ?ColumnFilter
     {
         $columns = iterator_to_array($this->getColumnFilterByType($type));
         $column = reset($columns);
+
         return $column ?: null;
     }
 
