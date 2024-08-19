@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSetting;
 
 /**
  * @internal

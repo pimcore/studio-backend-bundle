@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSetting;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 
 /**

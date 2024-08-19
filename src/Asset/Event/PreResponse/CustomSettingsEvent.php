@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSetting;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
 final class CustomSettingsEvent extends AbstractPreResponseEvent
