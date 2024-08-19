@@ -281,6 +281,10 @@ notification_delete_by_id_description: |
   Delete the notification with the given <strong>{id}</strong>. <br> Current user can only delete notifications, where he is the recipient.
 notification_delete_by_id_success_response: Successfully deleted notification
 notification_delete_by_id_summary: Delete notification with given id
+notification_read_by_id_description: |
+    Mark the notification with the given <strong>{id}</strong> as read. <br> Current user can only mark notifications as read, where he is the recipient.
+notification_read_by_id_success_response: Successfully marked notification as read
+notification_read_by_id_summary: Mark notification as read
 property_create_description: |
   Creating the property with default values. <br>
   <ul>
