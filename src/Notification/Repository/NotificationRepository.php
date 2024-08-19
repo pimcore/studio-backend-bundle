@@ -38,7 +38,7 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
 
     public function getListingForCurrentUser(
         UserInterface $user,
-        CollectionParameters $parameters
+        ?CollectionParameters $parameters = null
     ): Listing {
         $listing = $this->getListing($parameters);
         $listing->addConditionParam(
@@ -64,12 +64,15 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
     }
 
     public function getListing(
-        CollectionParameters $parameters
+        ?CollectionParameters $parameters = null
     ): Listing {
-        $limit = $parameters->getPageSize();
+
         $listing = new Listing();
-        $listing->setLimit($limit);
-        $listing->setOffset(($parameters->getPage() - 1) * $limit);
+        if ($parameters !== null) {
+            $limit = $parameters->getPageSize();
+            $listing->setLimit($limit);
+            $listing->setOffset(($parameters->getPage() - 1) * $limit);
+        }
         $listing->setOrderKey(self::DEFAULT_ORDER_KEY);
         $listing->setOrder('DESC');
 

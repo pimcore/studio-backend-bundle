@@ -48,7 +48,7 @@ final class ReadController extends AbstractApiController
     /**
      * @throws AccessDeniedException|NotFoundException|UserNotFoundException
      */
-    #[Route('/notifications/{id}', name: 'pimcore_studio_api_delete_notification', methods: ['POST'])]
+    #[Route('/notifications/{id}', name: 'pimcore_studio_api_read_notification', methods: ['POST'])]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
     #[POST(
         path: self::API_PATH . '/notifications/{id}',
@@ -57,7 +57,7 @@ final class ReadController extends AbstractApiController
         summary: 'notification_read_by_id_summary',
         tags: [Tags::Notifications->name]
     )]
-    #[IdParameter(type: 'version')]
+    #[IdParameter(type: 'notification')]
     #[SuccessResponse(
         description: 'notification_read_by_id_success_response',
     )]

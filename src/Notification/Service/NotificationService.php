@@ -94,6 +94,20 @@ final readonly class NotificationService implements NotificationServiceInterface
     }
 
     /**
+     * @throws UserNotFoundException
+     */
+    public function deleteAllUserNotifications(): void
+    {
+        $notifications = $this->notificationRepository->getListingForCurrentUser(
+            $this->securityService->getCurrentUser()
+        );
+
+        foreach ($notifications as $notification) {
+            $notification->delete();
+        }
+    }
+
+    /**
      * @throws AccessDeniedException
      * @throws UserNotFoundException
      */

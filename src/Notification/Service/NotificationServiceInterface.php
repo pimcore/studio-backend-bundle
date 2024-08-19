@@ -45,4 +45,9 @@ interface NotificationServiceInterface
      * @throws UserNotFoundException
      */
     public function deleteNotificationById(int $id): void;
+
+    /**
+     * @throws UserNotFoundException
+     */
+    public function deleteAllUserNotifications(): void;
 }
