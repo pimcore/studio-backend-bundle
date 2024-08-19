@@ -73,7 +73,6 @@ final class CollectionController extends AbstractApiController
     public function getTags(
         string $elementType,
         int $id,
-        #[MapQueryString] TagsParameters $parameters = new TagsParameters()
     ): JsonResponse {
         $collection = $this->tagService->getTagsForElement(new ElementParameters($elementType, $id));
 
