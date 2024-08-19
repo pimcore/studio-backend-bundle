@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;

@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
+
 /**
  * @internal
  */

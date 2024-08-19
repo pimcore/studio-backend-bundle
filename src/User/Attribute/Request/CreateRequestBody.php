@@ -14,13 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\SingleString;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateIntegerProperty;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleString;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class CreateRequestBody extends RequestBody

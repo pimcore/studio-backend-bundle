@@ -14,17 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\PatchCustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateIntegerProperty;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\UpdateStringProperty;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
 
 /**
  * @internal

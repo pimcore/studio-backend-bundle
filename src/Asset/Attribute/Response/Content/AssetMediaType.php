@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Response\Content;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Content;
 
 use OpenApi\Attributes\MediaType;
 use OpenApi\Attributes\Schema;

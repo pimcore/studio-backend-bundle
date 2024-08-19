@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\Items;
@@ -23,7 +23,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\SingleInteger;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleInteger;
 
 /**
  * @internal

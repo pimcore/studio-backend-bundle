@@ -18,11 +18,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Authorization\Controller;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Request\CredentialsRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Authorization\Attributes\Response\InvalidCredentialsResponse;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Attribute\Request\CredentialsRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Authorization\Attribute\Response\InvalidCredentialsResponse;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
 use Pimcore\Security\User\User;

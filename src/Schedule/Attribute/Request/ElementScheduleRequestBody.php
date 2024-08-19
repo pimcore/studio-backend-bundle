@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Attributes\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Schedule\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\Schedule\Schema\UpdateSchedule;
 
 #[Attribute(Attribute::TARGET_METHOD)]

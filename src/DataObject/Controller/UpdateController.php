@@ -18,13 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Attributes\Request\UpdateDataObjectRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Attributes\Response\Content\OneOfDataObjectsJson;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\UpdateDataObjectRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Response\Content\OneOfDataObjectsJson;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\DataParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
