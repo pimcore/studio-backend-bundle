@@ -50,9 +50,7 @@ final readonly class NotificationService implements NotificationServiceInterface
     public function getNotificationById(int $id): Notification
     {
         $notification = $this->notificationRepository->getNotificationById($id);
-        if ($this->securityService->getCurrentUser() !== $notification->getRecipient()) {
-            throw new AccessDeniedException('User has no permissions to access this notification');
-        }
+        $this->validateNotificationAccess($notification);
         if (!$notification->isRead()) {
             $this->markAsRead($notification);
         }
@@ -73,9 +71,8 @@ final readonly class NotificationService implements NotificationServiceInterface
     public function markNotificationAsRead(int $id): void
     {
         $notification = $this->notificationRepository->getNotificationById($id);
-        if ($this->securityService->getCurrentUser()->getId() !== $notification->getRecipient()) {
-            throw new AccessDeniedException('User has no permissions to access this notification');
-        }
+        $this->validateNotificationAccess($notification);
+
         $this->markAsRead($notification);
     }
 
@@ -122,7 +119,7 @@ final readonly class NotificationService implements NotificationServiceInterface
      * @throws AccessDeniedException
      * @throws UserNotFoundException
      */
-    private function validateNotificationAccess(Notification $notification): void
+    private function validateNotificationAccess(NotificationModel $notification): void
     {
         if ($this->securityService->getCurrentUser() !== $notification->getRecipient()) {
             throw new AccessDeniedException('User has no permissions to access this notification');
