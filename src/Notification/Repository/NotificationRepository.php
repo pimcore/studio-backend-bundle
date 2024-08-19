@@ -28,13 +28,13 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class NotificationRepository implements NotificationRepositoryInterface
 {
-    private const DEFAULT_ORDER_KEY = 'creationDate';
-
     public function __construct(
         private NotificationResolverInterface $notificationResolver
     ) {
 
     }
+
+    private const DEFAULT_ORDER_KEY = 'creationDate';
 
     public function getListingForCurrentUser(
         UserInterface $user,
@@ -50,6 +50,9 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
 
     }
 
+    /**
+     * @throws NotFoundException
+     */
     public function getNotificationById(int $id): Notification
     {
         $notification = $this->notificationResolver->getById($id);

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Model\Notification;
 use Pimcore\Model\Notification\Listing;
@@ -31,6 +32,9 @@ interface NotificationRepositoryInterface
         CollectionParameters $parameters
     ): Listing;
 
+    /**
+     * @throws NotFoundException
+     */
     public function getNotificationById(int $id): Notification;
 
     public function getListing(
