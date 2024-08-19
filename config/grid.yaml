@@ -31,6 +31,14 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnCollectorLoader
 
   #
+  # Repository
+  #
+  Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepository
+    arguments:
+      - "@doctrine.orm.studio_backend_entity_manager"
+
+  #
   # Column Definitions
   #
 

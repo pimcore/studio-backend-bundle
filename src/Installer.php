@@ -47,6 +47,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $schema = $this->db->createSchemaManager()->introspectSchema();
 
         $this->createTranslationTable($schema);
+        $this->createGridConfigurationTable($schema);
         $this->executeDiffSql($schema);
 
         parent::install();
@@ -101,6 +102,63 @@ final class Installer extends SettingsStoreAwareInstaller
             $translationDomainTable->setPrimaryKey(['key', 'language'], 'pk_translation');
             $translationDomainTable->addIndex(['language'], 'idx_language');
         }
+    }
+
+    private function createGridConfigurationTable(Schema $schema): void
+    {
+        $tableName = 'bundle_studio_grid_configurations';
+        if ($schema->hasTable($tableName)) {
+            return;
+        }
+
+        $table = $schema->createTable($tableName);
+
+        $table->addColumn('id', 'integer', [
+            'autoincrement' => true,
+            'unsigned' => true,
+        ]);
+
+        $table->addColumn('assetFolderId', 'integer', [
+            'notnull' => false,
+            'unsigned' => true,
+        ]);
+
+        $table->addColumn(
+            'owner',
+            'integer',
+            ['notnull' => false, 'unsigned' => true]
+        );
+
+        $table->addColumn('name', 'string', ['notnull' => true]);
+        $table->addColumn('description', 'text', ['notnull' => true]);
+
+        $table->addColumn('pageSize', 'integer', [
+            'notnull' => true,
+            'unsigned' => true,
+        ]);
+
+        $table->addColumn('shareGlobal', 'boolean', ['notnull' => true]);
+        $table->addColumn('saveFilter', 'boolean', ['notnull' => true]);
+        $table->addColumn('columns', 'json', ['notnull' => true]);
+        $table->addColumn('filter', 'json', ['notnull' => false]);
+        $table->addColumn('creationDate', 'datetime', ['notnull' => false]);
+        $table->addColumn('modificationDate', 'datetime', ['notnull' => false]);
+
+        $table->setPrimaryKey(['id'], 'pk_'.$tableName);
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['owner'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_'.$tableName.'_owner_users'
+        );
+
+        $table->addForeignKeyConstraint('assets',
+            ['assetFolderId'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_'.$tableName.'_assetFolderId_id');
     }
 
     /**

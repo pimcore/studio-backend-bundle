@@ -78,4 +78,15 @@ final readonly class Filter
     {
         return $this->sortFilter;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'page' => $this->page,
+            'pageSize' => $this->pageSize,
+            'includeDescendants' => $this->includeDescendants,
+            'columnFilters' => $this->columnFilters,
+            'sortFilter' => $this->sortFilter,
+        ];
+    }
 }

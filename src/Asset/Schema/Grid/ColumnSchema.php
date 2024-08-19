@@ -54,4 +54,13 @@ readonly class ColumnSchema
     {
         return $this->group;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'key' => $this->key,
+            'locale' => $this->locale,
+            'group' => $this->group,
+        ];
+    }
 }

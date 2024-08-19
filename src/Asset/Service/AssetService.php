@@ -129,6 +129,16 @@ final readonly class AssetService implements AssetServiceInterface
         return $asset;
     }
 
+    public function assetFolderExists(int $id): bool
+    {
+        try {
+            $this->getAssetFolder($id);
+            return true;
+        } catch (NotFoundException) {
+            return false;
+        }
+    }
+
     /**
      * @throws AccessDeniedException|NotFoundException
      */

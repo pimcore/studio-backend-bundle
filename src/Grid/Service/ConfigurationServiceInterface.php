@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 
 /**
@@ -32,4 +33,6 @@ interface ConfigurationServiceInterface
      * @return ColumnConfiguration[]
      */
     public function getDefaultAssetGridConfiguration(): array;
+
+    public function saveAssetGridConfiguration(SaveConfigurationParameter $configuration): void;
 }

@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\Grid\SaveConfigu
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -38,7 +39,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class SaveConfigurationController extends AbstractApiController
 {
     public function __construct(
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        private readonly ConfigurationServiceInterface $gridConfigurationService
     ) {
         parent::__construct($serializer);
     }
@@ -68,10 +70,10 @@ final class SaveConfigurationController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function saveAssetGridConfiguration(
-        #[MapRequestPayload] SaveConfigurationParameter $saveConfigurationParameter): Response {
-
-
-        dd($saveConfigurationParameter);
+        #[MapRequestPayload] SaveConfigurationParameter $saveConfigurationParameter
+    ): Response
+    {
+        $this->gridConfigurationService->saveAssetGridConfiguration($saveConfigurationParameter);
 
         return new Response();
     }

@@ -1,0 +1,12 @@
+doctrine:
+  orm:
+    entity_managers:
+      studio_backend:
+        connection: default
+        mappings:
+          PimcoreStudioBackendBundle:
+            type: attribute
+            is_bundle: true
+            dir: "src/Entity/Grid"
+            prefix: Pimcore\Bundle\StudioBackendBundle\Entity\Grid
+            alias: PimcoreStudioBackendBundle

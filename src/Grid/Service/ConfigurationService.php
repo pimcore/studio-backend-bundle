@@ -16,7 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -31,6 +36,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     public function __construct(
         private GridServiceInterface $gridService,
         private EventDispatcherInterface $eventDispatcher,
+        private ConfigurationRepositoryInterface $gridConfigurationRepository,
+        private AssetServiceInterface $assetService,
         private array $predefinedColumns
     ) {
     }
@@ -89,5 +96,24 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         }
 
         return $defaultColumns;
+    }
+
+    public function saveAssetGridConfiguration(SaveConfigurationParameter $configuration): void
+    {
+        if (!$this->assetService->assetFolderExists($configuration->getFolderId())) {
+            throw new NotFoundException("Asset Folder", $configuration->getFolderId());
+        }
+
+        $gridConfiguration = new GridConfiguration();
+        $gridConfiguration->setAssetFolderId($configuration->getFolderId());
+        $gridConfiguration->setPageSize($configuration->getPageSize());
+        $gridConfiguration->setName($configuration->getName());
+        $gridConfiguration->setDescription($configuration->getDescription());
+        $gridConfiguration->setShareGlobal($configuration->shareGlobal());
+        $gridConfiguration->setSaveFilter($configuration->saveFilter());
+        $gridConfiguration->setColumns($configuration->getColumnsAsArray());
+        $gridConfiguration->setFilter($configuration->getFilter()->toArray());
+
+        $this->gridConfigurationRepository->create($gridConfiguration);
     }
 }

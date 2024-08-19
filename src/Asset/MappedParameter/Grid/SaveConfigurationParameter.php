@@ -70,17 +70,17 @@ final readonly class SaveConfigurationParameter
         return $this->description;
     }
 
-    public function isShareGlobal(): bool
+    public function shareGlobal(): bool
     {
         return $this->shareGlobal;
     }
 
-    public function isSetAsFavorite(): bool
+    public function setAsFavorite(): bool
     {
         return $this->setAsFavorite;
     }
 
-    public function isSaveFilter(): bool
+    public function saveFilter(): bool
     {
         return $this->saveFilter;
     }
@@ -101,6 +101,14 @@ final readonly class SaveConfigurationParameter
     public function getColumns(): array
     {
         return $this->columns;
+    }
+
+    public function getColumnsAsArray(): array
+    {
+        return array_map(
+            fn(ColumnSchema $column) => $column->toArray(),
+            $this->columns
+        );
     }
 
     public function getFilter(): ?Filter
