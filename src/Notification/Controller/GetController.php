@@ -68,7 +68,8 @@ final class GetController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getNotification(int $id): JsonResponse {
+    public function getNotification(int $id): JsonResponse
+    {
 
         return $this->jsonResponse(
             $this->notificationService->getNotificationById($id)

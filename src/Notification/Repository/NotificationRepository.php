@@ -32,8 +32,7 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
 
     public function __construct(
         private NotificationResolverInterface $notificationResolver
-    )
-    {
+    ) {
 
     }
 
@@ -50,7 +49,7 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
         return $listing;
 
     }
-    
+
     public function getNotificationById(int $id): Notification
     {
         $notification = $this->notificationResolver->getById($id);
