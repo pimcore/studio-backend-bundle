@@ -19,10 +19,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationShareRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -37,6 +41,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private GridServiceInterface $gridService,
         private EventDispatcherInterface $eventDispatcher,
         private ConfigurationRepositoryInterface $gridConfigurationRepository,
+        private UserRepositoryInterface $userRepository,
+        private RoleRepositoryInterface $roleRepository,
         private AssetServiceInterface $assetService,
         private array $predefinedColumns
     ) {
@@ -98,6 +104,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return $defaultColumns;
     }
 
+    /**
+     * @throws NotFoundException
+     */
     public function saveAssetGridConfiguration(SaveConfigurationParameter $configuration): void
     {
         if (!$this->assetService->assetFolderExists($configuration->getFolderId())) {
@@ -114,6 +123,42 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $gridConfiguration->setColumns($configuration->getColumnsAsArray());
         $gridConfiguration->setFilter($configuration->getFilter()->toArray());
 
+        $gridConfiguration = $this->addUserShareToConfiguration($gridConfiguration, $configuration->getSharedUsers());
+        $gridConfiguration = $this->addRoleShareToConfiguration($gridConfiguration, $configuration->getSharedRoles());
+
         $this->gridConfigurationRepository->create($gridConfiguration);
+
+
+    }
+
+
+    /**
+     * @throws NotFoundException
+     */
+    private function addUserShareToConfiguration(GridConfiguration $gridConfiguration, array $userIds): GridConfiguration
+    {
+        foreach ($userIds as $userId) {
+            // Check if user exists
+            $user = $this->userRepository->getUserById($userId);
+            $share = new GridConfigurationShare($user->getId(), $gridConfiguration);
+            $gridConfiguration->addShare($share);
+        }
+
+        return $gridConfiguration;
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function addRoleShareToConfiguration(GridConfiguration $gridConfiguration, array $roleIds): GridConfiguration
+    {
+        foreach ($roleIds as $roleId) {
+            // Check if role exists
+            $role = $this->roleRepository->getRoleById($roleId);
+            $share = new GridConfigurationShare($role->getId(), $gridConfiguration);
+            $gridConfiguration->addShare($share);
+        }
+
+        return $gridConfiguration;
     }
 }

@@ -18,7 +18,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Entity\Grid;
 
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * @internal
@@ -69,8 +71,12 @@ class GridConfiguration
     #[ORM\Column(type: 'datetime')]
     private DateTime $modificationDate;
 
+    #[ORM\OneToMany(mappedBy: 'configuration', targetEntity: GridConfigurationShare::class, cascade: ['persist'])]
+    private Collection $shares;
+
     public function __construct(
     ) {
+        $this->shares = new ArrayCollection();
     }
 
     public function getId(): int
@@ -187,5 +193,10 @@ class GridConfiguration
     public function setOwner(int $owner): void
     {
         $this->owner = $owner;
+    }
+
+    public function addShare(GridConfigurationShare $share): void
+    {
+        $this->shares->add($share);
     }
 }

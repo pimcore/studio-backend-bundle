@@ -23,6 +23,7 @@ use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\SchemaException;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Extension\Bundle\Installer\Exception\InstallationException;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
@@ -49,17 +50,26 @@ final class Installer extends SettingsStoreAwareInstaller
 
         $this->createTranslationTable($schema);
         $this->createGridConfigurationTable($schema);
+        $this->createGridConfigurationSharesTable($schema);
         $this->executeDiffSql($schema);
 
         parent::install();
     }
 
+    /**
+     * @throws SchemaException
+     * @throws Exception
+     */
     public function uninstall(): void
     {
         $schema = $this->db->createSchemaManager()->introspectSchema();
 
         if ($schema->hasTable(GridConfiguration::TABLE_NAME)) {
             $schema->dropTable(GridConfiguration::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(GridConfigurationShare::TABLE_NAME)) {
+            $schema->dropTable(GridConfigurationShare::TABLE_NAME);
         }
 
         $this->executeDiffSql($schema);
@@ -119,6 +129,51 @@ final class Installer extends SettingsStoreAwareInstaller
         }
     }
 
+    /**
+     * @throws SchemaException
+     */
+    public function createGridConfigurationSharesTable(Schema $schema): void
+    {
+        if ($schema->hasTable(GridConfigurationShare::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(GridConfigurationShare::TABLE_NAME);
+
+        $table->addColumn(
+            'user',
+            'integer',
+            ['notnull' => false, 'unsigned' => true]
+        );
+
+        $table->addColumn(
+            'configuration',
+            'integer',
+            ['notnull' => false, 'unsigned' => true]
+        );
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['user'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_'.GridConfigurationShare::TABLE_NAME.'_users'
+        );
+
+        $table->addForeignKeyConstraint(
+            GridConfiguration::TABLE_NAME,
+            ['configuration'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_'.GridConfigurationShare::TABLE_NAME.'_configurations'
+        );
+
+        $table->setPrimaryKey(['user', 'configuration'], 'pk_'.GridConfigurationShare::TABLE_NAME);
+    }
+
+    /**
+     * @throws SchemaException
+     */
     private function createGridConfigurationTable(Schema $schema): void
     {
         if ($schema->hasTable(GridConfiguration::TABLE_NAME)) {
