@@ -65,7 +65,7 @@ final class ReadController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteNotification(int $id): Response
+    public function readNotificationById(int $id): Response
     {
         $this->notificationService->markNotificationAsRead($id);
 
