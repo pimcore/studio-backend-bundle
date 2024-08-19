@@ -37,5 +37,12 @@ interface NotificationServiceInterface
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
+    public function markNotificationAsRead(int $id): void;
+
+    /**
+     * @throws AccessDeniedException
+     * @throws NotFoundException
+     * @throws UserNotFoundException
+     */
     public function deleteNotificationById(int $id): void;
 }
