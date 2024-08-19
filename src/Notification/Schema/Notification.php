@@ -18,10 +18,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 
 #[Schema(
     title: 'Notification',
-    required: ['message', 'payload'],
+    required: ['message', 'payload', 'attachmentType', 'attachmentId'],
     type: 'object'
 )]
 final class Notification extends NotificationListItem
@@ -38,6 +39,10 @@ final class Notification extends NotificationListItem
         private readonly ?string $message = null,
         #[Property(description: 'payload', type: 'string', example: '{"key": "value"}')]
         private readonly ?string $payload = null,
+        #[Property(description: 'linked attachment type', type: 'string', example: 'object')]
+        private readonly ?string $attachmentType = null,
+        #[Property(description: 'linked attachment ID', type: 'integer', example: 3669)]
+        private readonly ?int $attachmentId = null,
     ) {
         parent::__construct($id, $type, $title, $read, $hasAttachment, $sentDate, $sender);
     }
@@ -50,5 +55,15 @@ final class Notification extends NotificationListItem
     public function getPayload(): ?string
     {
         return $this->payload;
+    }
+
+    public function getAttachmentType(): ?string
+    {
+        return $this->attachmentType;
+    }
+
+    public function getAttachmentId(): ?int
+    {
+        return $this->attachmentId;
     }
 }
