@@ -25,9 +25,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 
 #[ORM\Entity]
-#[ORM\Table(name: 'bundle_studio_grid_configurations')]
+#[ORM\Table(name: GridConfiguration::TABLE_NAME)]
 class GridConfiguration
 {
+
+    public const TABLE_NAME = 'bundle_studio_grid_configurations';
+
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'integer')]

@@ -22,6 +22,7 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\SchemaException;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Extension\Bundle\Installer\Exception\InstallationException;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
@@ -52,6 +53,20 @@ final class Installer extends SettingsStoreAwareInstaller
 
         parent::install();
     }
+
+    public function uninstall(): void
+    {
+        $schema = $this->db->createSchemaManager()->introspectSchema();
+
+        if ($schema->hasTable(GridConfiguration::TABLE_NAME)) {
+            $schema->dropTable(GridConfiguration::TABLE_NAME);
+        }
+
+        $this->executeDiffSql($schema);
+
+        parent::uninstall();
+    }
+
 
     /**
      * @throws SchemaException
@@ -106,12 +121,11 @@ final class Installer extends SettingsStoreAwareInstaller
 
     private function createGridConfigurationTable(Schema $schema): void
     {
-        $tableName = 'bundle_studio_grid_configurations';
-        if ($schema->hasTable($tableName)) {
+        if ($schema->hasTable(GridConfiguration::TABLE_NAME)) {
             return;
         }
 
-        $table = $schema->createTable($tableName);
+        $table = $schema->createTable(GridConfiguration::TABLE_NAME);
 
         $table->addColumn('id', 'integer', [
             'autoincrement' => true,
@@ -144,21 +158,21 @@ final class Installer extends SettingsStoreAwareInstaller
         $table->addColumn('creationDate', 'datetime', ['notnull' => false]);
         $table->addColumn('modificationDate', 'datetime', ['notnull' => false]);
 
-        $table->setPrimaryKey(['id'], 'pk_'.$tableName);
+        $table->setPrimaryKey(['id'], 'pk_'.GridConfiguration::TABLE_NAME);
 
         $table->addForeignKeyConstraint(
             'users',
             ['owner'],
             ['id'],
             ['onDelete' => 'CASCADE'],
-            'fk_'.$tableName.'_owner_users'
+            'fk_'.GridConfiguration::TABLE_NAME.'_owner_users'
         );
 
         $table->addForeignKeyConstraint('assets',
             ['assetFolderId'],
             ['id'],
             ['onDelete' => 'CASCADE'],
-            'fk_'.$tableName.'_assetFolderId_id');
+            'fk_'.GridConfiguration::TABLE_NAME.'_assetFolderId_id');
     }
 
     /**
