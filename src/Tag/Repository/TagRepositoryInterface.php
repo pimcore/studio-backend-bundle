@@ -62,7 +62,7 @@ interface TagRepositoryInterface
     /**
      * @throws NotFoundException
      */
-    public function updateTag(int $id, UpdateTagParameters $params): Tag;
+    public function updateTag(int $id, UpdateTagParameters $params): void;
 
     /**
      * @throws ElementDeletingFailedException

@@ -68,6 +68,8 @@ final class UpdateController extends AbstractApiController
     ])]
     public function updateTag(int $id, #[MapRequestPayload] UpdateTagParameters $parameters): JsonResponse
     {
-        return $this->jsonResponse($this->tagService->updateTag($id, $parameters));
+        $this->tagService->updateTag($id, $parameters);
+
+        return $this->jsonResponse($this->tagService->getTag($id));
     }
 }
