@@ -28,4 +28,6 @@ interface FilterInterface
         mixed $parameters,
         AbstractListing|CallableFilterListingInterface $listing
     ): AbstractListing|CallableFilterListingInterface;
+
+    public function supports(mixed $listing): bool;
 }

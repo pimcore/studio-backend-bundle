@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter\Loader;
 
+use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\Filters;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
@@ -33,10 +34,13 @@ final class TaggedIteratorAdapter implements FilterLoaderInterface
     ) {
     }
 
-    public function loadFilters(): Filters
+    public function loadFilters(mixed $listing): Filters
     {
         return new Filters(
-            [... $this->taggedFilters],
+            array_filter(
+                iterator_to_array($this->taggedFilters),
+                static function(FilterInterface $filter) use ($listing) { return $filter->supports($listing); }
+            ),
         );
     }
 }

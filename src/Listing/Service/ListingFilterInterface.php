@@ -27,6 +27,6 @@ interface ListingFilterInterface extends FilterServiceInterface
 
     public function applyFilters(
         FilterParameter $parameters,
-        AbstractListing|CallableFilterListingInterface $listing
-    ): AbstractListing|CallableFilterListingInterface;
+        mixed $listing
+    ): mixed;
 }
