@@ -16,7 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Model\Notification;
 use Pimcore\Model\Notification\Listing;
 use Pimcore\Model\UserInterface;
 
@@ -39,6 +42,17 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
 
         return $listing;
 
+    }
+    
+    public function getNotificationById(int $id): Notification
+    {
+        // ToDo: replace with resolver when core improvement is merged
+        $notification = Notification::getById($id);
+        if ($notification === null) {
+            throw new NotFoundException('notification', $id);
+        }
+
+        return $notification;
     }
 
     public function getListing(

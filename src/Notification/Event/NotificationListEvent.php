@@ -17,23 +17,23 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Event;
 
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationListItem;
 
-final class NotificationEvent extends AbstractPreResponseEvent
+final class NotificationListEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.notification';
+    public const EVENT_NAME = 'pre_response.notification.list.item';
 
     public function __construct(
-        private readonly Notification $notification
+        private readonly NotificationListItem $notificationListItem
     ) {
-        parent::__construct($this->notification);
+        parent::__construct($this->notificationListItem);
     }
 
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getNote(): Notification
+    public function getNote(): NotificationListItem
     {
-        return $this->notification;
+        return $this->notificationListItem;
     }
 }

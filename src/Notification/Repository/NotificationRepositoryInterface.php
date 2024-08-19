@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Model\Notification;
 use Pimcore\Model\Notification\Listing;
 use Pimcore\Model\UserInterface;
 
@@ -29,6 +30,8 @@ interface NotificationRepositoryInterface
         UserInterface $user,
         CollectionParameters $parameters
     ): Listing;
+
+    public function getNotificationById(int $id): Notification;
 
     public function getListing(
         CollectionParameters $parameters
