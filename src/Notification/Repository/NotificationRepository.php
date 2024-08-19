@@ -16,7 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Repository;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Notification\NotificationResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Model\Notification;
 use Pimcore\Model\Notification\Listing;
 use Pimcore\Model\UserInterface;
 
@@ -25,6 +28,12 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class NotificationRepository implements NotificationRepositoryInterface
 {
+    public function __construct(
+        private NotificationResolverInterface $notificationResolver
+    ) {
+
+    }
+
     private const DEFAULT_ORDER_KEY = 'creationDate';
 
     public function getListingForCurrentUser(
@@ -39,6 +48,19 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
 
         return $listing;
 
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getNotificationById(int $id): Notification
+    {
+        $notification = $this->notificationResolver->getById($id);
+        if ($notification === null) {
+            throw new NotFoundException('notification', $id);
+        }
+
+        return $notification;
     }
 
     public function getListing(

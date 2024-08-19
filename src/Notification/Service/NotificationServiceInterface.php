@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -29,4 +31,11 @@ interface NotificationServiceInterface
      * @throws UserNotFoundException
      */
     public function listNotifications(CollectionParameters $parameters): Collection;
+
+    /**
+     * @throws AccessDeniedException
+     * @throws NotFoundException
+     * @throws UserNotFoundException
+     */
+    public function deleteNotificationById(int $id): void;
 }

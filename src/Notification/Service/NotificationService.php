@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Event\NotificationEvent;
@@ -23,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydrato
 use Pimcore\Bundle\StudioBackendBundle\Notification\Repository\NotificationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\Notification;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -62,5 +65,29 @@ final readonly class NotificationService implements NotificationServiceInterface
             $listing->count(),
             $list
         );
+    }
+
+    /**
+     * @throws AccessDeniedException
+     * @throws NotFoundException
+     * @throws UserNotFoundException
+     */
+    public function deleteNotificationById(int $id): void
+    {
+        $notification = $this->notificationRepository->getNotificationById($id);
+        $this->validateNotificationAccess($notification);
+
+        $notification->delete();
+    }
+
+    /**
+     * @throws AccessDeniedException
+     * @throws UserNotFoundException
+     */
+    private function validateNotificationAccess(Notification $notification): void
+    {
+        if ($this->securityService->getCurrentUser() !== $notification->getRecipient()) {
+            throw new AccessDeniedException('User has no permissions to access this notification');
+        }
     }
 }
