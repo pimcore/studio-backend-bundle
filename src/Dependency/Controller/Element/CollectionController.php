@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Dependency\Controller\Element;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Dependency\Attribute\Parameters\Query\DependencyModeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Dependency\Attribute\Parameter\Query\DependencyModeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Attribute\Response\Property\DependencyCollection;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyParameters;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Service\DependencyServiceInterface;

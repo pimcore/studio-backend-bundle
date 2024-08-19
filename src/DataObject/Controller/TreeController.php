@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Parameters\Query\ClassNameParameter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Parameter\Query\ClassNameParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Response\Property\AnyOfDataObjects;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
