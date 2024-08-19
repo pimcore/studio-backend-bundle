@@ -168,9 +168,9 @@ final readonly class TagService implements TagServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function updateTag(int $id, UpdateTagParameters $parameters): Tag
+    public function updateTag(int $id, UpdateTagParameters $parameters): void
     {
-        return $this->getTag($this->tagRepository->updateTag($id, $parameters)->getId());
+        $this->tagRepository->updateTag($id, $parameters);
     }
 
     /**
