@@ -16,20 +16,21 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller;
 
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Content\ItemsJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\ElementTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Property\Attributes\Request\PropertyRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\PredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Service\PropertyServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -47,15 +48,16 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/properties', name: 'pimcore_studio_api_properties', methods: ['POST'])]
-    #[Post(
+    #[Route('/properties', name: 'pimcore_studio_api_properties', methods: ['GET'])]
+    #[Get(
         path: self::API_PATH . '/properties',
         operationId: 'property_get_collection',
         description: 'property_get_collection_description',
         summary: 'property_get_collection_summary',
         tags: [Tags::Properties->name]
     )]
-    #[PropertyRequestBody]
+    #[ElementTypeParameter(false, null)]
+    #[FilterParameter]
     #[SuccessResponse(
         description: 'property_get_collection_success_response',
         content: new ItemsJson(PredefinedProperty::class)
@@ -64,10 +66,8 @@ final class CollectionController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getProperties(
-        #[MapRequestPayload] PropertiesParameters $parameters
+        #[MapQueryString] PropertiesParameters $parameters = new PropertiesParameters()
     ): JsonResponse {
-        return $this->jsonResponse(
-            ['items' => $this->propertyService->getPredefinedProperties($parameters->getFilters())]
-        );
+        return $this->jsonResponse(['items' => $this->propertyService->getPredefinedProperties($parameters)]);
     }
 }

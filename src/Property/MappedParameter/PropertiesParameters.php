@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 
 /**
  * @internal
@@ -24,12 +24,23 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 final readonly class PropertiesParameters
 {
     public function __construct(
-        private ?FilterParameter $filters = null
+        private ?string $elementType = null,
+        private ?string $filter = null
+
     ) {
     }
 
-    public function getFilters(): FilterParameter
+    public function getFilter(): ?string
     {
-        return $this->filters ?? new FilterParameter();
+        return $this->filter;
+    }
+
+    public function getElementType(): ?string
+    {
+        if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
+            return ElementTypes::TYPE_OBJECT;
+        }
+
+        return $this->elementType;
     }
 }

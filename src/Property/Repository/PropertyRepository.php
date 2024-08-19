@@ -19,8 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 use Pimcore\Bundle\StaticResolverBundle\Models\Property\Predefined\PredefinedResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Mapper\QueryToPayloadFilterMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
@@ -28,6 +29,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @internal
@@ -37,8 +39,10 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private ListingFilterInterface $filterService,
+        private QueryToPayloadFilterMapperInterface $filterMapper,
         private PredefinedResolverInterface $predefinedResolver,
+        private ListingFilterInterface $filterService,
+        private TranslatorInterface $translator
     ) {
     }
 
@@ -74,13 +78,15 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
         return $predefined;
     }
 
-    public function listProperties(FilterParameter $parameters): PropertiesListing
+    public function listProperties(PropertiesParameters $parameters): PropertiesListing
     {
         $listing = new PropertiesListing();
 
+        $filterParameters = $this->filterMapper->map($parameters);
+
         /** @var PropertiesListing $filteredListing */
         $filteredListing = $this->filterService->applyFilters(
-            $parameters,
+            $filterParameters,
             $listing
         );
 
