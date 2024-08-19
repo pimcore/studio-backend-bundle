@@ -27,8 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\ElementsTagsCollec
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\ElementTagIdCollection;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;

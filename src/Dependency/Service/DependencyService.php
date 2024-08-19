@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyPara
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Repository\DependencyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 

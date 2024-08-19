@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\WorkflowUnsavedBehaviorTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\WorkflowUnsavedBehaviorTypes;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\AllowedTransition;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
 use Pimcore\Model\DataObject\Concrete;

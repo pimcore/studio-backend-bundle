@@ -17,9 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\DownloadLimits;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\ResizeModes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;

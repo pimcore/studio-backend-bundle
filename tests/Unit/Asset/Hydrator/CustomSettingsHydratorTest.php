@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Asset\Hydrator;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydrator;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings\FixedCustomSettings;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSetting;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSetting\FixedCustomSettings;
 
 /**
  * @internal

@@ -24,8 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFou
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Messenger\AssetPreviewImageMessage;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Video;
