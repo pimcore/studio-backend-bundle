@@ -40,7 +40,8 @@ final class UpdateAssetRequestBody extends RequestBody
             content: new JsonContent(
                 required: ['data'],
                 properties: [
-                    new Property('data',
+                    new Property(
+                        property: 'data',
                         properties: [
                             new UpdateIntegerProperty('parentId'),
                             new UpdateStringProperty('key'),
