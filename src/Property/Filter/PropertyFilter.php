@@ -25,6 +25,8 @@ use Pimcore\Model\Listing\CallableFilterListingInterface;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertyListing;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function get_class;
+use function in_array;
 
 final readonly class PropertyFilter implements FilterInterface
 {

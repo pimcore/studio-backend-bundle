@@ -18,8 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Listing\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceInterface;
-use Pimcore\Model\Listing\AbstractListing;
-use Pimcore\Model\Listing\CallableFilterListingInterface;
 
 interface ListingFilterInterface extends FilterServiceInterface
 {

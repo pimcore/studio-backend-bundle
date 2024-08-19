@@ -39,7 +39,7 @@ final class TaggedIteratorAdapter implements FilterLoaderInterface
         return new Filters(
             array_filter(
                 iterator_to_array($this->taggedFilters),
-                static function(FilterInterface $filter) use ($listing) { return $filter->supports($listing); }
+                static function (FilterInterface $filter) use ($listing) { return $filter->supports($listing); }
             ),
         );
     }
