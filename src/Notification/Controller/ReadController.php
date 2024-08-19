@@ -14,23 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
 
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Put;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Request\UpdateTagRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\UpdateTagParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -38,38 +36,39 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class UpdateController extends AbstractApiController
+final class ReadController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly TagServiceInterface $tagService,
+        private readonly NotificationServiceInterface $notificationService,
     ) {
         parent::__construct($serializer);
     }
 
-    #[Route('/tags/{id}', name: 'pimcore_studio_api_update_tag', methods: ['PUT'])]
-    #[Put(
-        path: self::API_PATH . '/tags/{id}',
-        operationId: 'tag_update_by_id',
-        description: 'tag_update_by_id_description',
-        summary: 'tag_update_by_id_summary',
-        tags: [Tags::Tags->name]
+    /**
+     * @throws AccessDeniedException|NotFoundException|UserNotFoundException
+     */
+    #[Route('/notifications/{id}', name: 'pimcore_studio_api_delete_notification', methods: ['POST'])]
+    #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
+    #[POST(
+        path: self::API_PATH . '/notifications/{id}',
+        operationId: 'notification_read_by_id',
+        description: 'notification_read_by_id_description',
+        summary: 'notification_read_by_id_summary',
+        tags: [Tags::Notifications->name]
     )]
-    #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
-    #[IdParameter(type: 'tag')]
-    #[UpdateTagRequestBody]
+    #[IdParameter(type: 'version')]
     #[SuccessResponse(
-        description: 'tag_update_by_id_success_response',
-        content: new JsonContent(ref: Tag::class, type: 'object')
+        description: 'notification_read_by_id_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function updateTag(int $id, #[MapRequestPayload] UpdateTagParameters $parameters): JsonResponse
+    public function readNotificationById(int $id): Response
     {
-        $this->tagService->updateTag($id, $parameters);
+        $this->notificationService->markNotificationAsRead($id);
 
-        return $this->jsonResponse($this->tagService->getTag($id));
+        return new Response();
     }
 }
