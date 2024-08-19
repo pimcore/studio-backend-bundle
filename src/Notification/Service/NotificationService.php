@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydrato
 use Pimcore\Bundle\StudioBackendBundle\Notification\Repository\NotificationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Model\Notification;
+use Pimcore\Model\Notification as NotificationModel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -72,6 +72,19 @@ final readonly class NotificationService implements NotificationServiceInterface
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
+    public function markNotificationAsRead(int $id): void
+    {
+        $notification = $this->notificationRepository->getNotificationById($id);
+        $this->validateNotificationAccess($notification);
+
+        $this->markAsRead($notification);
+    }
+
+    /**
+     * @throws AccessDeniedException
+     * @throws NotFoundException
+     * @throws UserNotFoundException
+     */
     public function deleteNotificationById(int $id): void
     {
         $notification = $this->notificationRepository->getNotificationById($id);
@@ -84,10 +97,16 @@ final readonly class NotificationService implements NotificationServiceInterface
      * @throws AccessDeniedException
      * @throws UserNotFoundException
      */
-    private function validateNotificationAccess(Notification $notification): void
+    private function validateNotificationAccess(NotificationModel $notification): void
     {
         if ($this->securityService->getCurrentUser() !== $notification->getRecipient()) {
             throw new AccessDeniedException('User has no permissions to access this notification');
         }
+    }
+
+    private function markAsRead(NotificationModel $notification): void
+    {
+        $notification->setRead(true);
+        $notification->save();
     }
 }
