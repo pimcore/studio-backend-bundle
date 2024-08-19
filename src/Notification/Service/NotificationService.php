@@ -107,19 +107,6 @@ final readonly class NotificationService implements NotificationServiceInterface
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
-    public function markNotificationAsRead(int $id): void
-    {
-        $notification = $this->notificationRepository->getNotificationById($id);
-        $this->validateNotificationAccess($notification);
-
-        $this->markAsRead($notification);
-    }
-
-    /**
-     * @throws AccessDeniedException
-     * @throws NotFoundException
-     * @throws UserNotFoundException
-     */
     public function deleteNotificationById(int $id): void
     {
         $notification = $this->notificationRepository->getNotificationById($id);
