@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 
 #[Schema(
     title: 'Notification',
