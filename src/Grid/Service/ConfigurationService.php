@@ -19,11 +19,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationShareRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -42,6 +43,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private GridServiceInterface $gridService,
         private EventDispatcherInterface $eventDispatcher,
         private ConfigurationRepositoryInterface $gridConfigurationRepository,
+        private ConfigurationFavoriteRepositoryInterface $gridConfigurationFavoriteRepository,
         private UserRepositoryInterface $userRepository,
         private RoleRepositoryInterface $roleRepository,
         private AssetServiceInterface $assetService,
@@ -122,7 +124,14 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $gridConfiguration->setDescription($configuration->getDescription());
         $gridConfiguration->setSaveFilter($configuration->saveFilter());
         $gridConfiguration->setColumns($configuration->getColumnsAsArray());
-        $gridConfiguration->setFilter($configuration->getFilter()->toArray());
+
+        if ($configuration->saveFilter()) {
+            $gridConfiguration->setFilter($configuration->getFilter()->toArray());
+        }
+
+        if ($configuration->setAsFavorite()) {
+            $gridConfiguration = $this->setAssetConfigurationAsFavoriteForCurrentUser($gridConfiguration);
+        }
 
         if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
             $gridConfiguration->setShareGlobal($configuration->shareGlobal());
@@ -160,6 +169,27 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             $share = new GridConfigurationShare($role->getId(), $gridConfiguration);
             $gridConfiguration->addShare($share);
         }
+
+        return $gridConfiguration;
+    }
+
+    private function setAssetConfigurationAsFavoriteForCurrentUser(GridConfiguration $gridConfiguration): GridConfiguration
+    {
+        $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndAssetFolder(
+            $this->securityService->getCurrentUser()->getId(),
+            $gridConfiguration->getAssetFolderId()
+        );
+
+        // If there is no favorite for the current user and asset folder, create a new one
+        if (!$favorite) {
+            $favorite  =  new GridConfigurationFavorite();
+            $favorite->setAssetFolder($gridConfiguration->getAssetFolderId());
+            $favorite->setUser($this->securityService->getCurrentUser()->getId());
+        }
+
+        $favorite->setConfiguration($gridConfiguration);
+
+        $gridConfiguration->addFavorite($favorite);
 
         return $gridConfiguration;
     }

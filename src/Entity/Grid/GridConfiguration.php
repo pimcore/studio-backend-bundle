@@ -74,9 +74,13 @@ class GridConfiguration
     #[ORM\OneToMany(mappedBy: 'configuration', targetEntity: GridConfigurationShare::class, cascade: ['persist'])]
     private Collection $shares;
 
+    #[ORM\OneToMany(mappedBy: 'configuration', targetEntity: GridConfigurationFavorite::class, cascade: ['persist'])]
+    private Collection $favorites;
+
     public function __construct(
     ) {
         $this->shares = new ArrayCollection();
+        $this->favorites = new ArrayCollection();
     }
 
     public function getId(): int
@@ -198,5 +202,10 @@ class GridConfiguration
     public function addShare(GridConfigurationShare $share): void
     {
         $this->shares->add($share);
+    }
+
+    public function addFavorite(GridConfigurationFavorite $favorite): void
+    {
+        $this->favorites->add($favorite);
     }
 }

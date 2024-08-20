@@ -38,6 +38,11 @@ services:
     arguments:
       - "@doctrine.orm.studio_backend_entity_manager"
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepository
+    arguments:
+      - "@doctrine.orm.studio_backend_entity_manager"
+
   #
   # Column Definitions
   #

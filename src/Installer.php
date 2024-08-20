@@ -23,6 +23,7 @@ use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\SchemaException;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Extension\Bundle\Installer\Exception\InstallationException;
@@ -51,6 +52,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createTranslationTable($schema);
         $this->createGridConfigurationTable($schema);
         $this->createGridConfigurationSharesTable($schema);
+        $this->createGridConfigurationFavoritesTable($schema);
         $this->executeDiffSql($schema);
 
         parent::install();
@@ -70,6 +72,10 @@ final class Installer extends SettingsStoreAwareInstaller
 
         if ($schema->hasTable(GridConfigurationShare::TABLE_NAME)) {
             $schema->dropTable(GridConfigurationShare::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(GridConfigurationFavorite::TABLE_NAME)) {
+            $schema->dropTable(GridConfigurationFavorite::TABLE_NAME);
         }
 
         $this->executeDiffSql($schema);
@@ -127,6 +133,53 @@ final class Installer extends SettingsStoreAwareInstaller
             $translationDomainTable->setPrimaryKey(['key', 'language'], 'pk_translation');
             $translationDomainTable->addIndex(['language'], 'idx_language');
         }
+    }
+
+    /**
+     * @throws SchemaException
+     */
+    public function createGridConfigurationFavoritesTable(Schema $schema): void
+    {
+        if ($schema->hasTable(GridConfigurationFavorite::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(GridConfigurationFavorite::TABLE_NAME);
+
+        $table->addColumn(
+            'user',
+            'integer',
+            ['notnull' => false, 'unsigned' => true]
+        );
+
+        $table->addColumn(
+            'configuration',
+            'integer',
+            ['notnull' => false, 'unsigned' => true]
+        );
+
+        $table->addColumn('assetFolder', 'integer', [
+            'notnull' => false,
+            'unsigned' => true,
+        ]);
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['user'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_'.GridConfigurationFavorite::TABLE_NAME.'_users'
+        );
+
+        $table->addForeignKeyConstraint(
+            GridConfiguration::TABLE_NAME,
+            ['configuration'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_'.GridConfigurationFavorite::TABLE_NAME.'_configurations'
+        );
+
+        $table->setPrimaryKey(['user', 'configuration'], 'pk_'.GridConfigurationFavorite::TABLE_NAME);
     }
 
     /**
