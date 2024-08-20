@@ -21,5 +21,5 @@ namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
  */
 interface FilterLoaderInterface
 {
-    public function loadFilters(): Filters;
+    public function loadFilters(mixed $listing): Filters;
 }

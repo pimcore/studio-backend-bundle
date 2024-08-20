@@ -81,16 +81,12 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     public function listProperties(PropertiesParameters $parameters): PropertiesListing
     {
         $listing = new PropertiesListing();
-
         $filterParameters = $this->filterMapper->map($parameters);
 
-        /** @var PropertiesListing $filteredListing */
-        $filteredListing = $this->filterService->applyFilters(
+        return $this->filterService->applyFilters(
             $filterParameters,
             $listing
         );
-
-        return $filteredListing;
     }
 
     public function updateElementProperties(ElementInterface $element, array $data): void

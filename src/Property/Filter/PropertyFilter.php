@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Filter;
 
+use Pimcore\Bundle\StudioBackendBundle\Filter\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Model\Listing\AbstractListing;
@@ -25,9 +25,13 @@ use Pimcore\Model\Listing\CallableFilterListingInterface;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertyListing;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function get_class;
+use function in_array;
 
 final readonly class PropertyFilter implements FilterInterface
 {
+    private const SUPPORTED_LISTINGS = [PropertyListing::class];
+
     public function __construct(private TranslatorInterface $translator)
     {
     }
@@ -73,5 +77,10 @@ final readonly class PropertyFilter implements FilterInterface
         });
 
         return $listing;
+    }
+
+    public function supports(mixed $listing): bool
+    {
+        return in_array(get_class($listing), self::SUPPORTED_LISTINGS, true);
     }
 }
