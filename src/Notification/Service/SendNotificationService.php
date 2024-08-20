@@ -31,6 +31,7 @@ use Pimcore\Model\Notification;
 use Pimcore\Model\Notification\Service\UserService;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
+use function sprintf;
 
 /**
  * @internal
