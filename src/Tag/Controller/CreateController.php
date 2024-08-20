@@ -20,17 +20,14 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\BadRequestResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\MethodNotAllowedResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\UnauthorizedResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\UnprocessableContentResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\UnsupportedMediaTypeResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Attribute\Request\CreateTagRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
@@ -67,11 +64,9 @@ final class CreateController extends AbstractApiController
         description: 'tag_create_success_description',
         content: new JsonContent(ref: Tag::class, type: 'object')
     )]
-    #[BadRequestResponse]
-    #[UnauthorizedResponse]
-    #[MethodNotAllowedResponse]
-    #[UnsupportedMediaTypeResponse]
-    #[UnprocessableContentResponse]
+    #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
+    ])]
     public function createTag(#[MapRequestPayload] CreateTagParameters $parameters): JsonResponse
     {
         return $this->jsonResponse($this->tagService->createTag($parameters));
