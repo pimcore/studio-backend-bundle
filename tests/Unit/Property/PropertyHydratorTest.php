@@ -22,7 +22,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Property\Predefined\PredefinedRes
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydrator;
 use Pimcore\Bundle\StudioBackendBundle\Property\Hydrator\PropertyHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Document;
 use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;

@@ -21,8 +21,8 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\CustomAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
 
 #[Schema(
     title: 'DataObject',

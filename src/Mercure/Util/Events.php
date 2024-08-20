@@ -15,7 +15,7 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Util;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
 enum Events: string
 {

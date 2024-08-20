@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ConsoleExecutableTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ConsoleExecutableTrait;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Tool\Console;
 use Symfony\Component\Process\Process;

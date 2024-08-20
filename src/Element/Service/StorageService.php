@@ -20,8 +20,8 @@ use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\StorageResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\StorageDirectories;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\TempFilePathTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\StorageDirectories;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
 use Symfony\Component\Filesystem\Filesystem;
 use function sprintf;
 

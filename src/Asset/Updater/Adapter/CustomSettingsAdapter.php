@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\CustomSettings;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\CustomSettings;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;

@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\Loader\TaggedIteratorAdapter;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\MustImplementInterfaceTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\MustImplementInterfaceTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 

@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\CreateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\UpdateTagParameters;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\Tag;
 use Pimcore\Model\Element\Tag\Listing as TagListing;
 

@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementIconTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 final class IconService implements IconServiceInterface
 {

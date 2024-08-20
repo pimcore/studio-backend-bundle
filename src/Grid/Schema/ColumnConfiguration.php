@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 /**
  * Contains all data to configure a grid column

@@ -20,7 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ClientTopicProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\ServerTopicProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TaggedIteratorAdapter;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\MustImplementInterfaceTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\MustImplementInterfaceTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use function in_array;

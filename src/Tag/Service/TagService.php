@@ -31,8 +31,8 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Repository\TagRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 

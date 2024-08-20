@@ -23,9 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamCon
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\ResizeModes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ConsoleExecutableTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ConsoleExecutableTrait;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageThumbnailConfig;
 use Pimcore\Model\Asset\Image\ThumbnailInterface;

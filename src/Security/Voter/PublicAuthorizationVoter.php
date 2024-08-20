@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NonPublicTranslationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PublicTranslationTrait;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\RequestTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PublicTranslationTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;

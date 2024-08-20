@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\ImageVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;

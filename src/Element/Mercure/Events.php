@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Mercure;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\EnumToValueArrayTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
 /**
  * @internal

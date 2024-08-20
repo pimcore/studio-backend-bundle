@@ -20,12 +20,12 @@ use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Property\SaveConfigurationColumn;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\SaveConfigurationColumn;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\ListOfInteger;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\SingleBoolean;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\SingleInteger;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\SingleString;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\ListOfInteger;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleBoolean;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleInteger;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleString;
 
 /**
  * @internal
