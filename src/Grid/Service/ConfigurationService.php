@@ -16,19 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
-use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;

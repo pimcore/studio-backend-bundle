@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
@@ -41,8 +40,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
         private RoleRepositoryInterface $roleRepository,
         private AssetServiceInterface $assetService,
         private SecurityServiceInterface $securityService,
-    )
-    {
+    ) {
     }
 
     /**
