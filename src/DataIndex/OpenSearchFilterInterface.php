@@ -19,12 +19,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 
 /**
  * @internal
  */
-interface OpenSearchFilterInterface
+interface OpenSearchFilterInterface extends FilterServiceInterface
 {
     public const SERVICE_TYPE = 'open_search_filter';
 

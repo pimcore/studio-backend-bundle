@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Loader\TaggedIteratorAdapter;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface as DataIndexFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Loader\TaggedIteratorAdapter as DataIndexFilter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\MustImplementInterfaceTrait;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
@@ -26,7 +26,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 /**
  * @internal
  */
-final class FilterPass implements CompilerPassInterface
+final class DataIndexFilterPass implements CompilerPassInterface
 {
     use MustImplementInterfaceTrait;
 
@@ -35,18 +35,18 @@ final class FilterPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container): void
     {
-        $taggedServices = array_keys(
+        $dataIndexFilter = array_keys(
             [
-                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_TAG),
-                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_ASSET_TAG),
-                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_DATA_OBJECT_TAG),
-                ... $container->findTaggedServiceIds(TaggedIteratorAdapter::FILTER_DOCUMENT_TAG),
+                ... $container->findTaggedServiceIds(DataIndexFilter::FILTER_TAG),
+                ... $container->findTaggedServiceIds(DataIndexFilter::FILTER_ASSET_TAG),
+                ... $container->findTaggedServiceIds(DataIndexFilter::FILTER_DATA_OBJECT_TAG),
+                ... $container->findTaggedServiceIds(DataIndexFilter::FILTER_DOCUMENT_TAG),
 
             ]
         );
 
-        foreach ($taggedServices as $environmentType) {
-            $this->checkInterface($environmentType, FilterInterface::class);
+        foreach ($dataIndexFilter as $filter) {
+            $this->checkInterface($filter, DataIndexFilterInterface::class);
         }
     }
 }

@@ -14,17 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
+
+use Pimcore\Model\Listing\AbstractListing;
+use Pimcore\Model\Listing\CallableFilterListingInterface;
 
 /**
  * @internal
  */
-interface ColumnFiltersParameterInterface
+interface FilterInterface
 {
-    /**
-     * @return ColumnFilter[]
-     */
-    public function getColumnFilterByType(string $type): iterable;
+    public function apply(
+        mixed $parameters,
+        AbstractListing|CallableFilterListingInterface $listing
+    ): AbstractListing|CallableFilterListingInterface;
 
-    public function getFirstColumnFilterByType(string $type): ?ColumnFilter;
+    public function supports(mixed $listing): bool;
 }

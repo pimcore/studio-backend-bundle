@@ -14,17 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Listing\Mapper;
 
-/**
- * @internal
- */
-interface ColumnFiltersParameterInterface
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+
+interface QueryToPayloadFilterMapperInterface
 {
-    /**
-     * @return ColumnFilter[]
-     */
-    public function getColumnFilterByType(string $type): iterable;
-
-    public function getFirstColumnFilterByType(string $type): ?ColumnFilter;
+    public function map(mixed $parameters): FilterParameter;
 }

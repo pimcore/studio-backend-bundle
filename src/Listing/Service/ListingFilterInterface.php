@@ -14,17 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Listing\Service;
 
-/**
- * @internal
- */
-interface ColumnFiltersParameterInterface
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceInterface;
+
+interface ListingFilterInterface extends FilterServiceInterface
 {
-    /**
-     * @return ColumnFilter[]
-     */
-    public function getColumnFilterByType(string $type): iterable;
+    public const SERVICE_TYPE = 'listing_filter';
 
-    public function getFirstColumnFilterByType(string $type): ?ColumnFilter;
+    public function applyFilters(
+        FilterParameter $parameters,
+        mixed $listing
+    ): mixed;
 }
