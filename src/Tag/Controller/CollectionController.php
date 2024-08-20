@@ -64,8 +64,9 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
         path: self::API_PATH . '/tags',
-        operationId: 'getTags',
-        summary: 'Get all tags for a parent id. You can filter by type and query',
+        operationId: 'tag_get_collection',
+        description: 'tag_get_collection_description',
+        summary: 'tag_get_collection_summary',
         tags: [Tags::Tags->name]
     )]
     #[PageParameter]
@@ -78,7 +79,7 @@ final class CollectionController extends AbstractApiController
         example: null
     )]
     #[SuccessResponse(
-        description: 'Tags filtered based on type and query parameters',
+        description: 'tag_get_collection_success_response',
         content: new ItemsJson(Tag::class)
     )]
     #[BadRequestResponse]

@@ -73,15 +73,15 @@ final class ThumbnailDownloadController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}/video/download/{thumbnailName}',
-        operationId: 'downloadVideoByThumbnail',
-        description: 'Download video by id and thumbnail name by path parameter',
-        summary: 'Download video by id and thumbnail name',
+        operationId: 'asset_video_download_by_thumbnail',
+        description: 'asset_video_download_by_thumbnail_description',
+        summary: 'asset_video_download_by_thumbnail_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'video')]
     #[ThumbnailNameParameter]
     #[SuccessResponse(
-        description: 'Video based on thumbnail name',
+        description: 'asset_video_download_by_thumbnail_success_response',
         content: new AssetMediaType('video/mp4'),
         headers: [new ContentDisposition()]
     )]

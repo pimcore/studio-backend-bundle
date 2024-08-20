@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -52,23 +52,24 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[Delete(
         path: self::API_PATH . '/tags/{id}',
-        operationId: 'deleteTag',
-        summary: 'Delete a tag with a given id',
+        operationId: 'tag_delete_by_id',
+        description: 'tag_delete_by_id_description',
+        summary: 'tag_delete_by_id_summary',
         tags: [Tags::Tags->name]
     )]
     #[IdParameter(type: 'tag', schema: new Schema(type: 'integer', example: 10))]
     #[SuccessResponse(
-        description: 'Id of deleted tag',
+        description: 'tag_delete_by_id_success_response',
         content: new IdJson('ID of deleted tag')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteTag(int $id): JsonResponse
+    public function deleteTag(int $id): Response
     {
         $this->tagService->deleteTag($id);
 
-        return $this->jsonResponse(['id' => $id]);
+        return new Response();
     }
 }

@@ -61,9 +61,9 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
         path: self::API_PATH . '/emails/blocklist',
-        operationId: 'getBlocklistEntries',
-        description: 'Get paginated blocklist entries',
-        summary: 'Get all blocklist entries',
+        operationId: 'email_blocklist_get_collection',
+        description: 'email_blocklist_get_collection_description',
+        summary: 'email_blocklist_get_collection_summary',
         tags: [Tags::Emails->value]
     )]
     #[PageParameter]
@@ -74,7 +74,7 @@ final class CollectionController extends AbstractApiController
         required: false
     )]
     #[SuccessResponse(
-        description: 'Paginated blocklist entries with total count as header param',
+        description: 'email_blocklist_get_collection_success_response',
         content: new CollectionJson(new GenericCollection(BlocklistEntry::class))
     )]
     #[DefaultResponses([

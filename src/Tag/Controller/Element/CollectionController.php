@@ -26,13 +26,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessRespon
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Attributes\Response\Property\TagCollection;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -56,14 +54,15 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
         path: self::API_PATH . '/tags/{elementType}/{id}',
-        operationId: 'getTagsForElementByTypeAndId',
-        summary: 'Get tags for an element',
+        operationId: 'tag_get_collection_for_element_by_type_and_id',
+        description: 'tag_get_collection_for_element_by_type_and_id_description',
+        summary: 'tag_get_collection_for_element_by_type_and_id_summary',
         tags: [Tags::TagsForElement->value]
     )]
     #[ElementTypeParameter]
     #[IdParameter(type: 'element')]
     #[SuccessResponse(
-        description: 'List of tags',
+        description: 'tag_get_collection_for_element_by_type_and_id_success_response',
         content: new CollectionJson(new TagCollection())
     )]
     #[DefaultResponses([
@@ -72,7 +71,6 @@ final class CollectionController extends AbstractApiController
     public function getTags(
         string $elementType,
         int $id,
-        #[MapQueryString] TagsParameters $parameters = new TagsParameters()
     ): JsonResponse {
         $collection = $this->tagService->getTagsForElement(new ElementParameters($elementType, $id));
 

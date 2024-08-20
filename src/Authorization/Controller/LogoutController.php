@@ -32,11 +32,12 @@ final class LogoutController extends AbstractApiController
     #[Post(
         path: self::API_PATH . '/logout',
         operationId: 'logout',
-        summary: 'Logout and invalidate current session for active user',
+        description: 'logout_description',
+        summary: 'logout_summary',
         tags: [Tags::Authorization->name]
     )]
     #[SuccessResponse(
-        description: 'Logout successful',
+        description: 'logout_success_response',
     )]
     public function logout(): void
     {

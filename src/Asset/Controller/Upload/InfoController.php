@@ -60,15 +60,15 @@ final class InfoController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/exists/{parentId}',
-        operationId: 'getAssetExists',
-        description: 'Get information if asset already exists by parentId path parameter and fileName query string',
-        summary: 'Get asset info by parentId and fileName',
+        operationId: 'asset_upload_info',
+        description: 'asset_upload_info_description',
+        summary: 'asset_upload_info_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
     #[NameParameter(name: 'fileName', description: 'Name of the file to upload', example: 'file.jpg')]
     #[SuccessResponse(
-        description: 'Returns true if asset with the same name and in the same path already exists, false otherwise',
+        description: 'asset_upload_info_success_response',
         content: new BoolJson(name: 'exists', description: 'True if asset exists, false otherwise')
     )]
     #[DefaultResponses([

@@ -1,0 +1,33 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Notification\Controller\:
+    resource: '../src/Notification/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationService
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydrator
+
+  #
+  # Repository
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Repository\NotificationRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Repository\NotificationRepository

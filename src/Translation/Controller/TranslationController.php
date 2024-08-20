@@ -54,14 +54,14 @@ final class TranslationController extends AbstractApiController
     #[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
     #[POST(
         path: self::API_PATH . self::ROUTE,
-        operationId: 'getTranslations',
-        description: 'Get translations for given keys and locale',
-        summary: 'Get translations',
+        operationId: 'translation_get_collection',
+        description: 'translation_get_collection_description',
+        summary: 'translation_get_collection_summary',
         tags: [Tags::Translation->name]
     )]
     #[TranslationRequestBody]
     #[SuccessResponse(
-        description: 'Key value pairs for given keys and locale',
+        description: 'translation_get_collection_success_response',
         content: new JsonContent(ref: Translation::class)
     )]
     #[DefaultResponses([

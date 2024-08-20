@@ -70,12 +70,13 @@ final class AddController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/add/{parentId}',
-        operationId: 'addAsset',
-        summary: 'Add a new asset.',
+        operationId: 'asset_add',
+        description: 'asset_add_description',
+        summary: 'asset_add_summary',
         tags: [Tags::Assets->value]
     )]
     #[SuccessResponse(
-        description: 'Successfully uploaded new asset',
+        description: 'asset_add_success_response',
         content: new IdJson('ID of created asset')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]

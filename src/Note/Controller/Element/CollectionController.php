@@ -67,8 +67,9 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Get(
         path: self::API_PATH . '/notes/{elementType}/{id}',
-        operationId: 'getNotesForElementByTypeAndId',
-        summary: 'Get notes for an element',
+        operationId: 'note_element_get_collection',
+        description: 'note_element_get_collection_description',
+        summary: 'note_element_get_collection_summary',
         tags: [Tags::Notes->name]
     )]
     #[ElementTypeParameter]
@@ -80,7 +81,7 @@ final class CollectionController extends AbstractApiController
     #[FilterParameter('notes')]
     #[FieldFilterParameter]
     #[SuccessResponse(
-        description: 'Paginated notes with total count as header param',
+        description: 'note_element_get_collection_success_response',
         content: new CollectionJson(new GenericCollection(Note::class))
     )]
     #[DefaultResponses([

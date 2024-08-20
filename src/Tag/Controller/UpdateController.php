@@ -50,15 +50,16 @@ final class UpdateController extends AbstractApiController
     #[Route('/tags/{id}', name: 'pimcore_studio_api_update_tag', methods: ['PUT'])]
     #[Put(
         path: self::API_PATH . '/tags/{id}',
-        operationId: 'updateTag',
-        summary: 'Update a tag',
+        operationId: 'tag_update_by_id',
+        description: 'tag_update_by_id_description',
+        summary: 'tag_update_by_id_summary',
         tags: [Tags::Tags->name]
     )]
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[IdParameter(type: 'tag')]
     #[UpdateTagRequestBody]
     #[SuccessResponse(
-        description: 'Updated tag data as json',
+        description: 'tag_update_by_id_success_response',
         content: new JsonContent(ref: Tag::class, type: 'object')
     )]
     #[DefaultResponses([
@@ -67,6 +68,8 @@ final class UpdateController extends AbstractApiController
     ])]
     public function updateTag(int $id, #[MapRequestPayload] UpdateTagParameters $parameters): JsonResponse
     {
-        return $this->jsonResponse($this->tagService->updateTag($id, $parameters));
+        $this->tagService->updateTag($id, $parameters);
+
+        return $this->jsonResponse($this->tagService->getTag($id));
     }
 }

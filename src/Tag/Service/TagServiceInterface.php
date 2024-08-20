@@ -69,7 +69,7 @@ interface TagServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function updateTag(int $id, UpdateTagParameters $parameters): Tag;
+    public function updateTag(int $id, UpdateTagParameters $parameters): void;
 
     /**
      * @throws ElementDeletingFailedException

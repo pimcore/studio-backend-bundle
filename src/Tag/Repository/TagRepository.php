@@ -152,7 +152,7 @@ final readonly class TagRepository implements TagRepositoryInterface
     /**
      * @throws NotFoundException
      */
-    public function updateTag(int $id, UpdateTagParameters $params): Tag
+    public function updateTag(int $id, UpdateTagParameters $params): void
     {
         $tag = $this->getTagById($id);
 
@@ -164,8 +164,6 @@ final readonly class TagRepository implements TagRepositoryInterface
             $tag->setName($params->getName());
         }
         $tag->save();
-
-        return $tag;
     }
 
     /**

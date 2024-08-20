@@ -55,9 +55,9 @@ final class DeleteController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Delete(
         path: self::API_PATH . '/emails/blocklist',
-        operationId: 'deleteBlocklistEntry',
-        description: 'Delete blocklist entry based on the provided email address',
-        summary: 'Delete blocklist entry',
+        operationId: 'email_blocklist_delete',
+        description: 'email_blocklist_delete_description',
+        summary: 'email_blocklist_delete_summary',
         tags: [Tags::Emails->value]
     )]
     #[TextFieldParameter(
@@ -66,7 +66,7 @@ final class DeleteController extends AbstractApiController
         required: false
     )]
     #[SuccessResponse(
-        description: 'Successfully deleted blocklist entry',
+        description: 'email_blocklist_delete_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

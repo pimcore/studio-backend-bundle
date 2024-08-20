@@ -64,16 +64,16 @@ final class CloneController extends AbstractApiController
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
         path: self::API_PATH . '/data-objects/{id}/clone/{parentId}',
-        operationId: 'cloneDataObject',
-        description: 'clone_data_object_description',
-        summary: 'clone_data_object_summary',
+        operationId: 'data_object_clone',
+        description: 'data_object_clone_description',
+        summary: 'data_object_clone_summary',
         tags: [Tags::DataObjects->value]
     )]
     #[SuccessResponse(
-        description: 'clone_data_object_success_response',
+        description: 'data_object_clone_success_response',
     )]
     #[CreatedResponse(
-        description: 'clone_data_object_created_response',
+        description: 'data_object_clone_created_response',
         content: new IdJson('ID of created jobRun')
     )]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT)]
@@ -83,7 +83,7 @@ final class CloneController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function cloneDataObject(
+    public function dataObjectClone(
         int $id,
         int $parentId,
         #[MapRequestPayload] CloneParameters $parameters

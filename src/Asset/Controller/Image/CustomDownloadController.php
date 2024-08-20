@@ -73,9 +73,9 @@ final class CustomDownloadController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::API_PATH . '/assets/{id}/image/download/custom',
-        operationId: 'downloadCustomImage',
-        description: 'Download custom image by configuration',
-        summary: 'Download custom image by configuration',
+        operationId: 'asset_image_download_custom',
+        description: 'asset_image_download_custom_description',
+        summary: 'asset_image_download_custom_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'image')]
@@ -86,7 +86,7 @@ final class CustomDownloadController extends AbstractApiController
     #[ImageConfigParameter('quality')]
     #[ImageConfigParameter('dpi')]
     #[SuccessResponse(
-        description: 'Custom image',
+        description: 'asset_image_download_custom_success_response',
         content: [new AssetMediaType('image/jpeg'), new AssetMediaType('image/png')],
         headers: [new ContentDisposition()]
     )]
