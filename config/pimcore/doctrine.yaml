@@ -7,6 +7,6 @@ doctrine:
           PimcoreStudioBackendBundle:
             type: attribute
             is_bundle: true
-            dir: "src/Entity/Grid"
-            prefix: Pimcore\Bundle\StudioBackendBundle\Entity\Grid
+            dir: "src/Entity"
+            prefix: Pimcore\Bundle\StudioBackendBundle\Entity
             alias: PimcoreStudioBackendBundle
