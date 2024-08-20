@@ -275,7 +275,8 @@ final class Installer extends SettingsStoreAwareInstaller
             'fk_'.GridConfiguration::TABLE_NAME.'_owner_users'
         );
 
-        $table->addForeignKeyConstraint('assets',
+        $table->addForeignKeyConstraint(
+            'assets',
             ['assetFolderId'],
             ['id'],
             ['onDelete' => 'CASCADE'],
