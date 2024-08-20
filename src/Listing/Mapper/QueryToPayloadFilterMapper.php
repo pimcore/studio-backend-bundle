@@ -36,20 +36,26 @@ final readonly class QueryToPayloadFilterMapper implements QueryToPayloadFilterM
 
     private function mapPropertiesParameters(PropertiesParameters $parameters): FilterParameter
     {
+        $columnFilters = [];
+
+        if ($parameters->getFilter() !== null) {
+            $columnFilters[] = [
+                'key' => 'properties',
+                'type' => ColumnType::PROPERTY_NAME->value,
+                'filterValue' => $parameters->getFilter(),
+            ];
+        }
+
+        if ($parameters->getElementType() !== null) {
+            $columnFilters[] = [
+                'key' => 'properties',
+                'type' => ColumnType::PROPERTY_ELEMENT_TYPE->value,
+                'filterValue' => $parameters->getElementType(),
+            ];
+        }
 
         return new FilterParameter(
-            columnFilters: [
-                [
-                    'key' => 'properties',
-                    'type' => ColumnType::PROPERTY_NAME->value,
-                    'filterValue' => $parameters->getFilter(),
-                ],
-                [
-                    'key' => 'properties',
-                    'type' => ColumnType::PROPERTY_ELEMENT_TYPE->value,
-                    'filterValue' => $parameters->getElementType(),
-                ],
-            ]
+            columnFilters: $columnFilters,
         );
     }
 }
