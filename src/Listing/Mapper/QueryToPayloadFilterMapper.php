@@ -2,8 +2,8 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Mapper;
 
+use Pimcore\Bundle\StudioBackendBundle\Filter\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
 
 final readonly class QueryToPayloadFilterMapper implements QueryToPayloadFilterMapperInterface

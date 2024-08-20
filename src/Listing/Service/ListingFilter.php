@@ -31,7 +31,7 @@ final readonly class ListingFilter implements ListingFilterInterface
     public function applyFilters(
         FilterParameter $parameters,
         mixed $listing
-    ): AbstractListing|CallableFilterListingInterface {
+    ): mixed {
         $filters = $this->filterLoader->loadFilters($listing);
 
         foreach ($filters->getFilters() as $filter) {
