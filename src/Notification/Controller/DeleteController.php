@@ -57,7 +57,7 @@ final class DeleteController extends AbstractApiController
         summary: 'notification_delete_by_id_summary',
         tags: [Tags::Notifications->name]
     )]
-    #[IdParameter(type: 'version')]
+    #[IdParameter(type: 'notification')]
     #[SuccessResponse(
         description: 'notification_delete_by_id_success_response',
     )]

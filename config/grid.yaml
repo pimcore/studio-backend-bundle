@@ -18,6 +18,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationService
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnService
 
@@ -29,6 +32,19 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnCollectorLoader
+
+  #
+  # Repository
+  #
+  Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepository
+    arguments:
+      - "@doctrine.orm.studio_backend_entity_manager"
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepository
+    arguments:
+      - "@doctrine.orm.studio_backend_entity_manager"
 
   #
   # Column Definitions

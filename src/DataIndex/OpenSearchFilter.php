@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 /**
  * @internal
  */
-final readonly class OpenSearchFilter implements FilterServiceInterface, OpenSearchFilterInterface
+final readonly class OpenSearchFilter implements OpenSearchFilterInterface
 {
     public function __construct(
         private FilterLoaderInterface $filterLoader,
