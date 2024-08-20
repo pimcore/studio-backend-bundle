@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Repository;
 use Pimcore\Bundle\StaticResolverBundle\Models\Property\Predefined\PredefinedResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Listing\Mapper\QueryToPayloadFilterMapperInterface;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
 use Pimcore\Bundle\StudioBackendBundle\Property\Schema\UpdatePredefinedProperty;
@@ -38,7 +38,7 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     use ElementProviderTrait;
 
     public function __construct(
-        private QueryToPayloadFilterMapperInterface $filterMapper,
+        private FilterMapperServiceInterface $filterMapper,
         private PredefinedResolverInterface $predefinedResolver,
         private ListingFilterInterface $filterService
     ) {
