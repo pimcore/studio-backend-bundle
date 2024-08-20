@@ -29,7 +29,6 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Property;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertiesListing;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @internal
