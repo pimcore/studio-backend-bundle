@@ -154,8 +154,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     private function addUserShareToConfiguration(
         GridConfiguration $gridConfiguration,
         array $userIds
-    ): GridConfiguration
-    {
+    ): GridConfiguration {
         foreach ($userIds as $userId) {
             // Check if user exists
             $user = $this->userRepository->getUserById($userId);
@@ -172,8 +171,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     private function addRoleShareToConfiguration(
         GridConfiguration $gridConfiguration,
         array $roleIds
-    ): GridConfiguration
-    {
+    ): GridConfiguration {
         foreach ($roleIds as $roleId) {
             // Check if role exists
             $role = $this->roleRepository->getRoleById($roleId);
@@ -186,8 +184,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
     private function setAssetConfigurationAsFavoriteForCurrentUser(
         GridConfiguration $gridConfiguration
-    ): GridConfiguration
-    {
+    ): GridConfiguration {
         $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndAssetFolder(
             $this->securityService->getCurrentUser()->getId(),
             $gridConfiguration->getAssetFolderId()
