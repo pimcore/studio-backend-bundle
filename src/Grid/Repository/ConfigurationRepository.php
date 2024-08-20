@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,8 +28,7 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
     public function __construct(
         private EntityManagerInterface $entityManager,
         private SecurityServiceInterface $securityService
-    )
-    {
+    ) {
     }
 
     public function create(GridConfiguration $configuration): GridConfiguration

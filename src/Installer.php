@@ -83,7 +83,6 @@ final class Installer extends SettingsStoreAwareInstaller
         parent::uninstall();
     }
 
-
     /**
      * @throws SchemaException
      */

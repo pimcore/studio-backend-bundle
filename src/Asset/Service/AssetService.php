@@ -133,6 +133,7 @@ final readonly class AssetService implements AssetServiceInterface
     {
         try {
             $this->getAssetFolder($id);
+
             return true;
         } catch (NotFoundException) {
             return false;

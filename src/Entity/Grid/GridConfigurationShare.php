@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Entity\Grid;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -22,7 +21,6 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @internal
  */
-
 #[ORM\Entity]
 #[ORM\Table(name: GridConfigurationShare::TABLE_NAME)]
 class GridConfigurationShare

@@ -36,7 +36,7 @@ readonly class ColumnSchema
         #[Property(description: 'Locale of the Column', type: 'string', example: 'de')]
         private ?string $locale,
         #[Property(description: 'Group of the Column', type: 'string', example: 'system')]
-        private string  $group,
+        private string $group,
     ) {
     }
 

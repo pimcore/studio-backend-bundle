@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,8 +26,7 @@ final readonly class ConfigurationFavoriteRepository implements ConfigurationFav
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-    )
-    {
+    ) {
     }
 
     public function getByUserAndAssetFolder(int $user, int $assetFolderId): ?GridConfigurationFavorite

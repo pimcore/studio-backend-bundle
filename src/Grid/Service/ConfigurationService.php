@@ -114,7 +114,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     public function saveAssetGridConfiguration(SaveConfigurationParameter $configuration): void
     {
         if (!$this->assetService->assetFolderExists($configuration->getFolderId())) {
-            throw new NotFoundException("Asset Folder", $configuration->getFolderId());
+            throw new NotFoundException('Asset Folder', $configuration->getFolderId());
         }
 
         $gridConfiguration = new GridConfiguration();
@@ -141,7 +141,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
         $this->gridConfigurationRepository->create($gridConfiguration);
     }
-
 
     /**
      * @throws NotFoundException

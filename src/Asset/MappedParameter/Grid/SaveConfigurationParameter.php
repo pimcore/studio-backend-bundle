@@ -103,7 +103,7 @@ final readonly class SaveConfigurationParameter
     public function getColumnsAsArray(): array
     {
         return array_map(
-            fn(ColumnSchema $column) => $column->toArray(),
+            fn (ColumnSchema $column) => $column->toArray(),
             $this->columns
         );
     }

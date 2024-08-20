@@ -71,8 +71,7 @@ final class SaveConfigurationController extends AbstractApiController
     ])]
     public function saveAssetGridConfiguration(
         #[MapRequestPayload] SaveConfigurationParameter $saveConfigurationParameter
-    ): Response
-    {
+    ): Response {
         $this->gridConfigurationService->saveAssetGridConfiguration($saveConfigurationParameter);
 
         return new Response();

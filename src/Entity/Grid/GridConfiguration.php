@@ -14,23 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Entity\Grid;
 
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @internal
  */
-
 #[ORM\Entity]
 #[ORM\Table(name: GridConfiguration::TABLE_NAME)]
 class GridConfiguration
 {
-
     public const TABLE_NAME = 'bundle_studio_grid_configurations';
 
     #[ORM\Id]
@@ -180,13 +177,13 @@ class GridConfiguration
 
     public function setCreated(): void
     {
-        $this->creationDate = new DateTime("now");
+        $this->creationDate = new DateTime('now');
         $this->setModified();
     }
 
     public function setModified(): void
     {
-        $this->modificationDate = new DateTime("now");
+        $this->modificationDate = new DateTime('now');
     }
 
     public function getOwner(): int
