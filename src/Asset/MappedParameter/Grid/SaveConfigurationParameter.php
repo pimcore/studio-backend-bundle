@@ -35,18 +35,15 @@ final readonly class SaveConfigurationParameter
         #[NotBlank]
         private string $description,
         #[NotBlank]
-        private bool $shareGlobal,
-        #[NotBlank]
-        private bool $setAsFavorite,
-        #[NotBlank]
-        private bool $saveFilter,
-        #[NotBlank]
         private array $sharedUsers,
         #[NotBlank]
         private array $sharedRoles,
         #[NotBlank]
         private array $columns,
         private ?Filter $filter = null,
+        private bool $saveFilter = false,
+        private bool $shareGlobal = false,
+        private bool $setAsFavorite = false,
     ) {
     }
 
