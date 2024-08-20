@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryIn
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationShareRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementTypes;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -44,6 +45,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private UserRepositoryInterface $userRepository,
         private RoleRepositoryInterface $roleRepository,
         private AssetServiceInterface $assetService,
+        private SecurityServiceInterface $securityService,
         private array $predefinedColumns
     ) {
     }
@@ -118,17 +120,17 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $gridConfiguration->setPageSize($configuration->getPageSize());
         $gridConfiguration->setName($configuration->getName());
         $gridConfiguration->setDescription($configuration->getDescription());
-        $gridConfiguration->setShareGlobal($configuration->shareGlobal());
         $gridConfiguration->setSaveFilter($configuration->saveFilter());
         $gridConfiguration->setColumns($configuration->getColumnsAsArray());
         $gridConfiguration->setFilter($configuration->getFilter()->toArray());
 
-        $gridConfiguration = $this->addUserShareToConfiguration($gridConfiguration, $configuration->getSharedUsers());
-        $gridConfiguration = $this->addRoleShareToConfiguration($gridConfiguration, $configuration->getSharedRoles());
+        if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
+            $gridConfiguration->setShareGlobal($configuration->shareGlobal());
+            $gridConfiguration = $this->addUserShareToConfiguration($gridConfiguration, $configuration->getSharedUsers());
+            $gridConfiguration = $this->addRoleShareToConfiguration($gridConfiguration, $configuration->getSharedRoles());
+        }
 
         $this->gridConfigurationRepository->create($gridConfiguration);
-
-
     }
 
 

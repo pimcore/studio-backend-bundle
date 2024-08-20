@@ -54,7 +54,7 @@ class GridConfiguration
     private string $description;
 
     #[ORM\Column(type: 'boolean')]
-    private bool $shareGlobal;
+    private bool $shareGlobal = false;
 
     #[ORM\Column(type: 'boolean')]
     private bool $saveFilter;
