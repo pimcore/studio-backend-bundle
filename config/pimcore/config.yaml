@@ -2,6 +2,7 @@ imports:
     - { resource: security.yaml }
     - { resource: firewall.yaml }
     - { resource: execution_engine.yaml }
+    - { resource: doctrine.yaml }
 
 pimcore:
     translations:
