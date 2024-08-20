@@ -39,10 +39,6 @@ class GridConfigurationFavorite
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $assetFolder = null;
 
-    public function __construct(
-    ) {
-    }
-
     public function getUser(): int
     {
         return $this->user;

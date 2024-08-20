@@ -135,8 +135,14 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
         if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
             $gridConfiguration->setShareGlobal($configuration->shareGlobal());
-            $gridConfiguration = $this->addUserShareToConfiguration($gridConfiguration, $configuration->getSharedUsers());
-            $gridConfiguration = $this->addRoleShareToConfiguration($gridConfiguration, $configuration->getSharedRoles());
+            $gridConfiguration = $this->addUserShareToConfiguration(
+                $gridConfiguration,
+                $configuration->getSharedUsers()
+            );
+            $gridConfiguration = $this->addRoleShareToConfiguration(
+                $gridConfiguration,
+                $configuration->getSharedRoles()
+            );
         }
 
         $this->gridConfigurationRepository->create($gridConfiguration);
@@ -145,7 +151,10 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     /**
      * @throws NotFoundException
      */
-    private function addUserShareToConfiguration(GridConfiguration $gridConfiguration, array $userIds): GridConfiguration
+    private function addUserShareToConfiguration(
+        GridConfiguration $gridConfiguration,
+        array $userIds
+    ): GridConfiguration
     {
         foreach ($userIds as $userId) {
             // Check if user exists
@@ -160,7 +169,10 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     /**
      * @throws NotFoundException
      */
-    private function addRoleShareToConfiguration(GridConfiguration $gridConfiguration, array $roleIds): GridConfiguration
+    private function addRoleShareToConfiguration(
+        GridConfiguration $gridConfiguration,
+        array $roleIds
+    ): GridConfiguration
     {
         foreach ($roleIds as $roleId) {
             // Check if role exists
@@ -172,7 +184,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return $gridConfiguration;
     }
 
-    private function setAssetConfigurationAsFavoriteForCurrentUser(GridConfiguration $gridConfiguration): GridConfiguration
+    private function setAssetConfigurationAsFavoriteForCurrentUser(
+        GridConfiguration $gridConfiguration
+    ): GridConfiguration
     {
         $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndAssetFolder(
             $this->securityService->getCurrentUser()->getId(),

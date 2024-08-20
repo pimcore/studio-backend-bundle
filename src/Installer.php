@@ -279,7 +279,8 @@ final class Installer extends SettingsStoreAwareInstaller
             ['assetFolderId'],
             ['id'],
             ['onDelete' => 'CASCADE'],
-            'fk_'.GridConfiguration::TABLE_NAME.'_assetFolderId_id');
+            'fk_'.GridConfiguration::TABLE_NAME.'_assetFolderId_id'
+        );
     }
 
     /**
