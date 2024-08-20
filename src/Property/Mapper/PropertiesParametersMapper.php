@@ -24,11 +24,15 @@ use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParame
 
 final class PropertiesParametersMapper implements FilterMapperInterface
 {
+    /**
+     * @throws InvalidArgumentException
+     */
     public function map(mixed $parameters): FilterParameter
     {
-        if(!$parameters instanceof PropertiesParameters) {
+        if (!$parameters instanceof PropertiesParameters) {
             throw new InvalidArgumentException('Invalid parameters type provided');
         }
+
         $columnFilters = [];
 
         if ($parameters->getFilter() !== null) {

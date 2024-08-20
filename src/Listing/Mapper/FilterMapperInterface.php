@@ -16,9 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Mapper;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 
 interface FilterMapperInterface
 {
+    /**
+     * @throws InvalidArgumentException
+     */
     public function map(mixed $parameters): FilterParameter;
 }
