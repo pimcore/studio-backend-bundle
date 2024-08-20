@@ -42,12 +42,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     public function __construct(
         private GridServiceInterface $gridService,
         private EventDispatcherInterface $eventDispatcher,
-        private ConfigurationRepositoryInterface $gridConfigurationRepository,
-        private ConfigurationFavoriteRepositoryInterface $gridConfigurationFavoriteRepository,
-        private UserRepositoryInterface $userRepository,
-        private RoleRepositoryInterface $roleRepository,
-        private AssetServiceInterface $assetService,
-        private SecurityServiceInterface $securityService,
         private array $predefinedColumns
     ) {
     }
@@ -106,101 +100,5 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         }
 
         return $defaultColumns;
-    }
-
-    /**
-     * @throws NotFoundException
-     */
-    public function saveAssetGridConfiguration(SaveConfigurationParameter $configuration): void
-    {
-        if (!$this->assetService->assetFolderExists($configuration->getFolderId())) {
-            throw new NotFoundException('Asset Folder', $configuration->getFolderId());
-        }
-
-        $gridConfiguration = new GridConfiguration();
-        $gridConfiguration->setAssetFolderId($configuration->getFolderId());
-        $gridConfiguration->setPageSize($configuration->getPageSize());
-        $gridConfiguration->setName($configuration->getName());
-        $gridConfiguration->setDescription($configuration->getDescription());
-        $gridConfiguration->setSaveFilter($configuration->saveFilter());
-        $gridConfiguration->setColumns($configuration->getColumnsAsArray());
-
-        if ($configuration->saveFilter()) {
-            $gridConfiguration->setFilter($configuration->getFilter()->toArray());
-        }
-
-        if ($configuration->setAsFavorite()) {
-            $gridConfiguration = $this->setAssetConfigurationAsFavoriteForCurrentUser($gridConfiguration);
-        }
-
-        if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
-            $gridConfiguration->setShareGlobal($configuration->shareGlobal());
-            $gridConfiguration = $this->addUserShareToConfiguration(
-                $gridConfiguration,
-                $configuration->getSharedUsers()
-            );
-            $gridConfiguration = $this->addRoleShareToConfiguration(
-                $gridConfiguration,
-                $configuration->getSharedRoles()
-            );
-        }
-
-        $this->gridConfigurationRepository->create($gridConfiguration);
-    }
-
-    /**
-     * @throws NotFoundException
-     */
-    private function addUserShareToConfiguration(
-        GridConfiguration $gridConfiguration,
-        array $userIds
-    ): GridConfiguration {
-        foreach ($userIds as $userId) {
-            // Check if user exists
-            $user = $this->userRepository->getUserById($userId);
-            $share = new GridConfigurationShare($user->getId(), $gridConfiguration);
-            $gridConfiguration->addShare($share);
-        }
-
-        return $gridConfiguration;
-    }
-
-    /**
-     * @throws NotFoundException
-     */
-    private function addRoleShareToConfiguration(
-        GridConfiguration $gridConfiguration,
-        array $roleIds
-    ): GridConfiguration {
-        foreach ($roleIds as $roleId) {
-            // Check if role exists
-            $role = $this->roleRepository->getRoleById($roleId);
-            $share = new GridConfigurationShare($role->getId(), $gridConfiguration);
-            $gridConfiguration->addShare($share);
-        }
-
-        return $gridConfiguration;
-    }
-
-    private function setAssetConfigurationAsFavoriteForCurrentUser(
-        GridConfiguration $gridConfiguration
-    ): GridConfiguration {
-        $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndAssetFolder(
-            $this->securityService->getCurrentUser()->getId(),
-            $gridConfiguration->getAssetFolderId()
-        );
-
-        // If there is no favorite for the current user and asset folder, create a new one
-        if (!$favorite) {
-            $favorite  =  new GridConfigurationFavorite();
-            $favorite->setAssetFolder($gridConfiguration->getAssetFolderId());
-            $favorite->setUser($this->securityService->getCurrentUser()->getId());
-        }
-
-        $favorite->setConfiguration($gridConfiguration);
-
-        $gridConfiguration->addFavorite($favorite);
-
-        return $gridConfiguration;
     }
 }

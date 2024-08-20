@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\Grid\SaveConfigu
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -40,7 +40,7 @@ final class SaveConfigurationController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ConfigurationServiceInterface $gridConfigurationService
+        private readonly SaveConfigurationServiceInterface $gridSaveConfigurationService
     ) {
         parent::__construct($serializer);
     }
@@ -72,7 +72,7 @@ final class SaveConfigurationController extends AbstractApiController
     public function saveAssetGridConfiguration(
         #[MapRequestPayload] SaveConfigurationParameter $saveConfigurationParameter
     ): Response {
-        $this->gridConfigurationService->saveAssetGridConfiguration($saveConfigurationParameter);
+        $this->gridSaveConfigurationService->saveAssetGridConfiguration($saveConfigurationParameter);
 
         return new Response();
     }

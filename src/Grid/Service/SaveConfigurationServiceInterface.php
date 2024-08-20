@@ -14,23 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
+
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
  * @internal
  */
-interface ConfigurationServiceInterface
+interface SaveConfigurationServiceInterface
 {
     /**
-     * @return ColumnConfiguration[]
+     * @throws NotFoundException
      */
-    public function getAvailableAssetGridConfiguration(): array;
-
-    /**
-     * @return ColumnConfiguration[]
-     */
-    public function getDefaultAssetGridConfiguration(): array;
+    public function saveAssetGridConfiguration(SaveConfigurationParameter $configuration): void;
 }
