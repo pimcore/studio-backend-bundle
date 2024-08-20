@@ -14,30 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Listing\Mapper;
+namespace Pimcore\Bundle\StudioBackendBundle\Property\Mapper;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Mapper\FilterMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
 
-final readonly class QueryToPayloadFilterMapper implements QueryToPayloadFilterMapperInterface
+final class PropertiesParametersMapper implements FilterMapperInterface
 {
+
     public function map(mixed $parameters): FilterParameter
     {
-        return $this->matchParameters($parameters);
-    }
-
-    private function matchParameters(mixed $parameters): FilterParameter
-    {
-        return match(true) {
-            $parameters instanceof PropertiesParameters => $this->mapPropertiesParameters($parameters),
-            default => throw new InvalidArgumentException('Invalid parameters type provided'),
-        };
-    }
-
-    private function mapPropertiesParameters(PropertiesParameters $parameters): FilterParameter
-    {
+        if(!$parameters instanceof PropertiesParameters) {
+            throw new InvalidArgumentException('Invalid parameters type provided');
+        }
         $columnFilters = [];
 
         if ($parameters->getFilter() !== null) {

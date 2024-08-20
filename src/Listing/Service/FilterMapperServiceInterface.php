@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Listing\Mapper;
+namespace Pimcore\Bundle\StudioBackendBundle\Listing\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 
-interface QueryToPayloadFilterMapperInterface
+interface FilterMapperServiceInterface
 {
     public function map(mixed $parameters): FilterParameter;
 }

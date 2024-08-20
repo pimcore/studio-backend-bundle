@@ -14,8 +14,24 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilter
     tags: [ 'pimcore.studio_backend.filter_service' ]
 
+
   #
-  # Mapper
+  # Mappers
   #
-  Pimcore\Bundle\StudioBackendBundle\Listing\Mapper\QueryToPayloadFilterMapperInterface:
-      class:  Pimcore\Bundle\StudioBackendBundle\Listing\Mapper\QueryToPayloadFilterMapper
+
+  Pimcore\Bundle\StudioBackendBundle\Property\Mapper\PropertiesParametersMapper: ~
+
+  #Service Locator
+  listing.query_to_payload_filter.service_locator:
+    class: Symfony\Component\DependencyInjection\ServiceLocator
+    tags: [ 'container.service_locator' ]
+    arguments:
+      - Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters: '@Pimcore\Bundle\StudioBackendBundle\Property\Mapper\PropertiesParametersMapper'
+
+  #
+  # MapperService
+  #
+  Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface:
+    class:  Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperService
+    arguments:
+      $filterMapperLocator: '@listing.query_to_payload_filter.service_locator'
