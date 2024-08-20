@@ -43,7 +43,7 @@ final class FilterMapperPass implements CompilerPassInterface
 
         // first argument is an array of mappers
         foreach (current($locator->getArguments()) as $mapper) {
-            /* @var Reference $mapper */
+            // @var Reference $mapper
             $this->checkInterface($mapper->__toString(), FilterMapperInterface::class);
         }
     }

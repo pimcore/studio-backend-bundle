@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParame
 
 final class PropertiesParametersMapper implements FilterMapperInterface
 {
-
     public function map(mixed $parameters): FilterParameter
     {
         if(!$parameters instanceof PropertiesParameters) {

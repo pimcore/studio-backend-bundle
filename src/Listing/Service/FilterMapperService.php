@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Service;
 
-
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Symfony\Contracts\Service\ServiceProviderInterface;
+use function get_class;
 
 final readonly class FilterMapperService implements FilterMapperServiceInterface
 {
@@ -27,6 +27,7 @@ final readonly class FilterMapperService implements FilterMapperServiceInterface
         private ServiceProviderInterface $filterMapperLocator,
     ) {
     }
+
     public function map(mixed $parameters): FilterParameter
     {
         if (!$this->filterMapperLocator->has(get_class($parameters))) {
