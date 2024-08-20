@@ -75,7 +75,10 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
         $this->gridConfigurationRepository->create($gridConfiguration);
     }
 
-    private function setShareOptions(GridConfiguration $configuration, SaveConfigurationParameter $options): GridConfiguration
+    private function setShareOptions(
+        GridConfiguration $configuration,
+        SaveConfigurationParameter $options
+    ): GridConfiguration
     {
         $configuration->setShareGlobal($options->shareGlobal());
         $configuration = $this->addUserShareToConfiguration(
