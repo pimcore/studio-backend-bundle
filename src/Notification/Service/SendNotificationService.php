@@ -26,6 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\SendNotificationParameters;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserPermission;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Notification;
 use Pimcore\Model\Notification\Service\UserService;
@@ -84,15 +86,17 @@ final readonly class SendNotificationService implements SendNotificationServiceI
     {
         try {
             $user = $this->userRepository->getUserById($parameters->getRecipientId());
+            if (!$user->isAllowed(UserPermissions::NOTIFICATIONS->value) || $user->getId() === $senderId) {
+                return [];
+            }
 
             return [$user];
         } catch (UserNotFoundException) {
+            $role = $this->roleRepository->getRoleById($parameters->getRecipientId());
+            $roleUsers = $this->userRepository->getUserListingByRoleId($role->getId(), $senderId);
+
+            return $this->userService->filterUsersWithPermission($roleUsers->getUsers());
         }
-
-        $role = $this->roleRepository->getRoleById($parameters->getRecipientId());
-        $roleUsers = $this->userRepository->getUserListingByRoleId($role->getId(), $senderId);
-
-        return $this->userService->filterUsersWithPermission($roleUsers->getUsers());
     }
 
     /**
