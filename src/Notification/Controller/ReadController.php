@@ -48,7 +48,12 @@ final class ReadController extends AbstractApiController
     /**
      * @throws AccessDeniedException|NotFoundException|UserNotFoundException
      */
-    #[Route('/notifications/{id}', name: 'pimcore_studio_api_read_notification', methods: ['POST'])]
+    #[Route(
+        '/notifications/{id}',
+        name: 'pimcore_studio_api_read_notification',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'])
+    ]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
     #[POST(
         path: self::API_PATH . '/notifications/{id}',
