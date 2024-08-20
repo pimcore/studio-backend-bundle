@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Mapper;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
@@ -31,6 +32,7 @@ final readonly class QueryToPayloadFilterMapper implements QueryToPayloadFilterM
     {
         return match(true) {
             $parameters instanceof PropertiesParameters => $this->mapPropertiesParameters($parameters),
+            default => throw new InvalidArgumentException('Invalid parameters type provided'),
         };
     }
 
