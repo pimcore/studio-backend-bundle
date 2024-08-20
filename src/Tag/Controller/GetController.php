@@ -20,15 +20,12 @@ use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\MethodNotAllowedResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\NotFoundResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\UnauthorizedResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\UnprocessableContentResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\UnsupportedMediaTypeResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -61,11 +58,10 @@ final class GetController extends AbstractApiController
         description: 'tag_get_by_id_success_response',
         content: new JsonContent(ref: Tag::class)
     )]
-    #[UnauthorizedResponse]
-    #[NotFoundResponse]
-    #[MethodNotAllowedResponse]
-    #[UnsupportedMediaTypeResponse]
-    #[UnprocessableContentResponse]
+    #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
+    ])]
     public function getTags(int $id): JsonResponse
     {
         return $this->jsonResponse($this->tagService->getTag($id));

@@ -25,16 +25,13 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\FilterP
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\ParentIdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\BadRequestResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\MethodNotAllowedResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\UnauthorizedResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\UnprocessableContentResponse;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Error\UnsupportedMediaTypeResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -82,11 +79,9 @@ final class CollectionController extends AbstractApiController
         description: 'tag_get_collection_success_response',
         content: new ItemsJson(Tag::class)
     )]
-    #[BadRequestResponse]
-    #[UnauthorizedResponse]
-    #[MethodNotAllowedResponse]
-    #[UnsupportedMediaTypeResponse]
-    #[UnprocessableContentResponse]
+    #[DefaultResponses([
+        HttpResponseCodes::UNAUTHORIZED,
+    ])]
     public function getTags(
         #[MapQueryString] TagsParameters $parameters): JsonResponse
     {
