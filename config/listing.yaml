@@ -13,3 +13,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilter
     tags: [ 'pimcore.studio_backend.filter_service' ]
+
+  #
+  # Mapper
+  #
+  Pimcore\Bundle\StudioBackendBundle\Listing\Mapper\QueryToPayloadFilterMapperInterface:
+      class:  Pimcore\Bundle\StudioBackendBundle\Listing\Mapper\QueryToPayloadFilterMapper
