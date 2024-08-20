@@ -21,6 +21,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Filter;
  */
 enum FilterType: string
 {
+    case EQUALS = 'equals';
     case PAGE = 'page';
     case PAGE_SIZE = 'page.size';
     case PROPERTY_NAME = 'property.name';

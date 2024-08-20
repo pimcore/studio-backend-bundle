@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Notification\NotificationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
@@ -45,13 +46,18 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
         ?CollectionParameters $parameters = null
     ): Listing {
         $listing = $this->getListing($parameters);
-        $listing->addConditionParam(
-            'recipient = :recipientId',
-            ['recipientId' => $user->getId()]
+        $filterParameters = new FilterParameter(
+            columnFilters: [
+                [
+                    'key' => 'recipient',
+                    'type' => 'equals',
+                    'filterValue' => $user->getId(),
+                ],
+            ],
         );
+        $this->listingFilter->applyFilters($filterParameters, $listing);
 
         return $listing;
-
     }
 
     /**

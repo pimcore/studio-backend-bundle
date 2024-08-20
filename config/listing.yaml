@@ -17,6 +17,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Listing\Filter\PaginationFilter:
     tags: [ 'pimcore.studio_backend.listing.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\EqualsFilter:
+    tags: [ 'pimcore.studio_backend.listing.filter' ]
+
   #Service Locator
   listing.query_to_payload_filter.service_locator:
     class: Symfony\Component\DependencyInjection\ServiceLocator
