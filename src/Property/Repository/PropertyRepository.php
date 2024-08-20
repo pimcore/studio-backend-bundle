@@ -41,8 +41,7 @@ final readonly class PropertyRepository implements PropertyRepositoryInterface
     public function __construct(
         private QueryToPayloadFilterMapperInterface $filterMapper,
         private PredefinedResolverInterface $predefinedResolver,
-        private ListingFilterInterface $filterService,
-        private TranslatorInterface $translator
+        private ListingFilterInterface $filterService
     ) {
     }
 
