@@ -277,6 +277,9 @@ notification_get_collection_description: |
   Get all paginated notifications for current user
 notification_get_collection_success_response: Paginated notifications with total count
 notification_get_collection_summary: Get paginated notifications
+notification_delete_all_description: Delete all notifications for the current user
+notification_delete_all_success_response: Successfully deleted all notifications
+notification_delete_all_summary: Delete all user notifications
 notification_delete_by_id_description: |
   Delete the notification with the given <strong>{id}</strong>. <br> Current user can only delete notifications, where he is the recipient.
 notification_delete_by_id_success_response: Successfully deleted notification

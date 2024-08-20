@@ -29,7 +29,7 @@ interface NotificationRepositoryInterface
 {
     public function getListingForCurrentUser(
         UserInterface $user,
-        CollectionParameters $parameters
+        ?CollectionParameters $parameters = null
     ): Listing;
 
     /**
@@ -38,6 +38,6 @@ interface NotificationRepositoryInterface
     public function getNotificationById(int $id): Notification;
 
     public function getListing(
-        CollectionParameters $parameters
+        ?CollectionParameters $parameters = null
     ): Listing;
 }

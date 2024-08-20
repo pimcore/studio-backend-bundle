@@ -18,11 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -36,7 +33,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class DeleteController extends AbstractApiController
+final class DeleteAllController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -46,28 +43,27 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|UserNotFoundException
+     * @throws UserNotFoundException
      */
-    #[Route('/notifications/{id}', name: 'pimcore_studio_api_delete_notification', methods: ['DELETE'])]
+    #[Route('/notifications', name: 'pimcore_studio_api_delete_all_notifications', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
     #[Delete(
-        path: self::API_PATH . '/notifications/{id}',
-        operationId: 'notification_delete_by_id',
-        description: 'notification_delete_by_id_description',
-        summary: 'notification_delete_by_id_summary',
+        path: self::API_PATH . '/notifications',
+        operationId: 'notification_delete_all',
+        description: 'notification_delete_all_description',
+        summary: 'notification_delete_all_summary',
         tags: [Tags::Notifications->name]
     )]
-    #[IdParameter(type: 'notification')]
     #[SuccessResponse(
-        description: 'notification_delete_by_id_success_response',
+        description: 'notification_delete_all_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteNotification(int $id): Response
+    public function deleteAllNotifications(): Response
     {
-        $this->notificationService->deleteNotificationById($id);
+        $this->notificationService->deleteAllUserNotifications();
 
         return new Response();
     }
