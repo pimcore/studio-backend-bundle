@@ -14,20 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
-
-use Pimcore\Model\Listing\AbstractListing;
-use Pimcore\Model\Listing\CallableFilterListingInterface;
+namespace Pimcore\Bundle\StudioBackendBundle\Filter;
 
 /**
  * @internal
  */
-interface FilterInterface
+enum FilterType: string
 {
-    public function apply(
-        mixed $parameters,
-        mixed $listing
-    ): mixed;
-
-    public function supports(mixed $listing): bool;
+    case PAGE = 'page';
+    case PAGE_SIZE = 'page.size';
+    case PROPERTY_NAME = 'property.name';
+    case PROPERTY_ELEMENT_TYPE = 'property.element.type';
 }

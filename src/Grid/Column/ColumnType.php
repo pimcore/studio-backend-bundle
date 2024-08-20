@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
 /**
  * @internal
@@ -34,6 +34,4 @@ enum ColumnType: string
     case METADATA_TEXTAREA = 'metadata.textarea';
     case METADATA_CHECKBOX = 'metadata.checkbox';
     case METADATA_STRING = 'metadata.string';
-    case PROPERTY_NAME = 'property.name';
-    case PROPERTY_ELEMENT_TYPE = 'property.element.type';
 }

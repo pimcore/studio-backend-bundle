@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Notification\NotificationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Model\Notification;
 use Pimcore\Model\Notification\Listing;
@@ -29,6 +31,8 @@ use Pimcore\Model\UserInterface;
 final readonly class NotificationRepository implements NotificationRepositoryInterface
 {
     public function __construct(
+        private FilterMapperServiceInterface $filterMapper,
+        private ListingFilterInterface $listingFilter,
         private NotificationResolverInterface $notificationResolver
     ) {
 
@@ -68,11 +72,8 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
     ): Listing {
 
         $listing = new Listing();
-        if ($parameters !== null) {
-            $limit = $parameters->getPageSize();
-            $listing->setLimit($limit);
-            $listing->setOffset(($parameters->getPage() - 1) * $limit);
-        }
+        $filterParameters = $this->filterMapper->map($parameters);
+        $this->listingFilter->applyFilters($filterParameters, $listing);
         $listing->setOrderKey(self::DEFAULT_ORDER_KEY);
         $listing->setOrder('DESC');
 
