@@ -47,11 +47,11 @@ final class CustomSettingsHydratorTest extends Unit
     public function testHydrate(): void
     {
         $assetCustomSettings = [
-            'embeddedMetadata' => [
+            'embeddedMetaData' => [
                 'FileSize' => '6.9 MB',
                 'FileType' => 'PNG',
             ],
-            'embeddedMetadataExtracted' => true,
+            'embeddedMetaDataExtracted' => true,
             'imageDimensionsCalculated' => true,
             'imageWidth' => 932,
             'imageHeight' => 327,
