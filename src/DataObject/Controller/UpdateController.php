@@ -56,7 +56,7 @@ final class UpdateController extends AbstractApiController
         operationId: 'data_object_update_by_id',
         description: 'data_object_update_by_id_description',
         summary: 'data_object_update_by_id_summary',
-        tags: [Tags::DataObjects->name]
+        tags: [Tags::DataObjects->value]
     )]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT)]
     #[UpdateDataObjectRequestBody]
