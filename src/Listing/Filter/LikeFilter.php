@@ -33,7 +33,7 @@ final readonly class LikeFilter implements FilterInterface
             return $listing;
         }
 
-        $equalsColumn = $parameters->getFirstColumnFilterByType(FilterType::EQUALS->value);
+        $equalsColumn = $parameters->getFirstColumnFilterByType(FilterType::LIKE->value);
 
         if ($equalsColumn === null) {
             return $listing;
@@ -41,7 +41,7 @@ final readonly class LikeFilter implements FilterInterface
 
         $listing->addConditionParam(
             $equalsColumn->getKey() . ' LIKE :' . $equalsColumn->getKey(),
-            [$equalsColumn->getKey() => $equalsColumn->getFilterValue()]
+            [$equalsColumn->getKey() => "%{$equalsColumn->getFilterValue()}%"]
         );
 
         return $listing;

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
 
+use Carbon\Carbon;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
@@ -46,11 +47,17 @@ final class DateFilter implements FilterInterface
 
         $filter = $column->getFilterValue();
         $key = $column->getKey();
-        $value = strtotime($filter['value']);
-
-        if ($filter['operator'] === 'eq') {
+        $carbonDate = new Carbon($filter['value']);
+        $value = $carbonDate->toDateTimeString();
+        if ($filter['operator'] === 'on') {
             $dateCondition = '`' . $key . '` ' . ' BETWEEN :minTime AND :maxTime';
-            $listing->addConditionParam($dateCondition, ['minTime' => $value, 'maxTime' => $value + (86400 - 1)]);
+            $listing->addConditionParam(
+                $dateCondition,
+                [
+                    'minTime' => $value,
+                    'maxTime' => $carbonDate->addDay()->subSecond()->toDateTimeString()
+                ]
+            );
 
             return $listing;
         }
@@ -74,10 +81,8 @@ final class DateFilter implements FilterInterface
     private function matchNumericOperator(string $operator): string
     {
         return match ($operator) {
-            'lt' => '<',
-            'lte' => '<=',
-            'gt' => '>',
-            'gte' => '>=',
+            'to' => '<=',
+            'from' => '>=',
             default => '='
         };
     }

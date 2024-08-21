@@ -20,9 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Notification\NotificationResolver
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Model\Notification;
 use Pimcore\Model\Notification\Listing;
 use Pimcore\Model\UserInterface;
@@ -33,7 +31,6 @@ use Pimcore\Model\UserInterface;
 final readonly class NotificationRepository implements NotificationRepositoryInterface
 {
     public function __construct(
-        private FilterMapperServiceInterface $filterMapper,
         private ListingFilterInterface $listingFilter,
         private NotificationResolverInterface $notificationResolver
     ) {
@@ -44,14 +41,14 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
 
     public function getListingForCurrentUser(
         UserInterface $user,
-        ?CollectionParameters $parameters = null
+        FilterParameter $parameters = new FilterParameter()
     ): Listing {
         $listing = $this->getListing($parameters);
         $filterParameters = new FilterParameter(
             columnFilters: [
                 [
                     'key' => 'recipient',
-                    'type' => FilterType::EQUALS,
+                    'type' => FilterType::EQUALS->value,
                     'filterValue' => $user->getId(),
                 ],
             ],
@@ -75,12 +72,11 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
     }
 
     public function getListing(
-        ?CollectionParameters $parameters = null
+        FilterParameter $parameters
     ): Listing {
 
         $listing = new Listing();
-        $filterParameters = $this->filterMapper->map($parameters);
-        $this->listingFilter->applyFilters($filterParameters, $listing);
+        $this->listingFilter->applyFilters($parameters, $listing);
         $listing->setOrderKey(self::DEFAULT_ORDER_KEY);
         $listing->setOrder('DESC');
 

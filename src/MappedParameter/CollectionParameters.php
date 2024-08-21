@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\ValueObject\Integer\PositiveInteger;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
@@ -34,6 +35,7 @@ readonly class CollectionParameters implements CollectionParametersInterface
         #[NotBlank]
         #[Positive]
         private int $pageSize = 10,
+        private ?FilterParameter $filters = null,
     ) {
         $this->validate();
     }
@@ -51,6 +53,11 @@ readonly class CollectionParameters implements CollectionParametersInterface
     public function getOffset(): int
     {
         return ($this->page - 1) * $this->pageSize;
+    }
+
+    public function getFilters(): ?FilterParameter
+    {
+        return $this->filters;
     }
 
     private function validate(): void
