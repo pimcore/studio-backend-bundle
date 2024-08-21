@@ -19,16 +19,21 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Attribute\Request\SendNotificationRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\SendNotificationParameters;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Service\SendNotificationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -36,43 +41,43 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ReadController extends AbstractApiController
+final class SendController extends AbstractApiController
 {
     public function __construct(
+        private readonly SendNotificationServiceInterface $sendNotificationService,
+        private readonly SecurityServiceInterface $securityService,
         SerializerInterface $serializer,
-        private readonly NotificationServiceInterface $notificationService,
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|UserNotFoundException
+     * @throws AccessDeniedException
+     * @throws EnvironmentException
+     * @throws InvalidElementTypeException
+     * @throws NotFoundException
+     * @throws UserNotFoundException
      */
-    #[Route(
-        '/notifications/{id}',
-        name: 'pimcore_studio_api_read_notification',
-        requirements: ['id' => '\d+'],
-        methods: ['POST'])
-    ]
-    #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
-    #[POST(
-        path: self::API_PATH . '/notifications/{id}',
-        operationId: 'notification_read_by_id',
-        description: 'notification_read_by_id_description',
-        summary: 'notification_read_by_id_summary',
-        tags: [Tags::Notifications->name]
+    #[Route('/notifications/send', name: 'pimcore_studio_api_notification_send', methods: ['POST'])]
+    #[IsGranted(UserPermissions::NOTIFICATIONS_SEND->value)]
+    #[Post(
+        path: self::API_PATH . '/notifications/send',
+        operationId: 'notification_send',
+        description: 'notification_send_description',
+        summary: 'notification_send_summary',
+        tags: [Tags::Notifications->value]
     )]
-    #[IdParameter(type: 'notification')]
+    #[SendNotificationRequestBody]
     #[SuccessResponse(
-        description: 'notification_read_by_id_success_response',
+        description: 'notification_send_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND,
     ])]
-    public function readNotificationById(int $id): Response
-    {
-        $this->notificationService->markNotificationAsRead($id);
+    public function sendNotification(
+        #[MapRequestPayload] SendNotificationParameters $parameters
+    ): Response {
+        $this->sendNotificationService->sendNotification($parameters, $this->securityService->getCurrentUser());
 
         return new Response();
     }

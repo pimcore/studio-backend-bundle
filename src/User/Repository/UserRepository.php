@@ -95,4 +95,27 @@ final readonly class UserRepository implements UserRepositoryInterface
             );
         }
     }
+
+    public function getUserListingByRoleId(int $roleId, ?int $excludeUserId = null): UserListing
+    {
+        $listing = new UserListing();
+        if ($excludeUserId !== null) {
+            $listing->addConditionParam('id != :excludeUser', ['excludeUser' => $excludeUserId]);
+        }
+        $roleCondition = '(roles = :roleId' .
+            'OR roles LIKE :roleIdEnds OR roles LIKE :roleIdStarts OR roles LIKE :roleIdContains)';
+        $roleParams = [
+            'roleId' => $roleId,
+            'roleIdEnds' => '%,' . $roleId,
+            'roleIdStarts' => $roleId . ',%',
+            'roleIdContains' => '%,' . $roleId . ',%',
+        ];
+        $listing->addConditionParam('active = :active', ['active' => 1]);
+        $listing->addConditionParam($roleCondition, $roleParams);
+        $listing->setOrder('ASC');
+        $listing->setOrderKey('name');
+        $listing->load();
+
+        return $listing;
+    }
 }

@@ -29,6 +29,7 @@ enum UserPermissions: string
     case GDPR = 'gdpr_data_extractor';
     case NOTES_EVENTS = 'notes_events';
     case NOTIFICATIONS = 'notifications';
+    case NOTIFICATIONS_SEND = 'notifications_send';
     case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
     case PIMCORE_USER = 'ROLE_PIMCORE_USER';
     case PREDEFINED_PROPERTIES = 'predefined_properties';
