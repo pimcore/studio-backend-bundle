@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Notification\NotificationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
@@ -50,7 +51,7 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
             columnFilters: [
                 [
                     'key' => 'recipient',
-                    'type' => 'equals',
+                    'type' => FilterType::EQUALS,
                     'filterValue' => $user->getId(),
                 ],
             ],

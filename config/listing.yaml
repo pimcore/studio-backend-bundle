@@ -14,10 +14,16 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilter
     tags: [ 'pimcore.studio_backend.filter_service' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\PaginationFilter:
+  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\DateFilter:
     tags: [ 'pimcore.studio_backend.listing.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\Listing\Filter\EqualsFilter:
+    tags: [ 'pimcore.studio_backend.listing.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\LikeFilter:
+    tags: [ 'pimcore.studio_backend.listing.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\PaginationFilter:
     tags: [ 'pimcore.studio_backend.listing.filter' ]
 
   #Service Locator
