@@ -27,12 +27,10 @@ use function is_array;
  */
 final class DateFilter implements FilterInterface
 {
-
     public function apply(
         mixed $parameters,
         mixed $listing
-    ): mixed
-    {
+    ): mixed {
         foreach ($parameters->getColumnFilterByType(FilterType::DATE->value) as $column) {
             $listing = $this->applyDateFilter($column, $listing);
         }
