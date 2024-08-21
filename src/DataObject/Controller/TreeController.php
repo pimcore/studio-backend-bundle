@@ -68,7 +68,7 @@ final class TreeController extends AbstractApiController
         operationId: 'data_object_get_tree',
         description: 'data_object_get_tree_description',
         summary: 'data_object_get_tree_summary',
-        tags: [Tags::DataObjects->name],
+        tags: [Tags::DataObjects->value],
     )]
     #[PageParameter]
     #[PageSizeParameter]

@@ -19,9 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\Grid\SaveConfigurationRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\SaveConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -59,7 +59,7 @@ final class SaveConfigurationController extends AbstractApiController
         operationId: 'asset_save_grid_configuration',
         description: 'asset_save_grid_configuration_description',
         summary: 'asset_save_grid_configuration_description',
-        tags: [Tags::Grid->name]
+        tags: [Tags::AssetGrid->value]
     )]
     #[SaveConfigurationRequestBody]
     #[SuccessResponse(

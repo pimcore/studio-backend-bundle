@@ -18,9 +18,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationService
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationService
-
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnService
 

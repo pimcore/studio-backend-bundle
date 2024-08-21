@@ -363,6 +363,7 @@ system_settings_get_success_response: System settings data
 system_settings_get_summary: Get system settings
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
+tag_asset_grid_description: Asset Grid operations
 tag_assign_to_element_description: |
   Assign a specific tag based on the given <strong>{tagId}</strong> to an element based on <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
@@ -409,7 +410,6 @@ tag_get_collection_for_element_by_type_and_id_success_response: Paginated tags f
 tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
 tag_get_collection_success_response: All tags for a parent filtered based on type and query parameters
 tag_get_collection_summary: Get all tags for a parent
-tag_grid_description: Grid operations
 tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
 tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications

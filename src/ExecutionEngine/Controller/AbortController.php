@@ -55,7 +55,7 @@ final class AbortController extends AbstractApiController
         operationId: 'execution_engine_abort_job_run_by_id',
         description: 'execution_engine_abort_job_run_by_id_description',
         summary: 'execution_engine_abort_job_run_by_id_summary',
-        tags: [Tags::ExecutionEngine->name]
+        tags: [Tags::ExecutionEngine->value]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
     #[SuccessResponse]
