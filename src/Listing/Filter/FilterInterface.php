@@ -16,9 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
 
-use Pimcore\Model\Listing\AbstractListing;
-use Pimcore\Model\Listing\CallableFilterListingInterface;
-
 /**
  * @internal
  */
@@ -26,8 +23,8 @@ interface FilterInterface
 {
     public function apply(
         mixed $parameters,
-        AbstractListing|CallableFilterListingInterface $listing
-    ): AbstractListing|CallableFilterListingInterface;
+        mixed $listing
+    ): mixed;
 
     public function supports(mixed $listing): bool;
 }

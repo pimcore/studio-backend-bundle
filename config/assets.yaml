@@ -22,6 +22,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoderInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Asset\Encoder\TextEncoder
 
+  # Services
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetService
 
@@ -57,6 +58,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvService
+
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\SaveConfigurationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\SaveConfigurationService
 
 
   #

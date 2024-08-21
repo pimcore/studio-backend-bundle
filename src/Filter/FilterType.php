@@ -14,18 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
-
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+namespace Pimcore\Bundle\StudioBackendBundle\Filter;
 
 /**
  * @internal
  */
-interface SaveConfigurationServiceInterface
+enum FilterType: string
 {
-    /**
-     * @throws NotFoundException
-     */
-    public function saveAssetGridConfiguration(SaveConfigurationParameter $configuration): void;
+    case DATE = 'date';
+    case EQUALS = 'equals';
+    case LIKE = 'like';
+    case PAGE = 'page';
+    case PAGE_SIZE = 'page.size';
+    case PROPERTY_NAME = 'property.name';
+    case PROPERTY_ELEMENT_TYPE = 'property.element.type';
 }

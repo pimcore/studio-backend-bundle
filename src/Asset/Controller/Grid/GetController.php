@@ -57,7 +57,7 @@ final class GetController extends AbstractApiController
         operationId: 'asset_get_grid',
         description: 'asset_get_grid_description',
         summary: 'asset_get_grid_summary',
-        tags: [Tags::Grid->name]
+        tags: [Tags::AssetGrid->value]
     )]
     #[GridRequestBody]
     #[SuccessResponse(

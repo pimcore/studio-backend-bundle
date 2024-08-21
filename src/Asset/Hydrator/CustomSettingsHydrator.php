@@ -24,9 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
  */
 final class CustomSettingsHydrator implements CustomSettingsHydratorInterface
 {
-    private const METADATA_KEY = 'embeddedMetadata';
+    private const METADATA_KEY = 'embeddedMetaData';
 
-    private const METADATA_EXTRACTED_KEY = 'embeddedMetadataExtracted';
+    private const METADATA_EXTRACTED_KEY = 'embeddedMetaDataExtracted';
 
     private const FIXED_CUSTOM_SETTINGS_KEYS = [
         self::METADATA_KEY,

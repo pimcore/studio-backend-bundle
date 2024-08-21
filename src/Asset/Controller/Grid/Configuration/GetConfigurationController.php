@@ -65,7 +65,7 @@ final class GetConfigurationController extends AbstractApiController
         operationId: 'asset_get_grid_configuration_by_folderId',
         description: 'asset_get_grid_configuration_by_folderId_description',
         summary: 'asset_get_grid_configuration_by_folderId_summary',
-        tags: [Tags::Grid->name]
+        tags: [Tags::AssetGrid->value]
     )]
     #[IdParameterPath(name: 'folderId')]
     #[IdParameterQuery(description: 'Configuration ID', namePrefix: 'configuration', required: false)]

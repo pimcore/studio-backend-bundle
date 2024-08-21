@@ -20,6 +20,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\PimcoreGenericDataIndexBundle;
 use Pimcore\Bundle\GenericExecutionEngineBundle\PimcoreGenericExecutionEngineBundle;
 use Pimcore\Bundle\StaticResolverBundle\PimcoreStaticResolverBundle;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\DataIndexFilterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\FilterMapperPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColumnDefinitionPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColumnResolverPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\ListingFilterPass;
@@ -75,6 +76,7 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new DataIndexFilterPass());
         $container->addCompilerPass(new ListingFilterPass());
         $container->addCompilerPass(new PatchAdapterPass());
+        $container->addCompilerPass(new FilterMapperPass());
         $container->addCompilerPass(new GridColumnDefinitionPass());
         $container->addCompilerPass(new GridColumnResolverPass());
         $container->addCompilerPass(new UpdateAdapterPass());
