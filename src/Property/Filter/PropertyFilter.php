@@ -16,12 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Property\Filter;
 
-use Pimcore\Bundle\StudioBackendBundle\Filter\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
-use Pimcore\Model\Listing\AbstractListing;
-use Pimcore\Model\Listing\CallableFilterListingInterface;
 use Pimcore\Model\Property\Predefined;
 use Pimcore\Model\Property\Predefined\Listing as PropertyListing;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -38,8 +36,8 @@ final readonly class PropertyFilter implements FilterInterface
 
     public function apply(
         mixed $parameters,
-        AbstractListing|CallableFilterListingInterface $listing
-    ): AbstractListing|CallableFilterListingInterface {
+        mixed $listing
+    ): mixed {
         if (!$listing instanceof PropertyListing) {
             return $listing;
         }
@@ -49,10 +47,10 @@ final readonly class PropertyFilter implements FilterInterface
         }
 
         /** @var ?ColumnFilter $name */
-        $name = $parameters->getFirstColumnFilterByType(ColumnType::PROPERTY_NAME->value);
+        $name = $parameters->getFirstColumnFilterByType(FilterType::PROPERTY_NAME->value);
 
         /** @var ?ColumnFilter $type */
-        $type = $parameters->getFirstColumnFilterByType(ColumnType::PROPERTY_ELEMENT_TYPE->value);
+        $type = $parameters->getFirstColumnFilterByType(FilterType::PROPERTY_ELEMENT_TYPE->value);
 
         $translator = $this->translator;
 

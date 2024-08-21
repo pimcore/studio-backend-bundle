@@ -19,21 +19,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Filter;
 /**
  * @internal
  */
-enum ColumnType: string
+enum FilterType: string
 {
-    case SYSTEM_STRING = 'system.string';
-    case SYSTEM_FILE_SIZE = 'system.fileSize';
-    case SYSTEM_INTEGER = 'system.integer';
-    case SYSTEM_DATETIME = 'system.datetime';
-    case METADATA_SELECT = 'metadata.select';
-    case METADATA_INPUT = 'metadata.input';
-    case METADATA_DATE = 'metadata.date';
-    case METADATA_ASSET = 'metadata.asset';
-    case METADATA_DOCUMENT = 'metadata.document';
-    case METADATA_DATA_OBJECT = 'metadata.object';
-    case METADATA_TEXTAREA = 'metadata.textarea';
-    case METADATA_CHECKBOX = 'metadata.checkbox';
-    case METADATA_STRING = 'metadata.string';
+    case DATE = 'date';
+    case EQUALS = 'equals';
+    case LIKE = 'like';
+    case PAGE = 'page';
+    case PAGE_SIZE = 'page.size';
     case PROPERTY_NAME = 'property.name';
     case PROPERTY_ELEMENT_TYPE = 'property.element.type';
 }

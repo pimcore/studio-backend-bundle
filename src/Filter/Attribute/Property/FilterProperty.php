@@ -14,17 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Property;
+
+use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 
 /**
  * @internal
  */
-interface FilterInterface
+final class FilterProperty extends Property
 {
-    public function apply(
-        mixed $parameters,
-        mixed $listing
-    ): mixed;
-
-    public function supports(mixed $listing): bool;
+    public function __construct()
+    {
+        parent::__construct(
+            property: 'filters',
+            ref: Filter::class,
+            type: 'object'
+        );
+    }
 }

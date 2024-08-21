@@ -14,12 +14,17 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilter
     tags: [ 'pimcore.studio_backend.filter_service' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\DateFilter:
+    tags: [ 'pimcore.studio_backend.listing.filter' ]
 
-  #
-  # Mappers
-  #
+  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\EqualsFilter:
+    tags: [ 'pimcore.studio_backend.listing.filter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Property\Mapper\PropertiesParametersMapper: ~
+  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\LikeFilter:
+    tags: [ 'pimcore.studio_backend.listing.filter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\PaginationFilter:
+    tags: [ 'pimcore.studio_backend.listing.filter' ]
 
   #Service Locator
   listing.query_to_payload_filter.service_locator:
@@ -27,6 +32,7 @@ services:
     tags: [ 'container.service_locator' ]
     arguments:
       - Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters: '@Pimcore\Bundle\StudioBackendBundle\Property\Mapper\PropertiesParametersMapper'
+        Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters: '@Pimcore\Bundle\StudioBackendBundle\Filter\Mapper\CollectionParametersMapper'
 
   #
   # MapperService

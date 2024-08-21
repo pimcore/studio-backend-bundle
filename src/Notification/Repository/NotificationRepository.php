@@ -18,7 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Notification\NotificationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Model\Notification;
 use Pimcore\Model\Notification\Listing;
 use Pimcore\Model\UserInterface;
@@ -29,6 +31,7 @@ use Pimcore\Model\UserInterface;
 final readonly class NotificationRepository implements NotificationRepositoryInterface
 {
     public function __construct(
+        private ListingFilterInterface $listingFilter,
         private NotificationResolverInterface $notificationResolver
     ) {
 
@@ -38,16 +41,21 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
 
     public function getListingForCurrentUser(
         UserInterface $user,
-        ?CollectionParameters $parameters = null
+        FilterParameter $parameters = new FilterParameter()
     ): Listing {
         $listing = $this->getListing($parameters);
-        $listing->addConditionParam(
-            'recipient = :recipientId',
-            ['recipientId' => $user->getId()]
+        $filterParameters = new FilterParameter(
+            columnFilters: [
+                [
+                    'key' => 'recipient',
+                    'type' => FilterType::EQUALS->value,
+                    'filterValue' => $user->getId(),
+                ],
+            ],
         );
+        $this->listingFilter->applyFilters($filterParameters, $listing);
 
         return $listing;
-
     }
 
     /**
@@ -64,15 +72,11 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
     }
 
     public function getListing(
-        ?CollectionParameters $parameters = null
+        FilterParameter $parameters
     ): Listing {
 
         $listing = new Listing();
-        if ($parameters !== null) {
-            $limit = $parameters->getPageSize();
-            $listing->setLimit($limit);
-            $listing->setOffset(($parameters->getPage() - 1) * $limit);
-        }
+        $this->listingFilter->applyFilters($parameters, $listing);
         $listing->setOrderKey(self::DEFAULT_ORDER_KEY);
         $listing->setOrder('DESC');
 

@@ -14,40 +14,40 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Property\Mapper;
+namespace Pimcore\Bundle\StudioBackendBundle\Filter\Mapper;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Mapper\FilterMapperInterface;
-use Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 
-final class PropertiesParametersMapper implements FilterMapperInterface
+final class CollectionParametersMapper implements FilterMapperInterface
 {
     /**
      * @throws InvalidArgumentException
      */
     public function map(mixed $parameters): FilterParameter
     {
-        if (!$parameters instanceof PropertiesParameters) {
-            throw new InvalidArgumentException('Invalid parameters type provided');
+        if (!$parameters instanceof CollectionParameters) {
+            return new FilterParameter();
         }
 
         $columnFilters = [];
 
-        if ($parameters->getFilter() !== null) {
+        if ($parameters->getPage() !== null) {
             $columnFilters[] = [
-                'key' => 'properties',
-                'type' => FilterType::PROPERTY_NAME->value,
-                'filterValue' => $parameters->getFilter(),
+                'key' => 'page',
+                'type' => FilterType::PAGE->value,
+                'filterValue' => $parameters->getPage(),
             ];
         }
 
-        if ($parameters->getElementType() !== null) {
+        if ($parameters->getPageSize() !== null) {
             $columnFilters[] = [
-                'key' => 'properties',
-                'type' => FilterType::PROPERTY_ELEMENT_TYPE->value,
-                'filterValue' => $parameters->getElementType(),
+                'key' => 'pageSize',
+                'type' => FilterType::PAGE_SIZE->value,
+                'filterValue' => $parameters->getPageSize(),
             ];
         }
 
