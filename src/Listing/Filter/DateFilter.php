@@ -55,7 +55,7 @@ final class DateFilter implements FilterInterface
                 $dateCondition,
                 [
                     'minTime' => $value,
-                    'maxTime' => $carbonDate->addDay()->subSecond()->toDateTimeString()
+                    'maxTime' => $carbonDate->addDay()->subSecond()->toDateTimeString(),
                 ]
             );
 
