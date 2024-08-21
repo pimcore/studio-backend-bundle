@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;

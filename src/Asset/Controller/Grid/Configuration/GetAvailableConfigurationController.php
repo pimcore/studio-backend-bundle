@@ -61,7 +61,7 @@ final class GetAvailableConfigurationController extends AbstractApiController
         operationId: 'asset_get_available_grid_configuration',
         description: 'asset_get_available_grid_configuration_description',
         summary: 'asset_get_available_grid_configuration_summary',
-        tags: [Tags::Grid->name]
+        tags: [Tags::AssetGrid->value]
     )]
     #[SuccessResponse(
         description: 'asset_get_available_grid_configuration_success_response',

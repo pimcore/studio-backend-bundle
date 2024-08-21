@@ -65,7 +65,7 @@ final class PatchController extends AbstractApiController
         operationId: 'data_object_patch_by_id',
         description: 'data_object_patch_by_id_description',
         summary: 'data_object_patch_by_id_summary',
-        tags: [Tags::DataObjects->name]
+        tags: [Tags::DataObjects->value]
     )]
     #[PatchDataObjectRequestBody]
     #[SuccessResponse(

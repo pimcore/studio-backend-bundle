@@ -22,31 +22,35 @@ use OpenApi\Attributes\Tag;
  * @internal
  */
 #[Tag(
-    name: Tags::Assets->name,
+    name: Tags::Assets->value,
     description: 'tag_assets_description',
 )]
 #[Tag(
-    name: Tags::AssetThumbnails->name,
+    name: Tags::AssetGrid->value,
+    description: 'tag_asset_grid_description'
+)]
+#[Tag(
+    name: Tags::AssetThumbnails->value,
     description: 'tag_asset_thumbnail_description'
 )]
 #[Tag(
-    name: Tags::Authorization->name,
+    name: Tags::Authorization->value,
     description: 'tag_authorization_description'
 )]
 #[Tag(
-    name: Tags::DataObjects->name,
+    name: Tags::DataObjects->value,
     description: 'tag_dataobjects_description'
 )]
 #[Tag(
-    name: Tags::Dependencies->name,
+    name: Tags::Dependencies->value,
     description: 'tag_dependencies_description'
 )]
 #[Tag(
-    name: Tags::Elements->name,
+    name: Tags::Elements->value,
     description: 'tag_elements_description'
 )]
 #[Tag(
-    name: Tags::ExecutionEngine->name,
+    name: Tags::ExecutionEngine->value,
     description: 'tag_execution_engine_description'
 )]
 #[Tag(
@@ -54,23 +58,19 @@ use OpenApi\Attributes\Tag;
     description: 'tag_emails_description'
 )]
 #[Tag(
-    name: Tags::Grid->name,
-    description: 'tag_grid_description'
-)]
-#[Tag(
-    name: Tags::Mercure->name,
+    name: Tags::Mercure->value,
     description: 'tag_mercure_description'
 )]
 #[Tag(
-    name: Tags::Notes->name,
+    name: Tags::Notes->value,
     description: 'tag_notes_description'
 )]
 #[Tag(
-    name: Tags::Notifications->name,
+    name: Tags::Notifications->value,
     description: 'tag_notifications_description'
 )]
 #[Tag(
-    name: Tags::Properties->name,
+    name: Tags::Properties->value,
     description: 'tag_properties_description'
 )]
 #[Tag(
@@ -78,15 +78,15 @@ use OpenApi\Attributes\Tag;
     description: 'tag_role_description'
 )]
 #[Tag(
-    name: Tags::Schedule->name,
+    name: Tags::Schedule->value,
     description: 'tag_schedule_description'
 )]
 #[Tag(
-    name: Tags::Settings->name,
+    name: Tags::Settings->value,
     description: 'tag_settings_description'
 )]
 #[Tag(
-    name: Tags::Tags->name,
+    name: Tags::Tags->value,
     description: 'tag_tags_description'
 )]
 #[Tag(
@@ -94,7 +94,7 @@ use OpenApi\Attributes\Tag;
     description: 'tag_tags_for_element_description'
 )]
 #[Tag(
-    name: Tags::Translation->name,
+    name: Tags::Translation->value,
     description: 'tag_translation_description'
 )]
 #[Tag(
@@ -102,24 +102,24 @@ use OpenApi\Attributes\Tag;
     description: 'tag_user_description'
 )]
 #[Tag(
-    name: Tags::Versions->name,
+    name: Tags::Versions->value,
     description: 'tag_versions_description'
 )]
 #[Tag(
-    name: Tags::Workflows->name,
+    name: Tags::Workflows->value,
     description: 'tag_workflows_description'
 )]
 enum Tags: string
 {
     case Assets = 'Assets';
+    case AssetGrid = 'Asset Grid';
     case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';
-    case DataObjects = 'DataObjects';
+    case DataObjects = 'Data Objects';
     case Dependencies = 'Dependencies';
     case Elements = 'Elements';
     case ExecutionEngine = 'Execution Engine';
     case Emails = 'E-Mails';
-    case Grid = 'Grid';
     case Mercure = 'Mercure';
     case Notes = 'Notes';
     case Notifications = 'Notifications';

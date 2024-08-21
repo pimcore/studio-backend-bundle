@@ -57,7 +57,7 @@ final class VideoCollectionController extends AbstractApiController
         operationId: 'thumbnail_video_get_collection',
         description: 'thumbnail_video_get_collection_description',
         summary: 'thumbnail_video_get_collection_summary',
-        tags: [Tags::AssetThumbnails->name]
+        tags: [Tags::AssetThumbnails->value]
     )]
     #[SuccessResponse(
         description: 'thumbnail_video_get_collection_success_response',
