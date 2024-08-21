@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
 use InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\ResizeModes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
 use function in_array;
 
 /**

@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Repository;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Event\ThumbnailEvent;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\Thumbnail;
 use Pimcore\Bundle\StudioBackendBundle\Thumbnail\Schema\ThumbnailCollection;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Thumbnails;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Thumbnails;
 use Pimcore\Model\Asset\Image\Thumbnail\Config;
 use Pimcore\Model\Asset\Image\Thumbnail\Config\Listing as ImageThumbnailListing;
 use Pimcore\Model\Asset\Video\Thumbnail\Config\Listing as VideoThumbnailListing;

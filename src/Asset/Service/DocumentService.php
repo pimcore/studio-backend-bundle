@@ -23,10 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotComplet
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\Asset\MimeTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseHeaders;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\StreamedResponseTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Document\Adapter;
 use Pimcore\Messenger\AssetUpdateTasksMessage;
 use Pimcore\Model\Asset\Document;

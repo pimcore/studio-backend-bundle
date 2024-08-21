@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Event\NotificationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Event\NotificationListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydratorInterface;
@@ -79,7 +79,7 @@ final readonly class NotificationService implements NotificationServiceInterface
     /**
      * @throws UserNotFoundException
      */
-    public function listNotifications(CollectionParameters $parameters): Collection
+    public function listNotifications(FilterParameter $parameters): Collection
     {
         $list = [];
         $listing = $this->notificationRepository->getListingForCurrentUser(
@@ -113,6 +113,20 @@ final readonly class NotificationService implements NotificationServiceInterface
         $this->validateNotificationAccess($notification);
 
         $notification->delete();
+    }
+
+    /**
+     * @throws UserNotFoundException
+     */
+    public function deleteAllUserNotifications(): void
+    {
+        $notifications = $this->notificationRepository->getListingForCurrentUser(
+            $this->securityService->getCurrentUser()
+        );
+
+        foreach ($notifications as $notification) {
+            $notification->delete();
+        }
     }
 
     /**

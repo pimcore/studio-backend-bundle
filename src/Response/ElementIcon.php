@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Response;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\ElementIconTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use function in_array;
 
 /**

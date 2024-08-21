@@ -18,6 +18,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationService
 
+  Pimcore\Bundle\StudioBackendBundle\Notification\Service\SendNotificationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Service\SendNotificationService
+
   #
   # Hydrators
   #

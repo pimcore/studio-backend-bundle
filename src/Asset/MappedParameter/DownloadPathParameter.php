@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\DownloadFormats;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DownloadFormats;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use function in_array;
 

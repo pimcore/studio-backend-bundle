@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Asset\Hydrator;
 
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomSettingsHydrator;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSetting\FixedCustomSettings;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings\FixedCustomSettings;
 
 /**
  * @internal
@@ -47,11 +47,11 @@ final class CustomSettingsHydratorTest extends Unit
     public function testHydrate(): void
     {
         $assetCustomSettings = [
-            'embeddedMetadata' => [
+            'embeddedMetaData' => [
                 'FileSize' => '6.9 MB',
                 'FileType' => 'PNG',
             ],
-            'embeddedMetadataExtracted' => true,
+            'embeddedMetaDataExtracted' => true,
             'imageDimensionsCalculated' => true,
             'imageWidth' => 932,
             'imageHeight' => 327,

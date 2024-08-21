@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\RateLimiter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\RateLimitException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\RequestTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\RateLimiter\Exception\RateLimitExceededException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;

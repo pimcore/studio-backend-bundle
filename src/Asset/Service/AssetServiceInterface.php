@@ -56,6 +56,8 @@ interface AssetServiceInterface
      */
     public function getAssetFolder(int $id): AssetFolder;
 
+    public function assetFolderExists(int $id): bool;
+
     /**
      * @throws AccessDeniedException|NotFoundException
      */

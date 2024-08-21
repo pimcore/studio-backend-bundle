@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\AdditionalAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'NotificationListItem',
@@ -41,8 +41,8 @@ class NotificationListItem implements AdditionalAttributesInterface
         private readonly bool $read,
         #[Property(description: 'has attachment', type: 'bool', example: true)]
         private readonly bool $hasAttachment,
-        #[Property(description: 'sent date', type: 'integer', example: 1707312457)]
-        private readonly int $sentDate,
+        #[Property(description: 'creation date', type: 'integer', example: 1707312457)]
+        private readonly int $creationDate,
         #[Property(description: 'sender', type: 'string', example: 'Pimcore Admin')]
         private readonly ?string $sender = null,
     ) {
@@ -74,9 +74,9 @@ class NotificationListItem implements AdditionalAttributesInterface
         return $this->hasAttachment;
     }
 
-    public function getSentDate(): int
+    public function getCreationDate(): int
     {
-        return $this->sentDate;
+        return $this->creationDate;
     }
 
     public function getSender(): ?string

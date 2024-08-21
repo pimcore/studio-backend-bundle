@@ -16,17 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSetting\FixedCustomSettings;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomSettings\FixedCustomSettings;
 
 /**
  * @internal
  */
 final class CustomSettingsHydrator implements CustomSettingsHydratorInterface
 {
-    private const METADATA_KEY = 'embeddedMetadata';
+    private const METADATA_KEY = 'embeddedMetaData';
 
-    private const METADATA_EXTRACTED_KEY = 'embeddedMetadataExtracted';
+    private const METADATA_EXTRACTED_KEY = 'embeddedMetaDataExtracted';
 
     private const FIXED_CUSTOM_SETTINGS_KEYS = [
         self::METADATA_KEY,

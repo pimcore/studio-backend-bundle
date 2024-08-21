@@ -25,7 +25,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchPro
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Dependency\MappedParameter\DependencyParameters;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 

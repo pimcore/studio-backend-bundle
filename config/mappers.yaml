@@ -1,0 +1,15 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+
+
+  #
+  # Mappers
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Property\Mapper\PropertiesParametersMapper: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Filter\Mapper\CollectionParametersMapper: ~

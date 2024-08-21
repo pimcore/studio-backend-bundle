@@ -16,25 +16,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationListItem;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Query\PageSizeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Property\GenericCollection;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\Content\CollectionJson;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Util\Traits\PaginatedResponseTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -57,17 +56,16 @@ final class CollectionController extends AbstractApiController
      * @throws AccessDeniedException
      * @throws UserNotFoundException
      */
-    #[Route('/notifications', name: 'pimcore_studio_api_notifications_list', methods: ['GET'])]
+    #[Route('/notifications', name: 'pimcore_studio_api_notifications_list', methods: ['POST'])]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
-    #[Get(
+    #[Post(
         path: self::API_PATH . '/notifications',
         operationId: 'notification_get_collection',
         description: 'notification_get_collection_description',
         summary: 'notification_get_collection_summary',
         tags: [Tags::Notifications->value]
     )]
-    #[PageParameter]
-    #[PageSizeParameter]
+    #[CollectionRequestBody]
     #[SuccessResponse(
         description: 'notification_get_collection_success_response',
         content: new CollectionJson(new GenericCollection(NotificationListItem::class))
@@ -77,9 +75,9 @@ final class CollectionController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function getNotificationCollection(
-        #[MapQueryString] CollectionParameters $parameters
+        #[MapRequestPayload] CollectionParameters $parameters
     ): JsonResponse {
-        $collection = $this->notificationService->listNotifications($parameters);
+        $collection = $this->notificationService->listNotifications($parameters->getFilters());
 
         return $this->getPaginatedCollection(
             $this->serializer,

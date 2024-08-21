@@ -48,4 +48,6 @@ interface UserRepositoryInterface
      * @throws DatabaseException
      */
     public function updateUser(UserInterface $user): void;
+
+    public function getUserListingByRoleId(int $roleId, ?int $excludeUserId = null): UserListing;
 }

@@ -20,7 +20,7 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\PublicTranslations;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Translation\Translator;
 
 final class TranslatorServiceTest extends Unit

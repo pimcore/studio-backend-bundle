@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constants\Mercure;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\Mercure;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Mercure\HubInterface;
 

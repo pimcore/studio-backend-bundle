@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Model\Notification;
 use Pimcore\Model\Notification\Listing;
 use Pimcore\Model\UserInterface;
@@ -29,7 +29,7 @@ interface NotificationRepositoryInterface
 {
     public function getListingForCurrentUser(
         UserInterface $user,
-        CollectionParameters $parameters
+        FilterParameter $parameters = new FilterParameter()
     ): Listing;
 
     /**
@@ -38,6 +38,6 @@ interface NotificationRepositoryInterface
     public function getNotificationById(int $id): Notification;
 
     public function getListing(
-        CollectionParameters $parameters
+        FilterParameter $parameters
     ): Listing;
 }

@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Email\Util\Constants\EmailContentType;
+use Pimcore\Bundle\StudioBackendBundle\Email\Util\Constant\EmailContentType;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use function in_array;
 

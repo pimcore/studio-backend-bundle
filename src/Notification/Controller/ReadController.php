@@ -22,12 +22,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Parameters\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\DefaultResponses;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attributes\Response\SuccessResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constants\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -48,7 +48,12 @@ final class ReadController extends AbstractApiController
     /**
      * @throws AccessDeniedException|NotFoundException|UserNotFoundException
      */
-    #[Route('/notifications/{id}', name: 'pimcore_studio_api_delete_notification', methods: ['POST'])]
+    #[Route(
+        '/notifications/{id}',
+        name: 'pimcore_studio_api_read_notification',
+        requirements: ['id' => '\d+'],
+        methods: ['POST'])
+    ]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
     #[POST(
         path: self::API_PATH . '/notifications/{id}',
@@ -57,7 +62,7 @@ final class ReadController extends AbstractApiController
         summary: 'notification_read_by_id_summary',
         tags: [Tags::Notifications->name]
     )]
-    #[IdParameter(type: 'version')]
+    #[IdParameter(type: 'notification')]
     #[SuccessResponse(
         description: 'notification_read_by_id_success_response',
     )]
