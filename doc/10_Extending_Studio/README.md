@@ -7,8 +7,8 @@ The main topics that can be extended are:
 - [Endpoints](01_Endpoints.md)
 - [OpenApi](02_OpenApi.md)
 - [Filters](03_Filters.md)
-  - OpenSearch Filters
-  - Listing Filters
+  - [OpenSearch Filters](04_Filters/01_OpenSearch_Filters.md)
+  - [Listing Filters](04_Filters/02_Listing_Filters.md)
 - [Grids](#Grids)
   - Columns
   - Resolvers
