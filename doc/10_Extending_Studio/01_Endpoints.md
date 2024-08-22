@@ -12,15 +12,15 @@ To add a custom endpoint to the Pimcore Studio Backend you need to implement it 
   - Keep in mind that for serialization the symfony serializer is used and the response must be representable in json if you want to use the standard function.
 - Add the route attribute like in a standard symfony way
 - For security checks you can use the IsGranted attribute
-  - This will invoke the according symfony voter and checks the current logged in user for the given permission
+  - This will invoke the according symfony voter and checks the current logged-in user for the given permission
   - If the user does not have the permission a 403 response is returned
 - Add the OpenApi method according to your route
   - In order that your endpoint shows up in the OpenApi documentation you need to add the OpenApi method
   - If your route specifies that it is a `POST` route use the according OpenApi method `OpenApi\Attributes\Post`
 - Add the necessary OpenApi attributes
-  - Add at least one response, you can checkout the existing responses here: -- TODO ADD PAGE WITH RESPONSES --
+  - Add at least one response, you can check out the existing responses here: -- TODO ADD PAGE WITH RESPONSES --
   - You can also add some DefaultResponses
-  - Add query params or request payload if necessary. You can checkout the existing parameters here: -- TODO ADD PAGE WITH PARAMETERS --
+  - Add query params or request payload if necessary. You can check out the existing parameters here: -- TODO ADD PAGE WITH PARAMETERS --
   - If you need specific parameters, payloads or responses you can extend OpenApi Schemas, Properties, Responses, etc.
   - How to extend OpenApi Schemas, Properties, Responses, etc. is described here: -- TODO ADD PAGE WITH EXTENDING OPENAPI --
 - Implement your endpoint logic in the standard symfony way

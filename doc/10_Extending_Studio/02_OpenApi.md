@@ -3,8 +3,6 @@
 For the OpenApi documentation we are using the [zircote/swagger-php](https://zircote.github.io/swagger-php/) library. 
 This library allows us to define the OpenApi documentation in PHP attributes and extend them.
 
-
-
 ## Why extending OpenApi attributes
 You can always use the standard attributes that are provided by the library.
 To reduce the amount of code duplication and make the controllers easier on the eyes we introduced custom attributes.
@@ -45,6 +43,7 @@ final class CreateNoteRequestBody extends RequestBody
 In order to extend a schema, you can use the `#[Schema]` attribute and define the properties that you want to add.
 The important part is to use the `#[Property]` attribute to define the properties of the schema.
 e.g. `#[Property(description: 'title', type: 'string', example: 'Title of note')]`
+Schemas should be unique and are shown at the bottom of the OpenApi documentation.
 
 ### Example for extending a schema
 ```php
