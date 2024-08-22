@@ -17,5 +17,7 @@ Every description is translatable and can be found in the `studio_api_docs.en.ya
 ## Documentation Overview
 
 - [Installation](./doc/00_Installation.md)
-
+- [Mercure Setup](./doc/02_Mercure_Setup.md)
 - [Grid](./doc/03_Grid.md)
+- [Generic Execution Engine](doc/04_Generic_Execution_Engine.md)
+- [Additional Attributes](./doc/05_Addition_Attributes.md)

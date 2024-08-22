@@ -9,10 +9,6 @@ The main topics that can be extended are:
 - [Filters](03_Filters.md)
   - [OpenSearch Filters](04_Filters/01_OpenSearch_Filters.md)
   - [Listing Filters](04_Filters/02_Listing_Filters.md)
-- [Grids](#Grids)
-  - Columns
-  - Resolvers
-  - Collectors
-- [Patcher](#Patcher)
-- [Updater](#Updater)
+- [Grids](05_Grid.md)
+- [Update & Patcher](06_Update_Patch.md)
 - [Additional Attributes](#Additional-Attributes)
