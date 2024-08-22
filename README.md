@@ -12,9 +12,10 @@ It provides a unified interface based on the OpenApi Specification for all backe
 It uses [zircote/swagger-php](https://github.com/zircote/swagger-php) attributes to generate the OpenApi Specification.
 
 Swagger-ui is available at `/studio/api/docs` and the OpenApi Specification is available at `/studio/api/docs.json`.
+Every description is translatable and can be found in the `studio_api_docs.en.yaml` folder of the bundle.
 
 ## Documentation Overview
 
-- [Installation](./doc/01_Installation.md)
+- [Installation](./doc/00_Installation.md)
 
 - [Grid](./doc/03_Grid.md)

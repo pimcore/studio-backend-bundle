@@ -5,7 +5,7 @@ Most of the customizations can be done by implementing interfaces and registerin
 
 The main topics that can be extended are:
 - [Endpoints](01_Endpoints.md)
-- [Schemes](#Schemas)
+- [OpenApi](02_OpenApi.md)
 - [Filters](#Filters)
   - OpenSearch Filters
   - Listing Filters

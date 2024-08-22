@@ -1,5 +1,10 @@
 # Extending Endpoints
 
+Endpoints can be added at any given point. In order to show up in the OpenApi documentation you need to add the according OpenApi attributes.
+This secures that the endpoint is documented and can be used by other developers. We are using the OpenApi standards for the documentation.
+
+## How to add a custom endpoint
+
 To add a custom endpoint to the Pimcore Studio Backend you need to implement it like the following:
 
 - Extend from AbstractApiController
