@@ -133,4 +133,4 @@ For more details on how to implement the OpenSearch filters see the [OpenSearch 
 
 ## Listing Filters
 For the classic approach of using listings, the Listing Filters are used.
-For more details on how to implement the Listing filters see the [Listing_FILTER](#).
+For more details on how to implement the Listing filters see the [Listing_FILTER](04_Filters/02_Listing_Filters.md).
