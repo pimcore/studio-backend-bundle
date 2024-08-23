@@ -75,7 +75,10 @@ final class UpdateConfigurationController extends AbstractApiController
         #[MapRequestPayload] UpdateConfigurationParameter $updateConfigurationParameter,
         int $configurationId
     ): Response {
-        $this->gridSaveConfigurationService->updateAssetGridConfigurationById($updateConfigurationParameter, $configurationId);
+        $this->gridSaveConfigurationService->updateAssetGridConfigurationById(
+            $updateConfigurationParameter,
+            $configurationId
+        );
 
         return new Response();
     }

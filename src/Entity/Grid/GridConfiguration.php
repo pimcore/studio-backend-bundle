@@ -68,10 +68,20 @@ class GridConfiguration
     #[ORM\Column(type: 'datetime')]
     private DateTime $modificationDate;
 
-    #[ORM\OneToMany(mappedBy: 'configuration', targetEntity: GridConfigurationShare::class, cascade: ['merge', 'persist'], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        mappedBy: 'configuration',
+        targetEntity: GridConfigurationShare::class,
+        cascade: ['merge', 'persist'],
+        orphanRemoval: true
+    )]
     private Collection $shares;
 
-    #[ORM\OneToMany(mappedBy: 'configuration', targetEntity: GridConfigurationFavorite::class, cascade: ['merge', 'persist'], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        mappedBy: 'configuration',
+        targetEntity: GridConfigurationFavorite::class,
+        cascade: ['merge', 'persist'],
+        orphanRemoval: true
+    )]
     private Collection $favorites;
 
     public function __construct(
