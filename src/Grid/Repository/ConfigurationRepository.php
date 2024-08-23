@@ -70,7 +70,7 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
     {
         $configuration = $this->entityManager->find(GridConfiguration::class, $id);
         if (!$configuration instanceof GridConfiguration) {
-            throw new NotFoundException("Grid Configuration", $id);
+            throw new NotFoundException('Grid Configuration', $id);
         }
 
         return $configuration;

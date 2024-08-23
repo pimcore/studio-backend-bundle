@@ -16,21 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\UpdateConfigurationParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
-use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 
 /**
  * @internal
@@ -53,7 +45,7 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
         $configuration = $this->gridConfigurationRepository->getById($id);
 
         if ($configuration->getOwner() !== $this->securityService->getCurrentUser()->getId()) {
-            throw new ForbiddenException("You are not allowed to update this configuration.");
+            throw new ForbiddenException('You are not allowed to update this configuration.');
         }
 
         $configuration = $this->gridConfigurationRepository->clearShares($configuration);
@@ -68,7 +60,6 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
         if ($configurationParams->saveFilter()) {
             $configuration->setFilter($configurationParams->getFilter()->toArray());
         }
-
 
         if ($configurationParams->setAsFavorite()) {
             $configuration = $this->favoriteService

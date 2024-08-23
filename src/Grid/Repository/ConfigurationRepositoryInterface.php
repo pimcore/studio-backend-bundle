@@ -28,6 +28,7 @@ interface ConfigurationRepositoryInterface
      * @throws NotFoundException
      */
     public function getById(int $id): GridConfiguration;
+
     public function create(GridConfiguration $configuration): GridConfiguration;
 
     public function update(GridConfiguration $configuration): GridConfiguration;
