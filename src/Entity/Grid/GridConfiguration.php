@@ -68,10 +68,10 @@ class GridConfiguration
     #[ORM\Column(type: 'datetime')]
     private DateTime $modificationDate;
 
-    #[ORM\OneToMany(mappedBy: 'configuration', targetEntity: GridConfigurationShare::class, cascade: ['persist'])]
+    #[ORM\OneToMany(mappedBy: 'configuration', targetEntity: GridConfigurationShare::class, cascade: ['merge', 'persist'], orphanRemoval: true)]
     private Collection $shares;
 
-    #[ORM\OneToMany(mappedBy: 'configuration', targetEntity: GridConfigurationFavorite::class, cascade: ['persist'])]
+    #[ORM\OneToMany(mappedBy: 'configuration', targetEntity: GridConfigurationFavorite::class, cascade: ['merge', 'persist'], orphanRemoval: true)]
     private Collection $favorites;
 
     public function __construct(
@@ -204,5 +204,15 @@ class GridConfiguration
     public function addFavorite(GridConfigurationFavorite $favorite): void
     {
         $this->favorites->add($favorite);
+    }
+
+    public function clearShares(): void
+    {
+        $this->shares->clear();
+    }
+
+    public function removeFavorite(GridConfigurationFavorite $favorite): void
+    {
+        $this->favorites->removeElement($favorite);
     }
 }

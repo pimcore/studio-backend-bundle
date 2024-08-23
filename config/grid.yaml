@@ -30,6 +30,11 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnCollectorLoader
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteService
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareService
   #
   # Repository
   #

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attributes\Request\Grid;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\Grid;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
@@ -38,7 +38,7 @@ final class SaveConfigurationRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['folderId'],
+                required: ['folderId', 'pageSize', 'name', 'description', 'columns'],
                 properties: [
                     new SingleInteger('folderId'),
                     new SingleInteger('pageSize'),

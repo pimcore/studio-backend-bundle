@@ -16,12 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
 
-use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\Grid\SaveConfigurationRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\SaveConfigurationServiceInterface;
+use OpenApi\Attributes\Put;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\Grid\UpdateConfigurationRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\UpdateConfigurationParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\UpdateConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -36,11 +37,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class SaveConfigurationController extends AbstractApiController
+final class UpdateConfigurationController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly SaveConfigurationServiceInterface $gridSaveConfigurationService
+        private readonly UpdateConfigurationServiceInterface $gridSaveConfigurationService
     ) {
         parent::__construct($serializer);
     }
@@ -49,30 +50,32 @@ final class SaveConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/assets/grid/configuration/save',
-        name: 'pimcore_studio_api_save_asset_grid_configuration',
-        methods: ['POST'],
+        '/assets/grid/configuration/update/{configurationId}',
+        name: 'pimcore_studio_api_update_asset_grid_configuration',
+        methods: ['PUT'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
-    #[Post(
-        path: self::API_PATH . '/assets/grid/configuration/save',
-        operationId: 'asset_save_grid_configuration',
-        description: 'asset_save_grid_configuration_description',
-        summary: 'asset_save_grid_configuration_description',
+    #[Put(
+        path: self::API_PATH . '/assets/grid/configuration/update/{configurationId}',
+        operationId: 'asset_update_grid_configuration',
+        description: 'asset_update_grid_configuration_description',
+        summary: 'asset_update_grid_configuration_description',
         tags: [Tags::AssetGrid->value]
     )]
-    #[SaveConfigurationRequestBody]
+    #[UpdateConfigurationRequestBody]
+    #[IdParameter('configurationId')]
     #[SuccessResponse(
-        description: 'asset_save_grid_configuration_success_response'
+        description: 'asset_update_grid_configuration_success_response'
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function saveAssetGridConfiguration(
-        #[MapRequestPayload] SaveConfigurationParameter $saveConfigurationParameter
+    public function updateAssetGridConfiguration(
+        #[MapRequestPayload] UpdateConfigurationParameter $updateConfigurationParameter,
+        int $configurationId
     ): Response {
-        $this->gridSaveConfigurationService->saveAssetGridConfiguration($saveConfigurationParameter);
+        $this->gridSaveConfigurationService->updateAssetGridConfigurationById($updateConfigurationParameter, $configurationId);
 
         return new Response();
     }

@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 
 /**
@@ -44,11 +45,33 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
 
     public function update(GridConfiguration $configuration): GridConfiguration
     {
-
         $configuration->setModified();
 
         $this->entityManager->persist($configuration);
         $this->entityManager->flush();
+
+        return $configuration;
+    }
+
+    public function clearShares(GridConfiguration $configuration): GridConfiguration
+    {
+        $configuration->clearShares();
+
+        $this->entityManager->persist($configuration);
+        $this->entityManager->flush();
+
+        return $configuration;
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getById(int $id): GridConfiguration
+    {
+        $configuration = $this->entityManager->find(GridConfiguration::class, $id);
+        if (!$configuration instanceof GridConfiguration) {
+            throw new NotFoundException("Grid Configuration", $id);
+        }
 
         return $configuration;
     }
