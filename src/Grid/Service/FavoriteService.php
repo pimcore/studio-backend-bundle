@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use function count;
 
 /**
  * @internal
@@ -117,7 +118,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
         $roles = $this->securityService->getCurrentUser()->getRoles();
         foreach ($shares as $share) {
-            $filter = array_filter($roles, fn($role) => $role === $share->getUser());
+            $filter = array_filter($roles, fn ($role) => $role === $share->getUser());
             if (count($filter) > 0) {
                 return true;
             }
