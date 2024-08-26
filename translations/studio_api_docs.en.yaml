@@ -528,3 +528,7 @@ asset_update_grid_configuration_description: |
   Update asset grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
 asset_update_grid_configuration_summary: Update asset grid configuration for a specific folder
 asset_update_grid_configuration_success_response: Asset grid configuration updated successfully
+asset_set_grid_configuration_as_favorite_description: |
+    Set asset grid configuration as favorite for the current user for a specific folder
+asset_set_grid_configuration_as_favorite_success_response: Asset grid configuration set as favorite successfully
+asset_set_grid_configuration_as_favorite_summary: Set asset grid configuration as favorite for a specific folder

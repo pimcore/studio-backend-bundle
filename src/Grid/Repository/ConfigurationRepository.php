@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Repository;
 use Doctrine\ORM\EntityManagerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 
 /**
  * @internal
@@ -28,14 +27,12 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private SecurityServiceInterface $securityService
     ) {
     }
 
     public function create(GridConfiguration $configuration): GridConfiguration
     {
         $configuration->setCreated();
-        $configuration->setOwner($this->securityService->getCurrentUser()->getId());
 
         $this->entityManager->persist($configuration);
         $this->entityManager->flush();

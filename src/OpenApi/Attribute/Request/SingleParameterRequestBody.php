@@ -27,7 +27,7 @@ use OpenApi\Attributes\RequestBody;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class SingleParameterRequestBody extends RequestBody
 {
-    public function __construct(string $parameterName, string $example)
+    public function __construct(string $parameterName, mixed $example, string $type = 'string')
     {
         parent::__construct(
             required: true,
@@ -35,7 +35,7 @@ final class SingleParameterRequestBody extends RequestBody
                 properties: [
                     new Property(
                         $parameterName,
-                        type: 'string',
+                        type: $type,
                         example: $example,
                     ),
                 ],
