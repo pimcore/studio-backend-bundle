@@ -59,11 +59,14 @@ final class UpdateConfigurationController extends AbstractApiController
         path: self::API_PATH . '/assets/grid/configuration/update/{configurationId}',
         operationId: 'asset_update_grid_configuration',
         description: 'asset_update_grid_configuration_description',
-        summary: 'asset_update_grid_configuration_description',
+        summary: 'asset_update_grid_configuration_summary',
         tags: [Tags::AssetGrid->value]
     )]
     #[UpdateConfigurationRequestBody]
-    #[IdParameter('configurationId')]
+    #[IdParameter(
+        type: 'configurationId',
+        name: 'configurationId'
+    )]
     #[SuccessResponse(
         description: 'asset_update_grid_configuration_success_response'
     )]
