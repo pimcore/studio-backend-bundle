@@ -97,11 +97,11 @@ final class AssetEvent extends AbstractPreResponseEvent
 
 ### List of custom attributes
 
-- `icon` - The custom icon that should be displayed in the tree
-- `tooltip`- The custom HTML tooltip to be displayed in the tree
-- `additionalIcons` - Array of additional icons that should be displayed in the tree
-- `key` - The key that should be displayed in the tree
-- `additionalCssClasses` - Additional CSS classes that should be added to the tree element
+- `icon` - The custom icon that should be displayed in the tree.
+- `tooltip`- The custom HTML tooltip to be displayed in the tree.
+- `additionalIcons` - Array of additional icons that should be displayed in the tree.
+- `key` - The key that should be displayed in the tree.
+- `additionalCssClasses` - Additional CSS classes that should be added to the tree element.
 
 ### List of available events
 - `pre_response.asset`
