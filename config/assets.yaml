@@ -62,6 +62,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\SaveConfigurationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\SaveConfigurationService
 
+  Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\UpdateConfigurationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\UpdateConfigurationService
+
 
   #
   # Updaters

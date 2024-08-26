@@ -14,24 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
 
-use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\UpdateConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
  * @internal
  */
-interface ConfigurationRepositoryInterface
+interface UpdateConfigurationServiceInterface
 {
     /**
      * @throws NotFoundException
      */
-    public function getById(int $id): GridConfiguration;
-
-    public function create(GridConfiguration $configuration): GridConfiguration;
-
-    public function update(GridConfiguration $configuration): GridConfiguration;
-
-    public function clearShares(GridConfiguration $configuration): GridConfiguration;
+    public function updateAssetGridConfigurationById(UpdateConfigurationParameter $configurationParams, int $id): void;
 }

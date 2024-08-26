@@ -23,13 +23,11 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 /**
  * @internal
  */
-final readonly class SaveConfigurationParameter implements ConfigurationParameterInterface
+final readonly class UpdateConfigurationParameter implements ConfigurationParameterInterface
 {
     use ColumnsAsArrayTrait;
 
     public function __construct(
-        #[NotBlank]
-        private int $folderId,
         #[NotBlank]
         private int $pageSize,
         #[NotBlank]
@@ -47,11 +45,6 @@ final readonly class SaveConfigurationParameter implements ConfigurationParamete
         private bool $shareGlobal = false,
         private bool $setAsFavorite = false,
     ) {
-    }
-
-    public function getFolderId(): int
-    {
-        return $this->folderId;
     }
 
     public function getPageSize(): int

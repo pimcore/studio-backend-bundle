@@ -528,3 +528,7 @@ asset_save_grid_configuration_description: |
   Save asset grid configuration for a specific folder
 asset_save_grid_configuration_success_response: Asset grid configuration saved successfully
 asset_save_grid_configuration_summary: Save asset grid configuration for a specific folder
+asset_update_grid_configuration_description: |
+  Update asset grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
+asset_update_grid_configuration_summary: Update asset grid configuration for a specific folder
+asset_update_grid_configuration_success_response: Asset grid configuration updated successfully

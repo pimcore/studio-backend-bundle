@@ -22,9 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use function in_array;
 
-/**
- * @internal
- */
 #[Schema(
     title: 'ElementIcon',
     required: [
