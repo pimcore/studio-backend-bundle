@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\UserInterface;
 use function count;
 
 /**
@@ -39,7 +40,8 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         GridConfiguration $gridConfiguration
     ): GridConfiguration {
 
-        if (!$this->isCurrentUserAllowsToSetAsFavorite($gridConfiguration)) {
+        $currentUser = $this->securityService->getCurrentUser();
+        if (!$this->isUserAllowsToSetAsFavorite($currentUser, $gridConfiguration)) {
             throw new ForbiddenException(
                 'You are not allowed to set this configuration as favorite.
                 You have to be the owner of the configuration or the configuration has to be shared with you.'
@@ -80,30 +82,30 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         return $gridConfiguration;
     }
 
-    private function isCurrentUserAllowsToSetAsFavorite(GridConfiguration $gridConfiguration): bool
+    private function isUserAllowsToSetAsFavorite(UserInterface $user, GridConfiguration $gridConfiguration): bool
     {
-        if ($gridConfiguration->getOwner() === $this->securityService->getCurrentUser()->getId()) {
+        if ($gridConfiguration->getOwner() === $user->getId()) {
             return true;
         }
 
-        if ($this->isCurrentUserInSharedUsers($gridConfiguration)) {
+        if ($this->isUserInSharedUsers($gridConfiguration, $user)) {
             return true;
         }
 
-        if ($this->isCurrentUserInSharedRoles($gridConfiguration)) {
+        if ($this->isUserInSharedRoles($gridConfiguration, $user)) {
             return true;
         }
 
         return false;
     }
 
-    private function isCurrentUserInSharedUsers(GridConfiguration $gridConfiguration): bool
+    private function isUserInSharedUsers(GridConfiguration $gridConfiguration, UserInterface $user,): bool
     {
         /** @var GridConfigurationShare[] $shares */
         $shares = $gridConfiguration->getShares()->getValues();
 
         foreach ($shares as $share) {
-            if ($share->getUser() === $this->securityService->getCurrentUser()->getId()) {
+            if ($share->getUser() === $user->getId()) {
                 return true;
             }
         }
@@ -111,12 +113,12 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         return false;
     }
 
-    private function isCurrentUserInSharedRoles(GridConfiguration $gridConfiguration): bool
+    private function isUserInSharedRoles(GridConfiguration $gridConfiguration, UserInterface $user,): bool
     {
         /** @var GridConfigurationShare[] $shares */
         $shares = $gridConfiguration->getShares()->getValues();
 
-        $roles = $this->securityService->getCurrentUser()->getRoles();
+        $roles = $user->getRoles();
         foreach ($shares as $share) {
             $filter = array_filter($roles, fn ($role) => $role === $share->getUser());
             if (count($filter) > 0) {
