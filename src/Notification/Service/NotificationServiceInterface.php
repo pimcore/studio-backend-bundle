@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
@@ -27,6 +28,12 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
  */
 interface NotificationServiceInterface
 {
+    /**
+     * @throws AccessDeniedException
+     * @throws UserNotFoundException
+     */
+    public function getNotificationById(int $id): Notification;
+
     /**
      * @throws UserNotFoundException
      */

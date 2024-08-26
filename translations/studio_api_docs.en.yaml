@@ -273,6 +273,10 @@ note_get_collection_description: |
   You can use different query parameters to filter the notes
 note_get_collection_success_response: Paginated notes with total count
 note_get_collection_summary: Get paginated notes
+notification_get_by_id_description: |
+  Get the notification with the given <strong>{id}</strong>. <br> Current user can only get notifications, where he is the recipient.
+notification_get_by_id_success_response: Notification data as JSON
+notification_get_by_id_summary: Get notification by ID
 notification_get_collection_description: |
   Get all paginated notifications for current user. <br> You can specify different filters in your request body. Available filters are: <br>
   <ul>

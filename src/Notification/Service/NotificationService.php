@@ -21,8 +21,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Event\NotificationEvent;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Event\NotificationListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Repository\NotificationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Notification as NotificationModel;
@@ -42,6 +44,39 @@ final readonly class NotificationService implements NotificationServiceInterface
     }
 
     /**
+     * @throws AccessDeniedException
+     * @throws UserNotFoundException
+     */
+    public function getNotificationById(int $id): Notification
+    {
+        $notification = $this->notificationRepository->getNotificationById($id);
+        $this->validateNotificationAccess($notification);
+        if (!$notification->isRead()) {
+            $this->markAsRead($notification);
+        }
+
+        $entry = $this->notificationHydrator->hydrateDetail($notification);
+        $this->eventDispatcher->dispatch(
+            new NotificationEvent($entry),
+            NotificationEvent::EVENT_NAME
+        );
+
+        return $entry;
+    }
+
+    /**
+     * @throws AccessDeniedException
+     * @throws UserNotFoundException
+     */
+    public function markNotificationAsRead(int $id): void
+    {
+        $notification = $this->notificationRepository->getNotificationById($id);
+        $this->validateNotificationAccess($notification);
+
+        $this->markAsRead($notification);
+    }
+
+    /**
      * @throws UserNotFoundException
      */
     public function listNotifications(FilterParameter $parameters): Collection
@@ -54,8 +89,8 @@ final readonly class NotificationService implements NotificationServiceInterface
         foreach ($listing as $listEntry) {
             $entry = $this->notificationHydrator->hydrate($listEntry);
             $this->eventDispatcher->dispatch(
-                new NotificationEvent($entry),
-                NotificationEvent::EVENT_NAME
+                new NotificationListEvent($entry),
+                NotificationListEvent::EVENT_NAME
             );
 
             $list[] = $entry;
@@ -65,19 +100,6 @@ final readonly class NotificationService implements NotificationServiceInterface
             $listing->count(),
             $list
         );
-    }
-
-    /**
-     * @throws AccessDeniedException
-     * @throws NotFoundException
-     * @throws UserNotFoundException
-     */
-    public function markNotificationAsRead(int $id): void
-    {
-        $notification = $this->notificationRepository->getNotificationById($id);
-        $this->validateNotificationAccess($notification);
-
-        $this->markAsRead($notification);
     }
 
     /**
