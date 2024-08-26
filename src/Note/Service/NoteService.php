@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteEvent;
+use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteTypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
@@ -28,6 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
+use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteType;
+use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteTypeCollection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
@@ -107,7 +110,26 @@ final readonly class NoteService implements NoteServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getNoteTypes(string $elementType): array
+    public function listNoteTypes(string $elementType): NoteTypeCollection
+    {
+        $types = [];
+        $noteTypes = $this->getNoteTypes($elementType);
+        foreach ($noteTypes as $noteType) {
+            $noteTypeResponse = new NoteType($noteType);
+            $this->eventDispatcher->dispatch(
+                new NoteTypeEvent($noteTypeResponse),
+                NoteTypeEvent::EVENT_NAME
+            );
+            $types[] = $noteTypeResponse;
+        }
+
+        return new NoteTypeCollection($types);
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function getNoteTypes(string $elementType): array
     {
         if (!isset($this->noteTypes[$elementType])) {
             throw new NotFoundException('Note type', $elementType, 'element type');

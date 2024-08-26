@@ -19,11 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Note\Controller\Element;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
+use Pimcore\Bundle\StudioBackendBundle\Note\Attribute\Response\Content\NoteTypesJson;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -62,7 +60,7 @@ final class TypeController extends AbstractApiController
     #[ElementTypeParameter]
     #[SuccessResponse(
         description: 'note_element_get_type_collection_success_response',
-        content: new CollectionJson(new GenericCollection(Note::class))
+        content: new NoteTypesJson()
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -70,6 +68,7 @@ final class TypeController extends AbstractApiController
     public function getNoteTypes(
         string $elementType
     ): JsonResponse {
-        return $this->jsonResponse($this->noteService->getNoteTypes($elementType));
+
+        return $this->jsonResponse($this->noteService->listNoteTypes($elementType));
     }
 }
