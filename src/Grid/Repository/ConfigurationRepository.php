@@ -28,14 +28,12 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private SecurityServiceInterface $securityService
     ) {
     }
 
     public function create(GridConfiguration $configuration): GridConfiguration
     {
         $configuration->setCreated();
-        $configuration->setOwner($this->securityService->getCurrentUser()->getId());
 
         $this->entityManager->persist($configuration);
         $this->entityManager->flush();
