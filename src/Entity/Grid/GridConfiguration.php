@@ -221,6 +221,11 @@ class GridConfiguration
         $this->shares->clear();
     }
 
+    public function getShares(): Collection
+    {
+        return $this->shares;
+    }
+
     public function removeFavorite(GridConfigurationFavorite $favorite): void
     {
         $this->favorites->removeElement($favorite);

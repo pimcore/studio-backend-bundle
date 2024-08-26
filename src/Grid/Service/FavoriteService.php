@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 
@@ -35,6 +37,14 @@ final readonly class FavoriteService implements FavoriteServiceInterface
     public function setAssetConfigurationAsFavoriteForCurrentUser(
         GridConfiguration $gridConfiguration
     ): GridConfiguration {
+
+        if (!$this->isCurrentUserAllowsToSetAsFavorite($gridConfiguration)) {
+            throw new ForbiddenException(
+                'You are not allowed to set this configuration as favorite. 
+                You have to be the owner of the configuration or the configuration has to be shared with you.'
+            );
+        }
+
         $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndAssetFolder(
             $this->securityService->getCurrentUser()->getId(),
             $gridConfiguration->getAssetFolderId()
@@ -42,7 +52,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
         // If there is no favorite for the current user and asset folder, create a new one
         if (!$favorite) {
-            $favorite  =  new GridConfigurationFavorite();
+            $favorite = new GridConfigurationFavorite();
             $favorite->setAssetFolder($gridConfiguration->getAssetFolderId());
             $favorite->setUser($this->securityService->getCurrentUser()->getId());
         }
@@ -67,5 +77,52 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         }
 
         return $gridConfiguration;
+    }
+
+    private function isCurrentUserAllowsToSetAsFavorite(GridConfiguration $gridConfiguration): bool
+    {
+        if ($gridConfiguration->getOwner() === $this->securityService->getCurrentUser()->getId()) {
+            return true;
+        }
+
+        if ($this->isCurrentUserInSharedUsers($gridConfiguration)) {
+            return true;
+        }
+
+        if ($this->isCurrentUserInSharedRoles($gridConfiguration)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isCurrentUserInSharedUsers(GridConfiguration $gridConfiguration): bool
+    {
+        /** @var GridConfigurationShare[] $shares */
+        $shares = $gridConfiguration->getShares()->getValues();
+
+        foreach ($shares as $share) {
+            if ($share->getUser() === $this->securityService->getCurrentUser()->getId()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isCurrentUserInSharedRoles(GridConfiguration $gridConfiguration): bool
+    {
+        /** @var GridConfigurationShare[] $shares */
+        $shares = $gridConfiguration->getShares()->getValues();
+
+        $roles = $this->securityService->getCurrentUser()->getRoles();
+        foreach ($shares as $share) {
+            $filter = array_filter($roles, fn($role) => $role === $share->getUser());
+            if (count($filter) > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

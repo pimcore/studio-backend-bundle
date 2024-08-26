@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\UpdateConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface;
@@ -74,6 +75,24 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
         if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
             $configuration = $this->userRoleShareService->setShareOptions($configuration, $configurationParams);
         }
+
+        $this->gridConfigurationRepository->update($configuration);
+    }
+
+    /**
+     * @throws NotFoundException
+     * @throws InvalidArgumentException
+     * @throws ForbiddenException
+     */
+    public function setAssetGridConfigurationAsFavorite(int $configurationId, int $folderId): void
+    {
+        $configuration = $this->gridConfigurationRepository->getById($configurationId);
+
+        if ($configuration->getAssetFolderId() !== $folderId) {
+            throw new InvalidArgumentException('Configuration does not belong to the given folder.');
+        }
+
+        $configuration = $this->favoriteService->setAssetConfigurationAsFavoriteForCurrentUser($configuration);
 
         $this->gridConfigurationRepository->update($configuration);
     }
