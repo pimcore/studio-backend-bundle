@@ -41,7 +41,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
         if (!$this->isCurrentUserAllowsToSetAsFavorite($gridConfiguration)) {
             throw new ForbiddenException(
-                'You are not allowed to set this configuration as favorite. 
+                'You are not allowed to set this configuration as favorite.
                 You have to be the owner of the configuration or the configuration has to be shared with you.'
             );
         }
