@@ -16,13 +16,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator;
 
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationListItem;
-use Pimcore\Model\Notification;
+use Pimcore\Model\Notification as NotificationModel;
 
 /**
  * @internal
  */
 interface NotificationHydratorInterface
 {
-    public function hydrate(Notification $notification): NotificationListItem;
+    public function hydrate(NotificationModel $notification): NotificationListItem;
+
+    public function hydrateDetail(NotificationModel $notification): Notification;
 }

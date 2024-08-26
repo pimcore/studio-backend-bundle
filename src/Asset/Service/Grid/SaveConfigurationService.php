@@ -54,6 +54,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
         $gridConfiguration->setName($configuration->getName());
         $gridConfiguration->setDescription($configuration->getDescription());
         $gridConfiguration->setSaveFilter($configuration->saveFilter());
+        $gridConfiguration->setOwner($this->securityService->getCurrentUser()->getId());
         $gridConfiguration->setColumns($configuration->getColumnsAsArray());
 
         if ($configuration->saveFilter()) {
