@@ -99,7 +99,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         return false;
     }
 
-    private function isUserInSharedUsers(GridConfiguration $gridConfiguration, UserInterface $user,): bool
+    private function isUserInSharedUsers(GridConfiguration $gridConfiguration, UserInterface $user): bool
     {
         /** @var GridConfigurationShare[] $shares */
         $shares = $gridConfiguration->getShares()->getValues();
@@ -113,7 +113,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         return false;
     }
 
-    private function isUserInSharedRoles(GridConfiguration $gridConfiguration, UserInterface $user,): bool
+    private function isUserInSharedRoles(GridConfiguration $gridConfiguration, UserInterface $user): bool
     {
         /** @var GridConfigurationShare[] $shares */
         $shares = $gridConfiguration->getShares()->getValues();
