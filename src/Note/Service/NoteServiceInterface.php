@@ -45,4 +45,9 @@ interface NoteServiceInterface
      * @throws NotFoundException
      */
     public function deleteNote(int $id): void;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getNoteTypes(string $elementType): array;
 }

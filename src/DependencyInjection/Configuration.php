@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -53,6 +54,7 @@ class Configuration implements ConfigurationInterface
         $this->addAssetDownloadLimits($rootNode);
         $this->addCsvSettings($rootNode);
         $this->addGridConfiguration($rootNode);
+        $this->addNoteTypes($rootNode);
 
         return $treeBuilder;
     }
@@ -229,5 +231,35 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
             ->end();
+    }
+
+    private function addNoteTypes(ArrayNodeDefinition $node): void
+    {
+        $defaultOptions = ['content', 'seo', 'warning', 'notice'];
+
+        $node->children()
+        ->arrayNode('notes')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->arrayNode('types')
+                    ->info('List all note types for asset, document, and data-object.')
+                    ->normalizeKeys(false)
+                    ->children()
+                        ->arrayNode(ElementTypes::TYPE_ASSET)
+                            ->prototype('scalar')->end()
+                            ->defaultValue($defaultOptions)
+                        ->end()
+                        ->arrayNode(ElementTypes::TYPE_DOCUMENT)
+                            ->prototype('scalar')->end()
+                            ->defaultValue($defaultOptions)
+                        ->end()
+                        ->arrayNode(ElementTypes::TYPE_DATA_OBJECT)
+                            ->prototype('scalar')->end()
+                            ->defaultValue($defaultOptions)
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
     }
 }
