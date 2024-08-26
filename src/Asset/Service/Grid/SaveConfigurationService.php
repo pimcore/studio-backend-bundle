@@ -19,14 +19,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
-use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 
 /**
  * @internal
@@ -35,9 +32,8 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
 {
     public function __construct(
         private ConfigurationRepositoryInterface $gridConfigurationRepository,
-        private ConfigurationFavoriteRepositoryInterface $gridConfigurationFavoriteRepository,
-        private UserRepositoryInterface $userRepository,
-        private RoleRepositoryInterface $roleRepository,
+        private FavoriteServiceInterface $favoriteService,
+        private UserRoleShareServiceInterface $userRoleShareService,
         private AssetServiceInterface $assetService,
         private SecurityServiceInterface $securityService,
     ) {
@@ -65,86 +61,14 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
         }
 
         if ($configuration->setAsFavorite()) {
-            $gridConfiguration = $this->setAssetConfigurationAsFavoriteForCurrentUser($gridConfiguration);
+            $gridConfiguration = $this->favoriteService
+                ->setAssetConfigurationAsFavoriteForCurrentUser($gridConfiguration);
         }
 
         if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
-            $gridConfiguration = $this->setShareOptions($gridConfiguration, $configuration);
+            $gridConfiguration = $this->userRoleShareService->setShareOptions($gridConfiguration, $configuration);
         }
 
         $this->gridConfigurationRepository->create($gridConfiguration);
-    }
-
-    private function setShareOptions(
-        GridConfiguration $configuration,
-        SaveConfigurationParameter $options
-    ): GridConfiguration {
-        $configuration->setShareGlobal($options->shareGlobal());
-        $configuration = $this->addUserShareToConfiguration(
-            $configuration,
-            $options->getSharedUsers()
-        );
-        $configuration = $this->addRoleShareToConfiguration(
-            $configuration,
-            $options->getSharedRoles()
-        );
-
-        return $configuration;
-    }
-
-    /**
-     * @throws NotFoundException
-     */
-    private function addUserShareToConfiguration(
-        GridConfiguration $gridConfiguration,
-        array $userIds
-    ): GridConfiguration {
-        foreach ($userIds as $userId) {
-            // Check if user exists
-            $user = $this->userRepository->getUserById($userId);
-            $share = new GridConfigurationShare($user->getId(), $gridConfiguration);
-            $gridConfiguration->addShare($share);
-        }
-
-        return $gridConfiguration;
-    }
-
-    /**
-     * @throws NotFoundException
-     */
-    private function addRoleShareToConfiguration(
-        GridConfiguration $gridConfiguration,
-        array $roleIds
-    ): GridConfiguration {
-        foreach ($roleIds as $roleId) {
-            // Check if role exists
-            $role = $this->roleRepository->getRoleById($roleId);
-            $share = new GridConfigurationShare($role->getId(), $gridConfiguration);
-            $gridConfiguration->addShare($share);
-        }
-
-        return $gridConfiguration;
-    }
-
-    private function setAssetConfigurationAsFavoriteForCurrentUser(
-        GridConfiguration $gridConfiguration
-    ): GridConfiguration {
-        $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndAssetFolder(
-            $this->securityService->getCurrentUser()->getId(),
-            $gridConfiguration->getAssetFolderId()
-        );
-
-        // If there is no favorite for the current user and asset folder, create a new one
-        if (!$favorite) {
-            $favorite  =  new GridConfigurationFavorite();
-            $favorite->setAssetFolder($gridConfiguration->getAssetFolderId());
-            $favorite->setUser($this->securityService->getCurrentUser()->getId());
-        }
-
-        $favorite->setConfiguration($gridConfiguration);
-
-        $gridConfiguration->addFavorite($favorite);
-
-        return $gridConfiguration;
     }
 }
