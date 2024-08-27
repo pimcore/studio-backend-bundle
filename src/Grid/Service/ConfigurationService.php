@@ -16,14 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
+use function in_array;
 
 /**
  * @internal
@@ -78,7 +82,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $filteredConfigurations = [];
         $currentUser = $this->securityService->getCurrentUser();
         foreach ($configurations as $configuration) {
-            if($this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
+            if ($this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
                 $hydratedConfiguration = $this->configurationHydrator->hydrate($configuration);
 
                 $this->eventDispatcher->dispatch(
