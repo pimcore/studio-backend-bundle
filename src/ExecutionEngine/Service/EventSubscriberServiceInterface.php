@@ -16,11 +16,29 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service;
 
+use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+
 /**
  * @internal
  */
 interface EventSubscriberServiceInterface
 {
+
+    /**
+     * @throws AccessDeniedException
+     * @throws InvalidArgumentException
+     * @throws UserNotFoundException
+     * @throws NotFoundException
+     */
+    public function handleFinishAndNotify(
+        string $topic,
+        JobRunStateChangedEvent $event
+    ): void;
+
     public function handleFinishedWithErrors(
         int $jobRunId,
         int $ownerId,

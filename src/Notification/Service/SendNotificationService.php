@@ -53,14 +53,18 @@ final readonly class SendNotificationService implements SendNotificationServiceI
      * @throws UserNotFoundException
      * @throws NotFoundException
      */
-    public function sendNotification(SendNotificationParameters $parameters, UserInterface $sender): void
+    public function sendNotification(
+        SendNotificationParameters $parameters,
+        ?UserInterface $sender,
+        ?string $payload = null
+    ): void
     {
         $this->validateParameters($parameters);
-        $recipients = $this->getRecipients($parameters, $sender->getId());
+        $recipients = $this->getRecipients($parameters, $sender?->getId());
         $attachment = $this->getAttachment($parameters, $sender);
 
         foreach ($recipients as $recipient) {
-            $this->sendNotificationToUser($recipient, $sender, $attachment, $parameters);
+            $this->sendNotificationToUser($recipient, $sender, $attachment, $parameters, $payload);
         }
     }
 
@@ -81,7 +85,7 @@ final readonly class SendNotificationService implements SendNotificationServiceI
     /**
      * @throws NotFoundException
      */
-    private function getRecipients(SendNotificationParameters $parameters, int $senderId): array
+    private function getRecipients(SendNotificationParameters $parameters, ?int $senderId): array
     {
         try {
             $user = $this->userRepository->getUserById($parameters->getRecipientId());
@@ -102,9 +106,9 @@ final readonly class SendNotificationService implements SendNotificationServiceI
      * @throws AccessDeniedException
      * @throws NotFoundException
      */
-    private function getAttachment(SendNotificationParameters $parameters, UserInterface $sender): ?ElementInterface
+    private function getAttachment(SendNotificationParameters $parameters, ?UserInterface $sender): ?ElementInterface
     {
-        if ($parameters->getAttachmentId() === null || $parameters->getAttachmentType() === null) {
+        if ($sender === null || $parameters->getAttachmentId() === null || $parameters->getAttachmentType() === null) {
             return null;
         }
 
@@ -120,9 +124,10 @@ final readonly class SendNotificationService implements SendNotificationServiceI
      */
     private function sendNotificationToUser(
         UserInterface $recipient,
-        UserInterface $sender,
+        ?UserInterface $sender,
         ?ElementInterface $element,
-        SendNotificationParameters $parameters
+        SendNotificationParameters $parameters,
+        ?string $payload = null
     ): void {
         try {
             $notification = new Notification();
@@ -133,6 +138,10 @@ final readonly class SendNotificationService implements SendNotificationServiceI
             $notification->setTitle($parameters->getTitle());
             $notification->setMessage($parameters->getMessage());
             $notification->setLinkedElement($element);
+            if ($payload !== null) {
+                $notification->setPayload($payload);
+                $notification->setIsStudio(true);
+            }
             $notification->save();
         } catch (Exception $e) {
             throw new DatabaseException(sprintf('Failed to send notification: %s', $e->getMessage()));
