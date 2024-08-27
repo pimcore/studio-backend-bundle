@@ -32,6 +32,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 {
     public function __construct(
         private ConfigurationFavoriteRepositoryInterface $gridConfigurationFavoriteRepository,
+        private UserRoleShareServiceInterface $userRoleShareService,
         private SecurityServiceInterface $securityService
     ) {
     }
@@ -41,7 +42,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
     ): GridConfiguration {
 
         $currentUser = $this->securityService->getCurrentUser();
-        if (!$this->isUserAllowsToSetAsFavorite($currentUser, $gridConfiguration)) {
+        if (!$this->userRoleShareService->isConfigurationSharedWithUser($gridConfiguration, $currentUser)) {
             throw new ForbiddenException(
                 'You are not allowed to set this configuration as favorite.
                 You have to be the owner of the configuration or the configuration has to be shared with you.'
@@ -80,52 +81,5 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         }
 
         return $gridConfiguration;
-    }
-
-    private function isUserAllowsToSetAsFavorite(UserInterface $user, GridConfiguration $gridConfiguration): bool
-    {
-        if ($gridConfiguration->getOwner() === $user->getId()) {
-            return true;
-        }
-
-        if ($this->isUserInSharedUsers($gridConfiguration, $user)) {
-            return true;
-        }
-
-        if ($this->isUserInSharedRoles($gridConfiguration, $user)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private function isUserInSharedUsers(GridConfiguration $gridConfiguration, UserInterface $user): bool
-    {
-        /** @var GridConfigurationShare[] $shares */
-        $shares = $gridConfiguration->getShares()->getValues();
-
-        foreach ($shares as $share) {
-            if ($share->getUser() === $user->getId()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function isUserInSharedRoles(GridConfiguration $gridConfiguration, UserInterface $user): bool
-    {
-        /** @var GridConfigurationShare[] $shares */
-        $shares = $gridConfiguration->getShares()->getValues();
-
-        $roles = $user->getRoles();
-        foreach ($shares as $share) {
-            $filter = array_filter($roles, fn ($role) => $role === $share->getUser());
-            if (count($filter) > 0) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

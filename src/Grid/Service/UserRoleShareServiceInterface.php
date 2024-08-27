@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\ConfigurationParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -28,4 +29,6 @@ interface UserRoleShareServiceInterface
         GridConfiguration $configuration,
         ConfigurationParameterInterface $options
     ): GridConfiguration;
+
+    public function isConfigurationSharedWithUser(GridConfiguration $gridConfiguration, UserInterface $user): bool;
 }

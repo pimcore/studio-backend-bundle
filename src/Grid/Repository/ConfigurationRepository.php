@@ -72,4 +72,12 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
 
         return $configuration;
     }
+
+    /**
+     * @return GridConfiguration[]
+     */
+    public function getByAssetFolderId(int $folderId): array
+    {
+        return $this->entityManager->getRepository(GridConfiguration::class)->findBy(['assetFolderId' => $folderId]);
+    }
 }

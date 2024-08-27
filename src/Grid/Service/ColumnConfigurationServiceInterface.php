@@ -22,15 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 /**
  * @internal
  */
-interface ConfigurationServiceInterface
+interface ColumnConfigurationServiceInterface
 {
     /**
      * @return ColumnConfiguration[]
      */
-    public function getDefaultAssetGridConfiguration(): array;
-
-    /**
-     * @return Configuration[]
-     */
-    public function getGridConfigurationsForFolder(int $folderId): array;
+    public function getAvailableAssetColumnConfiguration(): array;
 }
