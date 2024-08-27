@@ -27,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
  */
 interface EventSubscriberServiceInterface
 {
-
     /**
      * @throws AccessDeniedException
      * @throws InvalidArgumentException

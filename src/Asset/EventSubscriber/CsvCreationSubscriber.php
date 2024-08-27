@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceI
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**

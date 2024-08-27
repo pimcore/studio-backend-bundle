@@ -51,8 +51,7 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
     public function handleFinishAndNotify(
         string $topic,
         JobRunStateChangedEvent $event
-    ): void
-    {
+    ): void {
         $finished = new Finished(
             $event->getJobRunId(),
             $event->getJobName(),

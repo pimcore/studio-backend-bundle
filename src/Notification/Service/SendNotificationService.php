@@ -57,8 +57,7 @@ final readonly class SendNotificationService implements SendNotificationServiceI
         SendNotificationParameters $parameters,
         ?UserInterface $sender,
         ?string $payload = null
-    ): void
-    {
+    ): void {
         $this->validateParameters($parameters);
         $recipients = $this->getRecipients($parameters, $sender?->getId());
         $attachment = $this->getAttachment($parameters, $sender);
