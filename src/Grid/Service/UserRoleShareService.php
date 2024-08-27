@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Model\UserInterface;
+use function count;
 
 /**
  * @internal
@@ -51,7 +52,7 @@ final readonly class UserRoleShareService implements UserRoleShareServiceInterfa
         );
     }
 
-    public function isConfigurationSharedWithUser(GridConfiguration $gridConfiguration, UserInterface $user, ): bool
+    public function isConfigurationSharedWithUser(GridConfiguration $gridConfiguration, UserInterface $user): bool
     {
         if ($gridConfiguration->getOwner() === $user->getId()) {
             return true;
