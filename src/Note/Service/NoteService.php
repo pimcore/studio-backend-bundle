@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteEvent;
+use Pimcore\Bundle\StudioBackendBundle\Note\Event\NoteTypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
@@ -28,7 +29,12 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
+use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteType;
+use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteTypeCollection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -37,12 +43,20 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class NoteService implements NoteServiceInterface
 {
     public function __construct(
+        private EventDispatcherInterface $eventDispatcher,
         private NoteRepositoryInterface $noteRepository,
         private NoteHydratorInterface $noteHydrator,
-        private EventDispatcherInterface $eventDispatcher,
-        private SecurityServiceInterface $securityService
+        private ParameterBagInterface $parameterBag,
+        private SecurityServiceInterface $securityService,
+        private array $noteTypes
     ) {
     }
+
+    private const DATA_OBJECT_NOTE_TYPES = 'pimcore_admin.dataObjects.notes_events.types';
+
+    private const ASSET_NOTE_TYPES = 'pimcore_admin.assets.notes_events.types';
+
+    private const DOCUMENT_NOTE_TYPES = 'pimcore_admin.documents.notes_events.types';
 
     /**
      * @throws ElementSavingFailedException|NotFoundException|UserNotFoundException
@@ -96,6 +110,44 @@ final readonly class NoteService implements NoteServiceInterface
     /**
      * @throws NotFoundException
      */
+    public function listNoteTypes(string $elementType): NoteTypeCollection
+    {
+        $types = [];
+        $noteTypes = $this->getNoteTypes($elementType);
+        foreach ($noteTypes as $noteType) {
+            $noteTypeResponse = new NoteType($noteType);
+            $this->eventDispatcher->dispatch(
+                new NoteTypeEvent($noteTypeResponse),
+                NoteTypeEvent::EVENT_NAME
+            );
+            $types[] = $noteTypeResponse;
+        }
+
+        return new NoteTypeCollection($types);
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function getNoteTypes(string $elementType): array
+    {
+        if (!isset($this->noteTypes[$elementType])) {
+            throw new NotFoundException('Note type', $elementType, 'element type');
+        }
+        $noteTypes = $this->noteTypes[$elementType];
+
+        try {
+            $parameters = array_filter($this->parameterBag->get($this->getNoteTypeParameters($elementType)));
+        } catch (ParameterNotFoundException) {
+            return $noteTypes;
+        }
+
+        return array_values(array_unique(array_merge($parameters, $noteTypes)));
+    }
+
+    /**
+     * @throws NotFoundException
+     */
     private function getNote(int $id): Note
     {
         $note = $this->noteHydrator->hydrate(
@@ -108,5 +160,18 @@ final readonly class NoteService implements NoteServiceInterface
         );
 
         return $note;
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function getNoteTypeParameters(string $elementType): string
+    {
+        return match ($elementType) {
+            ElementTypes::TYPE_DATA_OBJECT => self::DATA_OBJECT_NOTE_TYPES,
+            ElementTypes::TYPE_ASSET => self::ASSET_NOTE_TYPES,
+            ElementTypes::TYPE_DOCUMENT => self::DOCUMENT_NOTE_TYPES,
+            default => throw new NotFoundException('Note type', $elementType, 'element type'),
+        };
     }
 }

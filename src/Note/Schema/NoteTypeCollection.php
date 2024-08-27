@@ -14,24 +14,34 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Attribute\Response\Property;
+namespace Pimcore\Bundle\StudioBackendBundle\Note\Schema;
 
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
+use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-final class NoteCollection extends Property
+#[Schema(
+    title: 'NoteTypeCollection',
+    required: ['items'],
+    type: 'object'
+)]
+final readonly class NoteTypeCollection
 {
-    public function __construct()
-    {
-        parent::__construct(
-            'items',
-            title: 'items',
+    public function __construct(
+        #[Property(
+            description: 'items',
             type: 'array',
-            items: new Items(ref: Note::class)
-        );
+            items: new Items(ref: NoteType::class)
+        )]
+        private array $items
+    ) {
+    }
+
+    public function getItems(): array
+    {
+        return $this->items;
     }
 }
