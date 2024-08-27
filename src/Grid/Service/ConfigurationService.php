@@ -16,12 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridConfigurationEvent;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
-use function in_array;
 
 /**
  * @internal
@@ -29,7 +31,11 @@ use function in_array;
 final readonly class ConfigurationService implements ConfigurationServiceInterface
 {
     public function __construct(
-        private GridServiceInterface $gridService,
+        private ColumnConfigurationServiceInterface $columnConfigurationService,
+        private ConfigurationRepositoryInterface $configurationRepository,
+        private ConfigurationHydratorInterface $configurationHydrator,
+        private UserRoleShareServiceInterface $userRoleShareService,
+        private SecurityServiceInterface $securityService,
         private EventDispatcherInterface $eventDispatcher,
         private array $predefinedColumns
     ) {
@@ -38,38 +44,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     /**
      * @return ColumnConfiguration[]
      */
-    public function getAvailableAssetGridConfiguration(): array
-    {
-        $columns = [];
-        foreach ($this->gridService->getColumnCollectors() as $collector) {
-            // Only collect supported asset collectors
-            if (!in_array(ElementTypes::TYPE_ASSET, $collector->supportedElementTypes(), true)) {
-                continue;
-            }
-
-            // rather use the spread operator instead of array_merge in a loop
-            $columns = [
-                ...$columns,
-                ...$collector->getColumnConfigurations($this->gridService->getColumnDefinitions()),
-            ];
-        }
-
-        foreach ($columns as $column) {
-            $this->eventDispatcher->dispatch(
-                new GridColumnConfigurationEvent($column),
-                GridColumnConfigurationEvent::EVENT_NAME
-            );
-        }
-
-        return $columns;
-    }
-
-    /**
-     * @return ColumnConfiguration[]
-     */
     public function getDefaultAssetGridConfiguration(): array
     {
-        $availableColumns = $this->getAvailableAssetGridConfiguration();
+        $availableColumns = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
         $defaultColumns = [];
         foreach ($this->predefinedColumns as $predefinedColumn) {
             $filteredColumns =
@@ -89,5 +66,30 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         }
 
         return $defaultColumns;
+    }
+
+    /**
+     * @return Configuration[]
+     */
+    public function getGridConfigurationsForFolder(int $folderId): array
+    {
+        $configurations = $this->configurationRepository->getByAssetFolderId($folderId);
+
+        $filteredConfigurations = [];
+        $currentUser = $this->securityService->getCurrentUser();
+        foreach ($configurations as $configuration) {
+            if ($this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
+                $hydratedConfiguration = $this->configurationHydrator->hydrate($configuration);
+
+                $this->eventDispatcher->dispatch(
+                    new GridConfigurationEvent($hydratedConfiguration),
+                    GridConfigurationEvent::EVENT_NAME
+                );
+
+                $filteredConfigurations[] = $hydratedConfiguration;
+            }
+        }
+
+        return $filteredConfigurations;
     }
 }

@@ -17,14 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -38,11 +38,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetAvailableConfigurationController extends AbstractApiController
+final class ListSavedConfigurationsController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private ConfigurationServiceInterface $configurationService,
     ) {
         parent::__construct($serializer);
     }
@@ -51,39 +51,34 @@ final class GetAvailableConfigurationController extends AbstractApiController
      * @throws NotFoundException|SearchException
      */
     #[Route(
-        '/assets/grid/available-configuration',
-        name: 'pimcore_studio_api_get_asset_grid_available_configuration',
+        '/assets/grid/configurations/{folderId}',
+        name: 'pimcore_studio_api_get_asset_saved_grid_configurations',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/grid/available-configuration',
-        operationId: 'asset_get_available_grid_configuration',
-        description: 'asset_get_available_grid_configuration_description',
-        summary: 'asset_get_available_grid_configuration_summary',
+        path: self::API_PATH . '/assets/grid/configurations/{folderId}',
+        operationId: 'asset_get_saved_grid_configurations',
+        description: 'asset_get_saved_grid_configurations_description',
+        summary: 'asset_get_saved_grid_configurations_summary',
         tags: [Tags::AssetGrid->value]
     )]
+    #[IdParameter(
+        type: 'folderId',
+        name: 'folderId'
+    )]
     #[SuccessResponse(
-        description: 'asset_get_available_grid_configuration_success_response',
-        content: new JsonContent(
-            properties: [
-                new Property(
-                    property: 'columns',
-                    type: 'array',
-                    items: new Items(ref: ColumnConfiguration::class),
-                )],
-        )
+        description: 'asset_get_saved_grid_configurations_success_response',
+        content: new CollectionJson(new GenericCollection(Configuration::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAvailableAssetGridConfiguration(): JsonResponse
+    public function getAssetSavedGridConfigurations(int $folderId): JsonResponse
     {
-        $columns = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
+        $configurations = $this->configurationService->getGridConfigurationsForFolder($folderId);
 
-        return $this->jsonResponse([
-            'columns' => $columns,
-        ]);
+        return $this->jsonResponse($configurations);
     }
 }

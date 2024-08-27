@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
+use Pimcore\Model\UserInterface;
+use function count;
 
 /**
  * @internal
@@ -48,6 +50,23 @@ final readonly class UserRoleShareService implements UserRoleShareServiceInterfa
             $configuration,
             $options->getSharedRoles()
         );
+    }
+
+    public function isConfigurationSharedWithUser(GridConfiguration $gridConfiguration, UserInterface $user): bool
+    {
+        if ($gridConfiguration->getOwner() === $user->getId()) {
+            return true;
+        }
+
+        if ($this->isUserInSharedUsers($gridConfiguration, $user)) {
+            return true;
+        }
+
+        if ($this->isUserInSharedRoles($gridConfiguration, $user)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -82,5 +101,35 @@ final readonly class UserRoleShareService implements UserRoleShareServiceInterfa
         }
 
         return $gridConfiguration;
+    }
+
+    private function isUserInSharedUsers(GridConfiguration $gridConfiguration, UserInterface $user): bool
+    {
+        /** @var GridConfigurationShare[] $shares */
+        $shares = $gridConfiguration->getShares()->getValues();
+
+        foreach ($shares as $share) {
+            if ($share->getUser() === $user->getId()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isUserInSharedRoles(GridConfiguration $gridConfiguration, UserInterface $user): bool
+    {
+        /** @var GridConfigurationShare[] $shares */
+        $shares = $gridConfiguration->getShares()->getValues();
+
+        $roles = $user->getRoles();
+        foreach ($shares as $share) {
+            $filter = array_filter($roles, fn ($role) => $role === $share->getUser());
+            if (count($filter) > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

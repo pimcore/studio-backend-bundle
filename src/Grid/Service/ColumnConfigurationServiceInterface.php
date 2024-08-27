@@ -17,20 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 
 /**
  * @internal
  */
-interface ConfigurationServiceInterface
+interface ColumnConfigurationServiceInterface
 {
     /**
      * @return ColumnConfiguration[]
      */
-    public function getDefaultAssetGridConfiguration(): array;
-
-    /**
-     * @return Configuration[]
-     */
-    public function getGridConfigurationsForFolder(int $folderId): array;
+    public function getAvailableAssetColumnConfiguration(): array;
 }

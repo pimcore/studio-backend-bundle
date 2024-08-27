@@ -14,23 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration as ConfigurationSchema;
 
 /**
  * @internal
  */
-interface ConfigurationServiceInterface
+interface ConfigurationHydratorInterface
 {
-    /**
-     * @return ColumnConfiguration[]
-     */
-    public function getDefaultAssetGridConfiguration(): array;
-
-    /**
-     * @return Configuration[]
-     */
-    public function getGridConfigurationsForFolder(int $folderId): array;
+    public function hydrate(GridConfiguration $data): ConfigurationSchema;
 }

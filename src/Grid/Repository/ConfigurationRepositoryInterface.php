@@ -34,4 +34,9 @@ interface ConfigurationRepositoryInterface
     public function update(GridConfiguration $configuration): GridConfiguration;
 
     public function clearShares(GridConfiguration $configuration): GridConfiguration;
+
+    /**
+     * @return GridConfiguration[]
+     */
+    public function getByAssetFolderId(int $folderId): array;
 }

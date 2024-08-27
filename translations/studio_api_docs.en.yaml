@@ -56,8 +56,8 @@ asset_download_zip_success_response: ZIP archive as attachment
 asset_download_zip_summary: Download ZIP archive for assets
 asset_get_available_grid_configuration_description: |
   Get all available grid configurations for assets
-asset_get_available_grid_configuration_success_response: All available grid configurations for assets
-asset_get_available_grid_configuration_summary: Get available grid configurations
+asset_get_available_grid_configuration_success_response: All available grid column configurations for assets
+asset_get_available_grid_configuration_summary: Get available grid column configurations
 asset_get_by_id_description: |
   Retrieves a specific asset data based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset.
 asset_get_by_id_success_response: Successfully retrieved one of asset type data as JSON
@@ -539,3 +539,11 @@ asset_set_grid_configuration_as_favorite_description: |
     Set asset grid configuration as favorite for the current user for a specific folder
 asset_set_grid_configuration_as_favorite_success_response: Asset grid configuration set as favorite successfully
 asset_set_grid_configuration_as_favorite_summary: Set asset grid configuration as favorite for a specific folder
+asset_get_available_grid_list_configurations_description: |
+    Get all saved grid configurations for assets of the given folder for the current user
+asset_get_available_grid_list_configurations_success_response: List of saved grid configurations for the given folder
+asset_get_available_grid_list_configurations_summary: Get all saved grid configurations for assets of the given folder
+asset_get_saved_grid_configurations_description: |
+    Get all saved grid configurations for assets of the given folder for the current user and shared configurations for this user
+asset_get_saved_grid_configurations_success_response: List of saved grid configurations for the given folder
+asset_get_saved_grid_configurations_summary: Get all saved grid configurations for assets of the given folder

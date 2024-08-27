@@ -18,6 +18,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationService
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnService
 
@@ -47,6 +50,13 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepository
     arguments:
       - "@doctrine.orm.studio_backend_entity_manager"
+
+
+  #
+  # Hydrator
+  #
+  Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydrator
 
   #
   # Column Definitions
