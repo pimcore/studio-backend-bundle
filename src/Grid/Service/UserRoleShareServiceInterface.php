@@ -31,4 +31,8 @@ interface UserRoleShareServiceInterface
     ): GridConfiguration;
 
     public function isConfigurationSharedWithUser(GridConfiguration $gridConfiguration, UserInterface $user): bool;
+
+    public function getUserShares(GridConfiguration $gridConfiguration): array;
+
+    public function getRoleShares(GridConfiguration $gridConfiguration): array;
 }

@@ -20,6 +20,7 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -229,5 +230,16 @@ class GridConfiguration
     public function removeFavorite(GridConfigurationFavorite $favorite): void
     {
         $this->favorites->removeElement($favorite);
+    }
+
+    public function isUserFavorite(UserInterface $user): bool
+    {
+        foreach ($this->favorites as $favorite) {
+            if ($favorite->getUser() === $user->getId()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

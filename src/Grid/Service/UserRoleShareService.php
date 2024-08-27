@@ -69,6 +69,37 @@ final readonly class UserRoleShareService implements UserRoleShareServiceInterfa
         return false;
     }
 
+    public function getUserShares(GridConfiguration $gridConfiguration): array
+    {
+        $shares = $gridConfiguration->getShares()->getValues();
+        $userShares = [];
+        foreach ($shares as $share) {
+            try {
+                $userShares[] = $this->userRepository->getUserById($share->getUser())->getId();
+            } catch (NotFoundException $e) {
+                continue;
+            }
+        }
+
+        return $userShares;
+    }
+
+    public function getRoleShares(GridConfiguration $gridConfiguration): array
+    {
+        $shares = $gridConfiguration->getShares()->getValues();
+        $roleShares = [];
+        foreach ($shares as $share) {
+            try {
+                $roleShares[] = $this->roleRepository->getRoleById($share->getUser())->getId();
+            } catch (NotFoundException $e) {
+                continue;
+            }
+        }
+
+        return $roleShares;
+    }
+
+
     /**
      * @throws NotFoundException
      */

@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter as IdParameterPath;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IdParameter as IdParameterQuery;
@@ -71,14 +72,7 @@ final class GetConfigurationController extends AbstractApiController
     #[IdParameterQuery(description: 'Configuration ID', namePrefix: 'configuration', required: false)]
     #[SuccessResponse(
         description: 'asset_get_grid_configuration_by_folderId_success_response',
-        content: new JsonContent(
-            properties: [
-                new Property(
-                    property: 'columns',
-                    type: 'array',
-                    items: new Items(ref: ColumnConfiguration::class),
-                )],
-        )
+        content: new JsonContent(ref: DetailedConfiguration::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -88,15 +82,15 @@ final class GetConfigurationController extends AbstractApiController
         int $folderId,
         #[MapQueryString] GridConfigurationIdParameter $configurationId = new GridConfigurationIdParameter()
     ): JsonResponse {
-        /**
-         * @todo: implement usage of $folderId and $configurationId
-         * If a configurationId is set, return the saved configuration for the folder.
-         * If no configurationId is set, return the default configuration.
-         */
-        $columns = $this->gridConfigurationService->getDefaultAssetGridConfiguration();
+        if ($configurationId->getConfigurationId() === null) {
+            $configuration = $this->gridConfigurationService->getDefaultAssetGridConfiguration();
+        } else {
+            $configuration = $this->gridConfigurationService->getAssetGridConfiguration(
+                $configurationId->getConfigurationId(),
+                $folderId
+            );
+        }
 
-        return $this->jsonResponse([
-            'columns' => $columns,
-        ]);
+        return $this->jsonResponse($configuration);
     }
 }

@@ -14,23 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Event;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 
-/**
- * @internal
- */
-interface ConfigurationServiceInterface
+final class DetailedConfigurationEvent extends AbstractPreResponseEvent
 {
-    public function getDefaultAssetGridConfiguration(): DetailedConfiguration;
+    public const EVENT_NAME = 'pre_response.grid_detailed_configuration';
 
-    public function getAssetGridConfiguration(int $configurationId, int $folderId): DetailedConfiguration;
+    public function __construct(
+        private readonly DetailedConfiguration $configuration
+    ) {
+        parent::__construct($configuration);
+    }
 
     /**
-     * @return Configuration[]
+     * Use this to get additional infos out of the response object
      */
-    public function getGridConfigurationsForFolder(int $folderId): array;
+    public function getConfiguration(): DetailedConfiguration
+    {
+        return $this->configuration;
+    }
 }
