@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter\NoteParameters;
 use Pimcore\Bundle\StudioBackendBundle\Note\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\CreateNote;
 use Pimcore\Bundle\StudioBackendBundle\Note\Schema\Note;
+use Pimcore\Bundle\StudioBackendBundle\Note\Schema\NoteTypeCollection;
 
 /**
  * @internal
@@ -45,4 +46,9 @@ interface NoteServiceInterface
      * @throws NotFoundException
      */
     public function deleteNote(int $id): void;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function listNoteTypes(string $elementType): NoteTypeCollection;
 }

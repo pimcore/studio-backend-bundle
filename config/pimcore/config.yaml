@@ -51,6 +51,11 @@ pimcore_studio_backend:
                   group: system
                 - key: size
                   group: system
+    notes:
+        types:
+            asset: ['content', 'seo', 'warning', 'notice']
+            document: ['content', 'seo', 'warning', 'notice']
+            data-object: ['content', 'seo', 'warning', 'notice']
 
 mercure:
     hubs:

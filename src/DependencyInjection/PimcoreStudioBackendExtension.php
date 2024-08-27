@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -88,6 +89,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);
         $definition->setArgument('$predefinedColumns', $config['grid']['asset']['predefined_columns']);
+
+        $definition = $container->getDefinition(NoteServiceInterface::class);
+        $definition->setArgument('$noteTypes', $config['notes']['types']);
 
     }
 

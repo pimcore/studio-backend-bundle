@@ -268,6 +268,9 @@ note_element_get_collection_description: |
   You can use different query parameters to filter the notes
 note_element_get_collection_success_response: Paginated notes with total count
 note_element_get_collection_summary: Get paginated notes for an element by id
+note_element_get_type_collection_description: Get note types collection by <strong>{elementType}</strong>
+note_element_get_type_collection_success_response: Note types collection
+note_element_get_type_collection_summary: Get note types
 note_get_collection_description: |
   Get paginated notes. <br>
   You can use different query parameters to filter the notes
