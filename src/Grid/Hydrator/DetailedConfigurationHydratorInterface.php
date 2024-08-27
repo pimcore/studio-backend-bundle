@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration as ConfigurationSchema;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 
 /**

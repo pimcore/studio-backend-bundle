@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
-use Pimcore\Model\UserInterface;
 
 /**
  * @internal

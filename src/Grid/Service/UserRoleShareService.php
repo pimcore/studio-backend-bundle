@@ -99,7 +99,6 @@ final readonly class UserRoleShareService implements UserRoleShareServiceInterfa
         return $roleShares;
     }
 
-
     /**
      * @throws NotFoundException
      */

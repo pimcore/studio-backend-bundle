@@ -48,9 +48,9 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly bool $saveFilter,
         #[Property(description: 'setAsFavorite', type: 'boolean', example: false)]
         private readonly bool $setAsFavorite,
-        #[Property(description: 'sharedUsers', type: 'object', example: [42,1337])]
+        #[Property(description: 'sharedUsers', type: 'object', example: [42, 1337])]
         private readonly array $sharedUsers,
-        #[Property(description: 'sharedRoles', type: 'object', example: [42,1337])]
+        #[Property(description: 'sharedRoles', type: 'object', example: [42, 1337])]
         private readonly array $sharedRoles,
         #[Property(description: 'columns', type: 'array', items: new Items(ref: ColumnSchema::class))]
         private readonly array $columns,
@@ -122,5 +122,4 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     {
         return $this->pageSize;
     }
-
 }
