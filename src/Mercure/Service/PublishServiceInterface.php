@@ -29,4 +29,6 @@ interface PublishServiceInterface
         ?string $type = null,
         ?int $retry = null
     ): void;
+
+    public function getJsonData(mixed $data): string;
 }

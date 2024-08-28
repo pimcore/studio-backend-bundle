@@ -34,5 +34,9 @@ interface SendNotificationServiceInterface
      * @throws UserNotFoundException
      * @throws NotFoundException
      */
-    public function sendNotification(SendNotificationParameters $parameters, UserInterface $sender): void;
+    public function sendNotification(
+        SendNotificationParameters $parameters,
+        ?UserInterface $sender,
+        ?string $payload = null
+    ): void;
 }

@@ -22,9 +22,8 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -33,8 +32,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 {
     public function __construct(
+        private EventSubscriberServiceInterface $eventSubscriberService,
         private CsvServiceInterface $csvService,
-        private PublishServiceInterface $publishService,
         private StorageServiceInterface $storageService,
     ) {
 
@@ -57,14 +56,9 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
         }
 
         match ($event->getNewState()) {
-            JobRunStates::FINISHED->value => $this->publishService->publish(
+            JobRunStates::FINISHED->value => $this->eventSubscriberService->handleFinishAndNotify(
                 Events::CSV_DOWNLOAD_READY->value,
-                new Finished(
-                    $event->getJobRunId(),
-                    $event->getJobName(),
-                    $event->getJobRunOwnerId(),
-                    $event->getNewState()
-                )
+                $event
             ),
             JobRunStates::FAILED->value => $this->cleanupOnFail($event->getJobRunId()),
             default => null,

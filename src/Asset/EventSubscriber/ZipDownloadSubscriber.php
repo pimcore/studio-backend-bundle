@@ -21,9 +21,12 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine\Finished;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -32,7 +35,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private PublishServiceInterface $publishService,
+        private EventSubscriberServiceInterface $eventSubscriberService,
         private StorageServiceInterface $storageService,
         private ZipServiceInterface $zipService
     ) {
@@ -46,6 +49,12 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @throws AccessDeniedException
+     * @throws InvalidArgumentException
+     * @throws UserNotFoundException
+     * @throws NotFoundException
+     */
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {
         if ($event->getJobName() !== Jobs::CREATE_ZIP->value) {
@@ -53,14 +62,9 @@ final readonly class ZipDownloadSubscriber implements EventSubscriberInterface
         }
 
         match ($event->getNewState()) {
-            JobRunStates::FINISHED->value => $this->publishService->publish(
+            JobRunStates::FINISHED->value => $this->eventSubscriberService->handleFinishAndNotify(
                 Events::ZIP_DOWNLOAD_READY->value,
-                new Finished(
-                    $event->getJobRunId(),
-                    $event->getJobName(),
-                    $event->getJobRunOwnerId(),
-                    $event->getNewState()
-                )
+                $event
             ),
             JobRunStates::FAILED->value => $this->storageService->cleanUpLocalFile(
                 $this->zipService->getTempFilePath(

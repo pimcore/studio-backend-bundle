@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
@@ -35,8 +34,6 @@ final readonly class PublishService implements PublishServiceInterface
 
     /**
      * @param string|array<string> $topics
-     *
-     * @throws JsonEncodingException
      */
     public function publish(
         string|array $topics,
@@ -50,7 +47,7 @@ final readonly class PublishService implements PublishServiceInterface
             $topics = [$topics];
         }
 
-        $jsonData = $this->serializer->serialize($data, 'json');
+        $jsonData = $this->getJsonData($data);
 
         $this->logger->debug(
             sprintf(
@@ -65,5 +62,10 @@ final readonly class PublishService implements PublishServiceInterface
         );
 
         $this->serverHub->publish(new Update($topics, $jsonData, $private, $id, $type, $retry));
+    }
+
+    public function getJsonData(mixed $data): string
+    {
+        return $this->serializer->serialize($data, 'json');
     }
 }
