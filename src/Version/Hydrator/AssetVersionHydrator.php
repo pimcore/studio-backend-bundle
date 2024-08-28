@@ -20,12 +20,9 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
-use Pimcore\Bundle\StudioBackendBundle\Version\Event\ImageVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
 use Pimcore\Model\Asset;
-use Pimcore\Model\Asset\Image;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -46,7 +43,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
      */
     public function hydrate(
         Asset $asset
-    ): ImageVersion|AssetVersion {
+    ): AssetVersion {
         if (
             $asset instanceof Asset\Document &&
             $asset->getMimeType() === MimeTypes::PDF->value &&
@@ -57,12 +54,20 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
             );
         }
 
-        if ($asset instanceof Image) {
-            return $this->hydrateImage($asset);
-        }
+        return $this->hydrateAsset($asset);
+    }
 
+    private function hydrateAsset(Asset $asset): AssetVersion
+    {
         $hydratedAsset = new AssetVersion(
-            fileName: $asset->getFilename()
+            $asset->getType(),
+            $asset->getFilename(),
+            $asset->getCreationDate(),
+            $asset->getModificationDate(),
+            $this->versionDetailService->getAssetFileSize($asset) ?? $asset->getFileSize(),
+            $asset->getMimeType(),
+            $this->customMetadataVersionHydrator->hydrate($asset->getMetadata()),
+            $this->versionDetailService->getDimensions($asset)
         );
 
         $this->eventDispatcher->dispatch(
@@ -71,25 +76,5 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
         );
 
         return $hydratedAsset;
-    }
-
-    private function hydrateImage(Image $image): ImageVersion
-    {
-        $hydratedImage = new ImageVersion(
-            $image->getFilename(),
-            $image->getCreationDate(),
-            $image->getModificationDate(),
-            $this->versionDetailService->getAssetFileSize($image) ?? $image->getFileSize(),
-            $image->getMimeType(),
-            $this->customMetadataVersionHydrator->hydrate($image->getMetadata()),
-            $this->versionDetailService->getImageDimensions($image)
-        );
-
-        $this->eventDispatcher->dispatch(
-            new ImageVersionEvent($hydratedImage),
-            ImageVersionEvent::EVENT_NAME
-        );
-
-        return $hydratedImage;
     }
 }
