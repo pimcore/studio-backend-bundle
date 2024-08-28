@@ -44,7 +44,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private SecurityServiceInterface $securityService,
         private EventDispatcherInterface $eventDispatcher,
         private DetailedConfigurationHydratorInterface $detailedConfigurationHydrator,
-        private FavoriteServiceInterface $favoriteService,
         private array $predefinedColumns
     ) {
     }
