@@ -31,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Schema\Error;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 
 /**
  * @internal
@@ -56,7 +55,6 @@ final readonly class Schemas
 
     public const VERSIONS = [
         AssetVersion::class,
-        ImageVersion::class,
         DataObjectVersion::class,
         DocumentVersion::class,
     ];

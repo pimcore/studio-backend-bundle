@@ -26,9 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\ImageVersion;
 use Pimcore\Model\Asset;
-use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
@@ -53,7 +51,7 @@ final class VersionDetailService implements VersionDetailServiceInterface
     public function getVersionData(
         int $id,
         UserInterface $user
-    ): AssetVersion|ImageVersion|DataObjectVersion|DocumentVersion {
+    ): AssetVersion|DataObjectVersion|DocumentVersion {
         $version = $this->repository->getVersionById($id);
         $element = $this->repository->getElementFromVersion($version, $user);
 
@@ -69,9 +67,9 @@ final class VersionDetailService implements VersionDetailServiceInterface
      *
      * @throws ElementStreamResourceNotFoundException
      */
-    public function getImageDimensions(Image $image): Dimensions
+    public function getDimensions(Asset $asset): Dimensions
     {
-        $path = $this->getLocalAssetPath($image);
+        $path = $this->getLocalAssetPath($asset);
 
         if (is_readable($path)) {
             $assetDimensions = getimagesize($path);
@@ -93,9 +91,9 @@ final class VersionDetailService implements VersionDetailServiceInterface
      *
      * @throws ElementStreamResourceNotFoundException
      */
-    public function getAssetFileSize(Asset $image): ?int
+    public function getAssetFileSize(Asset $asset): ?int
     {
-        $path = $this->getLocalAssetPath($image);
+        $path = $this->getLocalAssetPath($asset);
 
         if (is_readable($path)) {
             return filesize($path);
@@ -125,7 +123,7 @@ final class VersionDetailService implements VersionDetailServiceInterface
     private function hydrate(
         ElementInterface $element,
         string $class
-    ): AssetVersion|ImageVersion|DocumentVersion|DataObjectVersion {
+    ): AssetVersion|DocumentVersion|DataObjectVersion {
         if ($this->versionHydratorLocator->has($class)) {
             return $this->versionHydratorLocator->get($class)->hydrate($element);
         }
