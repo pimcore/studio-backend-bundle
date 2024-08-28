@@ -59,12 +59,12 @@ final class GetAvailableColumnsController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/assets/grid/available-columns',
         operationId: 'asset_get_available_grid_configuration',
-        description: 'asset_get_available_grid_configuration_description',
-        summary: 'asset_get_available_grid_configuration_summary',
+        description: 'asset_get_available_grid_columns_description',
+        summary: 'asset_get_available_grid_columns_summary',
         tags: [Tags::AssetGrid->value]
     )]
     #[SuccessResponse(
-        description: 'asset_get_available_grid_configuration_success_response',
+        description: 'asset_get_available_grid_columns_success_response',
         content: new JsonContent(
             properties: [
                 new Property(
