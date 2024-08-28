@@ -54,10 +54,10 @@ asset_download_zip_description: |
   Download the ZIP archive with assets based on the given <strong>{jobRunId}</strong> returned in the response of the create zip endpoint
 asset_download_zip_success_response: ZIP archive as attachment
 asset_download_zip_summary: Download ZIP archive for assets
-asset_get_available_grid_configuration_description: |
-  Get all available grid configurations for assets
-asset_get_available_grid_configuration_success_response: All available grid column configurations for assets
-asset_get_available_grid_configuration_summary: Get available grid column configurations
+asset_get_available_grid_columns_description: |
+  Get all available grid columns for assets
+asset_get_available_grid_columns_success_response: All available grid column configurations for assets
+asset_get_available_grid_columns_summary: Get available grid column configurations
 asset_get_by_id_description: |
   Retrieves a specific asset data based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset.
 asset_get_by_id_success_response: Successfully retrieved one of asset type data as JSON

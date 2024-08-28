@@ -58,6 +58,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\DetailedConfigurationHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\DetailedConfigurationHydrator
+
   #
   # Column Definitions
   #

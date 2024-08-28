@@ -16,11 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Event\DetailedConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\DetailedConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -37,14 +43,12 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private UserRoleShareServiceInterface $userRoleShareService,
         private SecurityServiceInterface $securityService,
         private EventDispatcherInterface $eventDispatcher,
+        private DetailedConfigurationHydratorInterface $detailedConfigurationHydrator,
         private array $predefinedColumns
     ) {
     }
 
-    /**
-     * @return ColumnConfiguration[]
-     */
-    public function getDefaultAssetGridConfiguration(): array
+    public function getDefaultAssetGridConfiguration(): DetailedConfiguration
     {
         $availableColumns = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
         $defaultColumns = [];
@@ -61,11 +65,20 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
                 });
 
             if (count($filteredColumns) === 1) {
-                $defaultColumns[] = array_pop($filteredColumns);
+                $column = array_pop($filteredColumns);
+                $defaultColumns[] = new ColumnSchema(
+                    key: $column->getKey(),
+                    locale: $column->getLocale(),
+                    group: $column->getGroup(),
+                );
             }
         }
 
-        return $defaultColumns;
+        $detailedConfiguration = $this->getDefaultDetailedConfiguration($defaultColumns);
+
+        $this->dispatchEvent($detailedConfiguration);
+
+        return $detailedConfiguration;
     }
 
     /**
@@ -91,5 +104,57 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         }
 
         return $filteredConfigurations;
+    }
+
+    public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration
+    {
+        if (!$configurationId) {
+            return $this->getDefaultAssetGridConfiguration();
+        }
+
+        $configuration =  $this->configurationRepository->getById($configurationId);
+
+        $user = $this->securityService->getCurrentUser();
+        if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
+            throw new AccessDeniedException('Access denied to configuration');
+        }
+
+        if ($configuration->getAssetFolderId() !== $folderId) {
+            throw new InvalidArgumentException('Configuration does not belong to folder');
+        }
+
+        $configuration = $this->detailedConfigurationHydrator->hydrate(
+            $configuration,
+            $this->userRoleShareService->getUserShares($configuration),
+            $this->userRoleShareService->getRoleShares($configuration),
+            $configuration->isUserFavorite($user)
+        );
+
+        $this->dispatchEvent($configuration);
+
+        return $configuration;
+    }
+
+    public function dispatchEvent(DetailedConfiguration $detailedConfiguration): void
+    {
+        $this->eventDispatcher->dispatch(
+            new DetailedConfigurationEvent($detailedConfiguration),
+            DetailedConfigurationEvent::EVENT_NAME
+        );
+    }
+
+    private function getDefaultDetailedConfiguration(array $columns): DetailedConfiguration
+    {
+        return new DetailedConfiguration(
+            name: 'Predefined',
+            description: 'Default Asset Grid Configuration',
+            shareGlobal: false,
+            saveFilter: false,
+            setAsFavorite: false,
+            sharedUsers: [],
+            sharedRoles: [],
+            columns: $columns,
+            filter: [],
+        );
     }
 }
