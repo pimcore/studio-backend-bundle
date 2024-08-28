@@ -78,7 +78,7 @@ final class GetAvailableColumnsController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAvailableAssetGridConfiguration(): JsonResponse
+    public function getAvailableAssetGridColumns(): JsonResponse
     {
         $columns = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
 
