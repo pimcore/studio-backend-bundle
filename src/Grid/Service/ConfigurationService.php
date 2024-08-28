@@ -106,8 +106,12 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return $filteredConfigurations;
     }
 
-    public function getAssetGridConfiguration(int $configurationId, int $folderId): DetailedConfiguration
+    public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration
     {
+        if (!$configurationId) {
+            return $this->getDefaultAssetGridConfiguration();
+        }
+
         $configuration =  $this->configurationRepository->getById($configurationId);
 
         $user = $this->securityService->getCurrentUser();

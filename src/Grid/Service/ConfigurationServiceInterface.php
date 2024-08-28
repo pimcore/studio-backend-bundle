@@ -26,7 +26,7 @@ interface ConfigurationServiceInterface
 {
     public function getDefaultAssetGridConfiguration(): DetailedConfiguration;
 
-    public function getAssetGridConfiguration(int $configurationId, int $folderId): DetailedConfiguration;
+    public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration;
 
     /**
      * @return Configuration[]

@@ -79,14 +79,10 @@ final class GetConfigurationController extends AbstractApiController
         int $folderId,
         #[MapQueryString] GridConfigurationIdParameter $configurationId = new GridConfigurationIdParameter()
     ): JsonResponse {
-        if ($configurationId->getConfigurationId() === null) {
-            $configuration = $this->gridConfigurationService->getDefaultAssetGridConfiguration();
-        } else {
-            $configuration = $this->gridConfigurationService->getAssetGridConfiguration(
-                $configurationId->getConfigurationId(),
-                $folderId
-            );
-        }
+        $configuration = $this->gridConfigurationService->getAssetGridConfiguration(
+            $configurationId->getConfigurationId(),
+            $folderId
+        );
 
         return $this->jsonResponse($configuration);
     }
