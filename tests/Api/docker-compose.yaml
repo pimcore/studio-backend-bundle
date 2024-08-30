@@ -1,0 +1,120 @@
+services:
+    redis:
+        image: redis:alpine
+        command: [ redis-server, --maxmemory 128mb, --maxmemory-policy volatile-lru, --save "" ]
+
+    db:
+        image: mariadb:10.11
+        working_dir: /application
+        command: [ mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci, --innodb-file-per-table=1 ]
+        volumes:
+            - pimcore-database:/var/lib/mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=ROOT
+            - MYSQL_DATABASE=pimcore
+            - MYSQL_USER=pimcore
+            - MYSQL_PASSWORD=pimcore
+        healthcheck:
+            # The service is considered healthy when:
+            # - connection to pimcore db can be established, and
+            # - we can run a simple SQL query.
+            test: [ "CMD-SHELL", "mysql -h db -u$$MYSQL_USER -p$$MYSQL_PASSWORD $$MYSQL_DATABASE -e 'SHOW TABLES;'" ]
+            interval: 10s
+            retries: 6
+            start_period: 1m
+            timeout: 3s
+
+    nginx:
+        image: nginx:stable-alpine
+        ports:
+            - "6001:80"
+        volumes:
+            - .:/var/www/html:ro
+            - ./.docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+        depends_on:
+            - php
+
+    php:
+        user: '1000:1000' # set to your uid:gid
+        image: pimcore/pimcore:php8.2-latest
+        environment:
+            COMPOSER_HOME: /var/www/html
+            # Feed installer configuration via ENV variables.
+            # See: https://pimcore.com/docs/pimcore/current/Development_Documentation/Getting_Started/Advanced_Installation_Topics.html#page_Advanced-Installation-Topics
+            PIMCORE_INSTALL_MYSQL_USERNAME: pimcore
+            PIMCORE_INSTALL_MYSQL_PASSWORD: pimcore
+            PIMCORE_INSTALL_MYSQL_PORT: 3306
+            PIMCORE_INSTALL_MYSQL_HOST_SOCKET: db
+            PIMCORE_INSTALL_MYSQL_DATABASE: pimcore
+        depends_on:
+            db:
+                condition: service_healthy
+        volumes:
+            - .:/var/www/html
+            - ./../../../../:/var/www/dev/pimcore/studio-backend-bundle
+
+    supervisord:
+        user: '1000:1000' # set to your uid:gid
+        image: pimcore/pimcore:php8.2-supervisord-latest
+        depends_on:
+            db:
+                condition: service_healthy
+        volumes:
+            - .:/var/www/html
+            - ./../../../../:/var/www/dev/pimcore/studio-backend-bundle
+            - ./.docker/supervisord.conf:/etc/supervisor/conf.d/pimcore.conf:ro
+
+    opensearch:
+        image: opensearchproject/opensearch:latest
+        environment:
+            - cluster.name=opensearch-cluster # Name the cluster
+            - node.name=opensearch-node # Name the node that will run in this container
+            - discovery.seed_hosts=opensearch-node # Nodes to look for when discovering the cluster
+            # - cluster.initial_cluster_manager_nodes=opensearch-node # Nodes eligible to serve as cluster manager
+            - bootstrap.memory_lock=true # Disable JVM heap memory swapping
+            - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # Set min and max JVM heap sizes to at least 50% of system RAM
+            - discovery.type=single-node
+            - action.auto_create_index=false
+        ulimits:
+            memlock:
+                soft: -1 # Set memlock to unlimited (no soft or hard limit)
+                hard: -1
+            nofile:
+                soft: 65536 # Maximum number of open files for the opensearch user - set to at least 65536
+                hard: 65536
+        ports:
+            - 6002:9200 # REST API
+            - 6003:9600 # Performance Analyzer
+        volumes:
+            - pimcore-opensearch:/usr/share/opensearch/data
+
+
+    opensearch-dashboards:
+        image: opensearchproject/opensearch-dashboards:latest # Make sure the version of opensearch-dashboards matches the version of opensearch installed on other nodes
+        ports:
+            - 6004:5601 # Map host port 6004 to container port 5601
+        environment:
+            OPENSEARCH_HOSTS: '["https://opensearch:9200"]'
+
+    mercure:
+        image: dunglas/mercure:latest
+        restart: unless-stopped
+        command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
+        environment:
+            # Disable HTTPS
+            SERVER_NAME: ':80'
+
+            # Add JWT keys configured
+            MERCURE_PUBLISHER_JWT_KEY: 'C5hme0FIly9xIppd1cipBhCL83T5TbqF0lUdMZGqg19ZeGbjeqOc9557uvEi5uT3'
+            MERCURE_SUBSCRIBER_JWT_KEY: 'C5hme0FIly9xIppd1cipBhCL83T5TbqF0lUdMZGqg19ZeGbjeqOc9557uvEi5uT3'
+        ports:
+            - '6005:80'
+        volumes:
+            - mercure_data:/data
+            - mercure_config:/config
+
+volumes:
+    pimcore-database:
+    pimcore-opensearch:
+    mercure_data:
+    mercure_config:

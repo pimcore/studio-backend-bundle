@@ -1,0 +1,7 @@
+pimcore_studio_backend:
+  mercure_settings:
+    jwt_key: 'C5hme0FIly9xIppd1cipBhCL83T5TbqF0lUdMZGqg19ZeGbjeqOc9557uvEi5uT3'
+    # URL of mercure accessible for client.
+    hub_url_client: 'http://localhost:6005/.well-known/mercure'
+    # URL of mercure accessible for server.
+    hub_url_server: 'http://mercure/.well-known/mercure'
