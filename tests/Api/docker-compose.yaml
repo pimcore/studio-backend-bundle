@@ -23,6 +23,8 @@ services:
             retries: 6
             start_period: 1m
             timeout: 3s
+        ports:
+            -   "6006:3306"
 
     nginx:
         image: nginx:stable-alpine
