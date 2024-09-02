@@ -42,8 +42,11 @@ final class UpdateDataObjectRequestBody extends RequestBody
                         property: 'data',
                         properties: [
                             new UpdateIntegerProperty('parentId'),
+                            new UpdateIntegerProperty('index', 0),
                             new UpdateStringProperty('key'),
                             new UpdateStringProperty('locked'),
+                            new UpdateStringProperty('childrenSortBy'),
+                            new UpdateStringProperty('childrenSortOrder'),
                             new UpdateBooleanProperty('published'),
                             new UpdateElementProperties(),
                         ],

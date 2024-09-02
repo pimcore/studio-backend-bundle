@@ -30,6 +30,7 @@ enum UserPermissions: string
     case NOTES_EVENTS = 'notes_events';
     case NOTIFICATIONS = 'notifications';
     case NOTIFICATIONS_SEND = 'notifications_send';
+    case OBJECTS_SORT_METHOD = 'objects_sort_method';
     case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
     case PIMCORE_USER = 'ROLE_PIMCORE_USER';
     case PREDEFINED_PROPERTIES = 'predefined_properties';

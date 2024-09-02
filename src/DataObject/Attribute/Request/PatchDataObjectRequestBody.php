@@ -51,8 +51,11 @@ final class PatchDataObjectRequestBody extends RequestBody
                                     example: 83
                                 ),
                                 new UpdateIntegerProperty('parentId'),
+                                new UpdateIntegerProperty('index', 0),
                                 new UpdateStringProperty('key'),
                                 new UpdateStringProperty('locked'),
+                                new UpdateStringProperty('childrenSortBy'),
+                                new UpdateStringProperty('childrenSortOrder'),
                                 new UpdateBooleanProperty('published'),
                             ],
                             type: 'object',

@@ -39,6 +39,7 @@ final readonly class FolderHydrator implements FolderHydratorInterface
             $item->isHasWorkflowWithPermissions(),
             $item->getFullPath(),
             $this->permissionsHydrator->hydrate($item->getPermissions()),
+            $item->getIndex(),
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),

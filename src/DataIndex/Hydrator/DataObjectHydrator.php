@@ -40,6 +40,7 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
             $dataObject->isHasWorkflowWithPermissions(),
             $dataObject->getFullPath(),
             $this->permissionsHydrator->hydrate($dataObject->getPermissions()),
+            $dataObject->getIndex(),
             $dataObject->getId(),
             $dataObject->getParentId(),
             $dataObject->getPath(),

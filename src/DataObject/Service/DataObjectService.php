@@ -22,7 +22,9 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DataObjectEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
@@ -42,6 +44,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
@@ -64,6 +67,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         AbstractObject::OBJECT_TYPE_OBJECT,
         AbstractObject::OBJECT_TYPE_VARIANT,
     ];
+
+    private const INDEX_SORT = 'index';
 
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
@@ -108,21 +113,22 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
+     * @throws AccessDeniedException|InvalidFilterServiceTypeException|InvalidQueryTypeException
+     * @throws InvalidFilterTypeException|NotFoundException|SearchException|UserNotFoundException
      */
-    public function getDataObjects(ElementParameters $parameters): Collection
+    public function getDataObjects(DataObjectParameters $parameters): Collection
     {
         /** @var OpenSearchFilterInterface $filterService */
         $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
 
-        $dataObjectQuery = $filterService->applyFilters(
+        $query = $filterService->applyFilters(
             $parameters,
             ElementTypes::TYPE_DATA_OBJECT
         );
 
-        $dataObjectQuery->orderByPath('asc');
+        $this->setTreeSorting($parameters->getParentId() ?? 1, $query);
 
-        $result = $this->dataObjectSearchService->searchDataObjects($dataObjectQuery);
+        $result = $this->dataObjectSearchService->searchDataObjects($query);
 
         $items = $result->getItems();
 
@@ -276,6 +282,27 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         } catch (Exception $exception) {
             throw new ElementSavingFailedException(null, $exception->getMessage());
         }
+    }
 
+    /**
+     * @throws AccessDeniedException|InvalidQueryTypeException|NotFoundException|UserNotFoundException
+     */
+    private function setTreeSorting(int $parentId, QueryInterface $dataObjectQuery): void
+    {
+        if (!$dataObjectQuery instanceof DataObjectQuery) {
+            throw new InvalidQueryTypeException(
+                HttpResponseCodes::BAD_REQUEST->value,
+                'Query type has to be instance of ' . DataObjectQuery::class
+            );
+        }
+
+        $parent = $this->getDataObjectElement($this->securityService->getCurrentUser(), $parentId);
+        if ($parent->getChildrenSortBy() === self::INDEX_SORT) {
+            $dataObjectQuery->orderByIndex();
+
+            return;
+        }
+
+        $dataObjectQuery->orderByPath(strtolower($parent->getChildrenSortOrder()));
     }
 }

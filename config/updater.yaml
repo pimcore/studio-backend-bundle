@@ -21,3 +21,12 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\LockedAdapter:
     tags: [ 'pimcore.studio_backend.update_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\ChildrenSortByAdapter:
+    tags: [ 'pimcore.studio_backend.update_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\ChildrenSortOrderAdapter:
+    tags: [ 'pimcore.studio_backend.update_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\IndexAdapter:
+    tags: [ 'pimcore.studio_backend.update_adapter' ]
