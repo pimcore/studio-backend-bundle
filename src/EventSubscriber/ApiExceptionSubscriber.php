@@ -46,11 +46,11 @@ final class ApiExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
         $request = $event->getRequest();
 
-        if(!$this->isStudioBackendPath($request->getPathInfo())) {
+        if (!$this->isStudioBackendPath($request->getPathInfo())) {
             return;
         }
 
-        if(!$exception instanceof HttpExceptionInterface) {
+        if (!$exception instanceof HttpExceptionInterface) {
             return;
         }
 
@@ -59,7 +59,7 @@ final class ApiExceptionSubscriber implements EventSubscriberInterface
 
     private function createResponse(HttpExceptionInterface $exception): Response
     {
-        if(!$exception->getMessage()) {
+        if (!$exception->getMessage()) {
             return new Response(null, $exception->getStatusCode());
         }
         $responseData = [

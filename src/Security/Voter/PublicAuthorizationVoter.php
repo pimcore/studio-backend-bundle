@@ -74,7 +74,7 @@ final class PublicAuthorizationVoter extends Voter
 
     private function getSubjectName(mixed $subject): string
     {
-        if($subject instanceof MapRequestPayload) {
+        if ($subject instanceof MapRequestPayload) {
             return $subject->metadata->getName();
         }
 

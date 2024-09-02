@@ -45,7 +45,7 @@ final readonly class OpenSearchFilter implements OpenSearchFilterInterface
         // apply default filters
         $filters = $this->filterLoader->loadFilters();
 
-        foreach($filters->getFilters() as $filter) {
+        foreach ($filters->getFilters() as $filter) {
             $query = $filter->apply($parameters, $query);
         }
 
