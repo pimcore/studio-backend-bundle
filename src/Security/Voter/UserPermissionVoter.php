@@ -72,7 +72,7 @@ final class UserPermissionVoter extends Voter
     {
         $userPermissions = $this->cacheResolver->load(self::USER_PERMISSIONS_CACHE_KEY);
 
-        if($userPermissions !== false && is_array($userPermissions)) {
+        if ($userPermissions !== false && is_array($userPermissions)) {
             $this->userPermissions = $userPermissions;
 
             return;
