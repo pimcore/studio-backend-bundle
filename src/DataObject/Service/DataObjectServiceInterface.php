@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
@@ -53,9 +54,10 @@ interface DataObjectServiceInterface
     ): int;
 
     /**
-     * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
+     * @throws AccessDeniedException|InvalidFilterServiceTypeException|InvalidQueryTypeException
+     * @throws InvalidFilterTypeException|NotFoundException|SearchException|UserNotFoundException
      */
-    public function getDataObjects(ElementParameters $parameters): Collection;
+    public function getDataObjects(DataObjectParameters $parameters): Collection;
 
     /**
      * @throws SearchException|NotFoundException

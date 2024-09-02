@@ -22,10 +22,13 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Parameter\Query\ClassNameParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Response\Property\AnyOfDataObjects;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IdSearchTermParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
@@ -59,7 +62,8 @@ final class TreeController extends AbstractApiController
     }
 
     /**
-     * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
+     * @throws AccessDeniedException|InvalidFilterServiceTypeException|InvalidQueryTypeException
+     * @throws InvalidFilterTypeException|NotFoundException|SearchException|UserNotFoundException
      */
     #[Route('/data-objects/tree', name: 'pimcore_studio_api_data_objects_tree', methods: ['GET'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]

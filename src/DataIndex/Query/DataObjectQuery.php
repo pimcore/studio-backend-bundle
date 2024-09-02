@@ -25,6 +25,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\Pare
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByIndexField;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
@@ -113,6 +114,13 @@ final class DataObjectQuery implements QueryInterface
     public function searchByIds(array $ids): self
     {
         $this->search->addModifier(new IdsFilter($ids));
+
+        return $this;
+    }
+
+    public function orderByIndex(): self
+    {
+        $this->search->addModifier(new OrderByIndexField());
 
         return $this;
     }

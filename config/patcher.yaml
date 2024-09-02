@@ -26,3 +26,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\PublishAdapter:
     tags : ['pimcore.studio_backend.patch_adapter']
 
+  Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\ChildrenSortByAdapter:
+    tags : ['pimcore.studio_backend.patch_adapter']
+
+  Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\ChildrenSortOrderAdapter:
+    tags : ['pimcore.studio_backend.patch_adapter']
+
+  Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\IndexAdapter:
+    tags : ['pimcore.studio_backend.patch_adapter']
+

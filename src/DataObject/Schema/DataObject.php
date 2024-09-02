@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
         'fullPath',
         'customAttributes',
         'permissions',
+        'index',
     ],
     type: 'object'
 )]
@@ -61,6 +62,8 @@ class DataObject extends Element implements AdditionalAttributesInterface
         private readonly string $fullPath,
         #[Property(ref: DataObjectPermissions::class)]
         private readonly DataObjectPermissions $permissions,
+        #[Property(description: 'Custom index', type: 'integer', example: 0)]
+        private readonly int $index,
         int $id,
         int $parentId,
         string $path,
@@ -124,5 +127,10 @@ class DataObject extends Element implements AdditionalAttributesInterface
     public function getPermissions(): DataObjectPermissions
     {
         return $this->permissions;
+    }
+
+    public function getIndex(): int
+    {
+        return $this->index;
     }
 }
