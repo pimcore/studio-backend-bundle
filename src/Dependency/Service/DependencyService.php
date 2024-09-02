@@ -52,7 +52,7 @@ final readonly class DependencyService implements DependencyServiceInterface
     {
         $hydratedDependencies = [];
 
-        foreach($dependencies as $dependency) {
+        foreach ($dependencies as $dependency) {
             $result = $this->dependencyHydrator->hydrate($dependency);
 
             $this->eventDispatcher->dispatch(

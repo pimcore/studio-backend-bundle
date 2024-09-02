@@ -114,7 +114,7 @@ final readonly class PropertyService implements PropertyServiceInterface
 
         $hydratedProperties = [];
 
-        foreach($element->getProperties() as $property) {
+        foreach ($element->getProperties() as $property) {
 
             $elementProperty = $this->propertyHydrator->hydrateElementProperty($property);
 

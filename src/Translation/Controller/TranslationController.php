@@ -71,7 +71,7 @@ final class TranslationController extends AbstractApiController
         #[MapRequestPayload] Translation $translation,
     ): JsonResponse {
 
-        if(empty($translation->getKeys())) {
+        if (empty($translation->getKeys())) {
             return $this->jsonResponse($this->translatorService->getAllTranslations($translation->getLocale()));
         }
 
