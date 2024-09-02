@@ -1,0 +1,114 @@
+{
+	"info": {
+		"_postman_id": "b53a32fb-4525-437c-954d-4bb4d392588e",
+		"name": "Smoke Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "33082135-b53a32fb-4525-437c-954d-4bb4d392588e"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login 200",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 200\", function(){",
+									" pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"id": "430c1c2f-aaeb-4401-8f20-f213e4751893"
+							}
+						}
+					],
+					"id": "657bf19e-2f70-4fb4-8d73-b7ec791c1f9e",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"pimcore\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6001/studio/api/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6001",
+							"path": [
+								"studio",
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login 401",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status is 401\", function(){",
+									" pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"id": "2939493e-dcb8-4ced-b862-727b1fedeb61"
+							}
+						}
+					],
+					"id": "974c00b4-a9d1-47c0-83d5-3d6160951eb5",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"nouser\",\n  \"password\": \"none\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:6001/studio/api/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "6001",
+							"path": [
+								"studio",
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "1ea9973b-eab3-40d3-83ca-3dd8e820a272"
+		}
+	]
+}

@@ -9,6 +9,7 @@ id = 614422ec-04dc-4af7-a04b-568299c4871a
 
 [config.relations.collections]
 rootDirectory = postman/collections
+files[] = {"id":"33082135-b53a32fb-4525-437c-954d-4bb4d392588e","path":"Smoke Test.json","metaData":{}}
 
 [config.relations.collections.metaData]
 
