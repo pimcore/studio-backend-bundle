@@ -27,6 +27,7 @@ final class CustomMetadata extends Property
 {
     public function __construct(string $schema = UpdateCustomMetadataSchema::class)
     {
+
         parent::__construct(
             property: 'metadata',
             type: 'array',
