@@ -22,6 +22,8 @@ use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal

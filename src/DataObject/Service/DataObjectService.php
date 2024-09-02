@@ -292,13 +292,14 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         if (!$dataObjectQuery instanceof DataObjectQuery) {
             throw new InvalidQueryTypeException(
                 HttpResponseCodes::BAD_REQUEST->value,
-                "Query type has to be instance of " . DataObjectQuery::class
+                'Query type has to be instance of ' . DataObjectQuery::class
             );
         }
 
         $parent = $this->getDataObjectElement($this->securityService->getCurrentUser(), $parentId);
         if ($parent->getChildrenSortBy() === self::INDEX_SORT) {
             $dataObjectQuery->orderByIndex();
+
             return;
         }
 
