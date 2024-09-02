@@ -90,7 +90,7 @@ final class DataObjectQuery implements QueryInterface
     public function setClassDefinitionName(string $classDefinitionId): self
     {
         $classDefinition = $this->classDefinitionResolver->getByName($classDefinitionId);
-        if($classDefinition === null) {
+        if ($classDefinition === null) {
             throw new NotFoundException('Class definition', $classDefinitionId);
         }
         $this->search->setClassDefinition($classDefinition);
