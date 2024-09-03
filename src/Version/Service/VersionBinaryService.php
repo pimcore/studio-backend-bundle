@@ -122,7 +122,8 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         return $this->documentService->getPreviewStream($document);
     }
 
-    private function getImageThumbnail(Image $image): ThumbnailInterface {
+    private function getImageThumbnail(Image $image): ThumbnailInterface
+    {
         $image->setFilename(uniqid('', true));
         $config = $this->configResolver->getPreviewConfig();
         $thumbnail = $image->getThumbnail($config);
