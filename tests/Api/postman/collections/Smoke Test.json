@@ -38,7 +38,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"pimcore\"\n}",
+									"raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"password\": \"{{admin_password}}\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -128,7 +128,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"pimcore\"\n}",
+									"raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"password\": \"{{admin_password}}\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -173,7 +173,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"pimcore\"\n}",
+									"raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"password\": \"{{admin_password}}\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -202,6 +202,44 @@
 				}
 			],
 			"id": "8d225a95-e77a-4d28-8e9c-71eb8a2e7546"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "1b98d732-f21e-4132-ab46-20cc15b76a77",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "fa87dcec-80c2-4c12-af63-2885cedd55ee",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "cf3f0519-08f3-4a31-96f3-904664ea9b9b",
+			"key": "admin_user",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"id": "e5cd21a1-8933-4edc-a457-eeb47b1d1ef1",
+			"key": "admin_password",
+			"value": "admin",
+			"type": "string"
 		}
 	]
 }
