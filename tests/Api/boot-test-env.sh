@@ -31,12 +31,12 @@ docker run \
   -u `id -u`:`id -g` --rm \
   -v `pwd`:/var/www/html \
   pimcore/pimcore:php8.3-latest \
-  composer create-project pimcore/skeleton skeleton
+  composer create-project pimcore/skeleton api-test
 
 printf " ${Green}%s${NC}\n" "Create pimcore/skeleton project"
 printf "%s${NC}\n"
 
-cd skeleton
+cd api-test
 cp ../../docker-compose.yaml .
 
 printf " ${Green}%s${NC}\n" "Copied all the files to the working directory"
