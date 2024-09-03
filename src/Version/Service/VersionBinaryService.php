@@ -127,7 +127,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
 
     private function getImageThumbnail(Image $image, string $originalName): ThumbnailInterface
     {
-        $image->setFilename(uniqid('', true) . '_'. $originalName);
+        $image->setFilename(uniqid('', true) . '_' . $originalName);
         $config = $this->configResolver->getPreviewConfig();
         $thumbnail = $image->getThumbnail($config);
 
