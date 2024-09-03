@@ -87,14 +87,17 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         if (!$image instanceof Image) {
             throw new InvalidElementTypeException($image->getType());
         }
-        $thumbnail = $this->getImageThumbnail($image);
-
-        return $this->getStreamedResponse(
+        $originalName = $image->getFilename();
+        $thumbnail = $this->getImageThumbnail($image, $originalName);
+        $response = $this->getStreamedResponse(
             $thumbnail,
             HttpResponseHeaders::INLINE_TYPE->value,
             [],
             $thumbnail->getFileSize()
         );
+        $image->setFilename($originalName);
+
+        return $response;
     }
 
     /**
@@ -122,9 +125,9 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         return $this->documentService->getPreviewStream($document);
     }
 
-    private function getImageThumbnail(Image $image): ThumbnailInterface
+    private function getImageThumbnail(Image $image, string $originalName): ThumbnailInterface
     {
-        $image->setFilename(uniqid('', true));
+        $image->setFilename(uniqid('', true) . '_'. $originalName);
         $config = $this->configResolver->getPreviewConfig();
         $thumbnail = $image->getThumbnail($config);
 
