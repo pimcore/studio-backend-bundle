@@ -1,0 +1,8 @@
+pimcore_open_search_client:
+  clients:
+    default:
+      hosts:
+        - https://opensearch:9200
+      password: 'admin'
+      username: 'admin'
+      ssl_verification: false

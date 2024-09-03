@@ -10,6 +10,7 @@ Thumbs.db
 /phpunit.xml
 /web/bundles/
 /web/var/
+/tests/Api/working-dir/
 
 # PHP-CS-Fixer
 /.php_cs
