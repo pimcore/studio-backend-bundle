@@ -95,7 +95,7 @@ printf "%s${NC}\n"
 
 
 ###############################################################################
-# Change security.yaml ? or Just copy a predefined .yaml file?
+# Change security.yaml Can be removed when studio is integrated in the skeleton
 ###############################################################################
 printf "    ${Yellow}Change${NC} config settings in ${Cyan}${TARGET_DIR}/config/packages/security.yaml${NC}"
     sed -i '/firewalls:/a\        pimcore_studio: '\''%pimcore_studio_backend.firewall_settings%'\''' ./config/packages/security.yaml
