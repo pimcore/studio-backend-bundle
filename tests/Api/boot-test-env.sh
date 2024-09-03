@@ -74,7 +74,7 @@ printf "%s${NC}\n"
 # Run pimcore installation.
 docker compose exec -T \
     -e PIMCORE_INSTALL_ADMIN_USERNAME=admin \
-    -e PIMCORE_INSTALL_ADMIN_PASSWORD=pimcore \
+    -e PIMCORE_INSTALL_ADMIN_PASSWORD=admin \
     -e PIMCORE_INSTALL_MYSQL_USERNAME=pimcore \
     -e PIMCORE_INSTALL_MYSQL_PASSWORD=pimcore \
     -e PIMCORE_INSTALL_MYSQL_PORT=3306 \

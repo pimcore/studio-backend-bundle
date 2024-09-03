@@ -13,7 +13,7 @@ sudo chmod +x boot-test-env.sh
 ## Credentials
 
 - **Pimcore admin user:** `admin`
-- **Pimcore admin password:** `pimcore`
+- **Pimcore admin password:** `admin`
 - **Database user:** `pimcore`
 - **Database password:** `ROOT`
 - **Database name:** `pimcore`
