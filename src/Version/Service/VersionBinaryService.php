@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInter
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Image;
+use Pimcore\Model\Asset\Image\ThumbnailInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -86,14 +87,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         if (!$image instanceof Image) {
             throw new InvalidElementTypeException($image->getType());
         }
-
-        $config = $this->configResolver->getPreviewConfig();
-        $thumbnail = $image->getThumbnail($config);
-
-        $autoFormatConfigs = $config->getAutoFormatThumbnailConfigs();
-        if ($autoFormatConfigs && $config->getFormat() === strtoupper(FormatTypes::SOURCE)) {
-            $thumbnail = $image->getThumbnail(current($autoFormatConfigs));
-        }
+        $thumbnail = $this->getImageThumbnail($image);
 
         return $this->getStreamedResponse(
             $thumbnail,
@@ -126,5 +120,18 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         }
 
         return $this->documentService->getPreviewStream($document);
+    }
+
+    private function getImageThumbnail(Image $image): ThumbnailInterface {
+        $image->setFilename(uniqid('', true));
+        $config = $this->configResolver->getPreviewConfig();
+        $thumbnail = $image->getThumbnail($config);
+
+        $autoFormatConfigs = $config->getAutoFormatThumbnailConfigs();
+        if ($autoFormatConfigs && $config->getFormat() === strtoupper(FormatTypes::SOURCE)) {
+            $thumbnail = $image->getThumbnail(current($autoFormatConfigs));
+        }
+
+        return $thumbnail;
     }
 }
