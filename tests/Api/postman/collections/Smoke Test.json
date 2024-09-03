@@ -1,0 +1,245 @@
+{
+	"info": {
+		"_postman_id": "3f329ef0-ba60-4afa-9ebe-8da64e0d7a86",
+		"name": "Smoke Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "33082135-3f329ef0-ba60-4afa-9ebe-8da64e0d7a86"
+	},
+	"item": [
+		{
+			"name": "1.Auth",
+			"item": [
+				{
+					"name": "1.Login",
+					"item": [
+						{
+							"name": "1.Login 200",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "21d1e0da-45c0-4c5e-9cb7-840d4741ab61",
+										"exec": [
+											"pm.test(\"Status is 200\", function(){",
+											" pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "614fabb7-9fd4-4b8f-bdaf-8a88fdf0e3fd",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.Login 401",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "c506027a-0346-45ef-aefc-233eea22eaa4",
+										"exec": [
+											"pm.test(\"Status is 401\", function(){",
+											" pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "b4bac6e3-fa11-48ff-a8d5-0551f90076c0",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"nouser\",\n  \"password\": \"none\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3.Unsupported Method GET",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "c4463a54-2970-4b37-a828-2feb5bc3f66c",
+										"exec": [
+											"pm.test(\"Method Not Allowed 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "c7efe002-9359-4571-8319-ee7f24022f11",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "4.Unsupported Method PUT",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4e3fc55e-afae-4011-9ef4-cc1617126930",
+										"exec": [
+											"pm.test(\"Method Not Allowed 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "c4afb817-2020-4a02-8b02-80af81b6530b",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "b2b21ffc-0b8a-4150-889c-114466c76002"
+				},
+				{
+					"name": "2.Logout",
+					"item": [],
+					"id": "ec8b2502-f190-48c9-8e4f-b4983f0fa666"
+				}
+			],
+			"id": "8d225a95-e77a-4d28-8e9c-71eb8a2e7546"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "1b98d732-f21e-4132-ab46-20cc15b76a77",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "fa87dcec-80c2-4c12-af63-2885cedd55ee",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "cf3f0519-08f3-4a31-96f3-904664ea9b9b",
+			"key": "admin_user",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"id": "e5cd21a1-8933-4edc-a457-eeb47b1d1ef1",
+			"key": "admin_password",
+			"value": "admin",
+			"type": "string"
+		}
+	]
+}
