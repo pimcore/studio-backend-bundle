@@ -7,105 +7,198 @@
 	},
 	"item": [
 		{
-			"name": "Auth",
+			"name": "1.Auth",
 			"item": [
 				{
-					"name": "Login 200",
-					"event": [
+					"name": "1.Login",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status is 200\", function(){",
-									" pm.response.to.have.status(200);",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"id": "430c1c2f-aaeb-4401-8f20-f213e4751893"
-							}
+							"name": "1.Login 200",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "430c1c2f-aaeb-4401-8f20-f213e4751893",
+										"exec": [
+											"pm.test(\"Status is 200\", function(){",
+											" pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "657bf19e-2f70-4fb4-8d73-b7ec791c1f9e",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"pimcore\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2.Login 401",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2939493e-dcb8-4ced-b862-727b1fedeb61",
+										"exec": [
+											"pm.test(\"Status is 401\", function(){",
+											" pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "974c00b4-a9d1-47c0-83d5-3d6160951eb5",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"nouser\",\n  \"password\": \"none\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3.Unsupported Method GET",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "430c1c2f-aaeb-4401-8f20-f213e4751893",
+										"exec": [
+											"pm.test(\"Method Not Allowed 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "492354b4-2f42-4482-b83f-adcd9e4e512b",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"pimcore\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "4.Unsupported Method PUT",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "430c1c2f-aaeb-4401-8f20-f213e4751893",
+										"exec": [
+											"pm.test(\"Method Not Allowed 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "a6222ce4-30b3-4daa-afdf-9db1a25aafd7",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"pimcore\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
 						}
 					],
-					"id": "657bf19e-2f70-4fb4-8d73-b7ec791c1f9e",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"pimcore\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:6001/studio/api/login",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "6001",
-							"path": [
-								"studio",
-								"api",
-								"login"
-							]
-						}
-					},
-					"response": []
+					"id": "7a80b09f-678f-4074-a816-19658340c3e1"
 				},
 				{
-					"name": "Login 401",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status is 401\", function(){",
-									" pm.response.to.have.status(401);",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"id": "2939493e-dcb8-4ced-b862-727b1fedeb61"
-							}
-						}
-					],
-					"id": "974c00b4-a9d1-47c0-83d5-3d6160951eb5",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"username\": \"nouser\",\n  \"password\": \"none\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:6001/studio/api/login",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "6001",
-							"path": [
-								"studio",
-								"api",
-								"login"
-							]
-						}
-					},
-					"response": []
+					"name": "2.Logout",
+					"item": [],
+					"id": "5e9fe618-df6b-44c3-949e-33c865673097"
 				}
 			],
 			"id": "1ea9973b-eab3-40d3-83ca-3dd8e820a272"
