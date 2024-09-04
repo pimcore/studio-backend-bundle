@@ -28,6 +28,7 @@ printf " ${Green}%s${NC}\n" "Pulled pimcore/pimcore:php8.2-latest"
 printf "%s${NC}\n"
 
 docker run \
+  -e COMPOSER_CACHE_READ_ONLY=1 \
   -u `id -u`:`id -g` --rm \
   -v `pwd`:/var/www/html \
   pimcore/pimcore:php8.3-latest \

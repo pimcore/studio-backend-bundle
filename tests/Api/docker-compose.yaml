@@ -41,6 +41,7 @@ services:
         image: pimcore/pimcore:php8.2-latest
         environment:
             COMPOSER_HOME: /var/www/html
+            COMPOSER_CACHE_READ_ONLY: 1
             # Feed installer configuration via ENV variables.
             # See: https://pimcore.com/docs/pimcore/current/Development_Documentation/Getting_Started/Advanced_Installation_Topics.html#page_Advanced-Installation-Topics
             PIMCORE_INSTALL_MYSQL_USERNAME: pimcore
@@ -77,6 +78,7 @@ services:
             - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # Set min and max JVM heap sizes to at least 50% of system RAM
             - discovery.type=single-node
             - action.auto_create_index=false
+            - OPENSEARCH_INITIAL_ADMIN_PASSWORD=PimcoreTests1492!
         ulimits:
             memlock:
                 soft: -1 # Set memlock to unlimited (no soft or hard limit)
