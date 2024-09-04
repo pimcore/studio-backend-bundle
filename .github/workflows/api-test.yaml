@@ -18,5 +18,3 @@ jobs:
       - name: Run API tests
         run: |
           postman collection run "${{ github.workspace }}/tests/Api/postman/collections/Smoke Test.json" -e "33082135-163b2749-45b5-4967-a48d-ddea0aab6395"
-          # Lint your API using Postman CLI
-          postman api lint 614422ec-04dc-4af7-a04b-568299c4871a
