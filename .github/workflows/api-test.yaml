@@ -1,0 +1,21 @@
+name: API tests
+
+on:
+  schedule:
+    - cron: '0 3 * * 1,2,3,4,5'
+
+jobs:
+  automated-api-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Postman CLI
+        run: |
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+      - name: Login to Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+      - name: Run API tests
+        run: |
+          postman collection run "${{ github.workspace }}/tests/Api/postman/collections/Smoke Test.json" -e "33082135-163b2749-45b5-4967-a48d-ddea0aab6395"
+          # Lint your API using Postman CLI
+          postman api lint 614422ec-04dc-4af7-a04b-568299c4871a
