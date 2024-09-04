@@ -17,6 +17,8 @@ sudo chmod +x boot-test-env.sh
 - **Database user:** `pimcore`
 - **Database password:** `ROOT`
 - **Database name:** `pimcore`
+- **Opensearch Dashboard user:** `admin`
+- **Opensearch Dashboard password:** `PimcoreTests1492!`
 
 # Debug API tests
 For debuging purposes docker exposes some ports to the host machine. You can access the following services:

@@ -3,6 +3,6 @@ pimcore_open_search_client:
     default:
       hosts:
         - https://opensearch:9200
-      password: 'admin'
+      password: 'PimcoreTests1492!'
       username: 'admin'
       ssl_verification: false
