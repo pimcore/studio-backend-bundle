@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInter
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Image;
+use Pimcore\Model\Asset\Image\ThumbnailInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -86,21 +87,17 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         if (!$image instanceof Image) {
             throw new InvalidElementTypeException($image->getType());
         }
-
-        $config = $this->configResolver->getPreviewConfig();
-        $thumbnail = $image->getThumbnail($config);
-
-        $autoFormatConfigs = $config->getAutoFormatThumbnailConfigs();
-        if ($autoFormatConfigs && $config->getFormat() === strtoupper(FormatTypes::SOURCE)) {
-            $thumbnail = $image->getThumbnail(current($autoFormatConfigs));
-        }
-
-        return $this->getStreamedResponse(
+        $originalName = $image->getFilename();
+        $thumbnail = $this->getImageThumbnail($image, $originalName);
+        $response = $this->getStreamedResponse(
             $thumbnail,
             HttpResponseHeaders::INLINE_TYPE->value,
             [],
             $thumbnail->getFileSize()
         );
+        $image->setFilename($originalName);
+
+        return $response;
     }
 
     /**
@@ -126,5 +123,19 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
         }
 
         return $this->documentService->getPreviewStream($document);
+    }
+
+    private function getImageThumbnail(Image $image, string $originalName): ThumbnailInterface
+    {
+        $image->setFilename(uniqid('', true) . '_' . $originalName);
+        $config = $this->configResolver->getPreviewConfig();
+        $thumbnail = $image->getThumbnail($config);
+
+        $autoFormatConfigs = $config->getAutoFormatThumbnailConfigs();
+        if ($autoFormatConfigs && $config->getFormat() === strtoupper(FormatTypes::SOURCE)) {
+            $thumbnail = $image->getThumbnail(current($autoFormatConfigs));
+        }
+
+        return $thumbnail;
     }
 }
