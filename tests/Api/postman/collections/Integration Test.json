@@ -415,7 +415,8 @@
 									"script": {
 										"id": "a12f76e8-8f10-4d40-8f8e-9b952bdcb96d",
 										"exec": [
-											"pm.environment.unset(\"user_id\");"
+											"pm.environment.unset(\"user_id\");",
+											"pm.environment.unset(\"cloned_user_id\");"
 										],
 										"type": "text/javascript",
 										"packages": {}
