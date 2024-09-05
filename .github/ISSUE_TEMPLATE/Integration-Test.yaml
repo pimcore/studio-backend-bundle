@@ -1,0 +1,20 @@
+name: Integration Test
+description: Create a report for an integration test to test all cases of a new API endpoint.
+title: "[Integration Test]: "
+labels: [Testing]
+body:
+    - type: input
+      attributes:
+          label: Endpoint URL
+      validations:
+          required: true
+    - type: input
+      attributes:
+          label: HTTP Method
+      validations:
+          required: true
+    - type: textarea
+      attributes:
+          label: Describe the test cases
+      validations:
+          required: true
