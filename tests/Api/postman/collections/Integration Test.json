@@ -1,0 +1,489 @@
+{
+	"info": {
+		"_postman_id": "fe531156-be22-456f-be76-a6ed43442543",
+		"name": "Integration Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "33082135-fe531156-be22-456f-be76-a6ed43442543"
+	},
+	"item": [
+		{
+			"name": "Clone User",
+			"item": [
+				{
+					"name": "Setup",
+					"item": [
+						{
+							"name": "Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "21d1e0da-45c0-4c5e-9cb7-840d4741ab61",
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "861c7863-3094-477c-bd96-92ba25d483ab",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "f9ab0aa5-0d98-4ab2-85ef-4358f01f7e84",
+										"exec": [
+											"let jsonData = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"user_id\", jsonData.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "cc56cde9-1970-45a6-bba9-f1cc64a1f9af",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"parentId\": 0,\n  \"name\": \"api_test_user\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/user/",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "617943f3-1cdf-4b33-943b-f45317826eb2"
+				},
+				{
+					"name": "Test",
+					"item": [
+						{
+							"name": "Clone non exiting User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2438500b-ea86-49ec-be08-ecd88c5a08f7",
+										"exec": [
+											"pm.test(\"Status code is 404 User Not Found\", function () {",
+											"    pm.response.to.have.status(404);",
+											"});",
+											"",
+											"pm.test(\"Check Response message\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.message).to.eql(\"User with ID: 10000 not found\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "2de156c9-998e-49e3-8700-801055da248f",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"cloned_user\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/user/clone/10000",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"clone",
+										"10000"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Clone with non unique name",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2438500b-ea86-49ec-be08-ecd88c5a08f7",
+										"exec": [
+											"pm.test(\"Status code is 500 Could not save user\", function () {",
+											"    pm.response.to.have.status(500);",
+											"});",
+											"",
+											"pm.test(\"Check Response message\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.message).to.contains(\"Could not save user\")",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "e9e87a04-92d6-4de6-8e72-e03d2c357a2f",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"api_test_user\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/user/clone/{{user_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"clone",
+										"{{user_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Clone with invalid name",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2438500b-ea86-49ec-be08-ecd88c5a08f7",
+										"exec": [
+											"pm.test(\"Status code is 500 Could not save user\", function () {",
+											"    pm.response.to.have.status(500);",
+											"});",
+											"",
+											"pm.test(\"Could not save user: Invalid name for user/role\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.message).to.contains(\"Could not save user: Invalid name for user/role\")",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "0f7ab465-923b-4b22-a27f-27b126063674",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Invalid Name\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/user/clone/{{user_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"clone",
+										"{{user_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Clone User 200",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2438500b-ea86-49ec-be08-ecd88c5a08f7",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Check Cloned Name\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.name).to.contains(\"Cloned_User\")",
+											"});",
+											"",
+											"pm.test(\"Check Cloned Type\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.type).to.contains(\"user\")",
+											"});",
+											"",
+											"let jsonData = pm.response.json();;",
+											"postman.setEnvironmentVariable(\"cloned_user_id\", jsonData.id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "3da01394-c19b-450c-b020-f05e1ce9b849",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Cloned_User\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/user/clone/{{user_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"clone",
+										"{{user_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "d319c3ac-b70a-467c-98ac-15d0c08c6b6a"
+				},
+				{
+					"name": "Teardown",
+					"item": [
+						{
+							"name": "Delete User",
+							"id": "2e36535c-fca2-4365-b32e-228a6f53776b",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user/{{user_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"{{user_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Cloned User",
+							"id": "e33d8ee8-dc5f-42f0-8f1e-b860779c12c2",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user/{{cloned_user_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"{{cloned_user_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Logout",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "7b7efcc4-6aee-49dc-b529-8ead9198d4b2",
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "a12f76e8-8f10-4d40-8f8e-9b952bdcb96d",
+										"exec": [
+											"pm.environment.unset(\"user_id\");"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "c5f51700-fd3d-4a73-9582-a6bdf72b4f6b",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/logout",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"logout"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "9984e988-2676-47b7-b228-1e9222752547"
+				}
+			],
+			"id": "ce54e92d-49b1-4017-b9cd-3ca1db7a136a"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "dd76b7a5-cfbe-4a98-a9e8-e8cb73c895ca",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "bcc50a01-64a0-4613-9105-aa982c2d1092",
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "a8d9565f-9179-4b4e-b6f6-8316946081d0",
+			"key": "admin_user",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"id": "3bed6e66-022b-4e47-b3ac-f41173d38ed7",
+			"key": "admin_password",
+			"value": "admin",
+			"type": "string"
+		}
+	]
+}
