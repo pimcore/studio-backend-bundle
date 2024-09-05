@@ -7,13 +7,13 @@
 	},
 	"item": [
 		{
-			"name": "1.Auth",
+			"name": "Auth",
 			"item": [
 				{
-					"name": "1.Login",
+					"name": "Login",
 					"item": [
 						{
-							"name": "1.Login 200",
+							"name": "Login 200",
 							"event": [
 								{
 									"listen": "test",
@@ -58,7 +58,7 @@
 							"response": []
 						},
 						{
-							"name": "2.Login 401",
+							"name": "Login 401",
 							"event": [
 								{
 									"listen": "test",
@@ -103,7 +103,7 @@
 							"response": []
 						},
 						{
-							"name": "3.Unsupported Method GET",
+							"name": "Unsupported Method GET",
 							"event": [
 								{
 									"listen": "test",
@@ -148,7 +148,7 @@
 							"response": []
 						},
 						{
-							"name": "4.Unsupported Method PUT",
+							"name": "Unsupported Method PUT",
 							"event": [
 								{
 									"listen": "test",
@@ -191,17 +191,582 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Unsupported Methode DELETE",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "c8a0482f-67e4-4373-9021-8cd3f6515e6e",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode PATCH",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "cba22568-683e-45e2-b298-1adc97ac946d",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode HEAD",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "0994a455-9233-42ba-bc2a-c3d9a02e9a29",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/login",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"login"
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"id": "b2b21ffc-0b8a-4150-889c-114466c76002"
 				},
 				{
-					"name": "2.Logout",
-					"item": [],
+					"name": "Logout",
+					"item": [
+						{
+							"name": "Logout 200",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "7b7efcc4-6aee-49dc-b529-8ead9198d4b2",
+										"exec": [
+											"pm.test(\"Status is 200\", function(){",
+											" pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "89178c9a-0d81-4058-baaf-3c6dce5377c7",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/logout",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"logout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode GET",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "381920e2-ec43-4e3c-ae7c-76e928277572",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/logout",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"logout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode DELETE",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "f7fb929c-89d5-4015-b0ee-18c27b5e1b8f",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/logout",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"logout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode PUT",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "af7dbd89-5b1a-4b60-a5d8-cc71bcb683a9",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/logout",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"logout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode PATCH",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "ec805d83-5bf3-4cc9-ad59-172e5f8641c5",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/logout",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"logout"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode HEAD",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "59e731b1-7af7-4ef3-9ee6-6017dc153227",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/logout",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"logout"
+									]
+								}
+							},
+							"response": []
+						}
+					],
 					"id": "ec8b2502-f190-48c9-8e4f-b4983f0fa666"
 				}
 			],
 			"id": "8d225a95-e77a-4d28-8e9c-71eb8a2e7546"
+		},
+		{
+			"name": "User Management",
+			"item": [
+				{
+					"name": "Clone User",
+					"item": [
+						{
+							"name": "Unauthorized",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 401\", function(){",
+											" pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "ff3cdbc3-60f6-4163-ba87-9b879013c541",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user/clone/1",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"clone",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode GET",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "e02b14b4-b9bb-4c02-8fba-ac8e1eacc093",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user/clone/1",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"clone",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode DELETE",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "b8434448-fbf0-470b-9601-7cb18eb9de00",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user/clone/1",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"clone",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode PUT",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "1d6e43dd-c828-409e-9076-b67729c9acee",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user/clone/1",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"clone",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode PATCH",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "9c62639d-e2cd-4190-a430-959323c13bbd",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user/clone/1",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"clone",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unsupported Methode HEAD",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "98a60326-98a2-4fd7-9208-1f236550e4c7",
+										"exec": [
+											"pm.test(\"Status is 405\", function(){",
+											" pm.response.to.have.status(405);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"id": "1a4428a5-feb1-4015-b29d-bbf7ae63246e",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "HEAD",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/user/clone/1",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"user",
+										"clone",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"id": "685bdcfe-b31a-4ac3-85fe-0b121d084641"
+				}
+			],
+			"id": "d436780f-c384-46a5-be91-bede6b2b06f4"
 		}
 	],
 	"event": [

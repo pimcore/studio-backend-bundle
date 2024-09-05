@@ -18,3 +18,4 @@ jobs:
       - name: Run API tests
         run: |
           postman collection run "${{ github.workspace }}/tests/Api/postman/collections/Smoke Test.json" -e "33082135-163b2749-45b5-4967-a48d-ddea0aab6395"
+          postman collection run "${{ github.workspace }}/tests/Api/postman/collections/Integration Test.json" -e "33082135-163b2749-45b5-4967-a48d-ddea0aab6395"
