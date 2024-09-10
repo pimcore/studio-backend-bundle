@@ -30,8 +30,8 @@ use OpenApi\Attributes\Schema;
 final readonly class UpdateSchedule
 {
     public function __construct(
-        #[Property(description: 'id', type: 'integer', example: 666)]
-        private int $id,
+        #[Property(description: 'Id of schedule, if null a new one will be created', type: 'integer', example: 666)]
+        private ?int $id,
         #[Property(description: 'Date of schedule', type: 'integer', example: 1634025600)]
         private int $date,
         #[Property(description: 'Action', type: 'string', enum: ['publish', 'delete'])]
@@ -44,7 +44,7 @@ final readonly class UpdateSchedule
 
     }
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
