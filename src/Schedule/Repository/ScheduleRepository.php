@@ -113,6 +113,10 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
                 $task = $this->createSchedule($elementType, $id);
             }
 
+            if (!$task) {
+                continue;
+            }
+
             $currentTasks[] = $task->getId();
             $task->setCid($id);
             $task->setCtype($elementType);
