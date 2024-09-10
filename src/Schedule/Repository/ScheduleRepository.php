@@ -106,7 +106,12 @@ final readonly class ScheduleRepository implements ScheduleRepositoryInterface
 
         $currentTasks = [];
         foreach ($schedules as $schedule) {
-            $task = $this->taskResolver->getById($schedule->getId());
+
+            if ($schedule->getId()) {
+                $task = $this->taskResolver->getById($schedule->getId());
+            } else {
+                $task = $this->createSchedule($elementType, $id);
+            }
 
             if (!$task) {
                 continue;
