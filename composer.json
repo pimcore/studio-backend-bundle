@@ -30,7 +30,6 @@
   },
   "require-dev": {
     "pimcore/admin-ui-classic-bundle": "^v1.3",
-    "roave/security-advisories": "dev-latest",
     "codeception/codeception": "^5.0.10",
     "codeception/phpunit-wrapper": "^9",
     "codeception/module-asserts": "^2",
