@@ -44,6 +44,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
 use function sprintf;
 
 /**
@@ -158,7 +159,6 @@ final readonly class UserService implements UserServiceInterface
                 username: $user->getName(),
             );
 
-
             $this->eventDispatcher->dispatch(
                 new SimpleUserEvent($item),
                 SimpleUserEvent::EVENT_NAME
@@ -169,7 +169,6 @@ final readonly class UserService implements UserServiceInterface
 
         return new Collection(count($items), $items);
     }
-
 
     /**
      * @return array<string, bool|string>

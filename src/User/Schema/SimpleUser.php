@@ -33,7 +33,7 @@ final class SimpleUser implements AdditionalAttributesInterface
 
     public function __construct(
         #[Property(description: 'ID of the User', type: 'integer', example: '1')]
-        private readonly int    $id,
+        private readonly int $id,
         #[Property(description: 'Name of the User', type: 'string', example: 'role')]
         private readonly string $username,
     ) {
