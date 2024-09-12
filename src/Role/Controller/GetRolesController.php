@@ -51,6 +51,7 @@ final class GetRolesController extends AbstractApiController
     #[Get(
         path: self::API_PATH . '/roles',
         operationId: 'role_get_collection',
+        description: 'role_get_collection_description',
         summary: 'role_get_collection_summary',
         tags: [Tags::Role->value]
     )]
