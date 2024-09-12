@@ -547,3 +547,6 @@ asset_get_saved_grid_configurations_description: |
     Get all saved grid configurations for assets of the given folder for the current user and shared configurations for this user
 asset_get_saved_grid_configurations_success_response: List of saved grid configurations for the given folder
 asset_get_saved_grid_configurations_summary: Get all saved grid configurations for assets of the given folder
+user_get_collection_summary: Get all users
+user_get_collection_description: Get all users with basic information
+user_get_collection_success_response: List of users

@@ -126,6 +126,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.tag`
 - `pre_response.list_thumbnail`
 - `pre_response.user`
+- `pre_response.simple_user`
 - `pre_response.user_permission`
 - `pre_response.user_tree_node`
 - `pre_response.asset_version`

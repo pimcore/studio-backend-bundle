@@ -118,4 +118,22 @@ final readonly class UserRepository implements UserRepositoryInterface
 
         return $listing;
     }
+
+    /**
+     * @return UserInterface[]
+     *
+     * @throws DatabaseException
+     */
+    public function getUsers(): array
+    {
+        try {
+            $userListing = new UserListing();
+            $userListing->setCondition('`type` = ?', ['user']);
+            $userListing->load();
+
+            return $userListing->getUsers();
+        } catch (Exception $e) {
+            throw new  DatabaseException(sprintf('Error while fetching users: %s', $e->getMessage()));
+        }
+    }
 }

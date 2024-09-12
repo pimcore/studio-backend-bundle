@@ -55,4 +55,9 @@ interface UserServiceInterface
      * @throws NotFoundException|DatabaseException
      */
     public function getUserById(int $userId): UserSchema;
+
+    /**
+     * @throws DatabaseException
+     */
+    public function getUsers(): Collection;
 }

@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ParentIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Event\SimpleUserEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
@@ -38,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\SimpleUser;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
@@ -144,6 +146,30 @@ final readonly class UserService implements UserServiceInterface
         }
 
     }
+
+    public function getUsers(): Collection
+    {
+        $users = $this->userRepository->getUsers();
+        $items = [];
+
+        foreach ($users as $user) {
+            $item = new SimpleUser(
+                id: $user->getId(),
+                username: $user->getName(),
+            );
+
+
+            $this->eventDispatcher->dispatch(
+                new SimpleUserEvent($item),
+                SimpleUserEvent::EVENT_NAME
+            );
+
+            $items[] = $item;
+        }
+
+        return new Collection(count($items), $items);
+    }
+
 
     /**
      * @return array<string, bool|string>
