@@ -50,4 +50,11 @@ interface UserRepositoryInterface
     public function updateUser(UserInterface $user): void;
 
     public function getUserListingByRoleId(int $roleId, ?int $excludeUserId = null): UserListing;
+
+    /**
+     * @return UserInterface[]
+     *
+     * @throws DatabaseException
+     */
+    public function getUsers(): array;
 }
