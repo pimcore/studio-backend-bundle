@@ -349,8 +349,8 @@ role_folder_create_summary: Create a new role folder.
 role_folder_delete_by_id_summary: Delete a specific folder with all sub roles.
 role_get_by_id_success_response: List of available user roles.
 role_get_by_id_summary: Get all available user roles.
-role_get_collection_success_response: Role data.
-role_get_collection_summary: Get role by id.
+role_get_collection_success_response: List of available roles.
+role_get_collection_summary: Get all available roles.
 role_get_tree_success_response: Collection of roles including folders for the given parent id.
 role_get_tree_summary: Get collection of roles for tree view.
 role_update_by_id_response: Updated data.
