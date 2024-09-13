@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\TagFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\TagFilterParameterInterface;
+use function count;
 
 /**
  * @internal
@@ -127,7 +128,6 @@ final class FilterParameter implements
 
         return null;
     }
-
 
     public function getFirstColumnFilterByType(string $type): ?ColumnFilter
     {

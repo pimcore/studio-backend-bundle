@@ -156,6 +156,4 @@ final class AssetQuery implements QueryInterface
 
         return $this;
     }
-
-
 }
