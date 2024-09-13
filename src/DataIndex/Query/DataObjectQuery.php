@@ -23,6 +23,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\Exc
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\TagFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByIndexField;
@@ -121,6 +122,16 @@ final class DataObjectQuery implements QueryInterface
     public function orderByIndex(): self
     {
         $this->search->addModifier(new OrderByIndexField());
+
+        return $this;
+    }
+
+    /**
+     * @param array<int> $tags
+     */
+    public function filterTags(array $tags, bool $considerChildTags): QueryInterface
+    {
+        $this->search->addModifier(new TagFilter($tags, $considerChildTags));
 
         return $this;
     }

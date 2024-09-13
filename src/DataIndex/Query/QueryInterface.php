@@ -37,4 +37,9 @@ interface QueryInterface
     public function orderByPath(string $direction): self;
 
     public function searchByIds(array $ids): self;
+
+    /**
+     * @param array<int> $tags
+     */
+    public function filterTags(array $tags, bool $considerChildTags): self;
 }
