@@ -40,6 +40,7 @@ Available filters are:
 |  metadata.asset   |       integer       |       ID fo the asset       |
 |   system.string   |       string        | Wildcard search can be used |
 |  system.datetime  |       integer       |    `from`, `to`, or `on`    |
+|    system.tag     |       object        | `considerChildTags`, `tags` |
 
 
 
@@ -68,6 +69,21 @@ Filter by a date column:
     "filterValue": {
       "from": 1719792000,
       "to": 1718792000
+    }
+  }
+]
+...
+```
+
+Filter by Tags:
+```json
+...
+"columnFilters" [
+  {
+    "type": "system.tag",
+    "filterValue": {
+      "considerChildTags": true,
+      "tags": [1,2,3]
     }
   }
 ]
