@@ -112,7 +112,7 @@ final class FilterParameter implements
             static fn ($columnFilter) => $columnFilter['type'] === ColumnType::SYSTEM_TAG->value
         );
 
-        if (count($columns) < 1) {
+        if (count($columns) > 1) {
             throw new InvalidArgumentException('More than one tag filter is not allowed');
         }
 
