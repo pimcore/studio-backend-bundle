@@ -156,4 +156,13 @@ final class AssetQuery implements QueryInterface
 
         return $this;
     }
+
+    public function filterRequiredBy(int $id): QueryInterface
+    {
+       //$this->search->addModifier(new ($tags, $considerChildTags)
+
+        return $this;
+    }
+
+
 }
