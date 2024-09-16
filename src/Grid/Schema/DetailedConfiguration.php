@@ -60,6 +60,7 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly int $pageSize = 25,
         private readonly ?int $modificationDate = null,
         private readonly ?int $creationDate = null,
+        private readonly ?int $ownerId = null,
     ) {
     }
 
@@ -133,5 +134,10 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     public function getCreationDate(): ?int
     {
         return $this->creationDate;
+    }
+
+    public function getOwnerId(): ?int
+    {
+        return $this->ownerId;
     }
 }
