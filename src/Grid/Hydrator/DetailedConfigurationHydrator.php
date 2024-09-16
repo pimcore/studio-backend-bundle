@@ -30,6 +30,7 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
         array $roles,
         bool $isFavorite
     ): DetailedConfiguration {
+
         return new DetailedConfiguration(
             name: $data->getName(),
             description: $data->getDescription(),
@@ -40,7 +41,9 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
             sharedRoles: $roles,
             columns: $data->getColumns(),
             filter: $data->getFilter() ?? [],
-            pageSize: $data->getPageSize()
+            pageSize: $data->getPageSize(),
+            modificationDate: $data->getModificationDate()->getTimestamp(),
+            creationDate: $data->getCreationDate()->getTimestamp(),
         );
     }
 }
