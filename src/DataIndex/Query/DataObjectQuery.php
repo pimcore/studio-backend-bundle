@@ -21,6 +21,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Dependency\NoDependenciesFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\TagFilter;
@@ -129,9 +130,16 @@ final class DataObjectQuery implements QueryInterface
     /**
      * @param array<int> $tags
      */
-    public function filterTags(array $tags, bool $considerChildTags): QueryInterface
+    public function filterTags(array $tags, bool $considerChildTags): self
     {
         $this->search->addModifier(new TagFilter($tags, $considerChildTags));
+
+        return $this;
+    }
+
+    public function filterNoDependencies(): self
+    {
+        $this->search->addModifier(new NoDependenciesFilter());
 
         return $this;
     }

@@ -21,6 +21,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterfac
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Asset\AssetMetaDataFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Dependency\NoDependenciesFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
@@ -150,9 +151,16 @@ final class AssetQuery implements QueryInterface
     /**
      * @param array<int> $tags
      */
-    public function filterTags(array $tags, bool $considerChildTags): QueryInterface
+    public function filterTags(array $tags, bool $considerChildTags): self
     {
         $this->search->addModifier(new TagFilter($tags, $considerChildTags));
+
+        return $this;
+    }
+
+    public function filterNoDependencies(): self
+    {
+        $this->search->addModifier(new NoDependenciesFilter());
 
         return $this;
     }

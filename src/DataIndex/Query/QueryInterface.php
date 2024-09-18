@@ -42,4 +42,6 @@ interface QueryInterface
      * @param array<int> $tags
      */
     public function filterTags(array $tags, bool $considerChildTags): self;
+
+    public function filterNoDependencies(): self;
 }

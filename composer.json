@@ -20,7 +20,7 @@
     "php": "~8.2.0 || ~8.3.0",
     "nesbot/carbon": "^2.65",
     "pimcore/static-resolver-bundle": "1.x-dev",
-    "pimcore/generic-data-index-bundle": "1.x-dev",
+    "pimcore/generic-data-index-bundle": "dev-210-filters-add-filter-to-list-items-without-dependencies",
     "pimcore/pimcore": "^11.x-dev",
     "zircote/swagger-php": "^4.8",
     "ext-zip": "*",
