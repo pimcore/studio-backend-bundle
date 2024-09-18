@@ -43,5 +43,5 @@ interface QueryInterface
      */
     public function filterTags(array $tags, bool $considerChildTags): self;
 
-    //public function filterRequiredBy(int $id): self;
+    public function filterNoDependencies(): self;
 }

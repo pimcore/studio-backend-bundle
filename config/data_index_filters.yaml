@@ -35,6 +35,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\TagFilter:
     tags: [ 'pimcore.studio_backend.open_search.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\NoDependenciesFilter:
+    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+
   # DataObject
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_backend.open_search.data_object.filter' ]

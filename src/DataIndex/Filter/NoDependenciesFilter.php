@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\TagFilterParameter
 /**
  * @internal
  */
-final class UnreferencedDependencyFilter implements FilterInterface
+final class NoDependenciesFilter implements FilterInterface
 {
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
@@ -43,6 +43,10 @@ final class UnreferencedDependencyFilter implements FilterInterface
             throw new InvalidArgumentException('Filter value for unreferenced dependencies must be a boolean');
         }
 
-        return $query->filterForUnreferencedDependencies($filter->getFilterValue());
+        if ($filter->getFilterValue()) {
+            $query = $query->filterNoDependencies();
+        }
+
+        return $query;
     }
 }
