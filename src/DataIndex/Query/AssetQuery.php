@@ -160,7 +160,7 @@ final class AssetQuery implements QueryInterface
 
     public function filterNoDependencies(): self
     {
-       $this->search->addModifier(new NoDependenciesFilter());
+        $this->search->addModifier(new NoDependenciesFilter());
 
         return $this;
     }
