@@ -31,7 +31,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderB
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
-final class DataObjectQuery implements QueryInterface
+final class DataObjectQuery implements DataObjectQueryInterface
 {
     public const DATA_OBJECT_QUERY_ID = 'data_object_query';
 

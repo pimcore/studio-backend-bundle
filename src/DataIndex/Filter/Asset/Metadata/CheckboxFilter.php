@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
@@ -48,7 +49,7 @@ final class CheckboxFilter implements FilterInterface
         return $assetQuery;
     }
 
-    private function applyCheckboxFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
+    private function applyCheckboxFilter(ColumnFilter $column, AssetQueryInterface $query): AssetQueryInterface
     {
         if (!is_bool($column->getFilterValue())) {
             throw new InvalidArgumentException('Filter value for checkbox must be a boolean');

@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ClassNameParametersInterface;
 
@@ -34,7 +34,7 @@ final class ClassNameFilter implements FilterInterface
     {
         if (
             !$parameters instanceof ClassNameParametersInterface ||
-            !$query instanceof DataObjectQuery ||
+            !$query instanceof DataObjectQueryInterface ||
             !$parameters->getClassName()
         ) {
             return $query;
