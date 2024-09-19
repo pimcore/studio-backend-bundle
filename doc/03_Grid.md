@@ -24,23 +24,25 @@ Here you can define `page`, `pageSize` and `includeDescendants`.
 
 ### ColumnFilter
 It is also possible to filter the data by a column. This is done by adding a `columnFilter` to the `filter` property.
-A `columnFilter` has a reference to the column and the value you want to filter by.
+A `columnFilter` has a reference to the column and the value you want to filter by. Some filters do not require a 
+specific column, like the `system.tag` filter. This filters will be applied to the general search query.
 
 Available filters are:
 
-|       Type        |     filterValue     |           Options           |
-|:-----------------:|:-------------------:|:---------------------------:|
-|  metadata.select  |       string        |                             |
-|   metadata.date   | object of timestamp |    `from`, `to`, or `on`    |
-|  metadata.input   |       string        |                             |
-| metadata.checkbox |       boolean       |                             |
-| metadata.textarea |       string        |                             |
-|  metadata.object  |       integer       |      ID of the object       |
-| metadata.document |       integer       |     ID fo the document      |
-|  metadata.asset   |       integer       |       ID fo the asset       |
-|   system.string   |       string        | Wildcard search can be used |
-|  system.datetime  |       integer       |    `from`, `to`, or `on`    |
-|    system.tag     |       object        | `considerChildTags`, `tags` |
+|       Type        |     filterValue     |           Options           | `key` required |
+|:-----------------:|:-------------------:|:---------------------------:|:--------------:|
+|  metadata.select  |       string        |                             |      true      |
+|   metadata.date   | object of timestamp |    `from`, `to`, or `on`    |      true      |
+|  metadata.input   |       string        |                             |      true      |
+| metadata.checkbox |       boolean       |                             |      true      |
+| metadata.textarea |       string        |                             |      true      |
+|  metadata.object  |       integer       |      ID of the object       |      true      |
+| metadata.document |       integer       |     ID fo the document      |      true      |
+|  metadata.asset   |       integer       |       ID fo the asset       |      true      |
+|   system.string   |       string        | Wildcard search can be used |      true      |
+|  system.datetime  |       integer       |    `from`, `to`, or `on`    |      true      |
+|    system.tag     |       object        | `considerChildTags`, `tags` |     false      |
+|    system.pql     |       string        |          PQL Query          |     false      |
 
 
 

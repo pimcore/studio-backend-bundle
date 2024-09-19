@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
@@ -26,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use function sprintf;
@@ -41,7 +43,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     }
 
     /**
-     * @throws SearchException
+     * @throws SearchException|InvalidArgumentException
      */
     public function searchAssets(QueryInterface $assetQuery): AssetSearchResult
     {
@@ -49,6 +51,8 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
             $searchResult = $this->searchService->search($assetQuery->getSearch());
         } catch (AssetSearchException) {
             throw new SearchException('assets');
+        } catch (Exception $e) {
+            throw new InvalidArgumentException($e->getMessage());
         }
 
         $result = [];

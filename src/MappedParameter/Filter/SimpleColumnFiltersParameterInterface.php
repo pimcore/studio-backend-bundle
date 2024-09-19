@@ -19,7 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 /**
  * @internal
  */
-interface TagFilterParameterInterface
+interface SimpleColumnFiltersParameterInterface
 {
-    public function getTagFilter(): ?TagFilterParameter;
+    /**
+     * A column filter that does not require a key
+     */
+    public function getSimpleColumnFilterByType(string $type): ?SimpleColumnFilter;
 }

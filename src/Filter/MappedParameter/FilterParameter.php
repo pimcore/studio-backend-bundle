@@ -17,16 +17,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ExcludeFolderParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PathParameterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFilter;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFiltersParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\TagFilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\TagFilterParameterInterface;
 use function count;
 
 /**
@@ -37,8 +36,8 @@ final class FilterParameter implements
     ExcludeFolderParameterInterface,
     PathParameterInterface,
     ColumnFiltersParameterInterface,
-    SortFilterParameterInterface,
-    TagFilterParameterInterface
+    SimpleColumnFiltersParameterInterface,
+    SortFilterParameterInterface
 {
     private ?string $path = null;
 
@@ -106,24 +105,21 @@ final class FilterParameter implements
         }
     }
 
-    public function getTagFilter(): ?TagFilterParameter
+    public function getSimpleColumnFilterByType(string $type): ?SimpleColumnFilter
     {
         $columns  = array_filter(
             $this->columnFilters,
-            static fn ($columnFilter) => $columnFilter['type'] === ColumnType::SYSTEM_TAG->value
+            static fn ($columnFilter) => $columnFilter['type'] === $type
         );
 
         if (count($columns) > 1) {
-            throw new InvalidArgumentException('More than one tag filter is not allowed');
+            throw new InvalidArgumentException('More than one filter of same type is not allowed');
         }
 
-        if (isset($columns[0]['filterValue'])) {
-            $filterValue = $columns[0]['filterValue'];
-            if (!isset($filterValue['tags'], $filterValue['considerChildTags'])) {
-                throw new InvalidArgumentException('Invalid tag filter');
-            }
+        $column = reset($columns);
 
-            return new TagFilterParameter($filterValue['tags'], $filterValue['considerChildTags']);
+        if (isset($column['filterValue'])) {
+            return new SimpleColumnFilter($type, $column['filterValue']);
         }
 
         return null;
