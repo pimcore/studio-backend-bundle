@@ -19,27 +19,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 /**
  * @internal
  */
-final readonly class ColumnFilter
+final readonly class ColumnFilter extends SimpleColumnFilter
 {
     public function __construct(
         private string $key,
         private string $type,
         private mixed $filterValue,
     ) {
+        parent::__construct($this->type, $this->filterValue);
     }
 
     public function getKey(): string
     {
         return $this->key;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    public function getFilterValue(): mixed
-    {
-        return $this->filterValue;
     }
 }

@@ -20,12 +20,11 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SimpleColumnFiltersParameterInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\TagFilterParameterInterface;
 
 /**
  * @internal
  */
-final class TagFilter implements FilterInterface
+final class PqlFilter implements FilterInterface
 {
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
@@ -33,18 +32,18 @@ final class TagFilter implements FilterInterface
             return $query;
         }
 
-        $filter = $parameters->getSimpleColumnFilterByType(ColumnType::SYSTEM_TAG->value);
+        $filter = $parameters->getSimpleColumnFilterByType(ColumnType::SYSTEM_PQL_QUERY->value);
 
         if (!$filter) {
             return $query;
         }
 
-        $filterValue = $filter->getFilterValue();
-
-        if (!isset($filterValue['tags'], $filterValue['considerChildTags'])) {
-            throw new InvalidArgumentException('Invalid tag filter');
+        if (!is_string($filter->getFilterValue())) {
+            throw new InvalidArgumentException('Invalid PQL filter. Filter value must be a string.');
         }
 
-        return $query->filterTags($filterValue['tags'], $filterValue['considerChildTags']);
+        $filterValue = $filter->getFilterValue();
+
+        return $query->filterByPql($filterValue);
     }
 }

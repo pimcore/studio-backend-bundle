@@ -27,6 +27,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\Path
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\TagFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\PqlFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByField;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 
@@ -150,9 +151,16 @@ final class AssetQuery implements QueryInterface
     /**
      * @param array<int> $tags
      */
-    public function filterTags(array $tags, bool $considerChildTags): QueryInterface
+    public function filterTags(array $tags, bool $considerChildTags): self
     {
         $this->search->addModifier(new TagFilter($tags, $considerChildTags));
+
+        return $this;
+    }
+
+    public function filterByPql(string $pqlQuery): self
+    {
+        $this->search->addModifier(new PqlFilter($pqlQuery));
 
         return $this;
     }

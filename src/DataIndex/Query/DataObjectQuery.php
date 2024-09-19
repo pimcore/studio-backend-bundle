@@ -25,6 +25,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\Pare
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\TagFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\PqlFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByIndexField;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
@@ -129,9 +130,16 @@ final class DataObjectQuery implements QueryInterface
     /**
      * @param array<int> $tags
      */
-    public function filterTags(array $tags, bool $considerChildTags): QueryInterface
+    public function filterTags(array $tags, bool $considerChildTags): self
     {
         $this->search->addModifier(new TagFilter($tags, $considerChildTags));
+
+        return $this;
+    }
+
+    public function filterByPql(string $pqlQuery): self
+    {
+        $this->search->addModifier(new PqlFilter($pqlQuery));
 
         return $this;
     }
