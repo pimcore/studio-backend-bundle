@@ -31,7 +31,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\Pq
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByField;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 
-final class AssetQuery implements QueryInterface
+final class AssetQuery implements AssetQueryInterface
 {
     public const ASSET_QUERY_ID = 'asset_query';
 

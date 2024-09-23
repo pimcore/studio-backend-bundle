@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
@@ -48,7 +48,7 @@ final class InputFilter implements FilterInterface
         return $assetQuery;
     }
 
-    private function applyInputFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
+    private function applyInputFilter(ColumnFilter $column, AssetQueryInterface $query): AssetQueryInterface
     {
         if (!is_string($column->getFilterValue())) {
             throw new InvalidArgumentException('Filter value for input must be a string');

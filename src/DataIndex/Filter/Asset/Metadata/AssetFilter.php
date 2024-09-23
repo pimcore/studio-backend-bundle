@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
@@ -48,7 +48,7 @@ final class AssetFilter implements FilterInterface
         return $assetQuery;
     }
 
-    private function applyAssetFilter(ColumnFilter $column, AssetQuery $query): AssetQuery
+    private function applyAssetFilter(ColumnFilter $column, AssetQueryInterface $query): AssetQueryInterface
     {
         if (!is_int($column->getFilterValue())) {
             throw new InvalidArgumentException('Filter value for asset must be a integer (ID of the asset)');
