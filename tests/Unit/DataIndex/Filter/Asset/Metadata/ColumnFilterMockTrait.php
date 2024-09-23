@@ -29,9 +29,9 @@ trait ColumnFilterMockTrait
         return $this->makeEmpty(ColumnFiltersParameterInterface::class, [
             'getColumnFilterByType' => function () use ($key, $type, $value) {
                 return [
-                    new ColumnFilter($key, $type, $value)
+                    new ColumnFilter($key, $type, $value),
                 ];
-            }
+            },
         ]);
     }
 }

@@ -57,7 +57,7 @@ final class DatetimeFilter implements FilterInterface
         $filterValue = $column->getFilterValue();
 
         if (isset($filterValue['on'])) {
-            $query->filterDatetime($column->getKey(), null, null,  $filterValue['on']);
+            $query->filterDatetime($column->getKey(), null, null, $filterValue['on']);
         }
 
         if (isset($filterValue['to'])) {

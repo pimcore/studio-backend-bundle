@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset;
 
-use DateTime;
 use Codeception\Test\Unit;
+use DateTime;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
@@ -64,11 +64,9 @@ final class IsAssetFilterTraitTest extends Unit
             $myTestClass->validateQueryType($columnFiltersParameterInterfaceMock)
         );
     }
-
 }
 
 final class MyTestClass
 {
     use IsAssetFilterTrait;
-
 }

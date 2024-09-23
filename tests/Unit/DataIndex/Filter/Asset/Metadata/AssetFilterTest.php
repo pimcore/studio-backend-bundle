@@ -29,33 +29,34 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 final class AssetFilterTest extends Unit
 {
     use ColumnFilterMockTrait;
+
     public function testIsExceptionIsThrownWhenFilterIsNotAnIdOfAssets(): void
     {
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'filterMetadata' => Expected::never()
+            'filterMetadata' => Expected::never(),
         ]);
 
-        $columnFilterMock = $this->getColumnFilterMock('key', "type", "not_at");
+        $columnFilterMock = $this->getColumnFilterMock('key', 'type', 'not_at');
 
         $stringFilter = new AssetFilter();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Filter value for asset must be a integer (ID of the asset)");
+        $this->expectExceptionMessage('Filter value for asset must be a integer (ID of the asset)');
         $stringFilter->apply($columnFilterMock, $queryMock);
     }
 
     public function testApplyAssetFilter(): void
     {
-        $columnFilterMock = $this->getColumnFilterMock('key', "type", 1);
+        $columnFilterMock = $this->getColumnFilterMock('key', 'type', 1);
 
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterMetadata' => Expected::once(function ($key, $type, $value) {
-                $this->assertSame("key", $key);
+                $this->assertSame('key', $key);
                 $this->assertSame(FilterType::ASSET->value, $type);
                 $this->assertSame(1, $value);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
-            })
+            }),
         ]);
 
         $textAreaFilter = new AssetFilter();

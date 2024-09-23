@@ -29,33 +29,34 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 final class InputFilterTest extends Unit
 {
     use ColumnFilterMockTrait;
+
     public function testIsExceptionIsThrownWhenFilterIsNotAString(): void
     {
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'filterMetadata' => Expected::never()
+            'filterMetadata' => Expected::never(),
         ]);
 
-        $columnFilterMock = $this->getColumnFilterMock('key', "type", 123);
+        $columnFilterMock = $this->getColumnFilterMock('key', 'type', 123);
 
         $stringFilter = new InputFilter();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Filter value for input must be a string");
+        $this->expectExceptionMessage('Filter value for input must be a string');
         $stringFilter->apply($columnFilterMock, $queryMock);
     }
 
     public function testApplyInputFilter(): void
     {
-        $columnFilterMock = $this->getColumnFilterMock('key', "type", "test_value");
+        $columnFilterMock = $this->getColumnFilterMock('key', 'type', 'test_value');
 
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterMetadata' => Expected::once(function ($key, $type, $value) {
-                $this->assertSame("key", $key);
+                $this->assertSame('key', $key);
                 $this->assertSame(FilterType::INPUT->value, $type);
-                $this->assertSame("test_value", $value);
+                $this->assertSame('test_value', $value);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
-            })
+            }),
         ]);
 
         $textAreaFilter = new InputFilter();

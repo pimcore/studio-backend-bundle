@@ -29,33 +29,34 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 final class CheckboxFilterTest extends Unit
 {
     use ColumnFilterMockTrait;
+
     public function testIsExceptionIsThrownWhenFilterIsNoABool(): void
     {
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'filterMetadata' => Expected::never()
+            'filterMetadata' => Expected::never(),
         ]);
 
-        $columnFilterMock = $this->getColumnFilterMock('key', "type", "not_bool");
+        $columnFilterMock = $this->getColumnFilterMock('key', 'type', 'not_bool');
 
         $stringFilter = new CheckboxFilter();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Filter value for checkbox must be a boolean");
+        $this->expectExceptionMessage('Filter value for checkbox must be a boolean');
         $stringFilter->apply($columnFilterMock, $queryMock);
     }
 
     public function testApplyCheckboxFilter(): void
     {
-        $columnFilterMock = $this->getColumnFilterMock('key', "type", true);
+        $columnFilterMock = $this->getColumnFilterMock('key', 'type', true);
 
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterMetadata' => Expected::once(function ($key, $type, $value) {
-                $this->assertSame("key", $key);
+                $this->assertSame('key', $key);
                 $this->assertSame(FilterType::CHECKBOX->value, $type);
                 $this->assertSame(true, $value);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
-            })
+            }),
         ]);
 
         $textAreaFilter = new CheckboxFilter();

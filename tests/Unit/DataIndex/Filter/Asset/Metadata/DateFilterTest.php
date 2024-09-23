@@ -30,34 +30,35 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 final class DateFilterTest extends Unit
 {
     use ColumnFilterMockTrait;
+
     public function testIsExceptionIsThrownWhenFilterIsNotAnArray(): void
     {
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'filterMetadata' => Expected::never()
+            'filterMetadata' => Expected::never(),
         ]);
 
-        $columnFilterMock = $this->getColumnFilterMock('key', "type", "not_array");
+        $columnFilterMock = $this->getColumnFilterMock('key', 'type', 'not_array');
 
         $stringFilter = new DateFilter();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Filter value for date must be an array");
+        $this->expectExceptionMessage('Filter value for date must be an array');
         $stringFilter->apply($columnFilterMock, $queryMock);
     }
 
     public function testApplyDateFilterForOn(): void
     {
         $time = 1726753660;
-        $columnFilterMock = $this->getColumnFilterMock('key', "type", ['on' => $time]);
+        $columnFilterMock = $this->getColumnFilterMock('key', 'type', ['on' => $time]);
 
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'filterMetadata' => Expected::once(function ($key, $type, $value) use ($time){
-                $this->assertSame("key", $key);
+            'filterMetadata' => Expected::once(function ($key, $type, $value) use ($time) {
+                $this->assertSame('key', $key);
                 $this->assertSame(FilterType::DATE->value, $type);
                 $this->assertSame([GenericDateFilter::PARAM_ON => $time], $value);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
-            })
+            }),
         ]);
 
         $textAreaFilter = new DateFilter();
@@ -67,16 +68,16 @@ final class DateFilterTest extends Unit
     public function testApplyDateFilterForTo(): void
     {
         $time = 1726753660;
-        $columnFilterMock = $this->getColumnFilterMock('key', "type", ['to' => $time]);
+        $columnFilterMock = $this->getColumnFilterMock('key', 'type', ['to' => $time]);
 
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'filterMetadata' => Expected::once(function ($key, $type, $value) use ($time){
-                $this->assertSame("key", $key);
+            'filterMetadata' => Expected::once(function ($key, $type, $value) use ($time) {
+                $this->assertSame('key', $key);
                 $this->assertSame(FilterType::DATE->value, $type);
                 $this->assertSame([GenericDateFilter::PARAM_END => $time], $value);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
-            })
+            }),
         ]);
 
         $textAreaFilter = new DateFilter();
@@ -86,16 +87,16 @@ final class DateFilterTest extends Unit
     public function testApplyDateFilterForFrom(): void
     {
         $time = 1726753660;
-        $columnFilterMock = $this->getColumnFilterMock('key', "type", ['from' => $time]);
+        $columnFilterMock = $this->getColumnFilterMock('key', 'type', ['from' => $time]);
 
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'filterMetadata' => Expected::once(function ($key, $type, $value) use ($time){
-                $this->assertSame("key", $key);
+            'filterMetadata' => Expected::once(function ($key, $type, $value) use ($time) {
+                $this->assertSame('key', $key);
                 $this->assertSame(FilterType::DATE->value, $type);
                 $this->assertSame([GenericDateFilter::PARAM_START => $time], $value);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
-            })
+            }),
         ]);
 
         $textAreaFilter = new DateFilter();

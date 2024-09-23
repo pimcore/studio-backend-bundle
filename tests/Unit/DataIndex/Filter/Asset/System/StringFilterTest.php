@@ -32,21 +32,21 @@ final class StringFilterTest extends Unit
     public function testIsExceptionIsThrownWhenFilterIsNotAString(): void
     {
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
-            'wildcardSearch' => Expected::never()
+            'wildcardSearch' => Expected::never(),
         ]);
 
         $columnFilterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
             'getColumnFilterByType' => function () {
                 return [
-                    new ColumnFilter('key', "type", 123)
+                    new ColumnFilter('key', 'type', 123),
                 ];
-            }
+            },
         ]);
 
         $stringFilter = new StringFilter();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Filter value for this filter must be a string");
+        $this->expectExceptionMessage('Filter value for this filter must be a string');
         $stringFilter->apply($columnFilterMock, $queryMock);
     }
 
@@ -54,19 +54,19 @@ final class StringFilterTest extends Unit
     {
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'wildcardSearch' => Expected::once(function ($key, $value) {
-                $this->assertSame("key", $key);
-                $this->assertSame("value", $value);
+                $this->assertSame('key', $key);
+                $this->assertSame('value', $value);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
-            })
+            }),
         ]);
 
         $columnFilterMock = $this->makeEmpty(ColumnFiltersParameterInterface::class, [
             'getColumnFilterByType' => function () {
                 return [
-                    new ColumnFilter('key', "type", "value")
+                    new ColumnFilter('key', 'type', 'value'),
                 ];
-            }
+            },
         ]);
 
         $stringFilter = new StringFilter();

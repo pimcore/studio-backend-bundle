@@ -33,10 +33,10 @@ final class SortFilterTest extends Unit
     {
         $sortFilter = new SortFilter();
         $query = $this->makeEmpty(AssetQueryInterface::class, [
-            'orderByField' => Expected::never()
+            'orderByField' => Expected::never(),
         ]);
 
-        $sortFilter->apply("test", $query);
+        $sortFilter->apply('test', $query);
     }
 
     public function testSortDirectionWithDesc(): void
@@ -44,17 +44,17 @@ final class SortFilterTest extends Unit
         $sortFilter = new SortFilter();
         $parameter = $this->makeEmpty(SortFilterParameterInterface::class, [
             'getSortFilter' => function () {
-                return new SortFilterParameter("key", "desc");
-            }
+                return new SortFilterParameter('key', 'desc');
+            },
         ]);
 
         $query = $this->makeEmpty(AssetQueryInterface::class, [
             'orderByField' => function ($key, $direction) {
-                $this->assertSame("key", $key);
+                $this->assertSame('key', $key);
                 $this->assertSame(SortDirection::DESC, $direction);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
-            }
+            },
         ]);
 
         $sortFilter->apply($parameter, $query);
@@ -66,19 +66,18 @@ final class SortFilterTest extends Unit
         $parameter = $this->makeEmpty(SortFilterParameterInterface::class, [
             'getSortFilter' => function () {
                 return new SortFilterParameter();
-            }
+            },
         ]);
 
         $query = $this->makeEmpty(AssetQueryInterface::class, [
             'orderByField' => function ($key, $direction) {
-                $this->assertSame("id", $key);
+                $this->assertSame('id', $key);
                 $this->assertSame(SortDirection::ASC, $direction);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
-            }
+            },
         ]);
 
         $sortFilter->apply($parameter, $query);
     }
-
 }
