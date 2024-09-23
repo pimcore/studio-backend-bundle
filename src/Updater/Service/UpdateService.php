@@ -83,7 +83,9 @@ final readonly class UpdateService implements UpdateServiceInterface
                 }
 
                 foreach ($adapters as $adapter) {
-                    $adapter->update($element, $fieldDefinition, $key, $editableData);
+                    if($adapter->update($element, $fieldDefinition, $key, $editableData)) {
+                        break;
+                    }
                 }
             }
 

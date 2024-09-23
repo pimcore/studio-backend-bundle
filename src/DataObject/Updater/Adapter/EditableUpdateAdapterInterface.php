@@ -21,7 +21,5 @@ use Pimcore\Model\DataObject\Concrete;
 
 interface EditableUpdateAdapterInterface
 {
-    public function update(Concrete $element, Data $fieldDefinition, string $key, array $data): void;
-
-    public function supports(Data $fieldDefinition): bool;
+    public function update(Concrete $element, Data $fieldDefinition, string $key, array $data): bool;
 }

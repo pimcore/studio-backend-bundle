@@ -29,18 +29,20 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag('pimcore.studio_backend.editable.update_adapter')]
 final readonly class InputAdapter implements EditableUpdateAdapterInterface
 {
-    public function update(Concrete $element, Data $fieldDefinition, string $key, array $data): void
+    public function update(Concrete $element, Data $fieldDefinition, string $key, array $data): bool
     {
         if (!array_key_exists($key, $data) || !($this->supports($fieldDefinition))) {
-            return;
+            return false;
         }
 
         /** @var ResourcePersistenceAwareInterface $fieldDefinition */
         $dataFromResource = $fieldDefinition->getDataFromResource($data[$key], $element);
         $element->setValue($key, $dataFromResource);
+
+        return true;
     }
 
-    public function supports(Data $fieldDefinition): bool
+    private function supports(Data $fieldDefinition): bool
     {
         return $fieldDefinition instanceof Numeric || $fieldDefinition instanceof Input;
     }
