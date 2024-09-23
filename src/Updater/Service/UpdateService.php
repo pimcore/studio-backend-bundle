@@ -23,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\DataObject\Concrete;
+use function Symfony\Component\String\s;
 
 /**
  * @internal
@@ -31,10 +33,13 @@ final readonly class UpdateService implements UpdateServiceInterface
 {
     use ElementProviderTrait;
 
+    private const EDITABLE_DATA_KEY = 'editableData';
+
     public function __construct(
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
         private SecurityServiceInterface $securityService,
         private AdapterLoaderInterface $adapterLoader,
+        private EditableAdapterLoaderInterface $editableAdapterLoader,
         private ServiceResolver $serviceResolver
     ) {
     }
@@ -45,6 +50,10 @@ final readonly class UpdateService implements UpdateServiceInterface
     public function update(string $elementType, int $id, array $data): void
     {
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
+        if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
+            $this->updateEditableData($data[self::EDITABLE_DATA_KEY], $element);
+            unset($data[self::EDITABLE_DATA_KEY]);
+        }
 
         foreach ($this->adapterLoader->loadAdapters($elementType) as $adapter) {
             $adapter->update($element, $data);
@@ -56,6 +65,30 @@ final readonly class UpdateService implements UpdateServiceInterface
             $element->save();
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
+        }
+    }
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    private function updateEditableData(array $editableData, Concrete $element): void
+    {
+        try {
+            $class = $element->getClass();
+            $adapters = $this->editableAdapterLoader->loadAdapters();
+            foreach ($editableData as $key => $value) {
+                $fieldDefinition = $class->getFieldDefinition($key);
+                if ($fieldDefinition === null) {
+                    continue;
+                }
+
+                foreach ($adapters as $adapter) {
+                    $adapter->update($element, $fieldDefinition, $key, $editableData);
+                }
+            }
+
+        } catch (Exception $e) {
+            throw new ElementSavingFailedException($element->getId(), $e->getMessage());
         }
     }
 }

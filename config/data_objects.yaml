@@ -33,6 +33,13 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceService
 
   #
+  # Updaters
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Updater\Adapter\NumericAdapter:
+    tags: [ 'pimcore.studio_backend.editable.update_adapter' ]
+
+  #
   # Handler
   #
 
