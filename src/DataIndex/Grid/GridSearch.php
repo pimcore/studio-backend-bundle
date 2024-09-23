@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
@@ -39,7 +40,7 @@ final readonly class GridSearch implements GridSearchInterface
     }
 
     /**
-     * @throws NotFoundException|SearchException
+     * @throws NotFoundException|SearchException|InvalidArgumentException
      */
     public function searchAssets(GridParameter $gridParameter): AssetSearchResult
     {

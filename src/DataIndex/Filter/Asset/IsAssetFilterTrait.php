@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 
 /**
@@ -33,9 +33,9 @@ trait IsAssetFilterTrait
         return null;
     }
 
-    public function validateQueryType(mixed $query): ?AssetQuery
+    public function validateQueryType(mixed $query): ?AssetQueryInterface
     {
-        if ($query instanceof AssetQuery) {
+        if ($query instanceof AssetQueryInterface) {
             return $query;
         }
 

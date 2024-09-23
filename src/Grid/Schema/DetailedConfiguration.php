@@ -57,7 +57,10 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         #[Property(description: 'filter', type: 'array', items: new Items(ref: Filter::class))]
         private readonly array $filter,
         #[Property(description: 'Page Size', type: 'integer', example: 42)]
-        private readonly int $pageSize = 25
+        private readonly int $pageSize = 25,
+        private readonly ?int $modificationDate = null,
+        private readonly ?int $creationDate = null,
+        private readonly ?int $ownerId = null,
     ) {
     }
 
@@ -121,5 +124,20 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     public function getPageSize(): int
     {
         return $this->pageSize;
+    }
+
+    public function getModificationDate(): ?int
+    {
+        return $this->modificationDate;
+    }
+
+    public function getCreationDate(): ?int
+    {
+        return $this->creationDate;
+    }
+
+    public function getOwnerId(): ?int
+    {
+        return $this->ownerId;
     }
 }

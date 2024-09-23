@@ -19,24 +19,21 @@ namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 /**
  * @internal
  */
-final readonly class TagFilterParameter
+readonly class SimpleColumnFilter
 {
     public function __construct(
-        private array $tags,
-        private bool $considerChildTags
+        private string $type,
+        private mixed $filterValue,
     ) {
     }
 
-    /**
-     * @return array<int>
-     */
-    public function getTags(): array
+    public function getType(): string
     {
-        return $this->tags;
+        return $this->type;
     }
 
-    public function considerChildTags(): bool
+    public function getFilterValue(): mixed
     {
-        return $this->considerChildTags;
+        return $this->filterValue;
     }
 }

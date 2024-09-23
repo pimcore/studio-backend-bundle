@@ -14,23 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
+
+use Exception;
 
 /**
  * @internal
  */
-final readonly class ColumnFilter extends SimpleColumnFilter
+interface DataObjectQueryInterface extends QueryInterface
 {
-    public function __construct(
-        private string $key,
-        private string $type,
-        private mixed $filterValue,
-    ) {
-        parent::__construct($this->type, $this->filterValue);
-    }
-
-    public function getKey(): string
-    {
-        return $this->key;
-    }
+    /**
+     * @throws Exception
+     */
+    public function setClassDefinitionName(string $classDefinitionId): self;
 }
