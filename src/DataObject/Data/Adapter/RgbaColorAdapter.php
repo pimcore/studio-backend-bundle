@@ -16,53 +16,39 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Model\Asset\MetaData\ClassDefinition\Data\Select;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Checkbox;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Country;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Email;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Lastname;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Numeric;
-use Pimcore\Model\DataObject\ClassDefinition\Data\ResourcePersistenceAwareInterface;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Slider;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Time;
+use Pimcore\Model\DataObject\ClassDefinition\Data\RgbaColor;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Data\RgbaColor as RgbaColorData;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class BasicInputAdapter implements DataAdapterInterface
+final readonly class
+RgbaColorAdapter implements DataAdapterInterface
 {
+    /**
+     * @throws Exception
+     */
     public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
     {
         if (!array_key_exists($key, $data)) {
             return null;
         }
 
-        /** @var ResourcePersistenceAwareInterface $fieldDefinition */
-        return $fieldDefinition->getDataFromResource($data[$key], $element);
+        $colorData = trim($data[$key], '# ');
+        [$r, $g, $b, $a] = sscanf($colorData, '%02x%02x%02x%02x');
+
+        return new RgbaColorData($r, $g, $b, $a);
     }
 
     public function supports(string $fieldDefinitionClass): bool
     {
-        return in_array(
-            $fieldDefinitionClass,
-            [
-                Email::class,
-                Checkbox::class,
-                Country::class,
-                Input::class,
-                Lastname::class,
-                Numeric::class,
-                Select::class,
-                Slider::class,
-                Time::class
-            ]
-        );
+        return $fieldDefinitionClass === RgbaColor::class;
     }
 }
