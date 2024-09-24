@@ -32,6 +32,22 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceService
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Loader\TaggedIteratorDataAdapter
+
+  #
+  # Data Adapters
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BasicInputAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BooleanAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
   #
   # Updaters
   #

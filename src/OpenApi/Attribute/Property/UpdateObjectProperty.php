@@ -16,20 +16,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property;
 
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 
 /**
  * @internal
  */
-final class UpdateArrayProperty extends Property
+final class UpdateObjectProperty extends Property
 {
     public function __construct(string $propertyName)
     {
         parent::__construct(
             property: $propertyName,
-            type: 'array',
-            items: new Items(),
+            type: 'object',
+            example: '{ "someFieldKey": "someValue" }',
             nullable: true,
         );
     }

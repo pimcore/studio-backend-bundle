@@ -20,7 +20,7 @@ use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateArrayProperty;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateObjectProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateBooleanProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
@@ -49,7 +49,7 @@ final class UpdateDataObjectRequestBody extends RequestBody
                             new UpdateStringProperty('childrenSortBy'),
                             new UpdateStringProperty('childrenSortOrder'),
                             new UpdateBooleanProperty('published'),
-                            new UpdateArrayProperty('editableData'),
+                            new UpdateObjectProperty('editableData'),
                             new UpdateElementProperties(),
                         ],
                         type: 'object',

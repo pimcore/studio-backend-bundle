@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -39,7 +40,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
         private SecurityServiceInterface $securityService,
         private AdapterLoaderInterface $adapterLoader,
-        private EditableAdapterLoaderInterface $editableAdapterLoader,
+        private DataAdapterLoaderInterface $dataAdapterLoader,
         private ServiceResolver $serviceResolver
     ) {
     }
@@ -51,7 +52,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     {
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
-            $this->updateEditableData($data[self::EDITABLE_DATA_KEY], $element);
+            $this->updateEditableData($element, $data[self::EDITABLE_DATA_KEY]);
             unset($data[self::EDITABLE_DATA_KEY]);
         }
 
@@ -71,22 +72,19 @@ final readonly class UpdateService implements UpdateServiceInterface
     /**
      * @throws ElementSavingFailedException
      */
-    private function updateEditableData(array $editableData, Concrete $element): void
+    private function updateEditableData(Concrete $element, array $editableData): void
     {
         try {
             $class = $element->getClass();
-            $adapters = $this->editableAdapterLoader->loadAdapters();
             foreach ($editableData as $key => $value) {
                 $fieldDefinition = $class->getFieldDefinition($key);
                 if ($fieldDefinition === null) {
                     continue;
                 }
 
-                foreach ($adapters as $adapter) {
-                    if($adapter->update($element, $fieldDefinition, $key, $editableData)) {
-                        break;
-                    }
-                }
+                $adapter = $this->dataAdapterLoader->loadAdapter($fieldDefinition);
+                $data = $adapter->getDataFromResource($element, $fieldDefinition, $key, $editableData);
+                $element->setValue($key, $data);
             }
 
         } catch (Exception $e) {
