@@ -16,41 +16,36 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\Asset\MetaData\ClassDefinition\Data\Select;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Checkbox;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Country;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Email;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Firstname;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Lastname;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Numeric;
+use Pimcore\Model\DataObject\ClassDefinition\Data\ResourcePersistenceAwareInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Slider;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Time;
+use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
-#[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class BasicInputAdapter extends AbstractAdapter
+abstract class AbstractAdapter implements DataAdapterInterface
 {
-    public function supports(string $fieldDefinitionClass): bool
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
     {
-        return in_array(
-            $fieldDefinitionClass,
-            [
-                Email::class,
-                Checkbox::class,
-                Country::class,
-                Input::class,
-                Firstname::class,
-                Lastname::class,
-                Numeric::class,
-                Select::class,
-                Slider::class,
-                Time::class
-            ]
-        );
+        if (!array_key_exists($key, $data)) {
+            return null;
+        }
+
+        /** @var ResourcePersistenceAwareInterface $fieldDefinition */
+        return $fieldDefinition->getDataFromResource($data[$key], $element);
     }
+
+     abstract public function supports(string $fieldDefinitionClass): bool;
 }

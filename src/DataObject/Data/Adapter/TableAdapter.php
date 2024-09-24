@@ -17,20 +17,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\RgbaColor;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\DataObject\Data\RgbaColor as RgbaColorData;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class
-TableAdapter implements DataAdapterInterface
+final class TableAdapter extends AbstractAdapter
 {
     /**
      * @throws Exception

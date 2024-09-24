@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Link;
@@ -29,8 +28,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class
-LinkAdapter implements DataAdapterInterface
+final class LinkAdapter extends AbstractAdapter
 {
     /**
      * @throws Exception

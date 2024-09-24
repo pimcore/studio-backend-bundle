@@ -18,7 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\BooleanSelect;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Countrymultiselect;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Languagemultiselect;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Multiselect;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
@@ -26,23 +28,30 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class BooleanAdapter extends AbstractAdapter
+final class ArrayAdapter extends AbstractAdapter
 {
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?bool
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?array
     {
         if (!array_key_exists($key, $data)) {
             return null;
         }
 
-        return match((int) $data[$key]) {
-            1 => true,
-            -1 => false,
-            default => null,
-        };
+        if (!is_array($data[$key])) {
+            return null;
+        }
+
+        return $data[$key];
     }
 
     public function supports(string $fieldDefinitionClass): bool
     {
-        return $fieldDefinitionClass === BooleanSelect::class;
+        return  in_array(
+            $fieldDefinitionClass,
+            [
+                Countrymultiselect::class,
+                Languagemultiselect::class,
+                Multiselect::class,
+            ]
+        );
     }
 }

@@ -16,8 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
-use Exception;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\RgbaColor;
@@ -29,13 +27,9 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class
-RgbaColorAdapter implements DataAdapterInterface
+final class RgbaColorAdapter extends AbstractAdapter
 {
-    /**
-     * @throws Exception
-     */
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?RgbaColorData
     {
         if (!array_key_exists($key, $data)) {
             return null;
