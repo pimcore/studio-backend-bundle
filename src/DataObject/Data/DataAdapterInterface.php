@@ -21,7 +21,7 @@ use Pimcore\Model\DataObject\Concrete;
 
 interface DataAdapterInterface
 {
-    public function getDataFromResource(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed;
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed;
 
     public function supports(string $fieldDefinitionClass): bool;
 }

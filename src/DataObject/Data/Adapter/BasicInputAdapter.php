@@ -36,7 +36,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class BasicInputAdapter implements DataAdapterInterface
 {
-    public function getDataFromResource(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
     {
         if (!array_key_exists($key, $data)) {
             return null;

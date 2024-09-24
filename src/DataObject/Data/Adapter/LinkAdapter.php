@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInter
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Link;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Tool\Serialize;
+use Pimcore\Model\DataObject\Data\Link as LinkData;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -35,29 +35,20 @@ LinkAdapter implements DataAdapterInterface
     /**
      * @throws Exception
      */
-    public function getDataFromResource(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
     {
         if (!array_key_exists($key, $data)) {
             return null;
         }
 
-        $data = clone $data[$key];
-        $data->_setOwner(null);
-        $data->_setOwnerFieldname('');
-        $data->_setOwnerLanguage(null);
+        $link = new LinkData();
+        $link->setValues($data[$key]);
 
-        if ($data->getLinktype() === 'internal' && !$data->getPath()) {
-            $data->setLinktype(null);
-            $data->setInternalType(null);
-            if ($data->isEmpty()) {
-                return null;
-            }
+        if ($link->isEmpty()) {
+            return null;
         }
 
-        $params['resetInvalidFields'] = true;
-        $fieldDefinition->checkValidity($data, true, $params);
-
-        return Serialize::serialize($data);
+        return $link;
     }
 
     public function supports(string $fieldDefinitionClass): bool

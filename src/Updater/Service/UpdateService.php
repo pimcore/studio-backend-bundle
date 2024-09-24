@@ -83,7 +83,7 @@ final readonly class UpdateService implements UpdateServiceInterface
                 }
 
                 $adapter = $this->dataAdapterLoader->loadAdapter($fieldDefinition);
-                $data = $adapter->getDataFromResource($element, $fieldDefinition, $key, $editableData);
+                $data = $adapter->getDataForSetter($element, $fieldDefinition, $key, $editableData);
                 $element->setValue($key, $data);
             }
 
