@@ -151,8 +151,8 @@ services:
   # Column Collector
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\SystemFieldCollector:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\Asset\SystemFieldCollector:
     tags: [ 'pimcore.studio_backend.grid_column_collector' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\MetadataCollector:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\Asset\MetadataCollector:
     tags: [ 'pimcore.studio_backend.grid_column_collector' ]
