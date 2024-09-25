@@ -27,4 +27,9 @@ interface ColumnConfigurationServiceInterface
      * @return ColumnConfiguration[]
      */
     public function getAvailableAssetColumnConfiguration(): array;
+
+    /**
+     * @return ColumnConfiguration[]
+     */
+    public function getAvailableDataObjectColumnConfiguration(): array;
 }
