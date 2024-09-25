@@ -39,10 +39,25 @@ services:
   # Data Adapters
   #
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyObjectRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BasicInputAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BooleanAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CalculatedValueAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateRangeAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:

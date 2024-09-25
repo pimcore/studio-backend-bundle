@@ -16,25 +16,25 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\ResourcePersistenceAwareInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data\CalculatedValue;
 use Pimcore\Model\DataObject\Concrete;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
-abstract class AbstractAdapter implements DataAdapterInterface
+#[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
+final class CalculatedValueAdapter extends AbstractAdapter
 {
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): null
     {
-        if (!array_key_exists($key, $data)) {
-            return null;
-        }
-
-        /** @var ResourcePersistenceAwareInterface $fieldDefinition */
-        return $fieldDefinition->getDataFromResource($data[$key], $element);
+        return null;
     }
 
-     abstract public function supports(string $fieldDefinitionClass): bool;
+    public function supports(string $fieldDefinitionClass): bool
+    {
+        return $fieldDefinitionClass === CalculatedValue::class;
+    }
 }

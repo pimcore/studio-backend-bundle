@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -41,7 +42,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private SecurityServiceInterface $securityService,
         private AdapterLoaderInterface $adapterLoader,
         private DataAdapterLoaderInterface $dataAdapterLoader,
-        private ServiceResolver $serviceResolver
+        private ServiceResolverInterface $serviceResolver
     ) {
     }
 

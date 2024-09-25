@@ -22,6 +22,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Checkbox;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Country;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Email;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Firstname;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Gender;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Input;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Lastname;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Numeric;
@@ -45,6 +46,7 @@ final class BasicInputAdapter extends AbstractAdapter
                 Country::class,
                 Input::class,
                 Firstname::class,
+                Gender::class,
                 Lastname::class,
                 Numeric::class,
                 Select::class,
