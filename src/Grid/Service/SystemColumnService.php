@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\ColumnMapperInterface;
 use Pimcore\Model\Asset\Service;
+use Pimcore\Model\DataObject\Concrete;
 
 /**
  * @internal
@@ -32,6 +33,17 @@ final readonly class SystemColumnService implements SystemColumnServiceInterface
     public function getSystemColumnsForAssets(): array
     {
         $systemColumns = Service::GRID_SYSTEM_COLUMNS;
+        $columns = [];
+        foreach ($systemColumns as $column) {
+            $columns[$column] = $this->columnMapper->getType($column);
+        }
+
+        return $columns;
+    }
+
+    public function getSystemColumnsForDataObjects(): array
+    {
+        $systemColumns = Concrete::SYSTEM_COLUMN_NAMES;
         $columns = [];
         foreach ($systemColumns as $column) {
             $columns[$column] = $this->columnMapper->getType($column);

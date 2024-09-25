@@ -22,4 +22,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 interface SystemColumnServiceInterface
 {
     public function getSystemColumnsForAssets(): array;
+
+    public function getSystemColumnsForDataObjects(): array;
 }
