@@ -61,7 +61,7 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
         $search->addModifier(
             new RequiresFilter(
                 $element->getId(),
-                ElementType::tryFrom($elementParameters->getType())
+                ElementType::fromShortValue($elementParameters->getType())
             )
         );
 
@@ -86,7 +86,7 @@ final readonly class DependencyRepository implements DependencyRepositoryInterfa
         $search->addModifier(
             new RequiredByFilter(
                 $element->getId(),
-                ElementType::tryFrom($elementParameters->getType())
+                ElementType::fromShortValue($elementParameters->getType())
             )
         );
 
