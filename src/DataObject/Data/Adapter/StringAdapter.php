@@ -16,10 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
-use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DefaultSetterValueTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -28,30 +27,16 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class DateRangeAdapter implements SetterDataInterface
+final readonly class StringAdapter implements SetterDataInterface
 {
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?CarbonPeriod
+    use DefaultSetterValueTrait;
+
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?string
     {
-        if (!array_key_exists($key, $data)) {
+        if ($data[$key] === '') {
             return null;
         }
 
-        $dateData = $data[$key];
-        if (is_array($dateData) && isset($dateData['start_date'], $dateData['end_date'])) {
-            $startDate = $this->getDateFromTimestamp($data['start_date'] / 1000);
-            $endDate = $this->getDateFromTimestamp($data['end_date'] / 1000);
-
-            return CarbonPeriod::create($startDate, $endDate);
-        }
-
-        return null;
-    }
-
-    private function getDateFromTimestamp(float|int|string $timestamp): Carbon
-    {
-        $date = new Carbon();
-        $date->setTimestamp($timestamp);
-
-        return $date;
+        return $this->getDefaultDataForSetter($element, $fieldDefinition, $key, $data);
     }
 }

@@ -57,6 +57,56 @@ pimcore_studio_backend:
             document: ['content', 'seo', 'warning', 'notice']
             data-object: ['content', 'seo', 'warning', 'notice']
 
+    data_object_data_adapter_mapping:
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyRelationAdapter:
+            - "advancedManyToManyRelation"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyObjectRelationAdapter:
+            - "advancedManyToManyObjectRelation"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BooleanAdapter:
+            - "booleanSelect"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CalculatedValueAdapter:
+            - "calculatedValue"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CheckboxAdapter:
+            - "checkbox"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateAdapter:
+            - "date"
+            - "datetime"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateRangeAdapter:
+            - "dateRange"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:
+            - "link"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\MultiSelectAdapter:
+            - "countrymultiselect"
+            - "languagemultiselect"
+            - "multiselect"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericAdapter:
+            - "numeric"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\RgbaColorAdapter:
+            - "rgbaColor"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SelectAdapter:
+            - "country"
+            - "gender"
+            - "language"
+            - "select"
+            - "user"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SliderAdapter:
+            - "slider"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StringAdapter:
+            - "email"
+            - "firstname"
+            - "input"
+            - "lastname"
+            - "password"
+            - "textarea"
+            - "time"
+            - "wysiwyg"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StructuredTableAdapter:
+            - "structuredTable"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\TableAdapter:
+            - "table"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
+            - "urlSlug"
+
 mercure:
     hubs:
         studio_server:

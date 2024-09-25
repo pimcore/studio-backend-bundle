@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\CalculatedValue;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
@@ -26,15 +26,10 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class CalculatedValueAdapter extends AbstractAdapter
+final readonly class CalculatedValueAdapter implements SetterDataInterface
 {
     public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): null
     {
         return null;
-    }
-
-    public function supports(string $fieldDefinitionClass): bool
-    {
-        return $fieldDefinitionClass === CalculatedValue::class;
     }
 }

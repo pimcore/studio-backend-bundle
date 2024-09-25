@@ -55,6 +55,7 @@ class Configuration implements ConfigurationInterface
         $this->addCsvSettings($rootNode);
         $this->addGridConfiguration($rootNode);
         $this->addNoteTypes($rootNode);
+        $this->addDataObjectAdapterMapping($rootNode);
 
         return $treeBuilder;
     }
@@ -261,5 +262,18 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ->end();
+    }
+
+
+    private function addDataObjectAdapterMapping(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('data_object_data_adapter_mapping')
+                ->useAttributeAsKey('class')
+                ->arrayPrototype()
+                    ->scalarPrototype()
+                    ->end()
+                ->end()
+            ->end();
     }
 }

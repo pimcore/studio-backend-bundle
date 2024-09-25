@@ -32,6 +32,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceService
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterService
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Loader\TaggedIteratorDataAdapter
 
@@ -45,13 +48,13 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyRelationAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BasicInputAdapter:
-    tags: [ 'pimcore.studio_backend.data_adapter' ]
-
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BooleanAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CalculatedValueAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CheckboxAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateAdapter:
@@ -66,7 +69,19 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\MultiSelectAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\RgbaColorAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SelectAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SliderAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StringAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StructuredTableAdapter:
@@ -77,13 +92,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
-
-  #
-  # Updaters
-  #
-
-  Pimcore\Bundle\StudioBackendBundle\DataObject\Updater\Adapter\InputAdapter:
-    tags: [ 'pimcore.studio_backend.editable.update_adapter' ]
 
   #
   # Handler

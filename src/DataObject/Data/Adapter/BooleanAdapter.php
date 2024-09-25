@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\BooleanSelect;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
@@ -26,7 +26,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class BooleanAdapter extends AbstractAdapter
+final readonly class BooleanAdapter implements SetterDataInterface
 {
     public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?bool
     {
@@ -39,10 +39,5 @@ final class BooleanAdapter extends AbstractAdapter
             -1 => false,
             default => null,
         };
-    }
-
-    public function supports(string $fieldDefinitionClass): bool
-    {
-        return $fieldDefinitionClass === BooleanSelect::class;
     }
 }

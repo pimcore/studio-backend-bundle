@@ -17,9 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Link as LinkDefinition;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Link;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -28,7 +28,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class LinkAdapter extends AbstractAdapter
+final readonly class LinkAdapter implements SetterDataInterface
 {
     /**
      * @throws Exception
@@ -47,10 +47,5 @@ final class LinkAdapter extends AbstractAdapter
         }
 
         return $link;
-    }
-
-    public function supports(string $fieldDefinitionClass): bool
-    {
-        return $fieldDefinitionClass === LinkDefinition::class;
     }
 }

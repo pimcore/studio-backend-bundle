@@ -17,9 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\UrlSlug as UrlSlugDefinition;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\UrlSlug;
 use Pimcore\Model\Site;
@@ -29,7 +29,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class UrlSlugAdapter extends AbstractAdapter
+final readonly class UrlSlugAdapter implements SetterDataInterface
 {
     /**
      * @throws Exception
@@ -59,11 +59,6 @@ final class UrlSlugAdapter extends AbstractAdapter
         }
 
         return $result;
-    }
-
-    public function supports(string $fieldDefinitionClass): bool
-    {
-        return $fieldDefinitionClass === UrlSlugDefinition::class;
     }
 
     /**

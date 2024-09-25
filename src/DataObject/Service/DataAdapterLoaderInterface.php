@@ -16,9 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Model\DataObject\ClassDefinition\Data;
 
 /**
  * @internal
@@ -30,5 +29,5 @@ interface DataAdapterLoaderInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function loadAdapter(Data $fieldDefinition): DataAdapterInterface;
+    public function loadAdapter(string $adapterClass): SetterDataInterface;
 }

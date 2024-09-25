@@ -17,9 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\RgbaColor;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
@@ -27,7 +27,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class TableAdapter extends AbstractAdapter
+final readonly class TableAdapter implements SetterDataInterface
 {
     /**
      * @throws Exception
@@ -45,11 +45,6 @@ final class TableAdapter extends AbstractAdapter
         }
 
         return $this->getCombinedData($tableData);
-    }
-
-    public function supports(string $fieldDefinitionClass): bool
-    {
-        return $fieldDefinitionClass === RgbaColor::class;
     }
 
     private function getCombinedData(array $tableData): ?array

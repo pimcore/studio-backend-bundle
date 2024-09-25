@@ -17,9 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Loader;
 
 use InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 /**
@@ -36,19 +35,18 @@ final readonly class TaggedIteratorDataAdapter implements DataAdapterLoaderInter
     /**
      * @throws InvalidArgumentException
      */
-    public function loadAdapter(Data $fieldDefinition): DataAdapterInterface
+    public function loadAdapter(string $adapterClass): SetterDataInterface
     {
         $adapters = [...$this->taggedAdapter];
-        $fieldDefinitionClass = get_class($fieldDefinition);
-        /** @var DataAdapterInterface $adapter */
+        /** @var SetterDataInterface $adapter */
         foreach ($adapters as $adapter) {
-            if ($adapter->supports($fieldDefinitionClass)) {
+            if (get_class($adapter) === $adapterClass) {
                 return $adapter;
             }
         }
 
         throw new InvalidArgumentException(
-            sprintf('No adapter found for field definition of type "%s"', $fieldDefinitionClass)
+            sprintf('No adapter found for the class "%s"', $adapterClass)
         );
     }
 }

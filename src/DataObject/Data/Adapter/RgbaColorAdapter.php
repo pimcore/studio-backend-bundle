@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\RgbaColor as RgbaColorDefinition;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\RgbaColor;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -27,7 +27,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class RgbaColorAdapter extends AbstractAdapter
+final readonly class RgbaColorAdapter implements SetterDataInterface
 {
     public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?RgbaColor
     {
@@ -39,10 +39,5 @@ final class RgbaColorAdapter extends AbstractAdapter
         [$r, $g, $b, $a] = sscanf($colorData, '%02x%02x%02x%02x');
 
         return new RgbaColor($r, $g, $b, $a);
-    }
-
-    public function supports(string $fieldDefinitionClass): bool
-    {
-        return $fieldDefinitionClass === RgbaColorDefinition::class;
     }
 }

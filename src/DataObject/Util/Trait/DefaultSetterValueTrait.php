@@ -14,9 +14,8 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait;
 
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataAdapterInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ResourcePersistenceAwareInterface;
 use Pimcore\Model\DataObject\Concrete;
@@ -24,9 +23,9 @@ use Pimcore\Model\DataObject\Concrete;
 /**
  * @internal
  */
-abstract class AbstractAdapter implements DataAdapterInterface
+trait DefaultSetterValueTrait
 {
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
+    public function getDefaultDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
     {
         if (!array_key_exists($key, $data)) {
             return null;
@@ -35,6 +34,4 @@ abstract class AbstractAdapter implements DataAdapterInterface
         /** @var ResourcePersistenceAwareInterface $fieldDefinition */
         return $fieldDefinition->getDataFromResource($data[$key], $element);
     }
-
-     abstract public function supports(string $fieldDefinitionClass): bool;
 }

@@ -18,15 +18,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolver;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\Concrete;
-use function Symfony\Component\String\s;
 
 /**
  * @internal
@@ -38,11 +37,12 @@ final readonly class UpdateService implements UpdateServiceInterface
     private const EDITABLE_DATA_KEY = 'editableData';
 
     public function __construct(
-        private SynchronousProcessingServiceInterface $synchronousProcessingService,
-        private SecurityServiceInterface $securityService,
         private AdapterLoaderInterface $adapterLoader,
         private DataAdapterLoaderInterface $dataAdapterLoader,
-        private ServiceResolverInterface $serviceResolver
+        private DataAdapterServiceInterface $dataAdapterService,
+        private SecurityServiceInterface $securityService,
+        private ServiceResolverInterface $serviceResolver,
+        private SynchronousProcessingServiceInterface $synchronousProcessingService
     ) {
     }
 
@@ -83,7 +83,9 @@ final readonly class UpdateService implements UpdateServiceInterface
                     continue;
                 }
 
-                $adapter = $this->dataAdapterLoader->loadAdapter($fieldDefinition);
+                $adapter = $this->dataAdapterLoader->loadAdapter(
+                    $this->dataAdapterService->getFieldDefinitionAdapterClass($fieldDefinition->getFieldType())
+                );
                 $data = $adapter->getDataForSetter($element, $fieldDefinition, $key, $editableData);
                 $element->setValue($key, $data);
             }

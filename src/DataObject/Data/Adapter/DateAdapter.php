@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Carbon\Carbon;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Date;
@@ -28,7 +29,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class DateAdapter extends AbstractAdapter
+final readonly class DateAdapter implements SetterDataInterface
 {
     public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?Carbon
     {
@@ -47,10 +48,5 @@ final class DateAdapter extends AbstractAdapter
         }
 
         return null;
-    }
-
-    public function supports(string $fieldDefinitionClass): bool
-    {
-        return in_array($fieldDefinitionClass, [Date::class, Datetime::class]);
     }
 }

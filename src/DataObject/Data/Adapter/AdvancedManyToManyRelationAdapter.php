@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -31,12 +32,12 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class AdvancedManyToManyRelationAdapter extends AbstractAdapter
+final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInterface
 {
     use ElementProviderTrait;
 
     public function __construct(
-        private readonly ServiceResolverInterface $serviceResolver
+        private ServiceResolverInterface $serviceResolver
     )
     {
     }
@@ -56,11 +57,6 @@ final class AdvancedManyToManyRelationAdapter extends AbstractAdapter
         }
 
         return $this->buildRelationsMetadata($relationData, $fieldDefinition);
-    }
-
-    public function supports(string $fieldDefinitionClass): bool
-    {
-        return $fieldDefinitionClass === AdvancedManyToManyRelation::class;
     }
 
     /**

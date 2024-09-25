@@ -19,9 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 
-interface DataAdapterInterface
+interface SetterDataInterface
 {
     public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed;
-
-    public function supports(string $fieldDefinitionClass): bool;
 }

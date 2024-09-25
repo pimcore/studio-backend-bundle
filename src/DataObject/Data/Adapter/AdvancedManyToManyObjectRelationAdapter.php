@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
@@ -28,10 +29,10 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class AdvancedManyToManyObjectRelationAdapter extends AbstractAdapter
+final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDataInterface
 {
     public function __construct(
-        private readonly ConcreteObjectResolverInterface $concreteObjectResolver
+        private ConcreteObjectResolverInterface $concreteObjectResolver
     )
     {
     }
@@ -48,11 +49,6 @@ final class AdvancedManyToManyObjectRelationAdapter extends AbstractAdapter
         }
 
         return $this->buildRelationsMetadata($relationData, $fieldDefinition);
-    }
-
-    public function supports(string $fieldDefinitionClass): bool
-    {
-        return $fieldDefinitionClass === AdvancedManyToManyObjectRelation::class;
     }
 
     private function buildRelationsMetadata(array $relationData, Data $fieldDefinition): array

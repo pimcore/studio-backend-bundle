@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
-use Exception;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\StructuredTable as StructuredTableDefinition;
@@ -28,7 +28,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class StructuredTableAdapter extends AbstractAdapter
+final readonly class StructuredTableAdapter implements SetterDataInterface
 {
     public function getDataForSetter(
         Concrete $element, Data $fieldDefinition, string $key, array $data
@@ -50,10 +50,5 @@ final class StructuredTableAdapter extends AbstractAdapter
         $table->setData($tableData);
 
         return $table;
-    }
-
-    public function supports(string $fieldDefinitionClass): bool
-    {
-        return $fieldDefinitionClass === StructuredTableDefinition::class;
     }
 }
