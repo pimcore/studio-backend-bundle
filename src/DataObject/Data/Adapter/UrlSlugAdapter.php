@@ -19,52 +19,62 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\RgbaColor;
+use Pimcore\Model\DataObject\ClassDefinition\Data\UrlSlug as UrlSlugDefinition;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Data\UrlSlug;
+use Pimcore\Model\Site;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class TableAdapter extends AbstractAdapter
+final class UrlSlugAdapter extends AbstractAdapter
 {
     /**
      * @throws Exception
      */
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?array
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): array
     {
         if (!array_key_exists($key, $data)) {
-            return null;
+            return [];
         }
 
-        $tableData = $data[$key];
+        $urlData = $data[$key];
+        if (!is_array($urlData)) {
+            return [];
+        }
+        $result = [];
+        foreach ($urlData as $slug) {
+            if ($slug instanceof UrlSlug) {
+                $siteId = $slug->getSiteId();
+                $resultItem = [
+                    'slug' => $slug->getSlug(),
+                    'siteId' => $siteId,
+                    'domain' => $this->getDomain($siteId),
+                ];
 
-        if (!is_array($tableData)) {
-            return $tableData;
+                $result[$siteId] = $resultItem;
+            }
         }
 
-        return $this->getCombinedData($tableData);
+        return $result;
     }
 
     public function supports(string $fieldDefinitionClass): bool
     {
-        return $fieldDefinitionClass === RgbaColor::class;
+        return $fieldDefinitionClass === UrlSlugDefinition::class;
     }
 
-    private function getCombinedData(array $tableData): ?array
+    /**
+     * @throws Exception
+     */
+    private function getDomain(?int $siteId): ?string
     {
-        $combinedData = '';
-        foreach ($tableData as $row) {
-            if (is_array($row)) {
-                $combinedData .= implode('', $row);
-            }
-        }
-
-        if (trim($combinedData) === '') {
+        if ($siteId === null) {
             return null;
         }
 
-        return $tableData;
+        return Site::getById($siteId)?->getMainDomain();
     }
 }

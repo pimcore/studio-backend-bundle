@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\RgbaColor;
+use Pimcore\Model\DataObject\ClassDefinition\Data\RgbaColor as RgbaColorDefinition;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\DataObject\Data\RgbaColor as RgbaColorData;
+use Pimcore\Model\DataObject\Data\RgbaColor;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -29,7 +29,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final class RgbaColorAdapter extends AbstractAdapter
 {
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?RgbaColorData
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?RgbaColor
     {
         if (!array_key_exists($key, $data)) {
             return null;
@@ -38,11 +38,11 @@ final class RgbaColorAdapter extends AbstractAdapter
         $colorData = trim($data[$key], '# ');
         [$r, $g, $b, $a] = sscanf($colorData, '%02x%02x%02x%02x');
 
-        return new RgbaColorData($r, $g, $b, $a);
+        return new RgbaColor($r, $g, $b, $a);
     }
 
     public function supports(string $fieldDefinitionClass): bool
     {
-        return $fieldDefinitionClass === RgbaColor::class;
+        return $fieldDefinitionClass === RgbaColorDefinition::class;
     }
 }

@@ -28,7 +28,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final class ArrayAdapter extends AbstractAdapter
+final class MultiSelectAdapter extends AbstractAdapter
 {
     public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?array
     {

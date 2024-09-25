@@ -48,6 +48,21 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\MultiSelectAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\RgbaColorAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StructuredTableAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\TableAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
   #
   # Updaters
   #

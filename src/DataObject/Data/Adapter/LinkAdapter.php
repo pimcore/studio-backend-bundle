@@ -19,9 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Link;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Link as LinkDefinition;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\DataObject\Data\Link as LinkData;
+use Pimcore\Model\DataObject\Data\Link;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -33,13 +33,13 @@ final class LinkAdapter extends AbstractAdapter
     /**
      * @throws Exception
      */
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
+    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?Link
     {
         if (!array_key_exists($key, $data)) {
             return null;
         }
 
-        $link = new LinkData();
+        $link = new Link();
         $link->setValues($data[$key]);
 
         if ($link->isEmpty()) {
@@ -51,6 +51,6 @@ final class LinkAdapter extends AbstractAdapter
 
     public function supports(string $fieldDefinitionClass): bool
     {
-        return $fieldDefinitionClass === Link::class;
+        return $fieldDefinitionClass === LinkDefinition::class;
     }
 }

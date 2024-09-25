@@ -19,9 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\StructuredTable;
+use Pimcore\Model\DataObject\ClassDefinition\Data\StructuredTable as StructuredTableDefinition;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\DataObject\Data\StructuredTable as StructuredTableData;
+use Pimcore\Model\DataObject\Data\StructuredTable;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -30,21 +30,18 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final class StructuredTableAdapter extends AbstractAdapter
 {
-    /**
-     * @throws Exception
-     */
     public function getDataForSetter(
         Concrete $element, Data $fieldDefinition, string $key, array $data
-    ): ?StructuredTableData
+    ): ?StructuredTable
     {
         if (!array_key_exists($key, $data)) {
             return null;
         }
 
-        $table = new StructuredTableData();
+        $table = new StructuredTable();
         $tableData = [];
         foreach ($data[$key] as $dataLine) {
-            /** @var StructuredTable $fieldDefinition */
+            /** @var StructuredTableDefinition $fieldDefinition */
             $cols = $fieldDefinition->getCols();
             foreach ($cols as $col) {
                 $tableData[$dataLine['__row_identifyer']][$col['key']] = $dataLine[$col['key']];
@@ -57,6 +54,6 @@ final class StructuredTableAdapter extends AbstractAdapter
 
     public function supports(string $fieldDefinitionClass): bool
     {
-        return $fieldDefinitionClass === StructuredTable::class;
+        return $fieldDefinitionClass === StructuredTableDefinition::class;
     }
 }
