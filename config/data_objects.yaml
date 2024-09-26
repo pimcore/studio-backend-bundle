@@ -117,6 +117,14 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\QuantityValueAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\InputQuantityValueAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\QuantityValueRangeAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
   #
   # Handler
   #

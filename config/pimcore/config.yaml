@@ -123,6 +123,12 @@ pimcore_studio_backend:
             - "table"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
             - "urlSlug"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\QuantityValueAdapter:
+            - "quantityValue"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\InputQuantityValueAdapter:
+            - "inputQuantityValue"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\QuantityValueRangeAdapter:
+            - "quantityValueRange"
 
 mercure:
     hubs:
