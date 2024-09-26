@@ -140,6 +140,8 @@ pimcore_studio_backend:
             - "video"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ConsentAdapter:
             - "consent"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\EncryptedFieldAdapter:
+            - "encryptedField"
 
 mercure:
     hubs:
