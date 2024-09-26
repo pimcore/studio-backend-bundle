@@ -94,7 +94,6 @@ pimcore_studio_backend:
             - "manyToManyRelation"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyObjectRelationAdapter:
             - "manyToManyObjectRelation"
-            - "reverseObjectRelation"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToOneRelationAdapter:
             - "manyToOneRelation"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\MultiSelectAdapter:
@@ -105,6 +104,8 @@ pimcore_studio_backend:
             - "numeric"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericRangeAdapter:
             - "numericRange"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter:
+            - "reverseObjectRelation"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\RgbaColorAdapter:
             - "rgbaColor"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SelectAdapter:
