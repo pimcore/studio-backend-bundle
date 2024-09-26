@@ -14,12 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Updater\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
-use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
-interface EditableUpdateAdapterInterface
+/**
+ * @internal
+ */
+interface DataAdapterServiceInterface
 {
-    public function update(Concrete $element, Data $fieldDefinition, string $key, array $data): bool;
+    public function getAdaptersMapping(): array;
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function getFieldDefinitionAdapterClass(string $fieldDefinitionType): string;
 }

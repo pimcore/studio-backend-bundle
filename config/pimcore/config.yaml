@@ -73,6 +73,21 @@ pimcore_studio_backend:
             - "datetime"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateRangeAdapter:
             - "dateRange"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\GeoBoundsAdapter:
+            - "geobounds"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\GeoPointAdapter:
+            - "geopoint"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\GeoPointsAdapter:
+            - "geopolygon"
+            - "geopolyline"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ExternalImageAdapter:
+            - "externalImage"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\HotspotImageAdapter:
+            - "hotspotimage"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ImageAdapter:
+            - "image"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ImageGalleryAdapter:
+            - "imageGallery"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:
             - "link"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\MultiSelectAdapter:
@@ -81,6 +96,8 @@ pimcore_studio_backend:
             - "multiselect"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericAdapter:
             - "numeric"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericRangeAdapter:
+            - "numericRange"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\RgbaColorAdapter:
             - "rgbaColor"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SelectAdapter:
