@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\EncryptedField;
@@ -29,24 +30,28 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class EncryptedFieldAdapter implements SetterDataInterface
 {
-    public function getDataForSetter(
+    public function __construct(
+        private DataAdapterServiceInterface $dataAdapterService,
+        private DataAdapterLoaderInterface $dataAdapterLoader,
+    ){}    public function getDataForSetter(
         Concrete $element,
         Data $fieldDefinition,
         string $key,
         array $data
     ): ?EncryptedField
     {
-        $value = $data[$key];
-
         if(!($fieldDefinition instanceof Data\EncryptedField)) {
             return null;
         }
 
-        $fd = $fieldDefinition->getDelegateDatatypeDefinition();
-        if(!$fd) {
+        $delegateFieldDefinition = $fieldDefinition->getDelegateDatatypeDefinition();
+        if(!$delegateFieldDefinition) {
             return null;
         }
-        $result = $fd->getDataFromEditmode($value, $element);
+        $adapter = $this->dataAdapterLoader->loadAdapter(
+            $this->dataAdapterService->getFieldDefinitionAdapterClass($delegateFieldDefinition->getFieldType())
+        );
+        $result = $adapter->getDataForSetter($element, $delegateFieldDefinition, $key, $data);
 
         return new EncryptedField($fieldDefinition->getDelegate(), $result);
     }
