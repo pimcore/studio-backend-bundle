@@ -36,7 +36,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 
     public function getCollectorName(): string
     {
-        return 'system';
+        return $this->getTypeName(). '.asset';
     }
 
     /**
@@ -56,7 +56,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 
             $column = new ColumnConfiguration(
                 key: $columnKey,
-                group: $this->getCollectorName(),
+                group: $this->getTypeName(),
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
                 editable: false,
                 localizable: false,
@@ -84,7 +84,12 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 
     private function concatType(string $type): string
     {
-        return $this->getCollectorName() . '.' . $type;
+        return $this->getTypeName() . '.' . $type;
+    }
+
+    private function getTypeName(): string
+    {
+        return 'system';
     }
 
     private function getCustomFrontendAdapter(string $columnKey, string $defaultAdapter): string
