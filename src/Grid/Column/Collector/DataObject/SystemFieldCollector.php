@@ -35,7 +35,7 @@ final class SystemFieldCollector implements ColumnCollectorInterface
 
     public function getCollectorName(): string
     {
-        return 'system';
+        return 'system.dataobject';
     }
 
     /**
@@ -55,7 +55,7 @@ final class SystemFieldCollector implements ColumnCollectorInterface
 
             $column = new ColumnConfiguration(
                 key: $columnKey,
-                group: $this->getCollectorName(),
+                group: 'system',
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
                 editable: false,
                 localizable: false,
@@ -80,6 +80,6 @@ final class SystemFieldCollector implements ColumnCollectorInterface
 
     private function concatType(string $type): string
     {
-        return $this->getCollectorName() . '.' . $type;
+        return 'system.' . $type;
     }
 }
