@@ -87,6 +87,15 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyObjectRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToOneRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\MultiSelectAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
@@ -115,6 +124,9 @@ services:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\VideoAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   #

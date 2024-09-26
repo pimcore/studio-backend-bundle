@@ -90,6 +90,13 @@ pimcore_studio_backend:
             - "imageGallery"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:
             - "link"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyRelationAdapter:
+            - "manyToManyRelation"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyObjectRelationAdapter:
+            - "manyToManyObjectRelation"
+            - "reverseObjectRelation"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToOneRelationAdapter:
+            - "manyToOneRelation"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\MultiSelectAdapter:
             - "countrymultiselect"
             - "languagemultiselect"
@@ -123,6 +130,8 @@ pimcore_studio_backend:
             - "table"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
             - "urlSlug"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\VideoAdapter:
+            - "video"
 
 mercure:
     hubs:
