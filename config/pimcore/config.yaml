@@ -138,6 +138,8 @@ pimcore_studio_backend:
             - "quantityValueRange"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\VideoAdapter:
             - "video"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ConsentAdapter:
+            - "consent"
 
 mercure:
     hubs:

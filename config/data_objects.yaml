@@ -137,6 +137,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\QuantityValueRangeAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ConsentAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
   #
   # Handler
   #
