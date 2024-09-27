@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use function in_array;
 
 /**
  * @internal
