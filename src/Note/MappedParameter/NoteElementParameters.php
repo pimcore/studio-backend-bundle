@@ -16,6 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use function in_array;
+
 /**
  * @internal
  */
@@ -26,15 +30,30 @@ final readonly class NoteElementParameters
         private ?int $id = null,
 
     ) {
+        $this->validate();
     }
 
     public function getType(): ?string
     {
+        if ($this->type === ElementTypes::TYPE_DATA_OBJECT) {
+            return ElementTypes::TYPE_OBJECT;
+        }
+
         return $this->type;
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    private function validate(): void
+    {
+        if (!in_array($this->type, ElementTypes::ALLOWED_TYPES, true)) {
+            throw new InvalidElementTypeException($this->type);
+        }
     }
 }

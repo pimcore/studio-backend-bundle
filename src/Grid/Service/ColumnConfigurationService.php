@@ -53,13 +53,43 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
             ];
         }
 
+        $this->dispatchEventForAllColumns($columns);
+
+        return $columns;
+    }
+
+    public function getAvailableDataObjectColumnConfiguration(): array
+    {
+        $columns = [];
+        foreach ($this->gridService->getColumnCollectors() as $collector) {
+            // Only collect supported data object collectors
+            if (!in_array(ElementTypes::TYPE_DATA_OBJECT, $collector->supportedElementTypes(), true)) {
+                continue;
+            }
+
+            // rather use the spread operator instead of array_merge in a loop
+            $columns = [
+                ...$columns,
+                ...$collector->getColumnConfigurations($this->gridService->getColumnDefinitions()),
+            ];
+        }
+
+        $this->dispatchEventForAllColumns($columns);
+
+        return $columns;
+
+    }
+
+    /**
+     * @param ColumnConfiguration[] $columns
+     */
+    private function dispatchEventForAllColumns(array $columns): void
+    {
         foreach ($columns as $column) {
             $this->eventDispatcher->dispatch(
                 new GridColumnConfigurationEvent($column),
                 GridColumnConfigurationEvent::EVENT_NAME
             );
         }
-
-        return $columns;
     }
 }

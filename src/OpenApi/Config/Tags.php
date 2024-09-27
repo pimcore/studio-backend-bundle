@@ -42,6 +42,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_dataobjects_description'
 )]
 #[Tag(
+    name: Tags::DataObjectsGrid->value,
+    description: 'tag_dataobject_grid_description'
+)]
+#[Tag(
     name: Tags::Dependencies->value,
     description: 'tag_dependencies_description'
 )]
@@ -116,6 +120,7 @@ enum Tags: string
     case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';
     case DataObjects = 'Data Objects';
+    case DataObjectsGrid = 'Data Object Grid';
     case Dependencies = 'Dependencies';
     case Elements = 'Elements';
     case ExecutionEngine = 'Execution Engine';

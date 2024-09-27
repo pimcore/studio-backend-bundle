@@ -381,7 +381,7 @@ system_settings_get_success_response: System settings data
 system_settings_get_summary: Get system settings
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
-tag_asset_grid_description: Asset Grid operations
+data: Asset Grid operations
 tag_assign_to_element_description: |
   Assign a specific tag based on the given <strong>{tagId}</strong> to an element based on <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
@@ -405,6 +405,7 @@ tag_create_success_response: Created tag data as JSON
 tag_create_summary: Create a new tag
 tag_dataobjects_description: DataObject operations to get/update/create/delete data
   objects
+tag_dataobject_grid_description: DataObject Grid operations
 tag_delete_by_id_description: |
   Delete a specific tag based on the given <strong>{id}</strong>
 tag_delete_by_id_success_response: ID of successfully deleted tag
@@ -551,3 +552,7 @@ asset_get_saved_grid_configurations_summary: Get all saved grid configurations f
 user_get_collection_summary: Get all users
 user_get_collection_description: Get all users with basic information
 user_get_collection_success_response: List of users
+data_object_get_available_grid_columns_description: |
+    Get all available grid columns for data objects
+data_object_get_available_grid_columns_summary: Get all available grid columns for data objects
+data_object_get_available_grid_columns_success_response: List of available grid columns for data objects

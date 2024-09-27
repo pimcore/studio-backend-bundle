@@ -14,11 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -27,7 +26,7 @@ use function array_key_exists;
 /**
  * @internal
  */
-final readonly class SystemFieldCollector implements ColumnCollectorInterface
+final class SystemFieldCollector implements ColumnCollectorInterface
 {
     public function __construct(
         private SystemColumnServiceInterface $systemColumnService,
@@ -36,7 +35,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 
     public function getCollectorName(): string
     {
-        return 'system';
+        return $this->getTypeName() . '.dataobject';
     }
 
     /**
@@ -46,7 +45,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
      */
     public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
-        $systemColumns = $this->systemColumnService->getSystemColumnsForAssets();
+        $systemColumns = $this->systemColumnService->getSystemColumnsForDataObjects();
         $columns = [];
         foreach ($systemColumns as $columnKey => $type) {
             $type = $this->concatType($type);
@@ -56,16 +55,13 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
 
             $column = new ColumnConfiguration(
                 key: $columnKey,
-                group: $this->getCollectorName(),
+                group: $this->getTypeName(),
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
                 editable: false,
                 localizable: false,
                 locale: null,
                 type: $availableColumnDefinitions[$type]->getType(),
-                frontendType: $this->getCustomFrontendAdapter(
-                    $columnKey,
-                    $availableColumnDefinitions[$type]->getFrontendType()
-                ),
+                frontendType: $availableColumnDefinitions[$type]->getFrontendType(),
                 config: []
             );
 
@@ -78,26 +74,17 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
     public function supportedElementTypes(): array
     {
         return [
-            ElementTypes::TYPE_ASSET,
+            ElementTypes::TYPE_DATA_OBJECT,
         ];
     }
 
     private function concatType(string $type): string
     {
-        return $this->getCollectorName() . '.' . $type;
+        return $this->getTypeName() . '.' . $type;
     }
 
-    private function getCustomFrontendAdapter(string $columnKey, string $defaultAdapter): string
+    private function getTypeName(): string
     {
-        $customFrontendAdapters = [
-            'fullpath' => FrontendType::ASSET_LINK->value,
-            'preview' => FrontendType::ASSET_PREVIEW->value,
-        ];
-
-        if (array_key_exists($columnKey, $customFrontendAdapters)) {
-            return $customFrontendAdapters[$columnKey];
-        }
-
-        return $defaultAdapter;
+        return 'system';
     }
 }

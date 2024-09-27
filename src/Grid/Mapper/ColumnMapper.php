@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Mapper;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use function array_key_exists;
+use function sprintf;
 
 /**
  * @internal
@@ -33,12 +34,16 @@ final readonly class ColumnMapper implements ColumnMapperInterface
         'creationDate' => 'datetime',
         'modificationDate' => 'datetime',
         'size' => 'fileSize',
+        'key' => 'string',
+        'published' => 'boolean',
+        'classname' => 'string',
+        'index' => 'integer',
     ];
 
     public function getType(string $column): string
     {
         if (!array_key_exists($column, self::COLUMN_MAPPING)) {
-            throw new InvalidArgumentException('Column not found');
+            throw new InvalidArgumentException(sprintf('Column "%s" not supported.', $column));
         }
 
         return self::COLUMN_MAPPING[$column];
