@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -33,11 +34,14 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private DataAdapterLoaderInterface $dataAdapterLoader,
-    ){}    public function getDataForSetter(
+    ){}
+
+    public function getDataForSetter(
         Concrete $element,
         Data $fieldDefinition,
         string $key,
-        array $data
+        array $data,
+        ?FieldContextData $contextData = null
     ): ?EncryptedField
     {
         if(!($fieldDefinition instanceof Data\EncryptedField)) {
@@ -48,9 +52,7 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface
         if(!$delegateFieldDefinition) {
             return null;
         }
-        $adapter = $this->dataAdapterLoader->loadAdapter(
-            $this->dataAdapterService->getFieldDefinitionAdapterClass($delegateFieldDefinition->getFieldType())
-        );
+        $adapter = $this->dataAdapterService->getDataAdapter($fieldDefinition->getFieldType());
         $result = $adapter->getDataForSetter($element, $delegateFieldDefinition, $key, $data);
 
         return new EncryptedField($fieldDefinition->getDelegate(), $result);

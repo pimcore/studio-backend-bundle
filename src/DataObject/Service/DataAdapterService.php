@@ -16,7 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
-use InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
  * @internal
@@ -25,6 +26,7 @@ final readonly class DataAdapterService implements DataAdapterServiceInterface
 {
     public function __construct(
         private array $dataAdapters,
+        private DataAdapterLoaderInterface $dataAdapterLoader,
     ) {
     }
 
@@ -47,6 +49,13 @@ final readonly class DataAdapterService implements DataAdapterServiceInterface
 
         throw new InvalidArgumentException(
             sprintf('No adapter found for field definition of type "%s"', $fieldDefinitionType)
+        );
+    }
+
+    public function getDataAdapter(string $fieldDefinitionType): SetterDataInterface
+    {
+        return $this->dataAdapterLoader->loadAdapter(
+            $this->getFieldDefinitionAdapterClass($fieldDefinitionType)
         );
     }
 }

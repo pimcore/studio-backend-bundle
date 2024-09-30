@@ -90,6 +90,8 @@ pimcore_studio_backend:
             - "imageGallery"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:
             - "link"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter:
+            - "localizedfields"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyRelationAdapter:
             - "manyToManyRelation"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyObjectRelationAdapter:
@@ -104,6 +106,8 @@ pimcore_studio_backend:
             - "numeric"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericRangeAdapter:
             - "numericRange"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ObjectBricksAdapter:
+            - "objectbricks"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter:
             - "reverseObjectRelation"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\RgbaColorAdapter:

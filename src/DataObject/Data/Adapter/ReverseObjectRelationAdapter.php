@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -47,7 +48,13 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
     /**
      * @throws Exception
      */
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): null
+    public function getDataForSetter(
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        array $data,
+        ?FieldContextData $contextData = null
+    ): null
     {
         if (!array_key_exists($key, $data) || !$fieldDefinition instanceof ReverseObjectRelation) {
             return null;

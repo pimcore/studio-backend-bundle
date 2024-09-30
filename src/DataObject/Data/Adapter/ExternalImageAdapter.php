@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -29,7 +30,13 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class ExternalImageAdapter implements SetterDataInterface
 {
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?string
+    public function getDataForSetter(
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        array $data,
+        ?FieldContextData $contextData = null
+    ): ?string
     {
         $imageData = $data[$key] ?? null;
         if (!$imageData instanceof ExternalImage) {

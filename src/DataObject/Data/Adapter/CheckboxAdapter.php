@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DefaultSetterValueTrait;
@@ -31,7 +32,13 @@ final readonly class CheckboxAdapter implements SetterDataInterface
 {
     use DefaultSetterValueTrait;
 
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?bool
+    public function getDataForSetter(
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        array $data,
+        ?FieldContextData $contextData = null
+    ): ?bool
     {
 
         return $this->getDefaultDataForSetter($element, $fieldDefinition, $key, $data);

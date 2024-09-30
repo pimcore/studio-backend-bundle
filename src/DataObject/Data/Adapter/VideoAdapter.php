@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -39,7 +40,12 @@ final readonly class VideoAdapter implements SetterDataInterface
     {
     }
 
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): ?Video
+    public function getDataForSetter(
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key, array $data,
+        ?FieldContextData $contextData = null
+    ): ?Video
     {
         $adapterData = $data[$key] ?? null;
 

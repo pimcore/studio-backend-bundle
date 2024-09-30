@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DefaultSetterValueTrait;
@@ -36,7 +37,8 @@ final readonly class QuantityValueAdapter implements SetterDataInterface
         Concrete $element,
         Data $fieldDefinition,
         string $key,
-        array $data
+        array $data,
+        ?FieldContextData $contextData = null
     ): ?QuantityValue
     {
         $value = $data[$key]['value'] ?? null;

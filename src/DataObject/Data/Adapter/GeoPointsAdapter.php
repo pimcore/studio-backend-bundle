@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -33,7 +34,11 @@ final readonly class GeoPointsAdapter implements SetterDataInterface
      * @return GeoCoordinates[]|null
      */
     public function getDataForSetter(
-        Concrete $element, Data $fieldDefinition, string $key, array $data
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        array $data,
+        ?FieldContextData $contextData = null
     ): ?array
     {
         if (!array_key_exists($key, $data)) {

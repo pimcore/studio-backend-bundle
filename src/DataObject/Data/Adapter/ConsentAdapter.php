@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\DataObject\Consent\Service;
@@ -40,7 +41,13 @@ final readonly class ConsentAdapter implements SetterDataInterface
     /**
      * @throws Exception
      */
-    public function getDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): Consent
+    public function getDataForSetter(
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        array $data,
+        ?FieldContextData $contextData = null
+    ): Consent
     {
         $value = $data[$key] ?? null;
         $noteId = null;
@@ -54,7 +61,11 @@ final readonly class ConsentAdapter implements SetterDataInterface
 
         if (!$oldData || $oldData->getConsent() !== $value) {
             if ($value) {
-                $note = $this->service->insertConsentNote($element,$key, 'Manually by User via Pimcore Backend.');
+                $note = $this->service->insertConsentNote(
+                    $element,
+                    $key,
+                    'Manually by User via Pimcore Backend.'
+                );
             } else {
                 $note = $this->service->insertRevokeNote($element, $key);
             }

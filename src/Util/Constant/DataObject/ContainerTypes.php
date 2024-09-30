@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Pimcore
@@ -14,18 +13,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject;
 
-use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
-interface SetterDataInterface
+enum ContainerTypes: string
 {
-    public function getDataForSetter(
-        Concrete $element,
-        Data $fieldDefinition,
-        string $key,
-        array $data,
-        ?FieldContextData $contextData = null
-    ): mixed;
+    use EnumToValueArrayTrait;
+
+    case BLOCK = 'block';
+    case CLASSIFICATION_STORE = 'classificationstore';
+    case FIELD_COLLECTION = 'fieldcollection';
+    case OBJECT_BRICK = 'objectbrick';
+
 }

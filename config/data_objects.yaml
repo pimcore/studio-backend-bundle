@@ -87,6 +87,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyRelationAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
@@ -103,6 +106,9 @@ services:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericRangeAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ObjectBricksAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter:
