@@ -32,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface as IndexElement
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 use function in_array;

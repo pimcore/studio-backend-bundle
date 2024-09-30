@@ -23,8 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface as IndexElementInterface;
+use Pimcore\Model\DataObject\ClassDefinition;
 
 /**
  * @internal
