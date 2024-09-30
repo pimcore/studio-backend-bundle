@@ -42,5 +42,4 @@ final readonly class NoteElementParameters
     {
         return $this->id;
     }
-
 }
