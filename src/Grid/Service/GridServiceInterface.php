@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface as IndexElementInterface;
 
 /**
  * @internal
@@ -40,7 +40,7 @@ interface GridServiceInterface
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
-        \Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface $element,
+        IndexElementInterface $element,
         string $elementType
     ): array;
 
@@ -49,7 +49,7 @@ interface GridServiceInterface
      */
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
-        ElementInterface $element,
+        IndexElementInterface $element,
         string $elementType
     ): array;
 

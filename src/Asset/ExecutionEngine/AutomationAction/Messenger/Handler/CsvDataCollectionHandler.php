@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -45,7 +46,8 @@ final class CsvDataCollectionHandler extends AbstractHandler
         private readonly PublishServiceInterface $publishService,
         private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver,
-        private readonly GridServiceInterface $gridService
+        private readonly GridServiceInterface $gridService,
+        private readonly AssetServiceInterface $assetService
     ) {
         parent::__construct();
     }
@@ -91,11 +93,13 @@ final class CsvDataCollectionHandler extends AbstractHandler
             true
         );
 
+        $indexAsset = $this->assetService->getAsset($asset->getId());
+
         try {
             $assetData = [
                 $asset->getId() => $this->gridService->getGridValuesForElement(
                     $columnCollection,
-                    $asset,
+                    $indexAsset,
                     ElementTypes::TYPE_ASSET
                 ),
             ];

@@ -128,7 +128,7 @@ final class GridService implements GridServiceInterface
      */
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
-        ElementInterface $element,
+        IndexElementInterface $element,
         string $elementType
     ): array {
         $data = $this->getGridDataForElement($columnCollection, $element, $elementType);
