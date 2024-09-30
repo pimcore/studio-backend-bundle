@@ -16,13 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\SimpleGetterTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
 
 /**
  * @internal
@@ -30,13 +31,14 @@ use Pimcore\Model\Element\ElementInterface;
 final class FileSizeResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
+    use SimpleGetterTrait;
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
         /** @var Asset $element */
         return $this->getColumnData(
             $column,
-            $element->getFileSize(true)
+            $element->getFileSize()
         );
     }
 

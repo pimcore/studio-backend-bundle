@@ -21,9 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
 
 /**
  * @internal
@@ -31,13 +31,14 @@ use Pimcore\Model\Element\ElementInterface;
 final class CheckboxResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
+    use LocalizedValueTrait;
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        $value = false;
-        /** @var Asset $element */
-        if ($element->getMetadata($column->getKey()) === '1') {
-            $value = true;
+        $value = $this->getLocalizedValue($column, $element);
+
+        if (!$value) {
+            return $this->getColumnData($column, false);
         }
 
         return $this->getColumnData($column, $value);

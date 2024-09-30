@@ -21,9 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
 
 /**
  * @internal
@@ -31,19 +31,19 @@ use Pimcore\Model\Element\ElementInterface;
 final class AssetResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
+    use LocalizedValueTrait;
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        /** @var Asset $element */
-        $asset = $element->getMetadata($column->getKey());
+        $asset = $this->getLocalizedValue($column, $element);
 
-        if (!$asset instanceof Asset) {
+        if (!isset($asset['asset'][0])) {
             return $this->getColumnData($column, null);
         }
 
         return $this->getColumnData(
             $column,
-            $asset->getFullPath()
+            $asset['asset'][0]
         );
     }
 

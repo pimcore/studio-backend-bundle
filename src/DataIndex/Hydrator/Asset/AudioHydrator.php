@@ -49,6 +49,8 @@ final readonly class AudioHydrator implements AudioHydratorInterface
             $item->isLocked(),
             $item->getCreationDate(),
             $item->getModificationDate(),
+            $item->getMetaData(),
+            $item->getFileSize(),
         );
     }
 }

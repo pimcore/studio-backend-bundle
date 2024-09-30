@@ -83,10 +83,9 @@ final class GridService implements GridServiceInterface
 
         $data = [];
         foreach ($items as $item) {
-            $asset = $this->getElement($this->serviceResolver, 'asset', $item->getId());
             $data[] = $this->getGridDataForElement(
                 $this->getConfigurationFromArray($gridParameter->getColumns()),
-                $asset,
+                $item,
                 ElementTypes::TYPE_ASSET
             );
         }
@@ -102,7 +101,7 @@ final class GridService implements GridServiceInterface
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
-        ElementInterface $element,
+        \Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface $element,
         string $elementType
     ): array {
         $data = [];

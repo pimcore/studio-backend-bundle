@@ -16,29 +16,40 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 
+use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Element\ElementInterface;
-
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
+use DateTime;
 /**
  * @internal
  */
 final class DateResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
+    use LocalizedValueTrait;
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        /** @var Asset $element */
-        return $this->getColumnData(
-            $column,
-            (int)$element->getMetadata($column->getKey())
-        );
+        $value = $this->getLocalizedValue($column, $element);
+
+        if (!$value) {
+            return $this->getColumnData($column, null);
+        }
+
+        try {
+            $datetime = new DateTime($value);
+        } catch (Exception $e) {
+            throw new InvalidArgumentException('Invalid date format');
+        }
+
+        return $this->getColumnData($column, $datetime->getTimestamp());
     }
 
     public function getType(): string

@@ -40,7 +40,7 @@ interface GridServiceInterface
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
-        ElementInterface $element,
+        \Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface $element,
         string $elementType
     ): array;
 

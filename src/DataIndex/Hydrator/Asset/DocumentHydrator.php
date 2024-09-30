@@ -51,6 +51,8 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
             $item->isLocked(),
             $item->getCreationDate(),
             $item->getModificationDate(),
+            $item->getMetaData(),
+            $item->getFileSize(),
         );
     }
 }

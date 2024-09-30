@@ -16,13 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
 
 /**
  * @internal
@@ -36,9 +38,16 @@ final class ImageResolver implements ColumnResolverInterface
      */
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
+        if (!$element instanceof Asset) {
+            return $this->getColumnData(
+                $column,
+                null
+            );
+        }
+
         return $this->getColumnData(
             $column,
-            $element->getRealFullPath()
+            $element->getFullPath()
         );
     }
 

@@ -59,6 +59,8 @@ class Video extends Asset
         bool $isLocked,
         ?int $creationDate,
         ?int $modificationDate,
+        array $metadata = [],
+        int $fileSize = 0
     ) {
         parent::__construct(
             $hasChildren,
@@ -79,6 +81,8 @@ class Video extends Asset
             $isLocked,
             $creationDate,
             $modificationDate,
+            $metadata,
+            $fileSize
         );
     }
 
