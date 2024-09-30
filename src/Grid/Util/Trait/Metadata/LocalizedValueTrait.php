@@ -37,6 +37,7 @@ trait LocalizedValueTrait
 
         return $this->getMetadataByNameAndLanguage($element->getMetadata(), $column->getKey(), $column->getLocale());
     }
+
     private function getMetadataByNameAndLanguage(array $metadata, string $name, ?string $language): mixed
     {
         foreach ($metadata as $assetMetadata) {
