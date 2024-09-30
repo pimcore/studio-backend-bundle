@@ -20,6 +20,7 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementTypeParameter as MappedElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -74,7 +75,7 @@ final class BatchAssignController extends AbstractApiController
     ): JsonResponse {
         $this->tagService->batchAssignTagsToElements(
             new BatchCollectionParameters(
-                $elementType,
+                (new MappedElementTypeParameter($elementType))->getType(),
                 $elementTagCollection->getElementIds(),
                 $elementTagCollection->getTagsIds()
             )

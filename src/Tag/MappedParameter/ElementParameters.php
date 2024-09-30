@@ -16,20 +16,25 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateElementTypeTrait;
+
 /**
  * @internal
  */
 final readonly class ElementParameters
 {
+    use ValidateElementTypeTrait;
+
     public function __construct(
         private ?string $type = null,
         private ?int $id = null
     ) {
+        $this->validate($this->type);
     }
 
     public function getType(): ?string
     {
-        return $this->type;
+        return $this->getElementType($this->type);
     }
 
     public function getId(): ?int
