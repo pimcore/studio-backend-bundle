@@ -37,7 +37,7 @@ trait ValidateElementTypeTrait
     /**
      * @throws InvalidElementTypeException
      */
-    private function validate($elementType): void
+    private function validate(?string $elementType): void
     {
         if ($elementType === null) {
             return;
