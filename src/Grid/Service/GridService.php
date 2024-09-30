@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
@@ -33,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface as IndexElementInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 use function in_array;
@@ -64,7 +64,6 @@ final class GridService implements GridServiceInterface
         private readonly ColumnResolverLoaderInterface $columnResolverLoader,
         private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
         private readonly GridSearchInterface $gridSearch,
-        private readonly ServiceResolverInterface $serviceResolver,
         private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
@@ -101,7 +100,7 @@ final class GridService implements GridServiceInterface
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
-        \Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface $element,
+        IndexElementInterface $element,
         string $elementType
     ): array {
         $data = [];
