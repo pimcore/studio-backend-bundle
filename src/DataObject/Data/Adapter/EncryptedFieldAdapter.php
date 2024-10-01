@@ -32,8 +32,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class EncryptedFieldAdapter implements SetterDataInterface
 {
     public function __construct(
-        private DataAdapterServiceInterface $dataAdapterService,
-        private DataAdapterLoaderInterface $dataAdapterLoader,
+        private DataAdapterServiceInterface $dataAdapterService
     ){}
 
     public function getDataForSetter(
@@ -52,7 +51,7 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface
         if(!$delegateFieldDefinition) {
             return null;
         }
-        $adapter = $this->dataAdapterService->getDataAdapter($fieldDefinition->getFieldType());
+        $adapter = $this->dataAdapterService->getDataAdapter($delegateFieldDefinition->getFieldType());
         $result = $adapter->getDataForSetter($element, $delegateFieldDefinition, $key, $data);
 
         return new EncryptedField($fieldDefinition->getDelegate(), $result);
