@@ -57,7 +57,7 @@ final readonly class ConsentAdapter implements SetterDataInterface
         /** @var Consent $oldData */
         $oldData = $element->get($key);
 
-        if (!$oldData || $oldData->getConsent() !== $value) {
+        if ($oldData?->getConsent() !== $value) {
             if ($value) {
                 $note = $this->service->insertConsentNote(
                     $element,
@@ -68,7 +68,9 @@ final readonly class ConsentAdapter implements SetterDataInterface
                 $note = $this->service->insertRevokeNote($element, $key);
             }
             $noteId = $note->getId();
-        } elseif ($oldData instanceof Consent) {
+        }
+
+        if ($noteId === null && $oldData instanceof Consent) {
             $noteId = $oldData->getNoteId();
         }
 
