@@ -54,7 +54,7 @@ final readonly class ConsentAdapter implements SetterDataInterface
             $value = false;
         }
 
-        /** @var Consent $oldData */
+        /** @var Consent|null $oldData */
         $oldData = $element->get($key);
 
         if ($oldData?->getConsent() !== $value) {
