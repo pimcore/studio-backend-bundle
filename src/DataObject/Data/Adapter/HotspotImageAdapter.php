@@ -28,6 +28,9 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Hotspotimage;
 use Pimcore\Model\Element\Data\MarkerHotspotItem;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
+use function in_array;
+use function is_array;
 
 /**
  * @internal
@@ -47,8 +50,7 @@ final readonly class HotspotImageAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?Hotspotimage
-    {
+    ): ?Hotspotimage {
         if (!array_key_exists($key, $data)) {
             return null;
         }
@@ -68,6 +70,7 @@ final readonly class HotspotImageAdapter implements SetterDataInterface
 
         return null;
     }
+
     private function processData(array $data): array
     {
         if (empty($data)) {
@@ -107,6 +110,6 @@ final readonly class HotspotImageAdapter implements SetterDataInterface
             $item['type'],
             [ElementTypes::TYPE_ASSET, ElementTypes::TYPE_DOCUMENT, ElementTypes::TYPE_OBJECT],
             true
-            ) && $item->getValue();
+        ) && $item->getValue();
     }
 }

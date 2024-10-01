@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Updater\Adapter\EditableUpdateAdapterInterface;
+
 /**
  * @internal
  */

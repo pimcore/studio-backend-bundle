@@ -22,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\DataObject\Consent\Service;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\Data\Consent;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Data\Consent;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -34,8 +34,7 @@ final readonly class ConsentAdapter implements SetterDataInterface
 {
     public function __construct(
         private Service $service
-    )
-    {
+    ) {
     }
 
     /**
@@ -47,8 +46,7 @@ final readonly class ConsentAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): Consent
-    {
+    ): Consent {
         $value = $data[$key] ?? null;
         $noteId = null;
 

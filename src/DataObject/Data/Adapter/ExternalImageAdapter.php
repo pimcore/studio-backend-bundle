@@ -36,8 +36,7 @@ final readonly class ExternalImageAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?string
-    {
+    ): ?string {
         $imageData = $data[$key] ?? null;
         if (!$imageData instanceof ExternalImage) {
             return null;

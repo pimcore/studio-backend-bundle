@@ -29,8 +29,7 @@ final readonly class FieldContextData
         private ?AbstractData $objectbrick = null,
         private ?BlockElement $blockElement = null,
         private ?string $language = null,
-    )
-    {
+    ) {
     }
 
     public function getObjectbrick(): ?AbstractData

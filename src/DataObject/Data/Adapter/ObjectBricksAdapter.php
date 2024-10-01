@@ -29,6 +29,7 @@ use Pimcore\Model\DataObject\Objectbrick;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
 
 /**
  * @internal
@@ -39,8 +40,7 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private DefinitionResolverInterface $definitionResolver
-    )
-    {
+    ) {
     }
 
     /**
@@ -52,8 +52,7 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?Objectbrick
-    {
+    ): ?Objectbrick {
         if (!array_key_exists($key, $data) || !$fieldDefinition instanceof Objectbricks) {
             return null;
         }
@@ -75,8 +74,7 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface
         string $key,
         string $fieldName,
         ?FieldContextData $contextData
-    ): Objectbrick
-    {
+    ): Objectbrick {
         $container = $element->get($key, $contextData?->getLanguage());
 
         if ($container instanceof Objectbrick) {
@@ -97,6 +95,7 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface
         }
 
         $brickClass = '\\Pimcore\\Model\\DataObject\\Objectbrick\\Data\\' . ucfirst($brickType);
+
         return new $brickClass($element);
     }
 
@@ -118,6 +117,7 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface
         $brick->setFieldname($fieldDefinition->getName());
         if ($collectionRaw['data'] === 'deleted') {
             $brick->setDoDelete(true);
+
             return;
         }
 
@@ -135,8 +135,7 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface
         array $rawData,
         Concrete $element,
         AbstractData $brick
-    ): array
-    {
+    ): array {
         $collectionData = [];
         foreach ($collectionDef->getFieldDefinitions() as $fd) {
             $fieldName = $fd->getName();

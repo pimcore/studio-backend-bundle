@@ -31,6 +31,8 @@ use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\DataObject\Service;
 use Pimcore\Model\User;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
+use function in_array;
 
 /**
  * @internal
@@ -41,8 +43,7 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private SecurityServiceInterface $securityService,
-    )
-    {
+    ) {
     }
 
     /**
@@ -54,8 +55,7 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?Localizedfield
-    {
+    ): ?Localizedfield {
         if (!array_key_exists($key, $data) || !$fieldDefinition instanceof Localizedfields) {
             return null;
         }
@@ -92,8 +92,7 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface
     private function getAllowedLanguages(
         Concrete $element,
         array $languageData
-    ): array
-    {
+    ): array {
         $user = $this->securityService->getCurrentUser();
         if ($user->isAdmin()) {
             return $languageData;

@@ -25,5 +25,4 @@ enum ContainerTypes: string
     case CLASSIFICATION_STORE = 'classificationstore';
     case FIELD_COLLECTION = 'fieldcollection';
     case OBJECT_BRICK = 'objectbrick';
-
 }

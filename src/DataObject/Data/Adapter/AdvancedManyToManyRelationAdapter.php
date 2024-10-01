@@ -28,6 +28,8 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
+use function is_array;
 
 /**
  * @internal
@@ -39,8 +41,7 @@ final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInte
 
     public function __construct(
         private ServiceResolverInterface $serviceResolver
-    )
-    {
+    ) {
     }
 
     /**
@@ -52,8 +53,7 @@ final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInte
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?array
-    {
+    ): ?array {
         if (!array_key_exists($key, $data)) {
             return null;
         }
@@ -91,8 +91,7 @@ final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInte
         ElementInterface $element,
         AdvancedManyToManyRelation $fieldDefinition,
         array $relation,
-    ): ElementMetadata
-    {
+    ): ElementMetadata {
         $metaData = new ElementMetadata(
             $fieldDefinition->getName(),
             $fieldDefinition->getColumnKeys(),

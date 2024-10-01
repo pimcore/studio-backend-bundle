@@ -27,6 +27,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Video;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_array;
 
 /**
  * @internal
@@ -45,8 +46,7 @@ final readonly class VideoAdapter implements SetterDataInterface
         Data $fieldDefinition,
         string $key, array $data,
         ?FieldContextData $contextData = null
-    ): ?Video
-    {
+    ): ?Video {
         $adapterData = $data[$key] ?? null;
 
         if (!is_array($adapterData)) {

@@ -24,6 +24,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ImageGallery;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_array;
 
 /**
  * @internal
@@ -43,8 +44,7 @@ final readonly class ImageGalleryAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?ImageGallery
-    {
+    ): ?ImageGallery {
         $galleryData = $data[$key] ?? null;
         if (!is_array($galleryData)) {
             return null;

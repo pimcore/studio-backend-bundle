@@ -30,13 +30,12 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class CalculatedValueAdapter implements SetterDataInterface
 {
     public function getDataForSetter(
-        Concrete $element, 
-        Data $fieldDefinition, 
-        string $key, 
-        array $data, 
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        array $data,
         ?FieldContextData $contextData = null
-    ): null
-    {
+    ): null {
         return null;
     }
 }

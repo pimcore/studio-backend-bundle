@@ -38,8 +38,7 @@ final readonly class NumericAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): float|int|string|null
-    {
+    ): float|int|string|null {
 
         return $this->getDefaultDataForSetter($element, $fieldDefinition, $key, $data);
     }

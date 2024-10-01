@@ -29,6 +29,9 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
+use function is_array;
+use function sprintf;
 
 /**
  * @internal
@@ -41,8 +44,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         private ConcreteObjectResolverInterface $concreteObjectResolver,
         private LoggerInterface $pimcoreLogger,
         private SecurityServiceInterface $securityService
-    )
-    {
+    ) {
     }
 
     /**
@@ -54,8 +56,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): null
-    {
+    ): null {
         if (!array_key_exists($key, $data) || !$fieldDefinition instanceof ReverseObjectRelation) {
             return null;
         }
@@ -82,8 +83,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         array $relations,
         array $newRelations,
         string $ownerFieldName
-    ): void
-    {
+    ): void {
         $getter = 'get' . ucfirst($ownerFieldName);
         $setter = 'set' . ucfirst($ownerFieldName);
         $dataToProcess = $this->getRemoteOwnerRelations($relations, $newRelations);
@@ -120,7 +120,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
 
         return [
             'originals' => $originals,
-            'changed' => $changed
+            'changed' => $changed,
         ];
     }
 
@@ -129,8 +129,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         Concrete $element,
         string $getter,
         string $setter
-    ): void
-    {
+    ): void {
         $currentData = method_exists($remoteObject, $getter) ? $remoteObject->$getter() : null;
         if ($currentData === null) {
             return;
@@ -138,6 +137,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
 
         if (!is_array($currentData) && $currentData->getId() === $element->getId()) {
             $remoteObject->$setter(null);
+
             return;
         }
 
@@ -157,8 +157,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         string $getter,
         string $setter,
         string $ownerFieldName
-    ): void
-    {
+    ): void {
         $currentData = method_exists($remoteObject, $getter) ? $remoteObject->$getter() : null;
         if (is_array($currentData)) {
             $currentData[] = $element;
@@ -171,13 +170,11 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
     }
 
     private function saveRemoteObject(
-        Concrete
-        $remoteObject,
+        Concrete $remoteObject,
         Concrete $element,
         string $action,
         string $fieldName
-    ): void
-    {
+    ): void {
         try {
             $actionTarget = 'to';
             if ($action === 'deleted') {

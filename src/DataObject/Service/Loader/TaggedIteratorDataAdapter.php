@@ -20,6 +20,8 @@ use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
+use function get_class;
+use function sprintf;
 
 /**
  * @internal

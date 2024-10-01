@@ -16,14 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\StructuredTable as StructuredTableDefinition;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\StructuredTable;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
 
 /**
  * @internal
@@ -33,8 +34,7 @@ final readonly class StructuredTableAdapter implements SetterDataInterface
 {
     public function getDataForSetter(
         Concrete $element, Data $fieldDefinition, string $key, array $data, ?FieldContextData $contextData = null
-    ): ?StructuredTable
-    {
+    ): ?StructuredTable {
         if (!array_key_exists($key, $data)) {
             return null;
         }

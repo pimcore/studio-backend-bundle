@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ResourcePersistenceAwareInterface;
 use Pimcore\Model\DataObject\Concrete;
+use function array_key_exists;
 
 /**
  * @internal

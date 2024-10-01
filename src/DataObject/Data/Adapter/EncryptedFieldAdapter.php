@@ -33,7 +33,8 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface
 {
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService
-    ){}
+    ) {
+    }
 
     public function getDataForSetter(
         Concrete $element,
@@ -41,14 +42,13 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?EncryptedField
-    {
-        if(!($fieldDefinition instanceof Data\EncryptedField)) {
+    ): ?EncryptedField {
+        if (!($fieldDefinition instanceof Data\EncryptedField)) {
             return null;
         }
 
         $delegateFieldDefinition = $fieldDefinition->getDelegateDatatypeDefinition();
-        if(!$delegateFieldDefinition) {
+        if (!$delegateFieldDefinition) {
             return null;
         }
         $adapter = $this->dataAdapterService->getDataAdapter($delegateFieldDefinition->getFieldType());

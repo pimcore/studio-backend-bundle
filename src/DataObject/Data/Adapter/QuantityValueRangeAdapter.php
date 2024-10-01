@@ -24,7 +24,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\QuantityValueRange;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use PImcore\Model\DataObject\Data\QuantityValue;
 
 /**
  * @internal
@@ -40,13 +39,12 @@ final readonly class QuantityValueRangeAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?QuantityValueRange
-    {
+    ): ?QuantityValueRange {
         $min = empty($data[$key]['minimum']) ? null : $data[$key]['minimum'];
         $max = empty($data[$key]['maximum']) ? null : $data[$key]['maximum'];
         $unit = $data[$key]['unit'] ?? null;
 
-        if(!$min && !$max) {
+        if (!$min && !$max) {
             return null;
         }
 

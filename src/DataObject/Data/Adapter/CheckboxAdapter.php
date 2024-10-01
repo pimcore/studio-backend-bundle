@@ -38,8 +38,7 @@ final readonly class CheckboxAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?bool
-    {
+    ): ?bool {
 
         return $this->getDefaultDataForSetter($element, $fieldDefinition, $key, $data);
     }

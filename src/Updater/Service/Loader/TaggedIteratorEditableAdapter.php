@@ -17,10 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service\Loader;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Updater\Adapter\EditableUpdateAdapterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\EditableAdapterLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
-use function in_array;
 
 /**
  * @internal

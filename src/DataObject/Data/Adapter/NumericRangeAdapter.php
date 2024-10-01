@@ -19,11 +19,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DefaultSetterValueTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\NumericRange;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_array;
 
 /**
  * @internal
@@ -37,8 +37,7 @@ final readonly class NumericRangeAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?NumericRange
-    {
+    ): ?NumericRange {
         $numericRangeData = $data[$key] ?? null;
         if (!isset($numericRangeData['minimum'], $numericRangeData['maximum']) || !is_array($numericRangeData)) {
             return null;

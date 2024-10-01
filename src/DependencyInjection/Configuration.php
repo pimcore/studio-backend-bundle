@@ -264,7 +264,6 @@ class Configuration implements ConfigurationInterface
         ->end();
     }
 
-
     private function addDataObjectAdapterMapping(ArrayNodeDefinition $node): void
     {
         $node->children()

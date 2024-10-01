@@ -38,8 +38,7 @@ final readonly class StringAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?string
-    {
+    ): ?string {
         if ($data[$key] === '') {
             return null;
         }

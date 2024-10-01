@@ -25,6 +25,7 @@ use Pimcore\Model\Asset\Image;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_array;
 
 /**
  * @internal
@@ -44,8 +45,7 @@ final readonly class ImageAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?Image
-    {
+    ): ?Image {
         $imageData = $data[$key] ?? null;
 
         if (!is_array($imageData) || !isset($imageData['id'])) {

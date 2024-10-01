@@ -25,6 +25,8 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelati
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
+use function is_array;
 
 /**
  * @internal
@@ -34,8 +36,7 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
 {
     public function __construct(
         private ConcreteObjectResolverInterface $concreteObjectResolver
-    )
-    {
+    ) {
     }
 
     public function getDataForSetter(
@@ -44,8 +45,7 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?array
-    {
+    ): ?array {
         if (!array_key_exists($key, $data)) {
             return null;
         }
@@ -79,8 +79,7 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
         Concrete $object,
         AdvancedManyToManyObjectRelation $fieldDefinition,
         array $relation,
-    ): ObjectMetadata
-    {
+    ): ObjectMetadata {
         $metaData = new ObjectMetadata(
             $fieldDefinition->getName(),
             $fieldDefinition->getColumnKeys(),

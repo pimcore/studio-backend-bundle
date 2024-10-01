@@ -25,6 +25,8 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Date;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Datetime;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
+use function is_string;
 
 /**
  * @internal
@@ -38,8 +40,7 @@ final readonly class DateAdapter implements SetterDataInterface
         string $key,
         array $data,
         ?FieldContextData $contextData = null
-    ): ?Carbon
-    {
+    ): ?Carbon {
         if (!array_key_exists($key, $data)) {
             return null;
         }
