@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInter
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 
 /**
  * @internal
@@ -37,10 +36,6 @@ final readonly class BooleanAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?bool {
-        if (!array_key_exists($key, $data)) {
-            return null;
-        }
-
         return match((int) $data[$key]) {
             1 => true,
             -1 => false,

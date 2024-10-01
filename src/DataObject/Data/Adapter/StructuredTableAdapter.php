@@ -24,7 +24,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\StructuredTable as StructuredT
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\StructuredTable;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 
 /**
  * @internal
@@ -35,9 +34,6 @@ final readonly class StructuredTableAdapter implements SetterDataInterface
     public function getDataForSetter(
         Concrete $element, Data $fieldDefinition, string $key, array $data, ?FieldContextData $contextData = null
     ): ?StructuredTable {
-        if (!array_key_exists($key, $data)) {
-            return null;
-        }
 
         $table = new StructuredTable();
         $tableData = [];

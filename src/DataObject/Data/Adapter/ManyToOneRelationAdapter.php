@@ -26,7 +26,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 use function is_array;
 
 /**
@@ -49,10 +48,6 @@ final readonly class ManyToOneRelationAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?ElementInterface {
-        if (!array_key_exists($key, $data)) {
-            return null;
-        }
-
         $relationData = $data[$key];
         if (!is_array($relationData) || empty($relationData['id']) || empty($relationData['type'])) {
             return null;

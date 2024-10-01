@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInter
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 use function is_array;
 
 /**
@@ -40,9 +39,6 @@ final readonly class DateRangeAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?CarbonPeriod {
-        if (!array_key_exists($key, $data)) {
-            return null;
-        }
 
         $dateData = $data[$key];
         if (is_array($dateData) && isset($dateData['start_date'], $dateData['end_date'])) {

@@ -24,7 +24,6 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Geobounds;
 use Pimcore\Model\DataObject\Data\GeoCoordinates;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 use function is_array;
 
 /**
@@ -40,9 +39,6 @@ final readonly class GeoBoundsAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?Geobounds {
-        if (!array_key_exists($key, $data)) {
-            return null;
-        }
 
         $geoPointData = $data[$key];
         if (!is_array($geoPointData) ||

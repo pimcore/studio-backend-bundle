@@ -53,7 +53,7 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?Objectbrick {
-        if (!array_key_exists($key, $data) || !$fieldDefinition instanceof Objectbricks) {
+        if (!$fieldDefinition instanceof Objectbricks) {
             return null;
         }
         $brickData = $data[$key];

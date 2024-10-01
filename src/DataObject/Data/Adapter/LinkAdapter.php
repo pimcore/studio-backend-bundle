@@ -24,7 +24,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Link;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 
 /**
  * @internal
@@ -42,9 +41,6 @@ final readonly class LinkAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?Link {
-        if (!array_key_exists($key, $data)) {
-            return null;
-        }
 
         $link = new Link();
         $link->setValues($data[$key]);

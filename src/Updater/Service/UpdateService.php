@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\Concrete;
+use function array_key_exists;
 
 /**
  * @internal
@@ -81,8 +82,12 @@ final readonly class UpdateService implements UpdateServiceInterface
                     continue;
                 }
 
-                $adapter = $this->dataAdapterService->getDataAdapter($fieldDefinition->getFieldType());
-                $data = $adapter->getDataForSetter($element, $fieldDefinition, $key, $editableData);
+                $data = array_key_exists($key, $editableData)
+                    ? $this->dataAdapterService
+                        ->getDataAdapter($fieldDefinition->getFieldType())
+                        ->getDataForSetter($element, $fieldDefinition, $key, $editableData)
+                    : null;
+
                 $element->setValue($key, $data);
             }
 

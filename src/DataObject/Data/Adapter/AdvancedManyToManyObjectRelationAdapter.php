@@ -25,7 +25,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelati
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 use function is_array;
 
 /**
@@ -46,9 +45,6 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
         array $data,
         ?FieldContextData $contextData = null
     ): ?array {
-        if (!array_key_exists($key, $data)) {
-            return null;
-        }
 
         $relationData = $data[$key];
         if ($relationData === false || !is_array($relationData)) {

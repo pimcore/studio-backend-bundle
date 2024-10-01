@@ -25,7 +25,6 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\UrlSlug;
 use Pimcore\Model\Site;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 use function is_array;
 
 /**
@@ -44,10 +43,6 @@ final readonly class UrlSlugAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): array {
-        if (!array_key_exists($key, $data)) {
-            return [];
-        }
-
         $urlData = $data[$key];
         if (!is_array($urlData)) {
             return [];

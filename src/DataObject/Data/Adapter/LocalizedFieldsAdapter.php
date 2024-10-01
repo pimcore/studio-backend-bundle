@@ -31,7 +31,6 @@ use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\DataObject\Service;
 use Pimcore\Model\User;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 use function in_array;
 
 /**
@@ -56,7 +55,7 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?Localizedfield {
-        if (!array_key_exists($key, $data) || !$fieldDefinition instanceof Localizedfields) {
+        if (!$fieldDefinition instanceof Localizedfields) {
             return null;
         }
 

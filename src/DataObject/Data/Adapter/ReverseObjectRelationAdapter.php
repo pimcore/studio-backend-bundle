@@ -29,7 +29,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 use function is_array;
 use function sprintf;
 
@@ -57,7 +56,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): null {
-        if (!array_key_exists($key, $data) || !$fieldDefinition instanceof ReverseObjectRelation) {
+        if ($fieldDefinition instanceof ReverseObjectRelation) {
             return null;
         }
 
