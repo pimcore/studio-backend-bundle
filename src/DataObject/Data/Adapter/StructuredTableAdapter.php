@@ -32,7 +32,11 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class StructuredTableAdapter implements SetterDataInterface
 {
     public function getDataForSetter(
-        Concrete $element, Data $fieldDefinition, string $key, array $data, ?FieldContextData $contextData = null
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        array $data,
+        ?FieldContextData $contextData = null
     ): ?StructuredTable {
 
         $table = new StructuredTable();

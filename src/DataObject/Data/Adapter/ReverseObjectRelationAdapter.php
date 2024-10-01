@@ -56,7 +56,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): null {
-        if ($fieldDefinition instanceof ReverseObjectRelation) {
+        if (!$fieldDefinition instanceof ReverseObjectRelation) {
             return null;
         }
 

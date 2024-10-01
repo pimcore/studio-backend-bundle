@@ -99,7 +99,9 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface
 
         /** @var User $user */
         $allowedLanguages = Service::getLanguagePermissions(
-            $element, $user, ElementPermissions::LANGUAGE_EDIT_PERMISSIONS
+            $element,
+            $user,
+            ElementPermissions::LANGUAGE_EDIT_PERMISSIONS
         );
 
         if (empty($allowedLanguages)) {

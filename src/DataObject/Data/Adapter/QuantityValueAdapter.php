@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInter
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DefaultSetterValueTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
-use PImcore\Model\DataObject\Data\QuantityValue;
+use Pimcore\Model\DataObject\Data\QuantityValue;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
