@@ -75,7 +75,7 @@ final class ZipController extends AbstractApiController
     )]
     #[CreatedResponse(
         description: 'asset_upload_zip_created_response',
-        content: new IdJson('ID of created jobRun')
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
     #[AddAssetRequestBody(
@@ -105,7 +105,7 @@ final class ZipController extends AbstractApiController
 
         return $this->jsonResponse(
             [
-                'id' => $this->zipService->uploadZipAssets(
+                'jobRunId' => $this->zipService->uploadZipAssets(
                     $this->securityService->getCurrentUser(),
                     $file,
                     $parentId
