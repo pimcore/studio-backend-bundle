@@ -381,7 +381,7 @@ system_settings_get_success_response: System settings data
 system_settings_get_summary: Get system settings
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
-data: Asset Grid operations
+tag_asset_grid_description: Asset Grid operations
 tag_assign_to_element_description: |
   Assign a specific tag based on the given <strong>{tagId}</strong> to an element based on <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
