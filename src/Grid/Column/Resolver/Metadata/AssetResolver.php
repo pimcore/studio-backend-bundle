@@ -36,8 +36,7 @@ final class AssetResolver implements ColumnResolverInterface
 
     public function __construct(
         private readonly AssetServiceInterface $assetService
-    )
-    {
+    ) {
     }
 
     public function resolve(Column $column, ElementInterface $element): ColumnData

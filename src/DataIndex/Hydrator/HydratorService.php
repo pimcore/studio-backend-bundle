@@ -30,8 +30,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
-use Symfony\Contracts\Service\ServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document as IndexDocument;
+use Symfony\Contracts\Service\ServiceProviderInterface;
 use function get_class;
 
 final readonly class HydratorService implements HydratorServiceInterface

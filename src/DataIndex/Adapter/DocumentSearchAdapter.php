@@ -4,13 +4,15 @@ declare(strict_types=1);
 /**
  * Pimcore
  *
- * This source file is available under following license:
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
  * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
-
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
@@ -20,18 +22,17 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterf
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use function sprintf;
 
 /**
  * @internal
  */
 final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInterface
 {
-
     public function __construct(
         private DocumentSearchServiceInterface $searchService,
         private DocumentHydratorInterface $hydratorService
-    )
-    {
+    ) {
     }
 
     /**
@@ -51,5 +52,4 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
 
         return $this->hydratorService->hydrate($document);
     }
-
 }

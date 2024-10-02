@@ -36,8 +36,7 @@ final class DataObjectResolver implements ColumnResolverInterface
 
     public function __construct(
         private readonly DataObjectServiceInterface $dataObjectService
-    )
-    {
+    ) {
     }
 
     public function resolve(Column $column, ElementInterface $element): ColumnData

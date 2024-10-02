@@ -36,8 +36,7 @@ final class DocumentResolver implements ColumnResolverInterface
 
     public function __construct(
         private readonly DocumentServiceInterface $documentService
-    )
-    {
+    ) {
     }
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
