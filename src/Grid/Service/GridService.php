@@ -85,7 +85,6 @@ final class GridService implements GridServiceInterface
         return $this->getCollectionFromSearchResult($result, $gridParameter);
     }
 
-
     /**
      * @throws InvalidArgumentException
      */
@@ -245,8 +244,7 @@ final class GridService implements GridServiceInterface
     private function getCollectionFromSearchResult(
         SearchResultItemInterface $searchResultItem,
         GridParameter $gridParameter
-    ): Collection
-    {
+    ): Collection {
         $items = $searchResultItem->getItems();
 
         if (empty($items)) {

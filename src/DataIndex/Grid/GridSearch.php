@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -36,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 final readonly class GridSearch implements GridSearchInterface
 {
     private OpenSearchFilterInterface $filterService;
+
     public function __construct(
         private FilterServiceProviderInterface $filterServiceProvider,
         private AssetSearchServiceInterface $assetSearchService,
@@ -70,7 +70,6 @@ final readonly class GridSearch implements GridSearchInterface
 
         $folder = $this->dataObjectSearchService->getDataObjectById($gridParameter->getFolderId());
 
-
         $filter->setPath($folder->getFullPath());
 
         $query = $this->filterService->applyFilters(
@@ -80,6 +79,4 @@ final readonly class GridSearch implements GridSearchInterface
 
         return $this->dataObjectSearchService->searchDataObjects($query);
     }
-
-
 }
