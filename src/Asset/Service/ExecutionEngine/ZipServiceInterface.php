@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFilePara
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\Asset;
 use Pimcore\Model\UserInterface;
@@ -67,6 +68,9 @@ interface ZipServiceInterface
         int $parentId
     ): int;
 
+    /**
+     * @throws EnvironmentException|MaxFileSizeExceededException
+     */
     public function generateZipFile(CreateAssetFileParameter $parameter): int;
 
     /**

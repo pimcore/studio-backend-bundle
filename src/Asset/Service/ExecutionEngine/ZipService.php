@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
@@ -142,7 +143,7 @@ final readonly class ZipService implements ZipServiceInterface
     }
 
     /**
-     * @throws EnvironmentException
+     * @throws EnvironmentException|MaxFileSizeExceededException
      */
     public function generateZipFile(CreateAssetFileParameter $parameter): int
     {
@@ -265,7 +266,7 @@ final readonly class ZipService implements ZipServiceInterface
     }
 
     /**
-     * @throws EnvironmentException
+     * @throws EnvironmentException|MaxFileSizeExceededException
      */
     private function validateDownloadItems(array $items): void
     {
@@ -285,11 +286,9 @@ final readonly class ZipService implements ZipServiceInterface
         }
 
         if ($totalFileSize > $this->downloadLimits[DownloadLimits::MAX_ZIP_FILE_SIZE->value]) {
-            throw new EnvironmentException(
-                sprintf(
-                    'The total size of the selected assets exceeds the maximum size of %s bytes.',
-                    $this->downloadLimits[DownloadLimits::MAX_ZIP_FILE_SIZE->value]
-                )
+            throw new MaxFileSizeExceededException(
+                $this->downloadLimits[DownloadLimits::MAX_ZIP_FILE_SIZE->value],
+                'The total size of the selected assets exceeds the maximum size of %s bytes.'
             );
         }
     }
