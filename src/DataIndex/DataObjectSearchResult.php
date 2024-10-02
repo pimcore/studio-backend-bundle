@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultPaginationInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultPaginationInterface;
 
 final readonly class DataObjectSearchResult implements SearchResultItemInterface, SearchResultPaginationInterface
 {
