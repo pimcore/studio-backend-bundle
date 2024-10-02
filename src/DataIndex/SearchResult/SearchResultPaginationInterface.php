@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult;
 /**
  * @internal
  */
-interface SearchResultIPaginationInterface
+interface SearchResultPaginationInterface
 {
     public function getCurrentPage(): int;
 
