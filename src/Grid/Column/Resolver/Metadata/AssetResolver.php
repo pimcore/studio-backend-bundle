@@ -43,8 +43,6 @@ final class AssetResolver implements ColumnResolverInterface
     {
         $asset = $this->getLocalizedValue($column, $element);
 
-
-
         if (!isset($asset['asset'])) {
             return $this->getColumnData($column, null);
         }
