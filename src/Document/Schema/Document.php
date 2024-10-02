@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
 
 #[Schema(
+    schema: 'Document',
     title: 'Document',
     required: [
     ],
