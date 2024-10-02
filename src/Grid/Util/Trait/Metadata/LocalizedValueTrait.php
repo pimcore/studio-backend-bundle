@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
 
 /**
  * @internal
@@ -35,10 +35,17 @@ trait LocalizedValueTrait
             throw new InvalidArgumentException('Element must be an instance of Asset');
         }
 
-        if ($column->getLocale()) {
-            return $element->getMetadata($column->getKey(), $column->getLocale());
+        return $this->getMetadataByNameAndLanguage($element->getMetadata(), $column->getKey(), $column->getLocale());
+    }
+
+    private function getMetadataByNameAndLanguage(array $metadata, string $name, ?string $language): mixed
+    {
+        foreach ($metadata as $assetMetadata) {
+            if ($assetMetadata->getLanguage() === $language && $assetMetadata->getName() === $name) {
+                return $assetMetadata->getData();
+            }
         }
 
-        return $element->getMetadata($column->getKey());
+        return null;
     }
 }

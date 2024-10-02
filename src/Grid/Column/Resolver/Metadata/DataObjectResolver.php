@@ -16,15 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
-use Pimcore\Model\DataObject;
-use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
@@ -32,19 +32,28 @@ use Pimcore\Model\Element\ElementInterface;
 final class DataObjectResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
+    use LocalizedValueTrait;
+
+    public function __construct(
+        private readonly DataObjectServiceInterface $dataObjectService
+    ) {
+    }
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        /** @var Asset $element */
-        $object = $element->getMetadata($column->getKey());
+        $object = $this->getLocalizedValue($column, $element);
 
-        if (!$object instanceof DataObject) {
+        if (!isset($object['object'])) {
             return $this->getColumnData($column, null);
         }
 
+        $relatedObject = $this->dataObjectService->getDataObject(
+            reset($object['object'])
+        );
+
         return $this->getColumnData(
             $column,
-            $object->getFullPath()
+            $relatedObject->getFullPath()
         );
     }
 

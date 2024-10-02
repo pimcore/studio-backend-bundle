@@ -49,6 +49,8 @@ final readonly class UnknownHydrator implements UnknownHydratorInterface
             $item->isLocked(),
             $item->getCreationDate(),
             $item->getModificationDate(),
+            $item->getMetaData(),
+            $item->getFileSize(),
         );
     }
 }

@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\DocumentSearchResultItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
@@ -29,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document as IndexDocument;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 use function get_class;
 
@@ -37,6 +39,7 @@ final readonly class HydratorService implements HydratorServiceInterface
     public function __construct(
         private AssetHydratorInterface $assetHydrator,
         private DataObjectHydratorInterface $dataObjectHydrator,
+        private DocumentHydratorInterface $documentHydrator,
         private ServiceProviderInterface $assetHydratorLocator,
         private ServiceProviderInterface $dataObjectHydratorLocator,
     ) {
@@ -61,5 +64,12 @@ final readonly class HydratorService implements HydratorServiceInterface
         }
 
         return $this->dataObjectHydrator->hydrate($item);
+    }
+
+    public function hydradeDocuments(DocumentSearchResultItem $item): IndexDocument
+    {
+        // TODO: Add Service Locator for different document types
+
+        return $this->documentHydrator->hydrate($item);
     }
 }

@@ -38,7 +38,7 @@ use OpenApi\Attributes\Schema;
     ],
     type: 'object'
 )]
-class Element
+class Element implements ElementInterface
 {
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 83)]

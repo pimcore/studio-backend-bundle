@@ -14,17 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 
-interface ColumnResolverInterface
+/**
+ * @internal
+ */
+interface DocumentSearchServiceInterface
 {
-    public function resolve(Column $column, ElementInterface $element): ColumnData;
-
-    public function getType(): string;
-
-    public function supportedElementTypes(): array;
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getDocumentById(int $id): Document;
 }

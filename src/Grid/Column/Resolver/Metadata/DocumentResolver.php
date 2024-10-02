@@ -16,15 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Document;
-use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
@@ -32,19 +32,28 @@ use Pimcore\Model\Element\ElementInterface;
 final class DocumentResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
+    use LocalizedValueTrait;
+
+    public function __construct(
+        private readonly DocumentServiceInterface $documentService
+    ) {
+    }
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        /** @var Asset $element */
-        $document = $element->getMetadata($column->getKey());
+        $document = $this->getLocalizedValue($column, $element);
 
-        if (!$document instanceof Document) {
+        if (!isset($document['document'])) {
             return $this->getColumnData($column, null);
         }
 
+        $documentIndex = $this->documentService->getDocument(
+            reset($document['document'])
+        );
+
         return $this->getColumnData(
             $column,
-            $document->getFullPath()
+            $documentIndex->getFullPath()
         );
     }
 

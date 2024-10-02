@@ -14,17 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\DocumentSearchResultItem;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 
-interface ColumnResolverInterface
+/**
+ * @internal
+ */
+interface DocumentHydratorInterface
 {
-    public function resolve(Column $column, ElementInterface $element): ColumnData;
-
-    public function getType(): string;
-
-    public function supportedElementTypes(): array;
+    public function hydrate(DocumentSearchResultItem $item): Document;
 }

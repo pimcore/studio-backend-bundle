@@ -24,6 +24,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydrator
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\PermissionsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\PermissionsHydrator
 
@@ -61,6 +63,14 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProvider
+
+
+  # Documents
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DocumentSearchAdapterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DocumentSearchAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchService
 
 
   #Service Locator

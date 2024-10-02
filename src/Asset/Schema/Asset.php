@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetMetaData;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
@@ -71,7 +72,9 @@ class Asset extends Element implements AdditionalAttributesInterface
         ?string $locked,
         bool $isLocked,
         ?int $creationDate,
-        ?int $modificationDate
+        ?int $modificationDate,
+        private readonly array $metadata = [],
+        private readonly int $fileSize = 0,
     ) {
         parent::__construct(
             $id,
@@ -125,5 +128,18 @@ class Asset extends Element implements AdditionalAttributesInterface
     public function getPermissions(): AssetPermissions
     {
         return $this->permissions;
+    }
+
+    /**
+     * @return AssetMetaData[]
+     */
+    public function getMetadata(): array
+    {
+        return $this->metadata;
+    }
+
+    public function getFileSize(): int
+    {
+        return $this->fileSize;
     }
 }

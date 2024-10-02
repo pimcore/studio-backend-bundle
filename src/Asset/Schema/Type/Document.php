@@ -59,6 +59,8 @@ class Document extends Asset
         bool $isLocked,
         ?int $creationDate,
         ?int $modificationDate,
+        array $metadata = [],
+        int $fileSize = 0,
     ) {
         parent::__construct(
             $hasChildren,
@@ -78,7 +80,9 @@ class Document extends Asset
             $locked,
             $isLocked,
             $creationDate,
-            $modificationDate
+            $modificationDate,
+            $metadata,
+            $fileSize
         );
     }
 
