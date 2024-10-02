@@ -38,7 +38,7 @@ final class FileSizeResolver implements ColumnResolverInterface
         /** @var Asset $element */
         return $this->getColumnData(
             $column,
-            $element->getFileSize()
+            formatBytes($element->getFileSize())
         );
     }
 
