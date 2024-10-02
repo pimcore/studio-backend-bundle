@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
@@ -33,6 +34,12 @@ final class DataObjectResolver implements ColumnResolverInterface
     use ColumnDataTrait;
     use LocalizedValueTrait;
 
+    public function __construct(
+        private readonly DataObjectServiceInterface $dataObjectService
+    )
+    {
+    }
+
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
         $object = $this->getLocalizedValue($column, $element);
@@ -41,9 +48,11 @@ final class DataObjectResolver implements ColumnResolverInterface
             return $this->getColumnData($column, null);
         }
 
+        $relatedObject = $this->dataObjectService->getDataObject($object['object'][0]);
+
         return $this->getColumnData(
             $column,
-            $object['object'][0]
+            $relatedObject->getFullPath()
         );
     }
 

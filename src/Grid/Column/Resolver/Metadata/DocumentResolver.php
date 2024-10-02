@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
@@ -33,6 +34,12 @@ final class DocumentResolver implements ColumnResolverInterface
     use ColumnDataTrait;
     use LocalizedValueTrait;
 
+    public function __construct(
+        private readonly DocumentServiceInterface $documentService
+    )
+    {
+    }
+
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
         $document = $this->getLocalizedValue($column, $element);
@@ -41,9 +48,11 @@ final class DocumentResolver implements ColumnResolverInterface
             return $this->getColumnData($column, null);
         }
 
+        $documentIndex = $this->documentService->getDocument($document['document'][0]);
+
         return $this->getColumnData(
             $column,
-            $document['document'][0]
+            $documentIndex->getFullPath()
         );
     }
 

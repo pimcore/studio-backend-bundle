@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
@@ -33,6 +34,12 @@ final class AssetResolver implements ColumnResolverInterface
     use ColumnDataTrait;
     use LocalizedValueTrait;
 
+    public function __construct(
+        private readonly AssetServiceInterface $assetService
+    )
+    {
+    }
+
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
         $asset = $this->getLocalizedValue($column, $element);
@@ -41,9 +48,11 @@ final class AssetResolver implements ColumnResolverInterface
             return $this->getColumnData($column, null);
         }
 
+        $relatedAsset = $this->assetService->getAsset($asset['asset'][0]);
+
         return $this->getColumnData(
             $column,
-            $asset['asset'][0]
+            $relatedAsset->getFullPath()
         );
     }
 
