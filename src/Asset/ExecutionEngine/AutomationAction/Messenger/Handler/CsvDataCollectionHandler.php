@@ -72,6 +72,8 @@ final class CsvDataCollectionHandler extends AbstractHandler
         }
 
         $jobAsset = $this->extractConfigFieldFromJobStepConfig($message, Csv::ASSET_TO_EXPORT->value);
+        // TODO: Replace getElementById with getAsset with permission check.
+        // We do not want to load the asset form the database. Permission check should be done in the index.
         $asset = $this->getElementById(
             new ElementDescriptor($jobAsset['type'], $jobAsset['id']),
             $user,
