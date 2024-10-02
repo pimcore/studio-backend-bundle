@@ -43,11 +43,13 @@ final class DocumentResolver implements ColumnResolverInterface
     {
         $document = $this->getLocalizedValue($column, $element);
 
-        if (!isset($document['document'][0])) {
+        if (!isset($document['document'])) {
             return $this->getColumnData($column, null);
         }
 
-        $documentIndex = $this->documentService->getDocument($document['document'][0]);
+        $documentIndex = $this->documentService->getDocument(
+            reset($document['document'])
+        );
 
         return $this->getColumnData(
             $column,

@@ -43,11 +43,13 @@ final class DataObjectResolver implements ColumnResolverInterface
     {
         $object = $this->getLocalizedValue($column, $element);
 
-        if (!isset($object['object'][0])) {
+        if (!isset($object['object'])) {
             return $this->getColumnData($column, null);
         }
 
-        $relatedObject = $this->dataObjectService->getDataObject($object['object'][0]);
+        $relatedObject = $this->dataObjectService->getDataObject(
+            reset($object['object'])
+        );
 
         return $this->getColumnData(
             $column,
