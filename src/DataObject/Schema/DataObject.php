@@ -134,7 +134,7 @@ class DataObject extends Element implements AdditionalAttributesInterface
         return $this->index;
     }
 
-    public function getFilename()
+    public function getFilename(): string
     {
         return $this->key;
     }
