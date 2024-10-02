@@ -25,8 +25,10 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultPaginationInterface;
 
-final readonly class AssetSearchResult
+final readonly class AssetSearchResult implements SearchResultItemInterface, SearchResultPaginationInterface
 {
     /**
      * @param array<int, Asset> $items

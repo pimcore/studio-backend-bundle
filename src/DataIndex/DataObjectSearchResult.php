@@ -16,7 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
-final readonly class DataObjectSearchResult
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultPaginationInterface;
+
+final readonly class DataObjectSearchResult implements SearchResultItemInterface, SearchResultPaginationInterface
 {
     /**
      * @param array $items
