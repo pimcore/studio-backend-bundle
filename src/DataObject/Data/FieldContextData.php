@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\ContainerTypes;
-use Pimcore\Model\DataObject\Data\BlockElement;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 
 /**
