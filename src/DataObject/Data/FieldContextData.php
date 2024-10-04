@@ -27,7 +27,7 @@ final readonly class FieldContextData
 {
     public function __construct(
         private ?AbstractData $objectbrick = null,
-        private ?BlockElement $blockElement = null,
+        private ?array $blockElements = null,
         private ?string $language = null,
     ) {
     }
@@ -37,9 +37,9 @@ final readonly class FieldContextData
         return $this->objectbrick;
     }
 
-    public function getBlockElement(): ?BlockElement
+    public function getBlockElements(): ?array
     {
-        return $this->blockElement;
+        return $this->blockElements;
     }
 
     public function getLanguage(): ?string
@@ -51,7 +51,7 @@ final readonly class FieldContextData
     {
         return match (true) {
             $this->objectbrick !== null => ['containerType' => ContainerTypes::OBJECT_BRICK->value],
-            $this->blockElement !== null => ['containerType' => ContainerTypes::BLOCK->value],
+            $this->blockElements !== null => ['containerType' => ContainerTypes::BLOCK->value],
             default => [],
         };
     }

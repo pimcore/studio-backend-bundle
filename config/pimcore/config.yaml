@@ -147,6 +147,8 @@ pimcore_studio_backend:
             - "consent"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\EncryptedFieldAdapter:
             - "encryptedField"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BlockAdapter:
+            - "block"
 
 mercure:
     hubs:

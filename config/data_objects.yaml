@@ -149,7 +149,11 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ConsentAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\EncryptedFieldAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BlockAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
   #
   # Handler
