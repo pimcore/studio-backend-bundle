@@ -42,7 +42,6 @@ final class CsvDataCollectionHandler extends AbstractHandler
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
-        private readonly ElementServiceInterface $elementService,
         private readonly UserResolverInterface $userResolver,
         private readonly GridServiceInterface $gridService,
         private readonly AssetServiceInterface $assetService
