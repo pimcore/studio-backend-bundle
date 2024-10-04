@@ -98,9 +98,9 @@ final readonly class AssetService implements AssetServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAsset(int $id): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video
+    public function getAsset(int $id, ?UserInterface $user = null): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video
     {
-        $asset = $this->assetSearchService->getAssetById($id);
+        $asset = $this->assetSearchService->getAssetById($id, $user);
 
         $this->eventDispatcher->dispatch(
             new AssetEvent($asset),
