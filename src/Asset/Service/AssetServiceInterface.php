@@ -49,7 +49,10 @@ interface AssetServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAsset(int $id, ?UserInterface $user = null): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
+    public function getAsset(
+        int $id,
+        ?UserInterface $user = null
+    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
 
     /**
      * @throws SearchException|NotFoundException
