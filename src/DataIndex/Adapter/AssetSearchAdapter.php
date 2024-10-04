@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function sprintf;
 
@@ -74,7 +75,11 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
      */
     public function getAssetById(int $id, ?UserInterface $user = null): Asset
     {
+
         try {
+            /** @var User $user
+             *  Because of byId method in the GDI
+             * */
             $asset = $this->searchService->byId($id, $user);
         } catch (AssetSearchException) {
             throw new SearchException(sprintf('Asset with id %s', $id));
