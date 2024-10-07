@@ -46,6 +46,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -62,6 +63,7 @@ use function sprintf;
 final readonly class DataObjectService implements DataObjectServiceInterface
 {
     use ElementProviderTrait;
+    use UserPermissionTrait;
 
     private const ALLOWED_TYPES = [
         AbstractObject::OBJECT_TYPE_OBJECT,
@@ -133,10 +135,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         $items = $result->getItems();
 
         foreach ($items as $item) {
-            $this->eventDispatcher->dispatch(
-                new DataObjectEvent($item),
-                DataObjectEvent::EVENT_NAME
-            );
+            $this->dispatchEventAndReturnDataObject($item);
         }
 
         return new Collection($result->getTotalItems(), $items);
@@ -145,35 +144,55 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDataObject(int $id): DataObject
+    public function getDataObject(int $id, bool $checkPermissionsForCurrentUser = true): DataObject
     {
-        $dataObject = $this->dataObjectSearchService->getDataObjectById($id);
-
-        $this->eventDispatcher->dispatch(
-            new DataObjectEvent($dataObject),
-            DataObjectEvent::EVENT_NAME
+        $dataObject = $this->dataObjectSearchService->getDataObjectById(
+            $id,
+            $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
         );
 
-        return $dataObject;
+       return $this->dispatchEventAndReturnDataObject($dataObject);
     }
 
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDataObjectFolder(int $id): DataObjectFolder
+    public function getDataObjectForUser(int $id, UserInterface $user): DataObject
     {
-        $dataObject = $this->dataObjectSearchService->getDataObjectById($id);
+        $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
+
+        return $this->dispatchEventAndReturnDataObject($dataObject);
+    }
+
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getDataObjectFolder(int $id, bool $checkPermissionsForCurrentUser = true): DataObjectFolder
+    {
+        $dataObject = $this->dataObjectSearchService->getDataObjectById(
+            $id,
+            $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
+        );
 
         if (!$dataObject instanceof DataObjectFolder) {
             throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
         }
 
-        $this->eventDispatcher->dispatch(
-            new DataObjectEvent($dataObject),
-            DataObjectEvent::EVENT_NAME
-        );
+        return $this->dispatchEventAndReturnDataObject($dataObject);
+    }
 
-        return $dataObject;
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getDataObjectFolderForUser(int $id, UserInterface $user): DataObjectFolder
+    {
+        $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
+
+        if (!$dataObject instanceof DataObjectFolder) {
+            throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
+        }
+
+        return $this->dispatchEventAndReturnDataObject($dataObject);
     }
 
     /**
@@ -304,5 +323,17 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         }
 
         $dataObjectQuery->orderByPath(strtolower($parent->getChildrenSortOrder()));
+    }
+
+    private function dispatchEventAndReturnDataObject(
+        DataObject|DataObjectFolder $dataObject
+    ): DataObject|DataObjectFolder
+    {
+        $this->eventDispatcher->dispatch(
+            new DataObjectEvent($dataObject),
+            DataObjectEvent::EVENT_NAME
+        );
+
+        return $dataObject;
     }
 }

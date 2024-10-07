@@ -14,20 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\UserInterface;
 
-/**
- * @internal
- */
-interface DocumentSearchServiceInterface
+trait UserPermissionTrait
 {
-    /**
-     * @throws SearchException|NotFoundException
-     */
-    public function getDocumentById(int $id, ?UserInterface $user): Document;
+    private function getUserForPermissionCheck(SecurityServiceInterface $securityService, bool $checkPermission): ?UserInterface
+    {
+        if(!$checkPermission) {
+            return null;
+        }
+
+        return $securityService->getCurrentUser();
+    }
 }
