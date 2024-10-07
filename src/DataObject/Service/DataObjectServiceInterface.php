@@ -61,12 +61,22 @@ interface DataObjectServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDataObject(int $id): DataObject;
+    public function getDataObject(int $id, bool $checkPermissionsForCurrentUser = true): DataObject;
 
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDataObjectFolder(int $id): DataObjectFolder;
+    public function getDataObjectForUser(int $id, UserInterface $user): DataObject;
+
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getDataObjectFolder(int $id, bool $checkPermissionsForCurrentUser = true): DataObjectFolder;
+
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getDataObjectFolderForUser(int $id, UserInterface $user): DataObjectFolder;
 
     /**
      * @throws AccessDeniedException|NotFoundException

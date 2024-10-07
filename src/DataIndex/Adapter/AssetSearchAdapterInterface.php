@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Model\UserInterface;
 
 interface AssetSearchAdapterInterface
 {
@@ -34,7 +35,7 @@ interface AssetSearchAdapterInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAssetById(int $id): Asset;
+    public function getAssetById(int $id, ?UserInterface $user = null): Asset;
 
     /**
      * @throws SearchException

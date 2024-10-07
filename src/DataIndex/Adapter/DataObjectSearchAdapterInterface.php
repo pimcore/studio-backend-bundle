@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Model\UserInterface;
 
 interface DataObjectSearchAdapterInterface
 {
@@ -29,7 +30,7 @@ interface DataObjectSearchAdapterInterface
     /**
      * @throws NotFoundException
      */
-    public function getDataObjectById(int $id): DataObject;
+    public function getDataObjectById(int $id, ?UserInterface $user = null): DataObject;
 
     /**
      * @throws SearchException

@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -40,7 +41,8 @@ final readonly class GridSearch implements GridSearchInterface
         private FilterServiceProviderInterface $filterServiceProvider,
         private AssetSearchServiceInterface $assetSearchService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
-        private AssetServiceInterface $assetService
+        private AssetServiceInterface $assetService,
+        private DataObjectServiceInterface $dataObjectService
     ) {
         $this->filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
     }
@@ -61,6 +63,7 @@ final readonly class GridSearch implements GridSearchInterface
             ElementTypes::TYPE_ASSET
         );
 
+        // TODO remove assetSearchService, replace with AssetService @martineiber
         return $this->assetSearchService->searchAssets($assetQuery);
     }
 
@@ -68,7 +71,7 @@ final readonly class GridSearch implements GridSearchInterface
     {
         $filter = $gridParameter->getFilters();
 
-        $folder = $this->dataObjectSearchService->getDataObjectById($gridParameter->getFolderId());
+        $folder = $this->dataObjectService->getDataObjectFolder($gridParameter->getFolderId());
 
         $filter->setPath($folder->getFullPath());
 
@@ -77,6 +80,7 @@ final readonly class GridSearch implements GridSearchInterface
             ElementTypes::TYPE_DATA_OBJECT
         );
 
+        // TODO remove dataObjectSearchService, replace with DataObjectService @martineiber
         return $this->dataObjectSearchService->searchDataObjects($query);
     }
 }

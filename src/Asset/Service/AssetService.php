@@ -44,6 +44,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\Asset as AssetModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -54,6 +55,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class AssetService implements AssetServiceInterface
 {
     use ElementProviderTrait;
+    use UserPermissionTrait;
 
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
@@ -85,11 +87,7 @@ final readonly class AssetService implements AssetServiceInterface
         $items = $result->getItems();
 
         foreach ($items as $item) {
-            $this->eventDispatcher->dispatch(
-                new AssetEvent($item),
-                AssetEvent::EVENT_NAME
-            );
-
+            $this->dispatchAssetEvent($item);
         }
 
         return new Collection($result->getTotalItems(), $items);
@@ -98,14 +96,17 @@ final readonly class AssetService implements AssetServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAsset(int $id): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video
-    {
-        $asset = $this->assetSearchService->getAssetById($id);
+    public function getAsset(
+        int $id,
+        bool $checkPermissionsForCurrentUser = true
+    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
 
-        $this->eventDispatcher->dispatch(
-            new AssetEvent($asset),
-            AssetEvent::EVENT_NAME
+        $asset = $this->assetSearchService->getAssetById(
+            $id,
+            $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
         );
+
+        $this->dispatchAssetEvent($asset);
 
         return $asset;
     }
@@ -113,26 +114,73 @@ final readonly class AssetService implements AssetServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAssetFolder(int $id): AssetFolder
+    public function getAssetForUser(
+        int $id,
+        UserInterface $user
+    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
+        $asset = $this->assetSearchService->getAssetById($id, $user);
+
+        $this->dispatchAssetEvent($asset);
+
+        return $asset;
+    }
+
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getAssetFolder(int $id, bool $checkPermissionsForCurrentUser = true): AssetFolder
     {
-        $asset = $this->assetSearchService->getAssetById($id);
+        $asset = $this->assetSearchService->getAssetById(
+            $id,
+            $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
+        );
 
         if (!$asset instanceof AssetFolder) {
             throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
         }
 
-        $this->eventDispatcher->dispatch(
-            new AssetEvent($asset),
-            AssetEvent::EVENT_NAME
-        );
+        $this->dispatchAssetEvent($asset);
 
         return $asset;
     }
 
-    public function assetFolderExists(int $id): bool
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getAssetFolderForUser(int $id, UserInterface $user): AssetFolder
+    {
+        $asset = $this->assetSearchService->getAssetById($id, $user);
+
+        if (!$asset instanceof AssetFolder) {
+            throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
+        }
+
+        $this->dispatchAssetEvent($asset);
+
+        return $asset;
+    }
+
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function assetFolderExists(int $id, bool $checkPermissionsForCurrentUser = true): bool
     {
         try {
-            $this->getAssetFolder($id);
+            $this->getAssetFolder($id, $checkPermissionsForCurrentUser);
+
+            return true;
+        } catch (NotFoundException) {
+            return false;
+        }
+    }
+
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function assetFolderExistsForUser(int $id, UserInterface $user): bool
+    {
+        try {
+            $this->getAssetFolderForUser($id, $user);
 
             return true;
         } catch (NotFoundException) {
@@ -192,5 +240,13 @@ final readonly class AssetService implements AssetServiceInterface
                 return $filename;
             }
         }
+    }
+
+    private function dispatchAssetEvent(mixed $asset): void
+    {
+        $this->eventDispatcher->dispatch(
+            new AssetEvent($asset),
+            AssetEvent::EVENT_NAME
+        );
     }
 }
