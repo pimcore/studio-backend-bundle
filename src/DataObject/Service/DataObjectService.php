@@ -151,9 +151,9 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
         );
 
-       $this->dispatchDataObjectEvent($dataObject);
+        $this->dispatchDataObjectEvent($dataObject);
 
-       return $dataObject;
+        return $dataObject;
     }
 
     /**

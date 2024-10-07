@@ -62,6 +62,7 @@ final readonly class GridSearch implements GridSearchInterface
             $filter,
             ElementTypes::TYPE_ASSET
         );
+
         // TODO remove assetSearchService, replace with AssetService @martineiber
         return $this->assetSearchService->searchAssets($assetQuery);
     }
@@ -78,6 +79,7 @@ final readonly class GridSearch implements GridSearchInterface
             $filter,
             ElementTypes::TYPE_DATA_OBJECT
         );
+
         // TODO remove dataObjectSearchService, replace with DataObjectService @martineiber
         return $this->dataObjectSearchService->searchDataObjects($query);
     }
