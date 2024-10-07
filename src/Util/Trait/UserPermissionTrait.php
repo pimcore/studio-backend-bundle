@@ -21,7 +21,10 @@ use Pimcore\Model\UserInterface;
 
 trait UserPermissionTrait
 {
-    private function getUserForPermissionCheck(SecurityServiceInterface $securityService, bool $checkPermission): ?UserInterface
+    private function getUserForPermissionCheck(
+        SecurityServiceInterface $securityService,
+        bool $checkPermission
+    ): ?UserInterface
     {
         if (!$checkPermission) {
             return null;
