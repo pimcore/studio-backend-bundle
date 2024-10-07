@@ -23,7 +23,7 @@ trait UserPermissionTrait
 {
     private function getUserForPermissionCheck(SecurityServiceInterface $securityService, bool $checkPermission): ?UserInterface
     {
-        if(!$checkPermission) {
+        if (!$checkPermission) {
             return null;
         }
 

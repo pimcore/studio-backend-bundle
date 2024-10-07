@@ -72,5 +72,4 @@ final readonly class DocumentService implements DocumentServiceInterface
 
         return $document;
     }
-
 }

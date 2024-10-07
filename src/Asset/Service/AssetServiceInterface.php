@@ -80,7 +80,7 @@ interface AssetServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function assetFolderExistsForUser(int $id,  UserInterface $user): bool;
+    public function assetFolderExistsForUser(int $id, UserInterface $user): bool;
 
     /**
      * @throws AccessDeniedException|NotFoundException

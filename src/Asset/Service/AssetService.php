@@ -115,8 +115,7 @@ final readonly class AssetService implements AssetServiceInterface
     public function getAssetForUser(
         int $id,
         UserInterface $user
-    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video
-    {
+    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
         $asset = $this->assetSearchService->getAssetById($id, $user);
 
         return $this->dispatchEventAndReturnAsset($asset);
@@ -237,8 +236,7 @@ final readonly class AssetService implements AssetServiceInterface
 
     private function dispatchEventAndReturnAsset(
         Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video $asset
-    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video
-    {
+    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
         $this->eventDispatcher->dispatch(
             new AssetEvent($asset),
             AssetEvent::EVENT_NAME

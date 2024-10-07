@@ -151,7 +151,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
         );
 
-       return $this->dispatchEventAndReturnDataObject($dataObject);
+        return $this->dispatchEventAndReturnDataObject($dataObject);
     }
 
     /**
@@ -327,8 +327,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
 
     private function dispatchEventAndReturnDataObject(
         DataObject|DataObjectFolder $dataObject
-    ): DataObject|DataObjectFolder
-    {
+    ): DataObject|DataObjectFolder {
         $this->eventDispatcher->dispatch(
             new DataObjectEvent($dataObject),
             DataObjectEvent::EVENT_NAME
