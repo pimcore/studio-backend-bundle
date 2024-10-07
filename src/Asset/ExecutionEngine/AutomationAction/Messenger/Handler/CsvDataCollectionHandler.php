@@ -71,7 +71,7 @@ final class CsvDataCollectionHandler extends AbstractHandler
 
         $jobAsset = $this->extractConfigFieldFromJobStepConfig($message, Csv::ASSET_TO_EXPORT->value);
 
-        $asset = $this->assetService->getAsset($jobAsset['id'], $user);
+        $asset = $this->assetService->getAssetForUser($jobAsset['id'], $user);
 
         if ($asset->getType() === ElementTypes::TYPE_FOLDER) {
             $this->abort($this->getAbortData(

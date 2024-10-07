@@ -135,7 +135,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         $items = $result->getItems();
 
         foreach ($items as $item) {
-            $this->dispatchEventAndReturnDataObject($item);
+            $this->dispatchDataObjectEvent($item);
         }
 
         return new Collection($result->getTotalItems(), $items);
@@ -151,7 +151,9 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
         );
 
-        return $this->dispatchEventAndReturnDataObject($dataObject);
+       $this->dispatchDataObjectEvent($dataObject);
+
+       return $dataObject;
     }
 
     /**
@@ -161,7 +163,9 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     {
         $dataObject = $this->dataObjectSearchService->getDataObjectById($id, $user);
 
-        return $this->dispatchEventAndReturnDataObject($dataObject);
+        $this->dispatchDataObjectEvent($dataObject);
+
+        return $dataObject;
     }
 
     /**
@@ -178,7 +182,9 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
         }
 
-        return $this->dispatchEventAndReturnDataObject($dataObject);
+        $this->dispatchDataObjectEvent($dataObject);
+
+        return $dataObject;
     }
 
     /**
@@ -192,7 +198,9 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
         }
 
-        return $this->dispatchEventAndReturnDataObject($dataObject);
+        $this->dispatchDataObjectEvent($dataObject);
+
+        return $dataObject;
     }
 
     /**
@@ -325,14 +333,11 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         $dataObjectQuery->orderByPath(strtolower($parent->getChildrenSortOrder()));
     }
 
-    private function dispatchEventAndReturnDataObject(
-        DataObject|DataObjectFolder $dataObject
-    ): DataObject|DataObjectFolder {
+    private function dispatchDataObjectEvent(mixed $dataObject): void
+    {
         $this->eventDispatcher->dispatch(
             new DataObjectEvent($dataObject),
             DataObjectEvent::EVENT_NAME
         );
-
-        return $dataObject;
     }
 }

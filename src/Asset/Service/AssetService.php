@@ -87,7 +87,7 @@ final readonly class AssetService implements AssetServiceInterface
         $items = $result->getItems();
 
         foreach ($items as $item) {
-            $this->dispatchEventAndReturnAsset($item);
+            $this->dispatchAssetEvent($item);
         }
 
         return new Collection($result->getTotalItems(), $items);
@@ -106,7 +106,9 @@ final readonly class AssetService implements AssetServiceInterface
             $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
         );
 
-        return $this->dispatchEventAndReturnAsset($asset);
+        $this->dispatchAssetEvent($asset);
+
+        return $asset;
     }
 
     /**
@@ -118,7 +120,9 @@ final readonly class AssetService implements AssetServiceInterface
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
         $asset = $this->assetSearchService->getAssetById($id, $user);
 
-        return $this->dispatchEventAndReturnAsset($asset);
+        $this->dispatchAssetEvent($asset);
+
+        return $asset;
     }
 
     /**
@@ -135,7 +139,9 @@ final readonly class AssetService implements AssetServiceInterface
             throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
         }
 
-        return $this->dispatchEventAndReturnAsset($asset);
+        $this->dispatchAssetEvent($asset);
+
+        return $asset;
     }
 
     /**
@@ -149,7 +155,9 @@ final readonly class AssetService implements AssetServiceInterface
             throw new NotFoundException(ElementTypes::TYPE_FOLDER, $id);
         }
 
-        return $this->dispatchEventAndReturnAsset($asset);
+        $this->dispatchAssetEvent($asset);
+
+        return $asset;
     }
 
     /**
@@ -234,14 +242,11 @@ final readonly class AssetService implements AssetServiceInterface
         }
     }
 
-    private function dispatchEventAndReturnAsset(
-        Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video $asset
-    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
+    private function dispatchAssetEvent(mixed $asset): void
+    {
         $this->eventDispatcher->dispatch(
             new AssetEvent($asset),
             AssetEvent::EVENT_NAME
         );
-
-        return $asset;
     }
 }

@@ -50,7 +50,9 @@ final readonly class DocumentService implements DocumentServiceInterface
             $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
         );
 
-        return $this->dispatchEventAndReturnDocument($document);
+        $this->dispatchDocumentEvent($document);
+
+        return $document;
     }
 
     /**
@@ -60,16 +62,16 @@ final readonly class DocumentService implements DocumentServiceInterface
     {
         $document = $this->documentSearchService->getDocumentById($id, $user);
 
-        return $this->dispatchEventAndReturnDocument($document);
+        $this->dispatchDocumentEvent($document);
+
+        return $document;
     }
 
-    private function dispatchEventAndReturnDocument(Document $document): Document
+    private function dispatchDocumentEvent(mixed $document): void
     {
         $this->eventDispatcher->dispatch(
             new DocumentEvent($document),
             DocumentEvent::EVENT_NAME
         );
-
-        return $document;
     }
 }
