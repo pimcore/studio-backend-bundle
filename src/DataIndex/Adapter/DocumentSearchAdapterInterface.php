@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -28,5 +29,5 @@ interface DocumentSearchAdapterInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDocumentById(int $id): Document;
+    public function getDocumentById(int $id, ?UserInterface $user = null): Document;
 }

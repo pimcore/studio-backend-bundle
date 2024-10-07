@@ -30,6 +30,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 use function get_class;
 use function sprintf;
 
@@ -76,10 +78,13 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDataObjectById(int $id): DataObject
+    public function getDataObjectById(int $id, ?UserInterface $user = null): DataObject
     {
         try {
-            $dataObject = $this->searchService->byId($id);
+            /** @var User $user
+             *  Because of byId method in the GDI
+             * */
+            $dataObject = $this->searchService->byId($id, $user);
         } catch (DataObjectSearchException) {
             throw new SearchException(sprintf('DataObject with id %s', $id));
         }

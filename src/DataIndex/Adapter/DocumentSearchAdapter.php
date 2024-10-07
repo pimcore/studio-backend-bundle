@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterf
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 use function sprintf;
 
 /**
@@ -38,10 +40,13 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDocumentById(int $id): Document
+    public function getDocumentById(int $id, ?UserInterface $user = null): Document
     {
         try {
-            $document = $this->searchService->byId($id);
+            /** @var User $user
+             *  Because of byId method in the GDI
+             * */
+            $document = $this->searchService->byId($id, $user);
         } catch (DocumentSearchException) {
             throw new SearchException(sprintf('Document with id %s', $id));
         }
