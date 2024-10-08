@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DocumentSearchAdapterIn
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -34,8 +35,8 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDocumentById(int $id): Document
+    public function getDocumentById(int $id, ?UserInterface $user): Document
     {
-        return $this->documentSearchAdapter->getDocumentById($id);
+        return $this->documentSearchAdapter->getDocumentById($id, $user);
     }
 }

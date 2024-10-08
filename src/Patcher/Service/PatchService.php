@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -29,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -37,12 +39,14 @@ use function count;
 /**
  * @internal
  */
-final class PatchService implements PatchServiceInterface
+final readonly class PatchService implements PatchServiceInterface
 {
     public function __construct(
-        private readonly AdapterLoaderInterface $adapterLoader,
-        private readonly ElementServiceInterface $elementService,
-        private readonly JobExecutionAgentInterface $jobExecutionAgent,
+        private SynchronousProcessingServiceInterface $synchronousProcessingService,
+        private JobExecutionAgentInterface $jobExecutionAgent,
+        private ElementServiceInterface $elementService,
+        private AdapterLoaderInterface $adapterLoader,
+        private SecurityServiceInterface $securityService,
     ) {
     }
 
@@ -78,12 +82,11 @@ final class PatchService implements PatchServiceInterface
                 $adapter->patch($element, $elementPatchData);
             }
 
+            $this->synchronousProcessingService->enable();
+            $element->setUserModification($this->securityService->getCurrentUser()->getId());
             $element->save();
         } catch (Exception $exception) {
-            throw new ElementSavingFailedException(
-                $element->getId(),
-                $exception->getMessage()
-            );
+            throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }
     }
 

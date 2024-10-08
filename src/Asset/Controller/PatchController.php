@@ -73,7 +73,7 @@ final class PatchController extends AbstractApiController
     )]
     #[CreatedResponse(
         description: 'asset_patch_by_id_created_response',
-        content: new IdJson('ID of created jobRun')
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -92,7 +92,7 @@ final class PatchController extends AbstractApiController
         if ($jobRunId) {
             $status = HttpResponseCodes::CREATED->value;
 
-            return $this->jsonResponse(['id' => $jobRunId], $status);
+            return $this->jsonResponse(['jobRunId' => $jobRunId], $status);
         }
 
         return new Response($data, $status);

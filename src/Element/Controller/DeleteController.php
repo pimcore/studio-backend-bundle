@@ -78,7 +78,7 @@ final class DeleteController extends AbstractApiController
     )]
     #[CreatedResponse(
         description: 'element_delete_created_response',
-        content: new IdJson('ID of created jobRun')
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[IdParameter]
     #[ElementTypeParameter]
@@ -97,7 +97,7 @@ final class DeleteController extends AbstractApiController
 
         if ($jobRunId) {
 
-            return $this->jsonResponse(['id' => $jobRunId], HttpResponseCodes::CREATED->value);
+            return $this->jsonResponse(['jobRunId' => $jobRunId], HttpResponseCodes::CREATED->value);
         }
 
         return new Response();
