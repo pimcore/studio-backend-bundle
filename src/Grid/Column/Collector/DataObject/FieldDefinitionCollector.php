@@ -69,7 +69,10 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
             throw new NotFoundException('Class definition', $this->getClassId());
         }
 
-        $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig($classDefinition, 744);
+        $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
+            $classDefinition,
+            744
+        );
 
         if (!isset($filteredDefinitions['layoutDefinition'])) {
             return [];
@@ -78,7 +81,10 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
         /** @var Layout $layoutDefinitions */
         $layoutDefinitions = $filteredDefinitions['layoutDefinition'];
 
-        $this->dataObjectServiceResolver->enrichLayoutDefinition($layoutDefinitions);
+        $this->dataObjectServiceResolver->enrichLayoutDefinition(
+            $layoutDefinitions
+        );
+
         $children = $layoutDefinitions->getChildren();
 
         $this->groupDefinitions($children, true, $classDefinition->getName(), false);
