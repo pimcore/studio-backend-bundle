@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
  */
 interface CustomMetadataServiceInterface
 {
-    public const DEFAULT_METADATA = ['alt', 'title', 'copyright'];
+    public const DEFAULT_METADATA = ['title', 'alt', 'copyright'];
 
     /**
      * @return array<int, CustomMetadata>
