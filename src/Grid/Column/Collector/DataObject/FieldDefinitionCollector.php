@@ -49,8 +49,7 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
     public function __construct(
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
-    )
-    {
+    ) {
     }
 
     public function getCollectorName(): string
@@ -72,7 +71,7 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
 
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig($classDefinition, 744);
 
-        if(!isset($filteredDefinitions['layoutDefinition'])) {
+        if (!isset($filteredDefinitions['layoutDefinition'])) {
             return [];
         }
 
@@ -92,16 +91,19 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
         foreach ($definitions as $definition) {
             if ($definition instanceof Layout && $definition->getTitle() && $searchForGroup) {
                 $this->groupDefinitions($definition->getChildren(), false, $definition->getTitle(), $localized);
+
                 continue;
             }
 
             if ($definition instanceof Layout) {
                 $this->groupDefinitions($definition->getChildren(), $searchForGroup, $defaultGroup, $localized);
+
                 continue;
             }
 
             if ($definition instanceof Localizedfields) {
                 $this->groupDefinitions($definition->getChildren(), $searchForGroup, $defaultGroup, true);
+
                 continue;
             }
 
@@ -111,6 +113,7 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
 
             if ($localized) {
                 $this->groupedDefinitions[] = new ColumnFieldDefinition($definition, $defaultGroup, true);
+
                 continue;
             }
 
@@ -138,7 +141,6 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
         if ($fieldDefinition instanceof Data\Select) {
             $options = $fieldDefinition->getOptions();
         }
-
 
         return new ColumnConfiguration(
             key: $fieldDefinition->getName(),

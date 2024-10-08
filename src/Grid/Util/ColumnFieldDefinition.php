@@ -27,8 +27,7 @@ final readonly class ColumnFieldDefinition
         private Data $fieldDefinition,
         private string $group,
         private bool $localizedField,
-    )
-    {
+    ) {
     }
 
     public function getFieldDefinition(): Data
