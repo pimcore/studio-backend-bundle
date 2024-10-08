@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -52,13 +53,13 @@ final class GetAvailableColumnsController extends AbstractApiController
      * @throws NotFoundException|SearchException
      */
     #[Route(
-        '/data-object/grid/available-columns/{className}',
+        '/data-object/grid/available-columns/{classId}/{folderId}',
         name: 'pimcore_studio_api_get_data_objects_grid_available_columns',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::API_PATH . '/data-object/grid/available-columns/{className}',
+        path: self::API_PATH . '/data-object/grid/available-columns/{classId}/folderId',
         operationId: 'data_object_get_available_grid_columns',
         description: 'data_object_get_available_grid_columns_description',
         summary: 'data_object_get_available_grid_columns_summary',
@@ -76,17 +77,20 @@ final class GetAvailableColumnsController extends AbstractApiController
         )
     )]
     #[StringParameter(
-        name: 'className',
+        name: 'classId',
         example: 'MyClass',
-        description: 'Itentifies the class name for which the columns should be retrieved.',
+        description: 'Identifies the class name for which the columns should be retrieved.',
+    )]
+    #[IdParameter(
+        name: 'folderId',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getDataObjectAvailableGridColumns(string $className): JsonResponse
+    public function getDataObjectAvailableGridColumns(string $classId, int $folderId): JsonResponse
     {
-        $columns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration();
+        $columns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, $folderId);
 
         return $this->jsonResponse([
             'columns' => $columns,

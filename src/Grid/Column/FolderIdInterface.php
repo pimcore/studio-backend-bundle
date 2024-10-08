@@ -14,22 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
-
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
 /**
  * @internal
  */
-interface ColumnConfigurationServiceInterface
+interface FolderIdInterface
 {
-    /**
-     * @return ColumnConfiguration[]
-     */
-    public function getAvailableAssetColumnConfiguration(): array;
+    public function getFolderId(): int;
 
-    /**
-     * @return ColumnConfiguration[]
-     */
-    public function getAvailableDataObjectColumnConfiguration(string $classId, int $folderId): array;
+    public function setFolderId(int $folderId): void;
 }
