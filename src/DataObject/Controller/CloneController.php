@@ -74,7 +74,7 @@ final class CloneController extends AbstractApiController
     )]
     #[CreatedResponse(
         description: 'data_object_clone_created_response',
-        content: new IdJson('ID of created jobRun')
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT)]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'parentId')]
@@ -91,7 +91,7 @@ final class CloneController extends AbstractApiController
         $jobRunId = $this->cloneService->cloneDataObjects($id, $parentId, $parameters);
         if ($jobRunId) {
 
-            return $this->jsonResponse(['id' => $jobRunId], HttpResponseCodes::CREATED->value);
+            return $this->jsonResponse(['jobRunId' => $jobRunId], HttpResponseCodes::CREATED->value);
         }
 
         return new Response();
