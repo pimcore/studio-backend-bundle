@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 
 final readonly class AssetQueryProvider implements AssetQueryProviderInterface
 {
