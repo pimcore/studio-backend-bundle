@@ -38,7 +38,7 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
     private const DEFAULT_METADATA = [
         ['name' => 'title', 'language' => '', 'type' => 'input', 'data' => ''],
         ['name' => 'alt', 'language' => '', 'type' => 'input', 'data' => ''],
-        ['name' => 'copyright', 'language' => '', 'type' => 'input', 'data' => '']
+        ['name' => 'copyright', 'language' => '', 'type' => 'input', 'data' => ''],
     ];
 
     public function __construct(
@@ -70,7 +70,7 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
 
         $originalCustomMetadata = $asset->getMetadata();
 
-        if(empty($originalCustomMetadata)) {
+        if (empty($originalCustomMetadata)) {
             $originalCustomMetadata = self::DEFAULT_METADATA;
         }
 
