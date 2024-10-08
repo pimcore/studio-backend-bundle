@@ -35,12 +35,6 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
 {
     use ElementProviderTrait;
 
-    private const DEFAULT_METADATA = [
-        ['name' => 'title', 'language' => '', 'type' => 'input', 'data' => ''],
-        ['name' => 'alt', 'language' => '', 'type' => 'input', 'data' => ''],
-        ['name' => 'copyright', 'language' => '', 'type' => 'input', 'data' => ''],
-    ];
-
     public function __construct(
         private CustomMetadataHydratorInterface $hydrator,
         private SecurityServiceInterface $securityService,
@@ -70,8 +64,15 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
 
         $originalCustomMetadata = $asset->getMetadata();
 
-        if (empty($originalCustomMetadata)) {
-            $originalCustomMetadata = self::DEFAULT_METADATA;
+        if(empty($originalCustomMetadata)) {
+            foreach(self::DEFAULT_METADATA as $metadata) {
+                $originalCustomMetadata[] = [
+                    'name' => $metadata,
+                    'language' => '',
+                    'type' => 'input',
+                    'data' => null
+                ];
+            }
         }
 
         foreach ($originalCustomMetadata as $metadata) {
