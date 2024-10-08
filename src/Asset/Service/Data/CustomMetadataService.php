@@ -64,6 +64,17 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
 
         $originalCustomMetadata = $asset->getMetadata();
 
+        if (empty($originalCustomMetadata)) {
+            foreach (self::DEFAULT_METADATA as $metadata) {
+                $originalCustomMetadata[] = [
+                    'name' => $metadata,
+                    'language' => '',
+                    'type' => 'input',
+                    'data' => null,
+                ];
+            }
+        }
+
         foreach ($originalCustomMetadata as $metadata) {
             $metadata = $this->hydrator->hydrate($metadata);
 
