@@ -97,8 +97,7 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
         bool $searchForGroup,
         string $defaultGroup,
         bool $localized
-    ): void
-    {
+    ): void {
         foreach ($definitions as $definition) {
             if ($definition instanceof Layout && $definition->getTitle() && $searchForGroup) {
                 $this->groupDefinitions(
