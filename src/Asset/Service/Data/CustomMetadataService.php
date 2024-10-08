@@ -64,13 +64,13 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
 
         $originalCustomMetadata = $asset->getMetadata();
 
-        if(empty($originalCustomMetadata)) {
-            foreach(self::DEFAULT_METADATA as $metadata) {
+        if (empty($originalCustomMetadata)) {
+            foreach (self::DEFAULT_METADATA as $metadata) {
                 $originalCustomMetadata[] = [
                     'name' => $metadata,
                     'language' => '',
                     'type' => 'input',
-                    'data' => null
+                    'data' => null,
                 ];
             }
         }

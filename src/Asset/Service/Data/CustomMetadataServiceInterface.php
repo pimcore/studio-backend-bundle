@@ -33,6 +33,4 @@ interface CustomMetadataServiceInterface
      *
      */
     public function getCustomMetadata(int $id): array;
-
-
 }
