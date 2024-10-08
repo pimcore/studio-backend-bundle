@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 
 interface AssetQueryProviderInterface
 {
-    public function createAssetQuery(): QueryInterface;
+    public function createAssetQuery(): AssetQueryInterface;
 }
