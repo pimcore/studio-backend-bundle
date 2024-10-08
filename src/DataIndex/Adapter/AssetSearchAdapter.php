@@ -26,6 +26,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchRes
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -47,7 +48,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     /**
      * @throws SearchException|InvalidArgumentException
      */
-    public function searchAssets(QueryInterface $assetQuery): AssetSearchResult
+    public function searchAssets(AssetQueryInterface $assetQuery): AssetSearchResult
     {
         try {
             $searchResult = $this->searchService->search($assetQuery->getSearch());

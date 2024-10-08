@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Asset\AssetMetaDataFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
@@ -35,7 +35,7 @@ final class AssetQuery implements AssetQueryInterface
 {
     public const ASSET_QUERY_ID = 'asset_query';
 
-    public function __construct(private readonly SearchInterface $search)
+    public function __construct(private readonly AssetSearchInterface $search)
     {
     }
 
@@ -85,7 +85,7 @@ final class AssetQuery implements AssetQueryInterface
         return $this;
     }
 
-    public function getSearch(): SearchInterface
+    public function getSearch(): AssetSearchInterface
     {
         return $this->search;
     }

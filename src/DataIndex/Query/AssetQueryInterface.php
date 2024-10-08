@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
 
 /**
  * @internal
@@ -41,4 +42,6 @@ interface AssetQueryInterface extends QueryInterface
         bool $roundToDay = true,
         bool $enablePqlFieldNameResolution = true
     ): self;
+
+    public function getSearch(): AssetSearchInterface;
 }
