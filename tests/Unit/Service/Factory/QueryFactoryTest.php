@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Factory;
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
@@ -66,6 +66,9 @@ final class QueryFactoryTest extends Unit
         $this->assertInstanceOf(DataObjectQuery::class, $query);
     }
 
+    /**
+     * @throws Exception
+     */
     private function getQueryFactory(): QueryFactoryInterface
     {
         return new QueryFactory(
@@ -81,7 +84,7 @@ final class QueryFactoryTest extends Unit
     {
         return $this->makeEmpty(AssetQueryProviderInterface::class, [
             'createAssetQuery' => function () {
-                return new AssetQuery($this->makeEmpty(SearchInterface::class));
+                return new AssetQuery($this->makeEmpty(AssetSearchInterface::class));
             },
         ]);
     }
