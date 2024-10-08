@@ -92,11 +92,21 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
         return $this->buildColumnConfigurations();
     }
 
-    private function groupDefinitions(array $definitions, bool $searchForGroup, string $defaultGroup, bool $localized): void
+    private function groupDefinitions(
+        array $definitions,
+        bool $searchForGroup,
+        string $defaultGroup,
+        bool $localized
+    ): void
     {
         foreach ($definitions as $definition) {
             if ($definition instanceof Layout && $definition->getTitle() && $searchForGroup) {
-                $this->groupDefinitions($definition->getChildren(), false, $definition->getTitle(), $localized);
+                $this->groupDefinitions(
+                    $definition->getChildren(),
+                    false,
+                    $definition->getTitle(),
+                    $localized
+                );
 
                 continue;
             }
