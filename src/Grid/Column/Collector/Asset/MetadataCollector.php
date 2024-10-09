@@ -98,7 +98,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
                 group: 'predefined_metadata',
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
                 editable: true,
-                localizable: false,
+                localizable: true,
                 locale: null,
                 type: $type,
                 frontendType: $availableColumnDefinitions[$type]->getFrontendType(),
