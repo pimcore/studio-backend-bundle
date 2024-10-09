@@ -43,6 +43,7 @@ interface PatchServiceInterface
     public function patchElement(
         ElementInterface $element,
         string $elementType,
-        array $elementPatchData
+        array $elementPatchData,
+        UserInterface $user
     ): void;
 }

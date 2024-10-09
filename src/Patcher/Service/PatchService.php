@@ -63,7 +63,7 @@ final readonly class PatchService implements PatchServiceInterface
         }
 
         $element = $this->elementService->getAllowedElementById($elementType, $patchData[0]['id'], $user);
-        $this->patchElement($element, $elementType, $patchData[0]);
+        $this->patchElement($element, $elementType, $patchData[0], $user);
 
         return null;
     }
@@ -74,7 +74,8 @@ final readonly class PatchService implements PatchServiceInterface
     public function patchElement(
         ElementInterface $element,
         string $elementType,
-        array $elementPatchData
+        array $elementPatchData,
+        UserInterface $user,
     ): void {
         try {
             $adapters = $this->adapterLoader->loadAdapters($elementType);
@@ -83,7 +84,7 @@ final readonly class PatchService implements PatchServiceInterface
             }
 
             $this->synchronousProcessingService->enable();
-            $element->setUserModification($this->securityService->getCurrentUser()->getId());
+            $element->setUserModification($user->getId());
             $element->save();
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
