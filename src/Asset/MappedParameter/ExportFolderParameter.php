@@ -64,7 +64,7 @@ final readonly class ExportFolderParameter
     {
         $this->validateConfig();
 
-        if (empty($this->folders)) {
+        if (empty($this->getFolders())) {
             throw new InvalidArgumentException('No folders provided');
         }
     }

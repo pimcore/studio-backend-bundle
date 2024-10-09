@@ -64,7 +64,7 @@ final readonly class ExportAssetParameter
     {
         $this->validateConfig();
 
-        if (empty($this->assets)) {
+        if (empty($this->getAssets())) {
             throw new InvalidArgumentException('No assets provided');
         }
     }
