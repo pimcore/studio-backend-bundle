@@ -45,8 +45,7 @@ final readonly class PatchService implements PatchServiceInterface
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private ElementServiceInterface $elementService,
-        private AdapterLoaderInterface $adapterLoader,
-        private SecurityServiceInterface $securityService,
+        private AdapterLoaderInterface $adapterLoader
     ) {
     }
 
