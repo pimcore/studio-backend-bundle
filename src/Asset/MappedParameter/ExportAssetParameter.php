@@ -34,9 +34,9 @@ final readonly class ExportAssetParameter
      * @param array $settings
      */
     public function __construct(
-        private array $assets,
-        private array $gridConfig,
-        private array $settings,
+        private array $assets = [],
+        private array $gridConfig = [],
+        private array $settings = [],
     ) {
         $this->validate();
     }

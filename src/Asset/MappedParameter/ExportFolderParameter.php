@@ -34,9 +34,9 @@ final readonly class ExportFolderParameter
      * @param array $settings
      */
     public function __construct(
-        private array $folders,
-        private array $gridConfig,
-        private array $settings,
+        private array $folders = [],
+        private array $gridConfig = [],
+        private array $settings = [],
     ) {
         $this->validate();
     }
