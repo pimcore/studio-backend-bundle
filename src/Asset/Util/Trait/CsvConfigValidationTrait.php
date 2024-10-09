@@ -27,7 +27,7 @@ trait CsvConfigValidationTrait
             throw new InvalidArgumentException('No grid config provided');
         }
 
-        if(!isset($this->gridConfig['columns'])) {
+        if (!isset($this->gridConfig['columns'])) {
             throw new InvalidArgumentException('No columns provided');
         }
 

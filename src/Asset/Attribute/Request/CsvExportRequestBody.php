@@ -23,7 +23,6 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 
 /**
  * @internal

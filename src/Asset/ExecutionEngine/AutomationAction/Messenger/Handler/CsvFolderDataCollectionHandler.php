@@ -18,12 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
@@ -34,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function count;
 
 /**
  * @internal
@@ -91,6 +90,7 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
 
         if (count($assets->getItems()) === 0) {
             $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+
             return;
         }
 
@@ -99,7 +99,7 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
             true
         );
 
-        foreach($assets->getItems() as $asset) {
+        foreach ($assets->getItems() as $asset) {
             try {
                 $assetData = [
                     $asset->getId() => $this->gridService->getGridValuesForElement(
@@ -140,7 +140,7 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
 
     private function mapFilter(array $config): ?FilterParameter
     {
-        if(isset($config['filters'])) {
+        if (isset($config['filters'])) {
             return new FilterParameter(
                 page: $config['filters']['page'],
                 pageSize: $config['filters']['pageSize'],
@@ -152,6 +152,7 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
                 ),
             );
         }
+
         return null;
     }
 }

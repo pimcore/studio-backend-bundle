@@ -107,8 +107,7 @@ final readonly class CsvService implements CsvServiceInterface
         array $settings,
         string $messageFQCN,
         Csv $export = Csv::ASSET_TO_EXPORT
-    ): int
-    {
+    ): int {
         $jobStepConfigConfiguration = [
             Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $config,
         ];
@@ -118,7 +117,7 @@ final readonly class CsvService implements CsvServiceInterface
 
         $jobSteps = [
             ...$this->mapJobSteps($elements, $jobStepConfigConfiguration, $messageFQCN, $export),
-            ...[$this->getCsvCreationStep($jobStepConfigSettings, $jobStepConfigConfiguration)]
+            ...[$this->getCsvCreationStep($jobStepConfigSettings, $jobStepConfigConfiguration)],
         ];
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -168,8 +167,7 @@ final readonly class CsvService implements CsvServiceInterface
         array $jobStepConfigConfiguration,
         string $messageFQCN,
         Csv $export
-    ): array
-    {
+    ): array {
         return array_map(
             static fn (ElementDescriptor $asset) => new JobStep(
                 JobSteps::CSV_COLLECTION->value,
