@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
+
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Trait\CsvConfigValidationTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -25,17 +25,17 @@ use Pimcore\Model\Element\ElementDescriptor;
 /**
  * @internal
  */
-final readonly class ExportAssetParameter
+final readonly class ExportFolderParameter
 {
     use CsvConfigValidationTrait;
 
     /**
-     * @param array $assets
+     * @param array $folders
      * @param array $gridConfig
      * @param array $settings
      */
     public function __construct(
-        private array $assets,
+        private array $folders,
         private array $gridConfig,
         private array $settings,
     ) {
@@ -53,11 +53,11 @@ final readonly class ExportAssetParameter
     }
 
     /** @return array<int, ElementDescriptor> */
-    public function getAssets(): array
+    public function getFolders(): array
     {
         return array_map(
             static fn (int $id) => new ElementDescriptor(ElementTypes::TYPE_ASSET, $id),
-            $this->assets
+            $this->folders
         );
     }
 
@@ -65,8 +65,8 @@ final readonly class ExportAssetParameter
     {
         $this->validateConfig();
 
-        if (empty($this->assets)) {
-            throw new InvalidArgumentException('No assets provided');
+        if (empty($this->folders)) {
+            throw new InvalidArgumentException('No folders provided');
         }
     }
 }

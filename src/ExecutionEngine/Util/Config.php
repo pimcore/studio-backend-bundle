@@ -33,6 +33,7 @@ enum Config: string
     case CSV_CREATION_FAILED_MESSAGE = 'studio_ee_csv_creation_failed';
     case CSV_DATA_COLLECTION_FAILED_MESSAGE = 'studio_ee_csv_data_collection_failed';
     case ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED = 'studio_ee_element_folder_collection_not_supported';
+    case WRONG_ELEMENT_TYPE_PROVIDED = 'studio_ee_wrong_element_type';
     case FILE_NOT_FOUND_FOR_JOB_RUN = 'studio_ee_file_not_found_for_job_run';
     case NO_ASSETS_FOUND_FOR_JOB_RUN = 'studio_ee_no_assets_found_for_job_run';
     case ASSET_UPLOAD_FAILED_MESSAGE = 'studio_ee_asset_upload_failed';

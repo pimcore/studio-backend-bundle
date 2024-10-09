@@ -19,6 +19,14 @@ asset_create_csv_description: |
   </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
 asset_create_csv_summary: Creating CSV file for assets
+asset_create_csv_folder_description: |
+  Creating the CSV file for assets based on the folder. <br> Parameters are: <ul>
+    <li><strong>folders</strong>: Array of folder ids</li>
+    <li><strong>gridConfig</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
+    <li><strong>settings</strong>: Delimiter and header options</li>
+    </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
+    Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
+asset_create_csv_folder_summary: Creating CSV file for assets based on folder
 asset_create_zip_created_response: Successfully created <strong>jobRun</strong> for zip export
 asset_create_zip_description: |
   Creating a ZIP file for assets based on the provided asset IDs in <strong>{items}</strong> parameter. <br>

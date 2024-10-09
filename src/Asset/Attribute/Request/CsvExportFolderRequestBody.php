@@ -29,14 +29,14 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class CsvExportRequestBody extends RequestBody
+final class CsvExportFolderRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
             content: new JsonContent(
                 properties: [
-                    new Property(property: 'assets', type: 'array', items: new Items(type: 'integer'), example: [83]),
+                    new Property(property: 'folders', type: 'array', items: new Items(type: 'integer'), example: [83]),
                     new Property(
                         property: 'gridConfig',
                         required: ['columns'],
@@ -45,6 +45,11 @@ final class CsvExportRequestBody extends RequestBody
                                 property: 'columns',
                                 type: 'array',
                                 items: new Items(ref: Column::class)
+                            ),
+                            new Property(
+                                property: 'filters',
+                                ref: Filter::class,
+                                type: 'object'
                             ),
                         ],
                         type: 'object',

@@ -55,9 +55,12 @@ final class CsvCreationHandler extends AbstractHandler
         if (!$this->shouldBeExecuted($jobRun)) {
             return;
         }
+
+        $config = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
+
         $settings = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_SETTINGS->value);
         $columnCollection = $this->gridService->getConfigurationFromArray(
-            $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value),
+            $config['columns'],
             true
         );
 

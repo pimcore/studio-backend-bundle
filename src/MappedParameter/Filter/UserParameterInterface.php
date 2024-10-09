@@ -14,13 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 
-use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
+use Pimcore\Model\UserInterface;
 
-/**
- * @internal
- */
-final class CsvCollectionMessage extends AbstractExecutionEngineMessage
+interface UserParameterInterface
 {
+    public function getUser(): ?UserInterface;
 }

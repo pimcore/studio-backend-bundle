@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -64,6 +65,26 @@ final readonly class GridSearch implements GridSearchInterface
             $filter,
             ElementTypes::TYPE_ASSET
         );
+
+        // TODO remove assetSearchService, replace with AssetService @martineiber
+        return $this->assetSearchService->searchAssets($assetQuery);
+    }
+
+    public function searchAssetsForUser(GridParameter $gridParameter, UserInterface $user): AssetSearchResult
+    {
+        $filter = $gridParameter->getFilters();
+
+        $asset = $this->assetService->getAssetFolderForUser($gridParameter->getFolderId(), $user);
+
+        $filter->setPath($asset->getFullPath());
+
+        /** @var AssetQueryInterface $assetQuery */
+        $assetQuery = $this->filterService->applyFilters(
+            $filter,
+            ElementTypes::TYPE_ASSET
+        );
+
+        $assetQuery->setUser($user);
 
         // TODO remove assetSearchService, replace with AssetService @martineiber
         return $this->assetSearchService->searchAssets($assetQuery);
