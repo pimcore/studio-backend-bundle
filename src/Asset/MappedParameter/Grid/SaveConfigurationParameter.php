@@ -37,11 +37,9 @@ final readonly class SaveConfigurationParameter implements ConfigurationParamete
         #[NotBlank]
         private string $description,
         #[NotBlank]
-        private array $sharedUsers,
-        #[NotBlank]
-        private array $sharedRoles,
-        #[NotBlank]
         private array $columns,
+        private array $sharedUsers = [],
+        private array $sharedRoles = [],
         private ?Filter $filter = null,
         private bool $saveFilter = false,
         private bool $shareGlobal = false,
