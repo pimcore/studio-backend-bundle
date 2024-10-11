@@ -34,8 +34,7 @@ final readonly class ExportFolderParameter extends ExportParameter
         ?FilterParameter $filters,
         array $config,
         private array $folders
-    )
-    {
+    ) {
         parent::__construct($columns, $filters, $config);
         $this->validate();
     }

@@ -64,12 +64,12 @@ final readonly class CsvService implements CsvServiceInterface
             Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportAssetParameter->getConfig(),
         ];
 
-       return $this->generateCsvFileJob(
-           $exportAssetParameter->getAssets(),
-           $collectionSettings,
-           $creationSettings,
-           CsvAssetCollectionMessage::class
-       );
+        return $this->generateCsvFileJob(
+            $exportAssetParameter->getAssets(),
+            $collectionSettings,
+            $creationSettings,
+            CsvAssetCollectionMessage::class
+        );
     }
 
     public function generateCsvFileForFolders(ExportFolderParameter $exportFolderParameter): int
@@ -83,7 +83,6 @@ final readonly class CsvService implements CsvServiceInterface
             Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportFolderParameter->getColumns(),
             Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportFolderParameter->getConfig(),
         ];
-
 
         return $this->generateCsvFileJob(
             $exportFolderParameter->getFolders(),

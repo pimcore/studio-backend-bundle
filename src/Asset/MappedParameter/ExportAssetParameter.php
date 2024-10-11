@@ -33,8 +33,7 @@ final readonly class ExportAssetParameter extends ExportParameter
         array $columns,
         array $config,
         private array $assets
-    )
-    {
+    ) {
         parent::__construct($columns, new FilterParameter(), $config);
         $this->validate();
     }

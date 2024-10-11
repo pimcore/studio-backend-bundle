@@ -158,7 +158,6 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
             ),
         );
 
-
         return null;
     }
 }
