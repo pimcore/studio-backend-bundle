@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class CsvExportRequestBody extends RequestBody
+final class CsvExportAssetRequestBody extends RequestBody
 {
     public function __construct()
     {
@@ -37,18 +37,11 @@ final class CsvExportRequestBody extends RequestBody
                 properties: [
                     new Property(property: 'assets', type: 'array', items: new Items(type: 'integer'), example: [83]),
                     new Property(
-                        property: 'gridConfig',
-                        required: ['columns'],
-                        properties: [
-                            new Property(
-                                property: 'columns',
-                                type: 'array',
-                                items: new Items(ref: Column::class)
-                            ),
-                        ],
-                        type: 'object',
+                        property: 'columns',
+                        type: 'array',
+                        items: new Items(ref: Column::class)
                     ),
-                    new Property(property: 'settings', properties: [
+                    new Property(property: 'config', properties: [
                         new Property(property: Csv::SETTINGS_DELIMITER->value, type: 'string', example: ';'),
                         new Property(
                             property: Csv::SETTINGS_HEADER->value,

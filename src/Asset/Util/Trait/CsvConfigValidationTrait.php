@@ -23,19 +23,16 @@ trait CsvConfigValidationTrait
 {
     private function validateConfig(): void
     {
-        if (empty($this->getGridConfig())) {
-            throw new InvalidArgumentException('No grid config provided');
-        }
 
-        if (!isset($this->getGridConfig()['columns'])) {
+        if (empty($this->getColumns())) {
             throw new InvalidArgumentException('No columns provided');
         }
 
-        if (empty($this->getSettings())) {
+        if (empty($this->getConfig())) {
             throw new InvalidArgumentException('No settings provided');
         }
 
-        if (!isset($this->getSettings()[Csv::SETTINGS_DELIMITER->value])) {
+        if (!isset($this->getConfig()[Csv::SETTINGS_DELIMITER->value])) {
             throw new InvalidArgumentException('No delimiter provided');
         }
     }

@@ -55,21 +55,40 @@ final readonly class CsvService implements CsvServiceInterface
 
     public function generateCsvFileForAssets(ExportAssetParameter $exportAssetParameter): int
     {
+        $collectionSettings = [
+            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportAssetParameter->getColumns(),
+        ];
 
-        return $this->generateCsvFileJob(
-            $exportAssetParameter->getAssets(),
-            $exportAssetParameter->getGridConfig(),
-            $exportAssetParameter->getSettings(),
-            CsvAssetCollectionMessage::class
-        );
+        $creationSettings = [
+            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportAssetParameter->getColumns(),
+            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportAssetParameter->getConfig(),
+        ];
+
+       return $this->generateCsvFileJob(
+           $exportAssetParameter->getAssets(),
+           $collectionSettings,
+           $creationSettings,
+           CsvAssetCollectionMessage::class
+       );
     }
 
     public function generateCsvFileForFolders(ExportFolderParameter $exportFolderParameter): int
     {
+        $collectionSettings = [
+            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportFolderParameter->getColumns(),
+            Csv::JOB_STEP_CONFIG_FILTERS->value => $exportFolderParameter->getFilters(),
+        ];
+
+        $creationSettings = [
+            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportFolderParameter->getColumns(),
+            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportFolderParameter->getConfig(),
+        ];
+
+
         return $this->generateCsvFileJob(
             $exportFolderParameter->getFolders(),
-            $exportFolderParameter->getGridConfig(),
-            $exportFolderParameter->getSettings(),
+            $collectionSettings,
+            $creationSettings,
             CsvFolderCollectionMessage::class,
             Csv::FOLDER_TO_EXPORT
         );
@@ -103,21 +122,15 @@ final readonly class CsvService implements CsvServiceInterface
 
     private function generateCsvFileJob(
         array $elements,
-        array $config,
-        array $settings,
+        array $collectionSettings,
+        array $creationSettings,
         string $messageFQCN,
         Csv $export = Csv::ASSET_TO_EXPORT
     ): int {
-        $jobStepConfigConfiguration = [
-            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $config,
-        ];
-        $jobStepConfigSettings = [
-            Csv::JOB_STEP_CONFIG_SETTINGS->value => $settings,
-        ];
 
         $jobSteps = [
-            ...$this->mapJobSteps($elements, $jobStepConfigConfiguration, $messageFQCN, $export),
-            ...[$this->getCsvCreationStep($jobStepConfigSettings, $jobStepConfigConfiguration)],
+            ...$this->mapJobSteps($elements, $collectionSettings, $messageFQCN, $export),
+            ...[$this->getCsvCreationStep($creationSettings)],
         ];
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
@@ -164,7 +177,7 @@ final readonly class CsvService implements CsvServiceInterface
 
     private function mapJobSteps(
         array $elements,
-        array $jobStepConfigConfiguration,
+        array $collectionSettings,
         string $messageFQCN,
         Csv $export
     ): array {
@@ -173,19 +186,19 @@ final readonly class CsvService implements CsvServiceInterface
                 JobSteps::CSV_COLLECTION->value,
                 $messageFQCN,
                 '',
-                array_merge([$export->value => $asset], $jobStepConfigConfiguration)
+                array_merge([$export->value => $asset], $collectionSettings)
             ),
             $elements,
         );
     }
 
-    private function getCsvCreationStep(array $jobStepConfigSettings, array $jobStepConfigConfiguration): JobStep
+    private function getCsvCreationStep(array $settings): JobStep
     {
         return new JobStep(
             JobSteps::CSV_CREATION->value,
             CsvCreationMessage::class,
             '',
-            array_merge($jobStepConfigSettings, $jobStepConfigConfiguration)
+            $settings
         );
     }
 

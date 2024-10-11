@@ -16,39 +16,28 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Trait\CsvConfigValidationTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 
 /**
  * @internal
  */
-final readonly class ExportFolderParameter
+final readonly class ExportFolderParameter extends ExportParameter
 {
-    use CsvConfigValidationTrait;
-
     /**
-     * @param array $folders
-     * @param array $gridConfig
-     * @param array $settings
+     * @param array<int> $folders
      */
     public function __construct(
-        private array $folders = [],
-        private array $gridConfig = [],
-        private array $settings = [],
-    ) {
+        array $columns,
+        ?FilterParameter $filters,
+        array $config,
+        private array $folders
+    )
+    {
+        parent::__construct($columns, $filters, $config);
         $this->validate();
-    }
-
-    public function getGridConfig(): array
-    {
-        return $this->gridConfig;
-    }
-
-    public function getSettings(): array
-    {
-        return $this->settings;
     }
 
     /** @return array<int, ElementDescriptor> */
@@ -62,8 +51,6 @@ final readonly class ExportFolderParameter
 
     private function validate(): void
     {
-        $this->validateConfig();
-
         if (empty($this->getFolders())) {
             throw new InvalidArgumentException('No folders provided');
         }

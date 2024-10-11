@@ -75,13 +75,15 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
 
         $jobFolder = $this->extractConfigFieldFromJobStepConfig($message, Csv::FOLDER_TO_EXPORT->value);
 
-        $config = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
+        $columns = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_COLUMNS->value);
+
+        $filters = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_FILTERS->value);
 
         $assets = $this->gridSearch->searchAssetsForUser(
             new GridParameter(
                 $jobFolder['id'],
-                $config['columns'],
-                $this->mapFilter($config)
+                $columns,
+                $this->mapFilter($filters)
             ),
             $user
         );
@@ -93,7 +95,7 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
         }
 
         $columnCollection = $this->gridService->getConfigurationFromArray(
-            $config['columns'],
+            $columns,
             true
         );
 
@@ -129,27 +131,33 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
             Csv::FOLDER_TO_EXPORT->value,
             self::ARRAY_TYPE
         );
-        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
+        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_COLUMNS->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::JOB_STEP_CONFIG_CONFIGURATION->value,
+            Csv::JOB_STEP_CONFIG_COLUMNS->value,
             self::ARRAY_TYPE
         );
+        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_FILTERS->value);
+        $this->stepConfiguration->setAllowedTypes(
+            Csv::JOB_STEP_CONFIG_FILTERS->value,
+            self::ARRAY_TYPE
+        );
+
     }
 
-    private function mapFilter(array $config): ?FilterParameter
+    private function mapFilter(array $filters): ?FilterParameter
     {
-        if (isset($config['filters'])) {
-            return new FilterParameter(
-                page: $config['filters']['page'],
-                pageSize: $config['filters']['pageSize'],
-                includeDescendants: $config['filters']['includeDescendants'],
-                columnFilters: $config['filters']['columnFilters'] ?? [],
-                sortFilter: new SortFilter(
-                    $config['filters']['sortFilter']['key'],
-                    $config['filters']['sortFilter']['direction']
-                ),
-            );
-        }
+
+        return new FilterParameter(
+            page: $filters['page'],
+            pageSize: $filters['pageSize'],
+            includeDescendants: $filters['pathIncludeDescendants'],
+            columnFilters: $filters['columnFilters'] ?? [],
+            sortFilter: new SortFilter(
+                $filters['sortFilter']['key'],
+                $filters['sortFilter']['direction']
+            ),
+        );
+
 
         return null;
     }

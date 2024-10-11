@@ -84,10 +84,10 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
             return;
         }
 
-        $config = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
+        $columns = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_COLUMNS->value);
 
         $columnCollection = $this->gridService->getConfigurationFromArray(
-            $config['columns'],
+            $columns,
             true
         );
 
@@ -121,9 +121,9 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
             Csv::ASSET_TO_EXPORT->value,
             self::ARRAY_TYPE
         );
-        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
+        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_COLUMNS->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::JOB_STEP_CONFIG_CONFIGURATION->value,
+            Csv::JOB_STEP_CONFIG_COLUMNS->value,
             self::ARRAY_TYPE
         );
     }
