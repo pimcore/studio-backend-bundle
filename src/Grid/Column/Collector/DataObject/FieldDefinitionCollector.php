@@ -71,7 +71,7 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
 
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
             $classDefinition,
-            744
+            $this->getFolderId()
         );
 
         if (!isset($filteredDefinitions['layoutDefinition'])) {
