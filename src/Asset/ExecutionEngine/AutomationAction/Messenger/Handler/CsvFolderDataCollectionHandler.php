@@ -24,10 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
-use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\FilterParameterMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -44,6 +43,7 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
     private const ARRAY_TYPE = 'array';
 
     public function __construct(
+        private readonly FilterParameterMapperInterface $filterParameterMapper,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
         private readonly GridServiceInterface $gridService,
@@ -83,7 +83,7 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
             new GridParameter(
                 $jobFolder['id'],
                 $columns,
-                $this->mapFilter($filters)
+                $this->filterParameterMapper->fromArray($filters)
             ),
             $user
         );
@@ -141,23 +141,5 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
             Csv::JOB_STEP_CONFIG_FILTERS->value,
             self::ARRAY_TYPE
         );
-
-    }
-
-    private function mapFilter(array $filters): ?FilterParameter
-    {
-
-        return new FilterParameter(
-            page: $filters['page'],
-            pageSize: $filters['pageSize'],
-            includeDescendants: $filters['pathIncludeDescendants'],
-            columnFilters: $filters['columnFilters'] ?? [],
-            sortFilter: new SortFilter(
-                $filters['sortFilter']['key'],
-                $filters['sortFilter']['direction']
-            ),
-        );
-
-        return null;
     }
 }
