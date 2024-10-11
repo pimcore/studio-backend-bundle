@@ -45,7 +45,7 @@ final class CsvAssetController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/export/csv/asset', name: 'pimcore_studio_api_export_csv_asset', methods: ['POST'])]
+    #[Route('/assets/export/csv/asset', name: 'pimcore_studio_api_asset_export_csv_asset', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/export/csv/asset',
@@ -63,7 +63,7 @@ final class CsvAssetController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function assetCreateCsv(
+    public function assetExportCsvAsset(
         #[MapRequestPayload] ExportAssetParameter $exportAssetParameter
     ): Response {
         return $this->jsonResponse(

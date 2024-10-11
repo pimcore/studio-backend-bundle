@@ -45,7 +45,7 @@ final class CsvFolderController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/export/csv/folder', name: 'pimcore_studio_api_export_csv_folder', methods: ['POST'])]
+    #[Route('/assets/export/csv/folder', name: 'pimcore_studio_api_asset_export_csv_folder', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
         path: self::API_PATH . '/assets/export/csv/folder',
@@ -63,7 +63,7 @@ final class CsvFolderController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function assetCreateCsv(
+    public function assetExportCsvFolder(
         #[MapRequestPayload] ExportFolderParameter $exportFolderParameter
     ): Response {
         return $this->jsonResponse(
