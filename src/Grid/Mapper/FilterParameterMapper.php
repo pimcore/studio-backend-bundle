@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 
 final readonly class FilterParameterMapper implements FilterParameterMapperInterface
 {
-
     public function fromArray(array $filters): FilterParameter
     {
         return new FilterParameter(
