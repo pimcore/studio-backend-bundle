@@ -40,7 +40,7 @@ final class JwtController extends AbstractApiController
 
     #[Route('/mercure/auth', name: 'pimcore_studio_mercure_auth', methods: ['POST'])]
     #[Post(
-        path: self::API_PATH . '/mercure/auth',
+        path: self::PREFIX . '/mercure/auth',
         operationId: 'mercure_create_cookie',
         description: 'mercure_create_cookie_description',
         summary: 'mercure_create_cookie_summary',

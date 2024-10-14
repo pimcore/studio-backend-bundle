@@ -55,7 +55,7 @@ final class UpdateController extends AbstractApiController
     #[Route('/properties/{id}', name: 'pimcore_studio_api_update_property', methods: ['PUT'])]
     #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[Put(
-        path: self::API_PATH . '/properties/{id}',
+        path: self::PREFIX . '/properties/{id}',
         operationId: 'property_update',
         description: 'property_update_description',
         summary: 'property_update_summary',

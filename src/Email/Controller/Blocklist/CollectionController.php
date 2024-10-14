@@ -60,7 +60,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/emails/blocklist', name: 'pimcore_studio_api_emails_blocklist_list', methods: ['GET'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
-        path: self::API_PATH . '/emails/blocklist',
+        path: self::PREFIX . '/emails/blocklist',
         operationId: 'email_blocklist_get_collection',
         description: 'email_blocklist_get_collection_description',
         summary: 'email_blocklist_get_collection_summary',

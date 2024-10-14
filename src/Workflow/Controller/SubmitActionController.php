@@ -52,7 +52,7 @@ final class SubmitActionController extends AbstractApiController
     )]
     //#[IsGranted('STUDIO_API')]
     #[Post(
-        path: self::API_PATH . '/workflows/action',
+        path: self::PREFIX . '/workflows/action',
         operationId: 'workflow_action_submit',
         description: 'workflow_action_submit_description',
         summary: 'workflow_action_submit_summary',

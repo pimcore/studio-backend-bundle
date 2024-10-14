@@ -57,7 +57,7 @@ final class GetController extends AbstractApiController
     #[Route('/emails/{id}', name: 'pimcore_studio_api_emails_log_entry', methods: ['GET'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
-        path: self::API_PATH . '/emails/{id}',
+        path: self::PREFIX . '/emails/{id}',
         operationId: 'email_log_get_by_id',
         description: 'email_log_get_by_id_description',
         summary: 'email_log_get_by_id_summary',

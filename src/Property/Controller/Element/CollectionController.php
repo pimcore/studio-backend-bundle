@@ -54,7 +54,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_get_element_properties', methods: ['GET'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
-        path: self::API_PATH . '/properties/{elementType}/{id}',
+        path: self::PREFIX . '/properties/{elementType}/{id}',
         operationId: 'property_get_collection_for_element_by_type_and_id',
         description: 'property_get_collection_for_element_by_type_and_id_description',
         summary: 'property_get_collection_for_element_by_type_and_id_summary',

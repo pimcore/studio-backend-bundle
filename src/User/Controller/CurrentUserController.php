@@ -36,7 +36,7 @@ final class CurrentUserController extends AbstractApiController
 {
     #[Route('/user/current-user-information', name: 'pimcore_studio_api_current_user', methods: ['GET'])]
     #[Get(
-        path: self::API_PATH . '/user/current-user-information',
+        path: self::PREFIX . '/user/current-user-information',
         operationId: 'user_get_current_information',
         summary: 'user_get_current_information_summary',
         tags: [Tags::User->value]

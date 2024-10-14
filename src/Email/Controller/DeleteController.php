@@ -52,7 +52,7 @@ final class DeleteController extends AbstractApiController
     #[Route('/emails/{id}', name: 'pimcore_studio_api_emails_list_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Delete(
-        path: self::API_PATH . '/emails/{id}',
+        path: self::PREFIX . '/emails/{id}',
         operationId: 'email_log_delete',
         description: 'email_log_delete_description',
         summary: 'email_log_delete_summary',

@@ -50,7 +50,7 @@ final class CreateController extends AbstractApiController
     #[Route('/property', name: 'pimcore_studio_api_property_create', methods: ['POST'])]
     #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[POST(
-        path: self::API_PATH . '/property',
+        path: self::PREFIX . '/property',
         operationId: 'property_create',
         description: 'property_create_description',
         summary: 'property_create_summary',

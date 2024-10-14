@@ -56,7 +56,7 @@ final class ResendController extends AbstractApiController
     #[Route('/emails/{id}/resend', name: 'pimcore_studio_api_emails_resend', methods: ['POST'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Post(
-        path: self::API_PATH . '/emails/{id}/resend',
+        path: self::PREFIX . '/emails/{id}/resend',
         operationId: 'email_log_resend_by_id',
         description: 'email_log_resend_by_id_description',
         summary: 'email_log_resend_by_id_summary',

@@ -1,6 +1,6 @@
-studio_api:
+pimcore_studio_api:
     resource: "../../src/"
     type:     annotation
-    prefix:   /studio/api
+    prefix:   '%pimcore_studio_backend.url_prefix%'
     options:
         expose: true

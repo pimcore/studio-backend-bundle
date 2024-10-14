@@ -68,7 +68,7 @@ final class TreeController extends AbstractApiController
     #[Route('/data-objects/tree', name: 'pimcore_studio_api_data_objects_tree', methods: ['GET'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::API_PATH . '/data-objects/tree',
+        path: self::PREFIX . '/data-objects/tree',
         operationId: 'data_object_get_tree',
         description: 'data_object_get_tree_description',
         summary: 'data_object_get_tree_summary',

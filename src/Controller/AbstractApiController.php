@@ -20,22 +20,19 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * @internal
- */
-#[Route('/studio/api')]
+
 abstract class AbstractApiController extends AbstractController
 {
     public const VOTER_PUBLIC_STUDIO_API = 'PUBLIC_STUDIO_API';
 
-    public const API_PATH = '/studio/api';
+    public const PREFIX = '{prefix}';
 
-    public function __construct(protected readonly SerializerInterface $serializer)
+    public function __construct(
+        protected readonly SerializerInterface $serializer,
+    )
     {
-
     }
 
     protected function jsonResponse(

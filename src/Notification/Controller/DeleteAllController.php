@@ -48,7 +48,7 @@ final class DeleteAllController extends AbstractApiController
     #[Route('/notifications', name: 'pimcore_studio_api_delete_all_notifications', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
     #[Delete(
-        path: self::API_PATH . '/notifications',
+        path: self::PREFIX . '/notifications',
         operationId: 'notification_delete_all',
         description: 'notification_delete_all_description',
         summary: 'notification_delete_all_summary',

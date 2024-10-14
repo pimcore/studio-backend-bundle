@@ -77,7 +77,7 @@ final class ImageThumbnailStreamController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/video/stream/image-thumbnail',
+        path: self::PREFIX . '/assets/{id}/video/stream/image-thumbnail',
         operationId: 'asset_video_image_thumbnail_stream',
         description: 'asset_video_image_thumbnail_stream_description',
         summary: 'asset_video_image_thumbnail_stream_summary',

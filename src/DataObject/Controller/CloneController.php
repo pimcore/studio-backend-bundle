@@ -63,7 +63,7 @@ final class CloneController extends AbstractApiController
     #[Route('/data-objects/{id}/clone/{parentId}', name: 'pimcore_studio_api_data_objects_clone', methods: ['POST'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
-        path: self::API_PATH . '/data-objects/{id}/clone/{parentId}',
+        path: self::PREFIX . '/data-objects/{id}/clone/{parentId}',
         operationId: 'data_object_clone',
         description: 'data_object_clone_description',
         summary: 'data_object_clone_summary',

@@ -57,7 +57,7 @@ final class CreateUserFolderController extends AbstractApiController
     #[Route('/user/folder', name: 'pimcore_studio_api_user_folder_create', methods: ['POST'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
-        path: self::API_PATH . '/user/folder',
+        path: self::PREFIX . '/user/folder',
         operationId: 'user_folder_create',
         summary: 'user_folder_create_summary',
         tags: [Tags::User->value]

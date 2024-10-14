@@ -61,7 +61,7 @@ final class PatchController extends AbstractApiController
     #[Route('/assets', name: 'pimcore_studio_api_patch_asset', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Patch(
-        path: self::API_PATH . '/assets',
+        path: self::PREFIX . '/assets',
         operationId: 'asset_patch_by_id',
         description: 'asset_patch_by_id_description',
         summary: 'asset_patch_by_id_summary',
