@@ -48,8 +48,9 @@ final readonly class OpenApiService implements OpenApiServiceInterface
             // replace the configurable prefix in the paths
             $prefix = $this->routePrefix;
             $config->paths = array_map(
-                static function(PathItem $pathItem) use($prefix) {
+                static function (PathItem $pathItem) use ($prefix) {
                     $pathItem->path = str_replace('{prefix}', $prefix, $pathItem->path);
+
                     return $pathItem;
                 },
                 $config->paths
