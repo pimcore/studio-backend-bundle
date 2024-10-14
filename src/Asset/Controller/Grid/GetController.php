@@ -53,7 +53,7 @@ final class GetController extends AbstractApiController
     #[Route('/assets/grid', name: 'pimcore_studio_api_get_asset_grid', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/grid',
+        path: self::PREFIX . '/assets/grid',
         operationId: 'asset_get_grid',
         description: 'asset_get_grid_description',
         summary: 'asset_get_grid_summary',

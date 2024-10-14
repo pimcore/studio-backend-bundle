@@ -67,7 +67,7 @@ final class DeleteController extends AbstractApiController
     #[Route('/elements/{elementType}/delete/{id}', name: 'pimcore_studio_api_elements_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Delete(
-        path: self::API_PATH . '/elements/{elementType}/delete/{id}',
+        path: self::PREFIX . '/elements/{elementType}/delete/{id}',
         operationId: 'element_delete',
         description: 'element_delete_description',
         summary: 'element_delete_summary',

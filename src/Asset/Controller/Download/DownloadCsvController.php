@@ -56,7 +56,7 @@ final class DownloadCsvController extends AbstractApiController
     #[Route('/assets/download/csv/{jobRunId}', name: 'pimcore_studio_api_csv_download_asset', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/download/csv/{jobRunId}',
+        path: self::PREFIX . '/assets/download/csv/{jobRunId}',
         operationId: 'asset_download_csv',
         description: 'asset_download_csv_description',
         summary: 'asset_download_csv_summary',

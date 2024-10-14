@@ -51,7 +51,7 @@ final class DeleteController extends AbstractApiController
     #[Route('/schedules/{id}', name: 'pimcore_studio_api_delete_schedule', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::PIMCORE_USER->value)]
     #[Delete(
-        path: self::API_PATH . '/schedules/{id}',
+        path: self::PREFIX . '/schedules/{id}',
         operationId: 'schedule_delete_by_id',
         description: 'schedule_delete_by_id_description',
         summary: 'schedule_delete_by_id_summary',

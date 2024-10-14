@@ -49,7 +49,7 @@ final class GetRolesController extends AbstractApiController
     #[Route('/roles', name: 'pimcore_studio_api_roles', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
-        path: self::API_PATH . '/roles',
+        path: self::PREFIX . '/roles',
         operationId: 'role_get_collection',
         description: 'role_get_collection_description',
         summary: 'role_get_collection_summary',

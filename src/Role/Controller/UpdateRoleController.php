@@ -59,7 +59,7 @@ final class UpdateRoleController extends AbstractApiController
     #[Route('/role/{id}', name: 'pimcore_studio_api_role_update', methods: ['PUT'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Put(
-        path: self::API_PATH . '/role/{id}',
+        path: self::PREFIX . '/role/{id}',
         operationId: 'role_update_by_id',
         summary: 'role_update_by_id_summary',
         tags: [Tags::Role->value]

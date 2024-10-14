@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -45,8 +44,7 @@ final readonly class PatchService implements PatchServiceInterface
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private ElementServiceInterface $elementService,
-        private AdapterLoaderInterface $adapterLoader,
-        private SecurityServiceInterface $securityService,
+        private AdapterLoaderInterface $adapterLoader
     ) {
     }
 
@@ -63,7 +61,7 @@ final readonly class PatchService implements PatchServiceInterface
         }
 
         $element = $this->elementService->getAllowedElementById($elementType, $patchData[0]['id'], $user);
-        $this->patchElement($element, $elementType, $patchData[0]);
+        $this->patchElement($element, $elementType, $patchData[0], $user);
 
         return null;
     }
@@ -74,7 +72,8 @@ final readonly class PatchService implements PatchServiceInterface
     public function patchElement(
         ElementInterface $element,
         string $elementType,
-        array $elementPatchData
+        array $elementPatchData,
+        UserInterface $user,
     ): void {
         try {
             $adapters = $this->adapterLoader->loadAdapters($elementType);
@@ -83,7 +82,7 @@ final readonly class PatchService implements PatchServiceInterface
             }
 
             $this->synchronousProcessingService->enable();
-            $element->setUserModification($this->securityService->getCurrentUser()->getId());
+            $element->setUserModification($user->getId());
             $element->save();
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());

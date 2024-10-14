@@ -50,7 +50,7 @@ final class DeleteController extends AbstractApiController
     #[Route('/properties/{id}', name: 'pimcore_studio_api_delete_properties', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::PREDEFINED_PROPERTIES->value)]
     #[Delete(
-        path: self::API_PATH . '/properties/{id}',
+        path: self::PREFIX . '/properties/{id}',
         operationId: 'property_delete',
         description: 'property_delete_description',
         summary: 'property_delete_summary',

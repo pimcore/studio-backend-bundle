@@ -8,6 +8,13 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearch
 
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\ColumnMapperInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\ColumnMapper
+
+  #
+  #  Services
+  #
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridService
 
@@ -16,6 +23,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationService
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionService
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SystemColumnService
@@ -34,6 +44,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareService
+
   #
   # Repository
   #
@@ -154,6 +165,9 @@ services:
     tags: [ 'pimcore.studio_backend.grid_column_collector' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\FieldDefinitionCollector:
+    tags: [ 'pimcore.studio_backend.grid_column_collector' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\ObjectBrickCollector:
     tags: [ 'pimcore.studio_backend.grid_column_collector' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\Asset\MetadataCollector:

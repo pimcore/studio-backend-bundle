@@ -67,7 +67,7 @@ final class ReplaceController extends AbstractApiController
     #[Route('/assets/{id}/replace', name: 'pimcore_studio_api_assets_replace', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/{id}/replace',
+        path: self::PREFIX . '/assets/{id}/replace',
         operationId: 'asset_replace',
         description: 'asset_replace_description',
         summary: 'asset_replace_summary',

@@ -66,7 +66,7 @@ final class TreeController extends AbstractApiController
     #[Route('/assets/tree', name: 'pimcore_studio_api_assets_tree', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/tree',
+        path: self::PREFIX . '/assets/tree',
         operationId: 'asset_get_tree',
         description: 'asset_get_tree_description',
         summary: 'asset_get_tree_summary',

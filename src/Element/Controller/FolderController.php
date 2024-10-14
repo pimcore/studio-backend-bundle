@@ -68,7 +68,7 @@ final class FolderController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Post(
-        path: self::API_PATH . '/elements/{elementType}/folder/{parentId}',
+        path: self::PREFIX . '/elements/{elementType}/folder/{parentId}',
         operationId: 'element_folder_create',
         description: 'element_folder_create_description',
         summary: 'element_folder_create_summary',

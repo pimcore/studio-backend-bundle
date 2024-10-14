@@ -44,6 +44,7 @@ class Configuration implements ConfigurationInterface
 
         $rootNode = $treeBuilder->getRootNode();
         $rootNode->addDefaultsIfNotSet();
+        $this->addUrlPrefix($rootNode);
         $this->addOpenApiScanPathsNode($rootNode);
         $this->addApiTokenNode($rootNode);
         $this->addAllowedHostsForCorsNode($rootNode);
@@ -57,6 +58,14 @@ class Configuration implements ConfigurationInterface
         $this->addNoteTypes($rootNode);
 
         return $treeBuilder;
+    }
+
+    private function addUrlPrefix(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->scalarNode('url_prefix')
+            ->defaultValue('/pimcore-studio/api')
+        ->end();
     }
 
     private function addOpenApiScanPathsNode(ArrayNodeDefinition $node): void

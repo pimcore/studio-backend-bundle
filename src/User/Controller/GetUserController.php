@@ -55,7 +55,7 @@ final class GetUserController extends AbstractApiController
     #[Route('/user/{id}', name: 'pimcore_studio_api_user_get', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
-        path: self::API_PATH . '/user/{id}',
+        path: self::PREFIX . '/user/{id}',
         operationId: 'user_get_by_id',
         summary: 'user_get_by_id_summary',
         tags: [Tags::User->value]

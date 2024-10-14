@@ -48,7 +48,7 @@ final class CsvAssetController extends AbstractApiController
     #[Route('/assets/export/csv/asset', name: 'pimcore_studio_api_asset_export_csv_asset', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/export/csv/asset',
+        path: self::PREFIX . '/assets/export/csv/asset',
         operationId: 'asset_export_csv_asset',
         description: 'asset_export_csv_asset_description',
         summary: 'asset_export_csv_asset_summary',

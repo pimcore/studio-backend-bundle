@@ -53,7 +53,7 @@ final class AddController extends AbstractApiController
     #[Route('/emails/blocklist', name: 'pimcore_studio_api_emails_blocklist_add', methods: ['POST'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Post(
-        path: self::API_PATH . '/emails/blocklist',
+        path: self::PREFIX . '/emails/blocklist',
         operationId: 'email_blocklist_add',
         description: 'email_blocklist_add_description',
         summary: 'email_blocklist_add_summary',

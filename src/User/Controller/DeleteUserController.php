@@ -54,7 +54,7 @@ final class DeleteUserController extends AbstractApiController
     #[Route('/user/{id}', name: 'pimcore_studio_api_user_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Delete(
-        path: self::API_PATH . '/user/{id}',
+        path: self::PREFIX . '/user/{id}',
         operationId: 'user_delete_by_id',
         summary: 'user_delete_by_id_summary',
         tags: [Tags::User->value]

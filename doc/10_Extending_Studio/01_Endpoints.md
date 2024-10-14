@@ -27,6 +27,7 @@ To add a custom endpoint to the Pimcore Studio Backend you need to implement it 
   - We try to leverage symfony functionality as much as possible for parameters with `#[MapQueryString]` or `#[MapRequestPayload]` attributes
 
 ### Example
+
 ```php
 <?php
 declare(strict_types=1);
@@ -79,7 +80,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/notes', name: 'pimcore_studio_api_get_notes', methods: ['GET'])]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Get(
-        path: self::API_PATH . '/notes',
+        path: self::PREFIX . '/notes',
         operationId: 'note_get_collection',
         description: 'note_get_collection_description',
         summary: 'note_get_collection_summary',

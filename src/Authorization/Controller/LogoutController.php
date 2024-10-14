@@ -30,7 +30,7 @@ final class LogoutController extends AbstractApiController
 {
     #[Route('/logout', name: 'pimcore_studio_api_logout', methods: ['POST'])]
     #[Post(
-        path: self::API_PATH . '/logout',
+        path: self::PREFIX . '/logout',
         operationId: 'logout',
         description: 'logout_description',
         summary: 'logout_summary',

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\Asset;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
@@ -58,7 +59,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
      */
     private function getDefaultMetadata(): array
     {
-        $defaultMetadata = ['title', 'alt', 'copyright'];
+        $defaultMetadata = CustomMetadataServiceInterface::DEFAULT_METADATA;
         $columns = [];
         foreach ($defaultMetadata as $metadata) {
             $columns[] = new ColumnConfiguration(
@@ -98,7 +99,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
                 group: 'predefined_metadata',
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
                 editable: true,
-                localizable: false,
+                localizable: true,
                 locale: null,
                 type: $type,
                 frontendType: $availableColumnDefinitions[$type]->getFrontendType(),

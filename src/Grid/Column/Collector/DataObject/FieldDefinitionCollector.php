@@ -16,16 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
-use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseClassIdTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseFolderIdTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -47,8 +45,8 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
     private array $groupedDefinitions = [];
 
     public function __construct(
-        private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
-        private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private readonly ClassDefinitionServiceInterface $classDefinitionService,
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService
     ) {
     }
 
@@ -59,31 +57,12 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
 
     public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
-        try {
-            $classDefinition = $this->classDefinitionResolver->getById($this->getClassId());
-        } catch (Exception) {
-            $classDefinition = null;
-        }
-
-        if (!$classDefinition) {
-            throw new NotFoundException('Class definition', $this->getClassId());
-        }
-
-        $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
-            $classDefinition,
-            744
+        $layoutDefinitions = $this->classDefinitionService->getFilteredLayoutDefinitions(
+            $this->getClassId(),
+            $this->getFolderId()
         );
 
-        if (!isset($filteredDefinitions['layoutDefinition'])) {
-            return [];
-        }
-
-        /** @var Layout $layoutDefinitions */
-        $layoutDefinitions = $filteredDefinitions['layoutDefinition'];
-
-        $this->dataObjectServiceResolver->enrichLayoutDefinition(
-            $layoutDefinitions
-        );
+        $classDefinition = $this->classDefinitionService->getClassDefinition($this->getClassId());
 
         $children = $layoutDefinitions->getChildren();
 
@@ -143,31 +122,10 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
     {
         $columns = [];
         foreach ($this->groupedDefinitions as $definition) {
-            $columns[] = $this->buildColumnConfiguration($definition);
+            $columns[] = $this->columnConfigurationService->buildColumnConfiguration($definition);
         }
 
         return $columns;
-    }
-
-    private function buildColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration
-    {
-        $options = null;
-        $fieldDefinition = $definition->getFieldDefinition();
-        if ($fieldDefinition instanceof Data\Select) {
-            $options = $fieldDefinition->getOptions();
-        }
-
-        return new ColumnConfiguration(
-            key: $fieldDefinition->getName(),
-            group: $definition->getGroup(),
-            sortable: true,
-            editable: !$fieldDefinition->getNoteditable(),
-            localizable: $definition->isLocalized(),
-            locale: null,
-            type: 'dataobject.' . $fieldDefinition->getFieldType(),
-            frontendType: $fieldDefinition->getFieldType(),
-            config: $options ? ['options' => $options] : [],
-        );
     }
 
     public function supportedElementTypes(): array

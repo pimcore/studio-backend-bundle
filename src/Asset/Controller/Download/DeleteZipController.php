@@ -51,7 +51,7 @@ final class DeleteZipController extends AbstractApiController
     #[Route('/assets/download/zip/{jobRunId}', name: 'pimcore_studio_api_zip_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
-        path: self::API_PATH . '/assets/download/zip/{jobRunId}',
+        path: self::PREFIX . '/assets/download/zip/{jobRunId}',
         operationId: 'asset_delete_zip',
         description: 'asset_delete_zip_description',
         summary: 'asset_delete_zip_summary',

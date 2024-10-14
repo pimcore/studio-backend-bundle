@@ -53,7 +53,7 @@ final class ImageCollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[IsGranted(UserPermissions::THUMBNAILS->value)]
     #[Get(
-        path: self::API_PATH . '/thumbnails/image',
+        path: self::PREFIX . '/thumbnails/image',
         operationId: 'thumbnail_image_get_collection',
         description: 'thumbnail_image_get_collection_description',
         summary: 'thumbnail_image_get_collection_summary',

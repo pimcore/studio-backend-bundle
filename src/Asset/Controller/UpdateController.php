@@ -52,7 +52,7 @@ final class UpdateController extends AbstractApiController
     #[Route('/assets/{id}', name: 'pimcore_studio_api_update_asset', methods: ['PUT'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Put(
-        path: self::API_PATH . '/assets/{id}',
+        path: self::PREFIX . '/assets/{id}',
         operationId: 'asset_update_by_id',
         description: 'asset_update_by_id_description',
         summary: 'asset_update_by_id_summary',
