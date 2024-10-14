@@ -64,7 +64,6 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
      */
     public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
-        $objectBricks = [];
         $objectBrickList = new ObjectBrickListing();
         $objectBrickList = $objectBrickList->load();
 
@@ -151,7 +150,7 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
 
     private function fieldNameExists(string $fieldName, array $filteredFieldDefinitions): bool
     {
-        if (count($filteredFieldDefinitions) === 0) {
+        if (empty($filteredFieldDefinitions)) {
             return true;
         }
 
