@@ -26,7 +26,7 @@ use function array_key_exists;
 /**
  * @internal
  */
-final class SystemFieldCollector implements ColumnCollectorInterface
+final readonly class SystemFieldCollector implements ColumnCollectorInterface
 {
     public function __construct(
         private SystemColumnServiceInterface $systemColumnService,
