@@ -23,25 +23,31 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 
 /**
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class CsvExportRequestBody extends RequestBody
+final class CsvExportFolderRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
             content: new JsonContent(
                 properties: [
-                    new Property(property: 'assets', type: 'array', items: new Items(type: 'integer'), example: [83]),
+                    new Property(property: 'folders', type: 'array', items: new Items(type: 'integer'), example: [83]),
                     new Property(
-                        property: 'gridConfig',
+                        property: 'columns',
                         type: 'array',
                         items: new Items(ref: Column::class)
                     ),
-                    new Property(property: 'settings', properties: [
+                    new Property(
+                        property: 'filters',
+                        ref: Filter::class,
+                        type: 'object'
+                    ),
+                    new Property(property: 'config', properties: [
                         new Property(property: Csv::SETTINGS_DELIMITER->value, type: 'string', example: ';'),
                         new Property(
                             property: Csv::SETTINGS_HEADER->value,

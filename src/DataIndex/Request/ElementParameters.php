@@ -21,6 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ExcludeFolderParam
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\IdSearchParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ParentIdParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PathParameterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\UserParameterInterface;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -29,7 +31,8 @@ readonly class ElementParameters extends CollectionParameters implements
     ParentIdParameterInterface,
     IdSearchParameterInterface,
     ExcludeFolderParameterInterface,
-    PathParameterInterface
+    PathParameterInterface,
+    UserParameterInterface
 {
     public function __construct(
         int $page = 1,
@@ -39,7 +42,8 @@ readonly class ElementParameters extends CollectionParameters implements
         private ?string $excludeFolders = null,
         private ?string $path = null,
         private ?string $pathIncludeParent = null,
-        private ?string $pathIncludeDescendants = null
+        private ?string $pathIncludeDescendants = null,
+        private ?UserInterface $user = null
     ) {
         parent::__construct($page, $pageSize);
     }
@@ -72,5 +76,10 @@ readonly class ElementParameters extends CollectionParameters implements
     public function getPathIncludeDescendants(): bool
     {
         return $this->pathIncludeDescendants === 'true'; // TODO: symfony 7.1 will support bool type
+    }
+
+    public function getUser(): ?UserInterface
+    {
+        return $this->user;
     }
 }

@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -33,7 +33,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class CsvDataCollectionHandler extends AbstractHandler
+final class CsvAssetDataCollectionHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
@@ -51,7 +51,7 @@ final class CsvDataCollectionHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(CsvCollectionMessage $message): void
+    public function __invoke(CsvAssetCollectionMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         if (!$this->shouldBeExecuted($jobRun)) {
@@ -84,8 +84,10 @@ final class CsvDataCollectionHandler extends AbstractHandler
             return;
         }
 
+        $columns = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_COLUMNS->value);
+
         $columnCollection = $this->gridService->getConfigurationFromArray(
-            $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value),
+            $columns,
             true
         );
 
@@ -119,9 +121,9 @@ final class CsvDataCollectionHandler extends AbstractHandler
             Csv::ASSET_TO_EXPORT->value,
             self::ARRAY_TYPE
         );
-        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
+        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_COLUMNS->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::JOB_STEP_CONFIG_CONFIGURATION->value,
+            Csv::JOB_STEP_CONFIG_COLUMNS->value,
             self::ARRAY_TYPE
         );
     }

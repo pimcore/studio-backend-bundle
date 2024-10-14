@@ -14,25 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Trait\CsvConfigValidationTrait;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 
 /**
  * @internal
  */
-final readonly class GridParameter
+readonly class ExportParameter
 {
-    public function __construct(
-        private int $folderId,
-        private array $columns,
-        private ?FilterParameter $filters
-    ) {
-    }
+    use CsvConfigValidationTrait;
 
-    public function getFolderId(): int
-    {
-        return $this->folderId;
+    public function __construct(
+        private array $columns,
+        private ?FilterParameter $filters,
+        private array $config,
+    ) {
+        $this->validate();
     }
 
     public function getColumns(): array
@@ -43,5 +42,15 @@ final readonly class GridParameter
     public function getFilters(): FilterParameter
     {
         return $this->filters ?? new FilterParameter();
+    }
+
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
+
+    private function validate(): void
+    {
+        $this->validateConfig();
     }
 }

@@ -13,3 +13,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Property\Mapper\PropertiesParametersMapper: ~
 
   Pimcore\Bundle\StudioBackendBundle\Filter\Mapper\CollectionParametersMapper: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\ColumnMapperInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\ColumnMapper
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\FilterParameterMapperInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\FilterParameterMapper

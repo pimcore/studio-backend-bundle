@@ -55,9 +55,12 @@ final class CsvCreationHandler extends AbstractHandler
         if (!$this->shouldBeExecuted($jobRun)) {
             return;
         }
-        $settings = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_SETTINGS->value);
+
+        $columns = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_COLUMNS->value);
+
+        $settings = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
         $columnCollection = $this->gridService->getConfigurationFromArray(
-            $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value),
+            $columns,
             true
         );
 
@@ -88,14 +91,14 @@ final class CsvCreationHandler extends AbstractHandler
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_SETTINGS->value);
-        $this->stepConfiguration->setAllowedTypes(
-            Csv::JOB_STEP_CONFIG_SETTINGS->value,
-            self::ARRAY_TYPE
-        );
         $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
         $this->stepConfiguration->setAllowedTypes(
             Csv::JOB_STEP_CONFIG_CONFIGURATION->value,
+            self::ARRAY_TYPE
+        );
+        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_COLUMNS->value);
+        $this->stepConfiguration->setAllowedTypes(
+            Csv::JOB_STEP_CONFIG_COLUMNS->value,
             self::ARRAY_TYPE
         );
     }

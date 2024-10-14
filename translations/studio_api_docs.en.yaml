@@ -9,16 +9,25 @@ asset_clone_description: |
   Clones a specific asset with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder
 asset_clone_success_response: Successfully copied asset
 asset_clone_summary: Clone a specific asset
-asset_create_csv_created_response: Successfully created <strong>jobRun</strong> for
+asset_export_csv_created_response: Successfully created <strong>jobRun</strong> for
   csv export
-asset_create_csv_description: |
+asset_export_csv_asset_description: |
   Creating the CSV file for assets. <br> Parameters are: <ul>
     <li><strong>assets</strong>: Array of asset ids</li>
-    <li><strong>gridConfig</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
-    <li><strong>settings</strong>: Delimiter and header options</li>
+    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
+    <li><strong>config</strong>: Delimiter and header options</li>
   </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
-asset_create_csv_summary: Creating CSV file for assets
+asset_export_csv_asset_summary: Creating CSV file for assets
+asset_export_csv_folder_description: |
+  Creating the CSV file for assets based on the folder. <br> Parameters are: <ul>
+    <li><strong>folders</strong>: Array of folder ids</li>
+    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
+    <li><strong>filters</strong>: Filter assets from folder based on the grid filter schema</li>
+    <li><strong>config</strong>: Delimiter and header options</li>
+  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
+  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
+asset_export_csv_folder_summary: Creating CSV file for assets based on folder
 asset_create_zip_created_response: Successfully created <strong>jobRun</strong> for zip export
 asset_create_zip_description: |
   Creating a ZIP file for assets based on the provided asset IDs in <strong>{items}</strong> parameter. <br>

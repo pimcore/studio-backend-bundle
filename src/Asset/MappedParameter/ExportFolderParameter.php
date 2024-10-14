@@ -24,33 +24,34 @@ use Pimcore\Model\Element\ElementDescriptor;
 /**
  * @internal
  */
-final readonly class ExportAssetParameter extends ExportParameter
+final readonly class ExportFolderParameter extends ExportParameter
 {
     /**
-     * @param array<int> $assets
+     * @param array<int> $folders
      */
     public function __construct(
         array $columns,
+        ?FilterParameter $filters,
         array $config,
-        private array $assets
+        private array $folders
     ) {
-        parent::__construct($columns, new FilterParameter(), $config);
+        parent::__construct($columns, $filters, $config);
         $this->validate();
     }
 
     /** @return array<int, ElementDescriptor> */
-    public function getAssets(): array
+    public function getFolders(): array
     {
         return array_map(
             static fn (int $id) => new ElementDescriptor(ElementTypes::TYPE_ASSET, $id),
-            $this->assets
+            $this->folders
         );
     }
 
     private function validate(): void
     {
-        if (empty($this->getAssets())) {
-            throw new InvalidArgumentException('No assets provided');
+        if (empty($this->getFolders())) {
+            throw new InvalidArgumentException('No folders provided');
         }
     }
 }
