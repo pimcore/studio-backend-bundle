@@ -55,7 +55,7 @@ final class SetAsFavoriteController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/grid/configuration/set-as-favorite/{configurationId}/{folderId}',
+        path: self::PREFIX . '/assets/grid/configuration/set-as-favorite/{configurationId}/{folderId}',
         operationId: 'asset_set_grid_configuration_as_favorite',
         description: 'asset_set_grid_configuration_as_favorite_description',
         summary: 'asset_set_grid_configuration_as_favorite_summary',

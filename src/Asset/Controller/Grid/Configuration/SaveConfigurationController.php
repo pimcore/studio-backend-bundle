@@ -55,7 +55,7 @@ final class SaveConfigurationController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/grid/configuration/save',
+        path: self::PREFIX . '/assets/grid/configuration/save',
         operationId: 'asset_save_grid_configuration',
         description: 'asset_save_grid_configuration_description',
         summary: 'asset_save_grid_configuration_description',

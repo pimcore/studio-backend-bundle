@@ -73,7 +73,7 @@ final class PreviewStreamController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/document/stream/pdf-preview',
+        path: self::PREFIX . '/assets/{id}/document/stream/pdf-preview',
         operationId: 'asset_document_stream_preview',
         description: 'asset_document_stream_preview_description',
         summary: 'asset_document_stream_preview_summary',

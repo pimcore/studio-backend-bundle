@@ -56,7 +56,7 @@ final class DownloadZipController extends AbstractApiController
     #[Route('/assets/download/zip/{jobRunId}', name: 'pimcore_studio_api_zip_download_asset', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/download/zip/{jobRunId}',
+        path: self::PREFIX . '/assets/download/zip/{jobRunId}',
         operationId: 'asset_download_zip',
         description: 'asset_download_zip_description',
         summary: 'asset_download_zip_summary',

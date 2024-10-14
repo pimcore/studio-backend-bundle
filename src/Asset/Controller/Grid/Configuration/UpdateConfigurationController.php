@@ -56,7 +56,7 @@ final class UpdateConfigurationController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Put(
-        path: self::API_PATH . '/assets/grid/configuration/update/{configurationId}',
+        path: self::PREFIX . '/assets/grid/configuration/update/{configurationId}',
         operationId: 'asset_update_grid_configuration',
         description: 'asset_update_grid_configuration_description',
         summary: 'asset_update_grid_configuration_summary',

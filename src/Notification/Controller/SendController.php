@@ -61,7 +61,7 @@ final class SendController extends AbstractApiController
     #[Route('/notifications/send', name: 'pimcore_studio_api_notification_send', methods: ['POST'])]
     #[IsGranted(UserPermissions::NOTIFICATIONS_SEND->value)]
     #[Post(
-        path: self::API_PATH . '/notifications/send',
+        path: self::PREFIX . '/notifications/send',
         operationId: 'notification_send',
         description: 'notification_send_description',
         summary: 'notification_send_summary',

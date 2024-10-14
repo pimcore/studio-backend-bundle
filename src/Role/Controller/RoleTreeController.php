@@ -56,7 +56,7 @@ final class RoleTreeController extends AbstractApiController
     #[Route('/roles/tree', name: 'pimcore_studio_api_role_tree', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
-        path: self::API_PATH . '/roles/tree',
+        path: self::PREFIX . '/roles/tree',
         operationId: 'role_get_tree',
         summary: 'role_get_tree_summary',
         tags: [Tags::Role->value]

@@ -59,7 +59,7 @@ final class CollectionController extends AbstractApiController
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[IsGranted(UserPermissions::GDPR->value)]
     #[Get(
-        path: self::API_PATH . '/emails',
+        path: self::PREFIX . '/emails',
         operationId: 'email_log_get_collection',
         description: 'email_log_get_collection_description',
         summary: 'email_log_get_collection_summary',

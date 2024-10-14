@@ -56,7 +56,7 @@ final class CleanupController extends AbstractApiController
     #[Route('/versions/{elementType}/{id}', name: 'pimcore_studio_api_cleanup_versions', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Delete(
-        path: self::API_PATH . '/versions/{elementType}/{id}',
+        path: self::PREFIX . '/versions/{elementType}/{id}',
         operationId: 'version_cleanup_for_element_by_type_and_id',
         description: 'version_cleanup_for_element_by_type_and_id_description',
         summary: 'version_cleanup_for_element_by_type_and_id_summary',

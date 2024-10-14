@@ -59,7 +59,7 @@ final class GetAvailableColumnsController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::API_PATH . '/data-object/grid/available-columns/{classId}/folderId',
+        path: self::PREFIX . '/data-object/grid/available-columns/{classId}/folderId',
         operationId: 'data_object_get_available_grid_columns',
         description: 'data_object_get_available_grid_columns_description',
         summary: 'data_object_get_available_grid_columns_summary',

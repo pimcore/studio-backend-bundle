@@ -57,7 +57,7 @@ final class ListSavedConfigurationsController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/grid/configurations/{folderId}',
+        path: self::PREFIX . '/assets/grid/configurations/{folderId}',
         operationId: 'asset_get_saved_grid_configurations',
         description: 'asset_get_saved_grid_configurations_description',
         summary: 'asset_get_saved_grid_configurations_summary',

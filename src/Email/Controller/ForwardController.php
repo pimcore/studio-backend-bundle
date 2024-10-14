@@ -59,7 +59,7 @@ final class ForwardController extends AbstractApiController
     #[Route('/emails/{id}/forward', name: 'pimcore_studio_api_emails_forward', methods: ['POST'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Post(
-        path: self::API_PATH . '/emails/{id}/forward',
+        path: self::PREFIX . '/emails/{id}/forward',
         operationId: 'email_log_forward_by_id',
         description: 'email_log_forward_by_id_description',
         summary: 'email_log_forward_by_id_summary',

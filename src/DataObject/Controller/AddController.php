@@ -64,7 +64,7 @@ final class AddController extends AbstractApiController
     #[Route('/data-objects/add/{parentId}', name: 'pimcore_studio_api_data_objects_add', methods: ['POST'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
-        path: self::API_PATH . '/data-objects/add/{parentId}',
+        path: self::PREFIX . '/data-objects/add/{parentId}',
         operationId: 'data_object_add',
         description: 'data_object_add_description',
         summary: 'data_object_add_summary',

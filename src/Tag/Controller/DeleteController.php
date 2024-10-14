@@ -51,7 +51,7 @@ final class DeleteController extends AbstractApiController
     #[Route('/tags/{id}', name: 'pimcore_studio_api_delete_tags', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::TAGS_CONFIGURATION->value)]
     #[Delete(
-        path: self::API_PATH . '/tags/{id}',
+        path: self::PREFIX . '/tags/{id}',
         operationId: 'tag_delete_by_id',
         description: 'tag_delete_by_id_description',
         summary: 'tag_delete_by_id_summary',

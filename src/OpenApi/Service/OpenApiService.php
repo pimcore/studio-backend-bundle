@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Service;
 
 use JsonException;
 use OpenApi\Annotations\OpenApi;
+use OpenApi\Annotations\PathItem;
 use OpenApi\Attributes\Schema;
 use OpenApi\Generator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -32,6 +33,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
 
     public function __construct(
         private TranslatorServiceInterface $translator,
+        private string $routePrefix,
         private array $openApiScanPaths = []
     ) {
     }
@@ -42,6 +44,17 @@ final readonly class OpenApiService implements OpenApiServiceInterface
 
         if ($config) {
             usort($config->components->schemas, [$this, 'sortSchemas']);
+
+            // replace the configurable prefix in the paths
+            $prefix = $this->routePrefix;
+            $config->paths = array_map(
+                static function (PathItem $pathItem) use ($prefix) {
+                    $pathItem->path = str_replace('{prefix}', $prefix, $pathItem->path);
+
+                    return $pathItem;
+                },
+                $config->paths
+            );
         }
 
         return $config;

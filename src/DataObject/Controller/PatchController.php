@@ -61,7 +61,7 @@ final class PatchController extends AbstractApiController
     #[Route('/data-objects', name: 'pimcore_studio_api_patch_data_object', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Patch(
-        path: self::API_PATH . '/data-objects',
+        path: self::PREFIX . '/data-objects',
         operationId: 'data_object_patch_by_id',
         description: 'data_object_patch_by_id_description',
         summary: 'data_object_patch_by_id_summary',

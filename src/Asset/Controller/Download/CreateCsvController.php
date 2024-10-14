@@ -48,7 +48,7 @@ final class CreateCsvController extends AbstractApiController
     #[Route('/assets/csv/create', name: 'pimcore_studio_api_create_csv_asset', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/csv/create',
+        path: self::PREFIX . '/assets/csv/create',
         operationId: 'asset_create_csv',
         description: 'asset_create_csv_description',
         summary: 'asset_create_csv_summary',

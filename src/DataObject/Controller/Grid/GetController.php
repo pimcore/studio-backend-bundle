@@ -53,7 +53,7 @@ final class GetController extends AbstractApiController
     #[Route('/data-objects/grid', name: 'pimcore_studio_api_get_data_object_grid', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/data-objects/grid',
+        path: self::PREFIX . '/data-objects/grid',
         operationId: 'data_object_get_grid',
         description: 'data_object_get_grid_description',
         summary: 'data_object_get_grid_summary',

@@ -59,7 +59,7 @@ final class InfoController extends AbstractApiController
     #[Route('/assets/exists/{parentId}', name: 'pimcore_studio_api_asset_upload_info', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/exists/{parentId}',
+        path: self::PREFIX . '/assets/exists/{parentId}',
         operationId: 'asset_upload_info',
         description: 'asset_upload_info_description',
         summary: 'asset_upload_info_summary',

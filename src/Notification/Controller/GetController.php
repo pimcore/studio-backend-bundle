@@ -53,7 +53,7 @@ final class GetController extends AbstractApiController
     #[Route('/notifications/{id}', name: 'pimcore_studio_api_notification_get', methods: ['GET'])]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
     #[Get(
-        path: self::API_PATH . '/notifications/{id}',
+        path: self::PREFIX . '/notifications/{id}',
         operationId: 'notification_get_by_id',
         description: 'notification_get_by_id_description',
         summary: 'notification_get_by_id_summary',

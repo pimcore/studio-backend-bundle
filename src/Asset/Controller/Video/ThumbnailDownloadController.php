@@ -72,7 +72,7 @@ final class ThumbnailDownloadController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/video/download/{thumbnailName}',
+        path: self::PREFIX . '/assets/{id}/video/download/{thumbnailName}',
         operationId: 'asset_video_download_by_thumbnail',
         description: 'asset_video_download_by_thumbnail_description',
         summary: 'asset_video_download_by_thumbnail_summary',

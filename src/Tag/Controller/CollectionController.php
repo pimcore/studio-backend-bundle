@@ -60,7 +60,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/tags', name: 'pimcore_studio_api_tags', methods: ['GET'])]
     #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
-        path: self::API_PATH . '/tags',
+        path: self::PREFIX . '/tags',
         operationId: 'tag_get_collection',
         description: 'tag_get_collection_description',
         summary: 'tag_get_collection_summary',
