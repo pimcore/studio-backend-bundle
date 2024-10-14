@@ -51,7 +51,7 @@ final class DeleteController extends AbstractApiController
     #[Route('/notifications/{id}', name: 'pimcore_studio_api_delete_notification', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
     #[Delete(
-        path: self::API_PATH . '/notifications/{id}',
+        path: self::PREFIX . '/notifications/{id}',
         operationId: 'notification_delete_by_id',
         description: 'notification_delete_by_id_description',
         summary: 'notification_delete_by_id_summary',

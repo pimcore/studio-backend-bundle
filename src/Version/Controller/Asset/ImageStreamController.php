@@ -57,7 +57,7 @@ final class ImageStreamController extends AbstractApiController
     #[Route('/versions/{id}/image/stream', name: 'pimcore_studio_api_stream_image_version', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/versions/{id}/image/stream',
+        path: self::PREFIX . '/versions/{id}/image/stream',
         operationId: 'version_image_stream_by_id',
         description: 'version_image_stream_by_id_description',
         summary: 'version_image_stream_by_id_summary',

@@ -56,7 +56,7 @@ final class EmailParamsController extends AbstractApiController
     #[Route('/emails/{id}/params', name: 'pimcore_studio_api_emails_log_params', methods: ['GET'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
-        path: self::API_PATH . '/emails/{id}/params',
+        path: self::PREFIX . '/emails/{id}/params',
         operationId: 'email_log_get_params',
         description: 'email_log_get_params_description',
         summary: 'email_log_get_params_summary',

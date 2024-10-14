@@ -67,7 +67,7 @@ final class ZipController extends AbstractApiController
     #[Route('/assets/add-zip/{parentId}', name: 'pimcore_studio_api_assets_upload_zip', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/add-zip/{parentId}',
+        path: self::PREFIX . '/assets/add-zip/{parentId}',
         operationId: 'asset_upload_zip',
         description: 'asset_upload_zip_description',
         summary: 'asset_upload_zip_summary',

@@ -63,7 +63,7 @@ final class CloneController extends AbstractApiController
     #[Route('/assets/{id}/clone/{parentId}', name: 'pimcore_studio_api_assets_clone', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/{id}/clone/{parentId}',
+        path: self::PREFIX . '/assets/{id}/clone/{parentId}',
         operationId: 'asset_clone',
         description: 'asset_clone_description',
         summary: 'asset_clone_summary',

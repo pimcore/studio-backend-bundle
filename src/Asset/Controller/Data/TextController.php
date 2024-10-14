@@ -57,7 +57,7 @@ final class TextController extends AbstractApiController
     #[Route('/assets/{id}/text', name: 'pimcore_studio_api_get_asset_data_text', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/text',
+        path: self::PREFIX . '/assets/{id}/text',
         operationId: 'asset_get_text_data_by_id',
         description: 'asset_get_text_data_by_id_description',
         summary: 'asset_get_text_data_by_id_summary',

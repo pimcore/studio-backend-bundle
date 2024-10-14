@@ -47,7 +47,7 @@ final class GetController extends AbstractApiController
     #[Route('/tags/{id}', name: 'pimcore_studio_api_get_tag', methods: ['GET'])]
     #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
-        path: self::API_PATH . '/tags/{id}',
+        path: self::PREFIX . '/tags/{id}',
         operationId: 'tag_get_by_id',
         description: 'tag_get_by_id_description',
         summary: 'tag_get_by_id_summary',

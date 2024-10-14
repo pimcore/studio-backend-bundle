@@ -25,6 +25,6 @@ trait StudioBackendPathTrait
 {
     private function isStudioBackendPath(string $path): bool
     {
-        return str_starts_with($path, AbstractApiController::API_PATH);
+        return str_starts_with($path, AbstractApiController::PREFIX);
     }
 }

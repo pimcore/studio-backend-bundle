@@ -55,7 +55,7 @@ final class CloneController extends AbstractApiController
     #[Route('/role/clone/{id}', name: 'pimcore_studio_api_role_clone', methods: ['POST'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
-        path: self::API_PATH . '/role/clone/{id}',
+        path: self::PREFIX . '/role/clone/{id}',
         operationId: 'role_clone_by_id',
         summary: 'role_clone_by_id_summary',
         tags: [Tags::Role->value]

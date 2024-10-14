@@ -56,7 +56,7 @@ final class EmailHtmlController extends AbstractApiController
     #[Route('/emails/{id}/html', name: 'pimcore_studio_api_emails_log_html', methods: ['GET'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
-        path: self::API_PATH . '/emails/{id}/html',
+        path: self::PREFIX . '/emails/{id}/html',
         operationId: 'email_log_get_html',
         description: 'email_log_get_html_description',
         summary: 'email_log_get_html_summary',

@@ -69,7 +69,7 @@ final class AddController extends AbstractApiController
     #[Route('/assets/add/{parentId}', name: 'pimcore_studio_api_assets_add', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/add/{parentId}',
+        path: self::PREFIX . '/assets/add/{parentId}',
         operationId: 'asset_add',
         description: 'asset_add_description',
         summary: 'asset_add_summary',

@@ -56,7 +56,7 @@ final class EmailTextController extends AbstractApiController
     #[Route('/emails/{id}/text', name: 'pimcore_studio_api_emails_log_text', methods: ['GET'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Get(
-        path: self::API_PATH . '/emails/{id}/text',
+        path: self::PREFIX . '/emails/{id}/text',
         operationId: 'email_log_get_text',
         description: 'email_log_get_text_description',
         summary: 'email_log_get_text_summary',

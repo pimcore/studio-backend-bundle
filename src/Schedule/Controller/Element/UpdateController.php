@@ -59,7 +59,7 @@ final class UpdateController extends AbstractApiController
     #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_update_schedules', methods: ['PUT'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Put(
-        path: self::API_PATH . '/schedules/{elementType}/{id}',
+        path: self::PREFIX . '/schedules/{elementType}/{id}',
         operationId: 'schedule_update_for_element_by_type_and_id',
         description: 'schedule_update_for_element_by_type_and_id_description',
         summary: 'schedule_update_for_element_by_type_and_id_summary',

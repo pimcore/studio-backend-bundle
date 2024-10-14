@@ -51,7 +51,7 @@ final class AbortController extends AbstractApiController
     #[Route('/execution-engine/abort/{jobRunId}', name: 'pimcore_studio_api_execution_engine_abort', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/execution-engine/abort/{JobRunId}',
+        path: self::PREFIX . '/execution-engine/abort/{JobRunId}',
         operationId: 'execution_engine_abort_job_run_by_id',
         description: 'execution_engine_abort_job_run_by_id_description',
         summary: 'execution_engine_abort_job_run_by_id_summary',

@@ -52,7 +52,7 @@ final class DeleteCsvController extends AbstractApiController
     #[Route('/assets/download/csv/{jobRunId}', name: 'pimcore_studio_api_csv_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
-        path: self::API_PATH . '/assets/download/csv/{jobRunId}',
+        path: self::PREFIX . '/assets/download/csv/{jobRunId}',
         operationId: 'asset_delete_csv',
         description: 'asset_delete_csv_description',
         summary: 'asset_delete_csv_summary',

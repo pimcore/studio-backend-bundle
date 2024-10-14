@@ -66,7 +66,7 @@ final class PdfStreamController extends AbstractApiController
     #[Route('/versions/{id}/pdf/stream', name: 'pimcore_studio_api_stream_pdf_version', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/versions/{id}/pdf/stream',
+        path: self::PREFIX . '/versions/{id}/pdf/stream',
         operationId: 'version_pdf_stream_by_id',
         description: 'version_pdf_stream_by_id_description',
         summary: 'version_pdf_stream_by_id_summary',

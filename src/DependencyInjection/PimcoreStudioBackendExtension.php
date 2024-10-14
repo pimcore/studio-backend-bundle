@@ -67,6 +67,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $this->checkValidOpenApiScanPaths($config['open_api_scan_paths']);
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
+        $definition->setArgument('$routePrefix', rtrim($config['url_prefix'], '/'));
         $definition->setArgument('$openApiScanPaths', $config['open_api_scan_paths']);
 
         $definition = $container->getDefinition(CorsSubscriber::class);
@@ -92,17 +93,20 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(NoteServiceInterface::class);
         $definition->setArgument('$noteTypes', $config['notes']['types']);
-
     }
 
     public function prepend(ContainerBuilder $container): void
     {
+
         if (!$container->hasParameter('pimcore_studio_backend.firewall_settings')) {
             $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
             $container->setParameter('pimcore_studio_backend.firewall_settings', $containerConfig['security_firewall']);
         }
 
         $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
+
+        $container->setParameter('pimcore_studio_backend.url_prefix', rtrim($containerConfig['url_prefix'], '/'));
+
         foreach ($containerConfig['mercure_settings'] as $key => $setting) {
             if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
                 continue;

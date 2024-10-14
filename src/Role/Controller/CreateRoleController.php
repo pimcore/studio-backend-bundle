@@ -54,7 +54,7 @@ final class CreateRoleController extends AbstractApiController
     #[Route('/role', name: 'pimcore_studio_api_role_create', methods: ['POST'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
-        path: self::API_PATH . '/role',
+        path: self::PREFIX . '/role',
         operationId: 'role_create',
         summary: 'role_create_summary',
         tags: [Tags::Role->value]

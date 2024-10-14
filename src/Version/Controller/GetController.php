@@ -53,7 +53,7 @@ final class GetController extends AbstractApiController
     #[Route('/versions/{id}', name: 'pimcore_studio_api_get_version', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[Get(
-        path: self::API_PATH . '/versions/{id}',
+        path: self::PREFIX . '/versions/{id}',
         operationId: 'version_get_by_id',
         description: 'version_get_by_id_description',
         summary: 'version_get_by_id_summary',

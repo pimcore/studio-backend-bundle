@@ -58,7 +58,7 @@ final class CreateZipController extends AbstractApiController
     #[Route('/assets/zip/create', name: 'pimcore_studio_api_create_zip_asset', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/zip/create',
+        path: self::PREFIX . '/assets/zip/create',
         operationId: 'asset_create_zip',
         description: 'asset_create_zip_description',
         summary: 'asset_create_zip_summary',

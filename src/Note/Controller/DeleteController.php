@@ -49,7 +49,7 @@ final class DeleteController extends AbstractApiController
     #[Route('/notes/{id}', name: 'pimcore_studio_api_delete_note', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Delete(
-        path: self::API_PATH . '/notes/{id}',
+        path: self::PREFIX . '/notes/{id}',
         operationId: 'note_delete_by_id',
         description: 'note_delete_by_id_description',
         summary: 'note_delete_by_id_summary',

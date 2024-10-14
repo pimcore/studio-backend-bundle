@@ -52,7 +52,7 @@ final class UpdateController extends AbstractApiController
     #[Route('/data-objects/{id}', name: 'pimcore_studio_api_update_data_object', methods: ['PUT'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Put(
-        path: self::API_PATH . '/data-objects/{id}',
+        path: self::PREFIX . '/data-objects/{id}',
         operationId: 'data_object_update_by_id',
         description: 'data_object_update_by_id_description',
         summary: 'data_object_update_by_id_summary',

@@ -59,7 +59,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/notifications', name: 'pimcore_studio_api_notifications_list', methods: ['POST'])]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
     #[Post(
-        path: self::API_PATH . '/notifications',
+        path: self::PREFIX . '/notifications',
         operationId: 'notification_get_collection',
         description: 'notification_get_collection_description',
         summary: 'notification_get_collection_summary',

@@ -52,7 +52,7 @@ final class GetController extends AbstractApiController
     #[Route('/assets/{id}', name: 'pimcore_studio_api_get_asset', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}',
+        path: self::PREFIX . '/assets/{id}',
         operationId: 'asset_get_by_id',
         description: 'asset_get_by_id_description',
         summary: 'asset_get_by_id_summary',

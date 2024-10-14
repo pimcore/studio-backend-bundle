@@ -55,7 +55,7 @@ final class CustomMetadataController extends AbstractApiController
     #[Route('/assets/{id}/custom-metadata', name: 'pimcore_studio_api_get_asset_custom_metadata', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[GET(
-        path: self::API_PATH . '/assets/{id}/custom-metadata',
+        path: self::PREFIX . '/assets/{id}/custom-metadata',
         operationId: 'asset_custom_metadata_get_by_id',
         description: 'asset_custom_metadata_get_by_id_description',
         summary: 'asset_custom_metadata_get_by_id_summary',

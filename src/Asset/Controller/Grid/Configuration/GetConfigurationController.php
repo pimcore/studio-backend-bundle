@@ -59,7 +59,7 @@ final class GetConfigurationController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/grid/configuration/{folderId}',
+        path: self::PREFIX . '/assets/grid/configuration/{folderId}',
         operationId: 'asset_get_grid_configuration_by_folderId',
         description: 'asset_get_grid_configuration_by_folderId_description',
         summary: 'asset_get_grid_configuration_by_folderId_summary',

@@ -37,7 +37,7 @@ final class LoginController extends AbstractApiController
 {
     #[Route('/login', name: 'pimcore_studio_api_login', methods: ['POST'])]
     #[Post(
-        path: self::API_PATH . '/login',
+        path: self::PREFIX . '/login',
         operationId: 'login',
         description: 'login_description',
         summary: 'login_summary',
