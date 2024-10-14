@@ -33,7 +33,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
 use function array_key_exists;
-use function count;
 
 /**
  * @internal
