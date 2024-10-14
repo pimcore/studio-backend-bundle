@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -33,6 +32,8 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
+use function array_key_exists;
+use function count;
 
 /**
  * @internal
@@ -50,8 +51,7 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService
-    )
-    {
+    ) {
     }
 
     public function getCollectorName(): string
@@ -81,13 +81,13 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
                 continue;
             }
 
-            if(!$this->usesClass($objectBrick, $classDefinition)) {
+            if (!$this->usesClass($objectBrick, $classDefinition)) {
                 continue;
             }
 
             $fieldName = $this->getUsedFieldName($objectBrick, $classDefinition);
 
-            if(!$this->fieldNameExists($fieldName, $filteredFieldDefinitions)) {
+            if (!$this->fieldNameExists($fieldName, $filteredFieldDefinitions)) {
                 continue;
             }
 
@@ -103,8 +103,7 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
         $dataFields = $this->getDataFields($objectBrick->getLayoutDefinitions());
 
         foreach ($dataFields as $dataField) {
-            $groupName = $objectBrick->getTitle() !== "" ? $objectBrick->getTitle() : $objectBrick->getKey();
-
+            $groupName = $objectBrick->getTitle() !== '' ? $objectBrick->getTitle() : $objectBrick->getKey();
 
             $this->configurations[] = $this->columnConfigurationService->buildColumnConfiguration(
                 new ColumnFieldDefinition($dataField, $groupName, false)
