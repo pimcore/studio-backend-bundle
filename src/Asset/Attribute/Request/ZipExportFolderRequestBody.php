@@ -21,8 +21,6 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 
 /**
@@ -41,7 +39,7 @@ final class ZipExportFolderRequestBody extends RequestBody
                         property: 'filters',
                         ref: Filter::class,
                         type: 'object'
-                    )
+                    ),
                 ],
                 type: 'object'
             )

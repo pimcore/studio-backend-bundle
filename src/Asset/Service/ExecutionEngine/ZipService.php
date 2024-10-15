@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipDownloadMessage;
@@ -61,12 +60,12 @@ final readonly class ZipService implements ZipServiceInterface
 
     private const COLUMN_CONFIG = [
         [
-            'key' => "id",
-            'locale' => "",
-            'type' => "system.integer",
-            'group' => "system",
-            'config' => []
-        ]
+            'key' => 'id',
+            'locale' => '',
+            'type' => 'system.integer',
+            'group' => 'system',
+            'config' => [],
+        ],
     ];
 
     public function __construct(
@@ -170,7 +169,7 @@ final readonly class ZipService implements ZipServiceInterface
         $folders = $parameter->getFolders();
 
         $assets = [];
-        foreach($folders as $folder) {
+        foreach ($folders as $folder) {
 
             $result = $this->gridSearch->searchAssetsForUser(
                 new GridParameter(
@@ -181,7 +180,7 @@ final readonly class ZipService implements ZipServiceInterface
                 $this->securityService->getCurrentUser()
             );
 
-            $ids = array_map(static function($item) {
+            $ids = array_map(static function ($item) {
                 return $item->getId();
             }, $result->getItems());
 
@@ -190,6 +189,7 @@ final readonly class ZipService implements ZipServiceInterface
 
         return $this->createJobRunAndStartExecution($assets);
     }
+
     /**
      * @throws EnvironmentException
      */
