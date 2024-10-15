@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceI
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
@@ -46,6 +47,8 @@ use function sprintf;
  */
 class PimcoreStudioBackendExtension extends Extension implements PrependExtensionInterface
 {
+    private const FIREWALL_PATTERN = '^{prefix}(/.*)?$';
+
     /**
      * {@inheritdoc}
      *
@@ -66,6 +69,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         }
 
         $this->checkValidOpenApiScanPaths($config['open_api_scan_paths']);
+        $this->checkValidUrlPrefix($config['url_prefix']);
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
         $definition->setArgument('$routePrefix', rtrim($config['url_prefix'], '/'));
         $definition->setArgument('$openApiScanPaths', $config['open_api_scan_paths']);
@@ -97,15 +101,23 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
     public function prepend(ContainerBuilder $container): void
     {
+        $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
+            $container,
+            'pimcore_studio_backend'
+        );
+
+        $urlPrefix = rtrim($containerConfig['url_prefix'], '/');
 
         if (!$container->hasParameter('pimcore_studio_backend.firewall_settings')) {
-            $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
+            $containerConfig['security_firewall']['pattern'] = str_replace(
+                '{prefix}',
+                $urlPrefix,
+                self::FIREWALL_PATTERN
+            );
             $container->setParameter('pimcore_studio_backend.firewall_settings', $containerConfig['security_firewall']);
         }
 
-        $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
-
-        $container->setParameter('pimcore_studio_backend.url_prefix', rtrim($containerConfig['url_prefix'], '/'));
+        $container->setParameter('pimcore_studio_backend.url_prefix', $urlPrefix);
 
         foreach ($containerConfig['mercure_settings'] as $key => $setting) {
             if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
@@ -132,6 +144,25 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                     )
                 );
             }
+        }
+    }
+
+    /**
+     * @throws InvalidUrlPrefixException
+     */
+    private function checkValidUrlPrefix(string $urlPrefix): void
+    {
+        if (!str_starts_with($urlPrefix, '/')) {
+            throw new InvalidUrlPrefixException(
+                sprintf('The URL prefix "%s" must start with a slash.', $urlPrefix)
+            );
+        }
+
+        // Check if the prefix contains only valid URL path characters
+        if (!preg_match('/^\/[a-zA-Z0-9\-_\/]*$/', $urlPrefix)) {
+            throw new InvalidUrlPrefixException(
+                sprintf('The URL prefix "%s" must only contain valid URL characters.', $urlPrefix)
+            );
         }
     }
 }
