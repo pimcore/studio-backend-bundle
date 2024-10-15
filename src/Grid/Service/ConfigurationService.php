@@ -44,6 +44,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private SecurityServiceInterface $securityService,
         private EventDispatcherInterface $eventDispatcher,
         private DetailedConfigurationHydratorInterface $detailedConfigurationHydrator,
+        private FavoriteServiceInterface $favoriteService,
         private array $predefinedColumns
     ) {
     }
@@ -108,6 +109,11 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
     public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration
     {
+        if (!$configurationId) {
+            $configuration = $this->favoriteService->getFavoriteConfigurationForAssetFolder($folderId);
+            $configurationId = $configuration?->getId();
+        }
+
         if (!$configurationId) {
             return $this->getDefaultAssetGridConfiguration();
         }
