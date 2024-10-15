@@ -110,7 +110,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         if (!$container->hasParameter('pimcore_studio_backend.firewall_settings')) {
             $containerConfig['security_firewall']['pattern'] = str_replace(
-                '{prefix}', $urlPrefix, self::FIREWALL_PATTERN
+                '{prefix}',
+                $urlPrefix,
+                self::FIREWALL_PATTERN
             );
             $container->setParameter('pimcore_studio_backend.firewall_settings', $containerConfig['security_firewall']);
         }
