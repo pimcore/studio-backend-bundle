@@ -71,7 +71,7 @@ final class ZipFolderController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::MAX_FILE_SIZE_EXCEEDED
+        HttpResponseCodes::MAX_FILE_SIZE_EXCEEDED,
     ])]
     public function assetExportZipFolder(
         #[MapRequestPayload] ExportFolderFileParameter $exportFolderFileParameter
