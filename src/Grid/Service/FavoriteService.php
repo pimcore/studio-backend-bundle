@@ -89,6 +89,4 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
         return $favorite?->getConfiguration();
     }
-
-
 }
