@@ -101,12 +101,17 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
     public function prepend(ContainerBuilder $container): void
     {
-        $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree($container, 'pimcore_studio_backend');
+        $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
+            $container,
+            'pimcore_studio_backend'
+        );
 
         $urlPrefix = rtrim($containerConfig['url_prefix'], '/');
 
         if (!$container->hasParameter('pimcore_studio_backend.firewall_settings')) {
-            $containerConfig['security_firewall']['pattern'] = str_replace('{prefix}', $urlPrefix, self::FIREWALL_PATTERN);
+            $containerConfig['security_firewall']['pattern'] = str_replace(
+                '{prefix}', $urlPrefix, self::FIREWALL_PATTERN
+            );
             $container->setParameter('pimcore_studio_backend.firewall_settings', $containerConfig['security_firewall']);
         }
 
@@ -146,12 +151,16 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
     private function checkValidUrlPrefix(string $urlPrefix): void
     {
         if (!str_starts_with($urlPrefix, '/')) {
-            throw new InvalidUrlPrefixException(sprintf('The URL prefix "%s" must start with a slash.', $urlPrefix));
+            throw new InvalidUrlPrefixException(
+                sprintf('The URL prefix "%s" must start with a slash.', $urlPrefix)
+            );
         }
 
         // Check if the prefix contains only valid URL path characters
         if (!preg_match('/^\/[a-zA-Z0-9\-_\/]*$/', $urlPrefix)) {
-            throw new InvalidUrlPrefixException(sprintf('The URL prefix "%s" must only contain valid URL characters.', $urlPrefix));
+            throw new InvalidUrlPrefixException(
+                sprintf('The URL prefix "%s" must only contain valid URL characters.', $urlPrefix)
+            );
         }
     }
 }
