@@ -48,6 +48,7 @@ use function sprintf;
 class PimcoreStudioBackendExtension extends Extension implements PrependExtensionInterface
 {
     private const FIREWALL_PATTERN = '^{prefix}(/.*)?$';
+
     /**
      * {@inheritdoc}
      *
@@ -105,7 +106,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $urlPrefix = rtrim($containerConfig['url_prefix'], '/');
 
         if (!$container->hasParameter('pimcore_studio_backend.firewall_settings')) {
-            $containerConfig['security_firewall']['pattern'] = str_replace('{prefix}', $urlPrefix,self::FIREWALL_PATTERN);
+            $containerConfig['security_firewall']['pattern'] = str_replace('{prefix}', $urlPrefix, self::FIREWALL_PATTERN);
             $container->setParameter('pimcore_studio_backend.firewall_settings', $containerConfig['security_firewall']);
         }
 
