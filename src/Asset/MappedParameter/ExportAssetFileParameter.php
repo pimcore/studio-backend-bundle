@@ -21,7 +21,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
  */
 final readonly class ExportAssetFileParameter
 {
-    /** @param array<int> $items */
+    /** @param array<int> $assets */
     public function __construct(
         private array $assets
     ) {

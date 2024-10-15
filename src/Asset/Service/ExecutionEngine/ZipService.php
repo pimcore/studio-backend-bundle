@@ -58,16 +58,6 @@ final readonly class ZipService implements ZipServiceInterface
 {
     use TempFilePathTrait;
 
-    private const COLUMN_CONFIG = [
-        [
-            'key' => 'id',
-            'locale' => '',
-            'type' => 'system.integer',
-            'group' => 'system',
-            'config' => [],
-        ],
-    ];
-
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
         private JobExecutionAgentInterface $jobExecutionAgent,
@@ -161,6 +151,7 @@ final readonly class ZipService implements ZipServiceInterface
      */
     public function generateZipFileForAssets(ExportAssetFileParameter $parameter): int
     {
+        $this->validateDownloadItems($parameter->getAssets());
         return $this->createJobRunAndStartExecution($parameter->getAssets());
     }
 
@@ -185,6 +176,7 @@ final readonly class ZipService implements ZipServiceInterface
             }, $result->getItems());
 
             $assets = [...$assets, ...$ids];
+            $this->validateDownloadItems($assets);
         }
 
         return $this->createJobRunAndStartExecution($assets);
@@ -315,8 +307,6 @@ final readonly class ZipService implements ZipServiceInterface
 
     private function createJobRunAndStartExecution(array $assets): int
     {
-        $this->validateDownloadItems($assets);
-
         $job = new Job(
             name: Jobs::CREATE_ZIP->value,
             steps: [
