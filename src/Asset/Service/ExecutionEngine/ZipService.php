@@ -19,14 +19,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipDownloadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ZipUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetFileParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -36,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -55,12 +59,23 @@ final readonly class ZipService implements ZipServiceInterface
 {
     use TempFilePathTrait;
 
+    private const COLUMN_CONFIG = [
+        [
+            'key' => "id",
+            'locale' => "",
+            'type' => "system.integer",
+            'group' => "system",
+            'config' => []
+        ]
+    ];
+
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
         private JobExecutionAgentInterface $jobExecutionAgent,
         private SecurityServiceInterface $securityService,
         private StorageServiceInterface $storageService,
         private UploadServiceInterface $uploadService,
+        private GridSearchInterface $gridSearch,
         private array $downloadLimits,
     ) {
     }
@@ -145,31 +160,36 @@ final readonly class ZipService implements ZipServiceInterface
     /**
      * @throws EnvironmentException|MaxFileSizeExceededException
      */
-    public function generateZipFile(CreateAssetFileParameter $parameter): int
+    public function generateZipFileForAssets(ExportAssetFileParameter $parameter): int
     {
-        $items = $parameter->getItems();
-        $this->validateDownloadItems($items);
-        $job = new Job(
-            name: Jobs::CREATE_ZIP->value,
-            steps: [
-                new JobStep(
-                    JobSteps::ZIP_CREATION->value,
-                    ZipDownloadMessage::class,
-                    '',
-                    [self::ASSETS_TO_ZIP => $items]
-                ),
-            ],
-        );
-
-        $jobRun = $this->jobExecutionAgent->startJobExecution(
-            $job,
-            $this->securityService->getCurrentUser()->getId(),
-            Config::CONTEXT_STOP_ON_ERROR->value
-        );
-
-        return $jobRun->getId();
+        return $this->createJobRunAndStartExecution($parameter->getAssets());
     }
 
+    public function generateZipFileForFolders(ExportFolderFileParameter $parameter): int
+    {
+        $folders = $parameter->getFolders();
+
+        $assets = [];
+        foreach($folders as $folder) {
+
+            $result = $this->gridSearch->searchAssetsForUser(
+                new GridParameter(
+                    $folder->getId(),
+                    [],
+                    $parameter->getFilters()
+                ),
+                $this->securityService->getCurrentUser()
+            );
+
+            $ids = array_map(static function($item) {
+                return $item->getId();
+            }, $result->getItems());
+
+            $assets = [...$assets, ...$ids];
+        }
+
+        return $this->createJobRunAndStartExecution($assets);
+    }
     /**
      * @throws EnvironmentException
      */
@@ -291,5 +311,30 @@ final readonly class ZipService implements ZipServiceInterface
                 'The total size of the selected assets exceeds the maximum size of %s bytes.'
             );
         }
+    }
+
+    private function createJobRunAndStartExecution(array $assets): int
+    {
+        $this->validateDownloadItems($assets);
+
+        $job = new Job(
+            name: Jobs::CREATE_ZIP->value,
+            steps: [
+                new JobStep(
+                    JobSteps::ZIP_CREATION->value,
+                    ZipDownloadMessage::class,
+                    '',
+                    [self::ASSETS_TO_ZIP => $assets]
+                ),
+            ],
+        );
+
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $this->securityService->getCurrentUser()->getId(),
+            Config::CONTEXT_STOP_ON_ERROR->value
+        );
+
+        return $jobRun->getId();
     }
 }

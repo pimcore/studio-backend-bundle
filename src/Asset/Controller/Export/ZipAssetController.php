@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Export;
 
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -42,7 +42,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CreateZipController extends AbstractApiController
+final class ZipAssetController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -55,31 +55,31 @@ final class CreateZipController extends AbstractApiController
      * @throws ForbiddenException|NotFoundException|StreamResourceNotFoundException
      * @throws EnvironmentException|MaxFileSizeExceededException
      */
-    #[Route('/assets/zip/create', name: 'pimcore_studio_api_create_zip_asset', methods: ['POST'])]
+    #[Route('/assets/export/zip/asset', name: 'pimcore_studio_api_asset_export_zip_asset', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/assets/zip/create',
-        operationId: 'asset_create_zip',
-        description: 'asset_create_zip_description',
-        summary: 'asset_create_zip_summary',
+        path: self::PREFIX . '/assets/export/zip/asset',
+        operationId: 'asset_export_zip_asset',
+        description: 'asset_export_zip_asset_description',
+        summary: 'asset_export_zip_asset_summary',
         tags: [Tags::Assets->name]
     )]
     #[RequestBody(
-        content: new ScalarItemsJson('integer')
+        content: new ScalarItemsJson('integer', 'assets')
     )]
     #[CreatedResponse(
-        description: 'asset_create_zip_created_response',
+        description: 'asset_export_zip_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function createZippedAssets(
-        #[MapRequestPayload] CreateAssetFileParameter $createAssetFileParameter
+    public function assetExportZipAsset(
+        #[MapRequestPayload] ExportAssetFileParameter $exportAssetFileParameter
     ): Response {
         return $this->jsonResponse(
-            ['jobRunId' => $this->zipService->generateZipFile($createAssetFileParameter)],
+            ['jobRunId' => $this->zipService->generateZipFileForAssets($exportAssetFileParameter)],
             HttpResponseCodes::CREATED->value
         );
     }

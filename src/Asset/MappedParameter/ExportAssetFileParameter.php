@@ -19,16 +19,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 /**
  * @internal
  */
-final readonly class CreateAssetFileParameter
+final readonly class ExportAssetFileParameter
 {
     /** @param array<int> $items */
     public function __construct(
-        private array $items
+        private array $assets
     ) {
     }
 
-    public function getItems(): array
+    public function getAssets(): array
     {
-        return $this->items;
+        return $this->assets;
     }
 }
