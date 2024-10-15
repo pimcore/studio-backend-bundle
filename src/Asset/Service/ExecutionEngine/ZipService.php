@@ -152,6 +152,7 @@ final readonly class ZipService implements ZipServiceInterface
     public function generateZipFileForAssets(ExportAssetFileParameter $parameter): int
     {
         $this->validateDownloadItems($parameter->getAssets());
+
         return $this->createJobRunAndStartExecution($parameter->getAssets());
     }
 
