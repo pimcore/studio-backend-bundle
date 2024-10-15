@@ -1,6 +1,6 @@
 pimcore_studio_backend:
   security_firewall:
-    pattern: ^/studio/api(/.*)?$
+    pattern: ^/pimcore-studio/api(/.*)?$
     user_checker: Pimcore\Security\User\UserChecker
     context: pimcore_admin
     provider: pimcore_studio_backend
