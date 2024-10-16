@@ -44,7 +44,8 @@ final readonly class VideoAdapter implements SetterDataInterface
     public function getDataForSetter(
         Concrete $element,
         Data $fieldDefinition,
-        string $key, array $data,
+        string $key,
+        array $data,
         ?FieldContextData $contextData = null
     ): ?Video {
         $adapterData = $data[$key] ?? null;

@@ -68,6 +68,8 @@ pimcore_studio_backend:
             - "calculatedValue"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CheckboxAdapter:
             - "checkbox"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter:
+            - "classificationstore"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateAdapter:
             - "date"
             - "datetime"
