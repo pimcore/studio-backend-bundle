@@ -40,7 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'sharedRoles',
         'columns',
         'filter',
-        'pageSize'
+        'pageSize',
     ],
     type: 'object'
 )]
