@@ -16,20 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
 
-/**
- * @internal
- */
-interface DocumentSearchServiceInterface
+interface ElementSearchServiceInterface
 {
-    /**
-     * @throws SearchException|NotFoundException
-     */
-    public function getDocumentById(int $id, ?UserInterface $user): Document;
+    public function getElementById(string $type, int $id, ?UserInterface $user = null): mixed;
 
-    public function getChildrenIds(string $parentPath, ?string $sortDirection = null): array;
+    public function getChildrenIds(string $type, string $parentPath, ?string $sortDirection = null): array;
 }

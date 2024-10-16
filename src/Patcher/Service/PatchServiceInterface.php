@@ -38,6 +38,15 @@ interface PatchServiceInterface
     ): ?int;
 
     /**
+     * @throws AccessDeniedException|ElementSavingFailedException|NotFoundException|InvalidArgumentException
+     */
+    public function patchFolder(
+        string $elementType,
+        array $patchData,
+        UserInterface $user,
+    ): ?int;
+
+    /**
      * @throws ElementSavingFailedException
      */
     public function patchElement(

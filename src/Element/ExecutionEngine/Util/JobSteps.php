@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util;
 enum JobSteps: string
 {
     case ELEMENT_PATCHING = 'studio_ee_job_step_element_patching';
+    case ELEMENT_FOLDER_PATCHING = 'studio_ee_job_step_folder_patching';
     case ELEMENT_REWRITE_REFERENCE = 'studio_ee_job_step_element_rewrite_reference';
     case ELEMENT_OBJECT_DELETION = 'studio_ee_job_step_element_deletion';
     case ELEMENT_RECYCLING = 'studio_ee_job_step_element_recycling';

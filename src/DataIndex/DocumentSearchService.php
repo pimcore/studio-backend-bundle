@@ -17,6 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DocumentSearchAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -28,7 +31,8 @@ use Pimcore\Model\UserInterface;
 final readonly class DocumentSearchService implements DocumentSearchServiceInterface
 {
     public function __construct(
-        private DocumentSearchAdapterInterface $documentSearchAdapter
+        private DocumentSearchAdapterInterface $documentSearchAdapter,
+        private DocumentQueryProviderInterface $documentQueryProvider,
     ) {
     }
 
@@ -38,5 +42,21 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     public function getDocumentById(int $id, ?UserInterface $user): Document
     {
         return $this->documentSearchAdapter->getDocumentById($id, $user);
+    }
+
+    public function getChildrenIds(string $parentPath, ?string $sortDirection = null): array
+    {
+        $query = $this->documentQueryProvider->createDocumentQuery();
+        $query->filterPath($parentPath, true, false);
+        if ($sortDirection) {
+            $query->orderByPath($sortDirection);
+        }
+
+        return $this->fetchDocumentIds($query);
+    }
+
+    public function fetchDocumentIds(DocumentQueryInterface $documentQuery): array
+    {
+        return $this->documentSearchAdapter->fetchDocumentIds($documentQuery);
     }
 }
