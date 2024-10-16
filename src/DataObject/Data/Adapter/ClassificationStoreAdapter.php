@@ -27,6 +27,8 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as Classif
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function in_array;
+use function is_array;
 
 /**
  * @internal
@@ -106,8 +108,7 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface
         ClassificationstoreDefinition $definition,
         Classificationstore $container,
         array $store
-    ): void
-    {
+    ): void {
         $activeGroups = $store['activeGroups'];
         foreach ($store['data'] as $language => $groups) {
             foreach ($groups as $groupId => $keys) {
@@ -129,8 +130,7 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface
         string $language,
         int $groupId,
         array $keys
-    ): void
-    {
+    ): void {
         foreach ($keys as $keyId => $value) {
             $fieldDefinition = $this->serviceResolver->getFieldDefinitionFromKeyConfig(
                 $definition->getKeyConfiguration($keyId)
@@ -163,5 +163,4 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface
             }
         }
     }
-
 }
