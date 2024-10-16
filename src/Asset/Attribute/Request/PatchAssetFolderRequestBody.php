@@ -45,7 +45,12 @@ final class PatchAssetFolderRequestBody extends RequestBody
                         items: new Items(
                             required: ['folderId'],
                             properties: [
-                                new Property(property: 'folderId', description: 'Folder ID', type: 'integer', example: 83),
+                                new Property(
+                                    property: 'folderId',
+                                    description: 'Folder ID',
+                                    type: 'integer',
+                                    example: 83
+                                ),
                                 new UpdateIntegerProperty('parentId'),
                                 new UpdateStringProperty('key'),
                                 new UpdateStringProperty('locked'),
