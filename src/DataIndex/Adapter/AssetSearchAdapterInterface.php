@@ -19,22 +19,24 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Model\UserInterface;
 
 interface AssetSearchAdapterInterface
 {
     /**
      * @throws SearchException|InvalidArgumentException
      */
-    public function searchAssets(QueryInterface $assetQuery): AssetSearchResult;
+    public function searchAssets(AssetQueryInterface $assetQuery): AssetSearchResult;
 
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAssetById(int $id): Asset;
+    public function getAssetById(int $id, ?UserInterface $user = null): Asset;
 
     /**
      * @throws SearchException

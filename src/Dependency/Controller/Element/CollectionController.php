@@ -59,7 +59,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/dependencies/{elementType}/{id}', name: 'pimcore_studio_api_dependencies', methods: ['GET'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
-        path: self::API_PATH . '/dependencies/{elementType}/{id}',
+        path: self::PREFIX . '/dependencies/{elementType}/{id}',
         operationId: 'dependency_get_collection_by_element_type',
         description: 'Get paginated dependencies.
         Pass dependency mode to get either all elements that depend on the provided element

@@ -61,7 +61,7 @@ final class PatchController extends AbstractApiController
     #[Route('/assets', name: 'pimcore_studio_api_patch_asset', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Patch(
-        path: self::API_PATH . '/assets',
+        path: self::PREFIX . '/assets',
         operationId: 'asset_patch_by_id',
         description: 'asset_patch_by_id_description',
         summary: 'asset_patch_by_id_summary',
@@ -73,7 +73,7 @@ final class PatchController extends AbstractApiController
     )]
     #[CreatedResponse(
         description: 'asset_patch_by_id_created_response',
-        content: new IdJson('ID of created jobRun')
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -92,7 +92,7 @@ final class PatchController extends AbstractApiController
         if ($jobRunId) {
             $status = HttpResponseCodes::CREATED->value;
 
-            return $this->jsonResponse(['id' => $jobRunId], $status);
+            return $this->jsonResponse(['jobRunId' => $jobRunId], $status);
         }
 
         return new Response($data, $status);

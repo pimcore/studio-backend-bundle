@@ -16,37 +16,26 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 
 /**
  * @internal
  */
-final readonly class ExportAssetParameter
+final readonly class ExportAssetParameter extends ExportParameter
 {
     /**
-     * @param array $assets
-     * @param array $gridConfig
-     * @param array $settings
+     * @param array<int> $assets
      */
     public function __construct(
-        private array $assets,
-        private array $gridConfig,
-        private array $settings,
+        array $columns,
+        array $config,
+        private array $assets
     ) {
+        parent::__construct($columns, new FilterParameter(), $config);
         $this->validate();
-    }
-
-    public function getGridConfig(): array
-    {
-        return $this->gridConfig;
-    }
-
-    public function getSettings(): array
-    {
-        return $this->settings;
     }
 
     /** @return array<int, ElementDescriptor> */
@@ -60,20 +49,8 @@ final readonly class ExportAssetParameter
 
     private function validate(): void
     {
-        if (empty($this->assets)) {
+        if (empty($this->getAssets())) {
             throw new InvalidArgumentException('No assets provided');
-        }
-
-        if (empty($this->gridConfig)) {
-            throw new InvalidArgumentException('No grid config provided');
-        }
-
-        if (empty($this->settings)) {
-            throw new InvalidArgumentException('No settings provided');
-        }
-
-        if (!isset($this->settings[Csv::SETTINGS_DELIMITER->value])) {
-            throw new InvalidArgumentException('No delimiter provided');
         }
     }
 }

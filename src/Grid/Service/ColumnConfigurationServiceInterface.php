@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 
 /**
  * @internal
@@ -31,5 +32,7 @@ interface ColumnConfigurationServiceInterface
     /**
      * @return ColumnConfiguration[]
      */
-    public function getAvailableDataObjectColumnConfiguration(): array;
+    public function getAvailableDataObjectColumnConfiguration(string $classId, int $folderId): array;
+
+    public function buildColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration;
 }

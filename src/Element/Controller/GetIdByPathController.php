@@ -56,7 +56,7 @@ final class GetIdByPathController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
-        path: self::API_PATH . '/elements/{elementType}/path',
+        path: self::PREFIX . '/elements/{elementType}/path',
         operationId: 'element_get_id_by_path',
         description: 'element_get_id_by_path_description',
         summary: 'element_get_id_by_path_summary',

@@ -11,7 +11,8 @@ pimcore_generic_execution_engine:
 framework:
   messenger:
     routing:
-      Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage: pimcore_generic_execution_engine
+      Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage: pimcore_generic_execution_engine
+      Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvFolderCollectionMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetCloneMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage: pimcore_generic_execution_engine

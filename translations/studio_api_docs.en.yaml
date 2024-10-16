@@ -9,16 +9,25 @@ asset_clone_description: |
   Clones a specific asset with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder
 asset_clone_success_response: Successfully copied asset
 asset_clone_summary: Clone a specific asset
-asset_create_csv_created_response: Successfully created <strong>jobRun</strong> for
+asset_export_csv_created_response: Successfully created <strong>jobRun</strong> for
   csv export
-asset_create_csv_description: |
+asset_export_csv_asset_description: |
   Creating the CSV file for assets. <br> Parameters are: <ul>
     <li><strong>assets</strong>: Array of asset ids</li>
-    <li><strong>gridConfig</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
-    <li><strong>settings</strong>: Delimiter and header options</li>
+    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
+    <li><strong>config</strong>: Delimiter and header options</li>
   </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
-asset_create_csv_summary: Creating CSV file for assets
+asset_export_csv_asset_summary: Creating CSV file for assets
+asset_export_csv_folder_description: |
+  Creating the CSV file for assets based on the folder. <br> Parameters are: <ul>
+    <li><strong>folders</strong>: Array of folder ids</li>
+    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
+    <li><strong>filters</strong>: Filter assets from folder based on the grid filter schema</li>
+    <li><strong>config</strong>: Delimiter and header options</li>
+  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
+  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
+asset_export_csv_folder_summary: Creating CSV file for assets based on folder
 asset_create_zip_created_response: Successfully created <strong>jobRun</strong> for zip export
 asset_create_zip_description: |
   Creating a ZIP file for assets based on the provided asset IDs in <strong>{items}</strong> parameter. <br>
@@ -381,7 +390,7 @@ system_settings_get_success_response: System settings data
 system_settings_get_summary: Get system settings
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
-data: Asset Grid operations
+tag_asset_grid_description: Asset Grid operations
 tag_assign_to_element_description: |
   Assign a specific tag based on the given <strong>{tagId}</strong> to an element based on <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
@@ -556,3 +565,13 @@ data_object_get_available_grid_columns_description: |
     Get all available grid columns for data objects
 data_object_get_available_grid_columns_summary: Get all available grid columns for data objects
 data_object_get_available_grid_columns_success_response: List of available grid columns for data objects
+data_object_get_grid_description: |
+    Retrieve data objects data for grid. <br>
+    You can use different query parameters to filter the data objects data: <br>
+    <ul>
+    <li><strong>folderId</strong>: ID of parent folder</li>
+    <li><strong>columns</strong>: To see the full description of request fields see the schema <strong>Grid Column Request</strong></li>
+    <li><strong>filters</strong>: To see the full description of request fields see the schema <strong>Grid Filter</strong></li>
+    </ul>
+data_object_get_grid_success_response: Data object grid data
+data_object_get_grid_summary: Get data object data for grid

@@ -61,7 +61,7 @@ final class TestEmailController extends AbstractApiController
     #[Route('/emails/test', name: 'pimcore_studio_api_emails_test', methods: ['POST'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[Post(
-        path: self::API_PATH . '/emails/test',
+        path: self::PREFIX . '/emails/test',
         operationId: 'email_send_test',
         description: 'email_send_test_description',
         summary: 'email_send_test_summary',

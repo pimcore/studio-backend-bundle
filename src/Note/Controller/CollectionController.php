@@ -63,7 +63,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/notes', name: 'pimcore_studio_api_get_notes', methods: ['GET'])]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Get(
-        path: self::API_PATH . '/notes',
+        path: self::PREFIX . '/notes',
         operationId: 'note_get_collection',
         description: 'note_get_collection_description',
         summary: 'note_get_collection_summary',

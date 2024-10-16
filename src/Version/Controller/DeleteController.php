@@ -52,7 +52,7 @@ final class DeleteController extends AbstractApiController
     #[Route('/versions/{id}', name: 'pimcore_studio_api_delete_version', methods: ['DELETE'])]
     //#[IsGranted('STUDIO_API')]
     #[Delete(
-        path: self::API_PATH . '/versions/{id}',
+        path: self::PREFIX . '/versions/{id}',
         operationId: 'version_delete_by_id',
         description: 'version_delete_by_id_description',
         summary: 'version_delete_by_id_summary',

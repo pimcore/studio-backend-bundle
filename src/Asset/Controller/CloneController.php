@@ -63,7 +63,7 @@ final class CloneController extends AbstractApiController
     #[Route('/assets/{id}/clone/{parentId}', name: 'pimcore_studio_api_assets_clone', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/{id}/clone/{parentId}',
+        path: self::PREFIX . '/assets/{id}/clone/{parentId}',
         operationId: 'asset_clone',
         description: 'asset_clone_description',
         summary: 'asset_clone_summary',
@@ -74,7 +74,7 @@ final class CloneController extends AbstractApiController
     )]
     #[CreatedResponse(
         description: 'asset_clone_created_response',
-        content: new IdJson('ID of created jobRun')
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
@@ -93,7 +93,7 @@ final class CloneController extends AbstractApiController
         if ($jobRunId) {
             $status = HttpResponseCodes::CREATED->value;
 
-            return $this->jsonResponse(['id' => $jobRunId], $status);
+            return $this->jsonResponse(['jobRunId' => $jobRunId], $status);
         }
 
         return new Response($data, $status);

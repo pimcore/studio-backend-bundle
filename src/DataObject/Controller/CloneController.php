@@ -63,7 +63,7 @@ final class CloneController extends AbstractApiController
     #[Route('/data-objects/{id}/clone/{parentId}', name: 'pimcore_studio_api_data_objects_clone', methods: ['POST'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
-        path: self::API_PATH . '/data-objects/{id}/clone/{parentId}',
+        path: self::PREFIX . '/data-objects/{id}/clone/{parentId}',
         operationId: 'data_object_clone',
         description: 'data_object_clone_description',
         summary: 'data_object_clone_summary',
@@ -74,7 +74,7 @@ final class CloneController extends AbstractApiController
     )]
     #[CreatedResponse(
         description: 'data_object_clone_created_response',
-        content: new IdJson('ID of created jobRun')
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT)]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'parentId')]
@@ -91,7 +91,7 @@ final class CloneController extends AbstractApiController
         $jobRunId = $this->cloneService->cloneDataObjects($id, $parentId, $parameters);
         if ($jobRunId) {
 
-            return $this->jsonResponse(['id' => $jobRunId], HttpResponseCodes::CREATED->value);
+            return $this->jsonResponse(['jobRunId' => $jobRunId], HttpResponseCodes::CREATED->value);
         }
 
         return new Response();

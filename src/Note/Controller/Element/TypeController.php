@@ -51,7 +51,7 @@ final class TypeController extends AbstractApiController
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[IsGranted(UserPermissions::NOTES_EVENTS->value)]
     #[Get(
-        path: self::API_PATH . '/notes/type/{elementType}',
+        path: self::PREFIX . '/notes/type/{elementType}',
         operationId: 'note_element_get_type_collection',
         description: 'note_element_get_type_collection_description',
         summary: 'note_element_get_type_collection_summary',

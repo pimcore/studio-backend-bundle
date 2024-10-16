@@ -26,10 +26,13 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchRes
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 use function sprintf;
 
 final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
@@ -45,7 +48,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     /**
      * @throws SearchException|InvalidArgumentException
      */
-    public function searchAssets(QueryInterface $assetQuery): AssetSearchResult
+    public function searchAssets(AssetQueryInterface $assetQuery): AssetSearchResult
     {
         try {
             $searchResult = $this->searchService->search($assetQuery->getSearch());
@@ -71,10 +74,14 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAssetById(int $id): Asset
+    public function getAssetById(int $id, ?UserInterface $user = null): Asset
     {
+
         try {
-            $asset = $this->searchService->byId($id);
+            /** @var User $user
+             *  Because of byId method in the GDI
+             * */
+            $asset = $this->searchService->byId($id, $user);
         } catch (AssetSearchException) {
             throw new SearchException(sprintf('Asset with id %s', $id));
         }

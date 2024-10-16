@@ -16,14 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
@@ -31,19 +32,28 @@ use Pimcore\Model\Element\ElementInterface;
 final class AssetResolver implements ColumnResolverInterface
 {
     use ColumnDataTrait;
+    use LocalizedValueTrait;
+
+    public function __construct(
+        private readonly AssetServiceInterface $assetService
+    ) {
+    }
 
     public function resolve(Column $column, ElementInterface $element): ColumnData
     {
-        /** @var Asset $element */
-        $asset = $element->getMetadata($column->getKey());
+        $asset = $this->getLocalizedValue($column, $element);
 
-        if (!$asset instanceof Asset) {
+        if (!isset($asset['asset'])) {
             return $this->getColumnData($column, null);
         }
 
+        $relatedAsset = $this->assetService->getAsset(
+            reset($asset['asset'])
+        );
+
         return $this->getColumnData(
             $column,
-            $asset->getFullPath()
+            $relatedAsset->getFullPath()
         );
     }
 

@@ -14,13 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
-
-use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
 /**
  * @internal
  */
-final class CsvCollectionMessage extends AbstractExecutionEngineMessage
+trait UseFolderIdTrait
 {
+    private int $folderId;
+
+    public function getFolderId(): int
+    {
+        return $this->folderId;
+    }
+
+    public function setFolderId(int $folderId): void
+    {
+        $this->folderId = $folderId;
+    }
 }

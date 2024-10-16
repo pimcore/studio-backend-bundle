@@ -67,7 +67,7 @@ final class DeleteController extends AbstractApiController
     #[Route('/elements/{elementType}/delete/{id}', name: 'pimcore_studio_api_elements_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Delete(
-        path: self::API_PATH . '/elements/{elementType}/delete/{id}',
+        path: self::PREFIX . '/elements/{elementType}/delete/{id}',
         operationId: 'element_delete',
         description: 'element_delete_description',
         summary: 'element_delete_summary',
@@ -78,7 +78,7 @@ final class DeleteController extends AbstractApiController
     )]
     #[CreatedResponse(
         description: 'element_delete_created_response',
-        content: new IdJson('ID of created jobRun')
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[IdParameter]
     #[ElementTypeParameter]
@@ -97,7 +97,7 @@ final class DeleteController extends AbstractApiController
 
         if ($jobRunId) {
 
-            return $this->jsonResponse(['id' => $jobRunId], HttpResponseCodes::CREATED->value);
+            return $this->jsonResponse(['jobRunId' => $jobRunId], HttpResponseCodes::CREATED->value);
         }
 
         return new Response();

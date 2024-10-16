@@ -57,7 +57,7 @@ final class CreateUserController extends AbstractApiController
     #[Route('/user/', name: 'pimcore_studio_api_user_create', methods: ['POST'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
-        path: self::API_PATH . '/user/',
+        path: self::PREFIX . '/user/',
         operationId: 'user_create',
         summary: 'user_create_summary',
         tags: [Tags::User->value]

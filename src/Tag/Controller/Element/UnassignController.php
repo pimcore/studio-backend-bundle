@@ -51,7 +51,7 @@ final class UnassignController extends AbstractApiController
     #[Route('/tags/{elementType}/{id}/{tagId}', name: 'pimcore_studio_api_unassign_element_tag', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Delete(
-        path: self::API_PATH . '/tags/{elementType}/{id}/{tagId}',
+        path: self::PREFIX . '/tags/{elementType}/{id}/{tagId}',
         operationId: 'tag_unassign_from_element',
         description: 'tag_unassign_from_element_description',
         summary: 'tag_unassign_from_element_summary',

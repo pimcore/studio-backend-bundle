@@ -67,7 +67,7 @@ final class ZipController extends AbstractApiController
     #[Route('/assets/add-zip/{parentId}', name: 'pimcore_studio_api_assets_upload_zip', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::API_PATH . '/assets/add-zip/{parentId}',
+        path: self::PREFIX . '/assets/add-zip/{parentId}',
         operationId: 'asset_upload_zip',
         description: 'asset_upload_zip_description',
         summary: 'asset_upload_zip_summary',
@@ -75,7 +75,7 @@ final class ZipController extends AbstractApiController
     )]
     #[CreatedResponse(
         description: 'asset_upload_zip_created_response',
-        content: new IdJson('ID of created jobRun')
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
     #[AddAssetRequestBody(
@@ -105,7 +105,7 @@ final class ZipController extends AbstractApiController
 
         return $this->jsonResponse(
             [
-                'id' => $this->zipService->uploadZipAssets(
+                'jobRunId' => $this->zipService->uploadZipAssets(
                     $this->securityService->getCurrentUser(),
                     $file,
                     $parentId

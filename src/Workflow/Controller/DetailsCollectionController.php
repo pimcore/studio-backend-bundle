@@ -53,7 +53,7 @@ final class DetailsCollectionController extends AbstractApiController
     #[Route('/workflows/details', name: 'pimcore_studio_api_element_workflows_details', methods: ['GET'])]
     //#[IsGranted('STUDIO_API')]
     #[Get(
-        path: self::API_PATH . '/workflows/details',
+        path: self::PREFIX . '/workflows/details',
         operationId: 'workflow_get_details',
         description: 'workflow_get_details_description',
         summary: 'workflow_get_details_summary',

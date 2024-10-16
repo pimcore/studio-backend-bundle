@@ -87,7 +87,12 @@ final class PatchHandler extends AbstractHandler
         }
 
         try {
-            $this->patchService->patchElement($element, $elementType, $jobEnvironmentData[$elementId]);
+            $this->patchService->patchElement(
+                $element,
+                $elementType,
+                $jobEnvironmentData[$elementId],
+                $validatedParameters->getUser()
+            );
         } catch (Exception $exception) {
             $this->abort($this->getAbortData(
                 Config::ELEMENT_PATCH_FAILED_MESSAGE->value,

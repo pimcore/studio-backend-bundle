@@ -21,10 +21,12 @@ use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -51,44 +53,44 @@ final readonly class CsvService implements CsvServiceInterface
     ) {
     }
 
-    public function generateCsvFile(ExportAssetParameter $exportAssetParameter): int
+    public function generateCsvFileForAssets(ExportAssetParameter $exportAssetParameter): int
     {
-        $jobStepConfigConfiguration = [
-            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportAssetParameter->getGridConfig(),
-        ];
-        $jobStepConfigSettings = [
-            Csv::JOB_STEP_CONFIG_SETTINGS->value => $exportAssetParameter->getSettings(),
+        $collectionSettings = [
+            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportAssetParameter->getColumns(),
         ];
 
-        $jobSteps = array_map(
-            static fn (ElementDescriptor $asset) => new JobStep(
-                JobSteps::CSV_COLLECTION->value,
-                CsvCollectionMessage::class,
-                '',
-                array_merge([csv::ASSET_TO_EXPORT->value => $asset], $jobStepConfigConfiguration)
-            ),
+        $creationSettings = [
+            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportAssetParameter->getColumns(),
+            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportAssetParameter->getConfig(),
+        ];
+
+        return $this->generateCsvFileJob(
             $exportAssetParameter->getAssets(),
+            $collectionSettings,
+            $creationSettings,
+            CsvAssetCollectionMessage::class
         );
+    }
 
-        $jobSteps[] = new JobStep(
-            JobSteps::CSV_CREATION->value,
-            CsvCreationMessage::class,
-            '',
-            array_merge($jobStepConfigSettings, $jobStepConfigConfiguration)
+    public function generateCsvFileForFolders(ExportFolderParameter $exportFolderParameter): int
+    {
+        $collectionSettings = [
+            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportFolderParameter->getColumns(),
+            Csv::JOB_STEP_CONFIG_FILTERS->value => $exportFolderParameter->getFilters(),
+        ];
+
+        $creationSettings = [
+            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportFolderParameter->getColumns(),
+            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportFolderParameter->getConfig(),
+        ];
+
+        return $this->generateCsvFileJob(
+            $exportFolderParameter->getFolders(),
+            $collectionSettings,
+            $creationSettings,
+            CsvFolderCollectionMessage::class,
+            Csv::FOLDER_TO_EXPORT
         );
-
-        $job = new Job(
-            name: Jobs::CREATE_CSV->value,
-            steps: $jobSteps
-        );
-
-        $jobRun = $this->jobExecutionAgent->startJobExecution(
-            $job,
-            $this->securityService->getCurrentUser()->getId(),
-            Config::CONTEXT_STOP_ON_ERROR->value
-        );
-
-        return $jobRun->getId();
     }
 
     /**
@@ -115,6 +117,28 @@ final readonly class CsvService implements CsvServiceInterface
             $this->getCsvFilePath($id, $storage),
             implode($data)
         );
+    }
+
+    private function generateCsvFileJob(
+        array $elements,
+        array $collectionSettings,
+        array $creationSettings,
+        string $messageFQCN,
+        Csv $export = Csv::ASSET_TO_EXPORT
+    ): int {
+
+        $jobSteps = [
+            ...$this->mapJobSteps($elements, $collectionSettings, $messageFQCN, $export),
+            ...[$this->getCsvCreationStep($creationSettings)],
+        ];
+
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $this->createJob($jobSteps),
+            $this->securityService->getCurrentUser()->getId(),
+            Config::CONTEXT_STOP_ON_ERROR->value
+        );
+
+        return $jobRun->getId();
     }
 
     /**
@@ -147,6 +171,41 @@ final readonly class CsvService implements CsvServiceInterface
         return $this->gridService->getColumnKeys(
             $columnCollection,
             $header === Csv::SETTINGS_HEADER_NAME->value
+        );
+    }
+
+    private function mapJobSteps(
+        array $elements,
+        array $collectionSettings,
+        string $messageFQCN,
+        Csv $export
+    ): array {
+        return array_map(
+            static fn (ElementDescriptor $asset) => new JobStep(
+                JobSteps::CSV_COLLECTION->value,
+                $messageFQCN,
+                '',
+                array_merge([$export->value => $asset], $collectionSettings)
+            ),
+            $elements,
+        );
+    }
+
+    private function getCsvCreationStep(array $settings): JobStep
+    {
+        return new JobStep(
+            JobSteps::CSV_CREATION->value,
+            CsvCreationMessage::class,
+            '',
+            $settings
+        );
+    }
+
+    private function createJob(array $jobSteps): Job
+    {
+        return new Job(
+            name: Jobs::CREATE_CSV->value,
+            steps: $jobSteps
         );
     }
 }

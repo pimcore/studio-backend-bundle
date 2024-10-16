@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
-use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
 
 interface ColumnResolverInterface
 {

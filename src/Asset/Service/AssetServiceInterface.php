@@ -54,9 +54,33 @@ interface AssetServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAssetFolder(int $id): AssetFolder;
+    public function getAssetForUser(
+        int $id,
+        UserInterface $user
+    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
 
-    public function assetFolderExists(int $id): bool;
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getAssetFolder(int $id, bool $checkPermissionsForCurrentUser = true): AssetFolder;
+
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function getAssetFolderForUser(
+        int $id,
+        UserInterface $user
+    ): AssetFolder;
+
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function assetFolderExists(int $id, bool $checkPermissionsForCurrentUser = true): bool;
+
+    /**
+     * @throws SearchException|NotFoundException
+     */
+    public function assetFolderExistsForUser(int $id, UserInterface $user): bool;
 
     /**
      * @throws AccessDeniedException|NotFoundException

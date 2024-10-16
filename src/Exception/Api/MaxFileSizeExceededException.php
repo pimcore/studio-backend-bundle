@@ -24,11 +24,11 @@ use function sprintf;
  */
 final class MaxFileSizeExceededException extends AbstractApiException
 {
-    public function __construct(int|float $maxFileSize)
+    public function __construct(int|float $maxFileSize, string $message = 'Max file size of %d bytes exceeded')
     {
         parent::__construct(
             HttpResponseCodes::MAX_FILE_SIZE_EXCEEDED->value,
-            sprintf('Max file size of %d bytes exceeded', $maxFileSize)
+            sprintf($message, $maxFileSize)
         );
     }
 }

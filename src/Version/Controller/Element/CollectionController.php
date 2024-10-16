@@ -64,7 +64,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/versions/{elementType}/{id}', name: 'pimcore_studio_api_versions', methods: ['GET'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
-        path: self::API_PATH . '/versions/{elementType}/{id}',
+        path: self::PREFIX . '/versions/{elementType}/{id}',
         operationId: 'version_get_collection_for_element_by_type_and_id',
         description: 'version_get_collection_for_element_by_type_and_id_description',
         summary: 'version_get_collection_for_element_by_type_and_id_summary',

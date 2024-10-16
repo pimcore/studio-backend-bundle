@@ -52,7 +52,7 @@ final class CollectionController extends AbstractApiController
     #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_get_element_schedules', methods: ['GET'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
-        path: self::API_PATH . '/schedules/{elementType}/{id}',
+        path: self::PREFIX . '/schedules/{elementType}/{id}',
         operationId: 'schedule_get_collection_for_element_by_type_and_id',
         description: 'schedule_get_collection_for_element_by_type_and_id_description',
         summary: 'schedule_get_collection_for_element_by_type_and_id_summary',

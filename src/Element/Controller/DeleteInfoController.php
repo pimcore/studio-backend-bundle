@@ -57,7 +57,7 @@ final class DeleteInfoController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
-        path: self::API_PATH . '/elements/{elementType}/delete-info/{id}',
+        path: self::PREFIX . '/elements/{elementType}/delete-info/{id}',
         operationId: 'element_get_delete_info',
         description: 'element_get_delete_info_description',
         summary: 'element_get_delete_info_summary',

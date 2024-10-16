@@ -49,7 +49,9 @@ final readonly class AssetHydrator implements AssetHydratorInterface
             $item->getLocked(),
             $item->isLocked(),
             $item->getCreationDate(),
-            $item->getModificationDate()
+            $item->getModificationDate(),
+            $item->getMetaData(),
+            $item->getFileSize(),
         );
     }
 }

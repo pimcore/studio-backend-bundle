@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
+use Pimcore\Model\UserInterface;
 
 interface QueryInterface
 {
@@ -44,4 +45,6 @@ interface QueryInterface
     public function filterTags(array $tags, bool $considerChildTags): self;
 
     public function filterByPql(string $pqlQuery): self;
+
+    public function setUser(UserInterface $user): self;
 }

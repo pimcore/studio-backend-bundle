@@ -56,7 +56,7 @@ final class ReadController extends AbstractApiController
     ]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
     #[POST(
-        path: self::API_PATH . '/notifications/{id}',
+        path: self::PREFIX . '/notifications/{id}',
         operationId: 'notification_read_by_id',
         description: 'notification_read_by_id_description',
         summary: 'notification_read_by_id_summary',

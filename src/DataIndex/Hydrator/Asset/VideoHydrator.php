@@ -53,6 +53,8 @@ final readonly class VideoHydrator implements VideoHydratorInterface
             $item->isLocked(),
             $item->getCreationDate(),
             $item->getModificationDate(),
+            $item->getMetaData(),
+            $item->getFileSize(),
         );
     }
 }

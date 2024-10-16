@@ -30,6 +30,8 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderB
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByIndexField;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 
 final class DataObjectQuery implements DataObjectQueryInterface
 {
@@ -140,6 +142,14 @@ final class DataObjectQuery implements DataObjectQueryInterface
     public function filterByPql(string $pqlQuery): self
     {
         $this->search->addModifier(new PqlFilter($pqlQuery));
+
+        return $this;
+    }
+
+    public function setUser(UserInterface $user): QueryInterface
+    {
+        /** @var User $user */
+        $this->search->setUser($user);
 
         return $this;
     }

@@ -19,24 +19,34 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
 final readonly class GridSearch implements GridSearchInterface
 {
+    private OpenSearchFilterInterface $filterService;
+
     public function __construct(
         private FilterServiceProviderInterface $filterServiceProvider,
         private AssetSearchServiceInterface $assetSearchService,
-        private AssetServiceInterface $assetService
+        private DataObjectSearchServiceInterface $dataObjectSearchService,
+        private AssetServiceInterface $assetService,
+        private DataObjectServiceInterface $dataObjectService
     ) {
+        $this->filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
     }
 
     /**
@@ -44,19 +54,56 @@ final readonly class GridSearch implements GridSearchInterface
      */
     public function searchAssets(GridParameter $gridParameter): AssetSearchResult
     {
-        /** @var OpenSearchFilterInterface $filterService */
-        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
         $filter = $gridParameter->getFilters();
 
         $asset = $this->assetService->getAssetFolder($gridParameter->getFolderId());
 
         $filter->setPath($asset->getFullPath());
 
-        $assetQuery = $filterService->applyFilters(
+        /** @var AssetQueryInterface $assetQuery */
+        $assetQuery = $this->filterService->applyFilters(
             $filter,
             ElementTypes::TYPE_ASSET
         );
 
+        // TODO remove assetSearchService, replace with AssetService @martineiber
         return $this->assetSearchService->searchAssets($assetQuery);
+    }
+
+    public function searchAssetsForUser(GridParameter $gridParameter, UserInterface $user): AssetSearchResult
+    {
+        $filter = $gridParameter->getFilters();
+
+        $asset = $this->assetService->getAssetFolderForUser($gridParameter->getFolderId(), $user);
+
+        $filter->setPath($asset->getFullPath());
+
+        /** @var AssetQueryInterface $assetQuery */
+        $assetQuery = $this->filterService->applyFilters(
+            $filter,
+            ElementTypes::TYPE_ASSET
+        );
+
+        $assetQuery->setUser($user);
+
+        // TODO remove assetSearchService, replace with AssetService @martineiber
+        return $this->assetSearchService->searchAssets($assetQuery);
+    }
+
+    public function searchDataObjects(GridParameter $gridParameter): DataObjectSearchResult
+    {
+        $filter = $gridParameter->getFilters();
+
+        $folder = $this->dataObjectService->getDataObjectFolder($gridParameter->getFolderId());
+
+        $filter->setPath($folder->getFullPath());
+
+        $query = $this->filterService->applyFilters(
+            $filter,
+            ElementTypes::TYPE_DATA_OBJECT
+        );
+
+        // TODO remove dataObjectSearchService, replace with DataObjectService @martineiber
+        return $this->dataObjectSearchService->searchDataObjects($query);
     }
 }

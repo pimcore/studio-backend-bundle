@@ -42,10 +42,6 @@ final readonly class GridParameter
 
     public function getFilters(): FilterParameter
     {
-        if ($this->filters === null) {
-            return new FilterParameter();
-        }
-
-        return $this->filters;
+        return $this->filters ?? new FilterParameter();
     }
 }

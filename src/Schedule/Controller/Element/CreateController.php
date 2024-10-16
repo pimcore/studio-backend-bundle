@@ -54,7 +54,7 @@ final class CreateController extends AbstractApiController
     #[Route('/schedules/{elementType}/{id}', name: 'pimcore_studio_api_create_schedule', methods: ['POST'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[POST(
-        path: self::API_PATH . '/schedules/{elementType}/{id}',
+        path: self::PREFIX . '/schedules/{elementType}/{id}',
         operationId: 'schedule_create_for_element_by_type_and_id',
         description: 'schedule_create_for_element_by_type_and_id_description',
         summary: 'schedule_create_for_element_by_type_and_id_summary',

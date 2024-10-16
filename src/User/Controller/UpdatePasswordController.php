@@ -57,7 +57,7 @@ final class UpdatePasswordController extends AbstractApiController
     #[Route('/user/{id}/password', name: 'pimcore_studio_api_user_password_update', methods: ['PUT'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Put(
-        path: self::API_PATH . '/user/{id}/password',
+        path: self::PREFIX . '/user/{id}/password',
         operationId: 'user_update_password_by_id',
         summary: 'user_update_password_by_id_summary',
         tags: [Tags::User->value]

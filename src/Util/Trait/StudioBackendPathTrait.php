@@ -16,15 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
-use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-
 /**
  * @internal
  */
 trait StudioBackendPathTrait
 {
-    private function isStudioBackendPath(string $path): bool
+    private function isStudioBackendPath(string $path, string $urlPrefix): bool
     {
-        return str_starts_with($path, AbstractApiController::API_PATH);
+        return str_starts_with($path, $urlPrefix);
     }
 }

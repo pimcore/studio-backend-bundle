@@ -16,9 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 use function in_array;
@@ -58,13 +62,21 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
         return $columns;
     }
 
-    public function getAvailableDataObjectColumnConfiguration(): array
+    public function getAvailableDataObjectColumnConfiguration(string $classId, int $folderId): array
     {
         $columns = [];
         foreach ($this->gridService->getColumnCollectors() as $collector) {
             // Only collect supported data object collectors
             if (!in_array(ElementTypes::TYPE_DATA_OBJECT, $collector->supportedElementTypes(), true)) {
                 continue;
+            }
+
+            if ($collector instanceof ClassIdInterface) {
+                $collector->setClassId($classId);
+            }
+
+            if ($collector instanceof FolderIdInterface) {
+                $collector->setFolderId($folderId);
             }
 
             // rather use the spread operator instead of array_merge in a loop
@@ -78,6 +90,27 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
 
         return $columns;
 
+    }
+
+    public function buildColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration
+    {
+        $options = null;
+        $fieldDefinition = $definition->getFieldDefinition();
+        if ($fieldDefinition instanceof Select) {
+            $options = $fieldDefinition->getOptions();
+        }
+
+        return new ColumnConfiguration(
+            key: $fieldDefinition->getName(),
+            group: $definition->getGroup(),
+            sortable: true,
+            editable: !$fieldDefinition->getNoteditable(),
+            localizable: $definition->isLocalized(),
+            locale: null,
+            type: 'dataobject.' . $fieldDefinition->getFieldType(),
+            frontendType: $fieldDefinition->getFieldType(),
+            config: $options ? ['options' => $options] : [],
+        );
     }
 
     /**

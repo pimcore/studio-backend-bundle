@@ -26,29 +26,33 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Model\UserInterface;
 
 interface AssetSearchServiceInterface
 {
     /**
      * @throws SearchException|InvalidArgumentException
      */
-    public function searchAssets(QueryInterface $assetQuery): AssetSearchResult;
+    public function searchAssets(AssetQueryInterface $assetQuery): AssetSearchResult;
 
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getAssetById(int $id): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
+    public function getAssetById(
+        int $id,
+        ?UserInterface $user = null
+    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
 
     /**
      * @throws SearchException
      *
      * @return array<int>
      */
-    public function fetchAssetIds(QueryInterface $assetQuery): array;
+    public function fetchAssetIds(AssetQueryInterface $assetQuery): array;
 
     /**
      * @throws SearchException

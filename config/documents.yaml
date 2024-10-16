@@ -1,0 +1,9 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+    # Secvices
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentService

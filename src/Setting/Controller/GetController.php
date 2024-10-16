@@ -43,7 +43,7 @@ final class GetController extends AbstractApiController
 
     #[Route(path: self::ROUTE, name: 'pimcore_studio_api_settings', methods: ['GET'])]
     #[Get(
-        path: self::API_PATH . self::ROUTE,
+        path: self::PREFIX . self::ROUTE,
         operationId: 'system_settings_get',
         description: 'system_settings_get_description',
         summary: 'system_settings_get_summary',

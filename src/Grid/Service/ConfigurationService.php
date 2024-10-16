@@ -25,8 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterf
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\DetailedConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
@@ -44,6 +44,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private SecurityServiceInterface $securityService,
         private EventDispatcherInterface $eventDispatcher,
         private DetailedConfigurationHydratorInterface $detailedConfigurationHydrator,
+        private FavoriteServiceInterface $favoriteService,
         private array $predefinedColumns
     ) {
     }
@@ -81,10 +82,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return $detailedConfiguration;
     }
 
-    /**
-     * @return Configuration[]
-     */
-    public function getGridConfigurationsForFolder(int $folderId): array
+    public function getGridConfigurationsForFolder(int $folderId): Collection
     {
         $configurations = $this->configurationRepository->getByAssetFolderId($folderId);
 
@@ -103,11 +101,16 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             }
         }
 
-        return $filteredConfigurations;
+        return new Collection(count($filteredConfigurations), $filteredConfigurations);
     }
 
     public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration
     {
+        if (!$configurationId) {
+            $configuration = $this->favoriteService->getFavoriteConfigurationForAssetFolder($folderId);
+            $configurationId = $configuration?->getId();
+        }
+
         if (!$configurationId) {
             return $this->getDefaultAssetGridConfiguration();
         }

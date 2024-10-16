@@ -54,7 +54,7 @@ final class CustomSettingsController extends AbstractApiController
     #[Route('/assets/{id}/custom-settings', name: 'pimcore_studio_api_get_asset_custom_settings', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[GET(
-        path: self::API_PATH . '/assets/{id}/custom-settings',
+        path: self::PREFIX . '/assets/{id}/custom-settings',
         operationId: 'asset_custom_settings_get_by_id',
         description: 'asset_custom_settings_get_by_id_description',
         summary: 'asset_custom_settings_get_by_id_summary',

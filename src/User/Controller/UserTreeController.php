@@ -53,7 +53,7 @@ final class UserTreeController extends AbstractApiController
     #[Route('/users/tree', name: 'pimcore_studio_api_user_tree', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
-        path: self::API_PATH . '/users/tree',
+        path: self::PREFIX . '/users/tree',
         operationId: 'user_get_tree',
         summary: 'user_get_tree_summary',
         tags: [Tags::User->value]

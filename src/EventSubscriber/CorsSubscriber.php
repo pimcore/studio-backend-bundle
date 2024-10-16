@@ -27,14 +27,15 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouterInterface;
 use function in_array;
 
-final class CorsSubscriber implements EventSubscriberInterface
+final readonly class CorsSubscriber implements EventSubscriberInterface
 {
     use StudioBackendPathTrait;
 
     public function __construct(
-        private readonly RouterInterface $router,
-        private readonly UrlMatcherInterface $urlMatcher,
-        private readonly array $allowedHosts = []
+        private string $urlPrefix,
+        private RouterInterface $router,
+        private UrlMatcherInterface $urlMatcher,
+        private array $allowedHosts = []
     ) {
     }
 
@@ -55,7 +56,7 @@ final class CorsSubscriber implements EventSubscriberInterface
 
         $request = $event->getRequest();
 
-        if (!$this->isStudioBackendPath($request->getPathInfo())) {
+        if (!$this->isStudioBackendPath($request->getPathInfo(), $this->urlPrefix)) {
             return;
         }
 
@@ -90,7 +91,7 @@ final class CorsSubscriber implements EventSubscriberInterface
     {
         $request = $event->getRequest();
 
-        if (!$this->isStudioBackendPath($request->getPathInfo())) {
+        if (!$this->isStudioBackendPath($request->getPathInfo(), $this->urlPrefix)) {
             return;
         }
         // Run CORS check in here to ensure domain is in the system

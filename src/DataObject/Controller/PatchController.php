@@ -61,7 +61,7 @@ final class PatchController extends AbstractApiController
     #[Route('/data-objects', name: 'pimcore_studio_api_patch_data_object', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Patch(
-        path: self::API_PATH . '/data-objects',
+        path: self::PREFIX . '/data-objects',
         operationId: 'data_object_patch_by_id',
         description: 'data_object_patch_by_id_description',
         summary: 'data_object_patch_by_id_summary',
@@ -73,7 +73,7 @@ final class PatchController extends AbstractApiController
     )]
     #[CreatedResponse(
         description: 'data_object_patch_by_id_created_response',
-        content: new IdJson('ID of created jobRun')
+        content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -88,7 +88,7 @@ final class PatchController extends AbstractApiController
         );
 
         if ($jobRunId) {
-            return $this->jsonResponse(['id' => $jobRunId], HttpResponseCodes::CREATED->value);
+            return $this->jsonResponse(['jobRunId' => $jobRunId], HttpResponseCodes::CREATED->value);
         }
 
         return new Response();

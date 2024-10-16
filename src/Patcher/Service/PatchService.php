@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -37,12 +38,13 @@ use function count;
 /**
  * @internal
  */
-final class PatchService implements PatchServiceInterface
+final readonly class PatchService implements PatchServiceInterface
 {
     public function __construct(
-        private readonly AdapterLoaderInterface $adapterLoader,
-        private readonly ElementServiceInterface $elementService,
-        private readonly JobExecutionAgentInterface $jobExecutionAgent,
+        private SynchronousProcessingServiceInterface $synchronousProcessingService,
+        private JobExecutionAgentInterface $jobExecutionAgent,
+        private ElementServiceInterface $elementService,
+        private AdapterLoaderInterface $adapterLoader
     ) {
     }
 
@@ -59,7 +61,7 @@ final class PatchService implements PatchServiceInterface
         }
 
         $element = $this->elementService->getAllowedElementById($elementType, $patchData[0]['id'], $user);
-        $this->patchElement($element, $elementType, $patchData[0]);
+        $this->patchElement($element, $elementType, $patchData[0], $user);
 
         return null;
     }
@@ -70,7 +72,8 @@ final class PatchService implements PatchServiceInterface
     public function patchElement(
         ElementInterface $element,
         string $elementType,
-        array $elementPatchData
+        array $elementPatchData,
+        UserInterface $user,
     ): void {
         try {
             $adapters = $this->adapterLoader->loadAdapters($elementType);
@@ -78,12 +81,11 @@ final class PatchService implements PatchServiceInterface
                 $adapter->patch($element, $elementPatchData);
             }
 
+            $this->synchronousProcessingService->enable();
+            $element->setUserModification($user->getId());
             $element->save();
         } catch (Exception $exception) {
-            throw new ElementSavingFailedException(
-                $element->getId(),
-                $exception->getMessage()
-            );
+            throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }
     }
 

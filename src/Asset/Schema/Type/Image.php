@@ -66,7 +66,9 @@ final class Image extends Asset
         ?string $locked,
         bool $isLocked,
         ?int $creationDate,
-        ?int $modificationDate
+        ?int $modificationDate,
+        array $metadata = [],
+        int $fileSize = 0,
     ) {
         parent::__construct(
             $hasChildren,
@@ -87,6 +89,8 @@ final class Image extends Asset
             $isLocked,
             $creationDate,
             $modificationDate,
+            $metadata,
+            $fileSize
         );
     }
 

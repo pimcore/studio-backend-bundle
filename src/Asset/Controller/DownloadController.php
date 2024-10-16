@@ -64,7 +64,7 @@ final class DownloadController extends AbstractApiController
     #[Route('/assets/{id}/download', name: 'pimcore_studio_api_download_asset', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::API_PATH . '/assets/{id}/download',
+        path: self::PREFIX . '/assets/{id}/download',
         operationId: 'asset_download_by_id',
         description: 'asset_download_by_id_description',
         summary: 'asset_download_by_id_summary',
