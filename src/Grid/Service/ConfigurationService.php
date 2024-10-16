@@ -26,9 +26,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\DetailedConfigurationHydrat
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use function count;
 
 /**
