@@ -20,14 +20,15 @@ composer require pimcore/studio-backend-bundle
 2) Enable Firewall settings
 
 To enable the firewall settings in your project, add the following configuration to your `config/packages/security.yaml` file:
-
+Keep in mind that the prefix part pimcore-studio/api can be changed to any other value in the config.
+You need to adapt your access_control settings accordingly.
 ```yaml
 security:
     firewalls: 
         pimcore_studio: '%pimcore_studio_backend.firewall_settings%'
     access_control:
-      - { path: ^/studio/api/(docs|docs.json|translations)$, roles: PUBLIC_ACCESS }
-      - { path: ^/studio, roles: ROLE_PIMCORE_USER }
+      - { path: ^/pimcore-studio/api/(docs|docs.json|translations)$, roles: PUBLIC_ACCESS }
+      - { path: ^/pimcore-studio, roles: ROLE_PIMCORE_USER }
 ```
 
 3) Make sure the bundle is enabled in the `config/bundles.php` file. The following lines should be added:
@@ -109,4 +110,20 @@ pimcore_studio_backend:
         hub_url_server: 'http://mercure/.well-known/mercure'
         # Optional configuration
         cookie_lifetime: 3600
+```
+
+## Changing the prefix of the Studio Backend
+It is possible to change the route where you can reach the API. By default, the route is `/pimcore-studio/api/`.  
+If you want to change the prefix, you can do so by changing the configuration like the following:
+Keep in mind that you need to update your access_control settings accordingly.
+```yaml
+pimcore_studio_backend:
+  url_prefix: '/your-prefix/api/'
+```
+
+```yaml
+security:
+    access_control:
+      - { path: ^/your-prefix/api/(docs|docs.json|translations)$, roles: PUBLIC_ACCESS }
+      - { path: ^/your-prefix, roles: ROLE_PIMCORE_USER }
 ```
