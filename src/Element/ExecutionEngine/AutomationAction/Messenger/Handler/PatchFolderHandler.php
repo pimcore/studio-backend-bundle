@@ -92,12 +92,13 @@ final class PatchFolderHandler extends AbstractHandler
 
         if (empty($childrenIds)) {
             $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+
             return;
         }
 
         $jobEnvironmentData = $jobRun->getJob()?->getEnvironmentData();
 
-        foreach($childrenIds as $childId) {
+        foreach ($childrenIds as $childId) {
             $element = $this->elementService->getAllowedElementById(
                 $elementType,
                 $childId,

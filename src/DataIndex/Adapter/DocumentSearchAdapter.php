@@ -62,7 +62,6 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
         return $this->hydratorService->hydrate($document);
     }
 
-
     public function fetchDocumentIds(QueryInterface $documentQuery): array
     {
         try {

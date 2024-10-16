@@ -28,6 +28,7 @@ final readonly class ElementSearchService implements ElementSearchServiceInterfa
 
     ) {
     }
+
     public function getElementById(string $type, int $id, ?UserInterface $user = null): mixed
     {
         return match ($type) {
