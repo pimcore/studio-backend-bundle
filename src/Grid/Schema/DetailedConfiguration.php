@@ -30,7 +30,18 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'GridDetailedConfiguration',
-    required: ['name', 'description', 'shareGlobal', 'saveFilter', 'setAsFavorite', 'sharedUsers', 'sharedRoles', 'columns', 'filter', 'pageSize'],
+    required: [
+        'name',
+        'description',
+        'shareGlobal',
+        'saveFilter',
+        'setAsFavorite',
+        'sharedUsers',
+        'sharedRoles',
+        'columns',
+        'filter',
+        'pageSize'
+    ],
     type: 'object'
 )]
 final class DetailedConfiguration implements AdditionalAttributesInterface
