@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
 /**
  * @internal
@@ -28,8 +28,5 @@ interface ConfigurationServiceInterface
 
     public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration;
 
-    /**
-     * @return Configuration[]
-     */
-    public function getGridConfigurationsForFolder(int $folderId): array;
+    public function getGridConfigurationsForFolder(int $folderId): Collection;
 }
