@@ -16,8 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
-use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-
 /**
  * @internal
  */
