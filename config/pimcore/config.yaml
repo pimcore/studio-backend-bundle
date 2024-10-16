@@ -151,6 +151,8 @@ pimcore_studio_backend:
             - "encryptedField"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BlockAdapter:
             - "block"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\FieldCollectionsAdapter:
+            - "fieldcollections"
 
 mercure:
     hubs:

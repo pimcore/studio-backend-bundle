@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\ContainerTypes;
+use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 
 /**
@@ -25,9 +26,10 @@ use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 final readonly class FieldContextData
 {
     public function __construct(
-        private ?AbstractData $objectbrick = null,
-        private ?array $blockElements = null,
-        private ?string $language = null,
+        private ?AbstractData    $objectbrick = null,
+        private ?array           $blockElements = null,
+        private ?string          $language = null,
+        private ?Fieldcollection $fieldCollection = null,
     ) {
     }
 
@@ -51,7 +53,13 @@ final readonly class FieldContextData
         return match (true) {
             $this->objectbrick !== null => ['containerType' => ContainerTypes::OBJECT_BRICK->value],
             $this->blockElements !== null => ['containerType' => ContainerTypes::BLOCK->value],
+            $this->fieldCollection !== null => ['containerType' => ContainerTypes::FIELD_COLLECTION->value],
             default => [],
         };
+    }
+
+    public function getFieldCollection(): ?Fieldcollection
+    {
+        return $this->fieldCollection;
     }
 }
