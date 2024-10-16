@@ -7,7 +7,8 @@ services:
   #Subscriber
   Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber:
     tags: [ 'kernel.event_subscriber' ]
+    arguments: ['%pimcore_studio_backend.url_prefix%']
 
   Pimcore\Bundle\StudioBackendBundle\EventSubscriber\ApiExceptionSubscriber:
     tags: [ 'kernel.event_subscriber' ]
-    arguments: ["%kernel.environment%"]
+    arguments: ["%kernel.environment%", '%pimcore_studio_backend.url_prefix%']

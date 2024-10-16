@@ -70,9 +70,12 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $this->checkValidOpenApiScanPaths($config['open_api_scan_paths']);
         $this->checkValidUrlPrefix($config['url_prefix']);
+
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
-        $definition->setArgument('$routePrefix', rtrim($config['url_prefix'], '/'));
-        $definition->setArgument('$openApiScanPaths', $config['open_api_scan_paths']);
+        $definition->setArguments([
+            '$routePrefix' => $config['url_prefix'],
+            '$openApiScanPaths' => $config['open_api_scan_paths'],
+        ]);
 
         $definition = $container->getDefinition(CorsSubscriber::class);
         $definition->setArgument('$allowedHosts', $config['allowed_hosts_for_cors']);

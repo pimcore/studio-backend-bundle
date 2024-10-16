@@ -26,11 +26,11 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 /**
  * @internal
  */
-final class ApiExceptionSubscriber implements EventSubscriberInterface
+final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 {
     use StudioBackendPathTrait;
 
-    public function __construct(private readonly string $environment)
+    public function __construct(private string $environment, private string $urlPrefix)
     {
     }
 
@@ -46,7 +46,7 @@ final class ApiExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getThrowable();
         $request = $event->getRequest();
 
-        if (!$this->isStudioBackendPath($request->getPathInfo())) {
+        if (!$this->isStudioBackendPath($request->getPathInfo(), $this->urlPrefix)) {
             return;
         }
 

@@ -23,8 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
  */
 trait StudioBackendPathTrait
 {
-    private function isStudioBackendPath(string $path): bool
+    private function isStudioBackendPath(string $path, string $urlPrefix): bool
     {
-        return str_starts_with($path, AbstractApiController::PREFIX);
+        return str_starts_with($path, $urlPrefix);
     }
 }
