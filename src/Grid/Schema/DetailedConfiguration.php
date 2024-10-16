@@ -29,8 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
-    title: 'GridConfiguration',
-    required: ['id', 'name', 'description'],
+    title: 'GridDetailedConfiguration',
+    required: ['name', 'description', 'shareGlobal', 'saveFilter', 'setAsFavorite', 'sharedUsers', 'sharedRoles', 'columns', 'filter', 'pageSize'],
     type: 'object'
 )]
 final class DetailedConfiguration implements AdditionalAttributesInterface
@@ -58,8 +58,11 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly array $filter,
         #[Property(description: 'Page Size', type: 'integer', example: 42)]
         private readonly int $pageSize = 25,
+        #[Property(description: 'Modification Date', type: 'integer', example: 1634025600)]
         private readonly ?int $modificationDate = null,
+        #[Property(description: 'Creation Date', type: 'integer', example: 1634025600)]
         private readonly ?int $creationDate = null,
+        #[Property(description: 'ID of the owner', type: 'integer', example: 42)]
         private readonly ?int $ownerId = null,
     ) {
     }
