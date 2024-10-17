@@ -14,6 +14,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData;
+use Pimcore\Model\Factory;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -24,6 +25,7 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface
 {
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
+        private Factory $modelFactory
     ) {
     }
 
@@ -47,7 +49,13 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface
 
         foreach ($fcData as $collectionRaw) {
             $collectionData = $this->processCollectionRaw($element, $fieldDefinition, $collectionRaw, $contextData);
-            $collection = $this->createCollection($element, $fieldDefinition, $collectionRaw['type'], $collectionData, $count);
+            $collection = $this->createCollection(
+                $element,
+                $fieldDefinition,
+                $collectionRaw['type'],
+                $collectionData,
+                $count
+            );
             $values[] = $collection;
             $count++;
         }
@@ -113,7 +121,7 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface
     ): AbstractData {
         $collectionClass = '\\Pimcore\\Model\\DataObject\\Fieldcollection\\Data\\' . ucfirst($collectionType);
         /** @var AbstractData $collection */
-        $collection = Pimcore::getContainer()?->get('pimcore.model.factory')?->build($collectionClass);
+        $collection = $this->modelFactory->build($collectionClass);
         $collection->setObject($element);
         $collection->setIndex($index);
         $collection->setFieldname($fieldDefinition->getName());
