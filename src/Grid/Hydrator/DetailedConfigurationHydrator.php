@@ -44,7 +44,8 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
             pageSize: $data->getPageSize(),
             modificationDate: $data->getModificationDate()->getTimestamp(),
             creationDate: $data->getCreationDate()->getTimestamp(),
-            ownerId: $data->getOwner()
+            ownerId: $data->getOwner(),
+            id: $data->getId(),
         );
     }
 }

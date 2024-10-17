@@ -75,6 +75,9 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly ?int $creationDate = null,
         #[Property(description: 'ID of the owner', type: 'integer', example: 42)]
         private readonly ?int $ownerId = null,
+        #[Property(description: 'ID of the configuration', type: 'integer', example: 42)]
+        private readonly ?int $id = null,
+
     ) {
     }
 
@@ -153,5 +156,10 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     public function getOwnerId(): ?int
     {
         return $this->ownerId;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 }
