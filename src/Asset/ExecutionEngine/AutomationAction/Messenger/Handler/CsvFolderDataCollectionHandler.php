@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvFolderCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -73,11 +73,11 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
             ));
         }
 
-        $jobFolder = $this->extractConfigFieldFromJobStepConfig($message, Csv::FOLDER_TO_EXPORT->value);
+        $jobFolder = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::FOLDER_TO_EXPORT->value);
 
-        $columns = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_COLUMNS->value);
+        $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
 
-        $filters = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_FILTERS->value);
+        $filters = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_FILTERS->value);
 
         $assets = $this->gridSearch->searchAssetsForUser(
             new GridParameter(
@@ -109,7 +109,7 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
                     ),
                 ];
 
-                $this->updateContextArrayValues($jobRun, Csv::ASSET_EXPORT_DATA->value, $assetData);
+                $this->updateContextArrayValues($jobRun, StepConfig::ASSET_EXPORT_DATA->value, $assetData);
             } catch (Exception $e) {
                 $this->abort($this->getAbortData(
                     Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
@@ -126,20 +126,20 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(Csv::FOLDER_TO_EXPORT->value);
+        $this->stepConfiguration->setRequired(StepConfig::FOLDER_TO_EXPORT->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::FOLDER_TO_EXPORT->value,
-            self::ARRAY_TYPE
+            StepConfig::FOLDER_TO_EXPORT->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
         );
-        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_COLUMNS->value);
+        $this->stepConfiguration->setRequired(StepConfig::CONFIG_COLUMNS->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::JOB_STEP_CONFIG_COLUMNS->value,
-            self::ARRAY_TYPE
+            StepConfig::CONFIG_COLUMNS->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
         );
-        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_FILTERS->value);
+        $this->stepConfiguration->setRequired(StepConfig::CONFIG_FILTERS->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::JOB_STEP_CONFIG_FILTERS->value,
-            self::ARRAY_TYPE
+            StepConfig::CONFIG_FILTERS->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
         );
     }
 }
