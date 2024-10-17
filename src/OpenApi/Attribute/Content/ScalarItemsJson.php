@@ -25,11 +25,11 @@ use OpenApi\Attributes\Property;
  */
 final class ScalarItemsJson extends JsonContent
 {
-    public function __construct(string $type)
+    public function __construct(string $type, string $name ='items')
     {
         parent::__construct(
             properties: [
-                new Property('items', type: 'array', items: new Items(type: $type)),
+                new Property(property: $name, type: 'array', items: new Items(type: $type)),
             ],
             type: 'object',
         );
