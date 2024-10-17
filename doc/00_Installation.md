@@ -59,7 +59,7 @@ https://<your-pimcore-host>/pimcore-studio/api/docs
 
 You can also access the OpenApi documentation in JSON format by navigating to the following URL:
 ```
-https://<your-pimcore-host>/pimcore-studio/api/docs.json
+https://<your-pimcore-host>/pimcore-studio/api/docs/json
 ```
 
 It is also possible to export the OpenApi documentation as a JSON file by running the following command:
