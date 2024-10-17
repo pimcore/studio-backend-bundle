@@ -51,7 +51,12 @@ final readonly class SubmitAction
         private string $workflowName,
         #[Property(description: 'transition', type: 'string', example: 'start_workflow')]
         private string $transition,
-        #[Property(description: 'workflowOptions', type: 'array', items: new Items(), example: [])]
+        #[Property(
+            description: 'workflowOptions',
+            type: 'object',
+            example: '{"notes": "Some note I want to write"}',
+            nullable: true
+        )]
         private array $workflowOptions = [],
     ) {
         if (!in_array($this->actionType, WorkflowActionTypes::ALLOWED_TYPES, true)) {
