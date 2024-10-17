@@ -40,8 +40,6 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
-    private const ARRAY_TYPE = 'array';
-
     public function __construct(
         private readonly FilterParameterMapperInterface $filterParameterMapper,
         private readonly PublishServiceInterface $publishService,
