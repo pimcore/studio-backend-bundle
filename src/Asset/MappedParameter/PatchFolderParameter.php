@@ -16,18 +16,27 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+
 /**
  * @internal
  */
-readonly class PatchAssetParameter
+final readonly class PatchFolderParameter extends PatchAssetParameter
 {
     public function __construct(
-        private array $data
+        private array $data,
+        private ?FilterParameter $filters,
     ) {
+        parent::__construct($data);
     }
 
     public function getData(): array
     {
         return $this->data;
+    }
+
+    public function getFilters(): FilterParameter
+    {
+        return $this->filters ?? new FilterParameter();
     }
 }

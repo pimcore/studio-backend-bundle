@@ -21,6 +21,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\Synchro
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
@@ -69,7 +70,7 @@ final readonly class PatchService implements PatchServiceInterface
 
     public function patchFolder(
         string $elementType,
-        array $patchData,
+        PatchFolderParameter $patchFolderParameter,
         UserInterface $user,
     ): ?int {
         $job = new Job(
@@ -79,7 +80,7 @@ final readonly class PatchService implements PatchServiceInterface
                     JobSteps::ELEMENT_FOLDER_PATCHING->value,
                     PatchFolderMessage::class,
                     '',
-                    []
+                    ['filters' => $patchFolderParameter->getFilters()]
                 ),
             ],
             selectedElements: array_map(
@@ -87,9 +88,9 @@ final readonly class PatchService implements PatchServiceInterface
                     $elementType,
                     $data['folderId']
                 ),
-                $patchData
+                $patchFolderParameter->getData()
             ),
-            environmentData: array_column($patchData, null, 'folderId'),
+            environmentData: array_column($patchFolderParameter->getData(), null, 'folderId'),
         );
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(

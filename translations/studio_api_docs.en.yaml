@@ -115,6 +115,10 @@ asset_patch_by_id_description: |
   Patching assets based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
 asset_patch_by_id_success_response: Successfully patched asset
 asset_patch_by_id_summary: Patch assets by ID
+asset_patch_folder_by_id_description: |
+  Patching assets based on the given folder ID and data. <br> Patching on folders will be done asynchronously. <br>
+  You can also use filters and sorting. Filter assets from folder based on the grid filter schema
+asset_patch_folder_by_id_summary: Patch all assets based on folder ID and filters
 asset_replace_description: |
   Replace the existing asset binary based on the given <strong>{id}</strong> with the provided {file} binary. <br> 
   The new asset binary mime type must be the same as the existing asset binary mime type.

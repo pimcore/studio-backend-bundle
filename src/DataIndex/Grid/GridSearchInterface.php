@@ -36,4 +36,10 @@ interface GridSearchInterface
     public function searchAssetsForUser(GridParameter $gridParameter, UserInterface $user): AssetSearchResult;
 
     public function searchDataObjects(GridParameter $gridParameter): DataObjectSearchResult;
+
+    public function searchElementsForUser(
+        string $type,
+        GridParameter $gridParameter,
+        UserInterface $user
+    ): AssetSearchResult|DataObjectSearchResult;
 }

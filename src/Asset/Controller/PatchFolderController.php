@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Patch;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\PatchAssetFolderRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchAssetParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -75,12 +75,12 @@ final class PatchFolderController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function assetPatchFolderById(#[MapRequestPayload] PatchAssetParameter $patchAssetParameter): Response
+    public function assetPatchFolderById(#[MapRequestPayload] PatchFolderParameter $patchFolderParameter): Response
     {
 
         $jobRunId = $this->patchService->patchFolder(
             ElementTypes::TYPE_ASSET,
-            $patchAssetParameter->getData(),
+            $patchFolderParameter,
             $this->securityService->getCurrentUser()
         );
 

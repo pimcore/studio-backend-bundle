@@ -18,13 +18,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationA
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\FilterParameterMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
@@ -40,11 +44,12 @@ final class PatchFolderHandler extends AbstractHandler
     use HandlerProgressTrait;
 
     public function __construct(
-        private readonly ElementSearchServiceInterface $elementSearchService,
-        private readonly PatchServiceInterface $patchService,
+        private readonly FilterParameterMapperInterface $filterParameterMapper,
         private readonly PublishServiceInterface $publishService,
         private readonly ElementServiceInterface $elementService,
+        private readonly PatchServiceInterface $patchService,
         private readonly UserResolverInterface $userResolver,
+        private readonly GridSearchInterface $gridSearch,
     ) {
         parent::__construct();
     }
@@ -69,39 +74,32 @@ final class PatchFolderHandler extends AbstractHandler
             $this->abort($validatedParameters);
         }
 
+        $folderId = $validatedParameters->getSubject()->getId();
         $elementType =  $validatedParameters->getSubject()->getType();
+        $filters = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_FILTERS->value);
 
-        $folder = $this->elementSearchService->getElementById(
+        $result = $this->gridSearch->searchElementsForUser(
             $elementType,
-            $validatedParameters->getSubject()->getId(),
-            $validatedParameters->getUser(),
+            new GridParameter(
+                $folderId,
+                [],
+                $this->filterParameterMapper->fromArray($filters)
+            ),
+            $validatedParameters->getUser()
         );
 
-        if (!$folder || $folder->getType() !== 'folder') {
-            $this->abort($this->getAbortData(
-                Config::ELEMENT_PATCH_FAILED_MESSAGE->value,
-                [
-                    'type' => 'folder',
-                    'id' => $validatedParameters->getSubject()->getId(),
-                    'message' => Config::NO_FOLDER_PROVIDED->value,
-                ],
-            ));
-        }
 
-        $childrenIds = $this->elementSearchService->getChildrenIds($elementType, $folder->getFullPath());
-
-        if (empty($childrenIds)) {
+        if (empty($result->getItems())) {
             $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
-
             return;
         }
 
         $jobEnvironmentData = $jobRun->getJob()?->getEnvironmentData();
 
-        foreach ($childrenIds as $childId) {
+        foreach ($result->getItems() as $item) {
             $element = $this->elementService->getAllowedElementById(
                 $elementType,
-                $childId,
+                $item->getId(),
                 $validatedParameters->getUser()
             );
             $elementId = $element->getId();
@@ -110,7 +108,7 @@ final class PatchFolderHandler extends AbstractHandler
                 $this->patchService->patchElement(
                     $element,
                     $elementType,
-                    $jobEnvironmentData[$folder->getId()],
+                    $jobEnvironmentData[$folderId],
                     $validatedParameters->getUser()
                 );
             } catch (Exception $exception) {
@@ -126,5 +124,14 @@ final class PatchFolderHandler extends AbstractHandler
 
             $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
         }
+    }
+
+    protected function configureStep(): void
+    {
+        $this->stepConfiguration->setRequired('filters');
+        $this->stepConfiguration->setAllowedTypes(
+            'filters',
+            'array'
+        );
     }
 }

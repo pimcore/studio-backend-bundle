@@ -23,6 +23,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\PatchCustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
 
@@ -58,6 +59,11 @@ final class PatchAssetFolderRequestBody extends RequestBody
                             ],
                             type: 'object',
                         ),
+                    ),
+                    new Property(
+                        property: 'filters',
+                        ref: Filter::class,
+                        type: 'object'
                     ),
                 ],
                 type: 'object',

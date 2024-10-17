@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -42,7 +43,7 @@ interface PatchServiceInterface
      */
     public function patchFolder(
         string $elementType,
-        array $patchData,
+        PatchFolderParameter $patchFolderParameter,
         UserInterface $user,
     ): ?int;
 
