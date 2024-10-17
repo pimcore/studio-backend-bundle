@@ -27,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
@@ -56,12 +56,12 @@ final readonly class CsvService implements CsvServiceInterface
     public function generateCsvFileForAssets(ExportAssetParameter $exportAssetParameter): int
     {
         $collectionSettings = [
-            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportAssetParameter->getColumns(),
+            StepConfig::CONFIG_COLUMNS->value => $exportAssetParameter->getColumns(),
         ];
 
         $creationSettings = [
-            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportAssetParameter->getColumns(),
-            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportAssetParameter->getConfig(),
+            StepConfig::CONFIG_COLUMNS->value => $exportAssetParameter->getColumns(),
+            StepConfig::CONFIG_CONFIGURATION->value => $exportAssetParameter->getConfig(),
         ];
 
         return $this->generateCsvFileJob(
@@ -75,13 +75,13 @@ final readonly class CsvService implements CsvServiceInterface
     public function generateCsvFileForFolders(ExportFolderParameter $exportFolderParameter): int
     {
         $collectionSettings = [
-            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportFolderParameter->getColumns(),
-            Csv::JOB_STEP_CONFIG_FILTERS->value => $exportFolderParameter->getFilters(),
+            StepConfig::CONFIG_COLUMNS->value => $exportFolderParameter->getColumns(),
+            StepConfig::CONFIG_FILTERS->value => $exportFolderParameter->getFilters(),
         ];
 
         $creationSettings = [
-            Csv::JOB_STEP_CONFIG_COLUMNS->value => $exportFolderParameter->getColumns(),
-            Csv::JOB_STEP_CONFIG_CONFIGURATION->value => $exportFolderParameter->getConfig(),
+            StepConfig::CONFIG_COLUMNS->value => $exportFolderParameter->getColumns(),
+            StepConfig::CONFIG_CONFIGURATION->value => $exportFolderParameter->getConfig(),
         ];
 
         return $this->generateCsvFileJob(
@@ -89,7 +89,7 @@ final readonly class CsvService implements CsvServiceInterface
             $collectionSettings,
             $creationSettings,
             CsvFolderCollectionMessage::class,
-            Csv::FOLDER_TO_EXPORT
+            StepConfig::FOLDER_TO_EXPORT
         );
     }
 
@@ -108,9 +108,9 @@ final readonly class CsvService implements CsvServiceInterface
         if ($delimiter === null) {
             $delimiter = $this->defaultDelimiter;
         }
-        $data[] = implode($delimiter, $headers) . Csv::NEW_LINE->value;
+        $data[] = implode($delimiter, $headers) . StepConfig::NEW_LINE->value;
         foreach ($assetData as $row) {
-            $data[] = implode($delimiter, array_map([$this, 'encodeFunc'], $row)) . Csv::NEW_LINE->value;
+            $data[] = implode($delimiter, array_map([$this, 'encodeFunc'], $row)) . StepConfig::NEW_LINE->value;
         }
 
         $storage->write(
@@ -124,7 +124,7 @@ final readonly class CsvService implements CsvServiceInterface
         array $collectionSettings,
         array $creationSettings,
         string $messageFQCN,
-        Csv $export = Csv::ASSET_TO_EXPORT
+        StepConfig $export = StepConfig::ASSET_TO_EXPORT
     ): int {
 
         $jobSteps = [
@@ -163,14 +163,14 @@ final readonly class CsvService implements CsvServiceInterface
 
     private function getHeaders(ColumnCollection $columnCollection, array $settings): array
     {
-        $header = $settings[Csv::SETTINGS_HEADER->value] ?? Csv::SETTINGS_HEADER_NO_HEADER->value;
-        if ($header === Csv::SETTINGS_HEADER_NO_HEADER->value) {
+        $header = $settings[StepConfig::SETTINGS_HEADER->value] ?? StepConfig::SETTINGS_HEADER_NO_HEADER->value;
+        if ($header === StepConfig::SETTINGS_HEADER_NO_HEADER->value) {
             return [];
         }
 
         return $this->gridService->getColumnKeys(
             $columnCollection,
-            $header === Csv::SETTINGS_HEADER_NAME->value
+            $header === StepConfig::SETTINGS_HEADER_NAME->value
         );
     }
 
@@ -178,7 +178,7 @@ final readonly class CsvService implements CsvServiceInterface
         array $elements,
         array $collectionSettings,
         string $messageFQCN,
-        Csv $export
+        StepConfig $export
     ): array {
         return array_map(
             static fn (ElementDescriptor $asset) => new JobStep(

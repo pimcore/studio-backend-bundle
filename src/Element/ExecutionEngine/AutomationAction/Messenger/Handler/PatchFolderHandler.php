@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationA
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -75,7 +75,7 @@ final class PatchFolderHandler extends AbstractHandler
 
         $folderId = $validatedParameters->getSubject()->getId();
         $elementType =  $validatedParameters->getSubject()->getType();
-        $filters = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_FILTERS->value);
+        $filters = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_FILTERS->value);
 
         $result = $this->gridSearch->searchElementsForUser(
             $elementType,
@@ -127,10 +127,10 @@ final class PatchFolderHandler extends AbstractHandler
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired('filters');
+        $this->stepConfiguration->setRequired(StepConfig::CONFIG_FILTERS->value);
         $this->stepConfiguration->setAllowedTypes(
-            'filters',
-            'array'
+            StepConfig::CONFIG_FILTERS->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
         );
     }
 }
