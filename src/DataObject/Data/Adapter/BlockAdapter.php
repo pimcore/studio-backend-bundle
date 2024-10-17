@@ -65,10 +65,9 @@ final readonly class BlockAdapter implements SetterDataInterface
         Data $fieldDefinition,
         ?FieldContextData $contextData = null
     ): FieldContextData {
-        $object = $contextData?->getObjectbrick() ?? $element;
+        $object = $contextData?->getContextObject() ?? $element;
 
         return new FieldContextData(
-            null,
             $object->get($fieldDefinition->getName()),
             $contextData?->getLanguage()
         );

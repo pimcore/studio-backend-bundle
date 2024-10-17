@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\ContainerTypes;
+use Pimcore\Model\DataObject\Data\BlockElement;
 use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 
@@ -26,21 +27,9 @@ use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 final readonly class FieldContextData
 {
     public function __construct(
-        private ?AbstractData    $objectbrick = null,
-        private ?array           $blockElements = null,
-        private ?string          $language = null,
-        private ?Fieldcollection $fieldCollection = null,
+        private AbstractData|array|Fieldcollection|null $contextObject = null,
+        private ?string          $language = null
     ) {
-    }
-
-    public function getObjectbrick(): ?AbstractData
-    {
-        return $this->objectbrick;
-    }
-
-    public function getBlockElements(): ?array
-    {
-        return $this->blockElements;
     }
 
     public function getLanguage(): ?string
@@ -48,18 +37,35 @@ final readonly class FieldContextData
         return $this->language;
     }
 
-    public function getContext(): array
+    public function getContextObject(): Fieldcollection|array|AbstractData|null
     {
-        return match (true) {
-            $this->objectbrick !== null => ['containerType' => ContainerTypes::OBJECT_BRICK->value],
-            $this->blockElements !== null => ['containerType' => ContainerTypes::BLOCK->value],
-            $this->fieldCollection !== null => ['containerType' => ContainerTypes::FIELD_COLLECTION->value],
-            default => [],
-        };
+        return $this->contextObject;
     }
 
-    public function getFieldCollection(): ?Fieldcollection
+    public function getFieldValueFromContextObject(string $fieldName): mixed
     {
-        return $this->fieldCollection;
+        $contextObject = $this->getContextObject();
+
+        if ($contextObject instanceof Fieldcollection || $contextObject instanceof AbstractData) {
+            return $contextObject->get($fieldName);
+        }
+
+        if (is_array($contextObject)) {
+            return $this->getFromBlockData($fieldName, $contextObject);
+        }
+
+        return null;
+    }
+
+    private function getFromBlockData(string $fieldName, array $blockData): mixed
+    {
+        foreach($blockData as $value) {
+            $fieldValue = $value[$fieldName] ?? null;
+            if($fieldValue instanceof BlockElement) {
+                return $fieldValue->getData();
+            }
+        }
+
+        return null;
     }
 }

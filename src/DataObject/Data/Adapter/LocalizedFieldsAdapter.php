@@ -123,8 +123,8 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface
             return new Localizedfield();
         }
 
-        if ($contextData->getObjectbrick() !== null) {
-            return $contextData->getObjectbrick()->get('localizedfields');
+        if ($contextData->getContextObject() !== null) {
+            return $contextData->getFieldValueFromContextObject('localizedfields');
         }
 
         throw new InvalidArgumentException('Invalid context provided.');

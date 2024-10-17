@@ -149,7 +149,7 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface
                 $fd,
                 $fieldName,
                 [$fieldName => $rawData[$fieldName]],
-                new FieldContextData(objectbrick: $brick)
+                new FieldContextData($brick)
             );
         }
 
