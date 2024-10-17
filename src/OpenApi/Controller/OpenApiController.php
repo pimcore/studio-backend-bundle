@@ -42,7 +42,7 @@ final class OpenApiController extends AbstractController
         );
     }
 
-    #[Route('/docs.json', name: 'pimcore_studio_api_docs_json', methods: ['GET'])]
+    #[Route('/docs/json', name: 'pimcore_studio_api_docs_json', methods: ['GET'])]
     public function openapi(#[MapQueryString] LocaleParameter $localeParameter = new LocaleParameter()): JsonResponse
     {
         $config = $this->openApiService->getConfig();
