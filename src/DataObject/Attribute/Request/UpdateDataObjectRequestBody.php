@@ -22,6 +22,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateBooleanProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateObjectProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Attribute\Property\UpdateElementProperties;
 
@@ -48,6 +49,7 @@ final class UpdateDataObjectRequestBody extends RequestBody
                             new UpdateStringProperty('childrenSortBy'),
                             new UpdateStringProperty('childrenSortOrder'),
                             new UpdateBooleanProperty('published'),
+                            new UpdateObjectProperty('editableData'),
                             new UpdateElementProperties(),
                         ],
                         type: 'object',

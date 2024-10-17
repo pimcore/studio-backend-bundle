@@ -40,4 +40,6 @@ final class ElementPermissions
     public const VERSIONS_PERMISSION = 'versions';
 
     public const PROPERTIES_PERMISSION = 'properties';
+
+    public const LANGUAGE_EDIT_PERMISSIONS = 'lEdit';
 }

@@ -7,6 +7,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Updater\Service\AdapterLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Updater\Service\Loader\TaggedIteratorAdapter
 
+  Pimcore\Bundle\StudioBackendBundle\Updater\Service\EditableAdapterLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Updater\Service\Loader\TaggedIteratorEditableAdapter
+
   Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateService
 

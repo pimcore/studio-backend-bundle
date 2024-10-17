@@ -52,7 +52,7 @@ final class GetUserController extends AbstractApiController
     /**
      * @throws NotFoundException|DatabaseException
      */
-    #[Route('/user/{id}', name: 'pimcore_studio_api_user_get', methods: ['GET'])]
+    #[Route('/user/{id}', name: 'pimcore_studio_api_user_get', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::PREFIX . '/user/{id}',

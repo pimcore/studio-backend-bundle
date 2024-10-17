@@ -39,7 +39,7 @@ final readonly class AllowedTransition
         #[Property(description: 'iconCls', type: 'string', example: 'pimcore_workflow_start')]
         private string $iconCls,
         #[Property(description: 'objectLayout', type: 'bool', example: false)]
-        private bool $objectLayout,
+        private bool|int|string $objectLayout,
         #[Property(
             description: 'unsavedChangesBehaviour',
             type: 'string',
@@ -72,7 +72,7 @@ final readonly class AllowedTransition
         return $this->iconCls;
     }
 
-    public function getObjectLayout(): bool
+    public function getObjectLayout(): bool|int|string
     {
         return $this->objectLayout;
     }

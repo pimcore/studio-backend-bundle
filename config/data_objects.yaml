@@ -32,6 +32,135 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceService
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterService
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Loader\TaggedIteratorDataAdapter
+
+  #
+  # Data Adapters
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyObjectRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BooleanAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CalculatedValueAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CheckboxAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateRangeAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\GeoBoundsAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\GeoPointAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\GeoPointsAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ExternalImageAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\HotspotImageAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ImageAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ImageGalleryAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyObjectRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToOneRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\MultiSelectAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericRangeAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ObjectBricksAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\RgbaColorAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SelectAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SliderAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StringAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StructuredTableAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\TableAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\VideoAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\QuantityValueAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\InputQuantityValueAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\QuantityValueRangeAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ConsentAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\EncryptedFieldAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BlockAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\FieldCollectionsAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
   #
   # Handler
   #
