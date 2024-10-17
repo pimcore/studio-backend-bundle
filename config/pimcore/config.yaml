@@ -57,6 +57,103 @@ pimcore_studio_backend:
             document: ['content', 'seo', 'warning', 'notice']
             data-object: ['content', 'seo', 'warning', 'notice']
 
+    data_object_data_adapter_mapping:
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyRelationAdapter:
+            - "advancedManyToManyRelation"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyObjectRelationAdapter:
+            - "advancedManyToManyObjectRelation"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BooleanAdapter:
+            - "booleanSelect"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CalculatedValueAdapter:
+            - "calculatedValue"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CheckboxAdapter:
+            - "checkbox"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter:
+            - "classificationstore"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateAdapter:
+            - "date"
+            - "datetime"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateRangeAdapter:
+            - "dateRange"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\GeoBoundsAdapter:
+            - "geobounds"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\GeoPointAdapter:
+            - "geopoint"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\GeoPointsAdapter:
+            - "geopolygon"
+            - "geopolyline"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ExternalImageAdapter:
+            - "externalImage"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\HotspotImageAdapter:
+            - "hotspotimage"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ImageAdapter:
+            - "image"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ImageGalleryAdapter:
+            - "imageGallery"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LinkAdapter:
+            - "link"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter:
+            - "localizedfields"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyRelationAdapter:
+            - "manyToManyRelation"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToManyObjectRelationAdapter:
+            - "manyToManyObjectRelation"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ManyToOneRelationAdapter:
+            - "manyToOneRelation"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\MultiSelectAdapter:
+            - "countrymultiselect"
+            - "languagemultiselect"
+            - "multiselect"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericAdapter:
+            - "numeric"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\NumericRangeAdapter:
+            - "numericRange"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ObjectBricksAdapter:
+            - "objectbricks"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ReverseObjectRelationAdapter:
+            - "reverseObjectRelation"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\RgbaColorAdapter:
+            - "rgbaColor"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SelectAdapter:
+            - "country"
+            - "gender"
+            - "language"
+            - "select"
+            - "user"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SliderAdapter:
+            - "slider"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StringAdapter:
+            - "email"
+            - "firstname"
+            - "input"
+            - "lastname"
+            - "password"
+            - "textarea"
+            - "time"
+            - "wysiwyg"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StructuredTableAdapter:
+            - "structuredTable"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\TableAdapter:
+            - "table"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
+            - "urlSlug"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\QuantityValueAdapter:
+            - "quantityValue"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\InputQuantityValueAdapter:
+            - "inputQuantityValue"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\QuantityValueRangeAdapter:
+            - "quantityValueRange"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\VideoAdapter:
+            - "video"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ConsentAdapter:
+            - "consent"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\EncryptedFieldAdapter:
+            - "encryptedField"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BlockAdapter:
+            - "block"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\FieldCollectionsAdapter:
+            - "fieldcollections"
+
 mercure:
     hubs:
         studio_server:
