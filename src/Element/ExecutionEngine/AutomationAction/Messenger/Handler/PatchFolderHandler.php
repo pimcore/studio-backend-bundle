@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationA
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -88,9 +87,9 @@ final class PatchFolderHandler extends AbstractHandler
             $validatedParameters->getUser()
         );
 
-
         if (empty($result->getItems())) {
             $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
+
             return;
         }
 

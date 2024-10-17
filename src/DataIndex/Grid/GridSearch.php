@@ -112,10 +112,8 @@ final readonly class GridSearch implements GridSearchInterface
         string $type,
         GridParameter $gridParameter,
         UserInterface $user
-    ): AssetSearchResult|DataObjectSearchResult
-    {
+    ): AssetSearchResult|DataObjectSearchResult {
         $filter = $gridParameter->getFilters();
-
 
         $folder = match($type) {
             ElementTypes::TYPE_ASSET => $this->assetService->getAssetFolderForUser(
@@ -126,8 +124,8 @@ final readonly class GridSearch implements GridSearchInterface
                 $gridParameter->getFolderId(),
                 $user
             ),
-           default => throw new InvalidElementTypeException($type)
-       };
+            default => throw new InvalidElementTypeException($type)
+        };
 
         $filter->setPath($folder->getFullPath());
 
