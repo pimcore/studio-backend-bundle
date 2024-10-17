@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\ContainerTypes;
 use Pimcore\Model\DataObject\Data\BlockElement;
 use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
+use function is_array;
 
 /**
  * @internal
@@ -28,7 +28,7 @@ final readonly class FieldContextData
 {
     public function __construct(
         private AbstractData|array|Fieldcollection|null $contextObject = null,
-        private ?string          $language = null
+        private ?string $language = null
     ) {
     }
 
@@ -59,9 +59,9 @@ final readonly class FieldContextData
 
     private function getFromBlockData(string $fieldName, array $blockData): mixed
     {
-        foreach($blockData as $value) {
+        foreach ($blockData as $value) {
             $fieldValue = $value[$fieldName] ?? null;
-            if($fieldValue instanceof BlockElement) {
+            if ($fieldValue instanceof BlockElement) {
                 return $fieldValue->getData();
             }
         }
