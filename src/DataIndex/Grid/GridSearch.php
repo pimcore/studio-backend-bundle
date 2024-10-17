@@ -23,8 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
@@ -105,5 +107,43 @@ final readonly class GridSearch implements GridSearchInterface
 
         // TODO remove dataObjectSearchService, replace with DataObjectService @martineiber
         return $this->dataObjectSearchService->searchDataObjects($query);
+    }
+
+    public function searchElementsForUser(
+        string $type,
+        GridParameter $gridParameter,
+        UserInterface $user
+    ): AssetSearchResult|DataObjectSearchResult {
+        $filter = $gridParameter->getFilters();
+
+        $folder = match($type) {
+            ElementTypes::TYPE_ASSET => $this->assetService->getAssetFolderForUser(
+                $gridParameter->getFolderId(),
+                $user
+            ),
+            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectService->getDataObjectFolderForUser(
+                $gridParameter->getFolderId(),
+                $user
+            ),
+            default => throw new InvalidElementTypeException($type)
+        };
+
+        $filter->setPath($folder->getFullPath());
+
+        /** @var AssetQueryInterface|DataObjectQueryInterface $query */
+        $query = $this->filterService->applyFilters(
+            $filter,
+            $type
+        );
+
+        $query->setUser($user);
+
+        // TODO remove assetSearchService|dataObjectSearchService,
+        // TODO replace with AssetService|DataObjectService @martineiber
+        return match($type) {
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->searchAssets($query),
+            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->searchDataObjects($query),
+            default => throw new InvalidElementTypeException($type)
+        };
     }
 }

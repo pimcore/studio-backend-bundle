@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -30,4 +31,6 @@ interface DocumentSearchAdapterInterface
      * @throws SearchException|NotFoundException
      */
     public function getDocumentById(int $id, ?UserInterface $user = null): Document;
+
+    public function fetchDocumentIds(QueryInterface $documentQuery): array;
 }

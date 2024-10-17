@@ -14,20 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider;
 
-/**
- * @internal
- */
-readonly class PatchAssetParameter
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
+
+interface DocumentQueryProviderInterface
 {
-    public function __construct(
-        private array $data
-    ) {
-    }
-
-    public function getData(): array
-    {
-        return $this->data;
-    }
+    public function createDocumentQuery(): DocumentQueryInterface;
 }

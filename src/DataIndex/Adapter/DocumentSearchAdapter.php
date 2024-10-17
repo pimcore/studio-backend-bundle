@@ -17,8 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DocumentSearchException;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Document\DocumentSearchServiceInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -32,6 +35,7 @@ use function sprintf;
 final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInterface
 {
     public function __construct(
+        private SearchResultIdListServiceInterface $searchResultIdListService,
         private DocumentSearchServiceInterface $searchService,
         private DocumentHydratorInterface $hydratorService
     ) {
@@ -56,5 +60,17 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
         }
 
         return $this->hydratorService->hydrate($document);
+    }
+
+    public function fetchDocumentIds(QueryInterface $documentQuery): array
+    {
+        try {
+            $search = $documentQuery->getSearch();
+            $search->addModifier(new OrderByFullPath());
+
+            return $this->searchResultIdListService->getAllIds($search);
+        } catch (DocumentSearchException) {
+            throw new SearchException('documents');
+        }
     }
 }

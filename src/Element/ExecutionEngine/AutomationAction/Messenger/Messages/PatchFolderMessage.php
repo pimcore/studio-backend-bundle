@@ -14,20 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages;
+
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-readonly class PatchAssetParameter
+final class PatchFolderMessage extends AbstractExecutionEngineMessage
 {
-    public function __construct(
-        private array $data
-    ) {
-    }
-
-    public function getData(): array
-    {
-        return $this->data;
-    }
 }

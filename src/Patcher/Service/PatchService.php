@@ -21,6 +21,8 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\Synchro
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
@@ -64,6 +66,40 @@ final readonly class PatchService implements PatchServiceInterface
         $this->patchElement($element, $elementType, $patchData[0], $user);
 
         return null;
+    }
+
+    public function patchFolder(
+        string $elementType,
+        PatchFolderParameter $patchFolderParameter,
+        UserInterface $user,
+    ): ?int {
+        $job = new Job(
+            name: Jobs::PATCH_ELEMENTS->value,
+            steps: [
+                new JobStep(
+                    JobSteps::ELEMENT_FOLDER_PATCHING->value,
+                    PatchFolderMessage::class,
+                    '',
+                    ['filters' => $patchFolderParameter->getFilters()]
+                ),
+            ],
+            selectedElements: array_map(
+                static fn (array $data) => new ElementDescriptor(
+                    $elementType,
+                    $data['folderId']
+                ),
+                $patchFolderParameter->getData()
+            ),
+            environmentData: array_column($patchFolderParameter->getData(), null, 'folderId'),
+        );
+
+        $jobRun = $this->jobExecutionAgent->startJobExecution(
+            $job,
+            $user->getId(),
+            Config::CONTEXT_CONTINUE_ON_ERROR->value
+        );
+
+        return $jobRun->getId();
     }
 
     /**

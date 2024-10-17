@@ -43,6 +43,10 @@ services:
       $assetHydratorLocator: '@open_search.asset_hydrator.service_locator'
       $dataObjectHydratorLocator: '@open_search.data_object_hydrator.service_locator'
 
+  # Elements
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchService
 
   # Assets
   Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface:
@@ -71,6 +75,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchService
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProvider
 
 
   #Service Locator

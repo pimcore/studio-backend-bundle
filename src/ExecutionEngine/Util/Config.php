@@ -20,6 +20,7 @@ enum Config: string
     case CONTEXT_STOP_ON_ERROR = 'studio_stop_on_error';
     case CONTEXT_CONTINUE_ON_ERROR = 'studio_continue_on_error';
     case NO_ELEMENT_PROVIDED = 'studio_ee_no_element_provided';
+    case NO_FOLDER_PROVIDED = 'studio_ee_no_folder_provided';
     case ELEMENT_NOT_FOUND_MESSAGE = 'studio_ee_element_not_found';
     case USER_NOT_FOUND_MESSAGE = 'studio_ee_user_not_found';
     case ENVIRONMENT_VARIABLE_NOT_FOUND = 'studio_ee_environment_variable_not_found';

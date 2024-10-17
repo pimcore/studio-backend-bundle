@@ -32,6 +32,7 @@ studio_ee_job_step_asset_uploading: Asset Uploading
 studio_ee_job_step_csv_creation: CSV Creation
 studio_ee_job_step_csv_collection: CSV Collection
 studio_ee_job_step_element_patching: Element Patching
+studio_ee_job_step_folder_patching: Patching Folder Elements
 studio_ee_job_step_element_rewrite_references: Rewrite Element References
 studio_ee_job_step_element_deletion: Element Deletion
 studio_ee_job_step_element_recycling: Adding Element to Recycle Bin
