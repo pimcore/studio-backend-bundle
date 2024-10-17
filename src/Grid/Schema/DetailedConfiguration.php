@@ -77,7 +77,6 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly ?int $ownerId = null,
         #[Property(description: 'ID of the configuration', type: 'integer', example: 42)]
         private readonly ?int $id = null,
-
     ) {
     }
 
