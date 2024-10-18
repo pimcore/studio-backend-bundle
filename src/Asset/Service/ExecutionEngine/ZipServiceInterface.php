@@ -16,7 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\CreateAssetFileParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetFileParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -71,7 +72,9 @@ interface ZipServiceInterface
     /**
      * @throws EnvironmentException|MaxFileSizeExceededException
      */
-    public function generateZipFile(CreateAssetFileParameter $parameter): int;
+    public function generateZipFileForAssets(ExportAssetFileParameter $parameter): int;
+
+    public function generateZipFileForFolders(ExportFolderFileParameter $parameter): int;
 
     /**
      * @throws EnvironmentException
