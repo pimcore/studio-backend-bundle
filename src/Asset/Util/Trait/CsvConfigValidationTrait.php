@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Util\Trait;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 trait CsvConfigValidationTrait
@@ -32,7 +32,7 @@ trait CsvConfigValidationTrait
             throw new InvalidArgumentException('No settings provided');
         }
 
-        if (!isset($this->getConfig()[Csv::SETTINGS_DELIMITER->value])) {
+        if (!isset($this->getConfig()[StepConfig::SETTINGS_DELIMITER->value])) {
             throw new InvalidArgumentException('No delimiter provided');
         }
     }

@@ -20,7 +20,7 @@ use Exception;
 use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
@@ -35,8 +35,6 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class CsvCreationHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
-
-    private const ARRAY_TYPE = 'array';
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
@@ -56,21 +54,21 @@ final class CsvCreationHandler extends AbstractHandler
             return;
         }
 
-        $columns = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_COLUMNS->value);
+        $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
 
-        $settings = $this->extractConfigFieldFromJobStepConfig($message, Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
+        $settings = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_CONFIGURATION->value);
         $columnCollection = $this->gridService->getConfigurationFromArray(
             $columns,
             true
         );
 
-        if (!isset($jobRun->getContext()[Csv::ASSET_EXPORT_DATA->value])) {
+        if (!isset($jobRun->getContext()[StepConfig::ASSET_EXPORT_DATA->value])) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,
                 ['message' => 'Asset export data not found in job run context']
             ));
         }
-        $assetData = $jobRun->getContext()[Csv::ASSET_EXPORT_DATA->value];
+        $assetData = $jobRun->getContext()[StepConfig::ASSET_EXPORT_DATA->value];
 
         try {
             $this->csvService->createCsvFile(
@@ -91,15 +89,15 @@ final class CsvCreationHandler extends AbstractHandler
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_CONFIGURATION->value);
+        $this->stepConfiguration->setRequired(StepConfig::CONFIG_CONFIGURATION->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::JOB_STEP_CONFIG_CONFIGURATION->value,
-            self::ARRAY_TYPE
+            StepConfig::CONFIG_CONFIGURATION->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
         );
-        $this->stepConfiguration->setRequired(Csv::JOB_STEP_CONFIG_COLUMNS->value);
+        $this->stepConfiguration->setRequired(StepConfig::CONFIG_COLUMNS->value);
         $this->stepConfiguration->setAllowedTypes(
-            Csv::JOB_STEP_CONFIG_COLUMNS->value,
-            self::ARRAY_TYPE
+            StepConfig::CONFIG_COLUMNS->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
         );
     }
 }
