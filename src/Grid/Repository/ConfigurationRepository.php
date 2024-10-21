@@ -80,4 +80,10 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
     {
         return $this->entityManager->getRepository(GridConfiguration::class)->findBy(['assetFolderId' => $folderId]);
     }
+
+    public function delete(GridConfiguration $configuration): void
+    {
+        $this->entityManager->remove($configuration);
+        $this->entityManager->flush();
+    }
 }

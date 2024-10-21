@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\DetailedConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterface;
@@ -159,5 +160,25 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             columns: $columns,
             filter: [],
         );
+    }
+
+    /**
+     * @throws NotFoundException|InvalidArgumentException|AccessDeniedException
+     */
+    public function deleteAssetConfiguration(int $configurationId, int $folderId): void
+    {
+        $configuration = $this->configurationRepository->getById($configurationId);
+
+        if ($configuration->getAssetFolderId() !== $folderId) {
+            throw new InvalidArgumentException('Configuration does not belong to folder');
+        }
+
+        if ($this->securityService->getCurrentUser()->getId() !== $configuration->getOwner()) {
+            throw new AccessDeniedException(
+                'You are not allowed to delete this configuration. Only the owner can delete it.'
+            );
+        }
+
+        $this->configurationRepository->delete($configuration);
     }
 }
