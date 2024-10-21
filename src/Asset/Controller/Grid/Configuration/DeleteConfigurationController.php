@@ -19,8 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration
 use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter as IdParameterPath;
@@ -47,7 +48,7 @@ final class DeleteConfigurationController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|SearchException
+     * @throws NotFoundException|InvalidArgumentException|AccessDeniedException
      */
     #[Route(
         '/assets/grid/configuration/{folderId}/{configurationId}',
