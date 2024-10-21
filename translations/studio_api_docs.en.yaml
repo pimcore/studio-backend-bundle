@@ -579,3 +579,6 @@ data_object_get_grid_description: |
     </ul>
 data_object_get_grid_success_response: Data object grid data
 data_object_get_grid_summary: Get data object data for grid
+asset_delete_grid_configuration_by_configurationId_description: |
+    Delete grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
+asset_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a specific folder and given configuration ID

@@ -65,7 +65,6 @@ final class DeleteConfigurationController extends AbstractApiController
     #[IdParameterPath(name: 'folderId')]
     #[IdParameterPath(name: 'configurationId')]
     #[SuccessResponse(
-        description: 'asset_delete_grid_configuration_by_configurationId_success_response',
         content: new JsonContent(ref: DetailedConfiguration::class)
     )]
     #[DefaultResponses([
