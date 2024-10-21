@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectFolderResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
@@ -36,11 +37,12 @@ use function sprintf;
 final readonly class ElementFolderService implements ElementFolderServiceInterface
 {
     public function __construct(
-        private AssetResolverInterface $assetResolver,
+        private SynchronousProcessingServiceInterface $synchronousProcessingService,
         private DataObjectFolderResolverInterface $dataObjectFolderResolver,
         private DocumentResolverInterface $documentResolver,
-        private ElementServiceInterface $elementService,
         private ServiceResolverInterface $serviceResolver,
+        private ElementServiceInterface $elementService,
+        private AssetResolverInterface $assetResolver
     ) {
     }
 
@@ -100,6 +102,7 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
         string $key,
         array $data
     ): void {
+        $this->synchronousProcessingService->enable();
         match (true) {
             $elementType === ElementTypes::TYPE_ASSET => $this->createAssetFolder($parentId, $key, $data),
             $elementType === ElementTypes::TYPE_OBJECT => $this->createDataObjectFolder($parentId, $key, $data),
