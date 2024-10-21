@@ -174,7 +174,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         }
 
         if ($this->securityService->getCurrentUser()->getId() !== $configuration->getOwner()) {
-            throw new AccessDeniedException('You are not allowed to delete this configuration. Only the owner can delete it.');
+            throw new AccessDeniedException(
+                'You are not allowed to delete this configuration. Only the owner can delete it.'
+            );
         }
 
         $this->configurationRepository->delete($configuration);
