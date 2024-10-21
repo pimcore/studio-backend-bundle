@@ -54,12 +54,12 @@ bin/console pimcore:bundle:install PimcoreStudioBackendBundle
 The Studio Backend Bundle provides an OpenApi documentation for the API. To access the documentation, navigate to the following URL:
 
 ```
-https://<your-pimcore-host>/studio/api/docs
+https://<your-pimcore-host>/pimcore-studio/api/docs
 ```
 
 You can also access the OpenApi documentation in JSON format by navigating to the following URL:
 ```
-https://<your-pimcore-host>/studio/api/docs.json
+https://<your-pimcore-host>/pimcore-studio/api/docs/json
 ```
 
 It is also possible to export the OpenApi documentation as a JSON file by running the following command:

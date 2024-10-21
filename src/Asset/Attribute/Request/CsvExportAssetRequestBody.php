@@ -21,7 +21,7 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\Csv;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 
 /**
@@ -42,12 +42,12 @@ final class CsvExportAssetRequestBody extends RequestBody
                         items: new Items(ref: Column::class)
                     ),
                     new Property(property: 'config', properties: [
-                        new Property(property: Csv::SETTINGS_DELIMITER->value, type: 'string', example: ';'),
+                        new Property(property: StepConfig::SETTINGS_DELIMITER->value, type: 'string', example: ';'),
                         new Property(
-                            property: Csv::SETTINGS_HEADER->value,
+                            property: StepConfig::SETTINGS_HEADER->value,
                             type: 'enum',
-                            enum: Csv::values(),
-                            example: Csv::SETTINGS_HEADER_TITLE->value
+                            enum: StepConfig::values(),
+                            example: StepConfig::SETTINGS_HEADER_TITLE->value
                         ),
                     ], type: 'object'),
                 ],

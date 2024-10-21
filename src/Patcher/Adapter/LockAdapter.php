@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Element\AbstractElement;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
@@ -31,13 +32,20 @@ final readonly class LockAdapter implements PatchAdapterInterface
 {
     private const INDEX_KEY = 'locked';
 
+    private const UNLOCK_PROPAGATE = 'unlockPropagate';
+
     public function patch(ElementInterface $element, array $data): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
 
-        $element->setLocked($data[$this->getIndexKey()]);
+        $isUnlockPropagate = $data[$this->getIndexKey()] === self::UNLOCK_PROPAGATE;
+        if ($element instanceof AbstractElement && $isUnlockPropagate) {
+            $element->unlockPropagate();
+        }
+
+        $element->setLocked($isUnlockPropagate ? null : $data[$this->getIndexKey()]);
     }
 
     public function getIndexKey(): string
