@@ -48,6 +48,11 @@ interface ThumbnailServiceInterface
     /**
      * @throws InvalidThumbnailException
      */
+    public function getImagePreviewThumbnail(Image $image): ThumbnailInterface;
+
+    /**
+     * @throws InvalidThumbnailException
+     */
     public function getVideoThumbnailConfig(
         string $thumbnailName
     ): VideoThumbnailConfig;

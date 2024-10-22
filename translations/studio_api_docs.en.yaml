@@ -110,6 +110,11 @@ asset_image_download_custom_description: |
   The <strong>{id}</strong> must be an ID of existing asset image
 asset_image_download_custom_success_response: Custom image binary file
 asset_image_download_custom_summary: Download custom image by ID and configuration
+asset_image_stream_preview_description: |
+  Stream image asset preview based on the provided <strong>{id}</strong>. <br> 
+  The <strong>{id}</strong> must be an ID of existing asset image
+asset_image_stream_preview_success_response: Image preview stream
+asset_image_stream_preview_summary: Stream image asset preview by ID
 asset_patch_by_id_created_response: Successfully created jobRun for patching multiple assets
 asset_patch_by_id_description: |
   Patching assets based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.

@@ -22,5 +22,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
 enum Thumbnails: string
 {
     case DEFAULT_THUMBNAIL_ID = 'pimcore-system-treepreview';
+    case DEFAULT_STUDIO_THUMBNAIL_ID = 'studio-preview';
     case DEFAULT_THUMBNAIL_TEXT = 'original';
 }

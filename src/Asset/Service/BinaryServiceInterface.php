@@ -43,6 +43,11 @@ interface BinaryServiceInterface
     ): StreamedResponse;
 
     /**
+     * @throws InvalidElementTypeException|InvalidThumbnailException
+     */
+    public function streamPreviewImageThumbnail(Asset $image): StreamedResponse;
+
+    /**
      * @throws ElementProcessingNotCompletedException
      * @throws InvalidElementTypeException
      * @throws InvalidThumbnailException
