@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Model\Asset;
-use Pimcore\Model\Asset\Image;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**

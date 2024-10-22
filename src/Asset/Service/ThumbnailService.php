@@ -182,7 +182,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             [
                 //ToDo: Replace with the path to the actual image once its present in Studio UI
                 'path' => '/bundles/pimcoreadmin/img/tree-preview-transparent-background.png',
-                'mode' => 'asTexture'
+                'mode' => 'asTexture',
             ]
         );
         $previewThumbnail->addItem(
@@ -190,7 +190,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             [
                 'width' => 1920,
                 'height' => 1920,
-                'forceResize' => false
+                'forceResize' => false,
             ]
         );
 
