@@ -105,7 +105,6 @@ final readonly class GridSearch implements GridSearchInterface
             throw new NotFoundException($type . ' Folder', $gridParameter->getFolderId());
         }
 
-
         $filter->setPath($folder->getFullPath());
 
         /** @var AssetQueryInterface|DataObjectQueryInterface $query */
