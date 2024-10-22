@@ -26,6 +26,7 @@ enum MimeTypes: string
     use EnumToValueArrayTrait;
 
     case JPEG = 'JPEG';
+    case PJPEG = 'PJPEG';
     case PNG = 'PNG';
     case PDF = 'application/pdf';
     case CSV = 'text/csv';

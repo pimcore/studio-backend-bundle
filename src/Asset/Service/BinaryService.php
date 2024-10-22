@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Messenger\AssetPreviewImageMessage;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Video;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -61,6 +62,21 @@ final readonly class BinaryService implements BinaryServiceInterface
         }
 
         return $this->getVideoByThumbnail($video, $thumbnailName, HttpResponseHeaders::ATTACHMENT_TYPE->value);
+    }
+
+    /**
+     * @throws InvalidElementTypeException|InvalidThumbnailException
+     */
+    public function streamPreviewImageThumbnail(Asset $image): StreamedResponse
+    {
+        if (!$image instanceof Image) {
+            throw new InvalidElementTypeException($image->getType());
+        }
+
+        return $this->getStreamedResponse(
+            $this->thumbnailService->getImagePreviewThumbnail($image),
+            HttpResponseHeaders::INLINE_TYPE->value
+        );
     }
 
     /**

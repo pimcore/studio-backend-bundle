@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Video\Thumbnail\ConfigResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ConfigResolverInterface as SystemConfigResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Image\Thumbnail\ConfigResolverInterface as ImageConfigResolver;
+use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Video\Thumbnail\ConfigResolverInterface as VideoConfigResolver;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
@@ -25,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Thumbnails;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ConsoleExecutableTrait;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageThumbnailConfig;
@@ -42,7 +45,9 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     use ConsoleExecutableTrait;
 
     public function __construct(
-        private ConfigResolverInterface $configResolver,
+        private ImageConfigResolver $imageConfigResolver,
+        private SystemConfigResolverInterface $systemConfigResolver,
+        private VideoConfigResolver $videoConfigResolver,
     ) {
 
     }
@@ -88,17 +93,35 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     /**
      * @throws InvalidThumbnailException
      */
+    public function getImagePreviewThumbnail(Image $image): ThumbnailInterface
+    {
+        $thumbnailConfig = $this->getDefaultImageThumbnailConfig();
+        $assetConfig = $this->systemConfigResolver->getSystemConfiguration('assets');
+        if (isset($assetConfig['preview_thumbnail']) && $assetConfig['preview_thumbnail']) {
+            try {
+                $thumbnailConfig = $this->imageConfigResolver->getByName($assetConfig['preview_thumbnail']);
+            } catch (Exception) {
+                throw new InvalidThumbnailException($assetConfig['preview_thumbnail']);
+            }
+        }
+
+        return $image->getThumbnail($thumbnailConfig);
+    }
+
+    /**
+     * @throws InvalidThumbnailException
+     */
     public function getVideoThumbnailConfig(
         string $thumbnailName
     ): VideoThumbnailConfig {
         try {
-            $config = $this->configResolver->getByName($thumbnailName);
+            $config = $this->videoConfigResolver->getByName($thumbnailName);
         } catch (Exception) {
             throw new InvalidThumbnailException($thumbnailName);
         }
 
         if (!$config instanceof VideoThumbnailConfig) {
-            $config = $this->configResolver->getPreviewConfig();
+            $config = $this->videoConfigResolver->getPreviewConfig();
         }
 
         return $config;
@@ -146,6 +169,32 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         }
 
         return $thumbnailConfig;
+    }
+
+    private function getDefaultImageThumbnailConfig(): ImageThumbnailConfig
+    {
+        $previewThumbnail = new ImageThumbnailConfig();
+        $previewThumbnail->setName(Thumbnails::DEFAULT_STUDIO_THUMBNAIL_ID->value);
+        $previewThumbnail->setFormat(MimeTypes::PJPEG->value);
+        $previewThumbnail->setQuality(60);
+        $previewThumbnail->addItem(
+            'setBackgroundImage',
+            [
+                //ToDo: Replace with the path to the actual image once its present in Studio UI
+                'path' => '/bundles/pimcoreadmin/img/tree-preview-transparent-background.png',
+                'mode' => 'asTexture'
+            ]
+        );
+        $previewThumbnail->addItem(
+            'contain',
+            [
+                'width' => 1920,
+                'height' => 1920,
+                'forceResize' => false
+            ]
+        );
+
+        return $previewThumbnail;
     }
 
     private function setThumbnailConfigResizeParameters(

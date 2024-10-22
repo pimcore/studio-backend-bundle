@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurati
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Model\Asset\Image;
+use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageThumbnailConfig;
 use Pimcore\Model\Asset\Image\ThumbnailInterface;
 use Pimcore\Model\Asset\Video\Thumbnail\Config as VideoThumbnailConfig;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -44,6 +45,11 @@ interface ThumbnailServiceInterface
         Image $image,
         bool $deleteAfterSend = true
     ): BinaryFileResponse;
+
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getImagePreviewThumbnail(Image $image): ThumbnailInterface;
 
     /**
      * @throws InvalidThumbnailException
