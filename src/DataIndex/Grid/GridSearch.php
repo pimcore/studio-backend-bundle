@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
@@ -24,13 +24,15 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterfac
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\UserInterface;
 
@@ -45,8 +47,7 @@ final readonly class GridSearch implements GridSearchInterface
         private FilterServiceProviderInterface $filterServiceProvider,
         private AssetSearchServiceInterface $assetSearchService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
-        private AssetServiceInterface $assetService,
-        private DataObjectServiceInterface $dataObjectService
+        private SecurityServiceInterface $securityService
     ) {
         $this->filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
     }
@@ -56,57 +57,29 @@ final readonly class GridSearch implements GridSearchInterface
      */
     public function searchAssets(GridParameter $gridParameter): AssetSearchResult
     {
-        $filter = $gridParameter->getFilters();
-
-        $asset = $this->assetService->getAssetFolder($gridParameter->getFolderId());
-
-        $filter->setPath($asset->getFullPath());
-
-        /** @var AssetQueryInterface $assetQuery */
-        $assetQuery = $this->filterService->applyFilters(
-            $filter,
-            ElementTypes::TYPE_ASSET
+        return $this->searchElementsForUser(
+            ElementTypes::TYPE_ASSET,
+            $gridParameter,
+            $this->securityService->getCurrentUser()
         );
-
-        // TODO remove assetSearchService, replace with AssetService @martineiber
-        return $this->assetSearchService->searchAssets($assetQuery);
     }
 
     public function searchAssetsForUser(GridParameter $gridParameter, UserInterface $user): AssetSearchResult
     {
-        $filter = $gridParameter->getFilters();
-
-        $asset = $this->assetService->getAssetFolderForUser($gridParameter->getFolderId(), $user);
-
-        $filter->setPath($asset->getFullPath());
-
-        /** @var AssetQueryInterface $assetQuery */
-        $assetQuery = $this->filterService->applyFilters(
-            $filter,
-            ElementTypes::TYPE_ASSET
+        return $this->searchElementsForUser(
+            ElementTypes::TYPE_ASSET,
+            $gridParameter,
+            $user
         );
-
-        $assetQuery->setUser($user);
-
-        // TODO remove assetSearchService, replace with AssetService @martineiber
-        return $this->assetSearchService->searchAssets($assetQuery);
     }
 
     public function searchDataObjects(GridParameter $gridParameter): DataObjectSearchResult
     {
-        $filter = $gridParameter->getFilters();
-
-        $folder = $this->dataObjectService->getDataObjectFolder($gridParameter->getFolderId());
-
-        $filter->setPath($folder->getFullPath());
-
-        $query = $this->filterService->applyFilters(
-            $filter,
-            ElementTypes::TYPE_DATA_OBJECT
+        return $this->searchElementsForUser(
+            ElementTypes::TYPE_DATA_OBJECT,
+            $gridParameter,
+            $this->securityService->getCurrentUser()
         );
-
-        // TODO remove dataObjectSearchService, replace with DataObjectService @martineiber
-        return $this->dataObjectSearchService->searchDataObjects($query);
     }
 
     public function searchElementsForUser(
@@ -117,16 +90,20 @@ final readonly class GridSearch implements GridSearchInterface
         $filter = $gridParameter->getFilters();
 
         $folder = match($type) {
-            ElementTypes::TYPE_ASSET => $this->assetService->getAssetFolderForUser(
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->getAssetById(
                 $gridParameter->getFolderId(),
                 $user
             ),
-            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectService->getDataObjectFolderForUser(
+            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->getDataObjectById(
                 $gridParameter->getFolderId(),
                 $user
             ),
             default => throw new InvalidElementTypeException($type)
         };
+
+        if (!$this->isFolderOfType($type, $folder)) {
+            throw new NotFoundException($type . ' Folder', $gridParameter->getFolderId());
+        }
 
         $filter->setPath($folder->getFullPath());
 
@@ -138,12 +115,23 @@ final readonly class GridSearch implements GridSearchInterface
 
         $query->setUser($user);
 
-        // TODO remove assetSearchService|dataObjectSearchService,
-        // TODO replace with AssetService|DataObjectService @martineiber
         return match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->searchAssets($query),
             ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->searchDataObjects($query),
             default => throw new InvalidElementTypeException($type)
         };
+    }
+
+    private function isFolderOfType(string $type, ElementInterface $element): bool
+    {
+        if ($type === ElementTypes::TYPE_ASSET && $element instanceof AssetFolder) {
+            return true;
+        }
+
+        if ($type === ElementTypes::TYPE_DATA_OBJECT && $element instanceof DataObjectFolder) {
+            return true;
+        }
+
+        return false;
     }
 }
