@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Util\Constant;
+namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
