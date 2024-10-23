@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
@@ -47,9 +48,13 @@ final class AssetResolver implements ColumnResolverInterface
             return $this->getColumnData($column, null);
         }
 
-        $relatedAsset = $this->assetService->getAsset(
-            reset($asset['asset'])
-        );
+        try {
+            $relatedAsset = $this->assetService->getAsset(
+                reset($asset['asset'])
+            );
+        } catch (NotFoundException) {
+            return $this->getColumnData($column, null);
+        }
 
         return $this->getColumnData(
             $column,

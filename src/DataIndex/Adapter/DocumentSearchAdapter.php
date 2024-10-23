@@ -56,7 +56,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
         }
 
         if (!$document) {
-            throw new NotFoundException('Asset', $id);
+            throw new NotFoundException('Document', $id);
         }
 
         return $this->hydratorService->hydrate($document);

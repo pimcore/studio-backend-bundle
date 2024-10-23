@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
@@ -47,9 +48,13 @@ final class DataObjectResolver implements ColumnResolverInterface
             return $this->getColumnData($column, null);
         }
 
-        $relatedObject = $this->dataObjectService->getDataObject(
-            reset($object['object'])
-        );
+        try {
+            $relatedObject = $this->dataObjectService->getDataObject(
+                reset($object['object'])
+            );
+        } catch (NotFoundException) {
+            return $this->getColumnData($column, null);
+        }
 
         return $this->getColumnData(
             $column,
