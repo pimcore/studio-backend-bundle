@@ -56,7 +56,6 @@ final class DataObjectResolver implements ColumnResolverInterface
             return $this->getColumnData($column, null);
         }
 
-
         return $this->getColumnData(
             $column,
             $relatedObject->getFullPath()
