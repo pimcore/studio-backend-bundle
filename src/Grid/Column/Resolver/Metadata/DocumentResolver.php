@@ -49,7 +49,7 @@ final class DocumentResolver implements ColumnResolverInterface
         }
 
         try {
-            $documentIndex = $this->documentService->getDocument(
+            $relatedDocument = $this->documentService->getDocument(
                 reset($document['document'])
             );
         } catch (NotFoundException) {
@@ -58,7 +58,7 @@ final class DocumentResolver implements ColumnResolverInterface
 
         return $this->getColumnData(
             $column,
-            $documentIndex->getFullPath()
+            $relatedDocument->getFullPath()
         );
     }
 
