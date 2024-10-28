@@ -66,7 +66,7 @@ final readonly class HydratorService implements HydratorServiceInterface
         return $this->dataObjectHydrator->hydrate($item);
     }
 
-    public function hydradeDocuments(DocumentSearchResultItem $item): IndexDocument
+    public function hydrateDocuments(DocumentSearchResultItem $item): IndexDocument
     {
         // TODO: Add Service Locator for different document types
 

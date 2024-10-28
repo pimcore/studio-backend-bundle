@@ -177,6 +177,10 @@ data_object_get_by_id_description: |
   Retrieves a specific data object based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing data object or folder.
 data_object_get_by_id_success_response: Successfully retrieved data object data as JSON
 data_object_get_by_id_summary: Get a specific data object by ID
+data_object_get_layout_by_id_description: |
+  Retrieves the layout of a specific data object based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing data object.
+data_object_get_layout_by_id_success_response: Successfully retrieved data object layout data as JSON
+data_object_get_layout_by_id_summary: Get layout of a data object by ID
 data_object_get_tree_description: |
   Listing of all data objects and data object folders in the system. <br>
   Returns only data which are relevant for the tree <br>
