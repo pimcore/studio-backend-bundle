@@ -180,5 +180,4 @@ class Layout implements AdditionalAttributesInterface
     {
         return $this->children;
     }
-
 }

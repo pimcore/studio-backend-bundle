@@ -19,16 +19,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\LayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
-use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function get_class;
+use function sprintf;
 
 /**
  * @internal
@@ -44,7 +46,6 @@ final readonly class LayoutService implements LayoutServiceInterface
         private SecurityServiceInterface $securityService,
     ) {
     }
-
 
     /**
      * @throws AccessDeniedException|InvalidElementTypeException|NotFoundException|UserNotFoundException
@@ -83,8 +84,7 @@ final readonly class LayoutService implements LayoutServiceInterface
 
     private function hydrateLayout(
         Panel $panel
-    ): Layout
-    {
+    ): Layout {
         return new Layout(
             $panel->getName(),
             $panel->getDatatype(),
