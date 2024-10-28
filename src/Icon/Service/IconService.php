@@ -82,4 +82,13 @@ final class IconService implements IconServiceInterface
     {
         return 'tag-02';
     }
+
+    public function getIconForLayout(?string $iconPath): ?ElementIcon
+    {
+        if ($iconPath === null) {
+            return null;
+        }
+
+        return new ElementIcon(ElementIconTypes::PATH->value, $iconPath);
+    }
 }

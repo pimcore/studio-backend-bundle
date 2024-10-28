@@ -38,6 +38,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Loader\TaggedIteratorDataAdapter
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\LayoutServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\LayoutService
+
   #
   # Data Adapters
   #
@@ -161,6 +164,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\FieldCollectionsAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
+
   #
   # Handler
   #
