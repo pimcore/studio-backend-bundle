@@ -30,6 +30,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Workflow\Manager;
 use Symfony\Component\Workflow\WorkflowInterface;
+use function count;
 
 /**
  * @internal

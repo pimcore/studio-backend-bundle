@@ -29,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
