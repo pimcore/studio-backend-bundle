@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
@@ -39,6 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -46,6 +48,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\Asset as AssetModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -61,10 +64,11 @@ final readonly class AssetService implements AssetServiceInterface
     public function __construct(
         private AssetSearchServiceInterface $assetSearchService,
         private AssetServiceResolverInterface $assetServiceResolver,
-        private FilterServiceProviderInterface $filterServiceProvider,
         private EventDispatcherInterface $eventDispatcher,
+        private FilterServiceProviderInterface $filterServiceProvider,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
+        private WorkflowDetailsServiceInterface $workflowDetailsService,
     ) {
     }
 
@@ -96,18 +100,22 @@ final readonly class AssetService implements AssetServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * @throws SearchException|NotFoundException|UserNotFoundException
      */
     public function getAsset(
         int $id,
-        bool $checkPermissionsForCurrentUser = true
+        bool $getWorkflowAvailable = true
     ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
 
-        $asset = $this->assetSearchService->getAssetById(
-            $id,
-            $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
-        );
-
+        $user = $this->securityService->getCurrentUser();
+        $asset = $this->assetSearchService->getAssetById($id, $user);
+        if ($getWorkflowAvailable) {
+            $asset->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows(
+                $id,
+                ElementTypes::TYPE_ASSET,
+                $user
+            ));
+        }
         $this->dispatchAssetEvent($asset);
 
         return $asset;

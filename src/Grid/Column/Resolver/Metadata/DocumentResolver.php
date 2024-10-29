@@ -50,7 +50,8 @@ final class DocumentResolver implements ColumnResolverInterface
 
         try {
             $relatedDocument = $this->documentService->getDocument(
-                reset($document['document'])
+                reset($document['document']),
+                false
             );
         } catch (NotFoundException) {
             return $this->getColumnData($column, null);
