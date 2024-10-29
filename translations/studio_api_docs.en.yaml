@@ -416,16 +416,11 @@ tag_assign_to_element_success_response: Successfully assigned tag to element
 tag_assign_to_element_summary: Assign a tag to an element
 tag_authorization_description: Session-based login via username and password or logout
   and invalidate the session
-tag_batch_assign_to_elements_by_type_description: |
-  Batch assign multiple tags based based on the given <strong>{tagIds}</strong> to multiple elements based on <strong>{elementType}</strong> and <strong>{elementIds}</strong>. <br>
-  To see the full description of request fields see the schema <strong>Collection of Element and Tag ids</strong>
-tag_batch_assign_to_elements_by_type_success_response: Successfully assigned tags to elements
-tag_batch_assign_to_elements_by_type_summary: Batch assign tags to elements
-tag_batch_replace_for_elements_by_type_description: |
-  Batch replace multiple tags based based on the given <strong>{tagIds}</strong> to multiple elements based on <strong>{elementType}</strong> and <strong>{elementIds}</strong>. <br>
-  To see the full description of request fields see the schema <strong>Collection of Element and Tag ids</strong>
-tag_batch_replace_for_elements_by_type_success_response: Successfully replaced tags for elements
-tag_batch_replace_for_elements_by_type_summary: Batch replace tags for elements
+tag_batch_operation_to_elements_by_type_and_id_description: |
+  Batch assign/replace multiple tags of the given parent based on the <strong>{elementId}</strong> and <strong>{elementType}</strong> to the children. <br>
+  Operation parameter <strong>{operation}</strong> must be one of the <strong>assign</strong or <strong>replace</strong>.
+tag_batch_operation_to_elements_by_type_and_id_created_response: Successfully created jobRun for batch tag assignment/replacement
+tag_batch_operation_to_elements_by_type_and_id_summary: Batch assign/replace tags for children elements
 tag_create_description: |
   Create a new tag. <br> See the full description of request fields with the schema <strong>Create Tag Parameters</strong>
 tag_create_success_response: Created tag data as JSON

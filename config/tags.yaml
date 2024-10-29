@@ -18,8 +18,28 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\Tag\Hydrator\TagHydrator
 
   # Services
+  Pimcore\Bundle\StudioBackendBundle\Tag\Service\ExecutionEngine\BatchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Tag\Service\ExecutionEngine\BatchService
+
   Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagService
 
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Tag\ExecutionEngine\AutomationAction\Messenger\Handler\BatchTagOperationHandler: ~
 
 
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Tag\EventSubscriber\BatchOperationSubscriber: ~
+
+  #
+  # Mercure SSE
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Tag\Mercure\Provider\TagTopicProvider:
+    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]

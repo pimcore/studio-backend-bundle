@@ -20,18 +20,18 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementTypeParameter as MappedElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Attribute\Request\ElementsTagsCollectionRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\ElementTagIdCollection;
-use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Attribute\Parameter\Path\BatchOperationParameter;
+use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchOperationParameters;
+use Pimcore\Bundle\StudioBackendBundle\Tag\Service\ExecutionEngine\BatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -39,11 +39,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class BatchReplaceController extends AbstractApiController
+final class BatchOperationController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly TagServiceInterface $tagService,
+        private readonly BatchServiceInterface $batchService,
     ) {
         parent::__construct($serializer);
     }
@@ -52,35 +52,42 @@ final class BatchReplaceController extends AbstractApiController
      * @throws ElementSavingFailedException|NotFoundException
      */
     #[Route(
-        '/tags/batch/replace/{elementType}',
-        name: 'pimcore_studio_api_batch_replace_elements_tags',
+        '/tags/batch/{operation}/{elementType}/{id}',
+        name: 'pimcore_studio_api_batch_assign_elements_tags',
         methods: ['POST']
     )]
     #[IsGranted(UserPermissions::TAGS_ASSIGNMENT->value)]
     #[Post(
-        path: self::PREFIX . '/tags/batch/replace/{elementType}',
-        operationId: 'tag_batch_replace_for_elements_by_type',
-        description: 'tag_batch_replace_for_elements_by_type_description',
-        summary: 'tag_batch_replace_for_elements_by_type_summary',
+        path: self::PREFIX . '/tags/batch/{operation}/{elementType}/{id}',
+        operationId: 'tag_batch_operation_to_elements_by_type_and_id',
+        description: 'tag_batch_operation_to_elements_by_type_and_id_description',
+        summary: 'tag_batch_operation_to_elements_by_type_and_id_summary',
         tags: [Tags::TagsForElement->value]
     )]
+    #[IdParameter]
     #[ElementTypeParameter]
-    #[ElementsTagsCollectionRequestBody]
+    #[BatchOperationParameter]
+    #[CreatedResponse(
+        description: 'tag_batch_operation_to_elements_by_type_and_id_created_response',
+        content: new IdJson('ID of created jobRun', 'jobRunId')
+    )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function assignTag(
         string $elementType,
-        #[MapRequestPayload] ElementTagIdCollection $elementTagCollection
+        int $id,
+        string $operation,
     ): JsonResponse {
-        $this->tagService->batchReplaceTagsToElements(
-            new BatchCollectionParameters(
-                (new MappedElementTypeParameter($elementType))->getType(),
-                $elementTagCollection->getElementIds(),
-                $elementTagCollection->getTagsIds()
-            )
-        );
 
-        return $this->jsonResponse(['id' => 0]);
+        return $this->jsonResponse(
+            [
+                'jobRunId' => $this->batchService->createJobRunForBatchOperation(
+                    new BatchOperationParameters($elementType, $id, $operation)
+                )
+            ],
+            HttpResponseCodes::CREATED->value
+        );
     }
 }

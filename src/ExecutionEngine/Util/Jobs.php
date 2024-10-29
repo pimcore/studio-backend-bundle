@@ -28,4 +28,6 @@ enum Jobs: string
     case REWRITE_REFERENCES = 'studio_ee_job_rewrite_element_references';
     case DELETE_DATA_OBJECTS = 'studio_ee_job_delete_data_objects';
     case DELETE_DOCUMENTS = 'studio_ee_job_delete_documents';
+    case BATCH_TAG_ASSIGN = 'studio_ee_job_batch_tag_assign';
+    case BATCH_TAG_REPLACE = 'studio_ee_job_batch_tag_replace';
 }

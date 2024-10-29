@@ -14,19 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\Mercure;
+
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
 /**
  * @internal
  */
-enum EnvironmentVariables: string
+enum Events: string
 {
-    case ORIGINAL_PARENT_ID = 'originalParentId';
-    case PARENT_ID = 'parentId';
-    case UPLOAD_FOLDER_LOCATION = 'uploadFolderLocation';
-    case UPDATE_REFERENCES = 'updateReferences';
-    case REWRITE_CONFIGURATION = 'rewriteConfiguration';
-    case REWRITE_PARAMETERS = 'rewriteParameters';
-    case BATCH_TAG_OPERATION = 'batchTagOperation';
-    case TAG_IDS = 'tagIds';
+    use EnumToValueArrayTrait;
+
+    case TAG_ASSIGNMENT_FINISHED = 'tag-assignment-finished';
+    case TAG_REPLACEMENT_FINISHED = 'tag-replacement-finished';
 }

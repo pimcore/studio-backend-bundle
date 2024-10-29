@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\UserInterface;
 
 final readonly class ElementSearchService implements ElementSearchServiceInterface
@@ -32,9 +33,9 @@ final readonly class ElementSearchService implements ElementSearchServiceInterfa
     public function getElementById(string $type, int $id, ?UserInterface $user = null): mixed
     {
         return match ($type) {
-            'asset' => $this->assetSearchService->getAssetById($id, $user),
-            'dataObject' => $this->dataObjectSearchService->getDataObjectById($id, $user),
-            'document' => $this->documentSearchService->getDocumentById($id, $user),
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->getAssetById($id, $user),
+            ElementTypes::TYPE_OBJECT => $this->dataObjectSearchService->getDataObjectById($id, $user),
+            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->getDocumentById($id, $user),
             default => throw new InvalidElementTypeException($type),
         };
     }
@@ -42,9 +43,9 @@ final readonly class ElementSearchService implements ElementSearchServiceInterfa
     public function getChildrenIds(string $type, string $parentPath, ?string $sortDirection = null): array
     {
         return match ($type) {
-            'asset' => $this->assetSearchService->getChildrenIds($parentPath, $sortDirection),
-            'dataObject' => $this->dataObjectSearchService->getChildrenIds($parentPath, $sortDirection),
-            'document' => $this->documentSearchService->getChildrenIds($parentPath, $sortDirection),
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->getChildrenIds($parentPath, $sortDirection),
+            ElementTypes::TYPE_OBJECT => $this->dataObjectSearchService->getChildrenIds($parentPath, $sortDirection),
+            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->getChildrenIds($parentPath, $sortDirection),
             default => throw new InvalidElementTypeException($type),
         };
     }

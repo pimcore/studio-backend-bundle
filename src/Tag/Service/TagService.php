@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidParentIdException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Event\TagEvent;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Hydrator\TagHydratorInterface;
@@ -33,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\Repository\TagRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function array_key_exists;
 
@@ -83,6 +85,19 @@ final readonly class TagService implements TagServiceInterface
     }
 
     /**
+     * @return array<int>
+     */
+    public function getTagIdsForElement(ElementParameters $tagElement): array
+    {
+        $result = [];
+        foreach ($this->tagRepository->getTagsForElement($tagElement) as $tag) {
+            $result[] = $tag->getId();
+        }
+
+        return $result;
+    }
+
+    /**
      * @throws NotFoundException
      */
     public function assignTagToElement(ElementParameters $tagElement, int $tagId): void
@@ -95,26 +110,34 @@ final readonly class TagService implements TagServiceInterface
         $this->tagRepository->assignTagToElement($tagElement, $tagId);
     }
 
-    public function batchAssignTagsToElements(BatchCollectionParameters $collection): void
+    /**
+     * @throws AccessDeniedException|UserNotFoundException|NotFoundException
+     */
+    public function batchAssignTagsToElements(BatchCollectionParameters $collection, UserInterface $user): void
     {
         foreach ($collection->getElementIds() as $elementId) {
             $this->checkElementPermission(
                 $collection->getType(),
                 $elementId,
-                ElementPermissions::PUBLISH_PERMISSION
+                ElementPermissions::PUBLISH_PERMISSION,
+                $user
             );
         }
 
         $this->tagRepository->batchAssignTagsToElements($collection);
     }
 
-    public function batchReplaceTagsToElements(BatchCollectionParameters $collection): void
+    /**
+     * @throws AccessDeniedException|UserNotFoundException|NotFoundException
+     */
+    public function batchReplaceTagsToElements(BatchCollectionParameters $collection, UserInterface $user): void
     {
         foreach ($collection->getElementIds() as $elementId) {
             $this->checkElementPermission(
                 $collection->getType(),
                 $elementId,
-                ElementPermissions::PUBLISH_PERMISSION
+                ElementPermissions::PUBLISH_PERMISSION,
+                $user
             );
         }
 
@@ -200,13 +223,22 @@ final readonly class TagService implements TagServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws AccessDeniedException|UserNotFoundException|NotFoundException
      */
-    private function checkElementPermission(string $type, int $id, string $permission): void
+    private function checkElementPermission(
+        string $type,
+        int $id,
+        string $permission,
+        ?UserInterface $user = null
+    ): void
     {
+        if ($user === null) {
+            $user = $this->securityService->getCurrentUser();
+        }
+
         $this->securityService->hasElementPermission(
             $this->getElement($this->serviceResolver, $type, $id),
-            $this->securityService->getCurrentUser(),
+            $user,
             $permission
         );
     }
