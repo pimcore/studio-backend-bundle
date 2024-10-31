@@ -90,7 +90,7 @@ final readonly class LayoutService implements LayoutServiceInterface
             $panel->getDatatype(),
             $panel->fieldtype,
             $panel->getType(),
-            $panel->getLayout(),
+            $panel->layout,
             $panel->getRegion(),
             $panel->getTitle(),
             $panel->getWidth(),
