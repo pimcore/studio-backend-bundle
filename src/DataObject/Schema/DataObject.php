@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 
 #[Schema(
     title: 'DataObject',
@@ -44,6 +45,7 @@ class DataObject extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
     use CustomAttributesTrait;
+    use WorkflowAvailableTrait;
 
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'Giulietta')]

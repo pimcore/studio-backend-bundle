@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\Asset as AssetModel;
 use Pimcore\Model\UserInterface;
@@ -47,9 +48,12 @@ interface AssetServiceInterface
     public function getAssets(ElementParameters $parameters): Collection;
 
     /**
-     * @throws SearchException|NotFoundException
+     * @throws SearchException|NotFoundException|UserNotFoundException
      */
-    public function getAsset(int $id): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
+    public function getAsset(
+        int $id,
+        bool $getWorkflowAvailable = true
+    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
 
     /**
      * @throws SearchException|NotFoundException

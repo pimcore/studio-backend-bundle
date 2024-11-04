@@ -47,6 +47,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -81,6 +82,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
+        private WorkflowDetailsServiceInterface $workflowDetailsService,
     ) {
     }
 
@@ -142,15 +144,23 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * @throws SearchException|NotFoundException|UserNotFoundException
      */
-    public function getDataObject(int $id, bool $checkPermissionsForCurrentUser = true): DataObject
+    public function getDataObject(int $id, bool $getWorkflowAvailable = true): DataObject
     {
+        $user = $this->securityService->getCurrentUser();
         $dataObject = $this->dataObjectSearchService->getDataObjectById(
             $id,
-            $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
+            $user
         );
 
+        if ($getWorkflowAvailable) {
+            $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows(
+                $id,
+                ElementTypes::TYPE_OBJECT,
+                $user
+            ));
+        }
         $this->dispatchDataObjectEvent($dataObject);
 
         return $dataObject;

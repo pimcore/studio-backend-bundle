@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
@@ -29,6 +30,7 @@ use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Workflow\Manager;
 use Symfony\Component\Workflow\WorkflowInterface;
+use function count;
 
 /**
  * @internal
@@ -55,15 +57,7 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         WorkflowDetailsParameters $parameters,
         UserInterface $user
     ): array {
-        $element = $this->getElement(
-            $this->serviceResolver,
-            $parameters->getElementType(),
-            $parameters->getElementId(),
-        );
-        $element = $this->getLatestVersionForUser(
-            $element,
-            $user
-        );
+        $element = $this->getUserElement($parameters->getElementId(), $parameters->getElementType(), $user);
         $element->setUserModification($user->getId());
 
         $this->securityService->hasElementPermission(
@@ -82,6 +76,30 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         }
 
         return $details;
+    }
+
+    public function hasElementWorkflows(int $elementId, string $elementType, UserInterface $user): bool
+    {
+        $element = $this->getUserElement($elementId, $elementType, $user);
+
+        return count($this->workflowManager->getAllWorkflowsForSubject($element)) > 0;
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function getUserElement(int $elementId, string $elementType, UserInterface $user): ElementInterface
+    {
+        $element = $this->getElement(
+            $this->serviceResolver,
+            $elementType,
+            $elementId,
+        );
+
+        return $this->getLatestVersionForUser(
+            $element,
+            $user
+        );
     }
 
     private function hydrate(
