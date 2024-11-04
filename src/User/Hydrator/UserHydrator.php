@@ -41,13 +41,6 @@ final readonly class UserHydrator implements UserHydratorInterface
 
     public function hydrate(UserInterface $user): UserSchema
     {
-        // TODO: Remove when https://github.com/pimcore/pimcore/issues/17196 is fixed.
-        try {
-            $lastLogin = $user->getLastLogin();
-        } catch (Throwable) {
-            $lastLogin = null;
-        }
-
         return new UserSchema(
             id: $user->getId(),
             name: $user->getName(),
@@ -55,6 +48,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             firstname: $user->getFirstname(),
             lastname: $user->getLastname(),
             active: $user->getActive(),
+            admin: $user->isAdmin(),
             classes: $user->getClasses(),
             closeWarning: $user->getCloseWarning(),
             allowDirtyClose: $user->getAllowDirtyClose(),
@@ -62,7 +56,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             hasImage: $user->hasImage(),
             keyBindings: $this->hydrateKeyBindings($user->getKeyBindings()),
             language: $user->getLanguage(),
-            lastLogin: $lastLogin,
+            lastLogin: $user->getLastLogin(),
             memorizeTabs: $user->getMemorizeTabs(),
             parentId: $user->getParentId(),
             permissions: $user->getPermissions(),

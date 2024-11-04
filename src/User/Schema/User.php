@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'User',
     description: 'Contains all information about a user',
     required: [
-        'id', 'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage', 'keyBindings',
+        'id', 'active', 'isAdmin', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage', 'keyBindings',
         'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationEnabled',
         'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
         'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces',
@@ -50,6 +50,8 @@ final class User implements AdditionalAttributesInterface
         private readonly ?string $lastname,
         #[Property(description: 'If a User is active', type: 'boolean', example: true)]
         private readonly bool $active,
+        #[Property(description: 'If User is admin', type: 'boolean', example: false)]
+        private bool $admin,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private readonly array $classes,
         #[Property(type: 'boolean', example: true)]
@@ -123,6 +125,11 @@ final class User implements AdditionalAttributesInterface
     public function isActive(): bool
     {
         return $this->active;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->admin;
     }
 
     public function getClasses(): array
