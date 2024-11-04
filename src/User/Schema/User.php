@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'User',
     description: 'Contains all information about a user',
     required: [
-        'id', 'active', 'isAdmin', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage', 'keyBindings',
+        'id', 'active', 'admin', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage', 'keyBindings',
         'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationEnabled',
         'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
         'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces',
