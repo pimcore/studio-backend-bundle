@@ -32,6 +32,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByFiel
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
 
 final class AssetQuery implements AssetQueryInterface
 {
@@ -171,6 +172,13 @@ final class AssetQuery implements AssetQueryInterface
     {
         /** @var User $user */
         $this->search->setUser($user);
+
+        return $this;
+    }
+
+    public function filterInteger(string $field, int $value): QueryInterface
+    {
+        $this->search->addModifier(new IntegerFilter($field, $value));
 
         return $this;
     }

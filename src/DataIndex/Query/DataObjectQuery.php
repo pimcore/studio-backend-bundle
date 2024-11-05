@@ -32,6 +32,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
 
 final class DataObjectQuery implements DataObjectQueryInterface
 {
@@ -150,6 +151,13 @@ final class DataObjectQuery implements DataObjectQueryInterface
     {
         /** @var User $user */
         $this->search->setUser($user);
+
+        return $this;
+    }
+
+    public function filterInteger(string $field, int $value): QueryInterface
+    {
+        $this->search->addModifier(new IntegerFilter($field, $value));
 
         return $this;
     }
