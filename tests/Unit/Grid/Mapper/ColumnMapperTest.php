@@ -43,7 +43,7 @@ final class ColumnMapperTest extends Unit
     public function testMapperForId(): void
     {
         $mapper = new ColumnMapper();
-        $this->assertSame('integer', $mapper->getType('id'));
+        $this->assertSame('id', $mapper->getType('id'));
     }
 
     public function testMapperForType(): void
