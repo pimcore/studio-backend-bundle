@@ -21,8 +21,11 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -36,20 +39,29 @@ final readonly class DocumentService implements DocumentServiceInterface
     public function __construct(
         private DocumentSearchServiceInterface $documentSearchService,
         private EventDispatcherInterface $eventDispatcher,
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private WorkflowDetailsServiceInterface $workflowDetailsService
     ) {
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * @throws SearchException|NotFoundException|UserNotFoundException
      */
-    public function getDocument(int $id, bool $checkPermissionsForCurrentUser = true): Document
+    public function getDocument(int $id, bool $getWorkflowAvailable = true): Document
     {
+        $user = $this->securityService->getCurrentUser();
         $document = $this->documentSearchService->getDocumentById(
             $id,
-            $this->getUserForPermissionCheck($this->securityService, $checkPermissionsForCurrentUser)
+            $user
         );
 
+        if ($getWorkflowAvailable) {
+            $document->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows(
+                $id,
+                ElementTypes::TYPE_DOCUMENT,
+                $user
+            ));
+        }
         $this->dispatchDocumentEvent($document);
 
         return $document;

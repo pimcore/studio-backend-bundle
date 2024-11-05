@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 
 #[Schema(
     title: 'Asset',
@@ -38,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
         'fullPath',
         'customAttributes',
         'permissions',
+        'hasWorkflowAvailable',
     ],
     type: 'object'
 )]
@@ -45,6 +47,7 @@ class Asset extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
     use CustomAttributesTrait;
+    use WorkflowAvailableTrait;
 
     public function __construct(
         #[Property(description: 'Has children', type: 'bool', example: false)]

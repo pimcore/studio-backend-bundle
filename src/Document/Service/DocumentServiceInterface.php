@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -27,9 +28,9 @@ use Pimcore\Model\UserInterface;
 interface DocumentServiceInterface
 {
     /**
-     * @throws SearchException|NotFoundException
+     * @throws SearchException|NotFoundException|UserNotFoundException
      */
-    public function getDocument(int $id, bool $checkPermissionsForCurrentUser = true): Document;
+    public function getDocument(int $id, bool $getWorkflowAvailable = true): Document;
 
     /**
      * @throws SearchException|NotFoundException

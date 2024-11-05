@@ -59,9 +59,9 @@ interface DataObjectServiceInterface
     public function getDataObjects(DataObjectParameters $parameters): Collection;
 
     /**
-     * @throws SearchException|NotFoundException
+     * @throws SearchException|NotFoundException|UserNotFoundException
      */
-    public function getDataObject(int $id, bool $checkPermissionsForCurrentUser = true): DataObject;
+    public function getDataObject(int $id, bool $getWorkflowAvailable = true): DataObject;
 
     /**
      * @throws SearchException|NotFoundException

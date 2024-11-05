@@ -50,7 +50,8 @@ final class AssetResolver implements ColumnResolverInterface
 
         try {
             $relatedAsset = $this->assetService->getAsset(
-                reset($asset['asset'])
+                reset($asset['asset']),
+                false
             );
         } catch (NotFoundException) {
             return $this->getColumnData($column, null);

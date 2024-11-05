@@ -32,4 +32,6 @@ interface WorkflowDetailsServiceInterface
         WorkflowDetailsParameters $parameters,
         UserInterface $user
     ): array;
+
+    public function hasElementWorkflows(int $elementId, string $elementType, UserInterface $user): bool;
 }
