@@ -129,6 +129,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             $parameters,
             ElementTypes::TYPE_DATA_OBJECT
         );
+        $query->setUser($this->securityService->getCurrentUser());
 
         $this->setTreeSorting($parameters->getParentId() ?? 1, $query);
 
