@@ -24,6 +24,7 @@ enum ColumnType: string
     case SYSTEM_STRING = 'system.string';
     case SYSTEM_FILE_SIZE = 'system.fileSize';
     case SYSTEM_INTEGER = 'system.integer';
+    case SYSTEM_ID = 'system.id';
     case SYSTEM_DATETIME = 'system.datetime';
     case SYSTEM_TAG = 'system.tag';
     case SYSTEM_PQL_QUERY = 'system.pql';
