@@ -64,7 +64,8 @@ final readonly class BatchService implements BatchServiceInterface
         $childrenIds = $this->elementSearchService->getChildrenIds($parameters->getType(), $parent->getRealFullPath());
         if (empty($childrenIds)) {
             throw new NotFoundException(
-                sprintf('Children for %s', $parameters->getType()), $parameters->getId()
+                sprintf('Children for %s', $parameters->getType()),
+                $parameters->getId()
             );
         }
         $tagIds = $this->tagService->getTagIdsForElement(
@@ -72,7 +73,8 @@ final readonly class BatchService implements BatchServiceInterface
         );
         if (empty($tagIds)) {
             throw new NotFoundException(
-                sprintf('Tags for %s', $parameters->getType()), $parameters->getId()
+                sprintf('Tags for %s', $parameters->getType()),
+                $parameters->getId()
             );
         }
 
