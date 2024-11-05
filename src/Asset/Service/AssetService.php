@@ -86,6 +86,7 @@ final readonly class AssetService implements AssetServiceInterface
         );
 
         $assetQuery->orderByPath('asc');
+        $assetQuery->setUser($this->securityService->getCurrentUser());
 
         $result = $this->assetSearchService->searchAssets($assetQuery);
 
