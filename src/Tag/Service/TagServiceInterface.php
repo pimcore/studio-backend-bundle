@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\TagsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\UpdateTagParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Schema\Tag;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -42,13 +43,18 @@ interface TagServiceInterface
     public function getTagsForElement(ElementParameters $tagElement): array;
 
     /**
+     * @return array<int>
+     */
+    public function getTagIdsForElement(ElementParameters $tagElement): array;
+
+    /**
      * @throws NotFoundException
      */
     public function assignTagToElement(ElementParameters $tagElement, int $tagId): void;
 
-    public function batchAssignTagsToElements(BatchCollectionParameters $collection): void;
+    public function batchAssignTagsToElements(BatchCollectionParameters $collection, UserInterface $user): void;
 
-    public function batchReplaceTagsToElements(BatchCollectionParameters $collection): void;
+    public function batchReplaceTagsToElements(BatchCollectionParameters $collection, UserInterface $user): void;
 
     /**
      * @throws NotFoundException

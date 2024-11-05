@@ -40,4 +40,5 @@ enum Config: string
     case ELEMENT_PATCH_FAILED_MESSAGE = 'studio_ee_element_patch_failed';
     case NO_ELEMENT_DATA_FOUND = 'studio_ee_no_element_data_found';
     case ELEMENT_REWRITE_REFERENCES_FAILED_MESSAGE = 'studio_ee_element_rewrite_references_failed';
+    case ELEMENT_TAG_OPERATION_FAILED_MESSAGE = 'studio_ee_element_tag_operation_failed';
 }

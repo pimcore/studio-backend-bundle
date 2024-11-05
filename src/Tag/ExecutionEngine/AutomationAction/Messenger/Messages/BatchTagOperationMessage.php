@@ -14,19 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
+namespace Pimcore\Bundle\StudioBackendBundle\Tag\ExecutionEngine\AutomationAction\Messenger\Messages;
+
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-enum EnvironmentVariables: string
+final class BatchTagOperationMessage extends AbstractExecutionEngineMessage
 {
-    case ORIGINAL_PARENT_ID = 'originalParentId';
-    case PARENT_ID = 'parentId';
-    case UPLOAD_FOLDER_LOCATION = 'uploadFolderLocation';
-    case UPDATE_REFERENCES = 'updateReferences';
-    case REWRITE_CONFIGURATION = 'rewriteConfiguration';
-    case REWRITE_PARAMETERS = 'rewriteParameters';
-    case BATCH_TAG_OPERATION = 'batchTagOperation';
-    case TAG_IDS = 'tagIds';
 }
