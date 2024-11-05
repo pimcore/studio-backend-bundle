@@ -85,7 +85,7 @@ final class BatchOperationController extends AbstractApiController
             [
                 'jobRunId' => $this->batchService->createJobRunForBatchOperation(
                     new BatchOperationParameters($elementType, $id, $operation)
-                )
+                ),
             ],
             HttpResponseCodes::CREATED->value
         );

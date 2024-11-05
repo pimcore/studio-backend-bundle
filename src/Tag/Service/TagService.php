@@ -230,8 +230,7 @@ final readonly class TagService implements TagServiceInterface
         int $id,
         string $permission,
         ?UserInterface $user = null
-    ): void
-    {
+    ): void {
         if ($user === null) {
             $user = $this->securityService->getCurrentUser();
         }

@@ -21,6 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\Util\Constant\BatchOperations;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateElementTypeTrait;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Positive;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -59,7 +61,7 @@ final readonly class BatchOperationParameters
 
     private function validateOperation(string $operation): void
     {
-        if(!in_array($operation, BatchOperations::values(), true)) {
+        if (!in_array($operation, BatchOperations::values(), true)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid operation "%s" provided.', $operation)
             );

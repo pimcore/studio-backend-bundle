@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchCollectionParame
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Util\Constant\BatchOperations;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function sprintf;
 
 /**
  * @internal
@@ -74,6 +75,7 @@ final class BatchTagOperationHandler extends AbstractHandler
         $element = $validatedParameters->getSubject();
         $environmentVariables = $validatedParameters->getEnvironmentData();
         $operation = $environmentVariables[EnvironmentVariables::BATCH_TAG_OPERATION->value];
+
         try {
             $parameters = new BatchCollectionParameters(
                 $element->getType(),
@@ -103,7 +105,7 @@ final class BatchTagOperationHandler extends AbstractHandler
                     'id' => $element->getId(),
                     'type' => $element->getType(),
                     'operation' => $operation,
-                    'message' => $exception->getMessage()
+                    'message' => $exception->getMessage(),
                 ],
             ));
         }

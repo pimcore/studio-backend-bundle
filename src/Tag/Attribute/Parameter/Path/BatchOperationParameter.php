@@ -22,8 +22,7 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Util\Constant\BatchOperations;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class
-BatchOperationParameter extends PathParameter
+final class BatchOperationParameter extends PathParameter
 {
     public function __construct()
     {
@@ -36,7 +35,7 @@ BatchOperationParameter extends PathParameter
                 type: 'string',
                 enum: [
                     BatchOperations::ASSIGN->value,
-                    BatchOperations::REPLACE->value
+                    BatchOperations::REPLACE->value,
                 ],
                 example: BatchOperations::ASSIGN->value,
             ),

@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\Util\Constant\BatchOperations;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
+use function sprintf;
 
 /**
  * @internal
