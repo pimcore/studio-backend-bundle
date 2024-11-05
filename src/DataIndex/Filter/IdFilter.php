@@ -39,7 +39,7 @@ final class IdFilter implements FilterInterface
             return $query;
         }
 
-        if (!is_integer($filter->getFilterValue())) {
+        if (!is_int($filter->getFilterValue())) {
             throw new InvalidArgumentException('Filter value for this filter must be a integer');
         }
 
