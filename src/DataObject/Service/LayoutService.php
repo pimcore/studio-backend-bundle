@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\PimcoreResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\LayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
@@ -46,8 +45,7 @@ final readonly class LayoutService implements LayoutServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private IconServiceInterface $iconService,
         private SecurityServiceInterface $securityService,
-        private DataObjectServiceResolverInterface $dataObjectServiceResolver,
-        private PimcoreResolverInterface $pimcoreResolver,
+        private DataObjectServiceResolverInterface $dataObjectServiceResolver
     ) {
     }
 
