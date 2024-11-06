@@ -38,8 +38,7 @@ final readonly class ApiContextSubscriber implements EventSubscriberInterface
         private DocumentResolverInterface $documentResolver,
         private LocalizedFieldResolverInterface $localizedFieldResolver,
         private PimcoreResolverInterface $pimcoreResolver,
-    )
-    {
+    ) {
     }
 
     public static function getSubscribedEvents(): array
