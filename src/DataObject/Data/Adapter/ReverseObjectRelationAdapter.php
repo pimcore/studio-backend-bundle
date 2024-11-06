@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
@@ -66,13 +65,9 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
             return null;
         }
 
-        //TODO: Remove the unpublished settings once the context is defined
-        $doUnpublished = DataObject::doHideUnpublished();
-        DataObject::setHideUnpublished(false);
         $ownerFieldName = $fieldDefinition->getOwnerFieldName();
         $relations = $element->getRelationData($ownerFieldName, false, $remoteClass->getId());
         $this->processRemoteOwnerRelations($element, $relations, $relationData, $ownerFieldName);
-        DataObject::setHideUnpublished($doUnpublished);
 
         return null;
     }
