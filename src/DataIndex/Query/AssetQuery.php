@@ -21,6 +21,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterfac
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Asset\AssetMetaDataFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
@@ -171,6 +172,13 @@ final class AssetQuery implements AssetQueryInterface
     {
         /** @var User $user */
         $this->search->setUser($user);
+
+        return $this;
+    }
+
+    public function filterInteger(string $field, int $value): QueryInterface
+    {
+        $this->search->addModifier(new IntegerFilter($field, $value));
 
         return $this;
     }

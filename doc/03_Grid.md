@@ -44,6 +44,7 @@ Available filters are:
 |    system.tag     |       object        | `considerChildTags`, `tags` |     false      |
 |    system.pql     |       string        |          PQL Query          |     false      |
 |     system.id     |       integer       |                             |     false      |
+|  system.integer   |       integer       |                             |      true      |
 
 
 
