@@ -41,6 +41,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\UserFilter:
     tags: [ 'pimcore.studio_backend.open_search.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\IdFilter:
+    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\IntegerFilter:
     tags: [ 'pimcore.studio_backend.open_search.filter' ]
 

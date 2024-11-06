@@ -43,6 +43,7 @@ Available filters are:
 |  system.datetime  |       integer       |    `from`, `to`, or `on`    |      true      |
 |    system.tag     |       object        | `considerChildTags`, `tags` |     false      |
 |    system.pql     |       string        |          PQL Query          |     false      |
+|     system.id     |       integer       |                             |     false      |
 |  system.integer   |       string        |                             |      true      |
 
 
