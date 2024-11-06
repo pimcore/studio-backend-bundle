@@ -47,7 +47,7 @@ final class GetUserPermissionsController extends AbstractApiController
     }
 
     #[Route('/user/available-permissions', name: 'pimcore_studio_api_user_available_permissions', methods: ['GET'])]
-    #[IsGranted(UserPermissions::PIMCORE_USER->value)]
+    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
         path: self::PREFIX . '/user/available-permissions',
         operationId: 'user_get_available_permissions',
