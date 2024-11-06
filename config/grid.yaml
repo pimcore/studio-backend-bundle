@@ -75,6 +75,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\IntegerDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\IdDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\StringDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 

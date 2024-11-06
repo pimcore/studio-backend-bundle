@@ -27,7 +27,7 @@ final readonly class ColumnMapper implements ColumnMapperInterface
 {
     private const COLUMN_MAPPING = [
         'preview' => 'image',
-        'id' => 'integer',
+        'id' => 'id',
         'type' => 'string',
         'fullpath' => 'string',
         'filename' => 'string',
