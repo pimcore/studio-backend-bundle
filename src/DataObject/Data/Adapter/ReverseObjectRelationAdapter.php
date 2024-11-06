@@ -66,13 +66,9 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
             return null;
         }
 
-        //TODO: Remove the unpublished settings once the context is defined
-        $doUnpublished = DataObject::doHideUnpublished();
-        DataObject::setHideUnpublished(false);
         $ownerFieldName = $fieldDefinition->getOwnerFieldName();
         $relations = $element->getRelationData($ownerFieldName, false, $remoteClass->getId());
         $this->processRemoteOwnerRelations($element, $relations, $relationData, $ownerFieldName);
-        DataObject::setHideUnpublished($doUnpublished);
 
         return null;
     }
