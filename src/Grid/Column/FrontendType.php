@@ -23,6 +23,7 @@ enum FrontendType: string
 {
     case ELEMENT_DROPZONE = 'element_dropzone';
     case INPUT = 'input';
+    case ID = 'id';
     case TEXTAREA = 'textarea';
     case SELECT = 'select';
     case CHECKBOX = 'checkbox';

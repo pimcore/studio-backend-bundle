@@ -42,7 +42,7 @@ final readonly class IdDefinition implements ColumnDefinitionInterface
 
     public function getFrontendType(): string
     {
-        return FrontendType::INPUT->value;
+        return FrontendType::ID->value;
     }
 
     public function isExportable(): bool
