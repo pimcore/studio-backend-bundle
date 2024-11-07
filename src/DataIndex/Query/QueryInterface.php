@@ -49,4 +49,6 @@ interface QueryInterface
     public function setUser(UserInterface $user): self;
 
     public function filterInteger(string $field, int $value): self;
+
+    public function filterFullText(string $value): self;
 }
