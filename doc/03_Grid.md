@@ -45,6 +45,7 @@ Available filters are:
 |    system.pql     |       string        |          PQL Query          |     false      |
 |     system.id     |       integer       |                             |     false      |
 |  system.integer   |       integer       |                             |      true      |
+|  system.fulltext  |       string        |                             |     false      |
 
 
 

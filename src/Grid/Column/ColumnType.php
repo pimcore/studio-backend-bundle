@@ -28,6 +28,7 @@ enum ColumnType: string
     case SYSTEM_DATETIME = 'system.datetime';
     case SYSTEM_TAG = 'system.tag';
     case SYSTEM_PQL_QUERY = 'system.pql';
+    case SYSTEM_FULLTEXT = 'system.fulltext';
     case METADATA_SELECT = 'metadata.select';
     case METADATA_INPUT = 'metadata.input';
     case METADATA_DATE = 'metadata.date';
