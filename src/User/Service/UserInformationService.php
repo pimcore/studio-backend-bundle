@@ -30,8 +30,7 @@ final readonly class UserInformationService implements UserInformationServiceInt
     public function __construct(
         private UserInformationHydratorInterface $userInformationHydrator,
         private EventDispatcherInterface $eventDispatcher,
-    )
-    {
+    ) {
     }
 
     public function getUserInformation(UserInterface $user): UserInformation
