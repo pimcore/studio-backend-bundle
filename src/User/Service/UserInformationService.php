@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
@@ -28,12 +27,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final class UserInformationService implements UserInformationServiceInterface
 {
-
     public function __construct(
         private UserInformationHydratorInterface $userInformationHydrator,
         private readonly EventDispatcherInterface $eventDispatcher,
-    )
-    {
+    ) {
     }
 
     public function getUserInformation(UserInterface $user): UserInformation

@@ -33,7 +33,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 )]
 final class UserInformation implements AdditionalAttributesInterface
 {
-
     use AdditionalAttributesTrait;
 
     public function __construct(
