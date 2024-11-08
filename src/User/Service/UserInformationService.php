@@ -25,12 +25,13 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * @internal
  */
-final class UserInformationService implements UserInformationServiceInterface
+final readonly class UserInformationService implements UserInformationServiceInterface
 {
     public function __construct(
         private UserInformationHydratorInterface $userInformationHydrator,
-        private readonly EventDispatcherInterface $eventDispatcher,
-    ) {
+        private EventDispatcherInterface $eventDispatcher,
+    )
+    {
     }
 
     public function getUserInformation(UserInterface $user): UserInformation
