@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserInformationHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserInformationServiceInterface;
 use Pimcore\Security\User\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -53,12 +54,10 @@ final class LoginController extends AbstractApiController
     #[DefaultResponses]
     public function login(
         #[CurrentUser] User $user,
-        UserInformationHydratorInterface $userInformationHydrator
+        UserInformationServiceInterface $userInformationService
     ): JsonResponse {
-        $userInformation = $userInformationHydrator->hydrate(
-            $user->getUser()
+        return $this->jsonResponse(
+            $userInformationService->getUserInformation($user->getUser())
         );
-
-        return $this->jsonResponse($userInformation);
     }
 }

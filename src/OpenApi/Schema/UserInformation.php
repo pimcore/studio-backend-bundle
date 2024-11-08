@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 /**
  * @internal
@@ -29,19 +31,22 @@ use OpenApi\Attributes\Schema;
     required: ['username', 'permissions', 'isAdmin'],
     type: 'object'
 )]
-final readonly class UserInformation
+final class UserInformation implements AdditionalAttributesInterface
 {
+
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'Username', type: 'string', example: 'admin')]
-        private string $username,
+        private readonly string $username,
         #[Property(
             description: 'Permissions',
             type: 'array',
             items: new Items(type: 'string', example: 'clear_cache')
         )]
-        private array $permissions,
+        private readonly array $permissions,
         #[Property(description: 'If user is an admin user', type: 'boolean', example: false)]
-        private bool $isAdmin,
+        private readonly bool $isAdmin,
     ) {
     }
 

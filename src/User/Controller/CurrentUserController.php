@@ -24,11 +24,13 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserInformationHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserInformationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Security\User\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
@@ -51,12 +53,10 @@ final class CurrentUserController extends AbstractApiController
     ])]
     public function getCurrentUserInformation(
         #[CurrentUser] User $user,
-        UserInformationHydratorInterface $userInformationHydrator
+        UserInformationServiceInterface $userInformationService
     ): JsonResponse {
-        $userInformation = $userInformationHydrator->hydrate(
-            $user->getUser()
+        return $this->jsonResponse(
+            $userInformationService->getUserInformation($user->getUser())
         );
-
-        return $this->jsonResponse($userInformation);
     }
 }
