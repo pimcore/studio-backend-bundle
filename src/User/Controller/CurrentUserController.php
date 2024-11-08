@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
+use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserInformationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Security\User\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -48,11 +49,15 @@ final class CurrentUserController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getCurrentUserInformation(#[CurrentUser] User $user): JsonResponse
+    public function getCurrentUserInformation(
+        #[CurrentUser] User $user,
+        UserInformationHydratorInterface $userInformationHydrator
+    ): JsonResponse
     {
-        return $this->jsonResponse([
-            'username' => $user->getUserIdentifier(),
-            'roles' => $user->getRoles(),
-        ]);
+        $userInformation = $userInformationHydrator->hydrate(
+            $user->getUser()
+        );
+
+        return $this->jsonResponse($userInformation);
     }
 }

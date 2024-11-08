@@ -25,8 +25,8 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'User Information',
-    description: 'Information about the user with username and roles',
-    required: ['username', 'roles'],
+    description: 'Information about the user',
+    required: ['username', 'permissions', 'isAdmin'],
     type: 'object'
 )]
 final readonly class UserInformation
@@ -35,21 +35,28 @@ final readonly class UserInformation
         #[Property(description: 'Username', type: 'string', example: 'admin')]
         private string $username,
         #[Property(
-            description: 'Roles',
+            description: 'Permissions',
             type: 'array',
-            items: new Items(type: 'string', example: 'ROLE_PIMCORE_ADMIN')
+            items: new Items(type: 'string', example: 'clear_cache')
         )]
-        private array $roles,
+        private array $permissions,
+        #[Property(description: 'If user is an admin user', type: 'boolean', example: false)]
+        private bool $isAdmin,
     ) {
     }
 
-    public function getRoles(): array
+    public function getPermissions(): array
     {
-        return $this->roles;
+        return $this->permissions;
     }
 
     public function getUsername(): string
     {
         return $this->username;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->isAdmin;
     }
 }
