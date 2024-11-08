@@ -38,6 +38,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\UserInformationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserInformationService
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\MailService
     arguments: [ '@Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider' ]
@@ -56,6 +59,10 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Hydrator\WorkspaceHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\WorkspaceHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserInformationHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserInformationHydrator
+
 
   #
   # Repositories

@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserInformationServiceInterface;
 use Pimcore\Security\User\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -50,11 +51,12 @@ final class LoginController extends AbstractApiController
     )]
     #[InvalidCredentialsResponse]
     #[DefaultResponses]
-    public function login(#[CurrentUser] User $user): JsonResponse
-    {
-        return $this->jsonResponse([
-            'username' => $user->getUserIdentifier(),
-            'roles' => $user->getRoles(),
-        ]);
+    public function login(
+        #[CurrentUser] User $user,
+        UserInformationServiceInterface $userInformationService
+    ): JsonResponse {
+        return $this->jsonResponse(
+            $userInformationService->getUserInformation($user->getUser())
+        );
     }
 }

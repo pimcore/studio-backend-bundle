@@ -19,37 +19,48 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 /**
  * @internal
  */
 #[Schema(
     title: 'User Information',
-    description: 'Information about the user with username and roles',
-    required: ['username', 'roles'],
+    description: 'Information about the user',
+    required: ['username', 'permissions', 'isAdmin'],
     type: 'object'
 )]
-final readonly class UserInformation
+final class UserInformation implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'Username', type: 'string', example: 'admin')]
-        private string $username,
+        private readonly string $username,
         #[Property(
-            description: 'Roles',
+            description: 'Permissions',
             type: 'array',
-            items: new Items(type: 'string', example: 'ROLE_PIMCORE_ADMIN')
+            items: new Items(type: 'string', example: 'clear_cache')
         )]
-        private array $roles,
+        private readonly array $permissions,
+        #[Property(description: 'If user is an admin user', type: 'boolean', example: false)]
+        private readonly bool $isAdmin,
     ) {
     }
 
-    public function getRoles(): array
+    public function getPermissions(): array
     {
-        return $this->roles;
+        return $this->permissions;
     }
 
     public function getUsername(): string
     {
         return $this->username;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->isAdmin;
     }
 }
