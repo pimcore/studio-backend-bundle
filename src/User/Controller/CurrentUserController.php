@@ -52,8 +52,7 @@ final class CurrentUserController extends AbstractApiController
     public function getCurrentUserInformation(
         #[CurrentUser] User $user,
         UserInformationHydratorInterface $userInformationHydrator
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $userInformation = $userInformationHydrator->hydrate(
             $user->getUser()
         );
