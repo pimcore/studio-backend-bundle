@@ -29,6 +29,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class SystemSettingsProvider implements SettingsProviderInterface
 {
     private array $systemSettings;
+
     public function __construct(
         SystemSettingsConfig $systemSettingsConfig,
         private ToolResolverInterface $toolResolver,
@@ -49,7 +50,6 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         ];
     }
 
-
     private function getAvailableAdminLanguages(): array
     {
         $availableLanguages = $this->adminResolver->getLanguages();
@@ -61,8 +61,8 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         }
 
         $languages = array_map(
-            static fn($lang) => ['language' => $lang, 'display' => $locales[$lang]],
-            array_filter($availableLanguages, static fn($lang) => isset($locales[$lang]))
+            static fn ($lang) => ['language' => $lang, 'display' => $locales[$lang]],
+            array_filter($availableLanguages, static fn ($lang) => isset($locales[$lang]))
         );
 
         usort($languages, static function ($a, $b) {
