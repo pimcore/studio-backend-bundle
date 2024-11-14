@@ -40,7 +40,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\RateLimiter\RateLimiterInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserFolderRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\ResetPassword;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\SimpleUser;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;

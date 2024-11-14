@@ -73,7 +73,7 @@ final class SearchUserController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function getUserSearch(#[MapQueryParameter] string $searchQuery): JsonResponse
     {

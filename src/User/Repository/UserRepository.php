@@ -146,6 +146,7 @@ final readonly class UserRepository implements UserRepositoryInterface
     {
         $list = [];
         $q = '%' . $searchQuery . '%';
+
         try {
             $userListing = new UserListing();
             $userListing->setCondition(
