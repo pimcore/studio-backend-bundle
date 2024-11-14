@@ -150,7 +150,7 @@ final readonly class UserRepository implements UserRepositoryInterface
         try {
             $userListing = new UserListing();
             $userListing->setCondition(
-                'name LIKE ? OR firstname LIKE ? OR lastname LIKE ? OR email LIKE ? or id = ?',
+                'name LIKE ? OR firstname LIKE ? OR lastname LIKE ? OR email LIKE ? OR id = ?',
                 [$q, $q, $q, $q, (int)$searchQuery]
             );
             $userListing->setOrder('ASC');
