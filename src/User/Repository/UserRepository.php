@@ -165,7 +165,7 @@ final readonly class UserRepository implements UserRepositoryInterface
 
             return $list;
         } catch (Exception $e) {
-            throw new  DatabaseException(sprintf('Error while fetching users: %s', $e->getMessage()));
+            throw new  DatabaseException(sprintf('Error while searching for users: %s', $e->getMessage()));
         }
     }
 }
