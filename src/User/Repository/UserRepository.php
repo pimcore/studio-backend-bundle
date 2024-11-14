@@ -136,4 +136,36 @@ final readonly class UserRepository implements UserRepositoryInterface
             throw new  DatabaseException(sprintf('Error while fetching users: %s', $e->getMessage()));
         }
     }
+
+    /**
+     * @return UserInterface[]
+     *
+     * @throws DatabaseException
+     */
+    public function searchUser(string $searchQuery): array
+    {
+        $list = [];
+        $q = '%' . $searchQuery . '%';
+
+        try {
+            $userListing = new UserListing();
+            $userListing->setCondition(
+                'name LIKE ? OR firstname LIKE ? OR lastname LIKE ? OR email LIKE ? OR id = ?',
+                [$q, $q, $q, $q, (int)$searchQuery]
+            );
+            $userListing->setOrder('ASC');
+            $userListing->setOrderKey('name');
+            $userListing->load();
+
+            foreach ($userListing->getUsers() as $user) {
+                if ($user instanceof UserInterface && $user->getName() !== 'system') {
+                    $list[] = $user;
+                }
+            }
+
+            return $list;
+        } catch (Exception $e) {
+            throw new  DatabaseException(sprintf('Error while searching for users: %s', $e->getMessage()));
+        }
+    }
 }

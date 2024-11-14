@@ -60,4 +60,9 @@ interface UserServiceInterface
      * @throws DatabaseException
      */
     public function getUsers(): Collection;
+
+    /**
+     * @throws DatabaseException
+     */
+    public function userSearch(string $searchQuery): Collection;
 }

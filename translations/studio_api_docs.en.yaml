@@ -591,3 +591,5 @@ data_object_get_grid_summary: Get data object data for grid
 asset_delete_grid_configuration_by_configurationId_description: |
     Delete grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
 asset_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a specific folder and given configuration ID
+user_search_summary: Search for users by query. The query can be a part of the username, first name, last name, email or user ID.
+user_search_response: List of users
