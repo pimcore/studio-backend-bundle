@@ -59,7 +59,7 @@ final class SearchUserController extends AbstractApiController
     #[Get(
         path: self::PREFIX . '/user/search',
         operationId: 'pimcore_studio_api_user_search',
-        summary: 'pimcore_studio_api_user_search_summary',
+        summary: 'user_search_summary',
         tags: [Tags::User->value]
     )]
     #[TextFieldParameter(
@@ -68,7 +68,7 @@ final class SearchUserController extends AbstractApiController
         required: false
     )]
     #[SuccessResponse(
-        description: 'pimcore_studio_api_user_search_summary_response',
+        description: 'user_search_summary_response',
         content: new CollectionJson(new GenericCollection(SimpleUser::class))
     )]
     #[DefaultResponses([
