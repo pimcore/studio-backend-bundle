@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\User\Event\SimpleUserEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserEvent;
 use Pimcore\Bundle\StudioBackendBundle\User\Event\UserTreeNodeEvent;
+use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\SimpleUserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\CreateParameter;
@@ -63,7 +64,8 @@ final readonly class UserService implements UserServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private UserFolderRepositoryInterface $userFolderRepository,
-        private UserHydratorInterface $userHydrator
+        private UserHydratorInterface $userHydrator,
+        private SimpleUserHydratorInterface $simpleUserHydrator
     ) {
     }
 
@@ -148,26 +150,14 @@ final readonly class UserService implements UserServiceInterface
 
     }
 
+    /**
+     * @throws DatabaseException
+     */
     public function getUsers(): Collection
     {
         $users = $this->userRepository->getUsers();
-        $items = [];
 
-        foreach ($users as $user) {
-            $item = new SimpleUser(
-                id: $user->getId(),
-                username: $user->getName(),
-            );
-
-            $this->eventDispatcher->dispatch(
-                new SimpleUserEvent($item),
-                SimpleUserEvent::EVENT_NAME
-            );
-
-            $items[] = $item;
-        }
-
-        return new Collection(count($items), $items);
+        return $this->getSimpleUserCollection($users);
     }
 
     /**
@@ -236,5 +226,36 @@ final readonly class UserService implements UserServiceInterface
         );
 
         return $user;
+    }
+
+    /**
+     * @throws DatabaseException
+     */
+    public function userSearch(string $searchQuery): Collection
+    {
+        $users = $this->userRepository->searchUser($searchQuery);
+
+        return $this->getSimpleUserCollection($users);
+    }
+
+    /**
+     * @param UserInterface[] $users
+     */
+    private function getSimpleUserCollection(array $users): Collection
+    {
+        $items = [];
+
+        foreach ($users as $user) {
+            $item = $this->simpleUserHydrator->hydrate($user);
+
+            $this->eventDispatcher->dispatch(
+                new SimpleUserEvent($item),
+                SimpleUserEvent::EVENT_NAME
+            );
+
+            $items[] = $item;
+        }
+
+        return new Collection(count($items), $items);
     }
 }
