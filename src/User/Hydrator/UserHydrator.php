@@ -113,6 +113,6 @@ final readonly class UserHydrator implements UserHydratorInterface
     // This method removes those empty strings
     private function sanitizePermissions(array $permissions): array
     {
-        return array_filter($permissions, fn($permission) => $permission !== '');
+        return array_filter($permissions, fn ($permission) => $permission !== '');
     }
 }
