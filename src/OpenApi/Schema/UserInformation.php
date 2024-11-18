@@ -59,7 +59,7 @@ final class UserInformation implements AdditionalAttributesInterface
         return $this->username;
     }
 
-    public function isAdmin(): bool
+    public function hasIsAdmin(): bool
     {
         return $this->isAdmin;
     }
