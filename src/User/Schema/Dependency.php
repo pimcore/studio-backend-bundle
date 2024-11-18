@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
 
 use OpenApi\Attributes\Property;
@@ -39,9 +38,9 @@ final readonly class Dependency
         private string $path,
         #[Property(description: 'Subtype of the object', type: 'string', example: 'Car')]
         private string $subtype,
-    )
-    {
+    ) {
     }
+
     public function getId(): int
     {
         return $this->id;

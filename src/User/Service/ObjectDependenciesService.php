@@ -14,8 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
@@ -28,12 +26,10 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class ObjectDependenciesService implements ObjectDependenciesServiceInterface
 {
-
     public function __construct(
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private DependencyHydratorInterface $dependencyHydrator
-    )
-    {
+    ) {
     }
 
     public function getDependenciesForUser(UserInterface $user): ObjectDependencies
@@ -46,6 +42,7 @@ final readonly class ObjectDependenciesService implements ObjectDependenciesServ
         foreach ($objects as $object) {
             if ($object->isAllowed('list')) {
                 $dependencies[] = $this->dependencyHydrator->hydrate($object);
+
                 continue;
             }
 

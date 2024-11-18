@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\Dependency;
@@ -23,9 +22,8 @@ use Pimcore\Model\DataObject\Concrete;
 /**
  * @internal
  */
-final class DependencyHydrator  implements DependencyHydratorInterface
+final class DependencyHydrator implements DependencyHydratorInterface
 {
-
     public function hydrate(Concrete $concrete): Dependency
     {
         return new Dependency(

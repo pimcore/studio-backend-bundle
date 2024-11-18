@@ -14,8 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
 
 use OpenApi\Attributes\Items;
@@ -38,8 +36,7 @@ final readonly class ObjectDependencies
         private array $dependencies,
         #[Property(description: 'If is has hidden dependencies', type: 'boolean', example: true)]
         private bool $hasHidden
-    )
-    {
+    ) {
     }
 
     public function getDependencies(): array
