@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
@@ -35,6 +36,7 @@ final readonly class UserHydrator implements UserHydratorInterface
         private ToolResolverInterface $toolResolver,
         private AdminResolverInterface $adminToolResolver,
         private WorkspaceHydratorInterface $workspaceHydrator,
+        private ObjectDependenciesServiceInterface $objectDependenciesService
     ) {
     }
 
@@ -68,6 +70,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             assetWorkspaces: $this->workspaceHydrator->hydrateAssetWorkspace($user),
             dataObjectWorkspaces: $this->workspaceHydrator->hydrateDataObjectWorkspace($user),
             documentWorkspaces: $this->workspaceHydrator->hydrateDocumentWorkspace($user),
+            objectDependencies: $this->objectDependenciesService->getDependenciesForUser($user),
         );
     }
 
