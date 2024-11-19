@@ -1,0 +1,54 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * Pimcore
+ *
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
+ * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
+
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\ObjectDependencies;
+use Pimcore\Model\UserInterface;
+
+/**
+ * @internal
+ */
+final readonly class ObjectDependenciesService implements ObjectDependenciesServiceInterface
+{
+    public function __construct(
+        private DataObjectServiceResolverInterface $dataObjectServiceResolver,
+        private DependencyHydratorInterface $dependencyHydrator
+    ) {
+    }
+
+    public function getDependenciesForUser(UserInterface $user): ObjectDependencies
+    {
+        $dependencies = [];
+        $hasHidden = false;
+
+        $objects = $this->dataObjectServiceResolver->getObjectsReferencingUser($user->getId());
+
+        foreach ($objects as $object) {
+            if ($object->isAllowed('list')) {
+                $dependencies[] = $this->dependencyHydrator->hydrate($object);
+
+                continue;
+            }
+
+            $hasHidden = true;
+        }
+
+        return new ObjectDependencies($dependencies, $hasHidden);
+    }
+}

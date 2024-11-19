@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'id', 'active', 'admin', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'hasImage',
         'keyBindings', 'language', 'memorizeTabs', 'parentId', 'permissions', 'roles',
         'twoFactorAuthenticationEnabled', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
-        'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces',
+        'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'objectDependencies',
     ],
     type: 'object'
 )]
@@ -94,6 +94,8 @@ final class User implements AdditionalAttributesInterface
         private readonly array $dataObjectWorkspaces,
         #[Property(description: 'Document Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
         private readonly array $documentWorkspaces,
+        #[Property(ref: ObjectDependencies::class, description: 'Object Dependencies', type: 'object')]
+        private readonly ObjectDependencies $objectDependencies,
     ) {
     }
 
@@ -237,5 +239,10 @@ final class User implements AdditionalAttributesInterface
     public function getDocumentWorkspaces(): array
     {
         return $this->documentWorkspaces;
+    }
+
+    public function getObjectDependencies(): ObjectDependencies
+    {
+        return $this->objectDependencies;
     }
 }

@@ -41,6 +41,10 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserInformationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserInformationService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesService
+
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\MailService
     arguments: [ '@Pimcore\Bundle\StudioBackendBundle\Setting\Provider\SystemSettingsProvider' ]
@@ -65,6 +69,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Hydrator\SimpleUserHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\SimpleUserHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydrator
 
 
   #
