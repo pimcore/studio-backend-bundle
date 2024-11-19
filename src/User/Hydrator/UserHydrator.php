@@ -60,7 +60,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             lastLogin: $user->getLastLogin(),
             memorizeTabs: $user->getMemorizeTabs(),
             parentId: $user->getParentId(),
-            permissions: $user->getPermissions(),
+            permissions: $this->sanitizePermissions($user->getPermissions()),
             roles: $user->getRoles(),
             twoFactorAuthenticationEnabled:
                 $user->getTwoFactorAuthentication('enabled') || $user->getTwoFactorAuthentication('secret'),
@@ -110,5 +110,12 @@ final readonly class UserHydrator implements UserHydratorInterface
         $contentLanguagesString = $this->adminToolResolver->reorderWebsiteLanguages($user, $validLanguages);
 
         return explode(',', $contentLanguagesString);
+    }
+
+    // In some cases, the permissions array contains and array with empty strings as values
+    // This method removes those empty strings
+    private function sanitizePermissions(array $permissions): array
+    {
+        return array_filter($permissions, fn ($permission) => $permission !== '');
     }
 }
