@@ -69,8 +69,8 @@ final class IconService implements IconServiceInterface
         }
 
         $value = match ($dataObject->getType()) {
-            ElementTypes::TYPE_OBJECT => 'vector',
-            ElementTypes::TYPE_VARIANT => 'variant-icon',
+            ElementTypes::TYPE_OBJECT => 'mainObject',
+            ElementTypes::TYPE_VARIANT => 'mainObjectVariant',
             ElementTypes::TYPE_FOLDER => 'folder',
             default => $this->defaultIcon
         };
