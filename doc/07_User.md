@@ -1,4 +1,4 @@
-# User
+# Studio User
 ## Default Key Bindings
 To change the default key bindings, you can add a synfony configuration file in your project. 
 The structure of the file should be like this:
