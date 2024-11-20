@@ -57,6 +57,7 @@ class Configuration implements ConfigurationInterface
         $this->addGridConfiguration($rootNode);
         $this->addNoteTypes($rootNode);
         $this->addDataObjectAdapterMapping($rootNode);
+        $this->addUserNode($rootNode);
 
         return $treeBuilder;
     }
@@ -284,4 +285,24 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end();
     }
+
+    private function addUserNode(ArrayNodeDefinition $node): void
+        {
+            $node->children()
+                ->arrayNode('user')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('default_key_bindings')
+                        ->prototype('array')
+                            ->children()
+                                ->scalarNode('key')->isRequired()->end()
+                                ->scalarNode('action')->isRequired()->end()
+                                ->scalarNode('alt')->defaultFalse()->end()
+                                ->scalarNode('ctrl')->defaultFalse()->end()
+                                ->scalarNode('shift')->defaultFalse()->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end();
+        }
 }

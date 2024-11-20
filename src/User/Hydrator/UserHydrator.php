@@ -36,7 +36,8 @@ final readonly class UserHydrator implements UserHydratorInterface
         private ToolResolverInterface $toolResolver,
         private AdminResolverInterface $adminToolResolver,
         private WorkspaceHydratorInterface $workspaceHydrator,
-        private ObjectDependenciesServiceInterface $objectDependenciesService
+        private ObjectDependenciesServiceInterface $objectDependenciesService,
+        private KeyBindingHydratorInterface $keyBindingHydrator,
     ) {
     }
 
@@ -85,17 +86,7 @@ final readonly class UserHydrator implements UserHydratorInterface
         try {
             $decoded = json_decode($keyBindings, true, 512, JSON_THROW_ON_ERROR);
 
-            foreach ($decoded as $binding) {
-                $bindings[] = new KeyBinding(
-                    key: $binding['key'],
-                    action: $binding['action'],
-                    ctrl: $binding['ctrl'],
-                    alt: $binding['alt'],
-                    shift: $binding['shift'],
-                );
-            }
-
-            return $bindings;
+            return $this->keyBindingHydrator->hydrate($decoded);
         } catch (Exception $e) {
             $this->pimcoreLogger->warning('Failed to decode key bindings', ['exception' => $e]);
 

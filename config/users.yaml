@@ -44,6 +44,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingService
+
 
   Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\MailService
@@ -72,6 +75,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\DependencyHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydrator
 
 
   #
