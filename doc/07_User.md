@@ -12,4 +12,4 @@ pimcore_studio_backend:
         ctrl: true
 ```
 
-You can find the predefined key bindings [here](../config/pimcore/user_key_binding.yaml).
+You can find the predefined key bindings here `config/pimcore/user_key_binding.yaml` in the Studio Backend Bundle.
