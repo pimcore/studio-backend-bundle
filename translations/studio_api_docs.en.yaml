@@ -593,3 +593,7 @@ asset_delete_grid_configuration_by_configurationId_description: |
 asset_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a specific folder and given configuration ID
 user_search_summary: Search for users by query. The query can be a part of the username, first name, last name, email or user ID.
 user_search_response: List of users
+user_default_key_bindings_description: |
+  Get default key bindings for user management
+user_default_key_bindings_summary: Get default key bindings
+user_default_key_bindings_response: List of default key bindings

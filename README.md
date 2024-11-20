@@ -21,3 +21,4 @@ Every description is translatable and can be found in the `studio_api_docs.en.ya
 - [Grid](./doc/03_Grid.md)
 - [Generic Execution Engine](doc/04_Generic_Execution_Engine.md)
 - [Additional Attributes](./doc/05_Additional_Custom_Attributes.md)
+- [Studio User](./doc/07_User.md)
