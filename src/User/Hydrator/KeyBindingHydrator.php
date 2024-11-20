@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
  */
 final class KeyBindingHydrator implements KeyBindingHydratorInterface
 {
-
     public function hydrate(array $data): array
     {
         $keyBindings = [];

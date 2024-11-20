@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
+use function ord;
 
 /**
  * @internal
@@ -28,8 +28,7 @@ final class KeyBindingService implements KeyBindingServiceInterface
     public function __construct(
         private array $defaultKeyBindings,
         private readonly KeyBindingHydratorInterface $keyBindingHydrator
-    )
-    {
+    ) {
     }
 
     /**
@@ -38,6 +37,7 @@ final class KeyBindingService implements KeyBindingServiceInterface
     public function getDefaultKeyBindings(): array
     {
         $this->convertKeyToAscii();
+
         return $this->keyBindingHydrator->hydrate($this->defaultKeyBindings);
     }
 

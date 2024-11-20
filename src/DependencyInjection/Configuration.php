@@ -287,22 +287,22 @@ class Configuration implements ConfigurationInterface
     }
 
     private function addUserNode(ArrayNodeDefinition $node): void
-        {
-            $node->children()
-                ->arrayNode('user')
-                ->addDefaultsIfNotSet()
-                ->children()
-                    ->arrayNode('default_key_bindings')
-                        ->prototype('array')
-                            ->children()
-                                ->scalarNode('key')->isRequired()->end()
-                                ->scalarNode('action')->isRequired()->end()
-                                ->scalarNode('alt')->defaultFalse()->end()
-                                ->scalarNode('ctrl')->defaultFalse()->end()
-                                ->scalarNode('shift')->defaultFalse()->end()
-                            ->end()
+    {
+        $node->children()
+            ->arrayNode('user')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->arrayNode('default_key_bindings')
+                    ->prototype('array')
+                        ->children()
+                            ->scalarNode('key')->isRequired()->end()
+                            ->scalarNode('action')->isRequired()->end()
+                            ->scalarNode('alt')->defaultFalse()->end()
+                            ->scalarNode('ctrl')->defaultFalse()->end()
+                            ->scalarNode('shift')->defaultFalse()->end()
                         ->end()
                     ->end()
-                ->end();
-        }
+                ->end()
+            ->end();
+    }
 }

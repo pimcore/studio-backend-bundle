@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
 use Pimcore\Model\User;
