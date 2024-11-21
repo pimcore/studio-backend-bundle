@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ImageUploadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
