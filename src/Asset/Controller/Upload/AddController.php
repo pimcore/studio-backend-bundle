@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
 use League\Flysystem\FilesystemException;
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\AddAssetRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
@@ -29,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -80,7 +80,7 @@ final class AddController extends AbstractApiController
         content: new IdJson('ID of created asset')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
-    #[AddAssetRequestBody(
+    #[MultipartFormDataRequestBody(
         [
             new Property(
                 property: 'file',
