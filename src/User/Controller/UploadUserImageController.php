@@ -50,7 +50,6 @@ final class UploadUserImageController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly UserUpdateServiceInterface $userUpdateService,
         private readonly ImageUploadServiceInterface $imageUploadService
     ) {
         parent::__construct($serializer);
