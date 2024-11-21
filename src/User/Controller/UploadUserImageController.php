@@ -17,26 +17,33 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 
 use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Put;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUser;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\ImageUploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserUpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -45,14 +52,14 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class UpdateUserController extends AbstractApiController
+final class UploadUserImageController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
         private readonly UserUpdateServiceInterface $userUpdateService,
-        private readonly UserServiceInterface $userService
+        private readonly ImageUploadServiceInterface $imageUploadService
     ) {
         parent::__construct($serializer);
     }
@@ -60,30 +67,45 @@ final class UpdateUserController extends AbstractApiController
     /**
      * @throws NotFoundException|DatabaseException|ForbiddenException|ParseException
      */
-    #[Route('/user/{id}', name: 'pimcore_studio_api_user_update', requirements: ['id' => '\d+'], methods: ['PUT'])]
+    #[Route('/user/upload-image/{id}', name: 'pimcore_studio_api_user_upload_image', methods: ['POST'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Put(
-        path: self::PREFIX . '/user/{id}',
-        operationId: 'user_update_by_id',
-        summary: 'user_update_by_id_summary',
+        path: self::PREFIX . '/user/upload-image/{id}',
+        operationId: 'user_upload_image',
+        summary: 'user_upload_image_summary',
         tags: [Tags::User->value]
     )]
     #[IdParameter(type: 'User')]
-    #[SuccessResponse(
-        description: 'user_update_by_id_success_response',
-        content: new JsonContent(ref: UserSchema::class)
-    )]
-    #[RequestBody(
-        content: new JsonContent(ref: UpdateUser::class)
+    #[SuccessResponse]
+    #[MultipartFormDataRequestBody(
+        [
+            new Property(
+                property: 'userImage',
+                description: 'User image to upload',
+                type: 'string',
+                format: 'binary'
+            ),
+        ],
+        ['userImage']
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::FORBIDDEN,
     ])]
-    public function updateUsers(int $id, #[MapRequestPayload] UpdateUserParameter $userUpdate): JsonResponse
+    public function uploadUserImage(
+        int $id,
+        // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
+        Request $request
+    ): Response
     {
-        $this->userUpdateService->updateUserById($userUpdate, $id);
+        $file = $request->files->get('userImage');
+        if (!$file instanceof UploadedFile) {
+            throw new EnvironmentException('Invalid file found in the request');
+        }
 
-        return $this->jsonResponse($this->userService->getUserById($id));
+        $this->imageUploadService->uploadUserImage($file, $id);
+
+
+        return new Response();
     }
 }
