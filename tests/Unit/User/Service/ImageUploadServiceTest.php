@@ -4,11 +4,14 @@ declare(strict_types=1);
 /**
  * Pimcore
  *
- * This source file is available under following license:
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
  * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
@@ -31,19 +34,19 @@ final class ImageUploadServiceTest extends Unit
     public function testNonAdminCanNotEditAdminUser(): void
     {
         $userMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => true
+            'isAdmin' => true,
         ]);
 
         $currentUserMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => false
+            'isAdmin' => false,
         ]);
 
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userMock
+            'getUserById' => $userMock,
         ]);
 
         $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $currentUserMock
+            'getCurrentUser' => $currentUserMock,
         ]);
 
         $assetResolver = $this->makeEmpty(AssetResolverInterface::class);
@@ -58,28 +61,28 @@ final class ImageUploadServiceTest extends Unit
     public function testWrongFileType(): void
     {
         $userMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => true
+            'isAdmin' => true,
         ]);
 
         $currentUserMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => true
+            'isAdmin' => true,
         ]);
 
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userMock
+            'getUserById' => $userMock,
         ]);
 
         $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $currentUserMock
+            'getCurrentUser' => $currentUserMock,
         ]);
 
         $assetResolver = $this->makeEmpty(AssetResolverInterface::class, [
-            'getTypeFromMimeMapping' => 'document'
+            'getTypeFromMimeMapping' => 'document',
         ]);
 
         $fileMock = $this->makeEmpty(UploadedFile::class, [
             'getMimeType' => 'application/pdf',
-            'getFilename' => 'test.pdf'
+            'getFilename' => 'test.pdf',
         ]);
 
         $imageUploadService = new ImageUploadService($userRepositoryMock, $securityServiceMock, $assetResolver);
@@ -95,29 +98,29 @@ final class ImageUploadServiceTest extends Unit
             'isAdmin' => true,
             'setImage' => Expected::once(function (string $path) {
                 $this->assertSame('/tmp/test.png', $path);
-            })
+            }),
         ]);
 
         $currentUserMock = $this->makeEmpty(UserInterface::class, [
-            'isAdmin' => true
+            'isAdmin' => true,
         ]);
 
         $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
-            'getUserById' => $userMock
+            'getUserById' => $userMock,
         ]);
 
         $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class, [
-            'getCurrentUser' => $currentUserMock
+            'getCurrentUser' => $currentUserMock,
         ]);
 
         $assetResolver = $this->makeEmpty(AssetResolverInterface::class, [
-            'getTypeFromMimeMapping' => 'image'
+            'getTypeFromMimeMapping' => 'image',
         ]);
 
         $fileMock = $this->makeEmpty(UploadedFile::class, [
             'getMimeType' => 'image/png',
             'getFilename' => 'test.png',
-            'getPathname' => '/tmp/test.png'
+            'getPathname' => '/tmp/test.png',
         ]);
 
         $imageUploadService = new ImageUploadService($userRepositoryMock, $securityServiceMock, $assetResolver);

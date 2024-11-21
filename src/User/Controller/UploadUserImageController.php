@@ -88,15 +88,13 @@ final class UploadUserImageController extends AbstractApiController
         int $id,
         // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
         Request $request
-    ): Response
-    {
+    ): Response {
         $file = $request->files->get('userImage');
         if (!$file instanceof UploadedFile) {
             throw new EnvironmentException('Invalid file found in the request');
         }
 
         $this->imageUploadService->uploadUserImage($file, $id);
-
 
         return new Response();
     }
