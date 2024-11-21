@@ -60,7 +60,7 @@ final class UpdateUserController extends AbstractApiController
     /**
      * @throws NotFoundException|DatabaseException|ForbiddenException|ParseException
      */
-    #[Route('/user/{id}', name: 'pimcore_studio_api_user_update', methods: ['PUT'])]
+    #[Route('/user/{id}', name: 'pimcore_studio_api_user_update', requirements: ['id' => '\d+'], methods: ['PUT'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Put(
         path: self::PREFIX . '/user/{id}',

@@ -14,28 +14,25 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Upload;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Controller;
 
 use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\ImageUploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,68 +43,56 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ReplaceController extends AbstractApiController
+final class UploadUserImageController extends AbstractApiController
 {
+    use PaginatedResponseTrait;
+
     public function __construct(
-        private readonly SecurityServiceInterface $securityService,
-        private readonly UploadServiceInterface $uploadService,
         SerializerInterface $serializer,
+        private readonly ImageUploadServiceInterface $imageUploadService
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws AccessDeniedException
-     * @throws DatabaseException
-     * @throws EnvironmentException
-     * @throws ForbiddenException
-     * @throws NotFoundException
-     * @throws UserNotFoundException
+     * @throws NotFoundException|DatabaseException|ForbiddenException|ParseException
      */
-    #[Route('/assets/{id}/replace', name: 'pimcore_studio_api_assets_replace', methods: ['POST'])]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[Route('/user/upload-image/{id}', name: 'pimcore_studio_api_user_upload_image', methods: ['POST'])]
+    #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Post(
-        path: self::PREFIX . '/assets/{id}/replace',
-        operationId: 'asset_replace',
-        description: 'asset_replace_description',
-        summary: 'asset_replace_summary',
-        tags: [Tags::Assets->value]
+        path: self::PREFIX . '/user/upload-image/{id}',
+        operationId: 'user_upload_image',
+        summary: 'user_upload_image_summary',
+        tags: [Tags::User->value]
     )]
-    #[SuccessResponse(
-        description: 'asset_replace_success_response',
-    )]
-    #[IdParameter(type: ElementTypes::TYPE_ASSET)]
+    #[IdParameter(type: 'User')]
+    #[SuccessResponse]
     #[MultipartFormDataRequestBody(
         [
             new Property(
-                property: 'file',
-                description: 'File to upload',
+                property: 'userImage',
+                description: 'User image to upload',
                 type: 'string',
                 format: 'binary'
             ),
         ],
-        ['file']
+        ['userImage']
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::FORBIDDEN,
     ])]
-    public function replaceAsset(
+    public function uploadUserImage(
         int $id,
         // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
         Request $request
     ): Response {
-
-        $file = $request->files->get('file');
+        $file = $request->files->get('userImage');
         if (!$file instanceof UploadedFile) {
-            throw new ElementStreamResourceNotFoundException(0, 'File');
+            throw new EnvironmentException('Invalid file found in the request');
         }
 
-        $this->uploadService->replaceAssetBinary(
-            $id,
-            $file,
-            $this->securityService->getCurrentUser()
-        );
+        $this->imageUploadService->uploadUserImage($file, $id);
 
         return new Response();
     }

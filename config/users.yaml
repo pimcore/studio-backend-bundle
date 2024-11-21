@@ -47,6 +47,10 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\ImageUploadServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\ImageUploadService
+
+
 
   Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\MailService

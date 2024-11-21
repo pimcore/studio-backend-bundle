@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\MediaType;
@@ -25,7 +25,7 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class AddAssetRequestBody extends RequestBody
+final class MultipartFormDataRequestBody extends RequestBody
 {
     public function __construct(array $properties, array $required = [])
     {
