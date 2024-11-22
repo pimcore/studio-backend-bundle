@@ -34,6 +34,10 @@ readonly class SimpleColumnFilter
 
     public function getFilterValue(): mixed
     {
+        if (is_string($this->filterValue)) {
+            return trim($this->filterValue);
+        }
+
         return $this->filterValue;
     }
 }
