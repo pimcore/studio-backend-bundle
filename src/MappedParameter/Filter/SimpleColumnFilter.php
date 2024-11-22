@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 
+use function is_string;
+
 /**
  * @internal
  */
