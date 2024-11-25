@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Video;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Content\AssetMediaType;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\AspectRatioParameter;
@@ -35,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurati
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -91,7 +91,7 @@ final class ImageThumbnailStreamController extends AbstractApiController
     #[AsyncGenerationParameter]
     #[SuccessResponse(
         description: 'asset_video_image_thumbnail_stream_success_response',
-        content: [new AssetMediaType('image/*')],
+        content: [new MediaType('image/*')],
         headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]
     #[DefaultResponses([
