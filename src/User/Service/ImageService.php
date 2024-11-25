@@ -22,11 +22,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @internal
  */
-final readonly class ImageUploadService implements ImageUploadServiceInterface
+final readonly class ImageService implements ImageServiceInterface
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,
@@ -54,5 +55,18 @@ final readonly class ImageUploadService implements ImageUploadServiceInterface
         }
 
         $user->setImage($file->getPathname());
+    }
+
+    public function getImageFromUserAsStreamedResponse(int $userId): StreamedResponse
+    {
+        $user = $this->userRepository->getUserById($userId);
+
+        $stream = $user->getImage();
+
+        return new StreamedResponse(function () use ($stream) {
+            fpassthru($stream);
+        }, 200, [
+            'Content-Type' => 'image/png',
+        ]);
     }
 }
