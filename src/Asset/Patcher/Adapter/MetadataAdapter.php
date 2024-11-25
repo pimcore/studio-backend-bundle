@@ -110,7 +110,7 @@ final class MetadataAdapter implements PatchAdapterInterface
             throw new InvalidArgumentException('Metadata name is required');
         }
 
-        if(in_array($metadata['name'], CustomMetadataServiceInterface::DEFAULT_METADATA, true)) {
+        if (in_array($metadata['name'], CustomMetadataServiceInterface::DEFAULT_METADATA, true)) {
             return $this->addDefaultMetadata($metadata);
         }
 
