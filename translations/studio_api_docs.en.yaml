@@ -598,3 +598,5 @@ user_default_key_bindings_description: |
 user_default_key_bindings_summary: Get default key bindings
 user_default_key_bindings_response: List of default key bindings
 user_upload_image_summary: Upload user image
+user_get_image_summary: Get user profile image
+user_get_image_success_response: User profile image

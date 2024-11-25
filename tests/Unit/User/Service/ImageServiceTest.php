@@ -22,14 +22,14 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\User\Service\ImageUploadService;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * @internal
  */
-final class ImageUploadServiceTest extends Unit
+final class ImageServiceTest extends Unit
 {
     public function testNonAdminCanNotEditAdminUser(): void
     {
@@ -51,7 +51,7 @@ final class ImageUploadServiceTest extends Unit
 
         $assetResolver = $this->makeEmpty(AssetResolverInterface::class);
 
-        $imageUploadService = new ImageUploadService($userRepositoryMock, $securityServiceMock, $assetResolver);
+        $imageUploadService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolver);
 
         $this->expectException(ForbiddenException::class);
         $this->expectExceptionMessage('You are not allowed to upload an image for an admin user');
@@ -85,7 +85,7 @@ final class ImageUploadServiceTest extends Unit
             'getFilename' => 'test.pdf',
         ]);
 
-        $imageUploadService = new ImageUploadService($userRepositoryMock, $securityServiceMock, $assetResolver);
+        $imageUploadService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolver);
 
         $this->expectException(ForbiddenException::class);
         $this->expectExceptionMessage('Only images are allowed');
@@ -123,8 +123,30 @@ final class ImageUploadServiceTest extends Unit
             'getPathname' => '/tmp/test.png',
         ]);
 
-        $imageUploadService = new ImageUploadService($userRepositoryMock, $securityServiceMock, $assetResolver);
+        $imageUploadService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolver);
 
         $imageUploadService->uploadUserImage($fileMock, 1);
+    }
+
+    public function testStreamResponseFromGetImage(): void
+    {
+        $userMock = $this->makeEmpty(UserInterface::class, [
+            'getImage' => fopen('php://memory', 'r'),
+        ]);
+
+        $userRepositoryMock = $this->makeEmpty(UserRepositoryInterface::class, [
+            'getUserById' => $userMock,
+        ]);
+
+        $securityServiceMock = $this->makeEmpty(SecurityServiceInterface::class);
+
+        $assetResolver = $this->makeEmpty(AssetResolverInterface::class);
+
+        $imageUploadService = new ImageService($userRepositoryMock, $securityServiceMock, $assetResolver);
+
+        $response = $imageUploadService->getImageFromUserAsStreamedResponse(1);
+
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('image/png', $response->headers->get('Content-Type'));
     }
 }

@@ -17,11 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * @internal
  */
-interface ImageUploadServiceInterface
+interface ImageServiceInterface
 {
     public function uploadUserImage(UploadedFile $file, int $userId): void;
+
+    public function getImageFromUserAsStreamedResponse(int $userId): StreamedResponse;
 }

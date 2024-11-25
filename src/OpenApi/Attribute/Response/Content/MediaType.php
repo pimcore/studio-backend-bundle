@@ -14,15 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Content;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content;
 
-use OpenApi\Attributes\MediaType;
+use OpenApi\Attributes\MediaType as OpenApiMediaType;
 use OpenApi\Attributes\Schema;
 
 /**
  * @internal
  */
-final class AssetMediaType extends MediaType
+final class MediaType extends OpenApiMediaType
 {
     public function __construct(string $mimeType = 'application/*')
     {
