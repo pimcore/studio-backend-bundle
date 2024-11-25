@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
@@ -109,6 +110,10 @@ final class MetadataAdapter implements PatchAdapterInterface
             throw new InvalidArgumentException('Metadata name is required');
         }
 
+        if(in_array($metadata['name'], CustomMetadataServiceInterface::DEFAULT_METADATA, true)) {
+            return $this->addDefaultMetadata($metadata);
+        }
+
         $predefined = $this->metadataRepository->getPredefinedMetadataByName($metadata['name']);
 
         if (!$predefined) {
@@ -134,5 +139,15 @@ final class MetadataAdapter implements PatchAdapterInterface
 
         // Return the key of the first match
         return !empty($match) ? current($match) : false;
+    }
+
+    private function addDefaultMetadata(array $metadata): array
+    {
+        return [
+            'name' => $metadata['name'],
+            'language' => $metadata['language'] ?? '',
+            'type' => 'input',
+            'data' => $metadata['data'] ?? null,
+        ];
     }
 }
