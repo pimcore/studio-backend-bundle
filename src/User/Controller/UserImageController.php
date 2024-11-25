@@ -51,7 +51,7 @@ final class UserImageController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|DatabaseException|ForbiddenException|ParseException
+     * @throws NotFoundException
      */
     #[Route('/user/image/{id}', name: 'pimcore_studio_api_get_user_image', methods: ['GET'])]
     #[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
@@ -68,7 +68,6 @@ final class UserImageController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::FORBIDDEN,
     ])]
     public function getUserImage(
         int $id,
