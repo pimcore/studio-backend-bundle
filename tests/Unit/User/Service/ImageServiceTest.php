@@ -127,7 +127,7 @@ final class ImageServiceTest extends Unit
 
         $imageUploadService->uploadUserImage($fileMock, 1);
     }
-    
+
     public function testStreamResponseFromGetImage(): void
     {
         $userMock = $this->makeEmpty(UserInterface::class, [
