@@ -14,6 +14,14 @@ It uses [zircote/swagger-php](https://github.com/zircote/swagger-php) attributes
 Swagger-ui is available at `/studio/api/docs` and the OpenApi Specification is available at `/studio/api/docs.json`.
 Every description is translatable and can be found in the `studio_api_docs.en.yaml` folder of the bundle.
 
+## Requirements
+This bundle requires the following dependencies:
+
+* Pimcore Core Framework 11
+* Generic Execution Engine as part of the Pimcore Core Framework
+* Generic Data Index
+* Mercure (https://mercure.rocks)
+
 ## Documentation Overview
 
 - [Installation](./doc/00_Installation.md)
