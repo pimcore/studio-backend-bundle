@@ -61,7 +61,7 @@ interface DataObjectServiceInterface
     /**
      * @throws SearchException|NotFoundException|UserNotFoundException
      */
-    public function getDataObject(int $id, bool $getWorkflowAvailable = true): DataObject;
+    public function getDataObject(int $id, bool $getDetailData = true): DataObject;
 
     /**
      * @throws SearchException|NotFoundException

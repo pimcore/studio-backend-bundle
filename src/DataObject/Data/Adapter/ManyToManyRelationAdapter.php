@@ -17,13 +17,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RelationData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Document;
+use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 
@@ -31,7 +35,7 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ManyToManyRelationAdapter implements SetterDataInterface
+final readonly class ManyToManyRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     use ElementProviderTrait;
 
@@ -55,6 +59,34 @@ final readonly class ManyToManyRelationAdapter implements SetterDataInterface
         return $this->getRelationElements($relationData);
     }
 
+    /**
+     * @return RelationData[]|null
+     */
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?array
+    {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        $data = [];
+        /** @var ElementInterface[] $value */
+        foreach ($value as $relation) {
+            $elementType = $this->getElementType($relation);
+            $data[] = new RelationData(
+                $relation->getId(),
+                $elementType,
+                $this->getSubType($relation),
+                $relation->getFullPath(),
+                $this->getPublished($relation)
+            );
+        }
+
+        return $data;
+    }
+
     private function getRelationElements(array $relationData): array
     {
         $relations = [];
@@ -69,5 +101,23 @@ final readonly class ManyToManyRelationAdapter implements SetterDataInterface
         }
 
         return $relations;
+    }
+
+    private function getSubType(ElementInterface $element): string
+    {
+        if ($element instanceof Concrete) {
+            return $element->getClassName();
+        }
+
+        return $element->getType();
+    }
+
+    private function getPublished(ElementInterface $element): ?bool
+    {
+        if ($element instanceof Concrete || $element instanceof Document) {
+            return $element->getPublished();
+        }
+
+        return null;
     }
 }

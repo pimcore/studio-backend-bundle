@@ -17,10 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -37,10 +40,11 @@ use function in_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class LocalizedFieldsAdapter implements SetterDataInterface
+final readonly class LocalizedFieldsAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
+        private DataServiceInterface $dataService,
         private SecurityServiceInterface $securityService,
     ) {
     }
@@ -86,6 +90,41 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface
         }
 
         return $localizedField;
+    }
+
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?array
+    {
+        if (!$value instanceof Localizedfield || !$fieldDefinition instanceof Localizedfields) {
+            return null;
+        }
+
+        $value->loadLazyData();
+        $originalValue = $fieldDefinition->normalize($value);
+        $languages = array_keys($originalValue);
+        $attributes = array_keys(reset($originalValue));
+        $result = [];
+        foreach ($attributes as $attribute) {
+            foreach ($languages as $language) {
+                try {
+                    $localizedValue = $value->getLocalizedValue($attribute, $language);
+                } catch (Exception $exception) {
+                    throw new DatabaseException(
+                        sprintf(
+                            'Error while normalizing localized field: %s',
+                            $exception->getMessage()
+                        )
+                    );
+                }
+                $fieldDefinition = $value->getFieldDefinition($attribute);
+                $localizedValue =  $this->dataService->getNormalizedValue($localizedValue, $fieldDefinition);
+                $result[$attribute][$language] = $localizedValue;
+            }
+        }
+
+        return $result;
     }
 
     private function getAllowedLanguages(

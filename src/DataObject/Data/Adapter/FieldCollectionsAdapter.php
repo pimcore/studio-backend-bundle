@@ -17,10 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\Concrete;
@@ -33,10 +36,12 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class FieldCollectionsAdapter implements SetterDataInterface
+final readonly class FieldCollectionsAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
+        private DataServiceInterface $dataService,
+        private DefinitionResolverInterface $fieldCollectionDefinition,
         private Factory $modelFactory
     ) {
     }
@@ -73,6 +78,41 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface
         }
 
         return new Fieldcollection($values, $fieldDefinition->getName());
+    }
+
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?array
+    {
+        if (!$value instanceof Fieldcollection) {
+            return null;
+        }
+
+        $resultItems = [];
+        $items = $value->getItems();
+
+        foreach ($items as $item) {
+            $type = $item->getType();
+            $fieldCollectionDefinition = $this->fieldCollectionDefinition->getByKey($item->getType());
+            if (!$fieldCollectionDefinition) {
+                continue;
+            }
+            $resultItem = ['type' => $type];
+
+            foreach ($fieldCollectionDefinition->getFieldDefinitions() as $collectionFieldDefinition) {
+                $getter = 'get' . ucfirst($collectionFieldDefinition->getName());
+                $value = $item->$getter();
+                $resultItem[$collectionFieldDefinition->getName()] = $this->dataService->getNormalizedValue(
+                    $value,
+                    $collectionFieldDefinition,
+                );
+            }
+
+            $resultItems[] = $resultItem;
+        }
+
+        return $resultItems;
     }
 
     /**

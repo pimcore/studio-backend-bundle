@@ -18,10 +18,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\Concrete;
@@ -35,10 +37,11 @@ use function array_key_exists;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ObjectBricksAdapter implements SetterDataInterface
+final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
+        private DataServiceInterface $dataService,
         private DefinitionResolverInterface $definitionResolver
     ) {
     }
@@ -64,6 +67,43 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface
         }
 
         return $container;
+    }
+
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?array
+    {
+        if (!$value instanceof Objectbrick) {
+            return null;
+        }
+
+        $resultItems = [];
+        $items = $value->getObjectVars();
+        foreach ($items as $item) {
+            if (!$item instanceof AbstractData) {
+                continue;
+            }
+
+            $type = $item->getType();
+            $resultItems[$type] = [];
+            $definition = $this->definitionResolver->getByKey($type);
+            if ($definition === null) {
+                continue;
+            }
+
+            $resultItems[$type] = [];
+            foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
+                $getter = 'get' . ucfirst($brickFieldDefinition->getName());
+                $value = $item->$getter();
+                $resultItems[$brickFieldDefinition->getName()] = $this->dataService->getNormalizedValue(
+                    $value,
+                    $brickFieldDefinition,
+                );
+            }
+        }
+
+        return $resultItems;
     }
 
     /**

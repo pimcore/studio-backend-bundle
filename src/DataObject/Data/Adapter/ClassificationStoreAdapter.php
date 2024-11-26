@@ -17,28 +17,43 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\SearchIndexAdapter\MappingProperty;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\DefinitionCacheResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
 use Pimcore\Model\DataObject\Classificationstore;
+use Pimcore\Model\DataObject\Classificationstore as ClassificationstoreModel;
+use Pimcore\Model\DataObject\Classificationstore\DefinitionCache;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
-use function is_array;
 
 /**
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ClassificationStoreAdapter implements SetterDataInterface
+final readonly class ClassificationStoreAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
+        private DefinitionCacheResolverInterface $definitionCacheResolver,
         private DataAdapterServiceInterface $dataAdapterService,
-        private ServiceResolverInterface $serviceResolver
+        private DataServiceInterface $dataService,
+        private GroupConfigResolverInterface $groupConfigResolver,
+        private ServiceResolverInterface $serviceResolver,
+        private ToolResolverInterface $toolResolver
     ) {
     }
 
@@ -68,6 +83,37 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface
         return $container;
     }
 
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?array
+    {
+        if (!$value instanceof ClassificationstoreModel || 
+            !$fieldDefinition instanceof ClassificationstoreDefinition
+        ) {
+            return null;
+        }
+
+        $validLanguages = $this->getValidLanguages($fieldDefinition);
+        $resultItems = [];
+
+        foreach ($this->getActiveGroups($value) as $groupId => $groupConfig) {
+            $resultItems[$groupConfig->getName()] = [];
+            $keys = $this->getClassificationStoreKeysFromGroup($groupConfig);
+            foreach ($validLanguages as $validLanguage) {
+                foreach ($keys as $key) {
+                    $normalizedValue = $this->getNormalizedValue($value, $groupId, $key, $validLanguage);
+
+                    if ($normalizedValue !== null) {
+                        $resultItems[$groupConfig->getName()][$validLanguage][$key->getName()] = $normalizedValue;
+                    }
+                }
+            }
+        }
+
+        return $resultItems;
+    }
+
     /**
      * @throws Exception
      */
@@ -89,13 +135,10 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface
     {
         $activeGroups = $data['activeGroups'];
         $groupCollectionMapping = $data['groupCollectionMapping'];
-        $correctedMapping = [];
 
-        foreach ($groupCollectionMapping as $groupId => $collectionId) {
-            if (isset($activeGroups[$groupId]) && $activeGroups[$groupId]) {
-                $correctedMapping[$groupId] = $collectionId;
-            }
-        }
+        $correctedMapping = array_filter($groupCollectionMapping, static function ($groupId) use ($activeGroups) {
+            return isset($activeGroups[$groupId]) && $activeGroups[$groupId];
+        }, ARRAY_FILTER_USE_KEY);
 
         $container->setGroupCollectionMappings($correctedMapping);
     }
@@ -162,5 +205,76 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface
                 $container->removeGroupData($existingGroupId);
             }
         }
+    }
+
+    private function getValidLanguages(ClassificationstoreDefinition $classificationStore): array
+    {
+        $languages = [MappingProperty::NOT_LOCALIZED_KEY];
+        if ($classificationStore->isLocalized()) {
+            $languages = array_merge($languages, $this->toolResolver->getValidLanguages());
+        }
+
+        return $languages;
+    }
+
+    /**
+     * @return GroupConfig[]
+     */
+    private function getActiveGroups(ClassificationstoreModel $value): array
+    {
+        $groups = [];
+        foreach ($value->getActiveGroups() as $groupId => $active) {
+            if ($active) {
+                $groupConfig = $this->groupConfigResolver->getById($groupId);
+                if ($groupConfig) {
+                    $groups[$groupId] = $groupConfig;
+                }
+            }
+        }
+
+        return $groups;
+    }
+
+    /**
+     * @return KeyGroupRelation[]
+     */
+    private function getClassificationStoreKeysFromGroup(GroupConfig $groupConfig): array
+    {
+        $listing = new KeyGroupRelationListing();
+        $listing->addConditionParam('groupId = ?', $groupConfig->getId());
+
+        return $listing->getList();
+    }
+
+
+    private function getNormalizedValue(
+        ClassificationstoreModel $classificationstore,
+        int $groupId,
+        KeyGroupRelation $key,
+        string $language
+    ): mixed {
+        try {
+            $value = $classificationstore->getLocalizedKeyValue(
+                $groupId,
+                $key->getKeyId(),
+                $language,
+                true,
+                true
+            );
+        } catch (Exception $exception) {
+            throw new DatabaseException($exception->getMessage());
+        }
+
+        $keyConfig = $this->definitionCacheResolver->get($key->getKeyId());
+        if ($keyConfig === null) {
+            return null;
+        }
+
+        $fieldDefinition = $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
+        if ($fieldDefinition === null) {
+            return null;
+        }
+
+        return $this->dataService->getNormalizedValue($value, $fieldDefinition);
     }
 }
