@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
@@ -41,6 +40,7 @@ final readonly class DataService implements DataServiceInterface
     public function getObjectData(Concrete $dataObject): array
     {
         $data = [];
+
         try {
             $fieldDefinitions = $dataObject->getClass()->getFieldDefinitions();
         } catch (Exception) {
@@ -76,12 +76,11 @@ final readonly class DataService implements DataServiceInterface
             (bool)$class->getLinkGeneratorReference()
         );
     }
-    
+
     public function getNormalizedValue(
         mixed $value,
         Data $fieldDefinition
-    ): mixed
-    {
+    ): mixed {
         if (!$fieldDefinition instanceof NormalizerInterface) {
             return null;
         }

@@ -65,8 +65,7 @@ final readonly class ManyToManyRelationAdapter implements SetterDataInterface, D
     public function normalize(
         mixed $value,
         Data $fieldDefinition
-    ): ?array
-    {
+    ): ?array {
         if (!is_array($value)) {
             return null;
         }

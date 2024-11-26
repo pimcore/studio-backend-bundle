@@ -83,8 +83,7 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
     public function normalize(
         mixed $value,
         Data $fieldDefinition
-    ): ?array
-    {
+    ): ?array {
         if (!$value instanceof Fieldcollection) {
             return null;
         }

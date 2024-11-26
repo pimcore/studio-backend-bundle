@@ -25,10 +25,13 @@ trait ClassDataTrait
 {
     #[Property(description: 'Inheritance allowed', type: 'bool', example: false)]
     private ?bool $allowInheritance = null;
+
     #[Property(description: 'Variants allowed', type: 'bool', example: false)]
     private ?bool $allowVariants = null;
+
     #[Property(description: 'Show variants', type: 'bool', example: false)]
     private ?bool $showVariants = null;
+
     #[Property(description: 'Has preview', type: 'bool', example: false)]
     private ?bool $hasPreview = null;
 

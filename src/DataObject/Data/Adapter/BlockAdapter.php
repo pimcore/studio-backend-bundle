@@ -29,6 +29,8 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function get_class;
+use function is_array;
 
 /**
  * @internal
@@ -60,11 +62,11 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
 
         return $this->processBlockData($element, $fieldDefinition, $blockData, $contextData);
     }
+
     public function normalize(
         mixed $value,
         Data $fieldDefinition
-    ): ?array
-    {
+    ): ?array {
         if (!is_array($value)) {
             return null;
         }

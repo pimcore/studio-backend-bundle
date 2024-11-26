@@ -35,6 +35,7 @@ use Pimcore\Model\DataObject\Service;
 use Pimcore\Model\User;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -95,8 +96,7 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
     public function normalize(
         mixed $value,
         Data $fieldDefinition
-    ): ?array
-    {
+    ): ?array {
         if (!$value instanceof Localizedfield || !$fieldDefinition instanceof Localizedfields) {
             return null;
         }

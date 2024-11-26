@@ -33,13 +33,13 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
 use Pimcore\Model\DataObject\Classificationstore;
 use Pimcore\Model\DataObject\Classificationstore as ClassificationstoreModel;
-use Pimcore\Model\DataObject\Classificationstore\DefinitionCache;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
+use function is_array;
 
 /**
  * @internal
@@ -86,9 +86,8 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface, 
     public function normalize(
         mixed $value,
         Data $fieldDefinition
-    ): ?array
-    {
-        if (!$value instanceof ClassificationstoreModel || 
+    ): ?array {
+        if (!$value instanceof ClassificationstoreModel ||
             !$fieldDefinition instanceof ClassificationstoreDefinition
         ) {
             return null;
@@ -245,7 +244,6 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface, 
 
         return $listing->getList();
     }
-
 
     private function getNormalizedValue(
         ClassificationstoreModel $classificationstore,

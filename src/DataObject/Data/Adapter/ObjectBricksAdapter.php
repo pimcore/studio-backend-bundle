@@ -72,8 +72,7 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNor
     public function normalize(
         mixed $value,
         Data $fieldDefinition
-    ): ?array
-    {
+    ): ?array {
         if (!$value instanceof Objectbrick) {
             return null;
         }
