@@ -38,6 +38,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_authorization_description'
 )]
 #[Tag(
+    name: Tags::ClassDefinition->value,
+    description: 'tag_class_description'
+)]
+#[Tag(
     name: Tags::DataObjects->value,
     description: 'tag_dataobjects_description'
 )]
@@ -119,6 +123,7 @@ enum Tags: string
     case AssetGrid = 'Asset Grid';
     case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';
+    case ClassDefinition = 'Class Definition';
     case DataObjects = 'Data Objects';
     case DataObjectsGrid = 'Data Object Grid';
     case Dependencies = 'Dependencies';
