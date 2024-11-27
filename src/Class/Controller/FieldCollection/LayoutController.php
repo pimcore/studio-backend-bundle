@@ -61,7 +61,7 @@ final class LayoutController extends AbstractApiController
         summary: 'class_field_collection_object_layout_summary',
         tags: [Tags::ClassDefinition->value],
     )]
-    #[IdParameter(name: 'objectId', required: true, )]
+    #[IdParameter(name: 'objectId', required: true)]
     #[SuccessResponse(
         description: 'class_field_collection_object_layout_success_response',
         content: new CollectionJson(new GenericCollection(LayoutDefinition::class))
