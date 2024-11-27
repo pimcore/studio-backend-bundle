@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query;
 
 use Attribute;
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\QueryParameter as OpenApiQueryParameter;
 use OpenApi\Attributes\Schema;
 
