@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Workflow\MappedParameter\WorkflowDetailsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -33,5 +34,7 @@ interface WorkflowDetailsServiceInterface
         UserInterface $user
     ): array;
 
-    public function hasElementWorkflows(int $elementId, string $elementType, UserInterface $user): bool;
+    public function hasElementWorkflowsById(int $elementId, string $elementType, UserInterface $user): bool;
+
+    public function hasElementWorkflows(ElementInterface $element): bool;
 }

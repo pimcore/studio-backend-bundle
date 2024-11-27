@@ -56,7 +56,7 @@ final readonly class DocumentService implements DocumentServiceInterface
         );
 
         if ($getWorkflowAvailable) {
-            $document->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows(
+            $document->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflowsById(
                 $id,
                 ElementTypes::TYPE_DOCUMENT,
                 $user

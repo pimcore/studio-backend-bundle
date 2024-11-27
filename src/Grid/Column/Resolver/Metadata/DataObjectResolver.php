@@ -50,7 +50,8 @@ final class DataObjectResolver implements ColumnResolverInterface
 
         try {
             $relatedObject = $this->dataObjectService->getDataObject(
-                reset($object['object'])
+                reset($object['object']),
+                false
             );
         } catch (NotFoundException) {
             return $this->getColumnData($column, null);

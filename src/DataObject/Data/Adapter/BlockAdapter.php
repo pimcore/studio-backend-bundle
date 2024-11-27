@@ -17,24 +17,30 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidDataTypeException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function get_class;
+use function is_array;
 
 /**
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class BlockAdapter implements SetterDataInterface
+final readonly class BlockAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
+        private DataServiceInterface $dataService
     ) {
     }
 
@@ -55,6 +61,37 @@ final readonly class BlockAdapter implements SetterDataInterface
         $blockData = $data[$key];
 
         return $this->processBlockData($element, $fieldDefinition, $blockData, $contextData);
+    }
+
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?array {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        $resultItems = [];
+        if (!$fieldDefinition instanceof Block) {
+            throw new InvalidDataTypeException(Block::class, get_class($fieldDefinition));
+        }
+        $fieldDefinitions = $fieldDefinition->getFieldDefinitions();
+        foreach ($value as $block) {
+            $resultItem = [];
+
+            /** @var BlockElement $fieldValue */
+            foreach ($block as $key => $fieldValue) {
+                $blockDefinition = $fieldDefinitions[$key];
+                $resultItems[$key] = $this->dataService->getNormalizedValue(
+                    $fieldValue->getData(),
+                    $blockDefinition,
+                );
+            }
+
+            $resultItems[] = $resultItem;
+        }
+
+        return $resultItems;
     }
 
     /**

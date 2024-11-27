@@ -75,6 +75,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
 
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
+        private DataServiceInterface $dataService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private FactoryInterface $factory,
@@ -147,7 +148,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     /**
      * @throws SearchException|NotFoundException|UserNotFoundException
      */
-    public function getDataObject(int $id, bool $getWorkflowAvailable = true): DataObject
+    public function getDataObject(int $id, bool $getDetailData = true): DataObject
     {
         $user = $this->securityService->getCurrentUser();
         $dataObject = $this->dataObjectSearchService->getDataObjectById(
@@ -155,13 +156,10 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             $user
         );
 
-        if ($getWorkflowAvailable) {
-            $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows(
-                $id,
-                ElementTypes::TYPE_OBJECT,
-                $user
-            ));
+        if ($getDetailData) {
+            $this->setObjectDetailData($dataObject);
         }
+
         $this->dispatchDataObjectEvent($dataObject);
 
         return $dataObject;
@@ -342,6 +340,28 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         }
 
         $dataObjectQuery->orderByPath(strtolower($parent->getChildrenSortOrder()));
+    }
+
+    /**
+     * @throws InvalidElementTypeException|NotFoundException
+     */
+    private function setObjectDetailData(DataObjectFolder|DataObject $dataObject): void
+    {
+        $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObject->getId());
+        $element = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
+
+        $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
+
+        if (!$element instanceof Concrete) {
+            return;
+        }
+        $dataObject->setObjectData($this->dataService->getObjectData($element));
+
+        $classData = $this->dataService->getObjectClassData($element);
+        $dataObject->setAllowInheritance($classData->getAllowInheritance());
+        $dataObject->setAllowVariants($classData->getAllowVariants());
+        $dataObject->setShowVariants($classData->getShowVariants());
+        $dataObject->setHasPreview($classData->getHasPreview());
     }
 
     private function dispatchDataObjectEvent(mixed $dataObject): void

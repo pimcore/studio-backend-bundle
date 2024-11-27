@@ -78,10 +78,15 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         return $details;
     }
 
-    public function hasElementWorkflows(int $elementId, string $elementType, UserInterface $user): bool
+    public function hasElementWorkflowsById(int $elementId, string $elementType, UserInterface $user): bool
     {
-        $element = $this->getUserElement($elementId, $elementType, $user);
+        return $this->hasElementWorkflows(
+            $this->getUserElement($elementId, $elementType, $user)
+        );
+    }
 
+    public function hasElementWorkflows(ElementInterface $element): bool
+    {
         return count($this->workflowManager->getAllWorkflowsForSubject($element)) > 0;
     }
 
