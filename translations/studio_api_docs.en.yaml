@@ -416,6 +416,7 @@ tag_assign_to_element_success_response: Successfully assigned tag to element
 tag_assign_to_element_summary: Assign a tag to an element
 tag_authorization_description: Session-based login via username and password or logout
   and invalidate the session
+tag_class_description: Class definition operations
 tag_batch_operation_to_elements_by_type_and_id_description: |
   Batch assign/replace multiple tags of the given parent based on the <strong>{elementId}</strong> and <strong>{elementType}</strong> to the children. <br>
   Operation parameter <strong>{operation}</strong> must be one of the <strong>assign</strong or <strong>replace</strong>.
@@ -600,3 +601,7 @@ user_default_key_bindings_response: List of default key bindings
 user_upload_image_summary: Upload user image
 user_get_image_summary: Get user profile image
 user_get_image_success_response: User profile image
+class_field_collection_object_layout_description: |
+  Get all layouts from the field collection for an given object
+class_field_collection_object_layout_summary: Get all layouts from the field collection for an given object
+class_field_collection_object_layout_success_response: List of layouts

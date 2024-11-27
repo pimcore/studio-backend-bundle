@@ -1,0 +1,25 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Class\Controller\:
+    resource: '../src/Class/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionService
+
+
+  #
+  # Hydrators
+  #
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydrator
