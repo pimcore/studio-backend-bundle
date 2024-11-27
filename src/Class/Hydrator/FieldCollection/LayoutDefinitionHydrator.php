@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\LayoutDefinition;
 use Pimcore\Model\DataObject\Fieldcollection\Definition as FieldCollectionDefinition;
