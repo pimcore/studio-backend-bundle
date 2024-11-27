@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\LayoutDefinition;
@@ -28,6 +27,7 @@ final class LayoutDefinitionHydrator implements LayoutDefinitionHydratorInterfac
     public function hydrate(FieldCollectionDefinition $data): LayoutDefinition
     {
         $layout = $data->getLayoutDefinitions();
+
         return new LayoutDefinition(
             $data->getKey(),
             $layout->getDatatype(),
@@ -43,5 +43,4 @@ final class LayoutDefinitionHydrator implements LayoutDefinitionHydratorInterfac
             $layout->getChildren(),
         );
     }
-
 }

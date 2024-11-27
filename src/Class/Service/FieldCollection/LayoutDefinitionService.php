@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection;
 
 use Exception;
@@ -40,8 +39,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         private readonly DefinitionResolverInterface $definitionResolver,
         private readonly LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
         private readonly EventDispatcherInterface $eventDispatcher,
-    )
-    {
+    ) {
     }
 
     private array $fieldCollectionTypes = [];
