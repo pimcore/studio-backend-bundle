@@ -43,7 +43,7 @@ final class NoteSortByParameter extends QueryParameter
                     'description',
                     'locked',
                 ],
-                example: null,
+                example: 'id',
             ),
         );
     }

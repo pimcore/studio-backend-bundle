@@ -36,7 +36,6 @@ trait AdditionalAttributesTrait
                 new Schema(type: 'number'),
                 new Schema(type: 'boolean'),
                 new Schema(type: 'object'),
-                new Schema(type: 'array', items: new Items()),
             ]
         )
     )]

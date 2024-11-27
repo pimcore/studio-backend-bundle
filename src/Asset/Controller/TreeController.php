@@ -76,7 +76,7 @@ final class TreeController extends AbstractApiController
     #[PageSizeParameter]
     #[ParentIdParameter(
         description: 'Filter assets by parent id.',
-        example: null,
+        example: 83,
     )]
     #[IdSearchTermParameter]
     #[ExcludeFoldersParameter]

@@ -29,7 +29,12 @@ final readonly class EmailDocumentParameters
     public function __construct(
         #[Property(description: 'parameter key', type: 'string', example: 'some_parameter_key')]
         private string $key,
-        #[Property(description: 'parameter value', type: 'value', example: 'some_parameter_value')]
+        #[Property(description: 'parameter value', example: 'some_parameter_value', anyOf: [
+            new Schema(type: 'string'),
+            new Schema(type: 'number'),
+            new Schema(type: 'boolean'),
+            new Schema(type: 'object'),
+        ])]
         private mixed $value,
     ) {
     }

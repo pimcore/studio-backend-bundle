@@ -82,9 +82,9 @@ final class CustomDownloadController extends AbstractApiController
     #[MimeTypeParameter]
     #[ResizeModeParameter]
     #[ImageConfigParameter('width', 140)]
-    #[ImageConfigParameter('height')]
-    #[ImageConfigParameter('quality')]
-    #[ImageConfigParameter('dpi')]
+    #[ImageConfigParameter('height', 140)]
+    #[ImageConfigParameter('quality', 80)]
+    #[ImageConfigParameter('dpi', 300)]
     #[SuccessResponse(
         description: 'asset_image_download_custom_success_response',
         content: [new MediaType('image/jpeg'), new MediaType('image/png')],

@@ -39,7 +39,7 @@ final readonly class SendEmailParameters
         private string $subject,
         #[Property(
             description: 'email content type',
-            type: 'enum',
+            type: 'string',
             enum: [
                 EmailContentType::DOCUMENT->value,
                 EmailContentType::HTML->value,

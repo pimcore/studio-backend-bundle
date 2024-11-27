@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query;
 
 use Attribute;
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\QueryParameter as OpenApiQueryParameter;
+use OpenApi\Attributes\Schema;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class FieldFilterParameter extends OpenApiQueryParameter
@@ -30,7 +32,7 @@ final class FieldFilterParameter extends OpenApiQueryParameter
             [{"operator":"like","value":"John","field":"name","type":"string"}]',
             in: 'query',
             required: false,
-            example: ''
+            schema: new Schema(type: 'string', example: '[{"operator":"like","value":"John","field":"name"}]'),
         );
     }
 }

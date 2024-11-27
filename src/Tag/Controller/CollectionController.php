@@ -68,12 +68,11 @@ final class CollectionController extends AbstractApiController
     )]
     #[PageParameter]
     #[PageSizeParameter]
-    #[ElementTypeParameter(false, null)]
+    #[ElementTypeParameter(false)]
     #[FilterParameter]
     #[ParentIdParameter(
         description: 'Filter tags by parent id.',
-        minimum: 0,
-        example: null
+        minimum: 0
     )]
     #[SuccessResponse(
         description: 'tag_get_collection_success_response',

@@ -53,7 +53,14 @@ final class Note implements AdditionalAttributesInterface
         #[Property(
             description: 'Data of note',
             type: 'array',
-            items: new Items(),
+            items: new Items(
+                anyOf: [
+                    new Schema(type: 'string'),
+                    new Schema(type: 'number'),
+                    new Schema(type: 'boolean'),
+                    new Schema(type: 'object'),
+                ]
+            ),
             example: 'Can be pretty much anything',
         )]
         private readonly array $data,

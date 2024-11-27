@@ -37,7 +37,7 @@ final class ClassNameParameter extends QueryParameter
             schema: new Schema(
                 type: 'string',
                 enum:  array_map(static fn (ClassDefinition $def) => $def->getName(), $classDefinitions->load()),
-                example: null
+                example: 'string'
             ),
         );
     }
