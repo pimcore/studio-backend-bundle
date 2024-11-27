@@ -112,7 +112,7 @@ final readonly class DataService implements DataServiceInterface
 
         return null;
     }
-fix:
+    
     private function getDataAdapter(string $fieldType): ?SetterDataInterface
     {
         try {
