@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\ClassData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
@@ -40,4 +41,12 @@ interface DataServiceInterface
         mixed $value,
         Data $fieldDefinition
     ): mixed;
+
+    public function getAdapterSetterValue(
+        Concrete $element,
+        Data $fieldDefinition,
+        string $key,
+        array $data,
+        ?FieldContextData $contextData = null
+    ): ?array;
 }

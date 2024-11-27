@@ -54,6 +54,9 @@ final readonly class DataAdapterService implements DataAdapterServiceInterface
         );
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getDataAdapter(string $fieldDefinitionType): SetterDataInterface
     {
         return $this->dataAdapterLoader->loadAdapter(

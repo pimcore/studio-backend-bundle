@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -38,7 +38,7 @@ final readonly class UpdateService implements UpdateServiceInterface
 
     public function __construct(
         private AdapterLoaderInterface $adapterLoader,
-        private DataAdapterServiceInterface $dataAdapterService,
+        private DataServiceInterface $dataService,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private SynchronousProcessingServiceInterface $synchronousProcessingService
@@ -83,9 +83,7 @@ final readonly class UpdateService implements UpdateServiceInterface
                 }
 
                 $data = array_key_exists($key, $editableData)
-                    ? $this->dataAdapterService
-                        ->getDataAdapter($fieldDefinition->getFieldType())
-                        ->getDataForSetter($element, $fieldDefinition, $key, $editableData)
+                    ? $this->dataService->getAdapterSetterValue($element, $fieldDefinition, $key, $editableData)
                     : null;
 
                 $element->setValue($key, $data);

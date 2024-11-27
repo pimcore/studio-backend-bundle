@@ -26,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -49,7 +48,6 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface, 
 {
     public function __construct(
         private DefinitionCacheResolverInterface $definitionCacheResolver,
-        private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
         private GroupConfigResolverInterface $groupConfigResolver,
         private ServiceResolverInterface $serviceResolver,
@@ -182,8 +180,7 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface, 
                 continue;
             }
 
-            $adapter = $this->dataAdapterService->getDataAdapter($fieldDefinition->getFieldType());
-            $setterData = $adapter->getDataForSetter(
+            $setterData = $this->dataService->getAdapterSetterValue(
                 $element,
                 $fieldDefinition,
                 $fieldDefinition->getName(),

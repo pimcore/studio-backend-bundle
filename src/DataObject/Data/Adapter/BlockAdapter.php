@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidDataTypeException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -39,7 +38,6 @@ use function is_array;
 final readonly class BlockAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
-        private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService
     ) {
     }
@@ -173,15 +171,16 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         $elementType = $fieldDefinition->getFieldtype();
         $elementData = $blockElement[$elementName] ?? null;
 
-        $adapter = $this->dataAdapterService->getDataAdapter($elementType);
-        $blockData = $adapter->getDataForSetter(
-            $element,
-            $fieldDefinition,
+        return new BlockElement(
             $elementName,
-            [$elementName => $elementData],
-            $fieldContextData
+            $elementType,
+            $this->dataService->getAdapterSetterValue(
+                $element,
+                $fieldDefinition,
+                $elementName,
+                [$elementName => $elementData],
+                $fieldContextData
+            )
         );
-
-        return new BlockElement($elementName, $elementType, $blockData);
     }
 }

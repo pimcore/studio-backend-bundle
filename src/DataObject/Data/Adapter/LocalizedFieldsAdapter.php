@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -44,7 +43,6 @@ use function sprintf;
 final readonly class LocalizedFieldsAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
-        private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
         private SecurityServiceInterface $securityService,
     ) {
@@ -75,10 +73,9 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
                     continue;
                 }
 
-                $adapter = $this->dataAdapterService->getDataAdapter($childFieldDefinition->getFieldType());
                 $localizedField->setLocalizedValue(
                     $name,
-                    $adapter->getDataForSetter(
+                    $this->dataService->getAdapterSetterValue(
                         $element,
                         $childFieldDefinition,
                         $name,

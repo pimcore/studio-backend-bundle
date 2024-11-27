@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
@@ -40,7 +39,6 @@ use function array_key_exists;
 final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
-        private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
         private DefinitionResolverInterface $definitionResolver
     ) {
@@ -182,8 +180,7 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNor
                 continue;
             }
 
-            $adapter = $this->dataAdapterService->getDataAdapter($fd->getFieldType());
-            $collectionData[$fd->getName()] = $adapter->getDataForSetter(
+            $collectionData[$fd->getName()] = $this->dataService->getAdapterSetterValue(
                 $element,
                 $fd,
                 $fieldName,

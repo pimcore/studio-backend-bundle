@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
@@ -39,7 +38,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class FieldCollectionsAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
-        private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
         private DefinitionResolverInterface $fieldCollectionDefinition,
         private Factory $modelFactory
@@ -150,8 +148,7 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
                 continue;
             }
 
-            $adapter = $this->dataAdapterService->getDataAdapter($fd->getFieldType());
-            $collectionData[$elementName] = $adapter->getDataForSetter(
+            $collectionData[$elementName] = $this->dataService->getAdapterSetterValue(
                 $element,
                 $fd,
                 $elementName,
