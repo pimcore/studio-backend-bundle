@@ -21,14 +21,12 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Request\ConvertRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertAllParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertedQuantityValues;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\QuantityValueServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\DataJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -79,7 +77,7 @@ final class ConvertAllController extends AbstractApiController
     #[ConvertRequestBody(ConvertAllParameters::class)]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function get(#[MapRequestPayload] ConvertAllParameters $parameters): JsonResponse
     {

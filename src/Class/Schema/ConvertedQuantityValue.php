@@ -24,7 +24,7 @@ use OpenApi\Attributes\Schema;
     required: [
         'originalValue',
         'fromUnitId',
-        'convertedValues'
+        'convertedValues',
     ],
     type: 'object'
 )]

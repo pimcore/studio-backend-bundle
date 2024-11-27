@@ -32,6 +32,7 @@ use Pimcore\Model\DataObject\Data\QuantityValue;
 use Pimcore\Model\DataObject\QuantityValue\Unit;
 use Pimcore\Model\DataObject\QuantityValue\UnitConversionService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -80,7 +81,7 @@ final readonly class QuantityValueService implements QuantityValueServiceInterfa
 
     /**
      * @throws DatabaseException|NotFoundException
-    */
+     */
     public function convertUnit(ConvertParameters $parameters): float|int
     {
         return $this->getConvertedValue(
@@ -140,7 +141,7 @@ final readonly class QuantityValueService implements QuantityValueServiceInterfa
     /**
      * @throws DatabaseException
      */
-    private function getConvertedValue(Unit $fromUnit, Unit $toUnit, float|int $value ): float|int
+    private function getConvertedValue(Unit $fromUnit, Unit $toUnit, float|int $value): float|int
     {
         try {
             $convertedValue = $this->unitConversionService->convert(
@@ -155,5 +156,4 @@ final readonly class QuantityValueService implements QuantityValueServiceInterfa
 
         return $convertedValue->getValue();
     }
-
 }

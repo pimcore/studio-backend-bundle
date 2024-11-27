@@ -27,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: [
         'originalValue',
         'fromUnitId',
-        'convertedValues'
+        'convertedValues',
     ],
     type: 'object'
 )]

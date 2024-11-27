@@ -74,7 +74,7 @@ final class ConvertController extends AbstractApiController
     #[ConvertRequestBody]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function get(#[MapRequestPayload] ConvertParameters $parameters): JsonResponse
     {

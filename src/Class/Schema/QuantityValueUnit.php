@@ -61,7 +61,7 @@ class QuantityValueUnit implements AdditionalAttributesInterface
         private readonly ?string $converter,
     ) {
     }
-    
+
     public function getId(): ?string
     {
         return $this->id;
