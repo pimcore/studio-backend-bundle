@@ -49,7 +49,11 @@ final class LayoutController extends AbstractApiController
     /**
      * @throws Exception|NotFoundException
      */
-    #[Route('/class/field-collection/{objectId}/object/layout', name: 'pimcore_studio_api_class_field_collection_object_layout', methods: ['GET'])]
+    #[Route(
+        '/class/field-collection/{objectId}/object/layout',
+        name: 'pimcore_studio_api_class_field_collection_object_layout',
+        methods: ['GET']
+    )]
     #[Get(
         path: self::PREFIX . '/class/field-collection/{objectId}/object/layout',
         operationId: 'class_field_collection_object_layout',
