@@ -20,6 +20,7 @@ use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -89,13 +90,7 @@ final readonly class DataService implements DataServiceInterface
             return null;
         }
 
-        try {
-            $adapter = $this->dataAdapterService->getDataAdapter($fieldDefinition->getFieldType());
-        } catch (InvalidArgumentException) {
-            // ToDo: Consider removing catch and throwing an exception when field types from bundles are implemented
-            return null;
-        }
-
+        $adapter = $this->getDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof DataNormalizerInterface) {
             return $adapter->normalize($value, $fieldDefinition);
         }
@@ -110,13 +105,21 @@ final readonly class DataService implements DataServiceInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?array {
+        $adapter = $this->getDataAdapter($fieldDefinition->getFieldType());
+        if ($adapter instanceof SetterDataInterface) {
+            return $adapter->getDataForSetter($element, $fieldDefinition, $key, $data, $contextData);
+        }
+
+        return null;
+    }
+fix:
+    private function getDataAdapter(string $fieldType): ?SetterDataInterface
+    {
         try {
-            $adapter = $this->dataAdapterService->getDataAdapter($fieldDefinition->getFieldType());
+            return $this->dataAdapterService->getDataAdapter($fieldType);
         } catch (InvalidArgumentException) {
             // ToDo: Consider removing catch and throwing an exception when field types from bundles are implemented
             return null;
         }
-
-        return $adapter->getDataForSetter($element, $fieldDefinition, $key, $data, $contextData);
     }
 }
