@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ClassDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
@@ -38,12 +39,18 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'customAttributes',
         'permissions',
         'index',
+        'objectData',
+        'allowInheritance',
+        'allowVariants',
+        'showVariants',
+        'hasPreview',
     ],
     type: 'object'
 )]
 class DataObject extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
+    use ClassDataTrait;
     use CustomAttributesTrait;
     use WorkflowAvailableTrait;
 
@@ -75,7 +82,9 @@ class DataObject extends Element implements AdditionalAttributesInterface
         ?string $locked,
         bool $isLocked,
         ?int $creationDate,
-        ?int $modificationDate
+        ?int $modificationDate,
+        #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
+        private array $objectData = [],
     ) {
         parent::__construct(
             $id,
@@ -134,6 +143,16 @@ class DataObject extends Element implements AdditionalAttributesInterface
     public function getIndex(): int
     {
         return $this->index;
+    }
+
+    public function setObjectData(array $objectData): void
+    {
+        $this->objectData = $objectData;
+    }
+
+    public function getObjectData(): array
+    {
+        return $this->objectData;
     }
 
     public function getFilename(): string

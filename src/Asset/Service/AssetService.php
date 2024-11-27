@@ -110,7 +110,7 @@ final readonly class AssetService implements AssetServiceInterface
         $user = $this->securityService->getCurrentUser();
         $asset = $this->assetSearchService->getAssetById($id, $user);
         if ($getWorkflowAvailable) {
-            $asset->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows(
+            $asset->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflowsById(
                 $id,
                 ElementTypes::TYPE_ASSET,
                 $user
