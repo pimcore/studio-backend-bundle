@@ -605,3 +605,16 @@ class_field_collection_object_layout_description: |
   Get all layouts from the field collection for an given object
 class_field_collection_object_layout_summary: Get all layouts from the field collection for an given object
 class_field_collection_object_layout_success_response: List of layouts
+class_quantity_value_unit_list_description: |
+  List of available quantity value units
+class_quantity_value_unit_list_summary: List of available quantity value units
+class_quantity_value_unit_list_success_response: List of quantity value units
+class_quantity_value_unit_convert_description: |
+  Convert quantity <strong>{value}</strong> from one unit to another based on the given <strong>{fromUnitId}</strong> and <strong>{toUnitId}</strong>
+class_quantity_value_unit_convert_summary: Convert quantity value from one unit to another
+class_quantity_value_unit_convert_success_response: Converted quantity value
+class_quantity_value_unit_convert_all_description: |
+  Convert quantity <strong>{value}</strong> from one unit to all other available units based on the given <strong>{fromUnitId}</strong>. <br>
+  Units have to have <strong>{fromUnitId}</strong> defined as base unit to be considered for conversion.
+class_quantity_value_unit_convert_all_summary: Convert quantity value from one unit to all other related units
+class_quantity_value_unit_convert_all_success_response: Converted quantity value
