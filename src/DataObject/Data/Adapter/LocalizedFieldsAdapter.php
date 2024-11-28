@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -43,6 +44,8 @@ use function sprintf;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class LocalizedFieldsAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use ValidateFieldTypeTrait;
+
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
@@ -75,18 +78,23 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
                     continue;
                 }
 
-                $adapter = $this->dataAdapterService->getDataAdapter($childFieldDefinition->getFieldType());
-                $localizedField->setLocalizedValue(
+                $adapter = $this->dataAdapterService->tryDataAdapter($childFieldDefinition->getFieldType());
+                if (!$adapter) {
+                    continue;
+                }
+
+                $value = $adapter->getDataForSetter(
+                    $element,
+                    $childFieldDefinition,
                     $name,
-                    $adapter->getDataForSetter(
-                        $element,
-                        $childFieldDefinition,
-                        $name,
-                        [$name => $fieldData],
-                        new FieldContextData(language: $language)
-                    ),
-                    $language
+                    [$name => $fieldData],
+                    new FieldContextData(language: $language)
                 );
+                if (!$this->validateEncryptedField($childFieldDefinition, $value)) {
+                    continue;
+                }
+
+                $localizedField->setLocalizedValue($name, $value, $language);
             }
         }
 

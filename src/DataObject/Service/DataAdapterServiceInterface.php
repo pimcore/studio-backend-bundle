@@ -31,5 +31,10 @@ interface DataAdapterServiceInterface
      */
     public function getFieldDefinitionAdapterClass(string $fieldDefinitionType): string;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getDataAdapter(string $fieldDefinitionType): SetterDataInterface;
+
+    public function tryDataAdapter(string $fieldDefinitionType): ?SetterDataInterface;
 }

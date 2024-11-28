@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\Concrete;
@@ -38,6 +39,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class FieldCollectionsAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use ValidateFieldTypeTrait;
+
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
@@ -146,18 +149,23 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
 
         foreach ($collectionDef?->getFieldDefinitions() as $elementName => $fd) {
             $elementValue = $blockElement[$elementName] ?? null;
-            if (!$elementValue) {
+            $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
+            if (!$elementValue || !$adapter) {
                 continue;
             }
 
-            $adapter = $this->dataAdapterService->getDataAdapter($fd->getFieldType());
-            $collectionData[$elementName] = $adapter->getDataForSetter(
+            $value = $adapter->getDataForSetter(
                 $element,
                 $fd,
                 $elementName,
                 [$elementName => $elementValue],
                 $fieldContextData
             );
+            if (!$this->validateEncryptedField($fieldDefinition, $value)) {
+                continue;
+            }
+
+            $collectionData[$elementName] = $value;
         }
 
         return $collectionData;
