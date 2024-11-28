@@ -50,10 +50,10 @@ final readonly class SiteService implements SiteServiceInterface
         foreach ($siteList as $siteEntry) {
             $site = new Site(
                 $siteEntry->getId(),
+                $siteEntry->getDomains(),
+                $siteEntry->getMainDomain(),
                 $siteEntry->getRootId(),
                 $siteEntry->getRootPath(),
-                $siteEntry->getDomains(),
-                $siteEntry->getMainDomain()
             );
 
             $this->eventDispatcher->dispatch(new SiteEvent($site), SiteEvent::EVENT_NAME);
@@ -65,6 +65,6 @@ final readonly class SiteService implements SiteServiceInterface
 
     private function getMainSite(): Site
     {
-        return new Site(0, 1, '/', [], 'main_site');
+        return new Site(0, [], 'main_site', 1, '/');
     }
 }

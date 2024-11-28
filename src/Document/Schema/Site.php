@@ -36,14 +36,14 @@ final class Site implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 0)]
         private readonly int $id,
-        #[Property(description: 'ID of the root', type: 'integer', example: 1)]
-        private readonly ?int $rootId = null,
-        #[Property(description: 'Root path', type: 'string', example: '/')]
-        private readonly ?string $rootPath = null,
         #[Property(description: 'Domains', type: 'array', items: new Items(type: 'string'), example: ['other_domain'])]
         private readonly array $domains,
         #[Property(description: 'Domain', type: 'string', example: 'main_site')]
         private readonly string $domain,
+        #[Property(description: 'ID of the root', type: 'integer', example: 1)]
+        private readonly ?int $rootId = null,
+        #[Property(description: 'Root path', type: 'string', example: '/')]
+        private readonly ?string $rootPath = null,
     ) {
     }
 
