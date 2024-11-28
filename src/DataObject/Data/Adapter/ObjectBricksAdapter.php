@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\Concrete;
@@ -39,6 +40,8 @@ use function array_key_exists;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use ValidateFieldTypeTrait;
+
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
@@ -177,19 +180,24 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNor
     ): array {
         $collectionData = [];
         foreach ($collectionDef->getFieldDefinitions() as $fd) {
+            $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
             $fieldName = $fd->getName();
-            if (!array_key_exists($fieldName, $rawData)) {
+            if (!array_key_exists($fieldName, $rawData) || !$adapter) {
                 continue;
             }
 
-            $adapter = $this->dataAdapterService->getDataAdapter($fd->getFieldType());
-            $collectionData[$fd->getName()] = $adapter->getDataForSetter(
+            $value = $adapter->getDataForSetter(
                 $element,
                 $fd,
                 $fieldName,
                 [$fieldName => $rawData[$fieldName]],
                 new FieldContextData($brick)
             );
+            if (!$this->validateEncryptedField($fd, $value)) {
+                continue;
+            }
+
+            $collectionData[$fieldName] = $value;
         }
 
         return $collectionData;
