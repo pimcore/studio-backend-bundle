@@ -40,7 +40,9 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class FieldCollectionsAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     use ValidateFieldTypeTrait;
+
     private const TYPE_KEY = 'type';
+
     private const DATA_KEY = 'data';
 
     public function __construct(

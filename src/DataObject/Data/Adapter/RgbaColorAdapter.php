@@ -48,8 +48,7 @@ final readonly class RgbaColorAdapter implements SetterDataInterface, DataNormal
     public function normalize(
         mixed $value,
         Data $fieldDefinition
-    ): ?string
-    {
+    ): ?string {
         if (!$value instanceof RgbaColor) {
             return null;
         }
