@@ -82,8 +82,7 @@ final readonly class ConsentAdapter implements SetterDataInterface, DataNormaliz
     public function normalize(
         mixed $value,
         Data $fieldDefinition
-    ): ?ConsentData
-    {
+    ): ?ConsentData {
         if (!$value instanceof Consent) {
             return null;
         }
