@@ -14,14 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
+use Pimcore\Model\Metadata\Predefined;
 
 /**
  * @internal
  */
-interface CustomMetadataHydratorInterface
+interface MetadataHydratorInterface
 {
     public function hydrate(array $customMetadata): CustomMetadata;
+
+    public function hydratePredefined(Predefined $predefined): PredefinedMetadata;
 }

@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -44,7 +45,7 @@ final class CustomMetadataController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomMetadataServiceInterface $customMetadataService
+        private readonly MetadataServiceInterface $metadataService
     ) {
         parent::__construct($serializer);
     }
@@ -72,6 +73,6 @@ final class CustomMetadataController extends AbstractApiController
     ])]
     public function getAssetCustomMetadataById(int $id): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->customMetadataService->getCustomMetadata($id)]);
+        return $this->jsonResponse(['items' => $this->metadataService->getCustomMetadata($id)]);
     }
 }

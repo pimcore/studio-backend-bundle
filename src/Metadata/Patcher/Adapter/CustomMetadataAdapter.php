@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Patcher\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Patcher\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -32,7 +32,7 @@ use function in_array;
  * @internal
  */
 #[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
-final class MetadataAdapter implements PatchAdapterInterface
+final class CustomMetadataAdapter implements PatchAdapterInterface
 {
     private const INDEX_KEY = 'metadata';
 
@@ -111,7 +111,7 @@ final class MetadataAdapter implements PatchAdapterInterface
             throw new InvalidArgumentException('Metadata name is required');
         }
 
-        if (in_array($metadata['name'], CustomMetadataServiceInterface::DEFAULT_METADATA, true)) {
+        if (in_array($metadata['name'], MetadataServiceInterface::DEFAULT_METADATA, true)) {
             return $this->addDefaultMetadata($metadata);
         }
 

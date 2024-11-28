@@ -70,6 +70,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_mercure_description'
 )]
 #[Tag(
+    name: Tags::Metadata->value,
+    description: 'tag_metadata_description'
+)]
+#[Tag(
     name: Tags::Notes->value,
     description: 'tag_notes_description'
 )]
@@ -131,6 +135,7 @@ enum Tags: string
     case ExecutionEngine = 'Execution Engine';
     case Emails = 'E-Mails';
     case Mercure = 'Mercure';
+    case Metadata = 'Metadata';
     case Notes = 'Notes';
     case Notifications = 'Notifications';
     case Properties = 'Properties';
