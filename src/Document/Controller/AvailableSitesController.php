@@ -64,7 +64,7 @@ final class AvailableSitesController extends AbstractApiController
         content: new AvailableSitesJson()
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getAvailableSites(
         #[MapQueryString] MappedParameter $parameter

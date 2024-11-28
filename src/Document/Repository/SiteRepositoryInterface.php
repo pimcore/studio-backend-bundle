@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Repository;
+
 use Pimcore\Model\Site;
 
 /**

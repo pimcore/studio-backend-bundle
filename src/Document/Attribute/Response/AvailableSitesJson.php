@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Attribute\Response;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\QuantityValueUnit;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Site;
 
 /**

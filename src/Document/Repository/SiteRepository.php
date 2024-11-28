@@ -31,5 +31,4 @@ final class SiteRepository implements SiteRepositoryInterface
     {
         return (new Listing())->load();
     }
-
 }

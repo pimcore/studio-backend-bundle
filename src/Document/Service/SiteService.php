@@ -65,6 +65,6 @@ final readonly class SiteService implements SiteServiceInterface
 
     private function getMainSite(): Site
     {
-        return new Site(0,1,'/',[],'main_site');
+        return new Site(0, 1, '/', [], 'main_site');
     }
 }

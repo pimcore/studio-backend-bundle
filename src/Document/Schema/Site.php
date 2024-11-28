@@ -44,8 +44,7 @@ final class Site implements AdditionalAttributesInterface
         private readonly array $domains,
         #[Property(description: 'Domain', type: 'string', example: 'main_site')]
         private readonly string $domain,
-    )
-    {
+    ) {
     }
 
     public function getId(): int

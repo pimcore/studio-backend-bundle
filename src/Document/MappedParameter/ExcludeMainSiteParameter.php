@@ -23,8 +23,7 @@ final readonly class ExcludeMainSiteParameter
 {
     public function __construct(
         private ?string $excludeMainSite = null
-    )
-    {
+    ) {
     }
 
     public function getExcludeMainSite(): bool
