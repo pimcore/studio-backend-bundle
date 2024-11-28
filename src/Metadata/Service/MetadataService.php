@@ -18,10 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\CustomMetadataEvent;
-use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\PredefinedMetadataEvent;
-use Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\PredefinedMetadataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -98,7 +98,7 @@ final readonly class MetadataService implements MetadataServiceInterface
         $originalPredefinedMetadata = $this->metadataRepository->getAllPredefinedMetadata();
 
         $predefinedMetadata = [];
-        foreach($originalPredefinedMetadata as $predefined) {
+        foreach ($originalPredefinedMetadata as $predefined) {
             $metadata = $this->hydrator->hydratePredefined($predefined);
 
             $this->eventDispatcher->dispatch(

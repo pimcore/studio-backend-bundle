@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse;
 
-use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
 
 final class CustomMetadataEvent extends AbstractPreResponseEvent
 {

@@ -31,24 +31,24 @@ final class PredefinedMetadata implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-       #[Property(description: 'Id', type: 'string', example: '1')]
-       private string $id,
-       #[Property(description: 'Name', type: 'string', example: 'custom_metadata')]
-       private string $name,
-       #[Property(description: 'Description', type: 'string', example: 'A predefined metadata')]
-       private ?string $description,
-       #[Property(description: 'Type', type: 'string', example: 'input')]
-       private string $type,
-       #[Property(description: 'Target sub type', type: 'string', example: 'input')]
-       private ?string $targetSubType,
-       #[Property(description: 'Data', type: 'string', example: 'data')]
-       private mixed $data,
-       #[Property(description: 'Config', type: 'string', example: 'config')]
-       private ?string $config,
-       #[Property(description: 'Language', type: 'string', example: 'en')]
-       private ?string $language,
-       #[Property(description: 'Group', type: 'string', example: 'group')]
-       private ?string $group,
+        #[Property(description: 'Id', type: 'string', example: '1')]
+        private string $id,
+        #[Property(description: 'Name', type: 'string', example: 'custom_metadata')]
+        private string $name,
+        #[Property(description: 'Description', type: 'string', example: 'A predefined metadata')]
+        private ?string $description,
+        #[Property(description: 'Type', type: 'string', example: 'input')]
+        private string $type,
+        #[Property(description: 'Target sub type', type: 'string', example: 'input')]
+        private ?string $targetSubType,
+        #[Property(description: 'Data', type: 'string', example: 'data')]
+        private mixed $data,
+        #[Property(description: 'Config', type: 'string', example: 'config')]
+        private ?string $config,
+        #[Property(description: 'Language', type: 'string', example: 'en')]
+        private ?string $language,
+        #[Property(description: 'Group', type: 'string', example: 'group')]
+        private ?string $group,
     ) {
     }
 
