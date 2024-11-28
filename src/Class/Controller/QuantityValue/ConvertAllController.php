@@ -55,7 +55,7 @@ final class ConvertAllController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|DatabaseException|NotFoundException|UserNotFoundException
+     * @throws DatabaseException|NotFoundException
      */
     #[Route(
         '/class/quantity-value/convert-all',
@@ -79,7 +79,7 @@ final class ConvertAllController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function get(#[MapRequestPayload] ConvertAllParameters $parameters): JsonResponse
+    public function covertAll(#[MapRequestPayload] ConvertAllParameters $parameters): JsonResponse
     {
         return $this->jsonResponse($this->quantityValueService->convertAllUnits($parameters));
     }

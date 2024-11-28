@@ -76,7 +76,7 @@ final class ConvertController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function get(#[MapRequestPayload] ConvertParameters $parameters): JsonResponse
+    public function convert(#[MapRequestPayload] ConvertParameters $parameters): JsonResponse
     {
         return $this->jsonResponse(['data' => $this->quantityValueService->convertUnit($parameters)]);
     }

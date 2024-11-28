@@ -22,7 +22,7 @@ use Pimcore\Model\DataObject\QuantityValue\Unit\Listing;
 /**
  * @internal
  */
-class QuantityValueRepository implements QuantityValueRepositoryInterface
+final readonly class QuantityValueRepository implements QuantityValueRepositoryInterface
 {
     /**
      * @return Unit[]
