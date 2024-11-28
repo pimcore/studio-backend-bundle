@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;

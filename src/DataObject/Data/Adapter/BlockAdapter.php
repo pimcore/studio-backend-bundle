@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -82,7 +82,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
             /** @var BlockElement $fieldValue */
             foreach ($block as $key => $fieldValue) {
                 $blockDefinition = $fieldDefinitions[$key];
-                $resultItems[$key] = $this->dataService->getNormalizedValue(
+                $resultItem[$key] = $this->dataService->getNormalizedValue(
                     $fieldValue->getData(),
                     $blockDefinition,
                 );
