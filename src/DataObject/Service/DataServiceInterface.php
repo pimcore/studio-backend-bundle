@@ -41,12 +41,4 @@ interface DataServiceInterface
         mixed $value,
         Data $fieldDefinition
     ): mixed;
-
-    public function getAdapterSetterValue(
-        Concrete $element,
-        Data $fieldDefinition,
-        string $key,
-        array $data,
-        ?FieldContextData $contextData = null
-    ): ?array;
 }

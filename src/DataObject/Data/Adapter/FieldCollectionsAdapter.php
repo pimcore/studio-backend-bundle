@@ -22,7 +22,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 use Pimcore\Model\DataObject\Concrete;
@@ -37,7 +39,10 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class FieldCollectionsAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use ValidateFieldTypeTrait;
+
     public function __construct(
+        private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
         private DefinitionResolverInterface $fieldCollectionDefinition,
         private Factory $modelFactory
@@ -144,17 +149,23 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
 
         foreach ($collectionDef?->getFieldDefinitions() as $elementName => $fd) {
             $elementValue = $blockElement[$elementName] ?? null;
-            if (!$elementValue) {
+            $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
+            if (!$elementValue || !$adapter) {
                 continue;
             }
 
-            $collectionData[$elementName] = $this->dataService->getAdapterSetterValue(
+            $value = $adapter->getDataForSetter(
                 $element,
                 $fd,
                 $elementName,
                 [$elementName => $elementValue],
                 $fieldContextData
             );
+            if (!$this->validateEncryptedField($fieldDefinition, $value)) {
+                continue;
+            }
+
+            $collectionData[$elementName] = $value;
         }
 
         return $collectionData;

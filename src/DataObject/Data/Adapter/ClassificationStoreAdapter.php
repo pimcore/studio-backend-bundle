@@ -26,7 +26,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
@@ -46,8 +48,11 @@ use function is_array;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class ClassificationStoreAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use ValidateFieldTypeTrait;
+
     public function __construct(
         private DefinitionCacheResolverInterface $definitionCacheResolver,
+        private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
         private GroupConfigResolverInterface $groupConfigResolver,
         private ServiceResolverInterface $serviceResolver,
@@ -180,12 +185,20 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface, 
                 continue;
             }
 
-            $setterData = $this->dataService->getAdapterSetterValue(
+            $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+            if ($adapter === null) {
+                continue;
+            }
+
+            $setterData = $adapter->getDataForSetter(
                 $element,
                 $fieldDefinition,
                 $fieldDefinition->getName(),
                 [$fieldDefinition->getName() => $value]
             );
+            if (!$this->validateEncryptedField($fieldDefinition, $setterData)) {
+                continue;
+            }
 
             $container->setLocalizedKeyValue($groupId, $keyId, $setterData, $language);
         }

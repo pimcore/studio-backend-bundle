@@ -19,9 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
@@ -90,36 +87,11 @@ final readonly class DataService implements DataServiceInterface
             return null;
         }
 
-        $adapter = $this->getDataAdapter($fieldDefinition->getFieldType());
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof DataNormalizerInterface) {
             return $adapter->normalize($value, $fieldDefinition);
         }
 
         return $fieldDefinition->normalize($value);
-    }
-
-    public function getAdapterSetterValue(
-        Concrete $element,
-        Data $fieldDefinition,
-        string $key,
-        array $data,
-        ?FieldContextData $contextData = null
-    ): ?array {
-        $adapter = $this->getDataAdapter($fieldDefinition->getFieldType());
-        if ($adapter instanceof SetterDataInterface) {
-            return $adapter->getDataForSetter($element, $fieldDefinition, $key, $data, $contextData);
-        }
-
-        return null;
-    }
-
-    private function getDataAdapter(string $fieldType): ?SetterDataInterface
-    {
-        try {
-            return $this->dataAdapterService->getDataAdapter($fieldType);
-        } catch (InvalidArgumentException) {
-            // ToDo: Consider removing catch and throwing an exception when field types from bundles are implemented
-            return null;
-        }
     }
 }

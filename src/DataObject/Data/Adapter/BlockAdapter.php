@@ -21,7 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidDataTypeException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
@@ -37,7 +39,10 @@ use function is_array;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class BlockAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use ValidateFieldTypeTrait;
+
     public function __construct(
+        private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService
     ) {
     }
@@ -146,13 +151,24 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         $fieldContextData = $this->createFieldContextData($element, $fieldDefinition, $contextData);
 
         foreach ($fieldDefinitions as $elementName => $fd) {
-            $resultElement[$elementName] = $this->createBlockElement(
+            $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
+            if (!$adapter) {
+                continue;
+            }
+
+            $value = $this->createBlockElement(
+                $adapter,
                 $element,
                 $fd,
                 $elementName,
                 $blockElement,
                 $fieldContextData
             );
+            if (!$value) {
+                continue;
+            }
+
+            $resultElement[$elementName] = $value;
         }
 
         return $resultElement;
@@ -162,19 +178,31 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
      * @throws Exception
      */
     private function createBlockElement(
+        SetterDataInterface $adapter,
         Concrete $element,
         Data $fieldDefinition,
         string $elementName,
         ?array $blockElement,
         ?FieldContextData $fieldContextData = null
-    ): BlockElement {
+    ): ?BlockElement {
         $elementType = $fieldDefinition->getFieldtype();
         $elementData = $blockElement[$elementName] ?? null;
+
+        $data = $adapter->getDataForSetter(
+            $element,
+            $fieldDefinition,
+            $elementName,
+            [$elementName => $elementData],
+            $fieldContextData
+        );
+        if (!$this->validateEncryptedField($fieldDefinition, $data)) {
+            return null;
+        }
 
         return new BlockElement(
             $elementName,
             $elementType,
-            $this->dataService->getAdapterSetterValue(
+            $adapter->getDataForSetter(
                 $element,
                 $fieldDefinition,
                 $elementName,
