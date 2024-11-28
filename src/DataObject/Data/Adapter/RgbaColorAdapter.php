@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
@@ -28,7 +29,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class RgbaColorAdapter implements SetterDataInterface
+final readonly class RgbaColorAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function getDataForSetter(
         Concrete $element,
@@ -42,5 +43,17 @@ final readonly class RgbaColorAdapter implements SetterDataInterface
         [$r, $g, $b, $a] = sscanf($colorData, '%02x%02x%02x%02x');
 
         return new RgbaColor($r, $g, $b, $a);
+    }
+
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?string
+    {
+        if (!$value instanceof RgbaColor) {
+            return null;
+        }
+
+        return $value->getHex(true);
     }
 }
