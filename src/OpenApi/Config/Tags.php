@@ -54,6 +54,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_dependencies_description'
 )]
 #[Tag(
+    name: Tags::Documents->value,
+    description: 'tag_documents_description'
+)]
+#[Tag(
     name: Tags::Elements->value,
     description: 'tag_elements_description'
 )]
@@ -127,6 +131,7 @@ enum Tags: string
     case DataObjects = 'Data Objects';
     case DataObjectsGrid = 'Data Object Grid';
     case Dependencies = 'Dependencies';
+    case Documents = 'Documents';
     case Elements = 'Elements';
     case ExecutionEngine = 'Execution Engine';
     case Emails = 'E-Mails';

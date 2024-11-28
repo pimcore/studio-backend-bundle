@@ -4,6 +4,27 @@ services:
     autoconfigure: true
     public: false
 
-    # Secvices
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Document\Controller\:
+    resource: '../src/Document/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+
   Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentService
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\SiteServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\SiteService
+
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepository
