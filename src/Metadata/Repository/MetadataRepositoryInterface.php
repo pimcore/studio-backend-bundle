@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
 use Pimcore\Model\Metadata\Predefined;
 
 /**
@@ -27,6 +28,8 @@ interface MetadataRepositoryInterface
      * @return Predefined[]
      */
     public function getAllPredefinedMetadata(): array;
+
+    public function getAllPredefinedMetadataDefinitions(MetadataParameters $metadataParameters): array;
 
     public function getPredefinedMetadataByName(string $name): ?Predefined;
 }
