@@ -28,3 +28,11 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepository
+
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\SiteHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\SiteHydrator

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\SiteEvent;
+use Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\SiteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\ExcludeMainSiteParameter;
 use Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Site;
@@ -32,6 +33,7 @@ final readonly class SiteService implements SiteServiceInterface
 
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
+        private SiteHydratorInterface $siteHydrator,
         private SiteRepositoryInterface $siteRepository,
     ) {
     }
@@ -48,13 +50,7 @@ final readonly class SiteService implements SiteServiceInterface
 
         $siteList = $this->siteRepository->listSites();
         foreach ($siteList as $siteEntry) {
-            $site = new Site(
-                $siteEntry->getId(),
-                $siteEntry->getDomains(),
-                $siteEntry->getMainDomain(),
-                $siteEntry->getRootId(),
-                $siteEntry->getRootPath(),
-            );
+            $site = $this->siteHydrator->hydrate($siteEntry);
 
             $this->eventDispatcher->dispatch(new SiteEvent($site), SiteEvent::EVENT_NAME);
             $sites[] = $site;

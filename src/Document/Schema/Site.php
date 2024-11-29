@@ -26,6 +26,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     schema: 'Site',
     title: 'Site',
     required: [
+        'id',
+        'domains',
+        'domain',
     ],
     type: 'object'
 )]
