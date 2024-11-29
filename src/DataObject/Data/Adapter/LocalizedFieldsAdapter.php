@@ -111,6 +111,10 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
 
         $value->loadLazyData();
         $originalValue = $fieldDefinition->normalize($value);
+        if (empty($originalValue)) {
+            return null;
+        }
+        $fieldDefinitions = $fieldDefinition->getFieldDefinitions();
         $languages = array_keys($originalValue);
         $attributes = array_keys(reset($originalValue));
         $result = [];
@@ -126,8 +130,9 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
                         )
                     );
                 }
-                $fieldDefinition = $value->getFieldDefinition($attribute);
-                $localizedValue =  $this->dataService->getNormalizedValue($localizedValue, $fieldDefinition);
+                if (isset($fieldDefinitions[$attribute])) {
+                    $localizedValue = $this->dataService->getNormalizedValue($localizedValue, $fieldDefinition);
+                }
                 $result[$attribute][$language] = $localizedValue;
             }
         }
