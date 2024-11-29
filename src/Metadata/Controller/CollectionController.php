@@ -18,10 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Attribute\Request\FilterRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Metadata\Attribute\Request\FilterRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;

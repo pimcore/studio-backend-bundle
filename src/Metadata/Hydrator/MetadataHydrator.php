@@ -80,7 +80,7 @@ final readonly class MetadataHydrator implements MetadataHydratorInterface
 
     private function resolveDefinitionData(mixed $data, string $type): mixed
     {
-        if(!$data) {
+        if (!$data) {
             return $data;
         }
 
@@ -90,5 +90,4 @@ final readonly class MetadataHydrator implements MetadataHydratorInterface
             default => $data
         };
     }
-
 }
