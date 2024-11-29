@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'PredefinedMetadata',
-    required: ['name', 'type'],
+    required: ['id', 'name', 'type', 'creationDate', 'modificationDate', 'isWriteable'],
     type: 'object'
 )]
 final class PredefinedMetadata implements AdditionalAttributesInterface
@@ -41,7 +41,7 @@ final class PredefinedMetadata implements AdditionalAttributesInterface
         private string $type,
         #[Property(description: 'Target sub type', type: 'string', example: 'input')]
         private ?string $targetSubType,
-        #[Property(description: 'Data', type: 'string', example: 'data')]
+        #[Property(description: 'Data', type: 'mixed', example: 'data')]
         private mixed $data,
         #[Property(description: 'Config', type: 'string', example: 'config')]
         private ?string $config,
