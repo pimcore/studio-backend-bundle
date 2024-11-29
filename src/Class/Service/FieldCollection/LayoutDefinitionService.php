@@ -34,11 +34,11 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
 {
     public function __construct(
-        private readonly DataObjectResolverInterface      $dataObjectResolver,
+        private readonly DataObjectResolverInterface $dataObjectResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
-        private readonly DefinitionResolverInterface      $definitionResolver,
-        private readonly SiteHydratorInterface            $layoutDefinitionHydrator,
-        private readonly EventDispatcherInterface         $eventDispatcher,
+        private readonly DefinitionResolverInterface $definitionResolver,
+        private readonly SiteHydratorInterface $layoutDefinitionHydrator,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
