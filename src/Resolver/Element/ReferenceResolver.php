@@ -15,11 +15,15 @@
 
 namespace Pimcore\Bundle\StudioBackendBundle\Resolver\Element;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\AbstractElement;
 use Pimcore\Model\Element\ElementInterface;
 
 final class ReferenceResolver implements ReferenceResolverInterface
 {
+    use ElementProviderTrait;
+
     private const ALLOWED_MODEL_PROPERTIES = [
         'key',
         'filename',
@@ -32,6 +36,10 @@ final class ReferenceResolver implements ReferenceResolverInterface
      * @var array<int, array>
      */
     private array $cache = [];
+
+    public function __construct(private ServiceResolverInterface $serviceResolver)
+    {
+    }
 
     public function resolve(ElementInterface $element): array
     {
@@ -52,5 +60,12 @@ final class ReferenceResolver implements ReferenceResolverInterface
         $this->cache[$element->getId()] = $data;
 
         return $data;
+    }
+
+    public function resolveData(string $type, int $id): mixed
+    {
+        $element = $this->getElement($this->serviceResolver, $type, $id);
+
+        return $this->resolve($element);
     }
 }

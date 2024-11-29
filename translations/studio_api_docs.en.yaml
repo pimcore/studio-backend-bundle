@@ -281,6 +281,9 @@ logout_summary: Logout and invalidate current session for active user.
 mercure_create_cookie_description: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_success_response: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_summary: Retrieve JWT token for Mercure hub as cookie
+metadata_get_collection_description: Get predefined metadata collection with basic filter options
+metadata_get_collection_success_response: Predefined metadata collection
+metadata_get_collection_summary: Get predefined metadata collection
 note_delete_by_id_description: |
   Delete the note with the given <strong>{id}</strong>
 note_delete_by_id_success_response: Successfully deleted note
@@ -453,6 +456,7 @@ tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
 tag_get_collection_success_response: All tags for a parent filtered based on type and query parameters
 tag_get_collection_summary: Get all tags for a parent
 tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
+tag_metadata_description: Metadata operations to get/update/create/delete metadata
 tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications
 tag_properties_description: Property operations to get/update/create/delete properties

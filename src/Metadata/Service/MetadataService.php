@@ -95,9 +95,10 @@ final readonly class MetadataService implements MetadataServiceInterface
 
     public function getPredefinedMetadata(MetadataParameters $parameters): array
     {
-        $originalPredefinedMetadata = $this->metadataRepository->getAllPredefinedMetadata();
+        $originalPredefinedMetadata = $this->metadataRepository->getAllPredefinedMetadataDefinitions($parameters);
 
         $predefinedMetadata = [];
+
         foreach ($originalPredefinedMetadata as $predefined) {
             $metadata = $this->hydrator->hydratePredefined($predefined);
 

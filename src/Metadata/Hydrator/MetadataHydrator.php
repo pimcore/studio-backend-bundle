@@ -52,13 +52,16 @@ final readonly class MetadataHydrator implements MetadataHydratorInterface
             $predefined->getDescription(),
             $predefined->getType(),
             $predefined->getTargetSubType(),
-            $this->resolveData(
+            $this->resolveDefinitionData(
                 $predefined->getData(),
                 $predefined->getType(),
             ),
             $predefined->getConfig(),
             $predefined->getLanguage(),
-            $predefined->getGroup()
+            $predefined->getGroup(),
+            $predefined->getCreationDate(),
+            $predefined->getModificationDate(),
+            $predefined->isWriteable()
         );
     }
 
@@ -74,4 +77,18 @@ final readonly class MetadataHydrator implements MetadataHydratorInterface
             default => $data,
         };
     }
+
+    private function resolveDefinitionData(mixed $data, string $type): mixed
+    {
+        if(!$data) {
+            return $data;
+        }
+
+        return match ($type) {
+            'asset', 'document', 'object' => $this->referenceResolver->resolveData($type, (int)$data),
+            'checkbox' => (bool)$data,
+            default => $data
+        };
+    }
+
 }

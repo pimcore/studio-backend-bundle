@@ -49,6 +49,12 @@ final class PredefinedMetadata implements AdditionalAttributesInterface
         private ?string $language,
         #[Property(description: 'Group', type: 'string', example: 'group')]
         private ?string $group,
+        #[Property(description: 'Creation Date', type: 'integer', example: 1634025600)]
+        private int $creationDate,
+        #[Property(description: 'Modfication Date', type: 'integer', example: 1634025600)]
+        private int $modificationDate,
+        #[Property(description: 'Writable', type: 'bool', example: false)]
+        private bool $isWriteable = false,
     ) {
     }
 
@@ -95,5 +101,20 @@ final class PredefinedMetadata implements AdditionalAttributesInterface
     public function getGroup(): ?string
     {
         return $this->group;
+    }
+
+    public function getCreationDate(): int
+    {
+        return $this->creationDate;
+    }
+
+    public function getModificationDate(): int
+    {
+        return $this->modificationDate;
+    }
+
+    public function isWriteable(): bool
+    {
+        return $this->isWriteable;
     }
 }
