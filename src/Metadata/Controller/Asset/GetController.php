@@ -38,7 +38,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CustomMetadataController extends AbstractApiController
+final class GetController extends AbstractApiController
 {
     use ElementProviderTrait;
 
