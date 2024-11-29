@@ -201,6 +201,10 @@ data_object_update_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
 data_object_update_by_id_success_response: Successfully updated data object
 data_object_update_by_id_summary: Update a data object by ID
+documents_list_available_sites_description: |
+  List all available sites
+documents_list_available_sites_success_response: List of available sites
+documents_list_available_sites_summary: List all available sites
 element_delete_created_response: Successfully created jobRun for deleting element
   and its children
 element_delete_description: |
@@ -434,6 +438,7 @@ tag_delete_by_id_description: |
 tag_delete_by_id_success_response: ID of successfully deleted tag
 tag_delete_by_id_summary: Delete a specific tag
 tag_dependencies_description: Get dependencies for a single element
+tag_documents_description: Document operations to get/update/create/delete documents
 tag_elements_description: Get element properties for a single element based on its
   type and provided parameters
 tag_emails_description: E-mail operations to get/update/create/delete/test emails and
