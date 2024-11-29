@@ -16,9 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
 
 /**
  * @internal
@@ -31,9 +32,11 @@ interface MetadataServiceInterface
      * @return array<int, CustomMetadata>
      *
      * @throws AccessDeniedException
-     *
      */
     public function getCustomMetadata(int $id): array;
 
+    /**
+     * @return array<int, PredefinedMetadata>
+     */
     public function getPredefinedMetadata(MetadataParameters $parameters): array;
 }
