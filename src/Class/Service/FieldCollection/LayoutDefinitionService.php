@@ -21,7 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\LayoutDefinitionEvent;
-use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\SiteHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject;
@@ -37,7 +37,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
         private readonly DataObjectResolverInterface $dataObjectResolver,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DefinitionResolverInterface $definitionResolver,
-        private readonly SiteHydratorInterface $layoutDefinitionHydrator,
+        private readonly LayoutDefinitionHydratorInterface $layoutDefinitionHydrator,
         private readonly EventDispatcherInterface $eventDispatcher,
     ) {
     }
