@@ -24,7 +24,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'CustomMetadataVersion',
-    required: ['name', 'type', 'data'],
+    required: ['name', 'language', 'type', 'data'],
     type: 'object'
 )]
 final readonly class CustomMetadataVersion
@@ -32,7 +32,7 @@ final readonly class CustomMetadataVersion
     public function __construct(
         #[Property(description: 'Name', type: 'string', example: 'custom_metadata')]
         private string $name,
-        #[Property(description: 'Language', type: 'string', example: 'en', nullable: true)]
+        #[Property(description: 'Language', type: 'string', example: 'en')]
         private ?string $language,
         #[Property(description: 'Type', type: 'string', example: 'input')]
         private string $type,
@@ -46,7 +46,7 @@ final readonly class CustomMetadataVersion
         return $this->name;
     }
 
-    public function getLanguage(): string
+    public function getLanguage(): ?string
     {
         return $this->language;
     }
