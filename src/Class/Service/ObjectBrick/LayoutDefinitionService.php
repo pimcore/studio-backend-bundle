@@ -93,5 +93,4 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
             }
         }
     }
-
 }
