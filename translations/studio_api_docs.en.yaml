@@ -605,6 +605,10 @@ class_field_collection_object_layout_description: |
   Get all layouts from the field collection for an given object
 class_field_collection_object_layout_summary: Get all layouts from the field collection for an given object
 class_field_collection_object_layout_success_response: List of layouts
+class_object_brick_object_layout_description: |
+  Get all layouts from the object bricks for an given object
+class_object_brick_object_layout_summary: Get all layouts from the object bricks for an given object
+class_object_brick_object_layout_success_response: List of layouts
 class_quantity_value_unit_list_description: |
   List of available quantity value units
 class_quantity_value_unit_list_summary: List of available quantity value units
