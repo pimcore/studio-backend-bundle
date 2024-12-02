@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
@@ -37,7 +37,7 @@ final class CustomMetadata implements AdditionalAttributesInterface
         private readonly string $language,
         #[Property(description: 'Type', type: 'string', example: 'input')]
         private readonly string $type,
-        #[Property(description: 'Data', type: 'string', example: 'data')]
+        #[Property(description: 'Data', type: 'mixed', example: 'data')]
         private readonly mixed $data
     ) {
     }

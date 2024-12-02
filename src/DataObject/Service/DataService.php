@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
@@ -49,10 +49,12 @@ final readonly class DataService implements DataServiceInterface
 
         foreach ($fieldDefinitions as $key => $fieldDefinition) {
             try {
-                $data[$key] = $this->getNormalizedValue($dataObject->get($key), $fieldDefinition);
+                $value = $dataObject->get($key);
             } catch (Exception) {
                 throw new NotFoundException(type: 'field', id: $key);
             }
+
+            $data[$key] = $this->getNormalizedValue($value, $fieldDefinition);
         }
 
         return $data;
@@ -85,7 +87,7 @@ final readonly class DataService implements DataServiceInterface
             return null;
         }
 
-        $adapter = $this->dataAdapterService->getDataAdapter($fieldDefinition->getFieldType());
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof DataNormalizerInterface) {
             return $adapter->normalize($value, $fieldDefinition);
         }

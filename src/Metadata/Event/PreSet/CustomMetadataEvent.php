@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreSet;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreSet;
 
 use Symfony\Contracts\EventDispatcher\Event;
 

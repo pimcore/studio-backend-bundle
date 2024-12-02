@@ -14,16 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Metadata\Predefined;
 
 /**
  * @internal
  */
-final readonly class CustomMetadataHydrator implements CustomMetadataHydratorInterface
+final readonly class MetadataHydrator implements MetadataHydratorInterface
 {
     public function __construct(private ReferenceResolverInterface $referenceResolver)
     {
@@ -42,6 +44,27 @@ final readonly class CustomMetadataHydrator implements CustomMetadataHydratorInt
         );
     }
 
+    public function hydratePredefined(Predefined $predefined): PredefinedMetadata
+    {
+        return new PredefinedMetadata(
+            $predefined->getId(),
+            $predefined->getName(),
+            $predefined->getDescription(),
+            $predefined->getType(),
+            $predefined->getTargetSubType(),
+            $this->resolveDefinitionData(
+                $predefined->getData(),
+                $predefined->getType(),
+            ),
+            $predefined->getConfig(),
+            $predefined->getLanguage(),
+            $predefined->getGroup(),
+            $predefined->getCreationDate(),
+            $predefined->getModificationDate(),
+            $predefined->isWriteable()
+        );
+    }
+
     private function resolveData(mixed $data, string $type): mixed
     {
         return match (true) {
@@ -52,6 +75,19 @@ final readonly class CustomMetadataHydrator implements CustomMetadataHydratorInt
             ),
             $type === 'checkbox' => (bool)$data,
             default => $data,
+        };
+    }
+
+    private function resolveDefinitionData(mixed $data, string $type): mixed
+    {
+        if (!$data) {
+            return $data;
+        }
+
+        return match ($type) {
+            'asset', 'document', 'object' => $this->referenceResolver->resolveData($type, (int)$data),
+            'checkbox' => (bool)$data,
+            default => $data
         };
     }
 }

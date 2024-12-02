@@ -201,6 +201,10 @@ data_object_update_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
 data_object_update_by_id_success_response: Successfully updated data object
 data_object_update_by_id_summary: Update a data object by ID
+documents_list_available_sites_description: |
+  List all available sites
+documents_list_available_sites_success_response: List of available sites
+documents_list_available_sites_summary: List all available sites
 element_delete_created_response: Successfully created jobRun for deleting element
   and its children
 element_delete_description: |
@@ -281,6 +285,9 @@ logout_summary: Logout and invalidate current session for active user.
 mercure_create_cookie_description: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_success_response: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_summary: Retrieve JWT token for Mercure hub as cookie
+metadata_get_collection_description: Get predefined metadata collection with basic filter options
+metadata_get_collection_success_response: Predefined metadata collection
+metadata_get_collection_summary: Get predefined metadata collection
 note_delete_by_id_description: |
   Delete the note with the given <strong>{id}</strong>
 note_delete_by_id_success_response: Successfully deleted note
@@ -434,6 +441,7 @@ tag_delete_by_id_description: |
 tag_delete_by_id_success_response: ID of successfully deleted tag
 tag_delete_by_id_summary: Delete a specific tag
 tag_dependencies_description: Get dependencies for a single element
+tag_documents_description: Document operations to get/update/create/delete documents
 tag_elements_description: Get element properties for a single element based on its
   type and provided parameters
 tag_emails_description: E-mail operations to get/update/create/delete/test emails and
@@ -453,6 +461,7 @@ tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
 tag_get_collection_success_response: All tags for a parent filtered based on type and query parameters
 tag_get_collection_summary: Get all tags for a parent
 tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
+tag_metadata_description: Metadata operations to get/update/create/delete metadata
 tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications
 tag_properties_description: Property operations to get/update/create/delete properties

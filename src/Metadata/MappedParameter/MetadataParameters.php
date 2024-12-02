@@ -14,23 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
-
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter;
 
 /**
  * @internal
  */
-interface CustomMetadataServiceInterface
+final readonly class MetadataParameters
 {
-    public const DEFAULT_METADATA = ['title', 'alt', 'copyright'];
+    public function __construct(
+        private ?string $filter = null
 
-    /**
-     * @return array<int, CustomMetadata>
-     *
-     * @throws AccessDeniedException
-     *
-     */
-    public function getCustomMetadata(int $id): array;
+    ) {
+    }
+
+    public function getFilter(): ?string
+    {
+        return $this->filter;
+    }
 }

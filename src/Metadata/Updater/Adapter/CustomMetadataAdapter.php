@@ -14,9 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Updater\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Updater\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreSet\CustomMetadataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreSet\CustomMetadataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;

@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\RelationData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\RelationData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -78,7 +78,7 @@ final readonly class ManyToManyRelationAdapter implements SetterDataInterface, D
                 $relation->getId(),
                 $elementType,
                 $this->getSubType($relation),
-                $relation->getFullPath(),
+                $relation->getRealFullPath(),
                 $this->getPublished($relation)
             );
         }

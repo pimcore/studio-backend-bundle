@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ConsentData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\DataObject\Consent\Service;
@@ -30,7 +32,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ConsentAdapter implements SetterDataInterface
+final readonly class ConsentAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
         private Service $service
@@ -75,5 +77,20 @@ final readonly class ConsentAdapter implements SetterDataInterface
         }
 
         return new Consent($value, $noteId);
+    }
+
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?ConsentData {
+        if (!$value instanceof Consent) {
+            return null;
+        }
+
+        return new ConsentData(
+            $value->getConsent(),
+            $value->getNoteId(),
+            $value->getSummaryString(),
+        );
     }
 }
