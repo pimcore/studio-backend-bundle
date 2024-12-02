@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
@@ -26,6 +27,7 @@ interface LayoutDefinitionServiceInterface
 {
     /**
      * @throws NotFoundException|Exception
+     * @return LayoutDefinition[]
      */
     public function getLayoutDefinitionsForObject(int $dataObjectId): array;
 }
