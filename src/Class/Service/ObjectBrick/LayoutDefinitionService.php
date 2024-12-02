@@ -19,8 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface
-    as ObjectBrickDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface as ObjectBrickDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ObjectBrick\LayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
