@@ -27,6 +27,7 @@ interface LayoutDefinitionServiceInterface
 {
     /**
      * @throws NotFoundException|Exception
+     *
      * @return LayoutDefinition[]
      */
     public function getLayoutDefinitionsForObject(int $dataObjectId): array;
