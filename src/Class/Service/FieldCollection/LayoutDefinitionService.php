@@ -24,9 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\LayoutDefinit
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
 
 /**
  * @internal
@@ -91,7 +91,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
     private function collectFieldCollectionTypes(ClassDefinitionInterface $classDefinition): void
     {
         foreach ($classDefinition->getFieldDefinitions() as $fieldDefinition) {
-            if ($fieldDefinition instanceof DataObject\ClassDefinition\Data\Fieldcollections) {
+            if ($fieldDefinition instanceof Fieldcollections) {
                 $this->fieldCollectionTypes = [...$this->fieldCollectionTypes, ...$fieldDefinition->getAllowedTypes()];
             }
         }

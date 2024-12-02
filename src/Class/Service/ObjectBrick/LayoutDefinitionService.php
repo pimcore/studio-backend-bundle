@@ -24,9 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Event\ObjectBrick\LayoutDefinitionE
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 
 /**
  * @internal
@@ -88,7 +88,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
     private function collectFieldCollectionTypes(ClassDefinitionInterface $classDefinition): void
     {
         foreach ($classDefinition->getFieldDefinitions() as $fieldDefinition) {
-            if ($fieldDefinition instanceof DataObject\ClassDefinition\Data\Objectbricks) {
+            if ($fieldDefinition instanceof Objectbricks) {
                 $this->objectBrickTypes = [...$this->objectBrickTypes, ...$fieldDefinition->getAllowedTypes()];
             }
         }
