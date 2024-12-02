@@ -24,7 +24,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'CustomMetadataVersion',
-    required: ['name', 'language', 'type', 'data'],
+    required: ['name', 'type', 'data'],
     type: 'object'
 )]
 final readonly class CustomMetadataVersion
