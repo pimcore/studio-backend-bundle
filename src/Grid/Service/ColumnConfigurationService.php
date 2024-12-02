@@ -105,6 +105,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
             group: $definition->getGroup(),
             sortable: true,
             editable: !$fieldDefinition->getNoteditable(),
+            exportable: true,
             localizable: $definition->isLocalized(),
             locale: null,
             type: 'dataobject.' . $fieldDefinition->getFieldType(),

@@ -44,6 +44,8 @@ final class ColumnConfiguration implements AdditionalAttributesInterface
         private readonly bool $sortable,
         #[Property(description: 'Editable', type: 'boolean', example: false)]
         private readonly bool $editable,
+        #[Property(description: 'Exportable', type: 'boolean', example: false)]
+        private readonly bool $exportable,
         #[Property(description: 'Localizable', type: 'boolean', example: false)]
         private readonly bool $localizable,
         #[Property(description: 'Locale', type: 'string', example: 'en')]
@@ -80,6 +82,11 @@ final class ColumnConfiguration implements AdditionalAttributesInterface
     public function isEditable(): bool
     {
         return $this->editable;
+    }
+
+    public function isExportable(): bool
+    {
+        return $this->exportable;
     }
 
     public function isLocalizable(): bool
