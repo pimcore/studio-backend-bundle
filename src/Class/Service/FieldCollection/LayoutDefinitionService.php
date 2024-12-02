@@ -22,7 +22,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInte
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection\LayoutDefinitionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\Object\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinitionInterface;
