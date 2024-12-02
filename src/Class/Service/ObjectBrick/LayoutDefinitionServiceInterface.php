@@ -14,15 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
-use Pimcore\Model\DataObject\Fieldcollection\Definition as FieldCollectionDefinition;
+use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
  * @internal
  */
-interface LayoutDefinitionHydratorInterface
+interface LayoutDefinitionServiceInterface
 {
-    public function hydrate(FieldCollectionDefinition $data): LayoutDefinition;
+    /**
+     * @throws NotFoundException|Exception
+     *
+     * @return LayoutDefinition[]
+     */
+    public function getLayoutDefinitionsForObject(int $dataObjectId): array;
 }

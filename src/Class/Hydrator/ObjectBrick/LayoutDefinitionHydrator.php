@@ -14,24 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
-use Pimcore\Model\DataObject\Fieldcollection\Definition as FieldCollectionDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
+use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 
 /**
  * @internal
  */
 final class LayoutDefinitionHydrator implements LayoutDefinitionHydratorInterface
 {
-    public function hydrate(FieldCollectionDefinition $data): LayoutDefinition
+    public function hydrate(ObjectBrickDefinition $data): LayoutDefinition
     {
         $layout = $data->getLayoutDefinitions();
 
         return new LayoutDefinition(
             $data->getKey(),
             $layout->getDatatype(),
-            $data->getGroup(),
             $layout->getName(),
             $layout->getType(),
             $layout->getRegion(),
