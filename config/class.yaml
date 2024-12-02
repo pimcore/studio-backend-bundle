@@ -17,6 +17,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionService
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionService
+
   Pimcore\Bundle\StudioBackendBundle\Class\Repository\QuantityValueRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Repository\QuantityValueRepository
 
@@ -28,3 +31,6 @@ services:
   #
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\FieldCollection\LayoutDefinitionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydrator

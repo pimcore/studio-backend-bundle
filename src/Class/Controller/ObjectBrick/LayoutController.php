@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\FieldCollection;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\ObjectBrick;
 
 use Exception;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\FieldCollection\LayoutDefinitionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -50,26 +50,26 @@ final class LayoutController extends AbstractApiController
      * @throws Exception|NotFoundException
      */
     #[Route(
-        '/class/field-collection/{objectId}/object/layout',
-        name: 'pimcore_studio_api_class_field_collection_object_layout',
+        '/class/object-brick/{objectId}/object/layout',
+        name: 'pimcore_studio_api_class_object_brick_object_layout',
         methods: ['GET']
     )]
     #[Get(
-        path: self::PREFIX . '/class/field-collection/{objectId}/object/layout',
-        operationId: 'class_field_collection_object_layout',
-        description: 'class_field_collection_object_layout_description',
-        summary: 'class_field_collection_object_layout_summary',
+        path: self::PREFIX . '/class/object-brick/{objectId}/object/layout',
+        operationId: 'class_object_brick_object_layout',
+        description: 'class_object_brick_object_layout_description',
+        summary: 'class_object_brick_object_layout_summary',
         tags: [Tags::ClassDefinition->value],
     )]
     #[IdParameter(name: 'objectId', required: true)]
     #[SuccessResponse(
-        description: 'class_field_collection_object_layout_success_response',
+        description: 'class_object_brick_object_layout_success_response',
         content: new CollectionJson(new GenericCollection(LayoutDefinition::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getFieldCollectionLayoutForObject(int $objectId): JsonResponse
+    public function getObjectBrickLayoutForObject(int $objectId): JsonResponse
     {
         $items = $this->layoutDefinitionService->getLayoutDefinitionsForObject($objectId);
 
