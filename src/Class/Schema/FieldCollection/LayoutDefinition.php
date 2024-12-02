@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
+    schema: 'FieldCollectionLayoutDefinition',
     title: 'Field Collection Layout Definition',
     required: [
         'key',

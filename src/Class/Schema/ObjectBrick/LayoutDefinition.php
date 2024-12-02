@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
+    schema: 'ObjectBrickLayoutDefinition',
     title: 'Object Brick Layout Definition',
     required: [
         'key',
