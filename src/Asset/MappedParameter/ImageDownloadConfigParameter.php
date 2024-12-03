@@ -102,30 +102,21 @@ final readonly class ImageDownloadConfigParameter
 
     public function getCoverTransformation(): array
     {
-        return [
-            'width' => $this->getWidth(),
-            'height' => $this->getHeight(),
-            'forceResize' => $this->getForceResize(),
+        return
+            [
+            ... $this->getBaseTransformationValues(),
             'positioning' => $this->getPositioning(),
         ];
     }
 
     public function getFrameTransformation(): array
     {
-        return [
-            'width' => $this->getWidth(),
-            'height' => $this->getHeight(),
-            'forceResize' => $this->getForceResize()
-        ];
+        return $this->getBaseTransformationValues();
     }
 
     public function getContainTransformation(): array
     {
-        return [
-            'width' => $this->getWidth(),
-            'height' => $this->getHeight(),
-            'forceResize' => $this->getForceResize()
-        ];
+        return $this->getBaseTransformationValues();
     }
 
     public function getPositioning(): ?string
@@ -164,5 +155,14 @@ final readonly class ImageDownloadConfigParameter
     private function isValidHeight(): bool
     {
         return $this->height !== null && $this->height > 0;
+    }
+
+    private function getBaseTransformationValues(): array
+    {
+        return [
+            'width' => $this->getWidth(),
+            'height' => $this->getHeight(),
+            'forceResize' => $this->getForceResize()
+        ];
     }
 }
