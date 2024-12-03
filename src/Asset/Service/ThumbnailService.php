@@ -168,6 +168,18 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             }
         }
 
+        if($parameters->hasCover()) {
+            $thumbnailConfig->addItem('cover', $parameters->getCoverTransformation());
+        }
+
+        if($parameters->hasFrame()) {
+            $thumbnailConfig->addItem('frame', $parameters->getFrameTransformation());
+        }
+
+        if($parameters->hasContain()) {
+            $thumbnailConfig->addItem('contain', $parameters->getContainTransformation());
+        }
+
         return $thumbnailConfig;
     }
 

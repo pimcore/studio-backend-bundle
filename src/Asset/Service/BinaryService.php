@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
@@ -75,6 +76,21 @@ final readonly class BinaryService implements BinaryServiceInterface
 
         return $this->getStreamedResponse(
             $this->thumbnailService->getImagePreviewThumbnail($image),
+            HttpResponseHeaders::INLINE_TYPE->value
+        );
+    }
+
+    public function streamImageThumbnailFromConfig(
+        Asset $image,
+        ImageDownloadConfigParameter $configParameter
+    ): StreamedResponse
+    {
+        if (!$image instanceof Image) {
+            throw new InvalidElementTypeException($image->getType());
+        }
+
+        return $this->getStreamedResponse(
+            $this->thumbnailService->getThumbnailFromConfiguration($image, $configParameter),
             HttpResponseHeaders::INLINE_TYPE->value
         );
     }
