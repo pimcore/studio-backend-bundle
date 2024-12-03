@@ -47,23 +47,22 @@ final readonly class ImageDownloadConfigParameter
             throw new InvalidArgumentException('Invalid resize mode ' . $this->resizeMode);
         }
 
-        if($this->resizeMode === ResizeModes::SCALE_BY_HEIGHT && !$this->isValidHeight()) {
+        if ($this->resizeMode === ResizeModes::SCALE_BY_HEIGHT && !$this->isValidHeight()) {
             throw new InvalidArgumentException(
                 'Height must be set and non-negative when using scale by width resize mode'
             );
         }
 
-        if($this->resizeMode === ResizeModes::SCALE_BY_WIDTH && !$this->isValidWidth()) {
+        if ($this->resizeMode === ResizeModes::SCALE_BY_WIDTH && !$this->isValidWidth()) {
             throw new InvalidArgumentException(
                 'Width must be set and non-negative when using scale by width resize mode'
             );
         }
 
-        if(
+        if (
             (!$this->isValidWidth() || !$this->isValidHeight()) &&
             ($this->hasFrame() || $this->hasCover() || $this->hasContain() || $this->resizeMode === ResizeModes::RESIZE)
-        )
-        {
+        ) {
             throw new InvalidArgumentException(
                 'Width, height must be set and non-negative when using frame, cover, contain or resize'
             );
@@ -115,7 +114,7 @@ final readonly class ImageDownloadConfigParameter
         return [
             'width' => $this->getWidth(),
             'height' => $this->getHeight(),
-            'forceResize' => $this->getForceResize()
+            'forceResize' => $this->getForceResize(),
         ];
     }
 
@@ -124,7 +123,7 @@ final readonly class ImageDownloadConfigParameter
         return [
             'width' => $this->getWidth(),
             'height' => $this->getHeight(),
-            'forceResize' => $this->getForceResize()
+            'forceResize' => $this->getForceResize(),
         ];
     }
 

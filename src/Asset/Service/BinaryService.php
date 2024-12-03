@@ -83,8 +83,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     public function streamImageThumbnailFromConfig(
         Asset $image,
         ImageDownloadConfigParameter $configParameter
-    ): StreamedResponse
-    {
+    ): StreamedResponse {
         if (!$image instanceof Image) {
             throw new InvalidElementTypeException($image->getType());
         }
