@@ -112,7 +112,7 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
 
         $value->loadLazyData();
         $originalValue = $fieldDefinition->normalize($value);
-        if (empty($originalValue)) {
+        if ($originalValue === null) {
             return null;
         }
         $languages = array_keys($originalValue);
