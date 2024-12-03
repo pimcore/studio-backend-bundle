@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Thumbnail\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Image;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
@@ -36,7 +36,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ImageClearController extends AbstractApiController
+final class ThumbnailImageClearController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
@@ -52,13 +52,12 @@ final class ImageClearController extends AbstractApiController
      */
     #[Route('/assets/{id}/image/thumbnail/clear', name: 'pimcore_studio_api_clear_image_thumbnail', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
-    #[IsGranted(UserPermissions::THUMBNAILS->value)]
     #[Delete(
         path: self::PREFIX . '/assets/{id}/image/thumbnail/clear',
         operationId: 'asset_image_clear_thumbnail',
         description: 'asset_image_clear_thumbnail_description',
         summary: 'asset_image_clear_thumbnail_summary',
-        tags: [Tags::AssetThumbnails->value]
+        tags: [Tags::Assets->value]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[SuccessResponse]

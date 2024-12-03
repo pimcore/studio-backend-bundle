@@ -100,8 +100,13 @@ asset_get_tree_description: |
   You can use different query parameters to filter the assets and it is possible to exclude folders from the result completely
 asset_get_tree_success_response: Paginated assets with total count as header param as JSON
 asset_get_tree_summary: Get all asset data for the tree
-asset_image_download_by_format_description: |
-  Download the image asset based on the provided <strong>{id}</strong> and <strong>{format}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset image
+asset_image_create_thumbnail_description: |
+  Create a new image thumbnail based on the provided <strong>{id}</strong> and configuration parameters. <br> 
+  The <strong>{id}</strong> must be an ID of existing asset image
+asset_image_clear_thumbnail_summary: Clear image thumbnail by ID
+asset_image_clear_thumbnail_description: |
+    Clear the image thumbnail based on the provided <strong>{id}</strong>. <br> 
+    The <strong>{id}</strong> must be an ID of existing asset image
 asset_image_download_by_format_success_response: Image asset binary file based on format
 asset_image_download_by_format_summary: Download image asset by ID and format
 asset_image_download_by_thumbnail_description: |
