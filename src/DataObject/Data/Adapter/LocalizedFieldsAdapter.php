@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -111,6 +112,9 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
 
         $value->loadLazyData();
         $originalValue = $fieldDefinition->normalize($value);
+        if ($originalValue === null) {
+            return null;
+        }
         $languages = array_keys($originalValue);
         $attributes = array_keys(reset($originalValue));
         $result = [];
@@ -126,8 +130,12 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
                         )
                     );
                 }
-                $fieldDefinition = $value->getFieldDefinition($attribute);
-                $localizedValue =  $this->dataService->getNormalizedValue($localizedValue, $fieldDefinition);
+                $fieldDefinition = $value->getFieldDefinition($attribute, $value->getContext());
+                if ($fieldDefinition === null) {
+                    throw new NotFoundException(type: 'Field Definition', id: $attribute);
+                }
+
+                $localizedValue = $this->dataService->getNormalizedValue($localizedValue, $fieldDefinition);
                 $result[$attribute][$language] = $localizedValue;
             }
         }
