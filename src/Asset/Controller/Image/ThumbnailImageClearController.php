@@ -50,7 +50,11 @@ final class ThumbnailImageClearController extends AbstractApiController
     /**
      * @throws UserNotFoundException
      */
-    #[Route('/assets/{id}/image/thumbnail/clear', name: 'pimcore_studio_api_clear_image_thumbnail', methods: ['DELETE'])]
+    #[Route(
+        path: '/assets/{id}/image/thumbnail/clear',
+        name: 'pimcore_studio_api_clear_image_thumbnail',
+        methods: ['DELETE']
+    )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
         path: self::PREFIX . '/assets/{id}/image/thumbnail/clear',
