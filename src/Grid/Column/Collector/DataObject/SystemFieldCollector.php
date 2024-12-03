@@ -58,6 +58,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
                 group: $this->getTypeName(),
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
                 editable: false,
+                exportable: $availableColumnDefinitions[$type]->isExportable(),
                 localizable: false,
                 locale: null,
                 type: $availableColumnDefinitions[$type]->getType(),

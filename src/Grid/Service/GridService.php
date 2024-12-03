@@ -147,7 +147,7 @@ final class GridService implements GridServiceInterface
         $columns = [];
         foreach ($config as $column) {
             if ($isExport && !$this->isExportable($column['type'])) {
-                throw new InvalidArgumentException('Column type is not exportable');
+                continue;
             }
 
             try {
