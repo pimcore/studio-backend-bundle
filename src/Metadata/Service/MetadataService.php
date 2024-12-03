@@ -14,13 +14,16 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\CustomMetadataEvent;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Hydrator\CustomMetadataHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\CustomMetadataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\PredefinedMetadataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -31,15 +34,16 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 /**
  * @internal
  */
-final readonly class CustomMetadataService implements CustomMetadataServiceInterface
+final readonly class MetadataService implements MetadataServiceInterface
 {
     use ElementProviderTrait;
 
     public function __construct(
-        private CustomMetadataHydratorInterface $hydrator,
+        private MetadataRepositoryInterface $metadataRepository,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private MetadataHydratorInterface $hydrator
     ) {
     }
 
@@ -87,5 +91,24 @@ final readonly class CustomMetadataService implements CustomMetadataServiceInter
         }
 
         return $customMetadata;
+    }
+
+    public function getPredefinedMetadata(MetadataParameters $parameters): array
+    {
+        $originalPredefinedMetadata = $this->metadataRepository->getAllPredefinedMetadataDefinitions($parameters);
+
+        $predefinedMetadata = [];
+
+        foreach ($originalPredefinedMetadata as $predefined) {
+            $metadata = $this->hydrator->hydratePredefined($predefined);
+
+            $this->eventDispatcher->dispatch(
+                new PredefinedMetadataEvent($metadata),
+                PredefinedMetadataEvent::EVENT_NAME
+            );
+            $predefinedMetadata[] = $metadata;
+        }
+
+        return $predefinedMetadata;
     }
 }

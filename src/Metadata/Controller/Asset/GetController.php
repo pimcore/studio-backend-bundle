@@ -14,13 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Data;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Controller\Asset;
 
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\CustomMetadata;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -38,13 +38,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CustomMetadataController extends AbstractApiController
+final class GetController extends AbstractApiController
 {
     use ElementProviderTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomMetadataServiceInterface $customMetadataService
+        private readonly MetadataServiceInterface $metadataService
     ) {
         parent::__construct($serializer);
     }
@@ -59,7 +59,7 @@ final class CustomMetadataController extends AbstractApiController
         operationId: 'asset_custom_metadata_get_by_id',
         description: 'asset_custom_metadata_get_by_id_description',
         summary: 'asset_custom_metadata_get_by_id_summary',
-        tags: [Tags::Assets->name]
+        tags: [Tags::Metadata->name]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[SuccessResponse(
@@ -72,6 +72,6 @@ final class CustomMetadataController extends AbstractApiController
     ])]
     public function getAssetCustomMetadataById(int $id): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->customMetadataService->getCustomMetadata($id)]);
+        return $this->jsonResponse(['items' => $this->metadataService->getCustomMetadata($id)]);
     }
 }

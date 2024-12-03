@@ -14,14 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Event\FieldCollection;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Event\ObjectBrick;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\FieldCollection\LayoutDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick\LayoutDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
 final class LayoutDefinitionEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.field_collection.layout_definition';
+    public const EVENT_NAME = 'pre_response.objectBrick.layout_definition';
 
     public function __construct(private readonly LayoutDefinition $layoutDefinition)
     {

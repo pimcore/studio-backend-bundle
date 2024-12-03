@@ -20,4 +20,6 @@ use Pimcore\Model\Element\ElementInterface;
 interface ReferenceResolverInterface
 {
     public function resolve(ElementInterface $element): array;
+
+    public function resolveData(string $type, int $id): mixed;
 }

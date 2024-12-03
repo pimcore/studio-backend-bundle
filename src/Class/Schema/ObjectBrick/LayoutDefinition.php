@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Schema\ObjectBrick;
 
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
@@ -26,7 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
-    title: 'Field Collection Layout Definition',
+    schema: 'ObjectBrickLayoutDefinition',
+    title: 'Object Brick Layout Definition',
     required: [
         'key',
         'title',
@@ -44,12 +45,10 @@ final class LayoutDefinition implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Key of Field Collection', type: 'string')]
+        #[Property(description: 'Key of Object Brick', type: 'string')]
         private readonly string $key,
         #[Property(description: 'Data Type', type: 'string', example: 'layout')]
         private readonly string $datatype,
-        #[Property(description: 'Group', type: 'string', example: 'Group Name')]
-        private readonly ?string $group = null,
         #[Property(description: 'Name', type: 'string', example: 'Layout')]
         private readonly ?string $name = null,
         #[Property(description: 'Type', type: 'string')]
@@ -74,11 +73,6 @@ final class LayoutDefinition implements AdditionalAttributesInterface
     public function getKey(): string
     {
         return $this->key;
-    }
-
-    public function getGroup(): ?string
-    {
-        return $this->group;
     }
 
     public function getName(): ?string

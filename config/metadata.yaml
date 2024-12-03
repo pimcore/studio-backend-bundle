@@ -4,9 +4,30 @@ services:
     autoconfigure: true
     public: false
 
-  #
-  # Repository
-  #
 
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Controller\:
+    resource: '../src/Metadata/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  # Service
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataService
+
+
+  # Hydrator
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydrator
+
+  # Repository
   Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Updater\Adapter\CustomMetadataAdapter:
+    tags: [ 'pimcore.studio_backend.update_adapter' ]
+
+  # Patcher
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Patcher\Adapter\CustomMetadataAdapter:
+    tags: [ 'pimcore.studio_backend.patch_adapter' ]
