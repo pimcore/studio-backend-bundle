@@ -27,8 +27,8 @@ security:
     firewalls: 
         pimcore_studio: '%pimcore_studio_backend.firewall_settings%'
     access_control:
-      - { path: ^/pimcore-studio/api/(docs|docs.json|translations)$, roles: PUBLIC_ACCESS }
-      - { path: ^/pimcore-studio, roles: ROLE_PIMCORE_USER }
+      - { path: ^/pimcore-studio/api/(docs|docs/json|translations)$, roles: PUBLIC_ACCESS }
+      - { path: ^/pimcore-studio/api, roles: ROLE_PIMCORE_USER }
 ```
 
 3) Make sure the bundle is enabled in the `config/bundles.php` file. The following lines should be added:
