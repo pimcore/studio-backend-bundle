@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Unit\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertParameters;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\ConvertParameters;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ConvertRequestBody extends RequestBody

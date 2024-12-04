@@ -14,20 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Unit\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\QuantityValue\UnitResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Class\Event\PreResponse\QuantityValueConversionEvent;
-use Pimcore\Bundle\StudioBackendBundle\Class\Event\PreResponse\QuantityValueUnitEvent;
-use Pimcore\Bundle\StudioBackendBundle\Class\Repository\QuantityValueRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertAllParameters;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertedQuantityValue;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertedQuantityValues;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertParameters;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\QuantityValueUnit;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Event\PreResponse\QuantityValueConversionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Event\PreResponse\QuantityValueUnitEvent;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\ConvertAllUnitsParameter;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\ConvertUnitParameter;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Repository\QuantityValueRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\ConvertedQuantityValue;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\ConvertedQuantityValues;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\QuantityValueUnit;
 use Pimcore\Model\DataObject\Data\QuantityValue;
 use Pimcore\Model\DataObject\QuantityValue\Unit;
 use Pimcore\Model\DataObject\QuantityValue\UnitConversionService;
@@ -82,7 +82,7 @@ final readonly class QuantityValueService implements QuantityValueServiceInterfa
     /**
      * @throws DatabaseException|NotFoundException
      */
-    public function convertUnit(ConvertParameters $parameters): float|int
+    public function convertUnit(ConvertUnitParameter $parameters): float|int
     {
         return $this->getConvertedValue(
             $this->getUnit($parameters->getFromUnitId()),
@@ -94,7 +94,7 @@ final readonly class QuantityValueService implements QuantityValueServiceInterfa
     /**
      * @throws DatabaseException|NotFoundException
      */
-    public function convertAllUnits(ConvertAllParameters $parameters): ConvertedQuantityValues
+    public function convertAllUnits(ConvertAllUnitsParameter $parameters): ConvertedQuantityValues
     {
         $fromUnit = $this->getUnit($parameters->getFromUnitId());
         $baseUnit = $fromUnit->getBaseunit() ?? $fromUnit;

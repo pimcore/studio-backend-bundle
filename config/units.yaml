@@ -1,0 +1,26 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Unit\Controller\:
+    resource: '../src/Unit/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Unit\Service\QuantityValueServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Unit\Service\QuantityValueService
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Unit\Repository\QuantityValueRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Unit\Repository\QuantityValueRepository

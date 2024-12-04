@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Unit\Schema;
 
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;

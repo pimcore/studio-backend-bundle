@@ -14,23 +14,29 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query;
+namespace Pimcore\Bundle\StudioBackendBundle\Unit\Attribute\Parameter\Query;
 
 use Attribute;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class TextFieldParameter extends QueryParameter
+#[Attribute(Attribute::TARGET_METHOD)]
+final class ValueParameter extends QueryParameter
 {
-    public function __construct(string $name, string $description, bool $required = false, string $example = null)
+    public function __construct()
     {
         parent::__construct(
-            name: $name,
-            description: $description,
+            name: 'value',
+            description: 'Value to convert.',
             in: 'query',
-            required: $required,
-            schema: new Schema(type: 'string', example: $example),
+            required: true,
+            schema: new Schema(
+                anyOf: [
+                    new Schema(type: 'integer', format: 'int32'),
+                    new Schema(type: 'number', format: 'float'),
+                ],
+            ),
+            example: 5
         );
     }
 }

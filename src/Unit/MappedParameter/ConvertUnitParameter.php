@@ -14,22 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter;
 
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
-#[Schema(
-    title: 'Convert All Units Parameters',
-    required: ['fromUnitId', 'value'],
-    type: 'object'
-)]
-final readonly class ConvertAllParameters
+/**
+ * @internal
+ */
+final readonly class ConvertUnitParameter
 {
     public function __construct(
-        #[Property(description: 'From Unit Id', type: 'string', example: 'm')]
+        #[NotBlank]
         private string $fromUnitId,
-        #[Property(description: 'Value', example: 5, anyOf: [new Schema(type: 'float'), new Schema(type: 'integer')])]
+        #[NotBlank]
+        private string $toUnitId,
+        #[NotBlank]
         private float|int $value,
     ) {
     }
@@ -37,6 +36,11 @@ final readonly class ConvertAllParameters
     public function getFromUnitId(): string
     {
         return $this->fromUnitId;
+    }
+
+    public function getToUnitId(): string
+    {
+        return $this->toUnitId;
     }
 
     public function getValue(): float|int
