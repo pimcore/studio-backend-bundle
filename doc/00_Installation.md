@@ -124,6 +124,6 @@ pimcore_studio_backend:
 ```yaml
 security:
     access_control:
-      - { path: ^/your-prefix/api/(docs|docs.json|translations)$, roles: PUBLIC_ACCESS }
-      - { path: ^/your-prefix, roles: ROLE_PIMCORE_USER }
+      - { path: ^/your-prefix/api/(docs|docs/json|translations)$, roles: PUBLIC_ACCESS }
+      - { path: ^/your-prefix/api, roles: ROLE_PIMCORE_USER }
 ```
