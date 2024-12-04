@@ -101,8 +101,7 @@ final readonly class ImageDownloadConfigParameter
 
     public function getCoverTransformation(): array
     {
-        return
-            [
+        return [
             ... $this->getBaseTransformationValues(),
             'positioning' => $this->getPositioning(),
         ];
