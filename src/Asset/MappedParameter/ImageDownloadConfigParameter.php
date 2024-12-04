@@ -160,7 +160,7 @@ final readonly class ImageDownloadConfigParameter
         return [
             'width' => $this->getWidth(),
             'height' => $this->getHeight(),
-            'forceResize' => $this->getForceResize()
+            'forceResize' => $this->getForceResize(),
         ];
     }
 }
