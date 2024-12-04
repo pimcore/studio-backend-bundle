@@ -14,21 +14,29 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Unit\Attribute\Parameter\Query;
 
 use Attribute;
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertParameters;
+use OpenApi\Attributes\QueryParameter;
+use OpenApi\Attributes\Schema;
 
 #[Attribute(Attribute::TARGET_METHOD)]
-final class ConvertRequestBody extends RequestBody
+final class ValueParameter extends QueryParameter
 {
-    public function __construct(string $ref = ConvertParameters::class)
+    public function __construct()
     {
         parent::__construct(
+            name: 'value',
+            description: 'Value to convert.',
+            in: 'query',
             required: true,
-            content: new JsonContent(ref: $ref)
+            schema: new Schema(
+                anyOf: [
+                    new Schema(type: 'integer', format: 'int32'),
+                    new Schema(type: 'number', format: 'float'),
+                ],
+            ),
+            example: 5
         );
     }
 }

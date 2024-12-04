@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Event\PreResponse;
+namespace Pimcore\Bundle\StudioBackendBundle\Unit\Event\PreResponse;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertedQuantityValues;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\ConvertedQuantityValues;
 
 final class QuantityValueConversionEvent extends AbstractPreResponseEvent
 {

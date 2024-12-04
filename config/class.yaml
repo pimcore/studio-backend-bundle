@@ -20,12 +20,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionService
 
-  Pimcore\Bundle\StudioBackendBundle\Class\Repository\QuantityValueRepositoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Class\Repository\QuantityValueRepository
-
-  Pimcore\Bundle\StudioBackendBundle\Class\Service\QuantityValueServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\QuantityValueService
-
   #
   # Hydrators
   #

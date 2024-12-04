@@ -14,24 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\QuantityValue;
+namespace Pimcore\Bundle\StudioBackendBundle\Unit\Controller\QuantityValue;
 
-use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Request\ConvertRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Response\ConvertedValueJson;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertParameters;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\QuantityValueServiceInterface;
+use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Attribute\Parameter\Query\ValueParameter;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\ConvertAllUnitsParameter;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\ConvertedQuantityValues;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Service\QuantityValueServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -39,7 +41,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ConvertController extends AbstractApiController
+final class ConvertAllController extends AbstractApiController
 {
     use ElementProviderTrait;
 
@@ -55,29 +57,35 @@ final class ConvertController extends AbstractApiController
      * @throws DatabaseException|NotFoundException
      */
     #[Route(
-        '/class/quantity-value/convert',
-        name: 'pimcore_studio_api_get_class_quantity_value_convert',
-        methods: ['POST']
+        '/unit/quantity-value/convert-all',
+        name: 'pimcore_studio_api_unit_quantity_value_convert_all',
+        methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
-    #[Post(
-        path: self::PREFIX . '/class/quantity-value/convert',
-        operationId: 'class_quantity_value_unit_convert',
-        description: 'class_quantity_value_unit_convert_description',
-        summary: 'class_quantity_value_unit_convert_summary',
-        tags: [Tags::ClassDefinition->value]
+    #[Get(
+        path: self::PREFIX . '/unit/quantity-value/convert-all',
+        operationId: 'unit_quantity_value_convert_all',
+        description: 'unit_quantity_value_convert_all_description',
+        summary: 'unit_quantity_value_convert_all_summary',
+        tags: [Tags::Units->value]
     )]
+    #[TextFieldParameter(
+        name: 'fromUnitId',
+        description: 'Id of the unit to convert from',
+        required: true
+    )]
+    #[ValueParameter]
     #[SuccessResponse(
-        description: 'class_quantity_value_unit_convert_success_response',
-        content: new ConvertedValueJson()
+        description: 'unit_quantity_value_convert_all_success_response',
+        content: new JsonContent(ref: ConvertedQuantityValues::class)
     )]
-    #[ConvertRequestBody]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
-    public function convert(#[MapRequestPayload] ConvertParameters $parameters): JsonResponse
+    public function covertAll(#[MapQueryString] ConvertAllUnitsParameter $parameters): JsonResponse
     {
-        return $this->jsonResponse(['data' => $this->quantityValueService->convertUnit($parameters)]);
+        return $this->jsonResponse($this->quantityValueService->convertAllUnits($parameters));
     }
 }

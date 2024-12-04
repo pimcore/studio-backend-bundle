@@ -487,6 +487,7 @@ tag_update_by_id_description: |
   See the full description of updatable fields with the schema <strong>Change Tag Parameters</strong>
 tag_update_by_id_success_response: Successfully updated tag data as JSON
 tag_update_by_id_summary: Update a tag by ID
+tag_units_description: Units operations like convert and get all units
 tag_user_description: User Management operations
 tag_versions_description: Versions operations to get/list/publish/delete and cleanup
   versions
@@ -623,16 +624,16 @@ class_object_brick_object_layout_description: |
   Get all layouts from the object bricks for an given object
 class_object_brick_object_layout_summary: Get all layouts from the object bricks for an given object
 class_object_brick_object_layout_success_response: List of layouts
-class_quantity_value_unit_list_description: |
+unit_quantity_value_list_description: |
   List of available quantity value units
-class_quantity_value_unit_list_summary: List of available quantity value units
-class_quantity_value_unit_list_success_response: List of quantity value units
-class_quantity_value_unit_convert_description: |
+unit_quantity_value_list_summary: List of available quantity value units
+unit_quantity_value_list_success_response: List of quantity value units
+unit_quantity_value_convert_description: |
   Convert quantity <strong>{value}</strong> from one unit to another based on the given <strong>{fromUnitId}</strong> and <strong>{toUnitId}</strong>
-class_quantity_value_unit_convert_summary: Convert quantity value from one unit to another
-class_quantity_value_unit_convert_success_response: Converted quantity value
-class_quantity_value_unit_convert_all_description: |
+unit_quantity_value_convert_summary: Convert quantity value from one unit to another
+unit_quantity_value_convert_success_response: Converted quantity value
+unit_quantity_value_convert_all_description: |
   Convert quantity <strong>{value}</strong> from one unit to all other available units based on the given <strong>{fromUnitId}</strong>. <br>
   Units have to have <strong>{fromUnitId}</strong> defined as base unit to be considered for conversion.
-class_quantity_value_unit_convert_all_summary: Convert quantity value from one unit to all other related units
-class_quantity_value_unit_convert_all_success_response: Converted quantity value
+unit_quantity_value_convert_all_summary: Convert quantity value from one unit to all other related units
+unit_quantity_value_convert_all_success_response: Converted quantity value

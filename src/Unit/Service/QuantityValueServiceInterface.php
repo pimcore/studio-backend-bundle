@@ -14,14 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Unit\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertAllParameters;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertedQuantityValues;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ConvertParameters;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\QuantityValueUnit;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\ConvertAllUnitsParameter;
+use Pimcore\Bundle\StudioBackendBundle\Unit\MappedParameter\ConvertUnitParameter;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\ConvertedQuantityValues;
+use Pimcore\Bundle\StudioBackendBundle\Unit\Schema\QuantityValueUnit;
 
 /**
  * @internal
@@ -36,10 +36,10 @@ interface QuantityValueServiceInterface
     /**
      * @throws DatabaseException|NotFoundException
      */
-    public function convertUnit(ConvertParameters $parameters): float|int;
+    public function convertUnit(ConvertUnitParameter $parameters): float|int;
 
     /**
      * @throws DatabaseException|NotFoundException
      */
-    public function convertAllUnits(ConvertAllParameters $parameters): ConvertedQuantityValues;
+    public function convertAllUnits(ConvertAllUnitsParameter $parameters): ConvertedQuantityValues;
 }

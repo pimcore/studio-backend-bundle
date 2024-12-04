@@ -114,6 +114,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_translation_description'
 )]
 #[Tag(
+    name: Tags::Units->value,
+    description: 'tag_units_description'
+)]
+#[Tag(
     name: Tags::User->value,
     description: 'tag_user_description'
 )]
@@ -150,6 +154,7 @@ enum Tags: string
     case Tags = 'Tags';
     case TagsForElement = 'Tags for Element';
     case Translation = 'Translation';
+    case Units = 'Units';
     case User = 'User Management';
     case Versions = 'Versions';
     case Workflows = 'Workflows';
