@@ -86,7 +86,7 @@ final class ConvertController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function convert(#[MapQueryString] ConvertUnitParameter $parameters): JsonResponse
     {

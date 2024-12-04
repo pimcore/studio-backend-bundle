@@ -82,7 +82,7 @@ final class ConvertAllController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function covertAll(#[MapQueryString] ConvertAllUnitsParameter $parameters): JsonResponse
     {
