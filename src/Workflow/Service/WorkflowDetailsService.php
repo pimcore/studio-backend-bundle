@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Workflow\Manager;
+use Symfony\Component\ExpressionLanguage\SyntaxError;
 use Symfony\Component\Workflow\WorkflowInterface;
 use function count;
 
@@ -87,7 +88,11 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
 
     public function hasElementWorkflows(ElementInterface $element): bool
     {
-        return count($this->workflowManager->getAllWorkflowsForSubject($element)) > 0;
+        try {
+            return count($this->workflowManager->getAllWorkflowsForSubject($element)) > 0;
+        } catch (SyntaxError) {
+            return false;
+        }
     }
 
     /**

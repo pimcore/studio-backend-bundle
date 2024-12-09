@@ -42,14 +42,14 @@ final readonly class SubmitAction
             example: WorkflowActionTypes::TRANSITION_ACTION
         )]
         private string $actionType,
-        #[Property(description: 'id of the element', type: 'integer', example: 50)]
+        #[Property(description: 'Id of the element', type: 'integer', example: 50)]
         private int $elementId,
-        #[Property(description: 'type of the element', type: 'string', example: ElementTypes::TYPE_OBJECT)]
+        #[Property(description: 'Type of the element', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
         private string $elementType,
-        #[Property(description: 'name of the workflow', type: 'string', example: 'my_first_workflow')]
-        private string $workflowName,
-        #[Property(description: 'transition', type: 'string', example: 'start_workflow')]
-        private string $transition,
+        #[Property(description: 'Id of the workflow', type: 'string', example: 'my_first_workflow')]
+        private string $workflowId,
+        #[Property(description: 'Id of the transition', type: 'string', example: 'start_workflow')]
+        private string $transitionId,
         #[Property(
             description: 'workflowOptions',
             type: 'object',
@@ -79,12 +79,16 @@ final readonly class SubmitAction
 
     public function getElementType(): string
     {
+        if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
+            return ElementTypes::TYPE_OBJECT;
+        }
+
         return $this->elementType;
     }
 
     public function getWorkflowName(): string
     {
-        return $this->workflowName;
+        return $this->workflowId;
     }
 
     public function getWorkflowOptions(): array
@@ -94,6 +98,6 @@ final readonly class SubmitAction
 
     public function getTransition(): string
     {
-        return $this->transition;
+        return $this->transitionId;
     }
 }
