@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Parameter\Query\ClassNameParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Response\Property\AnyOfDataObjects;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
@@ -37,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\ParentI
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PathIncludeDescendantsParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PathIncludeParentParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PathParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -85,12 +85,17 @@ final class TreeController extends AbstractApiController
     #[PathParameter]
     #[PathIncludeParentParameter]
     #[PathIncludeDescendantsParameter]
-    #[ClassNameParameter]
+    #[TextFieldParameter(
+        name: 'className',
+        description: 'Filter by class.',
+        example: 'Car'
+    )]
     #[SuccessResponse(
         description: 'data_object_get_tree_success_response',
         content: new CollectionJson(new AnyOfDataObjects())
     )]
     #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
