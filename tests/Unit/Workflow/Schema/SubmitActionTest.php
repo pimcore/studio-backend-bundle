@@ -34,8 +34,8 @@ final class SubmitActionTest extends Unit
             actionType: 'someUnusualType',
             elementId: 1,
             elementType: 'object',
-            workflowName: 'myWorkflow',
-            transition: 'myTransition',
+            workflowId: 'myWorkflow',
+            transitionId: 'myTransition',
             workflowOptions: []
         );
     }
@@ -48,8 +48,8 @@ final class SubmitActionTest extends Unit
             actionType: 'global',
             elementId: 1,
             elementType: 'someUnusualElementType',
-            workflowName: 'myWorkflow',
-            transition: 'myTransition',
+            workflowId: 'myWorkflow',
+            transitionId: 'myTransition',
             workflowOptions: []
         );
     }
@@ -60,8 +60,8 @@ final class SubmitActionTest extends Unit
             actionType: 'transition',
             elementId: 1,
             elementType: 'asset',
-            workflowName: 'myWorkflow',
-            transition: 'myTransition',
+            workflowId: 'myWorkflow',
+            transitionId: 'myTransition',
             workflowOptions: []
         );
 
