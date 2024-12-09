@@ -32,7 +32,12 @@ final readonly class ImageDownloadConfigParameter
         private ?int $width = null,
         private ?int $height = null,
         private ?int $quality = null,
-        private ?int $dpi = null
+        private ?int $dpi = null,
+        private ?string $positioning = 'center',
+        private string $cover = 'false',
+        private string $frame = 'false',
+        private string $contain = 'false',
+        private string $forceResize = 'false',
     ) {
         if (!in_array($this->mimeType, [MimeTypes::JPEG->value, MimeTypes::PNG->value], true)) {
             throw new InvalidArgumentException('Invalid mime type' . $this->mimeType);
@@ -40,6 +45,27 @@ final readonly class ImageDownloadConfigParameter
 
         if (!in_array($this->resizeMode, ResizeModes::ALLOWED_MODES)) {
             throw new InvalidArgumentException('Invalid resize mode ' . $this->resizeMode);
+        }
+
+        if ($this->resizeMode === ResizeModes::SCALE_BY_HEIGHT && !$this->isValidHeight()) {
+            throw new InvalidArgumentException(
+                'Height must be set and non-negative when using scale by width resize mode'
+            );
+        }
+
+        if ($this->resizeMode === ResizeModes::SCALE_BY_WIDTH && !$this->isValidWidth()) {
+            throw new InvalidArgumentException(
+                'Width must be set and non-negative when using scale by width resize mode'
+            );
+        }
+
+        if (
+            (!$this->isValidWidth() || !$this->isValidHeight()) &&
+            ($this->hasFrame() || $this->hasCover() || $this->hasContain() || $this->resizeMode === ResizeModes::RESIZE)
+        ) {
+            throw new InvalidArgumentException(
+                'Width, height must be set and non-negative when using frame, cover, contain or resize'
+            );
         }
     }
 
@@ -71,5 +97,70 @@ final readonly class ImageDownloadConfigParameter
     public function getDpi(): ?int
     {
         return $this->dpi;
+    }
+
+    public function getCoverTransformation(): array
+    {
+        return [
+            ... $this->getBaseTransformationValues(),
+            'positioning' => $this->getPositioning(),
+        ];
+    }
+
+    public function getFrameTransformation(): array
+    {
+        return $this->getBaseTransformationValues();
+    }
+
+    public function getContainTransformation(): array
+    {
+        return $this->getBaseTransformationValues();
+    }
+
+    public function getPositioning(): ?string
+    {
+        return $this->positioning;
+    }
+
+    public function getForceResize(): bool
+    {
+        return $this->forceResize === 'true'; // TODO: symfony 7.1 will support bool type
+    }
+
+    public function hasCover(): bool
+    {
+        // TODO: symfony 7.1 will support bool type
+        return $this->cover === 'true';
+    }
+
+    public function hasFrame(): bool
+    {
+        // TODO: symfony 7.1 will support bool type
+        return $this->frame === 'true';
+    }
+
+    public function hasContain(): bool
+    {
+        // TODO: symfony 7.1 will support bool type
+        return $this->contain === 'true';
+    }
+
+    private function isValidWidth(): bool
+    {
+        return $this->width !== null && $this->width > 0;
+    }
+
+    private function isValidHeight(): bool
+    {
+        return $this->height !== null && $this->height > 0;
+    }
+
+    private function getBaseTransformationValues(): array
+    {
+        return [
+            'width' => $this->getWidth(),
+            'height' => $this->getHeight(),
+            'forceResize' => $this->getForceResize(),
+        ];
     }
 }

@@ -120,6 +120,11 @@ asset_image_download_custom_description: |
   The <strong>{id}</strong> must be an ID of existing asset image
 asset_image_download_custom_success_response: Custom image binary file
 asset_image_download_custom_summary: Download custom image by ID and configuration
+asset_image_stream_custom_summary: Stream custom image thumbnail by ID and configuration
+asset_image_stream_custom_description: |
+  Stream image asset thumbnail based on the provided <strong>{id}</strong> and configuration parameters. <br> 
+  The <strong>{id}</strong> must be an ID of existing asset image
+asset_image_stream_custom_success_response: Image asset stream based on custom thumbnail configuration
 asset_image_stream_preview_description: |
   Stream image asset preview based on the provided <strong>{id}</strong>. <br> 
   The <strong>{id}</strong> must be an ID of existing asset image
