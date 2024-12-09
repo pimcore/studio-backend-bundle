@@ -42,13 +42,13 @@ final readonly class SubmitAction
             example: WorkflowActionTypes::TRANSITION_ACTION
         )]
         private string $actionType,
-        #[Property(description: 'id of the element', type: 'integer', example: 50)]
+        #[Property(description: 'Id of the element', type: 'integer', example: 50)]
         private int $elementId,
-        #[Property(description: 'type of the element', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
+        #[Property(description: 'Type of the element', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
         private string $elementType,
-        #[Property(description: 'id of the workflow', type: 'string', example: 'my_first_workflow')]
+        #[Property(description: 'Id of the workflow', type: 'string', example: 'my_first_workflow')]
         private string $workflowId,
-        #[Property(description: 'id of the transition', type: 'string', example: 'start_workflow')]
+        #[Property(description: 'Id of the transition', type: 'string', example: 'start_workflow')]
         private string $transitionId,
         #[Property(
             description: 'workflowOptions',
