@@ -22,9 +22,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter;
 final readonly class PredefinedMetadataParameter
 {
     public function __construct(
-        private ?string $subType = null,
         private string $group,
+        private ?string $subType = null,
     ) {
+    }
+
+    public function getGroup(): string
+    {
+        return $this->group;
     }
 
     public function getSubType(): ?string
@@ -32,8 +37,4 @@ final readonly class PredefinedMetadataParameter
         return $this->subType;
     }
 
-    public function getGroup(): string
-    {
-        return $this->group;
-    }
 }
