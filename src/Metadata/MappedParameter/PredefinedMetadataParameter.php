@@ -36,5 +36,4 @@ final readonly class PredefinedMetadataParameter
     {
         return $this->subType;
     }
-
 }
