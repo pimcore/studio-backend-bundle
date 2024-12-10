@@ -59,6 +59,7 @@ final class DeleteFolderController extends AbstractApiController
     #[IdParameter(type: 'folder')]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR
     ])]
     public function deleteRoleFolder(int $id): Response
     {

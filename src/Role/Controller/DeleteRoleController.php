@@ -60,6 +60,7 @@ final class DeleteRoleController extends AbstractApiController
     #[IdParameter(type: 'role')]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR
     ])]
     public function deleteRole(int $id): Response
     {
