@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\PredefinedMetadataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
 
@@ -39,4 +40,9 @@ interface MetadataServiceInterface
      * @return array<int, PredefinedMetadata>
      */
     public function getPredefinedMetadata(MetadataParameters $parameters): array;
+
+    /**
+     * @return array<int, PredefinedMetadata>
+     */
+    public function getAssetPredefinedMetadata(PredefinedMetadataParameter $parameters): array;
 }

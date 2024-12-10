@@ -19,9 +19,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Service;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\CustomMetadataEvent;
-use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\PredefinedMetadataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\PredefinedMetadataAllEvent;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\PredefinedMetadataGroupEvent;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\PredefinedMetadataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -37,6 +39,8 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class MetadataService implements MetadataServiceInterface
 {
     use ElementProviderTrait;
+
+    private const DEFAULT_GROUP = 'default';
 
     public function __construct(
         private MetadataRepositoryInterface $metadataRepository,
@@ -97,15 +101,39 @@ final readonly class MetadataService implements MetadataServiceInterface
     {
         $originalPredefinedMetadata = $this->metadataRepository->getAllPredefinedMetadataDefinitions($parameters);
 
-        $predefinedMetadata = [];
+        return $this->hydrateMetadataAndDispatchEvent(
+            $originalPredefinedMetadata,
+            PredefinedMetadataAllEvent::class,
+            PredefinedMetadataAllEvent::EVENT_NAME
+        );
+    }
 
-        foreach ($originalPredefinedMetadata as $predefined) {
+    public function getAssetPredefinedMetadata(PredefinedMetadataParameter $parameters): array
+    {
+        $predefinedMetadata = $this->metadataRepository->getAllPredefinedMetadata();
+        $subType = $parameters->getSubType();
+        $group = $parameters->getGroup();
+
+        $filteredMetadata = array_filter($predefinedMetadata, static function ($item) use ($subType, $group) {
+            return
+                (empty($item->getTargetSubtype()) || $item->getTargetSubtype() === $subType) &&
+                ($group === self::DEFAULT_GROUP || $group === $item->getGroup());
+        });
+
+        return $this->hydrateMetadataAndDispatchEvent(
+            $filteredMetadata,
+            PredefinedMetadataGroupEvent::class,
+            PredefinedMetadataGroupEvent::EVENT_NAME
+        );
+    }
+
+    private function hydrateMetadataAndDispatchEvent(array $list, string $eventClass, string $eventName): array
+    {
+        $predefinedMetadata = [];
+        foreach ($list as $predefined) {
             $metadata = $this->hydrator->hydratePredefined($predefined);
 
-            $this->eventDispatcher->dispatch(
-                new PredefinedMetadataEvent($metadata),
-                PredefinedMetadataEvent::EVENT_NAME
-            );
+            $this->eventDispatcher->dispatch(new $eventClass($metadata), $eventName);
             $predefinedMetadata[] = $metadata;
         }
 

@@ -19,18 +19,19 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Controller\Asset;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\PredefinedMetadataParameter;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -38,7 +39,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetController extends AbstractApiController
+final class GetPredefinedController extends AbstractApiController
 {
     use ElementProviderTrait;
 
@@ -52,31 +53,27 @@ final class GetController extends AbstractApiController
     /**
      * @throws AccessDeniedException
      */
-    #[Route(
-        '/assets/{id}/custom-metadata',
-        name: 'pimcore_studio_api_get_asset_custom_metadata',
-        requirements: ['id' => '\d+'],
-        methods: ['GET']
-    )]
+    #[Route('/assets/predefined-metadata', name: 'pimcore_studio_api_get_asset_predefined_metadata', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[GET(
-        path: self::PREFIX . '/assets/{id}/custom-metadata',
-        operationId: 'asset_custom_metadata_get_by_id',
-        description: 'asset_custom_metadata_get_by_id_description',
-        summary: 'asset_custom_metadata_get_by_id_summary',
+        path: self::PREFIX . '/assets/predefined-metadata',
+        operationId: 'asset_get_predefined_metadata',
+        description: 'asset_get_predefined_metadata_description',
+        summary: 'asset_get_predefined_metadata_summary',
         tags: [Tags::Metadata->name]
     )]
-    #[IdParameter(type: ElementTypes::TYPE_ASSET)]
+    #[TextFieldParameter(name: 'subType', description: 'subtype of the asset', required: false, example: 'image')]
+    #[TextFieldParameter(name: 'group', description: 'group of the metadata', required: true, example: 'default')]
     #[SuccessResponse(
-        description: 'asset_custom_metadata_get_by_id_success_response',
-        content: new ItemsJson(CustomMetadata::class)
+        description: 'asset_get_predefined_metadata_success_response',
+        content: new ItemsJson(PredefinedMetadata::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAssetCustomMetadataById(int $id): JsonResponse
+    public function getAssetPredefinedMetadata(#[MapQueryString] PredefinedMetadataParameter $parameters): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->metadataService->getCustomMetadata($id)]);
+        return $this->jsonResponse(['items' => $this->metadataService->getAssetPredefinedMetadata($parameters)]);
     }
 }

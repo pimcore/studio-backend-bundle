@@ -19,9 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
 
-final class PredefinedMetadataEvent extends AbstractPreResponseEvent
+final class PredefinedMetadataGroupEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.asset_predefined_metadata';
+    public const EVENT_NAME = 'pre_response.asset_predefined_metadata_group';
 
     public function __construct(
         private readonly PredefinedMetadata $predefinedMetadata
