@@ -69,6 +69,7 @@ final class CreateUserController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function createUser(#[MapRequestPayload] CreateParameter $createParameter): JsonResponse
     {

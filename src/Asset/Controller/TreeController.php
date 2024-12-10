@@ -88,8 +88,9 @@ final class TreeController extends AbstractApiController
         content: new CollectionJson(new AnyOfAsset())
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getAssetTree(#[MapQueryString] ElementParameters $parameters): JsonResponse
     {

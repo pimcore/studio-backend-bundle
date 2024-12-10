@@ -72,6 +72,7 @@ final class ListSavedConfigurationsController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(Configuration::class))
     )]
     #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

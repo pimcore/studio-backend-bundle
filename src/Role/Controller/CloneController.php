@@ -71,6 +71,7 @@ final class CloneController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function cloneRole(int $id, #[MapRequestPayload] RoleCloneParameter $roleClone): JsonResponse
     {

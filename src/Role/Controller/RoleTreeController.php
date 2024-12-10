@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\TreeNode;
 use Pimcore\Bundle\StudioBackendBundle\Role\Service\RoleServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,7 +72,9 @@ final class RoleTreeController extends AbstractApiController
         description: 'role_get_tree_success_response',
         content: new CollectionJson(new GenericCollection(TreeNode::class))
     )]
-    #[DefaultResponses]
+    #[DefaultResponses([
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
+    ])]
     public function getRoleTree(#[MapQueryString] MappedParentIdParameter $roleTreeListingParameter): Response
     {
         $roles = $this->roleService->getRoleTreeCollection($roleTreeListingParameter);
