@@ -88,7 +88,7 @@ final class CustomStreamController extends AbstractApiController
     #[ResizeModeParameter]
     #[ImageConfigParameter('width', 140)]
     #[ImageConfigParameter('height')]
-    #[ImageConfigParameter('quality')]
+    #[ImageConfigParameter('quality', 85)]
     #[ImageConfigParameter('dpi')]
     #[ContainParameter]
     #[FrameParameter]
