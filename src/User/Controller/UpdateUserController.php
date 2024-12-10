@@ -79,7 +79,7 @@ final class UpdateUserController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::FORBIDDEN,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function updateUsers(int $id, #[MapRequestPayload] UpdateUserParameter $userUpdate): JsonResponse
     {

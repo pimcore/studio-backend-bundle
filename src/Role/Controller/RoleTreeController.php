@@ -73,7 +73,7 @@ final class RoleTreeController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(TreeNode::class))
     )]
     #[DefaultResponses([
-        HttpResponseCodes::INTERNAL_SERVER_ERROR
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function getRoleTree(#[MapQueryString] MappedParentIdParameter $roleTreeListingParameter): Response
     {

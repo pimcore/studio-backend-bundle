@@ -66,7 +66,7 @@ final class CreateFolderController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function createRoleFolder(#[MapRequestPayload] CreateParameter $createParameter): JsonResponse
     {

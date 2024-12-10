@@ -74,7 +74,7 @@ final class CloneController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function cloneUser(int $id, #[MapRequestPayload] UserCloneParameter $userClone): JsonResponse
     {

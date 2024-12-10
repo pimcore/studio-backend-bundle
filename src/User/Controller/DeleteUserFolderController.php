@@ -63,7 +63,7 @@ final class DeleteUserFolderController extends AbstractApiController
     #[IdParameter(type: 'user-folder')]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function deleteUserFolder(int $id): Response
     {

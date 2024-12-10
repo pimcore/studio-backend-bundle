@@ -74,7 +74,7 @@ final class UpdateRoleController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function updateRoleById(int $id, #[MapRequestPayload] UpdateRoleParameter $roleUpdate): JsonResponse
     {

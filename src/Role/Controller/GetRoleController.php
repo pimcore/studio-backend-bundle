@@ -67,7 +67,7 @@ final class GetRoleController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::INTERNAL_SERVER_ERROR
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function getRoleById(int $id): JsonResponse
     {
