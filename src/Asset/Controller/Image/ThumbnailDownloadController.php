@@ -82,8 +82,9 @@ final class ThumbnailDownloadController extends AbstractApiController
         headers: [new ContentDisposition()]
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function downloadImageByThumbnail(int $id, string $thumbnailName): BinaryFileResponse
     {

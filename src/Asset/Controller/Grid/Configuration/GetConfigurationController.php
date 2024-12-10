@@ -72,8 +72,9 @@ final class GetConfigurationController extends AbstractApiController
         content: new JsonContent(ref: DetailedConfiguration::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getAssetGridConfiguration(
         int $folderId,

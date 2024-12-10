@@ -64,8 +64,9 @@ final class GetController extends AbstractApiController
         content: new OneOfAssetJson()
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getAssetById(int $id): JsonResponse
     {
