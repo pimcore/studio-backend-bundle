@@ -646,3 +646,7 @@ unit_quantity_value_convert_all_description: |
   Units have to have <strong>{fromUnitId}</strong> defined as base unit to be considered for conversion.
 unit_quantity_value_convert_all_summary: Convert quantity value from one unit to all other related units
 unit_quantity_value_convert_all_success_response: Converted quantity value
+data_object_get_select_options_description: |
+  Get all dynamic select options for data objects for given field
+data_object_get_select_options_summary: Get all dynamic select options for data objects
+data_object_get_select_options_success_response: List of dynamic select options
