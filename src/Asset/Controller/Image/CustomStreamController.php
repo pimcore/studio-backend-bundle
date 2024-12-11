@@ -18,14 +18,21 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Image;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Header\ContentDisposition;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\ThumbnailNameParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ContainParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\CoverParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ForceResizeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\FrameParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageConfigParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\MimeTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ResizeModeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\BinaryServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
@@ -34,8 +41,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -43,11 +52,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ThumbnailDownloadController extends AbstractApiController
+final class CustomStreamController extends AbstractApiController
 {
     public function __construct(
         private readonly AssetServiceInterface $assetService,
-        private readonly DownloadServiceInterface $downloadService,
+        private readonly BinaryServiceInterface $binaryService,
         private readonly SecurityServiceInterface $securityService,
         SerializerInterface $serializer
     ) {
@@ -58,44 +67,51 @@ final class ThumbnailDownloadController extends AbstractApiController
      * @throws AccessDeniedException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
-     * @throws SearchException
+     * @throws ThumbnailResizingFailedException
      * @throws UserNotFoundException
      */
     #[Route(
-        '/assets/{id}/image/download/thumbnail/{thumbnailName}',
-        name: 'pimcore_studio_api_download_image_thumbnail',
+        '/assets/{id}/image/stream/custom',
+        name: 'pimcore_studio_api_stream_image_custom',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/{id}/image/download/thumbnail/{thumbnailName}',
-        operationId: 'asset_image_download_by_thumbnail',
-        description: 'asset_image_download_by_thumbnail_description',
-        summary: 'asset_image_download_by_thumbnail_summary',
+        path: self::PREFIX . '/assets/{id}/image/stream/custom',
+        operationId: 'asset_image_stream_custom',
+        description: 'asset_image_stream_custom_description',
+        summary: 'asset_image_stream_custom_summary',
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'image')]
-    #[ThumbnailNameParameter]
+    #[MimeTypeParameter]
+    #[ResizeModeParameter]
+    #[ImageConfigParameter('width', 140)]
+    #[ImageConfigParameter('height')]
+    #[ImageConfigParameter('quality', 85)]
+    #[ImageConfigParameter('dpi')]
+    #[ContainParameter]
+    #[FrameParameter]
+    #[CoverParameter]
+    #[ForceResizeParameter]
     #[SuccessResponse(
-        description: 'asset_image_download_by_thumbnail_success_response',
-        content: new MediaType(),
-        headers: [new ContentDisposition()]
+        description: 'asset_image_stream_custom_success_response',
+        content: [new MediaType('image/*')],
+        headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]
     #[DefaultResponses([
-        HttpResponseCodes::BAD_REQUEST,
-        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
-    public function downloadImageByThumbnail(int $id, string $thumbnailName): BinaryFileResponse
-    {
+    public function streamCustomThumbnailConfig(
+        int $id,
+        #[MapQueryString] ImageDownloadConfigParameter $parameters
+    ): StreamedResponse {
         $asset = $this->assetService->getAssetElement(
             $this->securityService->getCurrentUser(),
             $id
         );
 
-        return $this->downloadService->downloadImageByThumbnail(
-            $asset,
-            $thumbnailName
-        );
+        return $this->binaryService->streamImageThumbnailFromConfig($asset, $parameters);
     }
 }

@@ -75,8 +75,9 @@ final class GetAvailableColumnsController extends AbstractApiController
         )
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getAvailableAssetGridColumns(): JsonResponse
     {

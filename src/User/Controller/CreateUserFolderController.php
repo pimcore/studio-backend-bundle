@@ -69,6 +69,7 @@ final class CreateUserFolderController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function createUserFolder(#[MapRequestPayload] CreateParameter $createParameter): JsonResponse
     {
