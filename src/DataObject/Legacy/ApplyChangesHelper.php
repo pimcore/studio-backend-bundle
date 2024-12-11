@@ -158,8 +158,8 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
             $owner->setUserModification($this->securityService->getCurrentUser()->getId());
             $owner->save();
             $this->logger->debug(
-                'Saved object id [ ' . $owner->getId() . ' ] by remote modification through 
-                [' . $object->getId() . '], Action: deleted [ ' . $object->getId() . " ] 
+                'Saved object id [ ' . $owner->getId() . ' ] by remote modification through
+                [' . $object->getId() . '], Action: deleted [ ' . $object->getId() . " ]
                 from [ $ownerFieldName]"
             );
         }
@@ -178,8 +178,8 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
                 $owner->setUserModification($this->securityService->getCurrentUser()->getId());
                 $owner->save();
                 $this->logger->debug(
-                    'Saved object id [ ' . $owner->getId() . ' ] by remote modification 
-                    through [' . $object->getId() . '], Action: 
+                    'Saved object id [ ' . $owner->getId() . ' ] by remote modification
+                    through [' . $object->getId() . '], Action:
                     added [ ' . $object->getId() . " ] to [ $ownerFieldName ]"
                 );
             }
