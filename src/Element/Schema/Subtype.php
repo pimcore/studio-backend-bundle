@@ -55,6 +55,4 @@ final class Subtype implements AdditionalAttributesInterface
     {
         return $this->elementSubtype;
     }
-
-
 }

@@ -112,7 +112,7 @@ final readonly class ElementService implements ElementServiceInterface
 
         $subtype = new Subtype($parameters->getId(), $parameters->getType(), $this->getSubtypeFromElement($element));
         $this->eventDispatcher->dispatch(new ElementSubtypeEvent($subtype), ElementSubtypeEvent::EVENT_NAME);
-        
+
         return $subtype;
     }
 
@@ -131,7 +131,7 @@ final readonly class ElementService implements ElementServiceInterface
         if ($subtype === null) {
             throw new ApiNotFoundException('Subtype for Element', $element->getId());
         }
-        
+
         return $subtype;
     }
 }
