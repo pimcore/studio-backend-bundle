@@ -17,10 +17,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementSubtypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
@@ -28,6 +33,7 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Exception\NotFoundException;
 use Pimcore\Model\UserInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -37,6 +43,7 @@ final readonly class ElementService implements ElementServiceInterface
     use ElementProviderTrait;
 
     public function __construct(
+        private EventDispatcherInterface $eventDispatcher,
         private ServiceResolverInterface $serviceResolver,
         private SecurityServiceInterface $securityService,
     ) {
@@ -93,5 +100,38 @@ final readonly class ElementService implements ElementServiceInterface
         }
 
         return $element->getDependencies()->isRequired();
+    }
+
+    /**
+     * @throws ApiNotFoundException
+     */
+    public function getElementSubtype(ElementParameters $parameters): Subtype
+    {
+        $user = $this->securityService->getCurrentUser();
+        $element = $this->getAllowedElementById($parameters->getType(), $parameters->getId(), $user);
+
+        $subtype = new Subtype($parameters->getId(), $parameters->getType(), $this->getSubtypeFromElement($element));
+        $this->eventDispatcher->dispatch(new ElementSubtypeEvent($subtype), ElementSubtypeEvent::EVENT_NAME);
+        
+        return $subtype;
+    }
+
+    /**
+     * @throws ApiNotFoundException
+     */
+    private function getSubtypeFromElement(ElementInterface $element): string
+    {
+        $subtype = match (true) {
+            $element instanceof Asset, $element instanceof Document => $element->getType(),
+            $element instanceof DataObject\Concrete => $element->getClassName(),
+            $element instanceof DataObject\Folder => ElementTypes::TYPE_FOLDER,
+            default => null,
+        };
+
+        if ($subtype === null) {
+            throw new ApiNotFoundException('Subtype for Element', $element->getId());
+        }
+        
+        return $subtype;
     }
 }
