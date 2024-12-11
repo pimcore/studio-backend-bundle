@@ -82,7 +82,7 @@ interface UploadServiceInterface
         int $assetId,
         UploadedFile $file,
         UserInterface $user
-    ): void;
+    ): string;
 
     /**
      * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException

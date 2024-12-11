@@ -142,7 +142,7 @@ asset_patch_folder_by_id_summary: Patch all assets based on folder ID and filter
 asset_replace_description: |
   Replace the existing asset binary based on the given <strong>{id}</strong> with the provided {file} binary. <br> 
   The new asset binary mime type must be the same as the existing asset binary mime type.
-asset_replace_success_response: Successfully replaced asset binary
+asset_replace_success_response: File name of the successfully replaced asset
 asset_replace_summary: Replace existing asset binary
 asset_update_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
