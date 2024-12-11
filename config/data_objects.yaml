@@ -44,6 +44,23 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\LayoutServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\LayoutService
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsService
+
+  #
+  # Legacy Services
+  #
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\ApplyChangesHelperInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\ApplyChangesHelper
+
+
+  #
+  # Hydrator
+  #
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydrator
+
+
   #
   # Data Adapters
   #
