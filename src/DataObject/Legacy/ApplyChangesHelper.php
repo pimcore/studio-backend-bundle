@@ -61,7 +61,11 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
                 if ($fd instanceof Localizedfields) {
                     $user = $this->securityService->getCurrentUser();
                     if (!$user->getAdmin()) {
-                        $allowedLanguages = $this->dataObjectServiceResolver->getLanguagePermissions($object, $user, 'lEdit');
+                        $allowedLanguages = $this->dataObjectServiceResolver->getLanguagePermissions(
+                            $object,
+                            $user,
+                            'lEdit'
+                        );
                         if (!is_null($allowedLanguages)) {
                             $allowedLanguages = array_keys($allowedLanguages);
                             $submittedLanguages = array_keys($changes[$key]);
@@ -122,7 +126,12 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
     /**
      * @throws DuplicateFullPathException
      */
-    private function processRemoteOwnerRelations(Concrete $object, array $toDelete, array $toAdd, string $ownerFieldName): void
+    private function processRemoteOwnerRelations(
+        Concrete $object,
+        array $toDelete,
+        array $toAdd,
+        string $ownerFieldName
+    ): void
     {
         $getter = 'get' . ucfirst($ownerFieldName);
         $setter = 'set' . ucfirst($ownerFieldName);
@@ -149,7 +158,11 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
             }
             $owner->setUserModification($this->securityService->getCurrentUser()->getId());
             $owner->save();
-            $this->logger->debug('Saved object id [ ' . $owner->getId() . ' ] by remote modification through [' . $object->getId() . '], Action: deleted [ ' . $object->getId() . " ] from [ $ownerFieldName]");
+            $this->logger->debug(
+                'Saved object id [ ' . $owner->getId() . ' ] by remote modification through 
+                [' . $object->getId() . '], Action: deleted [ ' . $object->getId() . " ] 
+                from [ $ownerFieldName]"
+            );
         }
 
         foreach ($toAdd as $id) {
@@ -165,7 +178,11 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
                 $owner->$setter($currentData);
                 $owner->setUserModification($this->securityService->getCurrentUser()->getId());
                 $owner->save();
-                $this->logger->debug('Saved object id [ ' . $owner->getId() . ' ] by remote modification through [' . $object->getId() . '], Action: added [ ' . $object->getId() . " ] to [ $ownerFieldName ]");
+                $this->logger->debug(
+                    'Saved object id [ ' . $owner->getId() . ' ] by remote modification 
+                    through [' . $object->getId() . '], Action: 
+                    added [ ' . $object->getId() . " ] to [ $ownerFieldName ]"
+                );
             }
         }
     }

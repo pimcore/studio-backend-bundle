@@ -124,7 +124,10 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
      * @throws InvalidArgumentException
      * @throws Exception
      */
-    private function getFieldDefinition(SelectOptionsParameter $selectOptionsParameter, Concrete $object): Select|Multiselect
+    private function getFieldDefinition(
+        SelectOptionsParameter $selectOptionsParameter,
+        Concrete $object
+    ): Select|Multiselect
     {
         $fieldDefinition = $object->getClass()->getFieldDefinition($selectOptionsParameter->getFieldName());
 
