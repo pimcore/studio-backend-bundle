@@ -103,7 +103,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         UserInterface $user
     ): void {
         $event = $this->getDeleteEvent($element);
-        $this->eventDispatcher->dispatch($event);
+        $this->eventDispatcher->dispatch($event, $event::EVENT_NAME);
 
         if (!$event->getDeletionAllowed()) {
             throw new ElementDeletionFailedException(

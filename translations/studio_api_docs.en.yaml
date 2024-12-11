@@ -234,6 +234,10 @@ element_get_id_by_path_description: |
   Get the element ID based on the given <strong>{path}</strong> and <strong>{elementType}</strong>. <br> The <strong>{path}</strong> must be a valid path of an existing element with provided <strong>{elementType}</strong>
 element_get_id_by_path_success_response: ID of the element
 element_get_id_by_path_summary: Get ID of the element by path query parameter and element type path parameter
+element_get_subtype_description: |
+  Get the subtype of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>.
+element_get_subtype_success_response: Subtype of the element
+element_get_subtype_summary: Get subtype of the element by id and element type path parameter
 email_blocklist_add_description: |
   Add an E-mail address to the blocklist. <br> The E-mail address has to be compliant with the PHP validate filter.
 email_blocklist_add_success_response: Successfully added E-mail address to blocklist
