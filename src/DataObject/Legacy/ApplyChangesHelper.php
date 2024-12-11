@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy;
 
 use Exception;
@@ -27,6 +26,10 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Psr\Log\LoggerInterface;
+use function count;
+use function in_array;
+use function is_array;
+use function is_null;
 
 /**
  * Copied from old admin-ui-classic-bundle
@@ -43,8 +46,7 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private DataObjectResolverInterface $dataObjectResolver,
         private LoggerInterface $logger,
-    )
-    {
+    ) {
     }
 
     /**

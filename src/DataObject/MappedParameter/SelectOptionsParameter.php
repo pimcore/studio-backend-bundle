@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter;
 
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -24,7 +23,6 @@ use Symfony\Component\Validator\Constraints\NotBlank;
  */
 final readonly class SelectOptionsParameter
 {
-
     public function __construct(
         #[NotBlank(message: 'The object id must not be empty.')]
         private int $objectId,
@@ -33,8 +31,7 @@ final readonly class SelectOptionsParameter
         private array $context,
         private array $changedData = [],
 
-    )
-    {
+    ) {
     }
 
     public function getFieldName(): string

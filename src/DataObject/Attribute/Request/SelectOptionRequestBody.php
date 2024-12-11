@@ -44,7 +44,7 @@ final class SelectOptionRequestBody extends RequestBody
                         property: 'context',
                         type: 'object',
                         example: '{"containerType":"object","fieldname":"select","objectId":40,"layoutId":"0"}'
-                    )
+                    ),
                 ]
             )
         );

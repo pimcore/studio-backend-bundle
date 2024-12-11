@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper\OptionsProviderResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DynamicSelectOptionEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydratorInterface;
@@ -27,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Multiselect;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper\OptionsProviderResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\DynamicOptionsProvider\SelectOptionsProviderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Helper\OptionsProviderResolver;
 use Pimcore\Model\DataObject\Concrete;
@@ -38,7 +38,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final readonly class SelectOptionsService implements SelectOptionsServiceInterface
 {
-
     public function __construct(
         private ConcreteObjectResolverInterface $concreteObjectResolver,
         private ApplyChangesHelperInterface $applyChangesHelper,
@@ -46,8 +45,7 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
         private SelectOptionHydratorInterface $selectOptionHydrator,
         private EventDispatcherInterface $eventDispatcher,
 
-    )
-    {
+    ) {
     }
 
     /**

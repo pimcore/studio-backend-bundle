@@ -32,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject as DataObjectModel;
-use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
 
 /**

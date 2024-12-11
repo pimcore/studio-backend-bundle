@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
 
-
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
@@ -41,6 +40,7 @@ class SelectOption implements AdditionalAttributesInterface
         private readonly int|string $value,
     ) {
     }
+
     public function getKey(): string
     {
         return $this->key;
