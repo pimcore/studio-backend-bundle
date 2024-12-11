@@ -131,8 +131,7 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
         array $toDelete,
         array $toAdd,
         string $ownerFieldName
-    ): void
-    {
+    ): void {
         $getter = 'get' . ucfirst($ownerFieldName);
         $setter = 'set' . ucfirst($ownerFieldName);
 

@@ -127,8 +127,7 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
     private function getFieldDefinition(
         SelectOptionsParameter $selectOptionsParameter,
         Concrete $object
-    ): Select|Multiselect
-    {
+    ): Select|Multiselect {
         $fieldDefinition = $object->getClass()->getFieldDefinition($selectOptionsParameter->getFieldName());
 
         if (!$fieldDefinition instanceof Select && !$fieldDefinition instanceof Multiselect) {
