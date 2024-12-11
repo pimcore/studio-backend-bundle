@@ -141,7 +141,6 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
             throw new NotFoundException('class', $object->getClassId());
         }
 
-
         if (!$fieldDefinition instanceof Select && !$fieldDefinition instanceof Multiselect) {
             throw new InvalidArgumentException('Field is not a select or multiselect field');
         }

@@ -61,7 +61,7 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
             try {
                 $fd = $object->getClass()->getFieldDefinition($key);
             } catch (Exception) {
-                throw new NotFoundException('Class ',  $object->getClassId());
+                throw new NotFoundException('Class ', $object->getClassId());
             }
 
             if ($fd) {
@@ -89,7 +89,7 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
                     try {
                         $remoteClass = $this->classDefinitionResolver->getByName($fd->getOwnerClassName());
                     } catch (Exception) {
-                        throw new NotFoundException('Class definition ',  $fd->getOwnerClassName());
+                        throw new NotFoundException('Class definition ', $fd->getOwnerClassName());
                     }
 
                     $relations = $object->getRelationData($fd->getOwnerFieldName(), false, $remoteClass->getId());
@@ -98,7 +98,7 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
                     if (count($toAdd) > 0 || count($toDelete) > 0) {
                         try {
                             $this->processRemoteOwnerRelations($object, $toDelete, $toAdd, $fd->getOwnerFieldName());
-                        }  catch (DuplicateFullPathException $e) {
+                        } catch (DuplicateFullPathException $e) {
                             throw new DatabaseException($e->getMessage());
                         }
                     }
