@@ -339,7 +339,7 @@ final readonly class UploadService implements UploadServiceInterface
         $newExtension = pathinfo($newFileName, PATHINFO_EXTENSION);
         $originalExtension = pathinfo($originalFileName, PATHINFO_EXTENSION);
         if ($newExtension === $originalExtension) {
-            return $newFileName;
+            return $originalFileName;
         }
 
         $fileName = preg_replace(
