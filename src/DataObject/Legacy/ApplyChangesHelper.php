@@ -20,6 +20,8 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
@@ -50,13 +52,18 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
     }
 
     /**
-     *
-     * @throws Exception
+     * @throws NotFoundException
+     * @throws DatabaseException
      */
     public function applyChanges(Concrete $object, array $changes): void
     {
         foreach ($changes as $key => $value) {
-            $fd = $object->getClass()->getFieldDefinition($key);
+            try {
+                $fd = $object->getClass()->getFieldDefinition($key);
+            } catch (Exception) {
+                throw new NotFoundException('Class ',  $object->getClassId());
+            }
+
             if ($fd) {
                 if ($fd instanceof Localizedfields) {
                     $user = $this->securityService->getCurrentUser();
@@ -79,12 +86,21 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
                 }
 
                 if ($fd instanceof ReverseObjectRelation) {
-                    $remoteClass = $this->classDefinitionResolver->getByName($fd->getOwnerClassName());
+                    try {
+                        $remoteClass = $this->classDefinitionResolver->getByName($fd->getOwnerClassName());
+                    } catch (Exception) {
+                        throw new NotFoundException('Class definition ',  $fd->getOwnerClassName());
+                    }
+
                     $relations = $object->getRelationData($fd->getOwnerFieldName(), false, $remoteClass->getId());
                     $toAdd = $this->detectAddedRemoteOwnerRelations($relations, $value);
                     $toDelete = $this->detectDeletedRemoteOwnerRelations($relations, $value);
                     if (count($toAdd) > 0 || count($toDelete) > 0) {
-                        $this->processRemoteOwnerRelations($object, $toDelete, $toAdd, $fd->getOwnerFieldName());
+                        try {
+                            $this->processRemoteOwnerRelations($object, $toDelete, $toAdd, $fd->getOwnerFieldName());
+                        }  catch (DuplicateFullPathException $e) {
+                            throw new DatabaseException($e->getMessage());
+                        }
                     }
                 } else {
                     $object->setValue($key, $fd->getDataFromEditmode($value, $object));

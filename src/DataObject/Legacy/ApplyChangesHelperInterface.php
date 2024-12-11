@@ -16,6 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy;
 
+use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Concrete;
 
 /**
@@ -27,5 +30,9 @@ use Pimcore\Model\DataObject\Concrete;
  */
 interface ApplyChangesHelperInterface
 {
+    /**
+     * @throws NotFoundException
+     * @throws DatabaseException
+     */
     public function applyChanges(Concrete $object, array $changes): void;
 }

@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydratorI
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\ApplyChangesHelperInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\SelectOptionsParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\SelectOption;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Multiselect;
@@ -49,7 +50,7 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
     }
 
     /**
-     * @throws Exception
+     * @throws DatabaseException
      * @throws NotFoundException
      * @throws InvalidArgumentException
      */
@@ -67,11 +68,17 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
 
         $provider = $this->getProvider($fieldDefinition);
 
+        try {
+            $class = $object->getClass();
+        } catch (Exception) {
+            throw new NotFoundException('class', $object->getClassId());
+        }
+
         $options = $provider->getOptions(
             [
                 'object' => $object,
                 'fieldname' => $fieldDefinition->getName(),
-                'class' => $object->getClass(),
+                'class' => $class,
                 'context' => $selectOptionsParameter->getContext(),
             ],
             $fieldDefinition
@@ -122,13 +129,18 @@ final readonly class SelectOptionsService implements SelectOptionsServiceInterfa
 
     /**
      * @throws InvalidArgumentException
-     * @throws Exception
+     * @throws NotFoundException
      */
     private function getFieldDefinition(
         SelectOptionsParameter $selectOptionsParameter,
         Concrete $object
     ): Select|Multiselect {
-        $fieldDefinition = $object->getClass()->getFieldDefinition($selectOptionsParameter->getFieldName());
+        try {
+            $fieldDefinition = $object->getClass()->getFieldDefinition($selectOptionsParameter->getFieldName());
+        } catch (Exception) {
+            throw new NotFoundException('class', $object->getClassId());
+        }
+
 
         if (!$fieldDefinition instanceof Select && !$fieldDefinition instanceof Multiselect) {
             throw new InvalidArgumentException('Field is not a select or multiselect field');
