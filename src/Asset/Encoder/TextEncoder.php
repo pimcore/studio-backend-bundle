@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
 use Pimcore\Model\Asset\Text;
 use Pimcore\Model\Element\ElementInterface;
+use function sprintf;
 
 final class TextEncoder implements TextEncoderInterface
 {
