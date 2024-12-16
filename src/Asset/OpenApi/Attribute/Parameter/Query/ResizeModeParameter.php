@@ -28,8 +28,7 @@ final class ResizeModeParameter extends QueryParameter
         bool $required = true,
         array $resizeModes = ResizeModes::ALLOWED_MODES,
         mixed $defaultValue = ResizeModes::SCALE_BY_WIDTH
-    )
-    {
+    ) {
         parent::__construct(
             name: 'resizeMode',
             description: 'Resize mode of downloaded image.',
