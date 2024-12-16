@@ -27,7 +27,7 @@ final class ResizeModeParameter extends QueryParameter
     public function __construct(
         bool $required = true,
         array $resizeModes = ResizeModes::ALLOWED_MODES,
-        mixed $defaultValue = ResizeModes::SCALE_BY_WIDTH
+        string $defaultValue = ResizeModes::SCALE_BY_WIDTH
     ) {
         parent::__construct(
             name: 'resizeMode',
