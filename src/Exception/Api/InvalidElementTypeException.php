@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use function sprintf;
 
@@ -24,13 +25,14 @@ use function sprintf;
  */
 final class InvalidElementTypeException extends AbstractApiException
 {
-    public function __construct(string $type)
+    public function __construct(string $subType, string $elementType = ElementTypes::TYPE_ELEMENT)
     {
         parent::__construct(
             HttpResponseCodes::BAD_REQUEST->value,
             sprintf(
-                'Invalid element type: %s',
-                $type
+                'Invalid %s type: %s',
+                $elementType,
+                $subType
             )
         );
     }

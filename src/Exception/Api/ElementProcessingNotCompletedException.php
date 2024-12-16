@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use function sprintf;
 
@@ -24,7 +25,7 @@ use function sprintf;
  */
 final class ElementProcessingNotCompletedException extends AbstractApiException
 {
-    public function __construct(int $id, string $type = 'Element')
+    public function __construct(int $id, string $type = ElementTypes::TYPE_ELEMENT)
     {
         parent::__construct(
             HttpResponseCodes::NOT_COMPLETED->value,

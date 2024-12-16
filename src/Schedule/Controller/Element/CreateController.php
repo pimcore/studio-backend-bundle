@@ -61,7 +61,7 @@ final class CreateController extends AbstractApiController
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]
-    #[IdParameter(type: 'element')]
+    #[IdParameter]
     #[SuccessResponse(
         description: 'schedule_create_for_element_by_type_and_id_success_response',
         content: new JsonContent(ref: Schedule::class)

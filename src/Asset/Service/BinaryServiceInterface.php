@@ -44,6 +44,13 @@ interface BinaryServiceInterface
     ): StreamedResponse;
 
     /**
+     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException
+     */
+    public function streamImage(
+        Asset $image
+    ): StreamedResponse;
+
+    /**
      * @throws InvalidElementTypeException|InvalidThumbnailException
      */
     public function streamPreviewImageThumbnail(Asset $image): StreamedResponse;

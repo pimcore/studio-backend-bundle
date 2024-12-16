@@ -27,6 +27,8 @@ final readonly class ElementTypes
 
     public const TYPE_DATA_OBJECT = 'data-object';
 
+    public const TYPE_ELEMENT = 'element';
+
     public const TYPE_OBJECT = 'object';
 
     public const TYPE_VARIANT = 'variant';
