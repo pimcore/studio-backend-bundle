@@ -71,7 +71,7 @@ final class CollectionController extends AbstractApiController
         tags: [Tags::Versions->name]
     )]
     #[ElementTypeParameter]
-    #[IdParameter('element')]
+    #[IdParameter]
     #[PageParameter]
     #[PageSizeParameter]
     #[SuccessResponse(

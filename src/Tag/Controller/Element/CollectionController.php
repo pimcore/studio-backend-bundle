@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Attribute\Response\Property\TagCollection;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
@@ -60,7 +61,7 @@ final class CollectionController extends AbstractApiController
         tags: [Tags::TagsForElement->value]
     )]
     #[ElementTypeParameter]
-    #[IdParameter(type: 'element')]
+    #[IdParameter]
     #[SuccessResponse(
         description: 'tag_get_collection_for_element_by_type_and_id_success_response',
         content: new CollectionJson(new TagCollection())

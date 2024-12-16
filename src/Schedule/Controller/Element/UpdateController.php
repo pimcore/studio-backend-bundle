@@ -66,7 +66,7 @@ final class UpdateController extends AbstractApiController
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]
-    #[IdParameter(type: 'element')]
+    #[IdParameter]
     #[ElementScheduleRequestBody]
     #[SuccessResponse(
         description: 'schedule_update_for_element_by_type_and_id_success_response',

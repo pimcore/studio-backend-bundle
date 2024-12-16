@@ -61,7 +61,7 @@ final class CollectionController extends AbstractApiController
         tags: [Tags::Properties->value]
     )]
     #[ElementTypeParameter]
-    #[IdParameter(type: 'element')]
+    #[IdParameter]
     #[SuccessResponse(
         description: 'property_get_collection_for_element_by_type_and_id_success_response',
         content: new ItemsJson(ElementProperty::class)

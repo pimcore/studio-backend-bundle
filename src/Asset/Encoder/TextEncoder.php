@@ -32,7 +32,14 @@ final class TextEncoder implements TextEncoderInterface
     public function encodeUTF8(ElementInterface $element): string
     {
         if (!$element instanceof Text) {
-            throw new InvalidElementTypeException('Element must be an instance of Text');
+            throw new InvalidElementTypeException(
+                sprintf(
+                    'should have been (%s) but was (%s)',
+                    Text::class,
+                    $element->getType(),
+                ),
+                'Asset'
+            );
         }
 
         if ($element->getFileSize() > self::MAX_FILE_SIZE) {
