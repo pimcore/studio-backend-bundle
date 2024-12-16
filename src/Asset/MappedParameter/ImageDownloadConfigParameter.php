@@ -31,7 +31,7 @@ final readonly class ImageDownloadConfigParameter
         private string $resizeMode = ResizeModes::NONE,
         private ?int $width = null,
         private ?int $height = null,
-        private ?int $quality = null,
+        private ?int $quality = 85,
         private ?int $dpi = null,
         private ?string $positioning = 'center',
         private string $cover = 'false',
