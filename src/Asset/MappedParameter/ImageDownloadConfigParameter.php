@@ -142,7 +142,7 @@ final readonly class ImageDownloadConfigParameter
 
     private function validateResizeMode(): void
     {
-        if($this->resizeMode === ResizeModes::NONE) {
+        if ($this->resizeMode === ResizeModes::NONE) {
             return;
         }
 
@@ -162,7 +162,7 @@ final readonly class ImageDownloadConfigParameter
             );
         }
 
-        if($this->resizeMode === ResizeModes::RESIZE && (!$this->isValidWidth() || !$this->isValidHeight())) {
+        if ($this->resizeMode === ResizeModes::RESIZE && (!$this->isValidWidth() || !$this->isValidHeight())) {
             throw new InvalidArgumentException(
                 'Width and height must be set and non-negative when using resize'
             );

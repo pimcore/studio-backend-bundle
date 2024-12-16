@@ -93,7 +93,7 @@ final class CustomStreamController extends AbstractApiController
             ResizeModes::SCALE_BY_HEIGHT,
             ResizeModes::SCALE_BY_WIDTH,
             ResizeModes::RESIZE,
-            ResizeModes::NONE
+            ResizeModes::NONE,
         ],
         ResizeModes::NONE
     )]
