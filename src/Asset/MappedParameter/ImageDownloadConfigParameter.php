@@ -28,7 +28,7 @@ final readonly class ImageDownloadConfigParameter
 {
     public function __construct(
         private string $mimeType,
-        private string $resizeMode,
+        private string $resizeMode = ResizeModes::NONE,
         private ?int $width = null,
         private ?int $height = null,
         private ?int $quality = null,
@@ -39,34 +39,10 @@ final readonly class ImageDownloadConfigParameter
         private string $contain = 'false',
         private string $forceResize = 'false',
     ) {
-        if (!in_array($this->mimeType, [MimeTypes::JPEG->value, MimeTypes::PNG->value], true)) {
-            throw new InvalidArgumentException('Invalid mime type' . $this->mimeType);
-        }
 
-        if (!in_array($this->resizeMode, ResizeModes::ALLOWED_MODES)) {
-            throw new InvalidArgumentException('Invalid resize mode ' . $this->resizeMode);
-        }
+        $this->validateResizeMode();
 
-        if ($this->resizeMode === ResizeModes::SCALE_BY_HEIGHT && !$this->isValidHeight()) {
-            throw new InvalidArgumentException(
-                'Height must be set and non-negative when using scale by width resize mode'
-            );
-        }
-
-        if ($this->resizeMode === ResizeModes::SCALE_BY_WIDTH && !$this->isValidWidth()) {
-            throw new InvalidArgumentException(
-                'Width must be set and non-negative when using scale by width resize mode'
-            );
-        }
-
-        if (
-            (!$this->isValidWidth() || !$this->isValidHeight()) &&
-            ($this->hasFrame() || $this->hasCover() || $this->hasContain() || $this->resizeMode === ResizeModes::RESIZE)
-        ) {
-            throw new InvalidArgumentException(
-                'Width, height must be set and non-negative when using frame, cover, contain or resize'
-            );
-        }
+        $this->validateTransformations();
     }
 
     public function getMimeType(): string
@@ -162,5 +138,45 @@ final readonly class ImageDownloadConfigParameter
             'height' => $this->getHeight(),
             'forceResize' => $this->getForceResize(),
         ];
+    }
+
+    private function validateResizeMode(): void
+    {
+        if($this->resizeMode === ResizeModes::NONE) {
+            return;
+        }
+
+        if (!in_array($this->mimeType, [MimeTypes::JPEG->value, MimeTypes::PNG->value], true)) {
+            throw new InvalidArgumentException('Invalid mime type' . $this->mimeType);
+        }
+
+        if ($this->resizeMode === ResizeModes::SCALE_BY_HEIGHT && !$this->isValidHeight()) {
+            throw new InvalidArgumentException(
+                'Height must be set and non-negative when using scale by width resize mode'
+            );
+        }
+
+        if ($this->resizeMode === ResizeModes::SCALE_BY_WIDTH && !$this->isValidWidth()) {
+            throw new InvalidArgumentException(
+                'Width must be set and non-negative when using scale by width resize mode'
+            );
+        }
+
+        if($this->resizeMode === ResizeModes::RESIZE && (!$this->isValidWidth() || !$this->isValidHeight())) {
+            throw new InvalidArgumentException(
+                'Width and height must be set and non-negative when using resize'
+            );
+        }
+    }
+
+    private function validateTransformations(): void
+    {
+        if ((!$this->isValidWidth() || !$this->isValidHeight()) &&
+            ($this->hasFrame() || $this->hasCover() || $this->hasContain())
+        ) {
+            throw new InvalidArgumentException(
+                'Width, height must be set and non-negative when using frame, cover, contain or resize'
+            );
+        }
     }
 }

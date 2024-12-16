@@ -40,6 +40,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -84,8 +86,17 @@ final class CustomStreamController extends AbstractApiController
         tags: [Tags::Assets->name]
     )]
     #[IdParameter(type: 'image')]
-    #[MimeTypeParameter]
-    #[ResizeModeParameter]
+    #[MimeTypeParameter(MimeTypes::PNG->value)]
+    #[ResizeModeParameter(
+        true,
+        [
+            ResizeModes::SCALE_BY_HEIGHT,
+            ResizeModes::SCALE_BY_WIDTH,
+            ResizeModes::RESIZE,
+            ResizeModes::NONE
+        ],
+        ResizeModes::NONE
+    )]
     #[ImageConfigParameter('width', 140)]
     #[ImageConfigParameter('height')]
     #[ImageConfigParameter('quality', 85)]

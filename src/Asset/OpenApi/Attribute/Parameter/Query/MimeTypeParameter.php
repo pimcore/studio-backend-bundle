@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class MimeTypeParameter extends QueryParameter
 {
-    public function __construct()
+    public function __construct(string $defaultValue = MimeTypes::JPEG->value)
     {
         parent::__construct(
             name: 'mimeType',
@@ -37,7 +37,7 @@ final class MimeTypeParameter extends QueryParameter
                     MimeTypes::JPEG->value,
                     MimeTypes::PNG->value,
                 ],
-                example: MimeTypes::JPEG->value
+                example: $defaultValue
             ),
         );
     }
