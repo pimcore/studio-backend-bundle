@@ -24,21 +24,21 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ResizeModeParameter extends QueryParameter
 {
-    public function __construct()
-    {
+    public function __construct(
+        bool $required = true,
+        array $resizeModes = ResizeModes::ALLOWED_MODES,
+        string $defaultValue = ResizeModes::SCALE_BY_WIDTH
+    ) {
         parent::__construct(
             name: 'resizeMode',
             description: 'Resize mode of downloaded image.',
             in: 'query',
-            required: true,
+            required: $required,
+
             schema: new Schema(
                 type: 'string',
-                enum: [
-                    ResizeModes::RESIZE,
-                    ResizeModes::SCALE_BY_WIDTH,
-                    ResizeModes::SCALE_BY_HEIGHT,
-                ],
-                example: ResizeModes::SCALE_BY_WIDTH
+                enum: $resizeModes,
+                example: $defaultValue
             ),
         );
     }
