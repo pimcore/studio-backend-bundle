@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Content\OneOfAss
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\UpdateAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -49,6 +51,9 @@ final class UpdateController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws ElementSavingFailedException|NotFoundException
+     */
     #[Route('/assets/{id}', name: 'pimcore_studio_api_update_asset', methods: ['PUT'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Put(
@@ -65,8 +70,9 @@ final class UpdateController extends AbstractApiController
         content: new OneOfAssetJson()
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function assetUpdateById(int $id, #[MapRequestPayload] UpdateAssetParameter $updateAsset): JsonResponse
     {
