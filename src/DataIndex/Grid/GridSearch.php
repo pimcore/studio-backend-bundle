@@ -21,9 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -41,7 +41,7 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class GridSearch implements GridSearchInterface
 {
-    private OpenSearchFilterInterface $filterService;
+    private SearchIndexFilterInterface $filterService;
 
     public function __construct(
         private FilterServiceProviderInterface $filterServiceProvider,
@@ -49,7 +49,7 @@ final readonly class GridSearch implements GridSearchInterface
         private DataObjectSearchServiceInterface $dataObjectSearchService,
         private SecurityServiceInterface $securityService
     ) {
-        $this->filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
+        $this->filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
     }
 
     /**
