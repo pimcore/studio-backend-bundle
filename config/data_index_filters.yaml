@@ -10,82 +10,82 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterLoaderInterface:
     class:  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Loader\TaggedIteratorAdapter
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilter
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilter
     tags: [ 'pimcore.studio_backend.filter_service' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\PageFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\PageSizeFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\ExcludeFolderFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\IdSearchFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\ParentIdFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\PathFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\TagFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\PqlFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\UserFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\IdFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\IntegerFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FullTextFilter:
-    tags: [ 'pimcore.studio_backend.open_search.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
   # DataObject
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
-      tags: [ 'pimcore.studio_backend.open_search.data_object.filter' ]
+      tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
   # Asset Metadata
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\SelectFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\InputFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\TextAreaFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\CheckboxFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\DateFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\AssetFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\DocumentFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\ObjectFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   # Asset System Data
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System\StringFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System\DatetimeFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   # Asset
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\SortFilter:
-    tags: [ 'pimcore.studio_backend.open_search.asset.filter' ]
+    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]

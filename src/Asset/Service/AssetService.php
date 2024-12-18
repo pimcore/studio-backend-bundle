@@ -30,7 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
@@ -79,8 +79,8 @@ final readonly class AssetService implements AssetServiceInterface
      */
     public function getAssets(ElementParameters $parameters): Collection
     {
-        /** @var OpenSearchFilterInterface $filterService */
-        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
+        /** @var SearchIndexFilterInterface $filterService */
+        $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
         /** @var AssetQueryInterface $assetQuery */
         $assetQuery = $filterService->applyFilters(

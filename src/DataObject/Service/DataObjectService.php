@@ -21,7 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
@@ -123,8 +123,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
      */
     public function getDataObjects(DataObjectParameters $parameters): Collection
     {
-        /** @var OpenSearchFilterInterface $filterService */
-        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
+        /** @var SearchIndexFilterInterface $filterService */
+        $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
         $query = $filterService->applyFilters(
             $parameters,

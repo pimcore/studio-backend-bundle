@@ -25,9 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInter
 /**
  * @internal
  */
-interface OpenSearchFilterInterface extends FilterServiceInterface
+interface SearchIndexFilterInterface extends FilterServiceInterface
 {
-    public const SERVICE_TYPE = 'open_search_filter';
+    public const SERVICE_TYPE = 'search_index_filter';
 
     /**
      * @throws InvalidQueryTypeException|InvalidFilterTypeException

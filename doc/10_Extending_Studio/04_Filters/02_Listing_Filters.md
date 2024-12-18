@@ -3,7 +3,7 @@
 The Listing Filters are based on the Pimcore Listing classes and provide an abstraction layer to add filters to a listing.
 
 ## Adding a new Listing Filter
-In order to add a new OpenSearch Filter, you need to implement the `Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface` and register the service with the tag `pimcore.studio_backend.listing.filter`
+In order to add a new Filter, you need to implement the `Pimcore\Bundle\StudioBackendBundle\Listing\Filter\FilterInterface` and register the service with the tag `pimcore.studio_backend.listing.filter`
 
 ## AbstractListing vs CallableListingInterface
 Unfortunately not all listings for the same. 

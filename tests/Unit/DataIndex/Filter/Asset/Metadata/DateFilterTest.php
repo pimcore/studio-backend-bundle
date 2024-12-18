@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset\M
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\OpenSearch\Query\DateFilter as GenericDateFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\DefaultSearch\Query\DateFilter as GenericDateFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\DateFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;

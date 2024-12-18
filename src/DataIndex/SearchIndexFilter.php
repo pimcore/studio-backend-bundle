@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 /**
  * @internal
  */
-final readonly class OpenSearchFilter implements OpenSearchFilterInterface
+final readonly class SearchIndexFilter implements SearchIndexFilterInterface
 {
     public function __construct(
         private FilterLoaderInterface $filterLoader,
@@ -76,6 +76,6 @@ final readonly class OpenSearchFilter implements OpenSearchFilterInterface
 
     public function getType(): string
     {
-        return OpenSearchFilterInterface::SERVICE_TYPE;
+        return SearchIndexFilterInterface::SERVICE_TYPE;
     }
 }

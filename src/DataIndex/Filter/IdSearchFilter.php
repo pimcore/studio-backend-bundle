@@ -31,7 +31,6 @@ final class IdSearchFilter implements FilterInterface
         }
 
         $idSearchTerm = $parameters->getIdSearchTerm();
-
         if (!$idSearchTerm) {
             return $query;
         }
