@@ -32,6 +32,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -43,10 +45,11 @@ use function count;
 final readonly class PatchService implements PatchServiceInterface
 {
     public function __construct(
-        private SynchronousProcessingServiceInterface $synchronousProcessingService,
-        private JobExecutionAgentInterface $jobExecutionAgent,
+        private AdapterLoaderInterface $adapterLoader,
         private ElementServiceInterface $elementService,
-        private AdapterLoaderInterface $adapterLoader
+        private JobExecutionAgentInterface $jobExecutionAgent,
+        private SynchronousProcessingServiceInterface $synchronousProcessingService,
+        private UpdateServiceInterface $updateService,
     ) {
     }
 
@@ -112,6 +115,15 @@ final readonly class PatchService implements PatchServiceInterface
         UserInterface $user,
     ): void {
         try {
+            if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
+                $this->updateService->updateEditableData(
+                    $element,
+                    $elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]
+                );
+
+                unset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]);
+            }
+
             $adapters = $this->adapterLoader->loadAdapters($elementType);
             foreach ($adapters as $adapter) {
                 $adapter->patch($element, $elementPatchData);
