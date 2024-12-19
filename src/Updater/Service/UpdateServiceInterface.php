@@ -18,14 +18,22 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\DataObject\Concrete;
 
 /**
  * @internal
  */
 interface UpdateServiceInterface
 {
+    public const EDITABLE_DATA_KEY = 'editableData';
+
     /**
      * @throws ElementSavingFailedException|NotFoundException
      */
     public function update(string $elementType, int $id, array $data): void;
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function updateEditableData(Concrete $element, array $editableData): void;
 }

@@ -76,8 +76,10 @@ final class PatchController extends AbstractApiController
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function assetPatchById(#[MapRequestPayload] PatchAssetParameter $patchAssetParameter): Response
     {

@@ -72,8 +72,10 @@ final class PatchFolderController extends AbstractApiController
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function assetPatchFolderById(#[MapRequestPayload] PatchFolderParameter $patchFolderParameter): Response
     {

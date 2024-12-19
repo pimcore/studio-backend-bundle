@@ -36,8 +36,6 @@ final readonly class UpdateService implements UpdateServiceInterface
     use ElementProviderTrait;
     use ValidateFieldTypeTrait;
 
-    private const EDITABLE_DATA_KEY = 'editableData';
-
     public function __construct(
         private AdapterLoaderInterface $adapterLoader,
         private DataAdapterServiceInterface $dataAdapterService,
@@ -74,7 +72,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     /**
      * @throws ElementSavingFailedException
      */
-    private function updateEditableData(Concrete $element, array $editableData): void
+    public function updateEditableData(Concrete $element, array $editableData): void
     {
         try {
             $class = $element->getClass();
