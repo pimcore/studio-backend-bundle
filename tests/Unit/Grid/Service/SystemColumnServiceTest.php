@@ -39,6 +39,7 @@ final class SystemColumnServiceTest extends Unit
             'creationDate' => 'datetime',
             'modificationDate' => 'datetime',
             'size' => 'fileSize',
+            'mimetype' => 'string',
         ], $systemColumnService->getSystemColumnsForAssets());
     }
 
