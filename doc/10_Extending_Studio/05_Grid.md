@@ -175,3 +175,19 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
     }
 }
 ```
+
+### Predefined Columns
+You can define what columns should be visible by default in the grid by modifying the `pimcore_studio_backend.grid.asset.predefined_columns` parameter in your `config.yaml` file.
+
+Example:
+```yaml
+
+pimcore_studio_backend:
+  grid:
+    asset:
+      predefined_columns:
+        - key: id
+          group: system
+        - key: fullpath
+          group: system
+```
