@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function array_key_exists;
 
 /**
  * @internal
@@ -32,7 +33,7 @@ final readonly class DataUriAdapter implements UpdateAdapterInterface
 
     public function update(ElementInterface $element, array $data): void
     {
-        if (!$element instanceof Asset) {
+        if (!$element instanceof Asset || !array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
 
