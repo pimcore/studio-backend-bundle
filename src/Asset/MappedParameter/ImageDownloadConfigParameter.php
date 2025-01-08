@@ -34,10 +34,10 @@ final readonly class ImageDownloadConfigParameter
         private ?int $quality = 85,
         private ?int $dpi = null,
         private ?string $positioning = 'center',
-        private string $cover = 'false',
-        private string $frame = 'false',
-        private string $contain = 'false',
-        private string $forceResize = 'false',
+        private bool $cover = false,
+        private bool $frame = false,
+        private bool $contain = false,
+        private bool $forceResize = false,
     ) {
 
         $this->validateResizeMode();
@@ -100,25 +100,22 @@ final readonly class ImageDownloadConfigParameter
 
     public function getForceResize(): bool
     {
-        return $this->forceResize === 'true'; // TODO: symfony 7.1 will support bool type
+        return $this->forceResize;
     }
 
     public function hasCover(): bool
     {
-        // TODO: symfony 7.1 will support bool type
-        return $this->cover === 'true';
+        return $this->cover;
     }
 
     public function hasFrame(): bool
     {
-        // TODO: symfony 7.1 will support bool type
-        return $this->frame === 'true';
+        return $this->frame;
     }
 
     public function hasContain(): bool
     {
-        // TODO: symfony 7.1 will support bool type
-        return $this->contain === 'true';
+        return $this->contain;
     }
 
     private function isValidWidth(): bool
