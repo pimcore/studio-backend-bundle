@@ -147,9 +147,11 @@ final readonly class BinaryService implements BinaryServiceInterface
         if ($imageConfig->getHeight()) {
             $imageParameters['height'] = $imageConfig->getHeight();
         }
+
         if ($imageConfig->getAspectRatio()) {
             $imageParameters['aspectratio'] = $imageConfig->getAspectRatio();
         }
+
         if ($imageConfig->getFrame()) {
             $imageParameters['frame'] = $imageConfig->getFrame();
         }

@@ -22,12 +22,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter;
 final readonly class ExcludeMainSiteParameter
 {
     public function __construct(
-        private ?string $excludeMainSite = null
+        private bool $excludeMainSite = false
     ) {
     }
 
     public function getExcludeMainSite(): bool
     {
-        return $this->excludeMainSite === 'true'; // TODO: symfony 7.1 will support bool type
+        return $this->excludeMainSite;
     }
 }
