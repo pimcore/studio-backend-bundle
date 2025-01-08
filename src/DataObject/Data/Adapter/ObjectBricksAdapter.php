@@ -94,11 +94,10 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNor
                 continue;
             }
 
-            $resultItems[$type] = [];
             foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
                 $getter = 'get' . ucfirst($brickFieldDefinition->getName());
                 $value = $item->$getter();
-                $resultItems[$brickFieldDefinition->getName()] = $this->dataService->getNormalizedValue(
+                $resultItems[$type][$brickFieldDefinition->getName()] = $this->dataService->getNormalizedValue(
                     $value,
                     $brickFieldDefinition,
                 );
