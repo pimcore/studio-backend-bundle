@@ -21,7 +21,6 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Config\Listing\Dao;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\User;
 
-
 /**
  * @internal
  */
@@ -29,8 +28,7 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
 {
     public function __construct(
         private SecurityServiceInterface $securityService
-    )
-    {
+    ) {
     }
 
     public function loadForUser(User $user): array {
@@ -41,12 +39,13 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
         );
     }
 
-    public function loadForCurrentUser(): array {
+    public function loadForCurrentUser(): array
+    {
         /** @var User $currentUser */
         $currentUser = $this->securityService->getCurrentUser();
 
         return $this->loadForUser(
-           $currentUser
+            $currentUser
         );
     }
 }
