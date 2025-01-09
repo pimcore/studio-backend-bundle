@@ -22,5 +22,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 interface CustomReportServiceInterface
 {
     public function getCustomReportTree(): array;
+
     public function getCustomReportConfigTree(): array;
 }
