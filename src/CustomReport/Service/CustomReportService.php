@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository\CustomReportRepositoryInterface;
+use Pimcore\Model\User;
 
 /**
  * @internal
@@ -30,10 +31,21 @@ final readonly class CustomReportService implements CustomReportServiceInterface
     ) {
     }
 
-    public function loadForCurrentUser(): array
+    public function getCustomReportTree(?User $user = null): array
     {
-        return $this->customReportHydrator->hydrate(
-            $this->customReportRepository->loadForCurrentUser()
+        return $this->customReportHydrator->hydrateCustomReportTree(
+            $user ?
+                $this->customReportRepository->loadForUser($user) :
+                $this->customReportRepository->loadForCurrentUser()
+        );
+    }
+
+    public function getCustomReportConfigTree(?User $user = null): array
+    {
+        return $this->customReportHydrator->hydrateCustomReportConfigTree(
+            $user ?
+                $this->customReportRepository->loadForUser($user) :
+                $this->customReportRepository->loadForCurrentUser()
         );
     }
 }

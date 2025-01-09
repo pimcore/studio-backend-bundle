@@ -655,6 +655,9 @@ data_object_get_select_options_description: |
   Get all dynamic select options for data objects for given field
 data_object_get_select_options_summary: Get all dynamic select options for data objects
 data_object_get_select_options_success_response: List of dynamic select options
-custom_reports_collection_description: Get all custom reports for the current user.
-custom_report_collection_success_response: All custom reports for the current user.
-custom_reports_get_collection_summary: Get all custom reports for the current user.
+custom_reports_config_get_tree_description: Get all reports for the current user to display in configuration tree.
+custom_reports_config_get_tree_summary: All reports for the current user to display in configuration tree.
+custom_report_get_tree_success_response: Get all reports for the current user to display in configuration tree.
+custom_reports_get_tree_description: Get all reports for the current user to display in tree.
+custom_reports_get_tree_summary: All reports for the current user to display in tree.
+custom_report_collection_success_response: Get all reports for the current user to display in tree.

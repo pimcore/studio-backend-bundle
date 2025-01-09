@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller\Config;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReport;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportConfigTreeNode;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
@@ -38,7 +38,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CollectionController extends AbstractApiController
+final class TreeController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
@@ -52,30 +52,27 @@ final class CollectionController extends AbstractApiController
     /**
      * @throws InvalidQueryTypeException
      */
-    #[Route('/custom-reports', name: 'pimcore_studio_api_custom_report', methods: ['GET'])]
+    #[Route('/custom-reports/config/tree', name: 'pimcore_studio_api_report', methods: ['GET'])]
     #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
     #[Get(
-        path: self::PREFIX . '/custom-reports',
-        operationId: 'custom_reports_get_collection',
-        description: 'custom_reports_collection_description',
-        summary: 'custom_reports_get_collection_summary',
+        path: self::PREFIX . '/custom-reports/config/tree',
+        operationId: 'custom_reports_config_get_tree',
+        description: 'custom_reports_config_get_tree_description',
+        summary: 'custom_reports_config_get_tree_summary',
         tags: [Tags::CustomReports->name]
     )]
     #[PageParameter]
     #[PageSizeParameter]
     #[SuccessResponse(
-        description: 'custom_report_collection_success_response',
-        content: new ItemsJson(CustomReport::class)
+        description: 'custom_report_get_tree_success_response',
+        content: new ItemsJson(CustomReportConfigTreeNode::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getCustomReports(): JsonResponse
     {
-        return $this->jsonResponse(
-            [
-                'items' => $this->customReportService->loadForCurrentUser(),
-            ]
-        );
+        $items = $this->customReportService->getCustomReportConfigTree();
+        return $this->getPaginatedCollection($this->serializer, $items, count($items));
     }
 }

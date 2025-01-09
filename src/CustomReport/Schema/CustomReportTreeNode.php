@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'Custom Report',
     type: 'object'
 )]
-final class CustomReport implements AdditionalAttributesInterface
+final class CustomReportTreeNode implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 

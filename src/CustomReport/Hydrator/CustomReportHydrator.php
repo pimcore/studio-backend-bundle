@@ -21,7 +21,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator;
  */
 final readonly class CustomReportHydrator implements CustomReportHydratorInterface
 {
-    public function hydrate(array $reports): array
+    public function hydrateCustomReportTree(array $reports): array
     {
         $hydratedReports = [];
 
@@ -37,6 +37,22 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
                     'reportClass' => htmlspecialchars($report->getReportClass()),
                 ];
             }
+        }
+
+        return $hydratedReports;
+    }
+
+    public function hydrateCustomReportConfigTree(array $reports): array
+    {
+        $hydratedReports = [];
+
+        foreach ($reports as $item) {
+            $hydratedReports[] = [
+                'id' => $item->getName(),
+                'text' => $item->getName(),
+                'cls' => 'pimcore_treenode_disabled',
+                'writeable' => $item->isWriteable(),
+            ];
         }
 
         return $hydratedReports;
