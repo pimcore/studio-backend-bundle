@@ -16,17 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator;
 
-use Pimcore\Bundle\CustomReportsBundle\Tool\Config\Listing;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
-use Pimcore\Model\User;
-
-
 /**
  * @internal
  */
 final readonly class CustomReportHydrator implements CustomReportHydratorInterface
 {
-    public function hydrate(array $reports): array {
+    public function hydrate(array $reports): array
+    {
         $hydratedReports = [];
 
         foreach ($reports as $report) {

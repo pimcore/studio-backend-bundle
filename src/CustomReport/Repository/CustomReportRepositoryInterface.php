@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository;
 
 use Pimcore\Model\User;
@@ -25,6 +24,6 @@ use Pimcore\Model\User;
 interface CustomReportRepositoryInterface
 {
     public function loadForUser(User $user): array;
-    public function loadForCurrentUser(): array;
 
+    public function loadForCurrentUser(): array;
 }
