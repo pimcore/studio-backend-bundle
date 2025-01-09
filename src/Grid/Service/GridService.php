@@ -108,6 +108,8 @@ final class GridService implements GridServiceInterface
             );
 
             $data['columns'][] = $columnData;
+            $data['isLocked'] = $element->getIsLocked();
+            $data['permissions'] = $element->getPermissions();
         }
 
         return $data;

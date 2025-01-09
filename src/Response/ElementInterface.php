@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Response;
 
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
+
 /**
  * @internal
  */
@@ -40,4 +42,6 @@ interface ElementInterface
     public function getLocked(): ?string;
 
     public function getIsLocked(): bool;
+
+    public function getPermissions(): Permissions;
 }
