@@ -41,10 +41,10 @@ final class IconService implements IconServiceInterface
 
         if ($assetType === 'text' && $mimeType !== null) {
             $value = match ($mimeType) {
-                'application/json' => 'file-code-01',
-                'application/type9' => 'file-check-02',
-                'text/plain' => 'file-02',
-                'text/csv' => 'file-x-03',
+                'application/json' => 'json',
+                'application/type9' => 'pdf',
+                'text/plain' => 'txt-docs',
+                'text/csv' => 'xlsx-csv',
                 default => $this->defaultIcon
             };
 
@@ -53,9 +53,9 @@ final class IconService implements IconServiceInterface
 
         $value = match ($assetType) {
             'folder' => 'folder',
-            'image' => 'image-01',
-            'video' => 'video-recorder',
-            'audio' => 'volume-max',
+            'image' => 'image',
+            'video' => 'video',
+            'audio' => 'audio',
             default => $this->defaultIcon
         };
 
@@ -80,7 +80,7 @@ final class IconService implements IconServiceInterface
 
     public function getIconForTag(): string
     {
-        return 'tag-02';
+        return 'tag';
     }
 
     public function getIconForLayout(?string $iconPath): ?ElementIcon
