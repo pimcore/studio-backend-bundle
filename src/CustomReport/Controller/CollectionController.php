@@ -74,7 +74,7 @@ final class CollectionController extends AbstractApiController
     {
         return $this->jsonResponse(
             [
-                'items' => $this->customReportService->loadForCurrentUser()
+                'items' => $this->customReportService->loadForCurrentUser(),
             ]
         );
     }
