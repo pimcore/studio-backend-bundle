@@ -23,16 +23,16 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 final class IconService implements IconServiceInterface
 {
-    private string $defaultIcon = 'file-question-02';
+    private string $defaultIcon = 'unknown';
 
     public function getIconForAsset(string $assetType, ?string $mimeType): ElementIcon
     {
         if ($assetType === 'document' && $mimeType !== null) {
             $value = match ($mimeType) {
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'presentation-chart-01',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'file-x-03',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'file-02',
-                'application/pdf' => 'file-check-02',
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'presentation',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx-csv',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'txt-docs',
+                'application/pdf' => 'pdf',
                 default => $this->defaultIcon
             };
 
@@ -41,10 +41,10 @@ final class IconService implements IconServiceInterface
 
         if ($assetType === 'text' && $mimeType !== null) {
             $value = match ($mimeType) {
-                'application/json' => 'file-code-01',
-                'application/type9' => 'file-check-02',
-                'text/plain' => 'file-02',
-                'text/csv' => 'file-x-03',
+                'application/json' => 'json',
+                'application/type9' => 'pdf',
+                'text/plain' => 'txt-docs',
+                'text/csv' => 'xlsx-csv',
                 default => $this->defaultIcon
             };
 
@@ -53,9 +53,9 @@ final class IconService implements IconServiceInterface
 
         $value = match ($assetType) {
             'folder' => 'folder',
-            'image' => 'image-01',
-            'video' => 'video-recorder',
-            'audio' => 'volume-max',
+            'image' => 'image',
+            'video' => 'video',
+            'audio' => 'audio',
             default => $this->defaultIcon
         };
 
@@ -69,8 +69,8 @@ final class IconService implements IconServiceInterface
         }
 
         $value = match ($dataObject->getType()) {
-            ElementTypes::TYPE_OBJECT => 'mainObject',
-            ElementTypes::TYPE_VARIANT => 'mainObjectVariant',
+            ElementTypes::TYPE_OBJECT => 'data-object',
+            ElementTypes::TYPE_VARIANT => 'data-object-variant',
             ElementTypes::TYPE_FOLDER => 'folder',
             default => $this->defaultIcon
         };
@@ -80,7 +80,7 @@ final class IconService implements IconServiceInterface
 
     public function getIconForTag(): string
     {
-        return 'tag-02';
+        return 'tag';
     }
 
     public function getIconForLayout(?string $iconPath): ?ElementIcon
