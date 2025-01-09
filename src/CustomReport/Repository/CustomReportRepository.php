@@ -41,7 +41,8 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
         );
     }
 
-    public function loadForCurrentUser(): array {
+    public function loadForCurrentUser(): array
+    {
         /** @var User $currentUser */
         $currentUser = $this->securityService->getCurrentUser();
 
