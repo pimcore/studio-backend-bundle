@@ -136,6 +136,7 @@ enum Tags: string
     case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';
     case ClassDefinition = 'Class Definition';
+    case CustomReports = 'Custom Reports';
     case DataObjects = 'Data Objects';
     case DataObjectsGrid = 'Data Object Grid';
     case Dependencies = 'Dependencies';
