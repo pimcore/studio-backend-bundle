@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config\Listing;
+use Pimcore\Bundle\CustomReportsBundle\Tool\Config\Listing\Dao;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\User;
 
@@ -33,7 +34,9 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
     }
 
     public function loadForUser(User $user): array {
-        return (new Listing())->getDao()->loadForGivenUser(
+        /** @var Dao $dao */
+        $dao = (new Listing())->getDao();
+        return $dao->loadForGivenUser(
             $user
         );
     }
