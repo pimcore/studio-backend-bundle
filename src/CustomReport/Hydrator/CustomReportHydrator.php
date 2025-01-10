@@ -60,10 +60,11 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
         return $hydratedReports;
     }
 
-    public function hydrateCustomReportDetails(Config $reportConfig): array {
+    public function hydrateCustomReportDetails(Config $reportConfig): array
+    {
         return [
             ... $reportConfig->getObjectVars(),
-            'writeable' => $reportConfig->isWriteable()
+            'writeable' => $reportConfig->isWriteable(),
         ];
     }
 }
