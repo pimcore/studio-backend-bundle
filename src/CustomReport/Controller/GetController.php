@@ -62,11 +62,11 @@ final class GetController extends AbstractApiController
         methods: ['GET'])
     ]
     //TODO Permissions
-//    #[IsGranted(
-//        'hasOneOf([
-//            \\Pimcore\\Bundle\\StudioBackendBundle\\Util\Constant\\CustomReportPermissions::REPORTS->value,
-//            \\Pimcore\\\Bundle\\StudioBackendBundle\\Util\\Constant\\CustomReportPermissions::REPORTS_CONFIG->value
-//        ])')]
+    //    #[IsGranted(
+    //        'hasOneOf([
+    //            \\Pimcore\\Bundle\\StudioBackendBundle\\Util\Constant\\CustomReportPermissions::REPORTS->value,
+    //            \\Pimcore\\\Bundle\\StudioBackendBundle\\Util\\Constant\\CustomReportPermissions::REPORTS_CONFIG->value
+    //        ])')]
     #[IsGranted(CustomReportPermissions::REPORTS->value)]
     #[Get(
         path: self::PREFIX . '/custom-reports/{name}',
