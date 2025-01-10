@@ -27,8 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSiz
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CustomReportPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -54,7 +54,7 @@ final class TreeController extends AbstractApiController
      * @throws InvalidQueryTypeException
      */
     #[Route('/custom-reports/config/tree', name: 'pimcore_studio_api_report', methods: ['GET'])]
-    #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
+    #[IsGranted(CustomReportPermissions::REPORTS_CONFIG->value)]
     #[Get(
         path: self::PREFIX . '/custom-reports/config/tree',
         operationId: 'custom_reports_config_get_tree',

@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CustomReportPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -59,8 +60,13 @@ final class GetController extends AbstractApiController
         name: 'pimcore_studio_api_custom_report_get',
         methods: ['GET'])
     ]
-    //TODO permissions
-    //#[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
+    //TODO Permissions
+//    #[IsGranted(
+//        'hasOneOf([
+//            \\Pimcore\\Bundle\\StudioBackendBundle\\Util\Constant\\CustomReportPermissions::REPORTS->value,
+//            \\Pimcore\\\Bundle\\StudioBackendBundle\\Util\\Constant\\CustomReportPermissions::REPORTS_CONFIG->value
+//        ])')]
+    #[IsGranted(CustomReportPermissions::REPORTS->value)]
     #[Get(
         path: self::PREFIX . '/custom-reports/{name}',
         operationId: 'custom_report_get_by_name',
