@@ -25,6 +25,7 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 interface CustomReportServiceInterface
 {
     public function getCustomReportTree(): array;
+
     public function getCustomReportConfigTree(): array;
 
     /**

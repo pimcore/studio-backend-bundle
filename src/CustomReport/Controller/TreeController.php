@@ -34,6 +34,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
+use function count;
 
 /**
  * @internal
@@ -73,6 +74,7 @@ final class TreeController extends AbstractApiController
     public function getCustomReports(): JsonResponse
     {
         $items = $this->customReportService->getCustomReportTree();
+
         return $this->getPaginatedCollection($this->serializer, $items, count($items));
     }
 }

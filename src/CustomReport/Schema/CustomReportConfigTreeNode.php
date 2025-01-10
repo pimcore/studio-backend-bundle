@@ -64,5 +64,4 @@ final class CustomReportConfigTreeNode implements AdditionalAttributesInterface
     {
         return $this->writeable;
     }
-
 }
