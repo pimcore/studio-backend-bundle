@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller;
 
+use Exception;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
@@ -54,7 +55,7 @@ final class GetController extends AbstractApiController
 
     /**
      * @throws NotFoundException|DatabaseException
-     * @throws \Exception
+     * @throws Exception
      */
     #[Route('/custom-reports/{name}',
         name: 'pimcore_studio_api_custom_report_get',
@@ -90,9 +91,10 @@ final class GetController extends AbstractApiController
     public function getByName(string $name): JsonResponse
     {
         $config = $this->customReportService->getCustomReportByName($name);
-        if(!$config) {
+        if (!$config) {
             throw new NotFoundException('Custom report', $name, 'name');
         }
+
         return $this->jsonResponse(
             $this->customReportHydrator->hydrateCustomReportDetails($config)
         );

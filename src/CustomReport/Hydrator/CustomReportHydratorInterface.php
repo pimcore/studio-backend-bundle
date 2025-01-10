@@ -26,5 +26,6 @@ interface CustomReportHydratorInterface
     public function hydrateCustomReportTree(array $reports): array;
 
     public function hydrateCustomReportConfigTree(array $reports): array;
+
     public function hydrateCustomReportDetails(Config $reportConfig): array;
 }
