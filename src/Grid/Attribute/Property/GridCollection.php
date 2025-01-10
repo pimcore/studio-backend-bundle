@@ -33,11 +33,11 @@ final class GridCollection extends Property
             required: ['id', 'columns', 'isLocked', 'permissions'],
             type: 'array',
             items: new Items(
-                new Property(
-                    property: 'id',
-                    type: 'integer',
-                ),
                 properties: [
+                    new Property(
+                        property: 'id',
+                        type: 'integer',
+                    ),
                     new Property(
                         property: 'columns',
                         type: 'array',
