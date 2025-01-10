@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotAuthorizedException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 /**
  * @internal
@@ -55,6 +56,11 @@ trait RequestTrait
         }
 
         return $request;
+    }
+
+    private function getCurrentSession(RequestStack $requestStack): SessionInterface
+    {
+        return $this->getCurrentRequest($requestStack)->getSession();
     }
 
     private function removeBearerPrefix(string $token): string
