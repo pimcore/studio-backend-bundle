@@ -59,7 +59,7 @@ final class TreeController extends AbstractApiController
         operationId: 'custom_reports_config_get_tree',
         description: 'custom_reports_config_get_tree_description',
         summary: 'custom_reports_config_get_tree_summary',
-        tags: [Tags::CustomReports->name]
+        tags: [Tags::CustomReports->value]
     )]
     #[PageParameter]
     #[PageSizeParameter]

@@ -661,3 +661,7 @@ custom_report_get_tree_success_response: Get all reports for the current user to
 custom_reports_get_tree_description: Get all reports for the current user to display in tree.
 custom_reports_get_tree_summary: All reports for the current user to display in tree.
 custom_report_collection_success_response: Get all reports for the current user to display in tree.
+tag_custom_reports_description: List custom reports
+custom_report_get_by_name_summary: Get a specific report by name
+custom_report_get_by_name_success_response: Report data as JSON
+custom_report_get_by_name_name_parameter: Name of the report

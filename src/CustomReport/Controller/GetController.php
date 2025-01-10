@@ -17,18 +17,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller;
 
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
+use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeNode;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -38,41 +38,57 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class TreeController extends AbstractApiController
+final class GetController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
         private readonly CustomReportServiceInterface $customReportService,
+        private readonly CustomReportHydratorInterface $customReportHydrator
+
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws InvalidQueryTypeException
+     * @throws NotFoundException|DatabaseException
+     * @throws \Exception
      */
-    #[Route('/custom-reports/tree', name: 'pimcore_studio_api_report', methods: ['GET'])]
-    #[IsGranted(UserPermissions::TAGS_SEARCH->value)]
+    #[Route('/custom-reports/{name}',
+        name: 'pimcore_studio_api_custom_report_get',
+        methods: ['GET'])
+    ]
+    //TODO permissions
+    //#[IsGranted(UserPermissions::USER_MANAGEMENT->value)]
     #[Get(
-        path: self::PREFIX . '/custom-reports/tree',
-        operationId: 'custom_reports_get_tree',
-        description: 'custom_reports_get_tree_description',
-        summary: 'custom_reports_get_tree_summary',
+        path: self::PREFIX . '/custom-reports/{name}',
+        operationId: 'custom_report_get_by_name',
+        summary: 'custom_report_get_by_name_summary',
         tags: [Tags::CustomReports->value]
     )]
-    #[PageParameter]
-    #[PageSizeParameter]
+    #[NameParameter(
+        name: 'name',
+        description: 'custom_report_get_by_name_name_parameter',
+        example: 'Quality_Attributes'
+    )
+    ]
+    //TODO schema
     #[SuccessResponse(
-        description: 'custom_report_collection_success_response',
-        content: new ItemsJson(CustomReportTreeNode::class)
+        description: 'custom_report_get_by_name_success_response',
+        content: new JsonContent(ref: CustomReportTreeNode::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getCustomReports(): JsonResponse
+    public function getByName(string $name): JsonResponse
     {
-        $items = $this->customReportService->getCustomReportTree();
-        return $this->getPaginatedCollection($this->serializer, $items, count($items));
+        $config = $this->customReportService->getCustomReportByName($name);
+        if(!$config) {
+            throw new NotFoundException('Custom report', $name, 'name');
+        }
+        return $this->jsonResponse(
+            $this->customReportHydrator->hydrateCustomReportDetails($config)
+        );
     }
 }

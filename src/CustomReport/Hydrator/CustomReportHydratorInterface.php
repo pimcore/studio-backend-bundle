@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator;
 
+use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+
 /**
  * @internal
  */
@@ -23,4 +25,5 @@ interface CustomReportHydratorInterface
 {
     public function hydrateCustomReportTree(array $reports): array;
     public function hydrateCustomReportConfigTree(array $reports): array;
+    public function hydrateCustomReportDetails(Config $reportConfig): array;
 }

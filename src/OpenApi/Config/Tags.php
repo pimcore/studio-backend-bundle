@@ -42,6 +42,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_class_description'
 )]
 #[Tag(
+    name: Tags::CustomReports->value,
+    description: 'tag_custom_reports_description'
+)]
+#[Tag(
     name: Tags::DataObjects->value,
     description: 'tag_dataobjects_description'
 )]

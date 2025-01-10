@@ -16,8 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository;
 
+use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config\Listing;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config\Listing\Dao;
+use Pimcore\Bundle\StaticResolverBundle\Models\Tool\CustomReportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\User;
 
@@ -27,7 +29,9 @@ use Pimcore\Model\User;
 final readonly class CustomReportRepository implements CustomReportRepositoryInterface
 {
     public function __construct(
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private CustomReportResolverInterface $customReportResolver
+
     ) {
     }
 
@@ -49,5 +53,10 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
         return $this->loadForUser(
             $currentUser
         );
+    }
+
+    public function loadByName(string $name): ?Config
+    {
+        return $this->customReportResolver->getByName($name);
     }
 }

@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository;
 
+use Exception;
+use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Model\User;
 
 /**
@@ -26,4 +28,9 @@ interface CustomReportRepositoryInterface
     public function loadForUser(User $user): array;
 
     public function loadForCurrentUser(): array;
+
+    /**
+     * @throws Exception
+     */
+    public function loadByName(string $name): ?Config;
 }

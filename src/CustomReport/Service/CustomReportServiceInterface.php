@@ -16,6 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
+use Exception;
+use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+
 /**
  * @internal
  */
@@ -23,4 +26,9 @@ interface CustomReportServiceInterface
 {
     public function getCustomReportTree(): array;
     public function getCustomReportConfigTree(): array;
+
+    /**
+     * @throws Exception
+     */
+    public function getCustomReportByName(string $name): ?Config;
 }

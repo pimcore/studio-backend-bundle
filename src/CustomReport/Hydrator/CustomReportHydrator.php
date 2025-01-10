@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator;
 
+use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+
 /**
  * @internal
  */
@@ -56,5 +58,12 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
         }
 
         return $hydratedReports;
+    }
+
+    public function hydrateCustomReportDetails(Config $reportConfig): array {
+        return [
+            ... $reportConfig->getObjectVars(),
+            'writeable' => $reportConfig->isWriteable()
+        ];
     }
 }
