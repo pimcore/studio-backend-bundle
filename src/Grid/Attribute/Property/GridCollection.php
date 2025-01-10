@@ -30,8 +30,13 @@ final class GridCollection extends Property
     {
         parent::__construct(
             property: 'items',
+            required: ['id', 'columns', 'isLocked', 'permissions'],
             type: 'array',
             items: new Items(
+                new Property(
+                    property: 'id',
+                    type: 'integer',
+                ),
                 properties: [
                     new Property(
                         property: 'columns',
