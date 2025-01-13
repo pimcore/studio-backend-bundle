@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CustomReportPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
+use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -57,19 +58,17 @@ final class GetController extends AbstractApiController
      * @throws NotFoundException|DatabaseException
      * @throws Exception
      */
-    #[Route('/custom-reports/{name}',
-        name: 'pimcore_studio_api_custom_report_get',
+    #[Route('/custom-reports/report/{name}',
+        name: 'pimcore_studio_api_custom_reports_report',
         methods: ['GET'])
     ]
-    //TODO Permissions
-    //    #[IsGranted(
-    //        'hasOneOf([
-    //            \\Pimcore\\Bundle\\StudioBackendBundle\\Util\Constant\\CustomReportPermissions::REPORTS->value,
-    //            \\Pimcore\\\Bundle\\StudioBackendBundle\\Util\\Constant\\CustomReportPermissions::REPORTS_CONFIG->value
-    //        ])')]
-    #[IsGranted(CustomReportPermissions::REPORTS->value)]
+    #[IsGranted(
+        new Expression(
+            'is_granted("reports") or is_granted("reports_permissions")'
+        )
+    )]
     #[Get(
-        path: self::PREFIX . '/custom-reports/{name}',
+        path: self::PREFIX . '/custom-reports/report/{name}',
         operationId: 'custom_report_get_by_name',
         summary: 'custom_report_get_by_name_summary',
         tags: [Tags::CustomReports->value]

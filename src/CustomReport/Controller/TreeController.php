@@ -53,7 +53,7 @@ final class TreeController extends AbstractApiController
     /**
      * @throws InvalidQueryTypeException
      */
-    #[Route('/custom-reports/tree', name: 'pimcore_studio_api_report', methods: ['GET'])]
+    #[Route('/custom-reports/tree', name: 'pimcore_studio_api_custom_reports_tree', methods: ['GET'])]
     #[IsGranted(CustomReportPermissions::REPORTS->value)]
     #[Get(
         path: self::PREFIX . '/custom-reports/tree',
