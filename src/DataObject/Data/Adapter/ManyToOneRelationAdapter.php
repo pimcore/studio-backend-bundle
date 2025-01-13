@@ -66,9 +66,10 @@ final readonly class ManyToOneRelationAdapter implements SetterDataInterface, Da
         $data = $fieldDefinition->normalize($value);
 
         if (!empty($data)) {
-           $data['fullPath'] = $value->getRealFullPath();
-           $data['subtype'] = $value->getType();
+            $data['fullPath'] = $value->getRealFullPath();
+            $data['subtype'] = $value->getType();
         }
+
         return $data;
     }
 }
