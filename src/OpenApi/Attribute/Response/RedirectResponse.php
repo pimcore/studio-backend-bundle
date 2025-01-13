@@ -39,7 +39,7 @@ final class RedirectResponse extends Response
                         type: 'string',
                         format: 'uri'
                     )
-                )
+                ),
             ]
         );
     }

@@ -35,8 +35,7 @@ final class PreviewController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private PreviewUrlServiceInterface $previewUrlService
-    )
-    {
+    ) {
         parent::__construct($serializer);
     }
 
@@ -51,7 +50,7 @@ final class PreviewController extends AbstractApiController
     #[PreviewRequestBody]
     #[RedirectResponseAttribute(description: 'data_object_preview_by_id_success_response')]
     #[DefaultResponses([
-        HttpResponseCodes::REDIRECT
+        HttpResponseCodes::REDIRECT,
     ])]
     public function preview(#[MapRequestPayload] PreviewParameter $previewParameter): RedirectResponse
     {
