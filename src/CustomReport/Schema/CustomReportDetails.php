@@ -47,7 +47,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'sharedUserNames',
         'sharedRoleNames',
         'sharedGlobally',
-        'writeable'
+        'writeable',
     ],
     type: 'object',
 )]
