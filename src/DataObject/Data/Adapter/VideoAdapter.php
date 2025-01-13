@@ -27,6 +27,7 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Video;
+use Pimcore\Normalizer\NormalizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 
@@ -88,7 +89,8 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
 
     public function normalize(mixed $value, Data $fieldDefinition): mixed
     {
-        if (!$value instanceof Video) {
+
+        if (!$value instanceof Video || !$fieldDefinition instanceof NormalizerInterface) {
             return null;
         }
 
