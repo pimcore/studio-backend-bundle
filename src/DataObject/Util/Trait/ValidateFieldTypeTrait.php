@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField as EncryptedFieldDefinition;
@@ -34,7 +33,6 @@ trait ValidateFieldTypeTrait
         return !($fieldDefinition instanceof EncryptedFieldDefinition && (!$value instanceof EncryptedField));
     }
 
-
     /**
      * @throws NotFoundException
      */
@@ -42,8 +40,7 @@ trait ValidateFieldTypeTrait
         Concrete $object,
         string $key,
         ?string $language = null
-    ): mixed
-    {
+    ): mixed {
         try {
             return $object->get($key, $language);
         } catch (Exception) {

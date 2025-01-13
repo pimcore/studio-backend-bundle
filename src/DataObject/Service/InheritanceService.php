@@ -44,8 +44,7 @@ final readonly class InheritanceService implements InheritanceServiceInterface
     public function getInheritanceData(
         Concrete $object,
         array $fieldDefinitions
-    ): array
-    {
+    ): array {
 
         return $this->dataObjectServiceResolver->useInheritedValues(
             false,
@@ -63,7 +62,6 @@ final readonly class InheritanceService implements InheritanceServiceInterface
             }
         );
     }
-
 
     /**
      * @throws NotFoundException
@@ -128,8 +126,7 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
-    ): mixed
-    {
+    ): mixed {
         $fieldKey = $this->getFieldKeyByContext(
             $key,
             $fieldDefinition,

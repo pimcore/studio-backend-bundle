@@ -41,7 +41,9 @@ use function array_key_exists;
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class ObjectBricksAdapter implements
-    SetterDataInterface, DataNormalizerInterface, DataInheritanceInterface
+    SetterDataInterface,
+    DataNormalizerInterface,
+    DataInheritanceInterface
 {
     use ValidateFieldTypeTrait;
 
@@ -116,8 +118,7 @@ final readonly class ObjectBricksAdapter implements
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
-    ): array
-    {
+    ): array {
         $value = $this->getValidFieldValue($object, $key);
         if (!$value instanceof Objectbrick) {
             return [];

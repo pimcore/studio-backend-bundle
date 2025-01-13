@@ -50,8 +50,7 @@ final readonly class DataService implements DataServiceInterface
         DataObjectFolder|DataObject $dataObject,
         Concrete $element,
         ClassDefinition $class
-    ): void
-    {
+    ): void {
         $classData = $this->getObjectClassData($class);
         $fieldDefinitions = $class->getFieldDefinitions();
 

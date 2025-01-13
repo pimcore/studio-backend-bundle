@@ -50,7 +50,9 @@ use function is_array;
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class ClassificationStoreAdapter implements
-    SetterDataInterface, DataNormalizerInterface, DataInheritanceInterface
+    SetterDataInterface,
+    DataNormalizerInterface,
+    DataInheritanceInterface
 {
     use ValidateFieldTypeTrait;
 
@@ -125,8 +127,7 @@ final readonly class ClassificationStoreAdapter implements
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
-    ): array
-    {
+    ): array {
         $inheritedData = [];
         if (!$fieldDefinition instanceof ClassificationstoreDefinition) {
             return [];
@@ -359,8 +360,7 @@ final readonly class ClassificationStoreAdapter implements
         int $groupId,
         int $groupKeyId,
         string $language
-    ): int
-    {
+    ): int {
         $data = $this->getValidFieldValue($object, $key)
             ->getLocalizedKeyValue($groupId, $groupKeyId, $language, true, true);
 

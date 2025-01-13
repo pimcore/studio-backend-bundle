@@ -21,7 +21,6 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -48,7 +47,9 @@ use function sprintf;
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class LocalizedFieldsAdapter implements
-    SetterDataInterface, DataNormalizerInterface, DataInheritanceInterface
+    SetterDataInterface,
+    DataNormalizerInterface,
+    DataInheritanceInterface
 {
     use ValidateFieldTypeTrait;
 
@@ -155,8 +156,7 @@ final readonly class LocalizedFieldsAdapter implements
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
-    ): array
-    {
+    ): array {
         if (!$fieldDefinition instanceof Localizedfields) {
             return [];
         }
