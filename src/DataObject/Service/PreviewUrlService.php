@@ -54,7 +54,8 @@ final readonly class PreviewUrlService implements PreviewUrlServiceInterface
         }
 
         $url = $this->getPreviewGenerator($dataObject)?->generatePreviewUrl(
-            $dataObject, ['preview' => true, 'context' => $this]
+            $dataObject,
+            ['preview' => true, 'context' => $this]
         );
 
         if (!$url) {
