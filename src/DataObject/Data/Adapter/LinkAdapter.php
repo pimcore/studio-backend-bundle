@@ -27,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Link;
-use Pimcore\Normalizer\NormalizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -37,6 +36,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     use ElementProviderTrait;
+
     public function __construct(private ServiceResolverInterface $serviceResolver)
     {
     }
@@ -79,7 +79,7 @@ final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerI
     {
         $fullPath = null;
 
-        if($link->getDirect() !== null) {
+        if ($link->getDirect() !== null) {
             return $link->getDirect();
         }
 
@@ -91,10 +91,11 @@ final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerI
                     $link->getInternal()
                 );
                 $fullPath = $element->getRealFullPath();
-            } catch (NotFoundException ) {
+            } catch (NotFoundException) {
                 return null;
             }
         }
+
         return $fullPath;
     }
 }
