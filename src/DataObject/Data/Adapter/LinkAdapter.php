@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Link;
+use Pimcore\Normalizer\NormalizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -64,7 +65,7 @@ final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerI
 
     public function normalize(mixed $value, Data $fieldDefinition): mixed
     {
-        if (!$value instanceof Link) {
+        if (!$value instanceof Link || !$fieldDefinition instanceof NormalizerInterface) {
             return null;
         }
 
