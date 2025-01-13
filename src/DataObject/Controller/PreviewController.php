@@ -20,7 +20,6 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PreviewParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Symfony\Component\HttpFoundation\RedirectResponse;
