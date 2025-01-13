@@ -17,9 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Extractor\DataExtractorInterface;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository\CustomReportRepositoryInterface;
 use Pimcore\Model\User;
+use RuntimeException;
 
 /**
  * @internal
@@ -27,14 +29,15 @@ use Pimcore\Model\User;
 final readonly class CustomReportService implements CustomReportServiceInterface
 {
     public function __construct(
-        private CustomReportHydratorInterface $customReportHydrator,
+        private DataExtractorInterface $dataExtractor,
         private CustomReportRepositoryInterface $customReportRepository,
+        private AdapterServiceInterface $adapterService,
     ) {
     }
 
     public function getCustomReportTree(?User $user = null): array
     {
-        return $this->customReportHydrator->hydrateCustomReportTree(
+        return $this->dataExtractor->extractTree(
             $user ?
                 $this->customReportRepository->loadForUser($user) :
                 $this->customReportRepository->loadForCurrentUser()
@@ -43,15 +46,35 @@ final readonly class CustomReportService implements CustomReportServiceInterface
 
     public function getCustomReportConfigTree(?User $user = null): array
     {
-        return $this->customReportHydrator->hydrateCustomReportConfigTree(
+        return $this->dataExtractor->extractConfigTree(
             $user ?
                 $this->customReportRepository->loadForUser($user) :
                 $this->customReportRepository->loadForCurrentUser()
         );
     }
 
-    public function getCustomReportByName(string $name): ?Config
+    public function getCustomReportByName(string $reportName): Config
     {
-        return $this->customReportRepository->loadByName($name);
+        $report = $this->customReportRepository->loadByName($reportName);
+        if(!$report) {
+            throw new RuntimeException('Report ' . $reportName . ' not found');
+        }
+        return $report;
+    }
+
+    public function getChartData(string $reportName, ChartDataParameter $chartDataParameter): array
+    {
+        $reportConfig = $this->getCustomReportByName($reportName);
+
+        $items = $this->adapterService->getData($reportConfig, $chartDataParameter);
+        return $this->dataExtractor->extractChartData(
+            $items
+        );
+    }
+
+    public function getCustomReportDetails(string $reportName): array {
+        $config = $this->getCustomReportByName($reportName);
+
+        return $this->dataExtractor->extractReportDetails($config);
     }
 }

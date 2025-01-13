@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
+use RuntimeException;
 use Exception;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 
@@ -31,5 +33,15 @@ interface CustomReportServiceInterface
     /**
      * @throws Exception
      */
-    public function getCustomReportByName(string $name): ?Config;
+    public function getCustomReportByName(string $reportName): ?Config;
+
+    /**
+     * @throws RuntimeException
+     */
+    public function getChartData(string $reportName, ChartDataParameter $chartDataParameter): array;
+
+    /**
+     * @throws RuntimeException
+     */
+    public function getCustomReportDetails(string $reportName): array;
 }

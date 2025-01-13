@@ -65,7 +65,7 @@ final class TreeController extends AbstractApiController
     #[PageParameter]
     #[PageSizeParameter]
     #[SuccessResponse(
-        description: 'custom_report_collection_success_response',
+        description: 'custom_reports_collection_success_response',
         content: new ItemsJson(CustomReportTreeNode::class)
     )]
     #[DefaultResponses([

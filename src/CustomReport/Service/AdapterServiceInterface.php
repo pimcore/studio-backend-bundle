@@ -14,18 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
+use Exception;
+use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
+use stdClass;
 
 /**
  * @internal
  */
-interface CustomReportHydratorInterface
+interface AdapterServiceInterface
 {
-    public function hydrateCustomReportTree(array $reports): array;
-
-    public function hydrateCustomReportConfigTree(array $reports): array;
-
-    public function hydrateCustomReportDetails(Config $reportConfig): array;
+    public function getData(Config $report, ChartDataParameter $chartDataParameter): array;
 }

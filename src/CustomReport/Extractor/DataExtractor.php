@@ -14,22 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Extractor;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 
 /**
  * @internal
  */
-final readonly class CustomReportHydrator implements CustomReportHydratorInterface
+final readonly class DataExtractor implements DataExtractorInterface
 {
-    public function hydrateCustomReportTree(array $reports): array
+    public function extractTree(array $reports): array
     {
-        $hydratedReports = [];
+        $data = [];
 
         foreach ($reports as $report) {
             if ($report->getDataSourceConfig() !== null) {
-                $hydratedReports[] = [
+                $data[] = [
                     'name' => htmlspecialchars($report->getName()),
                     'niceName' => htmlspecialchars($report->getNiceName()),
                     'iconClass' => htmlspecialchars($report->getIconClass()),
@@ -41,15 +41,15 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             }
         }
 
-        return $hydratedReports;
+        return $data;
     }
 
-    public function hydrateCustomReportConfigTree(array $reports): array
+    public function extractConfigTree(array $reports): array
     {
-        $hydratedReports = [];
+        $data = [];
 
         foreach ($reports as $item) {
-            $hydratedReports[] = [
+            $data[] = [
                 'id' => $item->getName(),
                 'text' => $item->getName(),
                 'cls' => 'pimcore_treenode_disabled',
@@ -57,14 +57,18 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             ];
         }
 
-        return $hydratedReports;
+        return $data;
     }
 
-    public function hydrateCustomReportDetails(Config $reportConfig): array
+    public function extractReportDetails(Config $reportConfig): array
     {
         return [
             ... $reportConfig->getObjectVars(),
             'writeable' => $reportConfig->isWriteable(),
         ];
+    }
+
+    public function extractChartData(array $chartData): array {
+        return $chartData['data'] ?? [];
     }
 }

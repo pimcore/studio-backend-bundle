@@ -20,11 +20,11 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository\CustomReportRepository
 
   #
-  # Hydrator
+  # Data extractor
   #
 
-  Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydrator
+  Pimcore\Bundle\StudioBackendBundle\CustomReport\Extractor\DataExtractorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Extractor\DataExtractor
 
   #
   # Services
@@ -32,3 +32,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportService
+
+  Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\AdapterServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\AdapterService
+    arguments:
+      $adapters: '@pimcore.custom_report.adapter.factories'
