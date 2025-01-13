@@ -25,7 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  * @internal
  */
 #[Schema(
-    title: 'Custom Report',
+    title: 'Custom Report Tree Node',
+    required: ['name', 'niceName', 'iconClass', 'group', 'groupIconClass', 'menuShortcut', 'reportClass'],
     type: 'object'
 )]
 final class CustomReportTreeNode implements AdditionalAttributesInterface
