@@ -68,7 +68,8 @@ final readonly class DataExtractor implements DataExtractorInterface
         ];
     }
 
-    public function extractChartData(array $chartData): array {
+    public function extractChartData(array $chartData): array
+    {
         return $chartData['data'] ?? [];
     }
 }

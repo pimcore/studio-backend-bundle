@@ -20,8 +20,8 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterFactoryIn
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
-use stdClass;
 use RuntimeException;
+use stdClass;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 
 /**
@@ -34,7 +34,8 @@ final readonly class AdapterService implements AdapterServiceInterface
     ) {
     }
 
-    public function getData(Config $report, ChartDataParameter $chartDataParameter): array {
+    public function getData(Config $report, ChartDataParameter $chartDataParameter): array
+    {
         return $this->getAdapter($report)->getData(
             $chartDataParameter->getFilters(),
             $chartDataParameter->getSortBy(),
@@ -46,14 +47,15 @@ final readonly class AdapterService implements AdapterServiceInterface
         );
     }
 
-    private function getAdapter(Config $report): CustomReportAdapterInterface {
+    private function getAdapter(Config $report): CustomReportAdapterInterface
+    {
         $configuration = $report->getDataSourceConfig();
-        if(!$configuration instanceof stdClass) {
+        if (!$configuration instanceof stdClass) {
             throw new RuntimeException('Invalid data source configuration');
         }
 
         $type = $configuration->type ?? 'sql';
-        if(!$this->adapters->has($type)) {
+        if (!$this->adapters->has($type)) {
             throw new RuntimeException('Adapter ' . $type . ' not found');
         }
 

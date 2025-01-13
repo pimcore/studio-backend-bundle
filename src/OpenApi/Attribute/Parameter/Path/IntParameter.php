@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path;
 
 use Attribute;
-use OpenApi\Attributes\PathParameter;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 

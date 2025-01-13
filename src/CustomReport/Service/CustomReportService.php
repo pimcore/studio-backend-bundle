@@ -56,9 +56,10 @@ final readonly class CustomReportService implements CustomReportServiceInterface
     public function getCustomReportByName(string $reportName): Config
     {
         $report = $this->customReportRepository->loadByName($reportName);
-        if(!$report) {
+        if (!$report) {
             throw new RuntimeException('Report ' . $reportName . ' not found');
         }
+
         return $report;
     }
 
@@ -67,12 +68,14 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         $reportConfig = $this->getCustomReportByName($reportName);
 
         $items = $this->adapterService->getData($reportConfig, $chartDataParameter);
+
         return $this->dataExtractor->extractChartData(
             $items
         );
     }
 
-    public function getCustomReportDetails(string $reportName): array {
+    public function getCustomReportDetails(string $reportName): array
+    {
         $config = $this->getCustomReportByName($reportName);
 
         return $this->dataExtractor->extractReportDetails($config);
