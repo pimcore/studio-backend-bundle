@@ -22,6 +22,7 @@ use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeNode;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -78,10 +79,9 @@ final class GetController extends AbstractApiController
         example: 'Quality_Attributes'
     )
     ]
-    //TODO schema
     #[SuccessResponse(
         description: 'custom_report_get_by_name_success_response',
-        content: new JsonContent(ref: CustomReportTreeNode::class)
+        content: new JsonContent(ref: CustomReportDetails::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,

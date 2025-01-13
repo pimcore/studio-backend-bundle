@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller\Config;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportConfigTreeNode;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
@@ -66,7 +66,7 @@ final class TreeController extends AbstractApiController
     #[PageSizeParameter]
     #[SuccessResponse(
         description: 'custom_report_get_tree_success_response',
-        content: new ItemsJson(CustomReportConfigTreeNode::class)
+        content: new ItemsJson(CustomReportTreeConfigNode::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: ['id', 'text', 'cls', 'writeable'],
     type: 'object',
 )]
-final class CustomReportConfigTreeNode implements AdditionalAttributesInterface
+final class CustomReportTreeConfigNode implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 
