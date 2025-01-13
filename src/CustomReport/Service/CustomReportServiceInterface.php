@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 use Exception;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use RuntimeException;
 
 /**
@@ -31,17 +32,17 @@ interface CustomReportServiceInterface
     public function getCustomReportConfigTree(): array;
 
     /**
-     * @throws Exception
+     * @throws NotFoundException
      */
     public function getCustomReportByName(string $reportName): ?Config;
 
     /**
-     * @throws RuntimeException
+     * @throws NotFoundException
      */
     public function getChartData(string $reportName, ChartDataParameter $chartDataParameter): array;
 
     /**
-     * @throws RuntimeException
+     * @throws NotFoundException
      */
     public function getCustomReportDetails(string $reportName): array;
 }
