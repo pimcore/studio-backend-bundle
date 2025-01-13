@@ -25,9 +25,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\RedirectResponse as RedirectResponseAttribute;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 final class PreviewController extends AbstractApiController
@@ -40,6 +42,7 @@ final class PreviewController extends AbstractApiController
     }
 
     #[Route('/data-objects/preview', name: 'pimcore_studio_api_data_objects_preview', methods: ['POST'])]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
         path: self::PREFIX . '/data-objects/preview',
         operationId: 'data_object_preview_by_id',
