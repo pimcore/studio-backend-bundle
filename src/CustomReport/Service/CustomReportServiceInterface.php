@@ -16,11 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
-use Exception;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use RuntimeException;
 
 /**
  * @internal
