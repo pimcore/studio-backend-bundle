@@ -16,13 +16,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter;
 
-/**
- * @internal
- */
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+
+#[Schema(
+    title: 'Data Object Preview Parameters',
+    required: ['id'],
+    type: 'object'
+)]
 final readonly class PreviewParameter
 {
     public function __construct(
+        #[Property(description: 'ID', type: 'integer', example: 83)]
         private int $id,
+        #[Property(description: 'Site', type: 'integer', default: 0, example: 1)]
         private int $site = 0
     ) {
     }

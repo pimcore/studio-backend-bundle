@@ -18,10 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\PreviewRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PreviewParameter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\RedirectResponse as RedirectResponseAttribute;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -29,7 +32,10 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class PreviewController extends AbstractApiController
 {
-    public function __construct(SerializerInterface $serializer, private PreviewUrlServiceInterface $previewUrlService)
+    public function __construct(
+        SerializerInterface $serializer,
+        private PreviewUrlServiceInterface $previewUrlService
+    )
     {
         parent::__construct($serializer);
     }
@@ -42,9 +48,11 @@ final class PreviewController extends AbstractApiController
         summary: 'data_object_preview_by_id_summary',
         tags: [Tags::DataObjects->value]
     )]
-    #[SuccessResponse(
-        description: 'data_object_preview_by_id_success_response',
-    )]
+    #[PreviewRequestBody]
+    #[RedirectResponseAttribute(description: 'data_object_preview_by_id_success_response')]
+    #[DefaultResponses([
+        HttpResponseCodes::REDIRECT
+    ])]
     public function preview(#[MapRequestPayload] PreviewParameter $previewParameter): RedirectResponse
     {
         return new RedirectResponse($this->previewUrlService->getPreviewUrl($previewParameter));
