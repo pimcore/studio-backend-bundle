@@ -96,7 +96,6 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
 
         $data = $fieldDefinition->normalize($value);
 
-
         if (isset($data['poster'])) {
             $data['poster']['fullPath'] = $value->getPoster()?->getRealFullPath();
         }
