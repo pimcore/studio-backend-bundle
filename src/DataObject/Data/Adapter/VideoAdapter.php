@@ -38,7 +38,6 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
 {
     use ElementProviderTrait;
 
-
     public function __construct(private AssetResolverInterface $assetResolver)
     {
     }
