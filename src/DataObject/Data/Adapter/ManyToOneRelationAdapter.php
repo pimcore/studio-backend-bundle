@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
@@ -32,7 +33,7 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ManyToOneRelationAdapter implements SetterDataInterface
+final readonly class ManyToOneRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     use ElementProviderTrait;
 
@@ -58,5 +59,16 @@ final readonly class ManyToOneRelationAdapter implements SetterDataInterface
         } catch (NotFoundException) {
             return null;
         }
+    }
+
+    public function normalize(mixed $value, Data $fieldDefinition): mixed
+    {
+        $data = $fieldDefinition->normalize($value);
+
+        if (!empty($data)) {
+           $data['fullPath'] = $value->getRealFullPath();
+           $data['subtype'] = $value->getType();
+        }
+        return $data;
     }
 }
