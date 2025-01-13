@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
@@ -26,6 +27,7 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Video;
+use Pimcore\Normalizer\NormalizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 
@@ -33,7 +35,7 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class VideoAdapter implements SetterDataInterface
+final readonly class VideoAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     use ElementProviderTrait;
 
@@ -49,7 +51,6 @@ final readonly class VideoAdapter implements SetterDataInterface
         ?FieldContextData $contextData = null
     ): ?Video {
         $adapterData = $data[$key] ?? null;
-
         if (!is_array($adapterData)) {
             return null;
         }
@@ -84,5 +85,26 @@ final readonly class VideoAdapter implements SetterDataInterface
     private function getAssetByPath(?string $path): ?Asset
     {
         return $path ? $this->assetResolver->getByPath($path) : null;
+    }
+
+    public function normalize(mixed $value, Data $fieldDefinition): mixed
+    {
+
+        if (!$value instanceof Video || !$fieldDefinition instanceof NormalizerInterface) {
+            return null;
+        }
+
+        $data = $fieldDefinition->normalize($value);
+
+        if (isset($data['poster'])) {
+            $data['poster']['fullPath'] = $value->getPoster()?->getRealFullPath();
+        }
+
+        if (isset($data['data'])) {
+            $data['data']['fullPath'] = $value->getData()?->getRealFullPath();
+            $data['data']['subtype'] = $value->getData()?->getType();
+        }
+
+        return $data;
     }
 }

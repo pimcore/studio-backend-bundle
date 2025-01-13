@@ -107,7 +107,10 @@ final class GridService implements GridServiceInterface
                 GridColumnDataEvent::EVENT_NAME
             );
 
+            $data['id'] = $element->getId();
             $data['columns'][] = $columnData;
+            $data['isLocked'] = $element->getIsLocked();
+            $data['permissions'] = $element->getPermissions();
         }
 
         return $data;
