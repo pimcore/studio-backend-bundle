@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property;
 
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 
 /**
@@ -29,14 +30,29 @@ final class GridCollection extends Property
     {
         parent::__construct(
             property: 'items',
+            required: ['id', 'columns', 'isLocked', 'permissions'],
             type: 'array',
             items: new Items(
                 properties: [
+                    new Property(
+                        property: 'id',
+                        type: 'integer',
+                    ),
                     new Property(
                         property: 'columns',
                         type: 'array',
                         items: new Items(ref: ColumnData::class),
                     ),
+                    new Property(
+                        property: 'isLocked',
+                        type: 'bool'
+                    ),
+                    new Property(
+                        property: 'permissions',
+                        ref: Permissions::class,
+                        type: 'object'
+                    ),
+
                 ]
             )
         );
