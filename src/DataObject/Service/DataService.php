@@ -16,10 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
-use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Normalizer\NormalizerInterface;
@@ -29,54 +34,40 @@ use Pimcore\Normalizer\NormalizerInterface;
  */
 final readonly class DataService implements DataServiceInterface
 {
+    use ValidateFieldTypeTrait;
+
     public function __construct(
-        private DataAdapterServiceInterface $dataAdapterService
+        private DataAdapterServiceInterface $dataAdapterService,
+        private InheritanceServiceInterface $inheritanceService,
+        private WorkflowDetailsServiceInterface $workflowDetailsService,
     ) {
     }
 
     /**
-     * @throws NotFoundException
+     * @throws DatabaseException|NotFoundException
      */
-    public function getObjectData(Concrete $dataObject): array
+    public function setObjectDetailData(
+        DataObjectFolder|DataObject $dataObject,
+        Concrete $element,
+        ClassDefinition $class
+    ): void
     {
-        $data = [];
+        $classData = $this->getObjectClassData($class);
+        $fieldDefinitions = $class->getFieldDefinitions();
 
-        try {
-            $fieldDefinitions = $dataObject->getClass()->getFieldDefinitions();
-        } catch (Exception) {
-            throw new NotFoundException(type: 'class', id: $dataObject->getClassId());
+        $dataObject->setAllowInheritance($classData->getAllowInheritance());
+        $dataObject->setAllowVariants($classData->getAllowVariants());
+        $dataObject->setShowVariants($classData->getShowVariants());
+        $dataObject->setHasPreview($classData->getHasPreview());
+        $dataObject->setObjectData($this->getNormalizedObjectData($element, $fieldDefinitions));
+
+        if ($dataObject->getAllowInheritance()) {
+            $dataObject->setInheritanceData(
+                $this->inheritanceService->getInheritanceData($element, $fieldDefinitions)
+            );
         }
 
-        foreach ($fieldDefinitions as $key => $fieldDefinition) {
-            try {
-                $value = $dataObject->get($key);
-            } catch (Exception) {
-                throw new NotFoundException(type: 'field', id: $key);
-            }
-
-            $data[$key] = $this->getNormalizedValue($value, $fieldDefinition);
-        }
-
-        return $data;
-    }
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getObjectClassData(Concrete $dataObject): ClassData
-    {
-        try {
-            $class = $dataObject->getClass();
-        } catch (Exception) {
-            throw new NotFoundException(type: 'class', id: $dataObject->getClassId());
-        }
-
-        return new ClassData(
-            $class->getAllowInherit(),
-            $class->getAllowVariants(),
-            $class->getShowVariants(),
-            (bool)$class->getLinkGeneratorReference()
-        );
+        $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
     }
 
     public function getNormalizedValue(
@@ -93,5 +84,32 @@ final readonly class DataService implements DataServiceInterface
         }
 
         return $fieldDefinition->normalize($value);
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function getNormalizedObjectData(Concrete $dataObject, array $fieldDefinitions): array
+    {
+        $data = [];
+        foreach ($fieldDefinitions as $key => $fieldDefinition) {
+            $data[$key] = $this->getNormalizedValue(
+                $this->getValidFieldValue($dataObject, $key),
+                $fieldDefinition
+            );
+        }
+
+        return $data;
+    }
+
+    private function getObjectClassData(ClassDefinition $class): ClassData
+    {
+
+        return new ClassData(
+            $class->getAllowInherit(),
+            $class->getAllowVariants(),
+            $class->getShowVariants(),
+            (bool)$class->getLinkGeneratorReference()
+        );
     }
 }

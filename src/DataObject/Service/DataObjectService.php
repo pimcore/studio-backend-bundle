@@ -47,7 +47,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -83,7 +82,6 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private WorkflowDetailsServiceInterface $workflowDetailsService,
     ) {
     }
 
@@ -157,7 +155,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         );
 
         if ($getDetailData) {
-            $this->setObjectDetailData($dataObject);
+            $this->getObjectDetailData($dataObject);
         }
 
         $this->dispatchDataObjectEvent($dataObject);
@@ -345,23 +343,15 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     /**
      * @throws InvalidElementTypeException|NotFoundException
      */
-    private function setObjectDetailData(DataObjectFolder|DataObject $dataObject): void
+    private function getObjectDetailData(DataObjectFolder|DataObject $dataObject): void
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObject->getId());
         $element = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
-
-        $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
-
         if (!$element instanceof Concrete) {
             return;
         }
-        $dataObject->setObjectData($this->dataService->getObjectData($element));
 
-        $classData = $this->dataService->getObjectClassData($element);
-        $dataObject->setAllowInheritance($classData->getAllowInheritance());
-        $dataObject->setAllowVariants($classData->getAllowVariants());
-        $dataObject->setShowVariants($classData->getShowVariants());
-        $dataObject->setHasPreview($classData->getHasPreview());
+        $this->dataService->setObjectDetailData($dataObject, $element, $this->getValidClass($element->getClassId()));
     }
 
     private function dispatchDataObjectEvent(mixed $dataObject): void

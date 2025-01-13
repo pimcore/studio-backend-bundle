@@ -17,9 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -28,19 +27,23 @@ use Pimcore\Model\DataObject\Concrete;
 /**
  * @internal
  */
-interface DataServiceInterface
+interface InheritanceServiceInterface
 {
     /**
-     * @throws DatabaseException|NotFoundException
+     * @throws NotFoundException
      */
-    public function setObjectDetailData(
-        DataObjectFolder|DataObject $dataObject,
-        Concrete $element,
-        ClassDefinition $class
-    ): void;
+    public function getInheritanceData(
+        Concrete $object,
+        array $fieldDefinitions
+    ): array;
 
-    public function getNormalizedValue(
-        mixed $value,
-        Data $fieldDefinition
-    ): mixed;
+    /**
+     * @throws NotFoundException
+     */
+    public function processFieldDefinition(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): array|InheritanceData;
 }

@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model;
 
 use Pimcore\Model\DataObject\Data\BlockElement;
 use Pimcore\Model\DataObject\Fieldcollection;
+use Pimcore\Model\DataObject\Objectbrick;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use function is_array;
 
@@ -55,6 +56,18 @@ final readonly class FieldContextData
         }
 
         return null;
+    }
+
+    public function getBrickValueFromElement(Objectbrick $brick, string $fieldName): mixed
+    {
+        $contextObject = $this->getContextObject();
+        if (!$contextObject instanceof AbstractData) {
+            return null;
+        }
+        $brickGetter = 'get' . ucfirst($contextObject->getType());
+        $fieldGetter = 'get' . ucfirst($fieldName);
+
+        return $brick->$brickGetter()->$fieldGetter($this->getLanguage());
     }
 
     private function getFromBlockData(string $fieldName, array $blockData): mixed

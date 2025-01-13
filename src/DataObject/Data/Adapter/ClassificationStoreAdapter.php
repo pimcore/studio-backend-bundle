@@ -22,14 +22,17 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\DefinitionCacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
 use Pimcore\Model\DataObject\Classificationstore;
@@ -46,7 +49,8 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ClassificationStoreAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class ClassificationStoreAdapter implements
+    SetterDataInterface, DataNormalizerInterface, DataInheritanceInterface
 {
     use ValidateFieldTypeTrait;
 
@@ -100,20 +104,56 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface, 
         $resultItems = [];
 
         foreach ($this->getActiveGroups($value) as $groupId => $groupConfig) {
-            $resultItems[$groupConfig->getName()] = [];
-            $keys = $this->getClassificationStoreKeysFromGroup($groupConfig);
+            $resultItems[$groupId] = [];
+            $keys = $this->getClassificationStoreKeysFromGroup($groupId);
             foreach ($validLanguages as $validLanguage) {
                 foreach ($keys as $key) {
                     $normalizedValue = $this->getNormalizedValue($value, $groupId, $key, $validLanguage);
 
                     if ($normalizedValue !== null) {
-                        $resultItems[$groupConfig->getName()][$validLanguage][$key->getName()] = $normalizedValue;
+                        $resultItems[$groupId][$validLanguage][$key->getKeyId()] = $normalizedValue;
                     }
                 }
             }
         }
 
         return $resultItems;
+    }
+
+    public function getFieldInheritance(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): array
+    {
+        $inheritedData = [];
+        if (!$fieldDefinition instanceof ClassificationstoreDefinition) {
+            return [];
+        }
+        $languages = $this->getValidLanguages($fieldDefinition);
+
+        foreach ($this->getStoreDefinitions($object, $fieldDefinition) as $groupId => $groupDefinitions) {
+            foreach ($groupDefinitions as $groupKeyId => $definition) {
+                foreach ($languages as $language) {
+                    $originId = $this->getOriginId(
+                        $object,
+                        $definition,
+                        $key,
+                        $groupId,
+                        $groupKeyId,
+                        $language
+                    );
+
+                    $inheritedData[$groupId][$language][$groupKeyId] = new InheritanceData(
+                        $originId,
+                        $originId !== $object->getId()
+                    );
+                }
+            }
+        }
+
+        return $inheritedData;
     }
 
     /**
@@ -216,6 +256,29 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface, 
         }
     }
 
+    private function getStoreDefinitions(
+        Concrete $dataObject,
+        ClassificationstoreDefinition $classificationStore
+    ): array {
+        $mapping = [];
+        foreach ($classificationStore->recursiveGetActiveGroupsIds($dataObject) as $groupId => $active) {
+            if (!$active) {
+                continue;
+            }
+
+            $keys = $this->getClassificationStoreKeysFromGroup($groupId);
+            foreach ($keys as $groupKey) {
+                $definition = $this->serviceResolver->getFieldDefinitionFromKeyConfig($groupKey);
+                if ($definition === null) {
+                    continue;
+                }
+                $mapping[$groupKey->getGroupId()][$groupKey->getKeyId()] = $definition;
+            }
+        }
+
+        return $mapping;
+    }
+
     private function getValidLanguages(ClassificationstoreDefinition $classificationStore): array
     {
         $languages = [MappingProperty::NOT_LOCALIZED_KEY];
@@ -247,10 +310,10 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface, 
     /**
      * @return KeyGroupRelation[]
      */
-    private function getClassificationStoreKeysFromGroup(GroupConfig $groupConfig): array
+    private function getClassificationStoreKeysFromGroup(int $groupId): array
     {
         $listing = new KeyGroupRelationListing();
-        $listing->addConditionParam('groupId = ?', $groupConfig->getId());
+        $listing->addConditionParam('groupId = ?', $groupId);
 
         return $listing->getList();
     }
@@ -284,5 +347,39 @@ final readonly class ClassificationStoreAdapter implements SetterDataInterface, 
         }
 
         return $this->dataService->getNormalizedValue($value, $fieldDefinition);
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function getOriginId(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        int $groupId,
+        int $groupKeyId,
+        string $language
+    ): int
+    {
+        $data = $this->getValidFieldValue($object, $key)
+            ->getLocalizedKeyValue($groupId, $groupKeyId, $language, true, true);
+
+        if (!$fieldDefinition->isEmpty($data)) {
+            return $object->getId();
+        }
+
+        $parent = $object->getNextParentForInheritance();
+        if ($parent === null) {
+            return $object->getId();
+        }
+
+        return $this->getOriginId(
+            $parent,
+            $fieldDefinition,
+            $key,
+            $groupId,
+            $groupKeyId,
+            $language
+        );
     }
 }
