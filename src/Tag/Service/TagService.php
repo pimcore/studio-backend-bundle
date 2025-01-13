@@ -83,6 +83,7 @@ final readonly class TagService implements TagServiceInterface
             $this->dispatchTagEvent($result);
             $results[] = $result;
         }
+
         return $results;
     }
 
