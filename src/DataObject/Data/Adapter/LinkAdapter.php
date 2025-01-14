@@ -78,25 +78,24 @@ final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerI
 
     private function getFullPath(Link $link): ?string
     {
-        $fullPath = null;
 
         if ($link->getDirect() !== null) {
             return $link->getDirect();
         }
 
-        if ($link->getInternal() && $link->getInternalType()) {
-            try {
-                $element = $this->getElement(
-                    $this->serviceResolver,
-                    $link->getInternalType(),
-                    $link->getInternal()
-                );
-                $fullPath = $element->getRealFullPath();
-            } catch (NotFoundException) {
-                return null;
-            }
+        if (!$link->getInternal() || !$link->getInternalType()) {
+            return null;
         }
 
-        return $fullPath;
+        try {
+            $element = $this->getElement(
+                $this->serviceResolver,
+                $link->getInternalType(),
+                $link->getInternal()
+            );
+            return $element->getRealFullPath();
+        } catch (NotFoundException) {
+            return null;
+        }
     }
 }
