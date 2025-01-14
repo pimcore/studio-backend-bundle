@@ -95,6 +95,7 @@ final class PublicAuthorizationVoter extends Voter
         } catch (UserNotFoundException) {
             return false;
         }
+
         return true;
     }
 }
