@@ -20,7 +20,7 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository\CustomReportRepository
 
   #
-  # Data extractor
+  # Hydrator
   #
 
   Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface:
