@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportColumnCon
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeNode;
+
 /**
  * @internal
  */
@@ -86,7 +87,8 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
         );
     }
 
-    private function getCustomReportColumnConfiguration(array $columns): array {
+    private function getCustomReportColumnConfiguration(array $columns): array
+    {
         $columnConfig = [];
         foreach ($columns as $column) {
             $columnConfig[] = new CustomReportColumnConfiguration(
@@ -98,6 +100,7 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
                 $column['id'] ?? ''
             );
         }
+
         return $columnConfig;
     }
 }

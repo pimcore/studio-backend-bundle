@@ -46,7 +46,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         $treeData = [];
         $reportTree = $this->customReportRepository->loadForCurrentUser();
 
-        foreach($reportTree as $report) {
+        foreach ($reportTree as $report) {
             $data = $this->customReportHydrator->extractTreeData($report);
 
             $this->eventDispatcher->dispatch(
@@ -65,7 +65,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         $treeConfigData = [];
         $reportTree = $this->customReportRepository->loadForCurrentUser();
 
-        foreach($reportTree as $report) {
+        foreach ($reportTree as $report) {
             $data = $this->customReportHydrator->extractConfigTreeData($report);
 
             $this->eventDispatcher->dispatch(
