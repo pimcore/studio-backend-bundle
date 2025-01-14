@@ -93,6 +93,7 @@ final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerI
                 $link->getInternalType(),
                 $link->getInternal()
             );
+
             return $element->getRealFullPath();
         } catch (NotFoundException) {
             return null;
