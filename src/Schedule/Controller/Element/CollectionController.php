@@ -59,7 +59,7 @@ final class CollectionController extends AbstractApiController
         tags: [Tags::Schedule->name]
     )]
     #[ElementTypeParameter]
-    #[IdParameter(type: 'element')]
+    #[IdParameter]
     #[SuccessResponse(
         description: 'schedule_get_collection_for_element_by_type_and_id_success_response',
         content: new ItemsJson(Schedule::class)

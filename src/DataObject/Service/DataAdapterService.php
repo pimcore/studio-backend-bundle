@@ -54,10 +54,23 @@ final readonly class DataAdapterService implements DataAdapterServiceInterface
         );
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getDataAdapter(string $fieldDefinitionType): SetterDataInterface
     {
         return $this->dataAdapterLoader->loadAdapter(
             $this->getFieldDefinitionAdapterClass($fieldDefinitionType)
         );
+    }
+
+    // ToDo: Consider removing this method and using getDataAdapter when field types from bundles are implemented
+    public function tryDataAdapter(string $fieldDefinitionType): ?SetterDataInterface
+    {
+        try {
+            return $this->getDataAdapter($fieldDefinitionType);
+        } catch (InvalidArgumentException) {
+            return null;
+        }
     }
 }

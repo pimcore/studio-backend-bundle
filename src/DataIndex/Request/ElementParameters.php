@@ -39,10 +39,10 @@ readonly class ElementParameters extends CollectionParameters implements
         int $pageSize = 10,
         private ?int $parentId = null,
         private ?string $idSearchTerm = null,
-        private ?string $excludeFolders = null,
+        private bool $excludeFolders = false,
         private ?string $path = null,
-        private ?string $pathIncludeParent = null,
-        private ?string $pathIncludeDescendants = null,
+        private bool $pathIncludeParent = false,
+        private bool $pathIncludeDescendants = false,
         private ?UserInterface $user = null
     ) {
         parent::__construct($page, $pageSize);
@@ -60,7 +60,7 @@ readonly class ElementParameters extends CollectionParameters implements
 
     public function getExcludeFolders(): bool
     {
-        return $this->excludeFolders === 'true'; // TODO: symfony 7.1 will support bool type
+        return $this->excludeFolders;
     }
 
     public function getPath(): ?string
@@ -70,12 +70,12 @@ readonly class ElementParameters extends CollectionParameters implements
 
     public function getPathIncludeParent(): bool
     {
-        return $this->pathIncludeParent === 'true'; // TODO: symfony 7.1 will support bool type
+        return $this->pathIncludeParent;
     }
 
     public function getPathIncludeDescendants(): bool
     {
-        return $this->pathIncludeDescendants === 'true'; // TODO: symfony 7.1 will support bool type
+        return $this->pathIncludeDescendants;
     }
 
     public function getUser(): ?UserInterface

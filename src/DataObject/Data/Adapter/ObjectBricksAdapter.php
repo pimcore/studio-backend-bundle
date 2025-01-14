@@ -18,12 +18,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\Concrete;
@@ -37,12 +40,18 @@ use function array_key_exists;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class ObjectBricksAdapter implements
+    SetterDataInterface,
+    DataNormalizerInterface,
+    DataInheritanceInterface
 {
+    use ValidateFieldTypeTrait;
+
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
-        private DefinitionResolverInterface $definitionResolver
+        private DefinitionResolverInterface $definitionResolver,
+        private InheritanceServiceInterface $inheritanceService,
     ) {
     }
 
@@ -91,11 +100,10 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNor
                 continue;
             }
 
-            $resultItems[$type] = [];
             foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
                 $getter = 'get' . ucfirst($brickFieldDefinition->getName());
                 $value = $item->$getter();
-                $resultItems[$brickFieldDefinition->getName()] = $this->dataService->getNormalizedValue(
+                $resultItems[$type][$brickFieldDefinition->getName()] = $this->dataService->getNormalizedValue(
                     $value,
                     $brickFieldDefinition,
                 );
@@ -103,6 +111,45 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNor
         }
 
         return $resultItems;
+    }
+
+    public function getFieldInheritance(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): array {
+        $value = $this->getValidFieldValue($object, $key);
+        if (!$value instanceof Objectbrick) {
+            return [];
+        }
+
+        $inheritanceData = [];
+        foreach ($value->getAllowedBrickTypes() as $type) {
+            $brickGetter = 'get' . $type;
+            $brick = $value->$brickGetter();
+            if (!$brick) {
+                continue;
+            }
+
+            $inheritanceData[$type] = [];
+            $brickDefinition = $this->definitionResolver->getByKey($type);
+            if ($brickDefinition === null) {
+                continue;
+            }
+
+            $contextData = new FieldContextData($brick, $contextData?->getLanguage());
+            foreach ($brickDefinition->getFieldDefinitions() as $definition) {
+                $inheritanceData[$type][$definition->getName()] = $this->inheritanceService->processFieldDefinition(
+                    $object,
+                    $definition,
+                    $key,
+                    $contextData
+                );
+            }
+        }
+
+        return $inheritanceData;
     }
 
     /**
@@ -177,19 +224,24 @@ final readonly class ObjectBricksAdapter implements SetterDataInterface, DataNor
     ): array {
         $collectionData = [];
         foreach ($collectionDef->getFieldDefinitions() as $fd) {
+            $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
             $fieldName = $fd->getName();
-            if (!array_key_exists($fieldName, $rawData)) {
+            if (!array_key_exists($fieldName, $rawData) || !$adapter) {
                 continue;
             }
 
-            $adapter = $this->dataAdapterService->getDataAdapter($fd->getFieldType());
-            $collectionData[$fd->getName()] = $adapter->getDataForSetter(
+            $value = $adapter->getDataForSetter(
                 $element,
                 $fd,
                 $fieldName,
                 [$fieldName => $rawData[$fieldName]],
                 new FieldContextData($brick)
             );
+            if (!$this->validateEncryptedField($fd, $value)) {
+                continue;
+            }
+
+            $collectionData[$fieldName] = $value;
         }
 
         return $collectionData;

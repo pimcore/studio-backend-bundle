@@ -100,8 +100,13 @@ asset_get_tree_description: |
   You can use different query parameters to filter the assets and it is possible to exclude folders from the result completely
 asset_get_tree_success_response: Paginated assets with total count as header param as JSON
 asset_get_tree_summary: Get all asset data for the tree
-asset_image_download_by_format_description: |
-  Download the image asset based on the provided <strong>{id}</strong> and <strong>{format}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset image
+asset_image_create_thumbnail_description: |
+  Create a new image thumbnail based on the provided <strong>{id}</strong> and configuration parameters. <br> 
+  The <strong>{id}</strong> must be an ID of existing asset image
+asset_image_clear_thumbnail_summary: Clear image thumbnail by ID
+asset_image_clear_thumbnail_description: |
+    Clear the image thumbnail based on the provided <strong>{id}</strong>. <br> 
+    The <strong>{id}</strong> must be an ID of existing asset image
 asset_image_download_by_format_success_response: Image asset binary file based on format
 asset_image_download_by_format_summary: Download image asset by ID and format
 asset_image_download_by_thumbnail_description: |
@@ -115,6 +120,16 @@ asset_image_download_custom_description: |
   The <strong>{id}</strong> must be an ID of existing asset image
 asset_image_download_custom_success_response: Custom image binary file
 asset_image_download_custom_summary: Download custom image by ID and configuration
+asset_image_stream_description: |
+  Stream original image asset based on the provided <strong>{id}</strong>. <br> 
+  The <strong>{id}</strong> must be an ID of existing asset image
+asset_image_stream_success_response: Stream of an original image asset
+asset_image_stream_summary: Stream original image asset by ID
+asset_image_stream_custom_description: |
+  Stream image asset thumbnail based on the provided <strong>{id}</strong> and configuration parameters. <br> 
+  The <strong>{id}</strong> must be an ID of existing asset image
+asset_image_stream_custom_success_response: Image asset stream based on custom thumbnail configuration
+asset_image_stream_custom_summary: Stream custom image thumbnail by ID and configuration
 asset_image_stream_preview_description: |
   Stream image asset preview based on the provided <strong>{id}</strong>. <br> 
   The <strong>{id}</strong> must be an ID of existing asset image
@@ -132,7 +147,7 @@ asset_patch_folder_by_id_summary: Patch all assets based on folder ID and filter
 asset_replace_description: |
   Replace the existing asset binary based on the given <strong>{id}</strong> with the provided {file} binary. <br> 
   The new asset binary mime type must be the same as the existing asset binary mime type.
-asset_replace_success_response: Successfully replaced asset binary
+asset_replace_success_response: File name of the successfully replaced asset
 asset_replace_summary: Replace existing asset binary
 asset_update_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like metadata, custom settings and properties. <br>  E.g. if you want to remove an entry from metadata simply do not include this entry in the update. <br>  If you want to update only a single field, use the PATCH method.
@@ -201,6 +216,10 @@ data_object_update_by_id_description: |
   Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
 data_object_update_by_id_success_response: Successfully updated data object
 data_object_update_by_id_summary: Update a data object by ID
+documents_list_available_sites_description: |
+  List all available sites
+documents_list_available_sites_success_response: List of available sites
+documents_list_available_sites_summary: List all available sites
 element_delete_created_response: Successfully created jobRun for deleting element
   and its children
 element_delete_description: |
@@ -220,6 +239,10 @@ element_get_id_by_path_description: |
   Get the element ID based on the given <strong>{path}</strong> and <strong>{elementType}</strong>. <br> The <strong>{path}</strong> must be a valid path of an existing element with provided <strong>{elementType}</strong>
 element_get_id_by_path_success_response: ID of the element
 element_get_id_by_path_summary: Get ID of the element by path query parameter and element type path parameter
+element_get_subtype_description: |
+  Get the subtype of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>.
+element_get_subtype_success_response: Subtype of the element
+element_get_subtype_summary: Get subtype of the element by id and element type path parameter
 email_blocklist_add_description: |
   Add an E-mail address to the blocklist. <br> The E-mail address has to be compliant with the PHP validate filter.
 email_blocklist_add_success_response: Successfully added E-mail address to blocklist
@@ -281,6 +304,9 @@ logout_summary: Logout and invalidate current session for active user.
 mercure_create_cookie_description: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_success_response: Retrieve JWT token for Mercure hub as cookie
 mercure_create_cookie_summary: Retrieve JWT token for Mercure hub as cookie
+metadata_get_collection_description: Get predefined metadata collection with basic filter options
+metadata_get_collection_success_response: Predefined metadata collection
+metadata_get_collection_summary: Get predefined metadata collection
 note_delete_by_id_description: |
   Delete the note with the given <strong>{id}</strong>
 note_delete_by_id_success_response: Successfully deleted note
@@ -416,6 +442,7 @@ tag_assign_to_element_success_response: Successfully assigned tag to element
 tag_assign_to_element_summary: Assign a tag to an element
 tag_authorization_description: Session-based login via username and password or logout
   and invalidate the session
+tag_class_description: Class definition operations
 tag_batch_operation_to_elements_by_type_and_id_description: |
   Batch assign/replace multiple tags of the given parent based on the <strong>{elementId}</strong> and <strong>{elementType}</strong> to the children. <br>
   Operation parameter <strong>{operation}</strong> must be one of the <strong>assign</strong or <strong>replace</strong>.
@@ -433,6 +460,7 @@ tag_delete_by_id_description: |
 tag_delete_by_id_success_response: ID of successfully deleted tag
 tag_delete_by_id_summary: Delete a specific tag
 tag_dependencies_description: Get dependencies for a single element
+tag_documents_description: Document operations to get/update/create/delete documents
 tag_elements_description: Get element properties for a single element based on its
   type and provided parameters
 tag_emails_description: E-mail operations to get/update/create/delete/test emails and
@@ -452,6 +480,7 @@ tag_get_collection_for_element_by_type_and_id_summary: Get tags for an element
 tag_get_collection_success_response: All tags for a parent filtered based on type and query parameters
 tag_get_collection_summary: Get all tags for a parent
 tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
+tag_metadata_description: Metadata operations to get/update/create/delete metadata
 tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications
 tag_properties_description: Property operations to get/update/create/delete properties
@@ -472,6 +501,7 @@ tag_update_by_id_description: |
   See the full description of updatable fields with the schema <strong>Change Tag Parameters</strong>
 tag_update_by_id_success_response: Successfully updated tag data as JSON
 tag_update_by_id_summary: Update a tag by ID
+tag_units_description: Units operations like convert and get all units
 tag_user_description: User Management operations
 tag_versions_description: Versions operations to get/list/publish/delete and cleanup
   versions
@@ -600,3 +630,38 @@ user_default_key_bindings_response: List of default key bindings
 user_upload_image_summary: Upload user image
 user_get_image_summary: Get user profile image
 user_get_image_success_response: User profile image
+class_field_collection_object_layout_description: |
+  Get all layouts from the field collection for an given object
+class_field_collection_object_layout_summary: Get all layouts from the field collection for an given object
+class_field_collection_object_layout_success_response: List of layouts
+class_object_brick_object_layout_description: |
+  Get all layouts from the object bricks for an given object
+class_object_brick_object_layout_summary: Get all layouts from the object bricks for an given object
+class_object_brick_object_layout_success_response: List of layouts
+unit_quantity_value_list_description: |
+  List of available quantity value units
+unit_quantity_value_list_summary: List of available quantity value units
+unit_quantity_value_list_success_response: List of quantity value units
+unit_quantity_value_convert_description: |
+  Convert quantity <strong>{value}</strong> from one unit to another based on the given <strong>{fromUnitId}</strong> and <strong>{toUnitId}</strong>
+unit_quantity_value_convert_summary: Convert quantity value from one unit to another
+unit_quantity_value_convert_success_response: Converted quantity value
+unit_quantity_value_convert_all_description: |
+  Convert quantity <strong>{value}</strong> from one unit to all other available units based on the given <strong>{fromUnitId}</strong>. <br>
+  Units have to have <strong>{fromUnitId}</strong> defined as base unit to be considered for conversion.
+unit_quantity_value_convert_all_summary: Convert quantity value from one unit to all other related units
+unit_quantity_value_convert_all_success_response: Converted quantity value
+data_object_get_select_options_description: |
+  Get all dynamic select options for data objects for given field
+data_object_get_select_options_summary: Get all dynamic select options for data objects
+data_object_get_select_options_success_response: List of dynamic select options
+custom_reports_config_get_tree_description: Get all reports for the current user to display in configuration tree.
+custom_reports_config_get_tree_summary: All reports for the current user to display in configuration tree.
+custom_report_get_tree_success_response: Get all reports for the current user to display in configuration tree.
+custom_reports_get_tree_description: Get all reports for the current user to display in tree.
+custom_reports_get_tree_summary: All reports for the current user to display in tree.
+custom_report_collection_success_response: Get all reports for the current user to display in tree.
+tag_custom_reports_description: List custom reports
+custom_report_get_by_name_summary: Get a specific report by name
+custom_report_get_by_name_success_response: Report data as JSON
+custom_report_get_by_name_name_parameter: Name of the report

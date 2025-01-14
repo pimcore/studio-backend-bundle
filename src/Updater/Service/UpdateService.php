@@ -20,6 +20,7 @@ use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -33,8 +34,7 @@ use function array_key_exists;
 final readonly class UpdateService implements UpdateServiceInterface
 {
     use ElementProviderTrait;
-
-    private const EDITABLE_DATA_KEY = 'editableData';
+    use ValidateFieldTypeTrait;
 
     public function __construct(
         private AdapterLoaderInterface $adapterLoader,
@@ -72,23 +72,27 @@ final readonly class UpdateService implements UpdateServiceInterface
     /**
      * @throws ElementSavingFailedException
      */
-    private function updateEditableData(Concrete $element, array $editableData): void
+    public function updateEditableData(Concrete $element, array $editableData): void
     {
         try {
             $class = $element->getClass();
             foreach ($editableData as $key => $value) {
                 $fieldDefinition = $class->getFieldDefinition($key);
-                if ($fieldDefinition === null) {
+                if ($fieldDefinition === null || !array_key_exists($key, $editableData)) {
                     continue;
                 }
 
-                $data = array_key_exists($key, $editableData)
-                    ? $this->dataAdapterService
-                        ->getDataAdapter($fieldDefinition->getFieldType())
-                        ->getDataForSetter($element, $fieldDefinition, $key, $editableData)
-                    : null;
+                $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldtype());
+                if ($adapter === null) {
+                    continue;
+                }
 
-                $element->setValue($key, $data);
+                $value = $adapter->getDataForSetter($element, $fieldDefinition, $key, $editableData);
+                if (!$this->validateEncryptedField($fieldDefinition, $value)) {
+                    continue;
+                }
+
+                $element->setValue($key, $value);
             }
 
         } catch (Exception $e) {

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Metadata\Predefined\PredefinedResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\MappedParameter\MetadataParameters;
 use Pimcore\Model\Metadata\Predefined;
 use Pimcore\Model\Metadata\Predefined\Listing;
 
@@ -35,6 +36,25 @@ final readonly class MetadataRepository implements MetadataRepositoryInterface
     public function getAllPredefinedMetadata(): array
     {
         return (new Listing())->load();
+    }
+
+    public function getAllPredefinedMetadataDefinitions(MetadataParameters $metadataParameters): array
+    {
+        $listing = new Listing();
+        $filter = $metadataParameters->getFilter();
+        if ($filter !== null) {
+            $listing->setFilter(function (Predefined $predefined) use ($filter) {
+                foreach ($predefined->getObjectVars() as $value) {
+                    if (stripos((string)$value, $filter) !== false) {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
+        }
+
+        return $listing->getDefinitions();
     }
 
     public function getPredefinedMetadataByName(string $name): ?Predefined

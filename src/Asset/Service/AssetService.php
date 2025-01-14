@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
+use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\AssetEvent;
@@ -29,10 +30,12 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
@@ -76,8 +79,8 @@ final readonly class AssetService implements AssetServiceInterface
      */
     public function getAssets(ElementParameters $parameters): Collection
     {
-        /** @var OpenSearchFilterInterface $filterService */
-        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
+        /** @var SearchIndexFilterInterface $filterService */
+        $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
         /** @var AssetQueryInterface $assetQuery */
         $assetQuery = $filterService->applyFilters(
@@ -249,6 +252,28 @@ final readonly class AssetService implements AssetServiceInterface
             } else {
                 return $filename;
             }
+        }
+    }
+
+    /**
+     * @throws DatabaseException|ForbiddenException
+     */
+    public function clearThumbnails(int $id): void
+    {
+        $asset = $this->getAsset($id);
+
+        if (!$asset->getPermissions()->isPublish()) {
+            throw new ForbiddenException('Not allowed to clear thumbnails for this asset');
+        }
+
+        $asset = $this->serviceResolver->getElementById('asset', $id);
+
+        $asset->clearThumbnails(true); // force clear
+
+        try {
+            $asset->save();
+        } catch (Exception $e) {
+            throw new DatabaseException($e->getMessage());
         }
     }
 

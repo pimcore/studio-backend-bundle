@@ -168,6 +168,18 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             }
         }
 
+        if ($parameters->hasCover()) {
+            $thumbnailConfig->addItem('cover', $parameters->getCoverTransformation());
+        }
+
+        if ($parameters->hasFrame()) {
+            $thumbnailConfig->addItem('frame', $parameters->getFrameTransformation());
+        }
+
+        if ($parameters->hasContain()) {
+            $thumbnailConfig->addItem('contain', $parameters->getContainTransformation());
+        }
+
         return $thumbnailConfig;
     }
 
@@ -217,13 +229,14 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
                     'height' => $resizeHeight,
                 ]
             ),
-            default => $thumbnailConfig->addItem(
+            ResizeModes::RESIZE => $thumbnailConfig->addItem(
                 ResizeModes::RESIZE,
                 [
                     'width' => $resizeWidth,
                     'height' => $resizeHeight,
                 ]
             ),
+            default => null
         };
 
         return $thumbnailConfig;

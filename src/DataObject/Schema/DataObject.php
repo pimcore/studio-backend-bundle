@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ClassDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\Element;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
@@ -40,6 +41,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'permissions',
         'index',
         'objectData',
+        'inheritanceData',
         'allowInheritance',
         'allowVariants',
         'showVariants',
@@ -85,6 +87,12 @@ class DataObject extends Element implements AdditionalAttributesInterface
         ?int $modificationDate,
         #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
         private array $objectData = [],
+        #[Property(
+            description: 'Inheritance object data',
+            type: 'object',
+            example: ['fieldKey' => new InheritanceData(1, true)])
+        ]
+        private array $inheritanceData = [],
     ) {
         parent::__construct(
             $id,
@@ -153,6 +161,16 @@ class DataObject extends Element implements AdditionalAttributesInterface
     public function getObjectData(): array
     {
         return $this->objectData;
+    }
+
+    public function setInheritanceData(array $inheritanceData): void
+    {
+        $this->inheritanceData = $inheritanceData;
+    }
+
+    public function getInheritanceData(): array
+    {
+        return $this->inheritanceData;
     }
 
     public function getFilename(): string

@@ -20,7 +20,7 @@ use Attribute;
 use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_METHOD)]
+#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class TextFieldParameter extends QueryParameter
 {
     public function __construct(string $name, string $description, bool $required = false, string $example = null)

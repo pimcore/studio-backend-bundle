@@ -27,7 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'Tag',
-    type: 'object'
+    required: ['id', 'parentId', 'text', 'path', 'hasChildren', 'iconName'],
+    type: 'object',
 )]
 final class Tag implements AdditionalAttributesInterface
 {

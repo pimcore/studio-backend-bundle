@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParame
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -66,7 +67,7 @@ final class CreateController extends AbstractApiController
         tags: [Tags::Notes->name]
     )]
     #[ElementTypeParameter]
-    #[IdParameter(type: 'element')]
+    #[IdParameter(type: ElementTypes::TYPE_ELEMENT)]
     #[CreateNoteRequestBody]
     #[SuccessResponse(
         description: 'note_element_create_success_response',

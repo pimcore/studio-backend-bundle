@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Role\Schema\DetailedRole;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\WorkspaceHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PermissionSanitationTrait;
 use Pimcore\Model\User\UserRoleInterface;
 
 /**
@@ -25,6 +26,8 @@ use Pimcore\Model\User\UserRoleInterface;
  */
 final readonly class RoleHydrator implements RoleHydratorInterface
 {
+    use PermissionSanitationTrait;
+
     public function __construct(
         private WorkspaceHydratorInterface $workspaceHydrator
     ) {
@@ -37,7 +40,7 @@ final readonly class RoleHydrator implements RoleHydratorInterface
             name: $role->getName(),
             classes: $role->getClasses(),
             parentId: $role->getParentId(),
-            permissions: $role->getPermissions(),
+            permissions: $this->sanitizePermissions($role->getPermissions()),
             docTypes: $role->getDocTypes(),
             websiteTranslationLanguagesEdit: $role->getWebsiteTranslationLanguagesEdit(),
             websiteTranslationLanguagesView: $role->getWebsiteTranslationLanguagesView(),

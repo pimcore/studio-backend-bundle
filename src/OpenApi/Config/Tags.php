@@ -38,6 +38,14 @@ use OpenApi\Attributes\Tag;
     description: 'tag_authorization_description'
 )]
 #[Tag(
+    name: Tags::ClassDefinition->value,
+    description: 'tag_class_description'
+)]
+#[Tag(
+    name: Tags::CustomReports->value,
+    description: 'tag_custom_reports_description'
+)]
+#[Tag(
     name: Tags::DataObjects->value,
     description: 'tag_dataobjects_description'
 )]
@@ -48,6 +56,10 @@ use OpenApi\Attributes\Tag;
 #[Tag(
     name: Tags::Dependencies->value,
     description: 'tag_dependencies_description'
+)]
+#[Tag(
+    name: Tags::Documents->value,
+    description: 'tag_documents_description'
 )]
 #[Tag(
     name: Tags::Elements->value,
@@ -64,6 +76,10 @@ use OpenApi\Attributes\Tag;
 #[Tag(
     name: Tags::Mercure->value,
     description: 'tag_mercure_description'
+)]
+#[Tag(
+    name: Tags::Metadata->value,
+    description: 'tag_metadata_description'
 )]
 #[Tag(
     name: Tags::Notes->value,
@@ -102,6 +118,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_translation_description'
 )]
 #[Tag(
+    name: Tags::Units->value,
+    description: 'tag_units_description'
+)]
+#[Tag(
     name: Tags::User->value,
     description: 'tag_user_description'
 )]
@@ -119,13 +139,17 @@ enum Tags: string
     case AssetGrid = 'Asset Grid';
     case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';
+    case ClassDefinition = 'Class Definition';
+    case CustomReports = 'Custom Reports';
     case DataObjects = 'Data Objects';
     case DataObjectsGrid = 'Data Object Grid';
     case Dependencies = 'Dependencies';
+    case Documents = 'Documents';
     case Elements = 'Elements';
     case ExecutionEngine = 'Execution Engine';
     case Emails = 'E-Mails';
     case Mercure = 'Mercure';
+    case Metadata = 'Metadata';
     case Notes = 'Notes';
     case Notifications = 'Notifications';
     case Properties = 'Properties';
@@ -135,6 +159,7 @@ enum Tags: string
     case Tags = 'Tags';
     case TagsForElement = 'Tags for Element';
     case Translation = 'Translation';
+    case Units = 'Units';
     case User = 'User Management';
     case Versions = 'Versions';
     case Workflows = 'Workflows';

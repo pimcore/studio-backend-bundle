@@ -26,10 +26,10 @@ final readonly class DataObjectParameters extends ElementParameters implements C
         int $pageSize = 10,
         ?int $parentId = null,
         ?string $idSearchTerm = null,
-        ?string $excludeFolders = null,
+        bool $excludeFolders = false,
         ?string $path = null,
-        ?string $pathIncludeParent = null,
-        ?string $pathIncludeDescendants = null,
+        bool $pathIncludeParent = false,
+        bool $pathIncludeDescendants = false,
         private ?string $className = null
     ) {
         parent::__construct(

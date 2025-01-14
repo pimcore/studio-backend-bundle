@@ -47,6 +47,7 @@ final class UpdateAssetRequestBody extends RequestBody
                             new UpdateStringProperty('key'),
                             new UpdateStringProperty('locked'),
                             new UpdateStringProperty('data'),
+                            new UpdateStringProperty('dataUri'),
                             new UpdateCustomMetadata(),
                             new UpdateCustomSettingsData(),
                             new UpdateElementProperties(),

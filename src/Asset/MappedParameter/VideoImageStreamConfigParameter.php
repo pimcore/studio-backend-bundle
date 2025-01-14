@@ -26,16 +26,16 @@ final readonly class VideoImageStreamConfigParameter
     public function __construct(
         private ?int $width = null,
         private ?int $height = null,
-        private ?string $aspectRatio = null,
-        private ?string $frame = null,
-        private ?string $async = null,
+        private bool $aspectRatio = false,
+        private bool $frame = false,
+        private bool $async = false,
     ) {
-        if ($this->frame === 'true' && ($this->width === null || $this->height === null)) {
+        if ($this->frame && ($this->width === null || $this->height === null)) {
             throw new InvalidThumbnailConfigurationException(
                 'Width and height must be set when using frame configuration'
             );
         }
-        if ($this->aspectRatio === 'true' && $this->width === null) {
+        if ($this->aspectRatio && $this->width === null) {
             throw new InvalidThumbnailConfigurationException(
                 'Width must be set when using aspectRatio configuration'
             );
@@ -54,16 +54,16 @@ final readonly class VideoImageStreamConfigParameter
 
     public function getAspectRatio(): bool
     {
-        return $this->aspectRatio === 'true'; // TODO: symfony 7.1 will support bool type
+        return $this->aspectRatio;
     }
 
     public function getFrame(): bool
     {
-        return $this->frame === 'true'; // TODO: symfony 7.1 will support bool type
+        return $this->frame;
     }
 
     public function getAsync(): bool
     {
-        return $this->async === 'true'; // TODO: symfony 7.1 will support bool type
+        return $this->async;
     }
 }

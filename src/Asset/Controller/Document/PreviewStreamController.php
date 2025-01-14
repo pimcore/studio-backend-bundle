@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\Asset\Document;
@@ -97,7 +98,7 @@ final class PreviewStreamController extends AbstractApiController
         );
 
         if (!$asset instanceof Document) {
-            throw new InvalidElementTypeException($asset->getType());
+            throw new InvalidElementTypeException($asset->getType(), ElementTypes::TYPE_ASSET);
         }
 
         return $this->documentService->getPreviewStream($asset);

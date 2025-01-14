@@ -17,14 +17,19 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -41,12 +46,19 @@ use function sprintf;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class LocalizedFieldsAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class LocalizedFieldsAdapter implements
+    SetterDataInterface,
+    DataNormalizerInterface,
+    DataInheritanceInterface
 {
+    use ValidateFieldTypeTrait;
+
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
+        private InheritanceServiceInterface $inheritanceService,
         private SecurityServiceInterface $securityService,
+        private ToolResolverInterface $toolResolver
     ) {
     }
 
@@ -75,18 +87,23 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
                     continue;
                 }
 
-                $adapter = $this->dataAdapterService->getDataAdapter($childFieldDefinition->getFieldType());
-                $localizedField->setLocalizedValue(
+                $adapter = $this->dataAdapterService->tryDataAdapter($childFieldDefinition->getFieldType());
+                if (!$adapter) {
+                    continue;
+                }
+
+                $value = $adapter->getDataForSetter(
+                    $element,
+                    $childFieldDefinition,
                     $name,
-                    $adapter->getDataForSetter(
-                        $element,
-                        $childFieldDefinition,
-                        $name,
-                        [$name => $fieldData],
-                        new FieldContextData(language: $language)
-                    ),
-                    $language
+                    [$name => $fieldData],
+                    new FieldContextData(language: $language)
                 );
+                if (!$this->validateEncryptedField($childFieldDefinition, $value)) {
+                    continue;
+                }
+
+                $localizedField->setLocalizedValue($name, $value, $language);
             }
         }
 
@@ -103,6 +120,9 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
 
         $value->loadLazyData();
         $originalValue = $fieldDefinition->normalize($value);
+        if ($originalValue === null) {
+            return null;
+        }
         $languages = array_keys($originalValue);
         $attributes = array_keys(reset($originalValue));
         $result = [];
@@ -118,13 +138,45 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
                         )
                     );
                 }
-                $fieldDefinition = $value->getFieldDefinition($attribute);
-                $localizedValue =  $this->dataService->getNormalizedValue($localizedValue, $fieldDefinition);
+                $fieldDefinition = $value->getFieldDefinition($attribute, $value->getContext());
+                if ($fieldDefinition === null) {
+                    throw new NotFoundException(type: 'Field Definition', id: $attribute);
+                }
+
+                $localizedValue = $this->dataService->getNormalizedValue($localizedValue, $fieldDefinition);
                 $result[$attribute][$language] = $localizedValue;
             }
         }
 
         return $result;
+    }
+
+    public function getFieldInheritance(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): array {
+        if (!$fieldDefinition instanceof Localizedfields) {
+            return [];
+        }
+
+        $inheritedData = [];
+        $contextObject = $contextData?->getContextObject();
+        $fields = $fieldDefinition->getChildren();
+
+        foreach ($fields as $field) {
+            foreach ($this->toolResolver->getValidLanguages() as $language) {
+                $inheritedData[$field->getName()][$language] = $this->inheritanceService->processFieldDefinition(
+                    $object,
+                    $field,
+                    $key,
+                    new FieldContextData(contextObject: $contextObject, language: $language)
+                );
+            }
+        }
+
+        return $inheritedData;
     }
 
     private function getAllowedLanguages(

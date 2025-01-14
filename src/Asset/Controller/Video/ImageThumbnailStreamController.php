@@ -81,7 +81,7 @@ final class ImageThumbnailStreamController extends AbstractApiController
         operationId: 'asset_video_image_thumbnail_stream',
         description: 'asset_video_image_thumbnail_stream_description',
         summary: 'asset_video_image_thumbnail_stream_summary',
-        tags: [Tags::Assets->name]
+        tags: [Tags::Assets->value]
     )]
     #[IdParameter(type: 'video')]
     #[WidthParameter('Width of the video image thumbnail', 265)]

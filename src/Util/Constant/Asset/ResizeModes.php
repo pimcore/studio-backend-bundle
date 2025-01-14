@@ -27,6 +27,8 @@ final readonly class ResizeModes
 
     public const SCALE_BY_HEIGHT = 'scaleByHeight';
 
+    public const NONE = 'none';
+
     public const ALLOWED_MODES = [
         self::RESIZE,
         self::SCALE_BY_WIDTH,

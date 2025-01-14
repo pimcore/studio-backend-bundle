@@ -21,10 +21,10 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolve
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\OpenSearchFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DataObjectEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
@@ -47,7 +47,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -83,7 +82,6 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private WorkflowDetailsServiceInterface $workflowDetailsService,
     ) {
     }
 
@@ -123,8 +121,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
      */
     public function getDataObjects(DataObjectParameters $parameters): Collection
     {
-        /** @var OpenSearchFilterInterface $filterService */
-        $filterService = $this->filterServiceProvider->create(OpenSearchFilterInterface::SERVICE_TYPE);
+        /** @var SearchIndexFilterInterface $filterService */
+        $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
 
         $query = $filterService->applyFilters(
             $parameters,
@@ -157,7 +155,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         );
 
         if ($getDetailData) {
-            $this->setObjectDetailData($dataObject);
+            $this->getObjectDetailData($dataObject);
         }
 
         $this->dispatchDataObjectEvent($dataObject);
@@ -345,23 +343,15 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     /**
      * @throws InvalidElementTypeException|NotFoundException
      */
-    private function setObjectDetailData(DataObjectFolder|DataObject $dataObject): void
+    private function getObjectDetailData(DataObjectFolder|DataObject $dataObject): void
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObject->getId());
         $element = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
-
-        $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
-
         if (!$element instanceof Concrete) {
             return;
         }
-        $dataObject->setObjectData($this->dataService->getObjectData($element));
 
-        $classData = $this->dataService->getObjectClassData($element);
-        $dataObject->setAllowInheritance($classData->getAllowInheritance());
-        $dataObject->setAllowVariants($classData->getAllowVariants());
-        $dataObject->setShowVariants($classData->getShowVariants());
-        $dataObject->setHasPreview($classData->getHasPreview());
+        $this->dataService->setObjectDetailData($dataObject, $element, $this->getValidClass($element->getClassId()));
     }
 
     private function dispatchDataObjectEvent(mixed $dataObject): void

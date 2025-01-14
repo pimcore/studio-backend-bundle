@@ -1,6 +1,6 @@
 # Extending Filters
 
-Currently, there are two different filters systems implemented. The OpenSearch Filters and the Listing Filters.
+Currently, there are two different filters systems implemented. The Search Index Filters and the Listing Filters.
 The main difference lies in the implementation of the adapters and the tag.
 
 The idea is that every filter knows for which type it is responsible and can be used in the according context.
@@ -127,9 +127,9 @@ final readonly class LikeFilter implements FilterInterface
 ```
 
 
-## OpenSearch Filters
-For assets, data objects and documents we are using OpenSearch to index the data and to provide a fast search.
-For more details on how to implement the OpenSearch filters see the [OpenSearch Filters](04_Filters/01_OpenSearch_Filters.md).
+## Search Index Filters
+For assets, data objects and documents we are using OpenSearch or ElasticSearch (based on your Generic Data Index configuration) to index the data and to provide a fast search.
+For more details on how to implement these filters see the [Search Index Filters](04_Filters/01_Search_Index_Filters.md).
 
 ## Listing Filters
 For the classic approach of using listings, the Listing Filters are used.

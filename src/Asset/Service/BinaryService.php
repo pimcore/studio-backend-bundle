@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
@@ -24,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFou
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Messenger\AssetPreviewImageMessage;
@@ -58,10 +60,23 @@ final readonly class BinaryService implements BinaryServiceInterface
         string $thumbnailName
     ): StreamedResponse {
         if (!$video instanceof Video) {
-            throw new InvalidElementTypeException($video->getType());
+            throw new InvalidElementTypeException($video->getType(), ElementTypes::TYPE_ASSET);
         }
 
         return $this->getVideoByThumbnail($video, $thumbnailName, HttpResponseHeaders::ATTACHMENT_TYPE->value);
+    }
+
+    /**
+     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException
+     */
+    public function streamImage(
+        Asset $image
+    ): StreamedResponse {
+        if (!$image instanceof Image) {
+            throw new InvalidElementTypeException($image->getType(), ElementTypes::TYPE_ASSET);
+        }
+
+        return $this->getStreamedResponse($image, HttpResponseHeaders::INLINE_TYPE->value);
     }
 
     /**
@@ -70,11 +85,25 @@ final readonly class BinaryService implements BinaryServiceInterface
     public function streamPreviewImageThumbnail(Asset $image): StreamedResponse
     {
         if (!$image instanceof Image) {
-            throw new InvalidElementTypeException($image->getType());
+            throw new InvalidElementTypeException($image->getType(), ElementTypes::TYPE_ASSET);
         }
 
         return $this->getStreamedResponse(
             $this->thumbnailService->getImagePreviewThumbnail($image),
+            HttpResponseHeaders::INLINE_TYPE->value
+        );
+    }
+
+    public function streamImageThumbnailFromConfig(
+        Asset $image,
+        ImageDownloadConfigParameter $configParameter
+    ): StreamedResponse {
+        if (!$image instanceof Image) {
+            throw new InvalidElementTypeException($image->getType(), ElementTypes::TYPE_ASSET);
+        }
+
+        return $this->getStreamedResponse(
+            $this->thumbnailService->getThumbnailFromConfiguration($image, $configParameter),
             HttpResponseHeaders::INLINE_TYPE->value
         );
     }
@@ -90,7 +119,7 @@ final readonly class BinaryService implements BinaryServiceInterface
         string $thumbnailName
     ): StreamedResponse {
         if (!$video instanceof Video) {
-            throw new InvalidElementTypeException($video->getType());
+            throw new InvalidElementTypeException($video->getType(), ElementTypes::TYPE_ASSET);
         }
 
         return $this->getVideoByThumbnail($video, $thumbnailName, HttpResponseHeaders::INLINE_TYPE->value);
@@ -107,7 +136,7 @@ final readonly class BinaryService implements BinaryServiceInterface
         VideoImageStreamConfigParameter $imageConfig
     ): StreamedResponse {
         if (!$video instanceof Video) {
-            throw new InvalidElementTypeException($video->getType());
+            throw new InvalidElementTypeException($video->getType(), ElementTypes::TYPE_ASSET);
         }
         $this->thumbnailService->validateCustomVideoThumbnailConfig($imageConfig);
 
@@ -118,9 +147,11 @@ final readonly class BinaryService implements BinaryServiceInterface
         if ($imageConfig->getHeight()) {
             $imageParameters['height'] = $imageConfig->getHeight();
         }
+
         if ($imageConfig->getAspectRatio()) {
             $imageParameters['aspectratio'] = $imageConfig->getAspectRatio();
         }
+
         if ($imageConfig->getFrame()) {
             $imageParameters['frame'] = $imageConfig->getFrame();
         }

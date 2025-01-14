@@ -16,12 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\Asset;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomMetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use function array_key_exists;
 
@@ -59,7 +59,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
      */
     private function getDefaultMetadata(): array
     {
-        $defaultMetadata = CustomMetadataServiceInterface::DEFAULT_METADATA;
+        $defaultMetadata = MetadataServiceInterface::DEFAULT_METADATA;
         $columns = [];
         foreach ($defaultMetadata as $metadata) {
             $columns[] = new ColumnConfiguration(
@@ -67,6 +67,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
                 group: 'default_metadata',
                 sortable: true,
                 editable: true,
+                exportable: true,
                 localizable: true,
                 locale: null,
                 type: 'metadata.input',
@@ -99,6 +100,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
                 group: 'predefined_metadata',
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
                 editable: true,
+                exportable: $availableColumnDefinitions[$type]->isExportable(),
                 localizable: true,
                 locale: null,
                 type: $type,

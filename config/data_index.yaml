@@ -40,8 +40,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorService
     arguments:
-      $assetHydratorLocator: '@open_search.asset_hydrator.service_locator'
-      $dataObjectHydratorLocator: '@open_search.data_object_hydrator.service_locator'
+      $assetHydratorLocator: '@search_index.asset_hydrator.service_locator'
+      $dataObjectHydratorLocator: '@search_index.data_object_hydrator.service_locator'
 
   # Elements
 
@@ -81,7 +81,7 @@ services:
 
 
   #Service Locator
-  open_search.asset_hydrator.service_locator:
+  search_index.asset_hydrator.service_locator:
     class: Symfony\Component\DependencyInjection\ServiceLocator
     tags: [ 'container.service_locator' ]
     arguments:
@@ -95,7 +95,7 @@ services:
         Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydratorInterface'
 
   #Service Locator
-  open_search.data_object_hydrator.service_locator:
+  search_index.data_object_hydrator.service_locator:
     class: Symfony\Component\DependencyInjection\ServiceLocator
     tags: [ 'container.service_locator' ]
     arguments:

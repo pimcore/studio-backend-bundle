@@ -16,8 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\ClassData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 
@@ -27,14 +30,13 @@ use Pimcore\Model\DataObject\Concrete;
 interface DataServiceInterface
 {
     /**
-     * @throws NotFoundException
+     * @throws DatabaseException|NotFoundException
      */
-    public function getObjectData(Concrete $dataObject): array;
-
-    /**
-     * @throws NotFoundException
-     */
-    public function getObjectClassData(Concrete $dataObject): ClassData;
+    public function setObjectDetailData(
+        DataObjectFolder|DataObject $dataObject,
+        Concrete $element,
+        ClassDefinition $class
+    ): void;
 
     public function getNormalizedValue(
         mixed $value,

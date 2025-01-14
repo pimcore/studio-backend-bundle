@@ -173,7 +173,7 @@ final readonly class UploadService implements UploadServiceInterface
         int $assetId,
         UploadedFile $file,
         UserInterface $user
-    ): void {
+    ): string {
         $asset = $this->assetService->getAssetElement($user, $assetId);
         if (!$asset->isAllowed(ElementPermissions::PUBLISH_PERMISSION)) {
             throw new ForbiddenException(
@@ -189,14 +189,17 @@ final readonly class UploadService implements UploadServiceInterface
         $this->validateMimeType($file, $fileName, $asset->getType());
 
         try {
+            $newFileName = $this->getUpdatedFileName($asset->getFilename(), $fileName, $asset->getParent());
             $asset->setStream(fopen($sourcePath, 'rb'));
             $asset->setCustomSetting('thumbnails', null);
             if (method_exists($asset, 'getEmbeddedMetaData')) {
                 $asset->getEmbeddedMetaData(true);
             }
             $asset->setUserModification($user->getId());
-            $asset->setFilename($this->getUpdatedFileName($asset->getFilename(), $fileName, $asset->getParent()));
+            $asset->setFilename($newFileName);
             $asset->save();
+
+            return $newFileName;
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
         } finally {
@@ -339,7 +342,7 @@ final readonly class UploadService implements UploadServiceInterface
         $newExtension = pathinfo($newFileName, PATHINFO_EXTENSION);
         $originalExtension = pathinfo($originalFileName, PATHINFO_EXTENSION);
         if ($newExtension === $originalExtension) {
-            return $newFileName;
+            return $originalFileName;
         }
 
         $fileName = preg_replace(

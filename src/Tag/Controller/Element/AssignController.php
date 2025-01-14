@@ -62,7 +62,7 @@ final class AssignController extends AbstractApiController
         tags: [Tags::TagsForElement->value]
     )]
     #[ElementTypeParameter]
-    #[IdParameter(type: 'element')]
+    #[IdParameter]
     #[IdParameter(type: 'tag', name: 'tagId')]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

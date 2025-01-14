@@ -16,11 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField as EncryptedFieldDefinition;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\EncryptedField;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -29,10 +32,11 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class EncryptedFieldAdapter implements SetterDataInterface
+final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function __construct(
-        private DataAdapterServiceInterface $dataAdapterService
+        private DataAdapterServiceInterface $dataAdapterService,
+        private DataServiceInterface $dataService
     ) {
     }
 
@@ -43,7 +47,7 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?EncryptedField {
-        if (!($fieldDefinition instanceof Data\EncryptedField)) {
+        if (!$fieldDefinition instanceof EncryptedFieldDefinition) {
             return null;
         }
 
@@ -51,9 +55,52 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface
         if (!$delegateFieldDefinition) {
             return null;
         }
-        $adapter = $this->dataAdapterService->getDataAdapter($delegateFieldDefinition->getFieldType());
-        $result = $adapter->getDataForSetter($element, $delegateFieldDefinition, $key, $data);
 
-        return new EncryptedField($fieldDefinition->getDelegate(), $result);
+        return $this->handleDelegatedField(
+            $element,
+            $delegateFieldDefinition,
+            $fieldDefinition,
+            $key,
+            $data,
+            $contextData
+        );
+    }
+
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): mixed {
+        if (!$fieldDefinition instanceof EncryptedFieldDefinition) {
+            return null;
+        }
+
+        if (!$value instanceof EncryptedField) {
+            return $value;
+        }
+
+        $plainValue = $value->getPlain();
+        $delegateFieldDefinition = $fieldDefinition->getDelegate();
+
+        return $this->dataService->getNormalizedValue($plainValue, $delegateFieldDefinition)
+            ?? $plainValue;
+    }
+
+    private function handleDelegatedField(
+        Concrete $element,
+        Data $delegateFieldDefinition,
+        EncryptedFieldDefinition $fieldDefinition,
+        string $key,
+        array $data,
+        ?FieldContextData $contextData = null
+    ): ?EncryptedField {
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+        if ($adapter instanceof SetterDataInterface) {
+            return new EncryptedField(
+                $fieldDefinition->getDelegate(),
+                $adapter->getDataForSetter($element, $delegateFieldDefinition, $key, $data, $contextData)
+            );
+        }
+
+        return null;
     }
 }

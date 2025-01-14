@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
@@ -43,9 +44,24 @@ interface BinaryServiceInterface
     ): StreamedResponse;
 
     /**
+     * @throws ElementStreamResourceNotFoundException|InvalidElementTypeException
+     */
+    public function streamImage(
+        Asset $image
+    ): StreamedResponse;
+
+    /**
      * @throws InvalidElementTypeException|InvalidThumbnailException
      */
     public function streamPreviewImageThumbnail(Asset $image): StreamedResponse;
+
+    /**
+     * @throws InvalidElementTypeException|InvalidThumbnailException
+     */
+    public function streamImageThumbnailFromConfig(
+        Asset $image,
+        ImageDownloadConfigParameter $configParameter
+    ): StreamedResponse;
 
     /**
      * @throws ElementProcessingNotCompletedException

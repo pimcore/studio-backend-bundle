@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\DataJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -37,8 +38,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -75,6 +76,7 @@ final class ReplaceController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'asset_replace_success_response',
+        content: new DataJson('new file name of the asset', 'image.jpg')
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[MultipartFormDataRequestBody(
@@ -89,6 +91,8 @@ final class ReplaceController extends AbstractApiController
         ['file']
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
@@ -96,19 +100,21 @@ final class ReplaceController extends AbstractApiController
         int $id,
         // TODO: Symfony 7.1 change to https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
         Request $request
-    ): Response {
+    ): JsonResponse {
 
         $file = $request->files->get('file');
         if (!$file instanceof UploadedFile) {
             throw new ElementStreamResourceNotFoundException(0, 'File');
         }
 
-        $this->uploadService->replaceAssetBinary(
-            $id,
-            $file,
-            $this->securityService->getCurrentUser()
+        return new JsonResponse(
+            [
+                'data' => $this->uploadService->replaceAssetBinary(
+                    $id,
+                    $file,
+                    $this->securityService->getCurrentUser()
+                ),
+            ]
         );
-
-        return new Response();
     }
 }
