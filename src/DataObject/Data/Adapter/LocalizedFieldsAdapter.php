@@ -17,12 +17,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -43,14 +46,19 @@ use function sprintf;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class LocalizedFieldsAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class LocalizedFieldsAdapter implements
+    SetterDataInterface,
+    DataNormalizerInterface,
+    DataInheritanceInterface
 {
     use ValidateFieldTypeTrait;
 
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
+        private InheritanceServiceInterface $inheritanceService,
         private SecurityServiceInterface $securityService,
+        private ToolResolverInterface $toolResolver
     ) {
     }
 
@@ -141,6 +149,34 @@ final readonly class LocalizedFieldsAdapter implements SetterDataInterface, Data
         }
 
         return $result;
+    }
+
+    public function getFieldInheritance(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): array {
+        if (!$fieldDefinition instanceof Localizedfields) {
+            return [];
+        }
+
+        $inheritedData = [];
+        $contextObject = $contextData?->getContextObject();
+        $fields = $fieldDefinition->getChildren();
+
+        foreach ($fields as $field) {
+            foreach ($this->toolResolver->getValidLanguages() as $language) {
+                $inheritedData[$field->getName()][$language] = $this->inheritanceService->processFieldDefinition(
+                    $object,
+                    $field,
+                    $key,
+                    new FieldContextData(contextObject: $contextObject, language: $language)
+                );
+            }
+        }
+
+        return $inheritedData;
     }
 
     private function getAllowedLanguages(

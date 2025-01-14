@@ -14,37 +14,34 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
-use Exception;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField as EncryptedFieldDefinition;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\DataObject\Data\EncryptedField;
 
 /**
  * @internal
  */
-trait ValidateFieldTypeTrait
+interface InheritanceServiceInterface
 {
-    private function validateEncryptedField(Data $fieldDefinition, mixed $value): bool
-    {
-        return !($fieldDefinition instanceof EncryptedFieldDefinition && (!$value instanceof EncryptedField));
-    }
+    /**
+     * @throws NotFoundException
+     */
+    public function getInheritanceData(
+        Concrete $object,
+        array $fieldDefinitions
+    ): array;
 
     /**
      * @throws NotFoundException
      */
-    private function getValidFieldValue(
+    public function processFieldDefinition(
         Concrete $object,
+        Data $fieldDefinition,
         string $key,
-        ?string $language = null
-    ): mixed {
-        try {
-            return $object->get($key, $language);
-        } catch (Exception) {
-            throw new NotFoundException(type: 'field', id: $key);
-        }
-    }
+        ?FieldContextData $contextData = null
+    ): array|InheritanceData;
 }
