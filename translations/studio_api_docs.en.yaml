@@ -668,7 +668,7 @@ custom_reports_report_name_parameter: Name of the report
 custom_reports_chart: Chart data
 custom_reports_chart_summary: Get chart data for a specific report
 custom_reports_chart_name_parameter: Name of the report
-custom_reports_chart_success_response: Chart data as JSON
+custom_reports_chart_success_response: Chart data as JSON. The actual data depends on the selected adapter in the report configuration.
 custom_reports_chart_sort_by_parameter: Sort by column parameter
 custom_reports_chart_report_limit_parameter: Limit of the report data
 custom_reports_chart_report_offset_parameter: Offset of the report data

@@ -18,14 +18,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller\Chart;
 
 use Exception;
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IntParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
@@ -101,8 +102,7 @@ final class GetController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'custom_reports_chart_success_response',
-        //Todo adapt schema
-        content: new JsonContent(ref: CustomReportDetails::class)
+        content: new ItemsJson('')
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
