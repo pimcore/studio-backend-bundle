@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PermissionSanitationTrait;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
@@ -30,6 +31,8 @@ use Psr\Log\LoggerInterface;
  */
 final readonly class UserHydrator implements UserHydratorInterface
 {
+    use PermissionSanitationTrait;
+
     public function __construct(
         private LoggerInterface $pimcoreLogger,
         private ToolResolverInterface $toolResolver,
@@ -100,12 +103,5 @@ final readonly class UserHydrator implements UserHydratorInterface
         $contentLanguagesString = $this->adminToolResolver->reorderWebsiteLanguages($user, $validLanguages);
 
         return explode(',', $contentLanguagesString);
-    }
-
-    // In some cases, the permissions array contains and array with empty strings as values
-    // This method removes those empty strings
-    private function sanitizePermissions(array $permissions): array
-    {
-        return array_filter($permissions, fn ($permission) => $permission !== '');
     }
 }
