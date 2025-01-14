@@ -70,18 +70,21 @@ final readonly class TagService implements TagServiceInterface
      */
     public function getTagsForElement(ElementParameters $tagElement): array
     {
-        $result = [];
+
         $this->checkElementPermission(
             $tagElement->getType(),
             $tagElement->getId(),
             ElementPermissions::VIEW_PERMISSION
         );
+
+        $results = [];
         foreach ($this->tagRepository->getTagsForElement($tagElement) as $tag) {
-            $result[$tag->getId()] = $this->tagHydrator->hydrate($tag);
-            $this->dispatchTagEvent($result[$tag->getId()]);
+            $result = $this->tagHydrator->hydrate($tag);
+            $this->dispatchTagEvent($result);
+            $results[] = $result;
         }
 
-        return $result;
+        return $results;
     }
 
     /**
