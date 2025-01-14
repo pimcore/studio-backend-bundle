@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTr
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 
 /**
  * @internal
@@ -127,14 +128,10 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         string $key,
         ?FieldContextData $contextData = null
     ): mixed {
-        $fieldKey = $this->getFieldKeyByContext(
-            $key,
-            $fieldDefinition,
-            $contextData
-        );
+        $fieldKey = $this->getFieldKeyByContext($key, $fieldDefinition, $contextData);
         $value = $this->getValidFieldValue($object, $fieldKey, $contextData?->getLanguage());
 
-        if ($contextData && $contextData->getContextObject()) {
+        if ($contextData && $contextData->getContextObject() instanceof AbstractData) {
             $value = $contextData->getBrickValueFromElement($value, $fieldDefinition->getName());
         }
 
@@ -146,14 +143,14 @@ final readonly class InheritanceService implements InheritanceServiceInterface
         Data $fieldDefinition,
         ?FieldContextData $contextData = null
     ): string {
-        if ($contextData === null) {
-            return $key;
+        if (
+            $contextData &&
+            $contextData->getLanguage() &&
+            !$contextData->getContextObject() instanceof AbstractData
+        ) {
+            return $fieldDefinition->getName();
         }
 
-        if ($contextData->getLanguage() && $contextData->getContextObject()) {
-            return $key;
-        }
-
-        return $fieldDefinition->getName();
+        return $key;
     }
 }
