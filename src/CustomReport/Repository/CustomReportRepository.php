@@ -16,9 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository;
 
-use Exception;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config\Listing;
+use Pimcore\Bundle\CustomReportsBundle\Tool\Config\Listing\Dao;
 use Pimcore\Bundle\StaticResolverBundle\Models\Tool\CustomReportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -37,7 +37,10 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
 
     public function loadForUser(User $user): array
     {
-        return (new Listing())->getDao()->loadForGivenUser(
+        /** @var Dao $dao */
+        $dao = (new Listing())->getDao();
+
+        return $dao->loadForGivenUser(
             $user
         );
     }
@@ -59,11 +62,12 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
 
         try {
             $report = $this->customReportResolver->getByName($name);
-        } catch (Exception $e) {
+        }
+        catch(\Exception $e){
             $exception = $e;
         }
 
-        if (!$report || $exception) {
+        if(!$report || $exception) {
             throw new NotFoundException(
                 'Report',
                 $name,
