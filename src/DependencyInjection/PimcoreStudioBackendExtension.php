@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceI
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
@@ -70,13 +71,15 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             $loader->load(basename($file));
         }
 
-        $this->checkValidOpenApiScanPaths($config['open_api_scan_paths']);
         $this->checkValidUrlPrefix($config['url_prefix']);
+        $this->checkValidOpenApiScanPaths($config['open_api_scan_paths']);
+        $this->checkValidServers($config['open_api_servers']);
 
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
         $definition->setArguments([
             '$routePrefix' => $config['url_prefix'],
             '$openApiScanPaths' => $config['open_api_scan_paths'],
+            '$openApiServers' => $config['open_api_servers'],
         ]);
 
         $definition = $container->getDefinition(CorsSubscriber::class);
@@ -153,6 +156,24 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                         'The path "%s" is not a valid directory.',
                         $path
                     )
+                );
+            }
+        }
+    }
+
+    /**
+     * @throws InvalidHostException
+     */
+    private function checkValidServers(array $servers): void
+    {
+        if (empty($servers)) {
+            return;
+        }
+
+        foreach($servers as $serverUrl) {
+            if (!filter_var($serverUrl['url'], FILTER_VALIDATE_URL)) {
+                throw new InvalidHostException(
+                    sprintf('The server URL "%s" is not a valid URL.', $serverUrl)
                 );
             }
         }

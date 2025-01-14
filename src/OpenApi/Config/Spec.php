@@ -40,11 +40,6 @@ use OpenApi\Attributes\Server;
     url: 'https://www.pimcore.org/license'
 )]
 
-#[Server(
-    url: 'http://localhost:6001',
-    description: 'local'
-)]
-
 final class Spec
 {
     private function __construct()
