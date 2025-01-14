@@ -66,16 +66,16 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
             $report->getMenuShortcut(),
             $report->getReportClass(),
             $report->getChartType(),
-            $report->getPieColumn(),
-            $report->getPieLabelColumn(),
-            $report->getXAxis(),
-            $report->getYAxis(),
             $report->getModificationDate(),
             $report->getCreationDate(),
             $report->getSharedUserNames(),
             $report->getSharedRoleNames(),
             $report->getShareGlobally(),
-            $report->isWriteable()
+            $report->isWriteable(),
+            $report->getPieColumn(),
+            $report->getPieLabelColumn(),
+            $report->getXAxis(),
+            $report->getYAxis(),
         );
     }
 

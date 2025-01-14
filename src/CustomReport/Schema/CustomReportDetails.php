@@ -91,24 +91,6 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         private readonly string $reportClass,
         #[Property(description: 'Chart type', type: 'string', example: 'pie')]
         private readonly string $chartType,
-        #[Property(description: 'Data column for pie chart', type: 'string', example: 'count(*)')]
-        private readonly ?string $pieColumn = null,
-        #[Property(description: 'Label of data column for pie chart', type: 'string', example: 'attributesAvailable')]
-        private readonly ?string $pieLabelColumn = null,
-        #[Property(
-            description: 'X axis column names',
-            type: 'array',
-            items: new Items(type: 'string'),
-            example: '["attributesAvailable", "count(*)"]'
-        )]
-        private readonly ?string $xAxis = null,
-        #[Property(
-            description: 'Y axis column information',
-            type: 'array',
-            items: new Items(type: 'string'),
-            example: '["attributesAvailable"]'
-        )]
-        private readonly ?array $yAxis = null,
         #[Property(description: 'Modification date time stamp', type: 'int', example: 1736762668)]
         private readonly int $modificationDate,
         #[Property(description: 'Creation date time stamp', type: 'int', example: 1567409307)]
@@ -131,6 +113,24 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         private readonly bool $sharedGlobally,
         #[Property(description: 'Whether the report is writeable', type: 'bool', example: true)]
         private readonly bool $writeable,
+        #[Property(description: 'Data column for pie chart', type: 'string', example: 'count(*)')]
+        private readonly ?string $pieColumn = null,
+        #[Property(description: 'Label of data column for pie chart', type: 'string', example: 'attributesAvailable')]
+        private readonly ?string $pieLabelColumn = null,
+        #[Property(
+            description: 'X axis column names',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: '["attributesAvailable", "count(*)"]'
+        )]
+        private readonly ?string $xAxis = null,
+        #[Property(
+            description: 'Y axis column information',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: '["attributesAvailable"]'
+        )]
+        private readonly ?array $yAxis = null,
     ) {
 
     }
