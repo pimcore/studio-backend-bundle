@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataPar
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository\CustomReportRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User;
+use Exception;
 
 /**
  * @internal
@@ -55,12 +56,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
 
     public function getCustomReportByName(string $reportName): Config
     {
-        $report = $this->customReportRepository->loadByName($reportName);
-        if (!$report) {
-            throw new NotFoundException('Report', $reportName, 'name');
-        }
-
-        return $report;
+        return $this->customReportRepository->loadByName($reportName);
     }
 
     public function getChartData(string $reportName, ChartDataParameter $chartDataParameter): array

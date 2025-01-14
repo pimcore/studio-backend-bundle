@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository;
 
-use Exception;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\User;
 
 /**
@@ -30,7 +30,7 @@ interface CustomReportRepositoryInterface
     public function loadForCurrentUser(): array;
 
     /**
-     * @throws Exception
+     * @throws NotFoundException
      */
     public function loadByName(string $name): ?Config;
 }

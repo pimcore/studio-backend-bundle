@@ -91,13 +91,11 @@ final class GetController extends AbstractApiController
     #[FilterParameter('chart data')]
     #[IntParameter(
         name: 'reportOffset',
-        example: 1,
         description: 'custom_reports_chart_report_offset_parameter',
         required: false
     )]
     #[IntParameter(
         name: 'reportLimit',
-        example: 10,
         description: 'custom_reports_chart_report_limit_parameter',
         required: false
     )]

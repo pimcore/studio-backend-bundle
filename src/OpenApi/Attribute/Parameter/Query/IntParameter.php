@@ -25,9 +25,9 @@ final class IntParameter extends QueryParameter
 {
     public function __construct(
         string $name,
-        int $example,
         string $description,
         bool $required = true,
+        ?int $example = null,
     ) {
         parent::__construct(
             name: $name,
