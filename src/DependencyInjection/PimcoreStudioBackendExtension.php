@@ -170,7 +170,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             return;
         }
 
-        foreach($servers as $serverUrl) {
+        foreach ($servers as $serverUrl) {
             if (!filter_var($serverUrl['url'], FILTER_VALIDATE_URL)) {
                 throw new InvalidHostException(
                     sprintf('The server URL "%s" is not a valid URL.', $serverUrl)

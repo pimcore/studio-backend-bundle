@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Config;
 use OpenApi\Attributes\Info;
 use OpenApi\Attributes\License;
 use OpenApi\Attributes\OpenApi;
-use OpenApi\Attributes\Server;
 
 /**
  * @internal

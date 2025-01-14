@@ -118,7 +118,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         }
 
         $config->servers = array_map(
-            static fn(array $server) => new Server(url: $server['url'], description: $server['description']),
+            static fn (array $server) => new Server(url: $server['url'], description: $server['description']),
             $this->openApiServers
         );
     }
