@@ -18,8 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller\Chart;
 
 use Exception;
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
