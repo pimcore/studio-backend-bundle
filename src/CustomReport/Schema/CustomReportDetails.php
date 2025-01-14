@@ -21,6 +21,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
+use stdClass;
 
 /**
  * @internal
@@ -66,13 +67,14 @@ final class CustomReportDetails implements AdditionalAttributesInterface
             items: new Items(),
             example: '[]'
         )]
-        private readonly string $dataSourceConfig,
+        private readonly stdClass $dataSourceConfig,
         #[Property(
             description: 'Configuration for columns to be displayed in report',
             type: 'array',
             items: new Items(CustomReportColumnConfiguration::class)
         )]
-        private readonly string $columnConfiguration,
+        /** array<CustomReportColumnConfiguration> */
+        private readonly array $columnConfigurations,
         #[Property(description: 'Label/nice name of report', type: 'string', example: 'Attributes')]
         private readonly string $niceName,
         #[Property(description: 'Group icon class', type: 'string', example: 'pimcore_group_icon_attributes')]
@@ -80,7 +82,7 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         #[Property(description: 'Icon class', type: 'string', example: 'pimcore_icon_attributes')]
         private readonly string $iconClass,
         #[Property(description: 'Whether the report has a shortcut in the menu', type: 'bool', example: true)]
-        private readonly string $menuShortcut,
+        private readonly bool $menuShortcut,
         #[Property(
             description: 'Report class of custom report implementation',
             type: 'string',
@@ -90,40 +92,45 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         #[Property(description: 'Chart type', type: 'string', example: 'pie')]
         private readonly string $chartType,
         #[Property(description: 'Data column for pie chart', type: 'string', example: 'count(*)')]
-        private readonly string $pieColumn,
+        private readonly ?string $pieColumn = null,
         #[Property(description: 'Label of data column for pie chart', type: 'string', example: 'attributesAvailable')]
-        private readonly string $pieLabelColumn,
+        private readonly ?string $pieLabelColumn = null,
         #[Property(
             description: 'X axis column names',
             type: 'array',
             items: new Items(type: 'string'),
             example: '["attributesAvailable", "count(*)"]'
         )]
-        private readonly string $xAxis,
-        #[Property(description: 'Y axis column name', type: 'string', example: 'attributesAvailable')]
-        private readonly string $yAxis,
+        private readonly ?string $xAxis = null,
+        #[Property(
+            description: 'Y axis column information',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: '["attributesAvailable"]'
+        )]
+        private readonly ?array $yAxis = null,
         #[Property(description: 'Modification date time stamp', type: 'int', example: 1736762668)]
-        private readonly string $modificationDate,
+        private readonly int $modificationDate,
         #[Property(description: 'Creation date time stamp', type: 'int', example: 1567409307)]
-        private readonly string $creationDate,
+        private readonly int $creationDate,
         #[Property(
             description: 'Array with user names the report is shared with',
             type: 'array',
             items: new Items(type: 'string'),
             example: '["admin", "superuser"]'
         )]
-        private readonly string $sharedUserNames,
+        private readonly array $sharedUserNames,
         #[Property(
             description: 'Array with roles the report is shared with',
             type: 'array',
             items: new Items(type: 'string'),
             example: '["role", "role2"]'
         )]
-        private readonly string $sharedRoleNames,
+        private readonly array $sharedRoleNames,
         #[Property(description: 'Whether the report is shared globally', type: 'bool', example: false)]
-        private readonly string $sharedGlobally,
+        private readonly bool $sharedGlobally,
         #[Property(description: 'Whether the report is writeable', type: 'bool', example: true)]
-        private readonly string $writeable,
+        private readonly bool $writeable,
     ) {
 
     }
@@ -138,17 +145,17 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         return $this->sql;
     }
 
-    public function getDataSourceConfig(): string
+    public function getDataSourceConfig(): stdClass
     {
         return $this->dataSourceConfig;
     }
 
-    public function getColumnConfiguration(): string
+    public function getColumnConfigurations(): array
     {
-        return $this->columnConfiguration;
+        return $this->columnConfigurations;
     }
 
-    public function getMenuShortcut(): string
+    public function getMenuShortcut(): bool
     {
         return $this->menuShortcut;
     }
@@ -178,52 +185,52 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         return $this->chartType;
     }
 
-    public function getPieColumn(): string
+    public function getPieColumn(): ?string
     {
         return $this->pieColumn;
     }
 
-    public function getPieLabelColumn(): string
+    public function getPieLabelColumn(): ?string
     {
         return $this->pieLabelColumn;
     }
 
-    public function getXAxis(): string
+    public function getXAxis(): ?string
     {
         return $this->xAxis;
     }
 
-    public function getYAxis(): string
+    public function getYAxis(): array
     {
         return $this->yAxis;
     }
 
-    public function getModificationDate(): string
+    public function getModificationDate(): int
     {
         return $this->modificationDate;
     }
 
-    public function getCreationDate(): string
+    public function getCreationDate(): int
     {
         return $this->creationDate;
     }
 
-    public function getSharedUserNames(): string
+    public function getSharedUserNames(): array
     {
         return $this->sharedUserNames;
     }
 
-    public function getSharedRoleNames(): string
+    public function getSharedRoleNames(): array
     {
         return $this->sharedRoleNames;
     }
 
-    public function getSharedGlobally(): string
+    public function getSharedGlobally(): bool
     {
         return $this->sharedGlobally;
     }
 
-    public function getWriteable(): string
+    public function getWriteable(): bool
     {
         return $this->writeable;
     }

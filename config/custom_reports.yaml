@@ -23,8 +23,8 @@ services:
   # Data extractor
   #
 
-  Pimcore\Bundle\StudioBackendBundle\CustomReport\Extractor\DataExtractorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Extractor\DataExtractor
+  Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydrator
 
   #
   # Services

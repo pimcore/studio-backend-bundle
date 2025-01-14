@@ -21,6 +21,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -49,8 +50,6 @@ use function count;
  */
 final class GetController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly CustomReportServiceInterface $customReportService
@@ -100,7 +99,7 @@ final class GetController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'custom_reports_chart_success_response',
-        content: new ItemsJson('')
+        content: new ItemsJson(CustomReportChartData::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
@@ -109,8 +108,8 @@ final class GetController extends AbstractApiController
         string $name,
         #[MapQueryString] ChartDataParameter $chartDataParameter
     ): JsonResponse {
-        $items = $this->customReportService->getChartData($name, $chartDataParameter);
-
-        return $this->getPaginatedCollection($this->serializer, $items, count($items));
+        return $this->jsonResponse(
+            $this->customReportService->getChartData($name, $chartDataParameter)
+        );
     }
 }

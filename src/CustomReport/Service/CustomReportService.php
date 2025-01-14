@@ -17,10 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\Extractor\DataExtractorInterface;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\ChartDataEvent;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\ReportEvent;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\TreeConfigNodeEvent;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\TreeNodeEvent;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository\CustomReportRepositoryInterface;
-use Pimcore\Model\User;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -28,28 +34,49 @@ use Pimcore\Model\User;
 final readonly class CustomReportService implements CustomReportServiceInterface
 {
     public function __construct(
-        private DataExtractorInterface $dataExtractor,
+        private CustomReportHydratorInterface $customReportHydrator,
         private CustomReportRepositoryInterface $customReportRepository,
         private AdapterServiceInterface $adapterService,
+        private EventDispatcherInterface $eventDispatcher
     ) {
     }
 
-    public function getCustomReportTree(?User $user = null): array
+    public function getCustomReportTree(): array
     {
-        return $this->dataExtractor->extractTree(
-            $user ?
-                $this->customReportRepository->loadForUser($user) :
-                $this->customReportRepository->loadForCurrentUser()
-        );
+        $treeData = [];
+        $reportTree = $this->customReportRepository->loadForCurrentUser();
+
+        foreach($reportTree as $report) {
+            $data = $this->customReportHydrator->extractTreeData($report);
+
+            $this->eventDispatcher->dispatch(
+                new TreeNodeEvent($data),
+                TreeNodeEvent::EVENT_NAME
+            );
+
+            $treeData[] = $data;
+        }
+
+        return $treeData;
     }
 
-    public function getCustomReportConfigTree(?User $user = null): array
+    public function getCustomReportConfigTree(): array
     {
-        return $this->dataExtractor->extractConfigTree(
-            $user ?
-                $this->customReportRepository->loadForUser($user) :
-                $this->customReportRepository->loadForCurrentUser()
-        );
+        $treeConfigData = [];
+        $reportTree = $this->customReportRepository->loadForCurrentUser();
+
+        foreach($reportTree as $report) {
+            $data = $this->customReportHydrator->extractConfigTreeData($report);
+
+            $this->eventDispatcher->dispatch(
+                new TreeConfigNodeEvent($data),
+                TreeConfigNodeEvent::EVENT_NAME
+            );
+
+            $treeConfigData[] = $data;
+        }
+
+        return $treeConfigData;
     }
 
     public function getCustomReportByName(string $reportName): Config
@@ -57,21 +84,30 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         return $this->customReportRepository->loadByName($reportName);
     }
 
-    public function getChartData(string $reportName, ChartDataParameter $chartDataParameter): array
+    public function getChartData(string $reportName, ChartDataParameter $chartDataParameter): CustomReportChartData
     {
         $reportConfig = $this->getCustomReportByName($reportName);
+        $data = $this->adapterService->getData($reportConfig, $chartDataParameter);
+        $chartData = $this->customReportHydrator->extractChartData($data);
 
-        $items = $this->adapterService->getData($reportConfig, $chartDataParameter);
-
-        return $this->dataExtractor->extractChartData(
-            $items
+        $this->eventDispatcher->dispatch(
+            new ChartDataEvent($chartData),
+            ChartDataEvent::EVENT_NAME
         );
+
+        return $chartData;
     }
 
-    public function getCustomReportDetails(string $reportName): array
+    public function getCustomReportDetails(string $reportName): CustomReportDetails
     {
         $config = $this->getCustomReportByName($reportName);
+        $reportDetails = $this->customReportHydrator->extractReportDetails($config);
 
-        return $this->dataExtractor->extractReportDetails($config);
+        $this->eventDispatcher->dispatch(
+            new ReportEvent($reportDetails),
+            ReportEvent::EVENT_NAME
+        );
+
+        return $reportDetails;
     }
 }
