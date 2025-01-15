@@ -34,7 +34,6 @@ final readonly class AdapterService implements AdapterServiceInterface
     ) {
     }
 
-
     public function getData(Config $report, ChartDataParameter $chartDataParameter): array
     {
         return $this->getAdapter($report)->getData(
