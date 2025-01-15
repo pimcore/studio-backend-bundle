@@ -32,3 +32,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportService
+
+  Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\AdapterServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\AdapterService
+    arguments:
+      $adapters: '@pimcore.custom_report.adapter.factories'

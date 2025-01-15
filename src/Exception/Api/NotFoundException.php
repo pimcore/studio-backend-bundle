@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Throwable;
 use function sprintf;
 
 /**
@@ -24,11 +25,12 @@ use function sprintf;
  */
 final class NotFoundException extends AbstractApiException
 {
-    public function __construct(string $type, int|string $id, string $parameter = 'ID')
+    public function __construct(string $type, int|string $id, string $parameter = 'ID', ?Throwable $previous = null)
     {
         parent::__construct(
             HttpResponseCodes::NOT_FOUND->value,
-            sprintf('%s with %s: %s not found', ucfirst($type), $parameter, $id)
+            sprintf('%s with %s: %s not found', ucfirst($type), $parameter, $id),
+            previous: $previous,
         );
     }
 }

@@ -17,54 +17,90 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeConfigNode;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeNode;
 
 /**
  * @internal
  */
 final readonly class CustomReportHydrator implements CustomReportHydratorInterface
 {
-    public function hydrateCustomReportTree(array $reports): array
+    public function extractTreeData(Config $report): CustomReportTreeNode
     {
-        $hydratedReports = [];
-
-        foreach ($reports as $report) {
-            if ($report->getDataSourceConfig() !== null) {
-                $hydratedReports[] = [
-                    'name' => htmlspecialchars($report->getName()),
-                    'niceName' => htmlspecialchars($report->getNiceName()),
-                    'iconClass' => htmlspecialchars($report->getIconClass()),
-                    'group' => htmlspecialchars($report->getGroup()),
-                    'groupIconClass' => htmlspecialchars($report->getGroupIconClass()),
-                    'menuShortcut' => $report->getMenuShortcut(),
-                    'reportClass' => htmlspecialchars($report->getReportClass()),
-                ];
-            }
-        }
-
-        return $hydratedReports;
+        return new CustomReportTreeNode(
+            htmlspecialchars($report->getName()),
+            htmlspecialchars($report->getNiceName()),
+            htmlspecialchars($report->getIconClass()),
+            htmlspecialchars($report->getGroup()),
+            htmlspecialchars($report->getGroupIconClass()),
+            $report->getMenuShortcut(),
+            htmlspecialchars($report->getReportClass())
+        );
     }
 
-    public function hydrateCustomReportConfigTree(array $reports): array
+    public function extractConfigTreeData(Config $report): CustomReportTreeConfigNode
     {
-        $hydratedReports = [];
-
-        foreach ($reports as $item) {
-            $hydratedReports[] = [
-                'id' => $item->getName(),
-                'text' => $item->getName(),
-                'cls' => 'pimcore_treenode_disabled',
-                'writeable' => $item->isWriteable(),
-            ];
-        }
-
-        return $hydratedReports;
+        return new CustomReportTreeConfigNode(
+            $report->getName(),
+            $report->getName(),
+            'pimcore_treenode_disabled',
+            $report->isWriteable()
+        );
     }
 
-    public function hydrateCustomReportDetails(Config $reportConfig): array
+    public function extractReportDetails(Config $report): CustomReportDetails
     {
-        return [
-            ... $reportConfig->getObjectVars(),
-            'writeable' => $reportConfig->isWriteable(),
-        ];
+
+        return new CustomReportDetails(
+            $report->getName(),
+            $report->getSql(),
+            $report->getDataSourceConfig(),
+            $this->getCustomReportColumnConfiguration(
+                $report->getColumnConfiguration()
+            ),
+            $report->getNiceName(),
+            $report->getGroupIconClass(),
+            $report->getIconClass(),
+            $report->getMenuShortcut(),
+            $report->getReportClass(),
+            $report->getChartType(),
+            $report->getModificationDate(),
+            $report->getCreationDate(),
+            $report->getSharedUserNames(),
+            $report->getSharedRoleNames(),
+            $report->getShareGlobally(),
+            $report->isWriteable(),
+            $report->getPieColumn(),
+            $report->getPieLabelColumn(),
+            $report->getXAxis(),
+            $report->getYAxis(),
+        );
+    }
+
+    public function extractChartData(array $chartData): CustomReportChartData
+    {
+        return new CustomReportChartData(
+            $chartData['data'] ?? []
+        );
+    }
+
+    private function getCustomReportColumnConfiguration(array $columns): array
+    {
+        $columnConfig = [];
+        foreach ($columns as $column) {
+            $columnConfig[] = new CustomReportColumnConfiguration(
+                $column['name'] ?? '',
+                $column['display'] ?? '',
+                $column['export'] ?? '',
+                $column['order'] ?? '',
+                $column['label'] ?? '',
+                $column['id'] ?? ''
+            );
+        }
+
+        return $columnConfig;
     }
 }

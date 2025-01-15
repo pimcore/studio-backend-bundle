@@ -17,15 +17,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeConfigNode;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeNode;
 
 /**
  * @internal
  */
 interface CustomReportHydratorInterface
 {
-    public function hydrateCustomReportTree(array $reports): array;
+    public function extractReportDetails(Config $report): CustomReportDetails;
 
-    public function hydrateCustomReportConfigTree(array $reports): array;
+    public function extractConfigTreeData(Config $report): CustomReportTreeConfigNode;
 
-    public function hydrateCustomReportDetails(Config $reportConfig): array;
+    public function extractTreeData(Config $report): CustomReportTreeNode;
+
+    public function extractChartData(array $chartData): CustomReportChartData;
 }

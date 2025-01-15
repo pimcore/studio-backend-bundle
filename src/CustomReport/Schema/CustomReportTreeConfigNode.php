@@ -41,7 +41,7 @@ final class CustomReportTreeConfigNode implements AdditionalAttributesInterface
         #[Property(description: 'css class', type: 'string', example: 'pimcore_treenode_disabled')]
         private readonly string $cls,
         #[Property(description: 'writeable', type: 'bool', example: true)]
-        private readonly string $writeable
+        private readonly bool $writeable
     ) {
 
     }
@@ -61,7 +61,7 @@ final class CustomReportTreeConfigNode implements AdditionalAttributesInterface
         return $this->cls;
     }
 
-    public function getWriteable(): string
+    public function getWriteable(): bool
     {
         return $this->writeable;
     }
