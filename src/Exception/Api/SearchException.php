@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Throwable;
+use function sprintf;
 
 /**
  * @internal

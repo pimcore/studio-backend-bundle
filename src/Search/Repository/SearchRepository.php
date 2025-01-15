@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Repository;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
@@ -39,8 +38,7 @@ final readonly class SearchRepository implements SearchRepositoryInterface
         private ElementSearchServiceInterface $elementSearchService,
         private SearchProviderInterface $searchProvider,
         private SecurityServiceInterface $securityService
-    )
-    {
+    ) {
     }
 
     /**

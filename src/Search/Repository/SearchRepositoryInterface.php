@@ -20,6 +20,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Element\SearchResult\Elem
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SimpleSearchParameter;
+
 /**
  * @internal
  */

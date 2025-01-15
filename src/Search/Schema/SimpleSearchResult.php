@@ -45,7 +45,7 @@ final class SimpleSearchResult implements AdditionalAttributesInterface
         private readonly string $path,
         #[Property(description: 'icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
-        
+
     ) {
 
     }
