@@ -55,11 +55,12 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
             return null;
         }
 
-        $type = $adapterData['type'] ?? null;
-        if ($type === ElementTypes::TYPE_ASSET) {
-            $adapterData['data'] = $this->resolveAssetIfNeeded($type, $adapterData['data']['fullPath']);
-            $adapterData['poster'] = $this->getAssetByPath($adapterData['poster'] ?? null);
+        $adapterData['data'] = $this->resolveAssetIfNeeded($adapterData['type'] ?? null, $adapterData['data']);
+        if ($adapterData['data'] === null) {
+            return null;
         }
+
+        $adapterData['poster'] = $this->getAssetByPath($adapterData['poster'] ?? null);
 
         return $this->createVideoObject($adapterData);
     }
@@ -99,8 +100,7 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
             $data['poster']['fullPath'] = $value->getPoster()?->getRealFullPath();
         }
 
-        $type = $data['type'] ?? '';
-        if (isset($data['data']) && $type === ElementTypes::TYPE_ASSET) {
+        if (isset($data['data'])) {
             $data['data']['fullPath'] = $value->getData()?->getRealFullPath();
             $data['data']['subtype'] = $value->getData()?->getType();
         }
