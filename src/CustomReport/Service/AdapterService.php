@@ -34,6 +34,7 @@ final readonly class AdapterService implements AdapterServiceInterface
     ) {
     }
 
+
     public function getData(Config $report, ChartDataParameter $chartDataParameter): array
     {
         return $this->getAdapter($report)->getData(
@@ -47,6 +48,9 @@ final readonly class AdapterService implements AdapterServiceInterface
         );
     }
 
+    /**
+     * @throws NotFoundException
+     */
     private function getAdapter(Config $report): CustomReportAdapterInterface
     {
         $configuration = $report->getDataSourceConfig();
