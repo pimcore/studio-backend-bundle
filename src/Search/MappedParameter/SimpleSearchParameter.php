@@ -14,22 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Throwable;
+namespace Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter;
+
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 
 /**
  * @internal
  */
-final class SearchException extends AbstractApiException
+final readonly class SimpleSearchParameter extends CollectionParameters
 {
-    public function __construct(string $type, ?Throwable $previous = null)
-    {
-        parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
-            sprintf('Search for %s failed', $type),
-            previous: $previous
-        );
+    public function __construct(
+        int $page = 1,
+        int $pageSize = 50,
+        private ?string $searchTerm = null,
+    ) {
+        parent::__construct($page, $pageSize);
     }
+
+    public function getSearchTerm(): ?string
+    {
+        return $this->searchTerm;
+    }
+
 }

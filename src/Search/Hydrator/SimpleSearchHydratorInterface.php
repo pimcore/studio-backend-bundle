@@ -14,22 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
+namespace Pimcore\Bundle\StudioBackendBundle\Search\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Throwable;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
+use Pimcore\Bundle\StudioBackendBundle\Search\Schema\SimpleSearchResult;
 
 /**
  * @internal
  */
-final class SearchException extends AbstractApiException
+interface SimpleSearchHydratorInterface
 {
-    public function __construct(string $type, ?Throwable $previous = null)
-    {
-        parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
-            sprintf('Search for %s failed', $type),
-            previous: $previous
-        );
-    }
+    public function hydrate(ElementSearchResultItemInterface $resultItem): SimpleSearchResult;
 }
