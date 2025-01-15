@@ -48,17 +48,11 @@ final readonly class UrlSlugAdapter implements SetterDataInterface
             return [];
         }
         $result = [];
-        foreach ($urlData as $slug) {
-            if ($slug instanceof UrlSlug) {
-                $siteId = $slug->getSiteId();
-                $resultItem = [
-                    'slug' => $slug->getSlug(),
-                    'siteId' => $siteId,
-                    'domain' => $this->getDomain($siteId),
-                ];
+        foreach ($urlData as $slugData) {
+            $siteId = $slugData['siteId'];
+            $slug = $slugData['slug'];
 
-                $result[$siteId] = $resultItem;
-            }
+            $result[$siteId] = new UrlSlug($slug, $siteId);
         }
 
         return $result;
