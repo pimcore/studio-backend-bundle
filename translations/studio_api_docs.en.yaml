@@ -672,4 +672,7 @@ custom_reports_chart_success_response: Chart data as JSON. The actual data depen
 custom_reports_chart_sort_by_parameter: Sort by column parameter
 custom_reports_chart_report_limit_parameter: Limit of the report data
 custom_reports_chart_report_offset_parameter: Offset of the report data
-
+custom_report_export_csv: CSV export
+custom_report_export_csv_description: Export report data as CSV using Generic Execution Engine
+custom_report_export_csv_summary: Export report data as CSV
+custom_report_export_csv_created_response: Successfully created <strong>jobRun</strong> for csv export

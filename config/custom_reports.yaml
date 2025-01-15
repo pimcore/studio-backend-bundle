@@ -27,6 +27,12 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydrator
 
   #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler\CsvExportHandler: ~
+
+  #
   # Services
   #
 
