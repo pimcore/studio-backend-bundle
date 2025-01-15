@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DefaultSetterValueTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -36,10 +37,7 @@ final readonly class BooleanAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?bool {
-        return match((int) $data[$key]) {
-            1 => true,
-            -1 => false,
-            default => null,
-        };
+
+        return $data[$key] ?? null;
     }
 }

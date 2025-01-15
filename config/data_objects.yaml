@@ -80,9 +80,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CalculatedValueAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
-  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CheckboxAdapter:
-    tags: [ 'pimcore.studio_backend.data_adapter' ]
-
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
