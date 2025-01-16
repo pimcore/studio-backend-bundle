@@ -146,7 +146,6 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         FieldContextData $contextData = null
     ): array {
         $resultElement = [];
-        $blockElement = $rawBlockElement['data'] ?? null;
         $fieldDefinitions = $fieldDefinition->getFieldDefinitions();
         $fieldContextData = $this->createFieldContextData($element, $fieldDefinition, $contextData);
 
@@ -161,7 +160,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
                 $element,
                 $fd,
                 $elementName,
-                $blockElement,
+                $rawBlockElement,
                 $fieldContextData
             );
             if (!$value) {
