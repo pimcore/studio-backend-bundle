@@ -21,7 +21,6 @@ use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -30,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -42,13 +40,9 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class GetController extends AbstractApiController
 {
-    use PaginatedResponseTrait;
-
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CustomReportServiceInterface $customReportService,
-        private readonly CustomReportHydratorInterface $customReportHydrator
-
+        private readonly CustomReportServiceInterface $customReportService
     ) {
         parent::__construct($serializer);
     }
@@ -68,18 +62,18 @@ final class GetController extends AbstractApiController
     )]
     #[Get(
         path: self::PREFIX . '/custom-reports/report/{name}',
-        operationId: 'custom_report_get_by_name',
-        summary: 'custom_report_get_by_name_summary',
+        operationId: 'custom_reports_report',
+        summary: 'custom_reports_report_summary',
         tags: [Tags::CustomReports->value]
     )]
     #[NameParameter(
         name: 'name',
-        description: 'custom_report_get_by_name_name_parameter',
+        description: 'custom_reports_report_name_parameter',
         example: 'Quality_Attributes'
     )
     ]
     #[SuccessResponse(
-        description: 'custom_report_get_by_name_success_response',
+        description: 'custom_reports_report_success_response',
         content: new JsonContent(ref: CustomReportDetails::class)
     )]
     #[DefaultResponses([
@@ -87,13 +81,8 @@ final class GetController extends AbstractApiController
     ])]
     public function getByName(string $name): JsonResponse
     {
-        $config = $this->customReportService->getCustomReportByName($name);
-        if (!$config) {
-            throw new NotFoundException('Custom report', $name, 'name');
-        }
-
         return $this->jsonResponse(
-            $this->customReportHydrator->hydrateCustomReportDetails($config)
+            $this->customReportService->getCustomReportDetails($name)
         );
     }
 }

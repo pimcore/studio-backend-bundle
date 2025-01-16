@@ -32,14 +32,14 @@ final readonly class CustomReportColumnConfiguration
         #[Property(description: 'Name', type: 'string', example: 'attributesAvailable')]
         private string $name,
         #[Property(description: 'Display name of column', type: 'bool', example: true)]
-        private string $display,
+        private bool $display,
         #[Property(description: 'Whether the column should be included in exports', type: 'bool', example: true)]
-        private string $export,
+        private bool $export,
         #[Property(description: 'Order', type: 'bool', example: true)]
-        private string $order,
+        private bool $order,
         #[Property(description: 'Label/display name of column', type: 'string', example: 'Attributes')]
         private string $label,
-        #[Property(description: 'Id', type: 'string', example: 'extModel401-3')]
+        #[Property(description: 'Id', type: 'string', example: '401-3')]
         private string $id,
     ) {
 
@@ -50,17 +50,17 @@ final readonly class CustomReportColumnConfiguration
         return $this->name;
     }
 
-    public function getDisplay(): string
+    public function getDisplay(): bool
     {
         return $this->display;
     }
 
-    public function getExport(): string
+    public function getExport(): bool
     {
         return $this->export;
     }
 
-    public function getOrder(): string
+    public function getOrder(): bool
     {
         return $this->order;
     }

@@ -134,3 +134,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.document_version`
 - `pre_response.image_version`
 - `pre_response.version`
+- `pre_response.custom_report_chart_data`
+- `pre_response.custom_report_report`
+- `pre_response.custom_report_tree_config_node`
+- `pre_response.custom_report_tree_node`
