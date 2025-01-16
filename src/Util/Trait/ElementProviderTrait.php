@@ -41,6 +41,9 @@ trait ElementProviderTrait
         string $type,
         int $id
     ): ElementInterface {
+        if($type === ElementTypes::TYPE_DATA_OBJECT) {
+            $type = ElementTypes::TYPE_OBJECT;
+        }
         $element = $serviceResolver->getElementById($type, $id);
         if ($element === null) {
             throw new NotFoundException($type, $id);
