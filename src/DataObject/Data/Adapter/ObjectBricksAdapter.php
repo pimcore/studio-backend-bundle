@@ -70,9 +70,18 @@ final readonly class ObjectBricksAdapter implements
         }
         $brickData = $data[$key];
         $container = $this->getContainer($element, $key, $fieldDefinition->getName(), $contextData);
+        $brickKeys = array_keys($brickData);
 
-        foreach ($brickData as $collectionRaw) {
-            $this->processBrickData($element, $container, $fieldDefinition, $collectionRaw);
+        foreach($brickKeys as $brickKey) {
+            $brick = $this->getBrick($element, $container, $brickKey);
+            $brick->setFieldname($fieldDefinition->getName());
+            $brickValue = $brickData[$brickKey];
+
+            if($this->checkDeleteBrick($brick, $brickValue)) {
+                continue;
+            }
+
+            $this->processBrickData($element, $container, $brick, $brickValue);
         }
 
         return $container;
@@ -191,34 +200,28 @@ final readonly class ObjectBricksAdapter implements
     private function processBrickData(
         Concrete $element,
         Objectbrick $container,
-        Data $fieldDefinition,
-        array $collectionRaw
+        AbstractData $brick,
+        array $brickValue
     ): void {
-        $collectionDef = $this->definitionResolver->getByKey($collectionRaw['type']);
+
+        $brickKey = $brick->getType();
+        $collectionDef = $this->definitionResolver->getByKey($brickKey);
         if ($collectionDef === null) {
-            return;
-        }
-
-        $brick = $this->getBrick($element, $container, $collectionRaw['type']);
-        $brick->setFieldname($fieldDefinition->getName());
-        if ($collectionRaw['data'] === 'deleted') {
-            $brick->setDoDelete(true);
-
             return;
         }
 
         $brick->setValues($this->getCollectionData(
             $collectionDef,
-            $collectionRaw['data'],
+            $brickValue,
             $element,
             $brick,
         ));
-        $container->set($collectionRaw['type'], $brick);
+        $container->set($brickKey, $brick);
     }
 
     private function getCollectionData(
         Definition $collectionDef,
-        array $rawData,
+        array $brickValue,
         Concrete $element,
         AbstractData $brick
     ): array {
@@ -226,7 +229,7 @@ final readonly class ObjectBricksAdapter implements
         foreach ($collectionDef->getFieldDefinitions() as $fd) {
             $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
             $fieldName = $fd->getName();
-            if (!array_key_exists($fieldName, $rawData) || !$adapter) {
+            if (!$adapter) {
                 continue;
             }
 
@@ -234,7 +237,7 @@ final readonly class ObjectBricksAdapter implements
                 $element,
                 $fd,
                 $fieldName,
-                [$fieldName => $rawData[$fieldName]],
+                [$fieldName => $brickValue[$fieldName]],
                 new FieldContextData($brick)
             );
             if (!$this->validateEncryptedField($fd, $value)) {
@@ -245,5 +248,17 @@ final readonly class ObjectBricksAdapter implements
         }
 
         return $collectionData;
+    }
+
+    private function checkDeleteBrick(AbstractData $brick, array $brickValue): bool
+    {
+        $action = $brickValue['action'] ?? null;
+        if ($action === 'deleted') {
+            $brick->setDoDelete(true);
+
+            return true;
+        }
+
+        return false;
     }
 }
