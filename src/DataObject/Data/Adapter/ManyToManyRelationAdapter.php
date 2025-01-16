@@ -73,10 +73,9 @@ final readonly class ManyToManyRelationAdapter implements SetterDataInterface, D
         $data = [];
         /** @var ElementInterface[] $value */
         foreach ($value as $relation) {
-            $elementType = $this->getElementType($relation);
             $data[] = new RelationData(
                 $relation->getId(),
-                $elementType,
+                $this->getElementType($relation, true),
                 $this->getSubType($relation),
                 $relation->getRealFullPath(),
                 $this->getPublished($relation)

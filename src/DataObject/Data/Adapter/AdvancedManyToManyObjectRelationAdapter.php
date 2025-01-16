@@ -20,6 +20,8 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationMetadataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
@@ -33,6 +35,8 @@ use function is_array;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDataInterface
 {
+    use RelationMetadataTrait;
+
     public function __construct(
         private ConcreteObjectResolverInterface $concreteObjectResolver
     ) {
@@ -62,39 +66,21 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
 
         $relationsMetadata = [];
         foreach ($relationData as $relation) {
-            $object = $this->concreteObjectResolver->getById($relation['id']);
+            if (empty($relation['element']['id']) || $relation['element']['type'] !== ElementTypes::TYPE_OBJECT) {
+                continue;
+            }
+
+            $object = $this->concreteObjectResolver->getById($relation['element']['id']);
             if ($object && $object->getClassName() === $fieldDefinition->getAllowedClassId()) {
-                $relationsMetadata[] = $this->createObjectMetadata($object, $fieldDefinition, $relation);
+                $fieldName = $fieldDefinition->getName();
+                $relationsMetadata[] = $this->addRelationMetadata(
+                    $object,
+                    $relation['data'],
+                    new ObjectMetadata($fieldName, $fieldDefinition->getColumnKeys(), $object)
+                );
             }
         }
 
         return $relationsMetadata;
-    }
-
-    private function createObjectMetadata(
-        Concrete $object,
-        AdvancedManyToManyObjectRelation $fieldDefinition,
-        array $relation,
-    ): ObjectMetadata {
-        $metaData = new ObjectMetadata(
-            $fieldDefinition->getName(),
-            $fieldDefinition->getColumnKeys(),
-            $object
-        );
-        $metaData->_setOwner($object);
-        $metaData->_setOwnerFieldname($fieldDefinition->getName());
-
-        foreach ($fieldDefinition->getColumns() as $column) {
-            $setter = 'set' . ucfirst($column['key']);
-            $value = $relation[$column['key']] ?? null;
-
-            if ($column['type'] === 'multiselect' && is_array($value)) {
-                $value = implode(',', $value);
-            }
-
-            $metaData->$setter($value);
-        }
-
-        return $metaData;
     }
 }

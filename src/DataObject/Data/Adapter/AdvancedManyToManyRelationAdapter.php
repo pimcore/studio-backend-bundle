@@ -21,11 +21,13 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationMetadataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
+use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
@@ -37,6 +39,7 @@ use function is_array;
 final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInterface
 {
     use ElementProviderTrait;
+    use RelationMetadataTrait;
 
     public function __construct(
         private ServiceResolverInterface $serviceResolver
@@ -72,40 +75,20 @@ final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInte
 
         $relationsMetadata = [];
         foreach ($relationData as $relation) {
-            $element = $this->getElement($this->serviceResolver, $relation['type'], $relation['id']);
-            $relationsMetadata[] = $this->createObjectMetadata($element, $fieldDefinition, $relation);
+            $elementData = $relation['element'];
+            if (empty($elementData['id']) || empty($elementData['type'])) {
+                continue;
+            }
+
+            $element = $this->getElement($this->serviceResolver, $elementData['type'], $elementData['id']);
+            $fieldName = $fieldDefinition->getName();
+            $relationsMetadata[] = $this->addRelationMetadata(
+                $element,
+                $relation['data'],
+                new ElementMetadata($fieldName, $fieldDefinition->getColumnKeys(), $element)
+            );
         }
 
         return $relationsMetadata;
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function createObjectMetadata(
-        ElementInterface $element,
-        AdvancedManyToManyRelation $fieldDefinition,
-        array $relation,
-    ): ElementMetadata {
-        $metaData = new ElementMetadata(
-            $fieldDefinition->getName(),
-            $fieldDefinition->getColumnKeys(),
-            $element
-        );
-        $metaData->_setOwner($element);
-        $metaData->_setOwnerFieldname($fieldDefinition->getName());
-
-        foreach ($fieldDefinition->getColumns() as $column) {
-            $setter = 'set' . ucfirst($column['key']);
-            $value = $relation[$column['key']] ?? null;
-
-            if ($column['type'] === 'multiselect' && is_array($value)) {
-                $value = implode(',', $value);
-            }
-
-            $metaData->$setter($value);
-        }
-
-        return $metaData;
     }
 }

@@ -41,9 +41,6 @@ trait ElementProviderTrait
         string $type,
         int $id
     ): ElementInterface {
-        if($type === ElementTypes::TYPE_DATA_OBJECT) {
-            $type = ElementTypes::TYPE_OBJECT;
-        }
         $element = $serviceResolver->getElementById($type, $id);
         if ($element === null) {
             throw new NotFoundException($type, $id);
@@ -104,12 +101,13 @@ trait ElementProviderTrait
     /**
      * @throws InvalidElementTypeException
      */
-    private function getElementType(ElementInterface $element): string
+    private function getElementType(ElementInterface $element, bool $getCoreValue = false): string
     {
         return match (true) {
             $element instanceof Asset => ElementTypes::TYPE_ASSET,
             $element instanceof Document => ElementTypes::TYPE_DOCUMENT,
-            $element instanceof DataObject => ElementTypes::TYPE_DATA_OBJECT,
+            $element instanceof DataObject =>
+                $getCoreValue ? ElementTypes::TYPE_OBJECT : ElementTypes::TYPE_DATA_OBJECT,
             default => throw new InvalidElementTypeException($element->getType())
         };
     }
