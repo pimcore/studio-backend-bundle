@@ -84,9 +84,7 @@ final readonly class ClassificationStoreAdapter implements
         $store = $data[$key];
         $container = $this->getContainer($element, $key, $contextData);
         $this->setMapping($container, $store);
-        if (is_array($store['data'])) {
-            $this->setStoreValues($element, $fieldDefinition, $container, $store);
-        }
+        $this->setStoreValues($element, $fieldDefinition, $container, $store);
         $this->cleanupStoreGroups($container);
 
         return $container;
@@ -176,14 +174,18 @@ final readonly class ClassificationStoreAdapter implements
 
     private function setMapping(Classificationstore $container, array $data): void
     {
-        $activeGroups = $data['activeGroups'];
-        $groupCollectionMapping = $data['groupCollectionMapping'];
+        $activeGroups = array_keys($data);
+        $mapping = [];
 
-        $correctedMapping = array_filter($groupCollectionMapping, static function ($groupId) use ($activeGroups) {
-            return isset($activeGroups[$groupId]) && $activeGroups[$groupId];
-        }, ARRAY_FILTER_USE_KEY);
+        foreach($activeGroups as $activeGroup) {
+            /* TODO Get group collection id, not to confuse with group id or key definition id.
+            The mapping should contain the groupId as key and the group collection id as value.
+            */
 
-        $container->setGroupCollectionMappings($correctedMapping);
+            $mapping[$activeGroup] = 1; // 1 = group collection id (e.g. Size)
+        }
+
+        $container->setGroupCollectionMappings($mapping);
     }
 
     /**
@@ -195,9 +197,11 @@ final readonly class ClassificationStoreAdapter implements
         Classificationstore $container,
         array $store
     ): void {
-        $activeGroups = $store['activeGroups'];
-        foreach ($store['data'] as $language => $groups) {
-            foreach ($groups as $groupId => $keys) {
+
+        $activeGroups = [];
+
+        foreach ($store as $groupId => $groupData) {
+            foreach ($groupData as $language => $keys) {
                 $this->processGroupKeys($element, $definition, $container, $language, $groupId, $keys);
                 $activeGroups[$groupId] = true;
             }
