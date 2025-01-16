@@ -103,8 +103,8 @@ asset_get_tree_summary: Get all asset data for the tree
 asset_image_create_thumbnail_description: |
   Create a new image thumbnail based on the provided <strong>{id}</strong> and configuration parameters. <br> 
   The <strong>{id}</strong> must be an ID of existing asset image
-asset_image_clear_thumbnail_summary: Clear image thumbnail by ID
-asset_image_clear_thumbnail_description: |
+asset_clear_thumbnail_summary: Clear image thumbnail by ID
+asset_clear_thumbnail_description: |
     Clear the image thumbnail based on the provided <strong>{id}</strong>. <br> 
     The <strong>{id}</strong> must be an ID of existing asset image
 asset_image_download_by_format_success_response: Image asset binary file based on format
