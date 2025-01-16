@@ -42,7 +42,7 @@ final readonly class QuantityValueRangeAdapter implements SetterDataInterface
     ): ?QuantityValueRange {
         $min = empty($data[$key]['minimum']) ? null : $data[$key]['minimum'];
         $max = empty($data[$key]['maximum']) ? null : $data[$key]['maximum'];
-        $unit = $data[$key]['unit'] ?? null;
+        $unit = $data[$key]['unitId'] ?? null;
 
         if (!$min && !$max) {
             return null;
