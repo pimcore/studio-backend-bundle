@@ -17,10 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 
 interface IconServiceInterface
 {
+    public function getIconForElement(ElementSearchResultItemInterface $resultItem): ElementIcon;
+
     public function getIconForAsset(string $assetType, string $mimeType): ElementIcon;
 
     public function getIconForDataObject(DataObjectSearchResultItem $dataObject): ElementIcon;

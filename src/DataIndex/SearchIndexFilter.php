@@ -50,7 +50,6 @@ final readonly class SearchIndexFilter implements SearchIndexFilterInterface
         }
 
         // apply type specific filters
-
         foreach ($this->getTypeFilters($filters, $type) as $filter) {
             $query = $filter->apply($parameters, $query);
         }

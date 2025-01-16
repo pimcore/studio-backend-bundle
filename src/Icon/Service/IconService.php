@@ -16,7 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -24,6 +26,18 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 final class IconService implements IconServiceInterface
 {
     private string $defaultIcon = 'unknown';
+
+    public function getIconForElement(ElementSearchResultItemInterface $resultItem): ElementIcon
+    {
+        return match (true) {
+            $resultItem instanceof AssetSearchResultItem => $this->getIconForAsset(
+                $resultItem->getType(),
+                $resultItem->getMimeType()
+            ),
+            $resultItem instanceof DataObjectSearchResultItem => $this->getIconForDataObject($resultItem),
+            default => new ElementIcon(ElementIconTypes::NAME->value, $this->defaultIcon)
+        };
+    }
 
     public function getIconForAsset(string $assetType, ?string $mimeType): ElementIcon
     {
