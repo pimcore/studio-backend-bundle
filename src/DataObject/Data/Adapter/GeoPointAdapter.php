@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\Coordinates;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\GeoCoordinates;
@@ -44,6 +45,9 @@ final readonly class GeoPointAdapter implements SetterDataInterface
             return null;
         }
 
-        return new GeoCoordinates($geoPointData['latitude'], $geoPointData['longitude']);
+        return new GeoCoordinates(
+            $geoPointData[Coordinates::LATITUDE->value],
+            $geoPointData[Coordinates::LONGITUDE->value]
+        );
     }
 }
