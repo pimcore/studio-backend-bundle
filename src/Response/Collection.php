@@ -16,22 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Response;
 
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\Schema;
-
 /**
  * @internal
  */
-#[Schema(
-    title: 'Collection',
-    type: 'object'
-)]
 final readonly class Collection
 {
     public function __construct(
-        #[Property(description: 'total items', type: 'integer', example: 666)]
         private int $totalItems,
-        #[Property(description: 'items', type: 'mixed', example: ['Asset', 'Folder', 'Document', 'DataObject'])]
         private array $items
     ) {
     }

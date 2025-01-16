@@ -36,7 +36,7 @@ final class SortOrderParameter extends QueryParameter
                     'ASC',
                     'DESC',
                 ],
-                example: null,
+                example: 'ASC',
             ),
         );
     }

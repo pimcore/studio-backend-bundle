@@ -30,7 +30,7 @@ final class PathIncludeParentParameter extends QueryParameter
             description: 'Include the parent item in the result.',
             in: 'query',
             required: false,
-            schema: new Schema(type: 'boolean', example: null),
+            schema: new Schema(type: 'boolean', example: true),
         );
     }
 }

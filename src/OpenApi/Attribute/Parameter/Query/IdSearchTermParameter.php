@@ -30,7 +30,7 @@ final class IdSearchTermParameter extends QueryParameter
             description: 'Filter assets/data-objects by matching ids. As a wildcard * can be used',
             in: 'query',
             required: false,
-            schema: new Schema(type: 'string', example: null),
+            schema: new Schema(type: 'string', example: 83),
         );
     }
 }
