@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInter
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\UrlSlug;
-use Pimcore\Model\Site;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 
