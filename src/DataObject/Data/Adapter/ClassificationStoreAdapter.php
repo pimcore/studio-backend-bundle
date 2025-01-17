@@ -43,7 +43,6 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as Key
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
-use function is_array;
 
 /**
  * @internal
@@ -82,8 +81,16 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         $store = $data[$key];
+        $activeGroups = $store['activeGroups'] ?? [];
+        if(empty($activeGroups)) {
+            return null;
+        }
+        $groupCollectionMapping = $store['groupCollectionMapping'] ?? [];
         $container = $this->getContainer($element, $key, $contextData);
-        $this->setMapping($container, $store);
+        if(!empty($groupCollectionMapping)) {
+            $this->setMapping($container, $store['activeGroups'], $store['groupCollectionMapping']);
+        }
+        unset($store['activeGroups'], $store['groupCollectionMapping']);
         $this->setStoreValues($element, $fieldDefinition, $container, $store);
         $this->cleanupStoreGroups($container);
 
@@ -102,6 +109,9 @@ final readonly class ClassificationStoreAdapter implements
 
         $validLanguages = $this->getValidLanguages($fieldDefinition);
         $resultItems = [];
+
+        $resultItems['activeGroups'] = $value->getActiveGroups();
+        $resultItems['groupCollectionMapping'] = $value->getGroupCollectionMappings();
 
         foreach ($this->getActiveGroups($value) as $groupId => $groupConfig) {
             $resultItems[$groupId] = [];
@@ -172,20 +182,17 @@ final readonly class ClassificationStoreAdapter implements
         return $container;
     }
 
-    private function setMapping(Classificationstore $container, array $data): void
+    private function setMapping(
+        Classificationstore $container,
+        array $activeGroups,
+        array $groupCollectionMapping
+    ): void
     {
-        $activeGroups = array_keys($data);
-        $mapping = [];
+        $correctedMapping = array_filter($groupCollectionMapping, static function ($groupId) use ($activeGroups) {
+            return isset($activeGroups[$groupId]) && $activeGroups[$groupId];
+        }, ARRAY_FILTER_USE_KEY);
 
-        foreach($activeGroups as $activeGroup) {
-            /* TODO Get group collection id, not to confuse with group id or key definition id.
-            The mapping should contain the groupId as key and the group collection id as value.
-            */
-
-            $mapping[$activeGroup] = 1; // 1 = group collection id (e.g. Size)
-        }
-
-        $container->setGroupCollectionMappings($mapping);
+        $container->setGroupCollectionMappings($correctedMapping);
     }
 
     /**
