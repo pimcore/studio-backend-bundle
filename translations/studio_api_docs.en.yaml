@@ -106,7 +106,7 @@ asset_image_create_thumbnail_description: |
 asset_clear_thumbnail_summary: Clear image thumbnail by ID
 asset_clear_thumbnail_description: |
     Clear the image thumbnail based on the provided <strong>{id}</strong>. <br> 
-    The <strong>{id}</strong> must be an ID of existing asset image
+    The <strong>{id}</strong> must be an ID of an existing asset image, video or pdf
 asset_image_download_by_format_success_response: Image asset binary file based on format
 asset_image_download_by_format_summary: Download image asset by ID and format
 asset_image_download_by_thumbnail_description: |
