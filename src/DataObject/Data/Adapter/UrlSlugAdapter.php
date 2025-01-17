@@ -57,16 +57,4 @@ final readonly class UrlSlugAdapter implements SetterDataInterface
 
         return $result;
     }
-
-    /**
-     * @throws Exception
-     */
-    private function getDomain(?int $siteId): ?string
-    {
-        if ($siteId === null) {
-            return null;
-        }
-
-        return Site::getById($siteId)?->getMainDomain();
-    }
 }

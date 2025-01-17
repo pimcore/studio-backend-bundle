@@ -61,12 +61,4 @@ final readonly class DateRangeAdapter implements SetterDataInterface, DataNormal
             $value->getEndDate(),
         ];
     }
-
-    private function getDateFromTimestamp(float|int|string $timestamp): Carbon
-    {
-        $date = new Carbon();
-        $date->setTimestamp($timestamp);
-
-        return $date;
-    }
 }

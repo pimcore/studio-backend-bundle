@@ -113,7 +113,7 @@ final readonly class ClassificationStoreAdapter implements
         $resultItems['activeGroups'] = $value->getActiveGroups();
         $resultItems['groupCollectionMapping'] = $value->getGroupCollectionMappings();
 
-        foreach ($this->getActiveGroups($value) as $groupId => $groupConfig) {
+        foreach ($this->getActiveGroupsConfig($resultItems['activeGroups']) as $groupId => $groupConfig) {
             $resultItems[$groupId] = [];
             $keys = $this->getClassificationStoreKeysFromGroup($groupId);
             foreach ($validLanguages as $validLanguage) {
@@ -303,10 +303,10 @@ final readonly class ClassificationStoreAdapter implements
     /**
      * @return GroupConfig[]
      */
-    private function getActiveGroups(ClassificationstoreModel $value): array
+    private function getActiveGroupsConfig(array $activeGroups): array
     {
         $groups = [];
-        foreach ($value->getActiveGroups() as $groupId => $active) {
+        foreach ($activeGroups as $groupId => $active) {
             if ($active) {
                 $groupConfig = $this->groupConfigResolver->getById($groupId);
                 if ($groupConfig) {
