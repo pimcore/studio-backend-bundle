@@ -22,6 +22,5 @@ enum Coordinates: string
     use EnumToValueArrayTrait;
 
     case LATITUDE = 'latitude';
-
     case LONGITUDE = 'longitude';
 }

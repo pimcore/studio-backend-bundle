@@ -29,8 +29,7 @@ trait RelationMetadataTrait
         ElementInterface $object,
         array $relationData,
         ObjectMetadata|ElementMetadata $metadata
-    ): ObjectMetadata|ElementMetadata
-    {
+    ): ObjectMetadata|ElementMetadata {
         $metadata->_setOwner($object);
         $metadata->_setOwnerFieldname($metadata->getFieldname());
 

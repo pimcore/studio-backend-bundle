@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInter
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function count;
 use function is_array;
 
 /**
@@ -57,7 +58,7 @@ final readonly class DateRangeAdapter implements SetterDataInterface, DataNormal
 
         return [
             $value->getStartDate(),
-            $value->getEndDate()
+            $value->getEndDate(),
         ];
     }
 

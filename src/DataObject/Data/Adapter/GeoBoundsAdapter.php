@@ -38,7 +38,7 @@ final readonly class GeoBoundsAdapter implements SetterDataInterface
     private const string SOUTH_WEST = 'southWest';
 
     private const array DIRECTIONS = [self::NORTH_EAST, self::SOUTH_WEST];
-    
+
     public function getDataForSetter(
         Concrete $element,
         Data $fieldDefinition,
@@ -63,7 +63,7 @@ final readonly class GeoBoundsAdapter implements SetterDataInterface
             )
         );
     }
-    
+
     private function validateBounds(array $data): bool
     {
         foreach (self::DIRECTIONS as $direction) {

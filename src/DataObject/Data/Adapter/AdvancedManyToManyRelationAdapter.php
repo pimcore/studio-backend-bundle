@@ -27,8 +27,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ElementMetadata;
-use Pimcore\Model\DataObject\Data\ObjectMetadata;
-use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 

@@ -82,12 +82,12 @@ final readonly class ClassificationStoreAdapter implements
 
         $store = $data[$key];
         $activeGroups = $store['activeGroups'] ?? [];
-        if(empty($activeGroups)) {
+        if (empty($activeGroups)) {
             return null;
         }
         $groupCollectionMapping = $store['groupCollectionMapping'] ?? [];
         $container = $this->getContainer($element, $key, $contextData);
-        if(!empty($groupCollectionMapping)) {
+        if (!empty($groupCollectionMapping)) {
             $this->setMapping($container, $store['activeGroups'], $store['groupCollectionMapping']);
         }
         unset($store['activeGroups'], $store['groupCollectionMapping']);
@@ -186,8 +186,7 @@ final readonly class ClassificationStoreAdapter implements
         Classificationstore $container,
         array $activeGroups,
         array $groupCollectionMapping
-    ): void
-    {
+    ): void {
         $correctedMapping = array_filter($groupCollectionMapping, static function ($groupId) use ($activeGroups) {
             return isset($activeGroups[$groupId]) && $activeGroups[$groupId];
         }, ARRAY_FILTER_USE_KEY);

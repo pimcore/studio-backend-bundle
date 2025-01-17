@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\DefaultSetterValueTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;

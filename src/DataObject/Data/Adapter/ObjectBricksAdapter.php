@@ -34,7 +34,6 @@ use Pimcore\Model\DataObject\Objectbrick;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function array_key_exists;
 
 /**
  * @internal
@@ -72,12 +71,12 @@ final readonly class ObjectBricksAdapter implements
         $container = $this->getContainer($element, $key, $fieldDefinition->getName(), $contextData);
         $brickKeys = array_keys($brickData);
 
-        foreach($brickKeys as $brickKey) {
+        foreach ($brickKeys as $brickKey) {
             $brick = $this->getBrick($element, $container, $brickKey);
             $brick->setFieldname($fieldDefinition->getName());
             $brickValue = $brickData[$brickKey];
 
-            if($this->checkDeleteBrick($brick, $brickValue)) {
+            if ($this->checkDeleteBrick($brick, $brickValue)) {
                 continue;
             }
 
