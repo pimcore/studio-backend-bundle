@@ -18,41 +18,113 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ClassDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Response\Element;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 
 #[Schema(
     title: 'DataObjectVersion',
     required: ['modificationDate', 'path', 'published'],
     type: 'object'
 )]
-final class DataObjectVersion implements AdditionalAttributesInterface
+final class DataObjectVersion extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
+    use ClassDataTrait;
+    use WorkflowAvailableTrait;
 
     public function __construct(
-        #[Property(description: 'modification date', type: 'integer', example: 1712823182)]
-        private readonly int $modificationDate,
-        #[Property(description: 'path', type: 'string', example: '/path/to/object')]
-        private readonly string $path,
-        #[Property(description: 'published', type: 'bool', example: true)]
-        private readonly bool $published
+        #[Property(description: 'Key', type: 'string', example: 'Giulietta')]
+        private readonly string $key,
+        #[Property(description: 'Class name', type: 'string', example: 'car')]
+        private readonly ?string $className = null,
+        #[Property(description: 'Type', type: 'string', example: 'image')]
+        private readonly string $type,
+        #[Property(description: 'Published', type: 'bool', example: false)]
+        private readonly ?bool $published = null,
+        #[Property(description: 'Has children', type: 'bool', example: false)]
+        private readonly bool $hasChildren,
+        #[Property(description: 'Full path', type: 'string', example: '/path/to/dataObject')]
+        private readonly string $fullPath,
+        #[Property(description: 'Custom index', type: 'integer', example: 0)]
+        private readonly int $index,
+        int $id,
+        int $parentId,
+        string $path,
+        ElementIcon $icon,
+        int $userOwner,
+        int $userModification,
+        ?string $locked,
+        bool $isLocked,
+        ?int $creationDate,
+        ?int $modificationDate,
+        #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
+        private array $objectData = [],
     ) {
-
+        parent::__construct(
+            $id,
+            $parentId,
+            $path,
+            $icon,
+            $userOwner,
+            $userModification,
+            $locked,
+            $isLocked,
+            $creationDate,
+            $modificationDate
+        );
     }
 
-    public function getModificationDate(): int
+    public function getKey(): string
     {
-        return $this->modificationDate;
+        return $this->key;
     }
 
-    public function getPath(): string
+    public function getClassName(): ?string
     {
-        return $this->path;
+        return $this->className;
     }
 
-    public function isPublished(): bool
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function isPublished(): ?bool
     {
         return $this->published;
+    }
+
+    public function getHasChildren(): bool
+    {
+        return $this->hasChildren;
+    }
+
+    public function getFullPath(): string
+    {
+        return $this->fullPath;
+    }
+
+    public function getIndex(): int
+    {
+        return $this->index;
+    }
+
+    public function setObjectData(array $objectData): void
+    {
+        $this->objectData = $objectData;
+    }
+
+    public function getObjectData(): array
+    {
+        return $this->objectData;
+    }
+
+    public function getFilename(): string
+    {
+        return $this->key;
     }
 }

@@ -16,14 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
+use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
@@ -34,9 +37,10 @@ use Pimcore\Normalizer\NormalizerInterface;
  */
 final readonly class DataService implements DataServiceInterface
 {
-    use ValidateFieldTypeTrait;
+    use ValidateObjectDataTrait;
 
     public function __construct(
+        private ClassDefinitionResolverInterface $classDefinitionResolver,
         private DataAdapterServiceInterface $dataAdapterService,
         private InheritanceServiceInterface $inheritanceService,
         private WorkflowDetailsServiceInterface $workflowDetailsService,
@@ -47,10 +51,15 @@ final readonly class DataService implements DataServiceInterface
      * @throws DatabaseException|NotFoundException
      */
     public function setObjectDetailData(
-        DataObjectFolder|DataObject $dataObject,
-        Concrete $element,
-        ClassDefinition $class
+        DataObjectFolder|DataObject|DataObjectVersion $dataObject,
+        DataObjectModel $element
     ): void {
+        $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
+        if ($dataObject instanceof DataObjectFolder || !$element instanceof Concrete) {
+            return;
+        }
+
+        $class = $this->getValidClass($this->classDefinitionResolver, $element->getClassId());
         $classData = $this->getObjectClassData($class);
         $fieldDefinitions = $class->getFieldDefinitions();
 
@@ -60,13 +69,11 @@ final readonly class DataService implements DataServiceInterface
         $dataObject->setHasPreview($classData->getHasPreview());
         $dataObject->setObjectData($this->getNormalizedObjectData($element, $fieldDefinitions));
 
-        if ($dataObject->getAllowInheritance()) {
+        if ($dataObject instanceof DataObject && $dataObject->getAllowInheritance()) {
             $dataObject->setInheritanceData(
                 $this->inheritanceService->getInheritanceData($element, $fieldDefinitions)
             );
         }
-
-        $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
     }
 
     public function getNormalizedValue(

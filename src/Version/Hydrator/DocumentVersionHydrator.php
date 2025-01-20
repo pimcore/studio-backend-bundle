@@ -16,35 +16,21 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Version\Event\DocumentVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
 use Pimcore\Model\Document;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
  */
 final readonly class DocumentVersionHydrator
 {
-    public function __construct(
-        private EventDispatcherInterface $eventDispatcher,
-    ) {
-    }
-
     public function hydrate(
         Document $document
     ): DocumentVersion {
-        $hydratedDocument = new DocumentVersion(
+        return new DocumentVersion(
             $document->getModificationDate(),
             $document->getRealFullPath(),
             $document->isPublished(),
         );
-
-        $this->eventDispatcher->dispatch(
-            new DocumentVersionEvent($hydratedDocument),
-            DocumentVersionEvent::EVENT_NAME
-        );
-
-        return $hydratedDocument;
     }
 }

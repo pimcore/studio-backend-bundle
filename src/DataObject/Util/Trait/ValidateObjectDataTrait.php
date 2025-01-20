@@ -17,7 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField as EncryptedFieldDefinition;
 use Pimcore\Model\DataObject\Concrete;
@@ -26,7 +30,7 @@ use Pimcore\Model\DataObject\Data\EncryptedField;
 /**
  * @internal
  */
-trait ValidateFieldTypeTrait
+trait ValidateObjectDataTrait
 {
     private function validateEncryptedField(Data $fieldDefinition, mixed $value): bool
     {
@@ -46,5 +50,26 @@ trait ValidateFieldTypeTrait
         } catch (Exception) {
             throw new NotFoundException(type: 'field', id: $key);
         }
+    }
+
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    private function getValidClass(
+        ClassDefinitionResolverInterface $classDefinitionResolver,
+        string $classId): ClassDefinition
+    {
+        try {
+            $class = $classDefinitionResolver->getById($classId);
+        } catch (Exception $exception) {
+            throw new DatabaseException($exception->getMessage());
+        }
+
+        if (!$class) {
+            throw new NotFoundException(ElementTypes::TYPE_CLASS_DEFINITION, $classId);
+        }
+
+        return $class;
     }
 }
