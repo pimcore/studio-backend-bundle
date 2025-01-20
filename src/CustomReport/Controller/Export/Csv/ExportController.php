@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller\Export\Csv;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CsvService;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportCustomReportParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
@@ -31,7 +31,6 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportCustomReportParameter;
 
 /**
  * @internal

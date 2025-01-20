@@ -52,7 +52,7 @@ final class CustomReportCsvCollectionHandler extends AbstractHandler
         $id = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_TO_EXPORT->value);
 
         try {
-                //TODO: implement csv data collection
+            //TODO: implement csv data collection
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
