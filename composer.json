@@ -29,7 +29,7 @@
     "lcobucci/jwt": "^5.3"
   },
   "require-dev": {
-    "pimcore/admin-ui-classic-bundle": "^v1.3",
+    "pimcore/admin-ui-classic-bundle": "2.x-dev",
     "codeception/codeception": "^5.0.10",
     "roave/security-advisories": "dev-latest",
     "codeception/phpunit-wrapper": "^9",
