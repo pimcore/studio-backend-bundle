@@ -27,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 
 #[Schema(
     title: 'DataObjectVersion',
-    required: ['modificationDate', 'path', 'published'],
+    required: ['key', 'type', 'hasChildren', 'fullPath', 'index', 'className', 'published', 'objectData'],
     type: 'object'
 )]
 final class DataObjectVersion extends Element implements AdditionalAttributesInterface
