@@ -75,6 +75,10 @@ class DataObject extends Element implements AdditionalAttributesInterface
         private readonly DataObjectPermissions $permissions,
         #[Property(description: 'Custom index', type: 'integer', example: 0)]
         private readonly int $index,
+        #[Property(description: 'Sort mode of children', type: 'string', example: 'index')]
+        private readonly string $childrenSortBy,
+        #[Property(description: 'Sort order of children', type: 'string', example: 'asc')]
+        private readonly string $childrenSortOrder,
         int $id,
         int $parentId,
         string $path,
@@ -151,6 +155,16 @@ class DataObject extends Element implements AdditionalAttributesInterface
     public function getIndex(): int
     {
         return $this->index;
+    }
+
+    public function getChildrenSortBy(): string
+    {
+        return $this->childrenSortBy;
+    }
+
+    public function getChildrenSortOrder(): string
+    {
+        return $this->childrenSortOrder;
     }
 
     public function setObjectData(array $objectData): void
