@@ -52,7 +52,6 @@ trait ValidateObjectDataTrait
         }
     }
 
-
     /**
      * @throws DatabaseException|NotFoundException
      */

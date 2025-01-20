@@ -30,11 +30,11 @@ use Pimcore\Model\DataObject\Concrete;
 final readonly class IconService implements IconServiceInterface
 {
     use ValidateObjectDataTrait;
-    
-    public function __construct(private  ClassDefinitionResolverInterface $classDefinitionResolver)
+
+    public function __construct(private ClassDefinitionResolverInterface $classDefinitionResolver)
     {
     }
-    
+
     private const string DEFAULT_ICON = 'unknown';
 
     public function getIconForElement(ElementSearchResultItemInterface $resultItem): ElementIcon
