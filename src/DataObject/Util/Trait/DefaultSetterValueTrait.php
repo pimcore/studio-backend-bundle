@@ -17,8 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait;
 
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\ResourcePersistenceAwareInterface;
-use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Normalizer\NormalizerInterface;
 use function array_key_exists;
 
 /**
@@ -26,13 +25,12 @@ use function array_key_exists;
  */
 trait DefaultSetterValueTrait
 {
-    public function getDefaultDataForSetter(Concrete $element, Data $fieldDefinition, string $key, array $data): mixed
+    public function getDefaultDataForSetter(Data $fieldDefinition, string $key, array $data): mixed
     {
-        if (!array_key_exists($key, $data)) {
+        if (!array_key_exists($key, $data) || !$fieldDefinition instanceof NormalizerInterface) {
             return null;
         }
 
-        /** @var ResourcePersistenceAwareInterface $fieldDefinition */
-        return $fieldDefinition->getDataFromResource($data[$key], $element);
+        return $fieldDefinition->denormalize($data[$key]);
     }
 }

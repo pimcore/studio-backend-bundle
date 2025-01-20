@@ -40,6 +40,6 @@ final readonly class SelectAdapter implements SetterDataInterface
         ?FieldContextData $contextData = null
     ): null|string|int {
 
-        return $this->getDefaultDataForSetter($element, $fieldDefinition, $key, $data);
+        return $this->getDefaultDataForSetter($fieldDefinition, $key, $data);
     }
 }
