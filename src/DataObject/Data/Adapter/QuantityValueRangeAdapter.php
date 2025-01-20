@@ -30,7 +30,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class QuantityValueRangeAdapter implements SetterDataInterface
 {
-
     public function getDataForSetter(
         Concrete $element,
         Data $fieldDefinition,
