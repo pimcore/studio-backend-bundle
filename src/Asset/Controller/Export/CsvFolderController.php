@@ -20,6 +20,7 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\CsvExportFolderRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;

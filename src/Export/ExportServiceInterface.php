@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
+namespace Pimcore\Bundle\StudioBackendBundle\Export;
 
 use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
@@ -24,9 +24,15 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 /**
  * @internal
  */
-interface CsvServiceInterface
+interface ExportServiceInterface
 {
-    public function generateCsvFileForAssets(ExportAssetParameter $exportAssetParameter): int;
+    public function createExportFile(
+        int $id,
+        array $columns,
+        array $csvData,
+        bool $withHeaders = false,
+        bool $withGroup = false,
+        ?string $delimiter = null,
+    ): void;
 
-    public function generateCsvFileForFolders(ExportFolderParameter $exportFolderParameter): int;
 }

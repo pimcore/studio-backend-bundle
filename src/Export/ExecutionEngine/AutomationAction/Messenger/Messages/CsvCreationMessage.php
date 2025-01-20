@@ -14,13 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-final class CsvExportMessage extends AbstractExecutionEngineMessage
+final class CsvCreationMessage extends AbstractExecutionEngineMessage
 {
 }

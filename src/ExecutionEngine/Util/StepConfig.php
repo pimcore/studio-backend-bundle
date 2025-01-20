@@ -24,7 +24,7 @@ enum StepConfig: string
 
     case ASSET_TO_EXPORT = 'asset_to_export';
     case FOLDER_TO_EXPORT = 'folder_to_export';
-    case ASSET_EXPORT_DATA = 'asset_export_data';
+    case CSV_EXPORT_DATA = 'csv_export_data';
     case CONFIG_CONFIGURATION = 'config';
     case CONFIG_COLUMNS = 'columns';
     case CONFIG_FILTERS = 'filters';

@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -77,8 +77,8 @@ final class DownloadCsvController extends AbstractApiController
     {
         return $this->downloadService->downloadResourceByJobRunId(
             $jobRunId,
-            CsvServiceInterface::CSV_FILE_NAME,
-            CsvServiceInterface::CSV_FOLDER_NAME,
+            ExportServiceInterface::CSV_FILE_NAME,
+            ExportServiceInterface::CSV_FOLDER_NAME,
             MimeTypes::CSV->value,
             'assets.csv'
         );

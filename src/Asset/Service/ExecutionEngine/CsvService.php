@@ -16,25 +16,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
-use League\Flysystem\FilesystemException;
-use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderParameter;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
 use Pimcore\Model\Element\ElementDescriptor;
 
 /**
@@ -42,14 +36,9 @@ use Pimcore\Model\Element\ElementDescriptor;
  */
 final readonly class CsvService implements CsvServiceInterface
 {
-    use TempFilePathTrait;
-
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent,
-        private SecurityServiceInterface $securityService,
-        private StorageServiceInterface $storageService,
-        private GridServiceInterface $gridService,
-        private string $defaultDelimiter,
+        private SecurityServiceInterface $securityService
     ) {
     }
 
@@ -93,31 +82,6 @@ final readonly class CsvService implements CsvServiceInterface
         );
     }
 
-    /**
-     * @throws FilesystemException
-     */
-    public function createCsvFile(
-        int $id,
-        ColumnCollection $columnCollection,
-        array $settings,
-        array $assetData,
-        ?string $delimiter = null,
-    ): void {
-        $storage = $this->storageService->getTempStorage();
-        $headers = $this->getHeaders($columnCollection, $settings);
-        if ($delimiter === null) {
-            $delimiter = $this->defaultDelimiter;
-        }
-        $data[] = implode($delimiter, $headers) . StepConfig::NEW_LINE->value;
-        foreach ($assetData as $row) {
-            $data[] = implode($delimiter, array_map([$this, 'encodeFunc'], $row)) . StepConfig::NEW_LINE->value;
-        }
-
-        $storage->write(
-            $this->getCsvFilePath($id, $storage),
-            implode($data)
-        );
-    }
 
     private function generateCsvFileJob(
         array $elements,
@@ -139,39 +103,6 @@ final readonly class CsvService implements CsvServiceInterface
         );
 
         return $jobRun->getId();
-    }
-
-    /**
-     * @throws FilesystemException
-     */
-    private function getCsvFilePath(int $id, FilesystemOperator $storage): string
-    {
-        $folderName = $this->getTempFileName($id, self::CSV_FOLDER_NAME);
-        $file = $this->getTempFileName($id, self::CSV_FILE_NAME);
-        $storage->createDirectory($folderName);
-
-        return $folderName . '/' . $file;
-    }
-
-    private function encodeFunc(?string $value): string
-    {
-        $value = str_replace('"', '""', $value ?? '');
-
-        //force wrap value in quotes and return
-        return '"' . $value . '"';
-    }
-
-    private function getHeaders(ColumnCollection $columnCollection, array $settings): array
-    {
-        $header = $settings[StepConfig::SETTINGS_HEADER->value] ?? StepConfig::SETTINGS_HEADER_NO_HEADER->value;
-        if ($header === StepConfig::SETTINGS_HEADER_NO_HEADER->value) {
-            return [];
-        }
-
-        return $this->gridService->getColumnKeys(
-            $columnCollection,
-            $header === StepConfig::SETTINGS_HEADER_NAME->value
-        );
     }
 
     private function mapJobSteps(

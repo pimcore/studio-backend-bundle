@@ -1,0 +1,24 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCreationHandler: ~
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface: ~
+  Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService: ~
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber\Csv\CsvCreationSubscriber: ~

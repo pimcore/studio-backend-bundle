@@ -17,10 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller\Export\Csv;
 
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\CsvExportAssetRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -28,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -40,7 +37,7 @@ final class ExportController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CsvServiceInterface $csvService
+        private readonly CsvExportService $csvService
     ) {
         parent::__construct($serializer);
     }
@@ -65,11 +62,6 @@ final class ExportController extends AbstractApiController
     public function exportCsv(
     ): Response {
         //TODO adapt code
-        return $this->jsonResponse(
-            [
-                'jobRunId' => $this->csvService->generateCsvFileForAssets($exportAssetParameter)
-            ],
-            HttpResponseCodes::CREATED->value
-        );
+        return $this->jsonResponse("");
     }
 }

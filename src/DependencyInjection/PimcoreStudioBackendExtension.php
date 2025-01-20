@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 use Exception;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
@@ -27,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
@@ -97,7 +97,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(ZipServiceInterface::class);
         $definition->setArgument('$downloadLimits', $config['asset_download_settings']);
 
-        $definition = $container->getDefinition(CsvServiceInterface::class);
+        $definition = $container->getDefinition(CsvExportService::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
 
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);
