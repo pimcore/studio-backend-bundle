@@ -103,10 +103,10 @@ asset_get_tree_summary: Get all asset data for the tree
 asset_image_create_thumbnail_description: |
   Create a new image thumbnail based on the provided <strong>{id}</strong> and configuration parameters. <br> 
   The <strong>{id}</strong> must be an ID of existing asset image
-asset_image_clear_thumbnail_summary: Clear image thumbnail by ID
-asset_image_clear_thumbnail_description: |
+asset_clear_thumbnail_summary: Clear image thumbnail by ID
+asset_clear_thumbnail_description: |
     Clear the image thumbnail based on the provided <strong>{id}</strong>. <br> 
-    The <strong>{id}</strong> must be an ID of existing asset image
+    The <strong>{id}</strong> must be an ID of an existing asset image, video or pdf
 asset_image_download_by_format_success_response: Image asset binary file based on format
 asset_image_download_by_format_summary: Download image asset by ID and format
 asset_image_download_by_thumbnail_description: |
@@ -427,6 +427,12 @@ schedule_update_for_element_by_type_and_id_description: |
   See the full description of updatable fields with the schema <strong>UpdateSchedule</strong>
 schedule_update_for_element_by_type_and_id_success_response: List of updated schedules
 schedule_update_for_element_by_type_and_id_summary: Update schedules for an element
+simple_search_get_description: |
+  Search for elements based on the given <strong>{search term}</strong>. <br>
+  Elements are searched with the fulltext filter applied via Generic Data Index. <br>
+simple_search_get_search_term_parameter: Search term
+simple_search_get_success_response: Search results for elements
+simple_search_get_summary: Search for elements
 system_settings_get_description: |
   Get system settings from different providers. <br>
   System settings are public and need no login.
@@ -485,6 +491,7 @@ tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications
 tag_properties_description: Property operations to get/update/create/delete properties
 tag_role_description: Role Management operations
+tag_search_description: Operations to get search configuration, search elements and get search result previews
 tag_schedule_description: Get schedules for an element
 tag_settings_description: Get System Settings
 tag_tags_description: Tag operations to get/list/create/update/delete tags
@@ -659,3 +666,21 @@ data_object_get_select_options_description: |
   Get all dynamic select options for data objects for given field
 data_object_get_select_options_summary: Get all dynamic select options for data objects
 data_object_get_select_options_success_response: List of dynamic select options
+custom_reports_config_get_tree_description: Get all reports for the current user to display in configuration tree.
+custom_reports_config_get_tree_summary: All reports for the current user to display in configuration tree.
+custom_reports_get_tree_success_response: Get all reports for the current user to display in configuration tree.
+custom_reports_get_tree_description: Get all reports for the current user to display in tree.
+custom_reports_get_tree_summary: All reports for the current user to display in tree.
+custom_reports_collection_success_response: Get all reports for the current user to display in tree.
+tag_custom_reports_description: List custom reports
+custom_reports_report_summary: Get detailed configuration for a specific report by name
+custom_reports_report_success_response: Report data as JSON
+custom_reports_report_name_parameter: Name of the report
+custom_reports_chart: Chart data
+custom_reports_chart_summary: Get chart data for a specific report
+custom_reports_chart_name_parameter: Name of the report
+custom_reports_chart_success_response: Chart data as JSON. The actual data depends on the selected adapter in the report configuration.
+custom_reports_chart_sort_by_parameter: Sort by column parameter
+custom_reports_chart_report_limit_parameter: Limit of the report data
+custom_reports_chart_report_offset_parameter: Offset of the report data
+

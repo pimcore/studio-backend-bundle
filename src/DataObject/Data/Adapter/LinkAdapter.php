@@ -17,20 +17,31 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Link;
+use Pimcore\Normalizer\NormalizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class LinkAdapter implements SetterDataInterface
+final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use ElementProviderTrait;
+
+    public function __construct(private ServiceResolverInterface $serviceResolver)
+    {
+    }
+
     /**
      * @throws Exception
      */
@@ -50,5 +61,42 @@ final readonly class LinkAdapter implements SetterDataInterface
         }
 
         return $link;
+    }
+
+    public function normalize(mixed $value, Data $fieldDefinition): mixed
+    {
+        if (!$value instanceof Link || !$fieldDefinition instanceof NormalizerInterface) {
+            return null;
+        }
+
+        $data = $fieldDefinition->normalize($value);
+
+        $data['fullPath'] = $this->getFullPath($value);
+
+        return $data;
+    }
+
+    private function getFullPath(Link $link): ?string
+    {
+
+        if ($link->getDirect() !== null) {
+            return $link->getDirect();
+        }
+
+        if (!$link->getInternal() || !$link->getInternalType()) {
+            return null;
+        }
+
+        try {
+            $element = $this->getElement(
+                $this->serviceResolver,
+                $link->getInternalType(),
+                $link->getInternal()
+            );
+
+            return $element->getRealFullPath();
+        } catch (NotFoundException) {
+            return null;
+        }
     }
 }

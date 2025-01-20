@@ -20,6 +20,7 @@ use JsonException;
 use OpenApi\Annotations\OpenApi;
 use OpenApi\Annotations\PathItem;
 use OpenApi\Attributes\Schema;
+use OpenApi\Attributes\Server;
 use OpenApi\Generator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
@@ -34,7 +35,8 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     public function __construct(
         private TranslatorServiceInterface $translator,
         private string $routePrefix,
-        private array $openApiScanPaths = []
+        private array $openApiScanPaths = [],
+        private array $openApiServers = []
     ) {
     }
 
@@ -55,6 +57,8 @@ final readonly class OpenApiService implements OpenApiServiceInterface
                 },
                 $config->paths
             );
+
+            $this->addServers($config);
         }
 
         return $config;
@@ -105,5 +109,17 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     private function translate(string $message, string $locale = 'en'): string
     {
         return $this->translator->translateApiDocs($message, $locale);
+    }
+
+    private function addServers(OpenApi $config): void
+    {
+        if (empty($this->openApiServers)) {
+            return;
+        }
+
+        $config->servers = array_map(
+            static fn (array $server) => new Server(url: $server['url'], description: $server['description']),
+            $this->openApiServers
+        );
     }
 }

@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 
 #[Schema(
-    schema: 'Asset Document',
+    schema: 'AssetDocument',
     title: 'Asset Document',
     required: [
         'pageCount',

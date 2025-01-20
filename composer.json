@@ -17,11 +17,11 @@
   "prefer-stable": true,
   "minimum-stability": "dev",
   "require": {
-    "php": "~8.2.0 || ~8.3.0",
+    "php": "~8.3.0",
     "nesbot/carbon": "^2.65",
     "pimcore/static-resolver-bundle": "2.x-dev",
     "pimcore/generic-data-index-bundle": "2.x-dev",
-    "pimcore/pimcore": "^11.x-dev",
+    "pimcore/pimcore": "^12.x-dev",
     "zircote/swagger-php": "^4.8",
     "ext-zip": "*",
     "symfony/mercure": "^0.6.5",
@@ -29,7 +29,7 @@
     "lcobucci/jwt": "^5.3"
   },
   "require-dev": {
-    "pimcore/admin-ui-classic-bundle": "^v1.3",
+    "pimcore/admin-ui-classic-bundle": "2.x-dev",
     "codeception/codeception": "^5.0.10",
     "roave/security-advisories": "dev-latest",
     "codeception/phpunit-wrapper": "^9",

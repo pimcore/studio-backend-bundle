@@ -42,6 +42,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_class_description'
 )]
 #[Tag(
+    name: Tags::CustomReports->value,
+    description: 'tag_custom_reports_description'
+)]
+#[Tag(
     name: Tags::DataObjects->value,
     description: 'tag_dataobjects_description'
 )]
@@ -98,6 +102,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_schedule_description'
 )]
 #[Tag(
+    name: Tags::Search->value,
+    description: 'tag_search_description'
+)]
+#[Tag(
     name: Tags::Settings->value,
     description: 'tag_settings_description'
 )]
@@ -136,6 +144,7 @@ enum Tags: string
     case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';
     case ClassDefinition = 'Class Definition';
+    case CustomReports = 'Custom Reports';
     case DataObjects = 'Data Objects';
     case DataObjectsGrid = 'Data Object Grid';
     case Dependencies = 'Dependencies';
@@ -149,6 +158,7 @@ enum Tags: string
     case Notifications = 'Notifications';
     case Properties = 'Properties';
     case Role = 'Role Management';
+    case Search = 'Search';
     case Schedule = 'Schedule';
     case Settings = 'Settings';
     case Tags = 'Tags';

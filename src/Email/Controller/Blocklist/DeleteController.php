@@ -63,7 +63,8 @@ final class DeleteController extends AbstractApiController
     #[TextFieldParameter(
         name: 'email',
         description: ' Email address to be deleted from blocklist',
-        required: false
+        required: false,
+        example: 'mail@mail.com'
     )]
     #[SuccessResponse(
         description: 'email_blocklist_delete_success_response',

@@ -27,6 +27,7 @@ final class UserInformationHydrator implements UserInformationHydratorInterface
     public function hydrate(UserInterface $user): UserInformation
     {
         return new UserInformation(
+            $user->getId(),
             $user->getUsername(),
             $user->getPermissions(),
             $user->isAdmin()
