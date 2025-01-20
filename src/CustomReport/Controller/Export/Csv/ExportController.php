@@ -65,7 +65,6 @@ final class ExportController extends AbstractApiController
     public function exportCsv(
         #[MapRequestPayload] ExportCustomReportParameter $exportCustomReportParameter
     ): Response {
-        //TODO adapt code
         return $this->jsonResponse(
             $this->csvService->generateCsvFile(
                 $exportCustomReportParameter

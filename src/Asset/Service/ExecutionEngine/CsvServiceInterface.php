@@ -16,10 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
-use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 
 /**
  * @internal
