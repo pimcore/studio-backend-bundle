@@ -64,7 +64,6 @@ final class CsvCreationHandler extends AbstractHandler
         }
         $csvData = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA->value];
 
-        //Todo adapt filename
         try {
             $this->csvService->createExportFile(
                 $jobRun->getId(),

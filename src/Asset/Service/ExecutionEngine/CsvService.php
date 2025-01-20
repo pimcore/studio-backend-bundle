@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Element\ElementDescriptor;
+use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\Util\JobSteps as ExportJobSteps;
 
 /**
  * @internal
@@ -125,7 +126,7 @@ final readonly class CsvService implements CsvServiceInterface
     private function getCsvCreationStep(array $settings): JobStep
     {
         return new JobStep(
-            JobSteps::CSV_CREATION->value,
+            ExportJobSteps::CSV_CREATION->value,
             CsvCreationMessage::class,
             '',
             $settings

@@ -680,6 +680,11 @@ custom_reports_chart_sort_by_parameter: Sort by column parameter
 custom_reports_chart_report_limit_parameter: Limit of the report data
 custom_reports_chart_report_offset_parameter: Offset of the report data
 custom_report_export_csv: CSV export
-custom_report_export_csv_description: Export report data as CSV using Generic Execution Engine
 custom_report_export_csv_summary: Export report data as CSV
 custom_report_export_csv_created_response: Successfully created <strong>jobRun</strong> for csv export
+custom_report_export_csv_description: |
+  Creating the CSV file for custom reports. <br> Parameters are: <ul>
+    <li><strong>id</strong>: Id/Name of cusotm report</li>    
+    <li><strong>config</strong>: Delimiter and header options</li>
+  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
+  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
