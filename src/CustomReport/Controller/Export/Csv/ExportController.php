@@ -62,6 +62,6 @@ final class ExportController extends AbstractApiController
     public function exportCsv(
     ): Response {
         //TODO adapt code
-        return $this->jsonResponse("");
+        return $this->jsonResponse('');
     }
 }

@@ -60,7 +60,7 @@ final readonly class CsvExportService implements ExportServiceInterface
             $columns,
             true
         );
-        if($withHeaders) {
+        if ($withHeaders) {
             $headers = $this->getHeaders($columnCollection, $withGroup);
         }
         if ($delimiter === null) {
@@ -101,8 +101,7 @@ final readonly class CsvExportService implements ExportServiceInterface
     private function createDirectory(
         string $fileName,
         FilesystemOperator $storage
-    ): void
-    {
+    ): void {
         $storage->createDirectory(
             $fileName
         );
