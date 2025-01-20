@@ -33,7 +33,7 @@ final class IdParameter extends QueryParameter
             description: $description,
             in: 'query',
             required: $required,
-            schema: new Schema(type: 'integer', example: null),
+            schema: new Schema(type: 'integer', example: 83),
         );
     }
 }

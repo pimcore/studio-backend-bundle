@@ -29,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 #[Schema(
     title: 'Asset',
     required: [
-        'iconName',
         'hasChildren',
         'type',
         'filename',
@@ -50,7 +49,7 @@ class Asset extends Element implements AdditionalAttributesInterface
     use WorkflowAvailableTrait;
 
     public function __construct(
-        #[Property(description: 'Has children', type: 'bool', example: false)]
+        #[Property(description: 'Has children', required: ['hasChildren'], type: 'bool', example: false)]
         private readonly bool $hasChildren,
         #[Property(description: 'Type', type: 'string', example: 'image')]
         private readonly string $type,

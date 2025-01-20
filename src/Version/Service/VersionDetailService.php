@@ -21,6 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFou
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Version\Event\DataObjectVersionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Version\Event\DocumentVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
@@ -29,19 +32,21 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
 /**
  * @internal
  */
-final class VersionDetailService implements VersionDetailServiceInterface
+final readonly class VersionDetailService implements VersionDetailServiceInterface
 {
     use ElementProviderTrait;
 
     public function __construct(
-        private readonly VersionRepositoryInterface $repository,
-        private readonly ServiceProviderInterface $versionHydratorLocator
+        private EventDispatcherInterface $eventDispatcher,
+        private ServiceProviderInterface $versionHydratorLocator,
+        private VersionRepositoryInterface $repository,
     ) {
     }
 
@@ -55,10 +60,14 @@ final class VersionDetailService implements VersionDetailServiceInterface
         $version = $this->repository->getVersionById($id);
         $element = $this->repository->getElementFromVersion($version, $user);
 
-        return $this->hydrate(
+        $hydratedVersion = $this->hydrate(
             $element,
             $this->getElementClass($element)
         );
+
+        $this->dispatchVersionEvent($hydratedVersion);
+
+        return $hydratedVersion;
     }
 
     /**
@@ -129,5 +138,17 @@ final class VersionDetailService implements VersionDetailServiceInterface
         }
 
         throw new InvalidElementTypeException($class);
+    }
+
+    private function dispatchVersionEvent(AssetVersion|DocumentVersion|DataObjectVersion $version): void
+    {
+        $event = match (true) {
+            $version instanceof AssetVersion => new AssetVersionEvent($version),
+            $version instanceof DocumentVersion => new DocumentVersionEvent($version),
+            $version instanceof DataObjectVersion => new DataObjectVersionEvent($version)
+        };
+
+        $this->eventDispatcher->dispatch($event, $event::EVENT_NAME);
+
     }
 }

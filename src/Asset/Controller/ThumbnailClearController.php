@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Image;
+namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
@@ -36,7 +36,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ThumbnailImageClearController extends AbstractApiController
+final class ThumbnailClearController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
@@ -51,16 +51,16 @@ final class ThumbnailImageClearController extends AbstractApiController
      * @throws UserNotFoundException
      */
     #[Route(
-        path: '/assets/{id}/image/thumbnail/clear',
-        name: 'pimcore_studio_api_clear_image_thumbnail',
+        path: '/assets/{id}/thumbnail/clear',
+        name: 'pimcore_studio_api_clear_thumbnail',
         methods: ['DELETE']
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
-        path: self::PREFIX . '/assets/{id}/image/thumbnail/clear',
-        operationId: 'asset_image_clear_thumbnail',
-        description: 'asset_image_clear_thumbnail_description',
-        summary: 'asset_image_clear_thumbnail_summary',
+        path: self::PREFIX . '/assets/{id}/thumbnail/clear',
+        operationId: 'asset_clear_thumbnail',
+        description: 'asset_clear_thumbnail_description',
+        summary: 'asset_clear_thumbnail_summary',
         tags: [Tags::Assets->value]
     )]
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
@@ -70,7 +70,7 @@ final class ThumbnailImageClearController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
-    public function clearImageThumbnails(int $id): Response
+    public function clearThumbnails(int $id): Response
     {
         $this->assetService->clearThumbnails($id);
 

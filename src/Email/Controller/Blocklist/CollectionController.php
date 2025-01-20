@@ -71,7 +71,8 @@ final class CollectionController extends AbstractApiController
     #[TextFieldParameter(
         name: 'email',
         description: 'Email address to be filtered by',
-        required: false
+        required: false,
+        example: 'mail@mail.com'
     )]
     #[SuccessResponse(
         description: 'email_blocklist_get_collection_success_response',

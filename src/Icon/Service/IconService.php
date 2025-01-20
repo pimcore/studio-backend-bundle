@@ -16,14 +16,38 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\AssetSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\DataObject\Concrete;
 
-final class IconService implements IconServiceInterface
+final readonly class IconService implements IconServiceInterface
 {
-    private string $defaultIcon = 'unknown';
+    use ValidateObjectDataTrait;
+
+    public function __construct(private ClassDefinitionResolverInterface $classDefinitionResolver)
+    {
+    }
+
+    private const string DEFAULT_ICON = 'unknown';
+
+    public function getIconForElement(ElementSearchResultItemInterface $resultItem): ElementIcon
+    {
+        return match (true) {
+            $resultItem instanceof AssetSearchResultItem => $this->getIconForAsset(
+                $resultItem->getType(),
+                $resultItem->getMimeType()
+            ),
+            $resultItem instanceof DataObjectSearchResultItem => $this->getIconForDataObject($resultItem),
+            default => new ElementIcon(ElementIconTypes::NAME->value, self::DEFAULT_ICON)
+        };
+    }
 
     public function getIconForAsset(string $assetType, ?string $mimeType): ElementIcon
     {
@@ -33,7 +57,7 @@ final class IconService implements IconServiceInterface
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx-csv',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'txt-docs',
                 'application/pdf' => 'pdf',
-                default => $this->defaultIcon
+                default => self::DEFAULT_ICON
             };
 
             return new ElementIcon(ElementIconTypes::NAME->value, $value);
@@ -45,7 +69,7 @@ final class IconService implements IconServiceInterface
                 'application/type9' => 'pdf',
                 'text/plain' => 'txt-docs',
                 'text/csv' => 'xlsx-csv',
-                default => $this->defaultIcon
+                default => self::DEFAULT_ICON
             };
 
             return new ElementIcon(ElementIconTypes::NAME->value, $value);
@@ -56,23 +80,24 @@ final class IconService implements IconServiceInterface
             'image' => 'image',
             'video' => 'video',
             'audio' => 'audio',
-            default => $this->defaultIcon
+            default => self::DEFAULT_ICON
         };
 
         return new ElementIcon(ElementIconTypes::NAME->value, $value);
     }
 
-    public function getIconForDataObject(DataObjectSearchResultItem $dataObject): ElementIcon
+    public function getIconForDataObject(DataObjectSearchResultItem|DataObject $dataObject): ElementIcon
     {
-        if ($dataObject->getClassDefinitionIcon() !== null) {
-            return new ElementIcon(ElementIconTypes::PATH->value, $dataObject->getClassDefinitionIcon());
+        $classIcon = $this->getClassIcon($dataObject);
+        if ($classIcon instanceof ElementIcon) {
+            return $classIcon;
         }
 
         $value = match ($dataObject->getType()) {
             ElementTypes::TYPE_OBJECT => 'data-object',
             ElementTypes::TYPE_VARIANT => 'data-object-variant',
             ElementTypes::TYPE_FOLDER => 'folder',
-            default => $this->defaultIcon
+            default => self::DEFAULT_ICON
         };
 
         return new ElementIcon(ElementIconTypes::NAME->value, $value);
@@ -90,5 +115,21 @@ final class IconService implements IconServiceInterface
         }
 
         return new ElementIcon(ElementIconTypes::PATH->value, $iconPath);
+    }
+
+    private function getClassIcon(DataObjectSearchResultItem|DataObject $dataObject): ?ElementIcon
+    {
+        if ($dataObject instanceof Concrete) {
+            $class = $this->getValidClass($this->classDefinitionResolver, $dataObject->getClassId());
+            if ($class->getIcon() !== null) {
+                return new ElementIcon(ElementIconTypes::PATH->value, $class->getIcon());
+            }
+        }
+
+        if ($dataObject->getClassDefinitionIcon() !== null) {
+            return new ElementIcon(ElementIconTypes::PATH->value, $dataObject->getClassDefinitionIcon());
+        }
+
+        return null;
     }
 }

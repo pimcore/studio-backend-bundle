@@ -102,6 +102,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_schedule_description'
 )]
 #[Tag(
+    name: Tags::Search->value,
+    description: 'tag_search_description'
+)]
+#[Tag(
     name: Tags::Settings->value,
     description: 'tag_settings_description'
 )]
@@ -154,6 +158,7 @@ enum Tags: string
     case Notifications = 'Notifications';
     case Properties = 'Properties';
     case Role = 'Role Management';
+    case Search = 'Search';
     case Schedule = 'Schedule';
     case Settings = 'Settings';
     case Tags = 'Tags';

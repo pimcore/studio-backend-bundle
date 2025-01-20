@@ -56,7 +56,7 @@ final class CollectionController extends AbstractApiController
         summary: 'property_get_collection_summary',
         tags: [Tags::Properties->name]
     )]
-    #[ElementTypeParameter(false, null)]
+    #[ElementTypeParameter(false)]
     #[FilterParameter]
     #[SuccessResponse(
         description: 'property_get_collection_success_response',

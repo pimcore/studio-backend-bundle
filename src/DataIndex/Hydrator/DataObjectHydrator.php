@@ -41,6 +41,8 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
             $dataObject->getFullPath(),
             $this->permissionsHydrator->hydrate($dataObject->getPermissions()),
             $dataObject->getIndex(),
+            $dataObject->getChildrenSortBy(),
+            $dataObject->getChildrenSortOrder(),
             $dataObject->getId(),
             $dataObject->getParentId(),
             $dataObject->getPath(),

@@ -28,8 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 #[Schema(
     schema: 'Document',
     title: 'Document',
-    required: [
-    ],
+    required: ['id'],
     type: 'object'
 )]
 final class Document extends Element implements AdditionalAttributesInterface

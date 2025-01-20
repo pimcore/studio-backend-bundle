@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'User Information',
     description: 'Information about the user',
-    required: ['username', 'permissions', 'isAdmin'],
+    required: ['id', 'username', 'permissions', 'isAdmin'],
     type: 'object'
 )]
 final class UserInformation implements AdditionalAttributesInterface
@@ -36,6 +36,8 @@ final class UserInformation implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
+        #[Property(description: 'User ID', type: 'integer', example: 1)]
+        private readonly int $id,
         #[Property(description: 'Username', type: 'string', example: 'admin')]
         private readonly string $username,
         #[Property(
@@ -49,6 +51,11 @@ final class UserInformation implements AdditionalAttributesInterface
     ) {
     }
 
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
     public function getPermissions(): array
     {
         return $this->permissions;
@@ -59,7 +66,7 @@ final class UserInformation implements AdditionalAttributesInterface
         return $this->username;
     }
 
-    public function hasIsAdmin(): bool
+    public function getIsAdmin(): bool
     {
         return $this->isAdmin;
     }

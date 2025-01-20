@@ -58,6 +58,7 @@ class Configuration implements ConfigurationInterface
         $this->addNoteTypes($rootNode);
         $this->addDataObjectAdapterMapping($rootNode);
         $this->addUserNode($rootNode);
+        $this->addServerNode($rootNode);
 
         return $treeBuilder;
     }
@@ -300,6 +301,27 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('alt')->defaultFalse()->end()
                             ->scalarNode('ctrl')->defaultFalse()->end()
                             ->scalarNode('shift')->defaultFalse()->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addServerNode(ArrayNodeDefinition $node): void
+    {
+        $node
+            ->children()
+                ->arrayNode('open_api_servers')
+                    ->arrayPrototype() // Allows multiple server entries
+                        ->children()
+                            ->scalarNode('url')
+                                ->isRequired() // Ensure each server has a URL
+                                ->info('The URL to the server.')
+                            ->end()
+                            ->scalarNode('description')
+                                ->isRequired() // Ensure each server has a description
+                                ->info('A description of the server.')
+                            ->end()
                         ->end()
                     ->end()
                 ->end()

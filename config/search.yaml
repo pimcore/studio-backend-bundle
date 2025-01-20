@@ -1,0 +1,33 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Search\Controller\:
+    resource: '../src/Search/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Hydrator
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\SimpleSearchHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\SimpleSearchHydrator
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Search\Repository\SearchRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Repository\SearchRepository
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Search\Service\SearchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Service\SearchService
