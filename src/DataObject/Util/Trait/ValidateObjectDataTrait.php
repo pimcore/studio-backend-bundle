@@ -57,8 +57,8 @@ trait ValidateObjectDataTrait
      */
     private function getValidClass(
         ClassDefinitionResolverInterface $classDefinitionResolver,
-        string $classId): ClassDefinition
-    {
+        string $classId
+    ): ClassDefinition {
         try {
             $class = $classDefinitionResolver->getById($classId);
         } catch (Exception $exception) {
