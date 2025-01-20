@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
 
 final class DocumentVersionEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.document_version';
+    public const string EVENT_NAME = 'pre_response.document_version';
 
     public function __construct(
         private readonly DocumentVersion $version
