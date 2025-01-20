@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Schema\ExecutionEngine;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
@@ -46,7 +47,12 @@ final readonly class Finished
         private int $ownerId,
         #[Property(description: 'status', type: 'string', example: JobRunStates::FINISHED->value)]
         private string $status,
-        #[Property(description: 'messages', type: 'list', example: ['Something went wrong'])]
+        #[Property(
+            description: 'messages',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: ['Something went wrong']
+        )]
         private array $messages = [],
         #[Property(description: 'notifyAll', type: 'boolean', example: false)]
         private bool $notifyAll = false,

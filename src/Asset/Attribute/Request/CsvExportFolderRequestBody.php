@@ -51,7 +51,7 @@ final class CsvExportFolderRequestBody extends RequestBody
                         new Property(property: StepConfig::SETTINGS_DELIMITER->value, type: 'string', example: ';'),
                         new Property(
                             property: StepConfig::SETTINGS_HEADER->value,
-                            type: 'enum',
+                            type: 'string',
                             enum: StepConfig::values(),
                             example: StepConfig::SETTINGS_HEADER_TITLE->value
                         ),

@@ -41,8 +41,8 @@ final class CustomSettings implements AdditionalAttributesInterface
         #[Property(
             description: 'dynamic custom settings - can be any key-value pair',
             type: 'array',
-            items: new Items(),
-            example: '{ imageWidth: 1280, imageHeight: 720 }')
+            items: new Items(type: 'object'),
+            example: '[{ imageWidth: 1280 }, { imageHeight: 720 }]')
         ]
         private readonly array $dynamicCustomSettings = [],
     ) {

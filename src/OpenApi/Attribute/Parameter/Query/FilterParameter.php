@@ -30,7 +30,7 @@ final class FilterParameter extends OpenApiQueryParameter
             description: 'Filter for ' . $filterFor,
             in: 'query',
             required: false,
-            schema: new Schema(type: 'string', example: null),
+            schema: new Schema(type: 'string', example: $filterFor),
         );
     }
 }

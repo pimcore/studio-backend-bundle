@@ -35,7 +35,7 @@ final readonly class ElementIcon
     public function __construct(
         #[Property(
             description: 'Icon type',
-            type: 'enum',
+            type: 'string',
             enum: ElementIconTypes::class,
             example: ElementIconTypes::PATH->value
         )]

@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
 use OpenApi\Attributes\AdditionalProperties;
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use function array_key_exists;
@@ -36,7 +35,6 @@ trait AdditionalAttributesTrait
                 new Schema(type: 'number'),
                 new Schema(type: 'boolean'),
                 new Schema(type: 'object'),
-                new Schema(type: 'array', items: new Items()),
             ]
         )
     )]

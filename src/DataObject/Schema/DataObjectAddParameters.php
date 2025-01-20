@@ -34,7 +34,7 @@ final readonly class DataObjectAddParameters
         private string $classId,
         #[Property(
             description: 'Type',
-            type: 'enum',
+            type: 'string',
             enum: [AbstractObject::OBJECT_TYPE_OBJECT, AbstractObject::OBJECT_TYPE_VARIANT],
             example: AbstractObject::OBJECT_TYPE_OBJECT
         )]
