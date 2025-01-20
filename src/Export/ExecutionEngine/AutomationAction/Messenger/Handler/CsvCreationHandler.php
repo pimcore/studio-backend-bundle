@@ -68,7 +68,6 @@ final class CsvCreationHandler extends AbstractHandler
         try {
             $this->csvService->createExportFile(
                 $jobRun->getId(),
-                "",
                 $columns,
                 $csvData,
                 $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,

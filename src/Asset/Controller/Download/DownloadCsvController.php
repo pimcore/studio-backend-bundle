@@ -19,12 +19,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -77,8 +77,8 @@ final class DownloadCsvController extends AbstractApiController
     {
         return $this->downloadService->downloadResourceByJobRunId(
             $jobRunId,
-            ExportServiceInterface::CSV_FILE_NAME,
-            ExportServiceInterface::CSV_FOLDER_NAME,
+            CsvExportService::CSV_FILE_NAME,
+            CsvExportService::CSV_FOLDER_NAME,
             MimeTypes::CSV->value,
             'assets.csv'
         );
