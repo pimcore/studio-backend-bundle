@@ -39,12 +39,8 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
     public function __construct(
         #[Property(description: 'Key', type: 'string', example: 'Giulietta')]
         private readonly string $key,
-        #[Property(description: 'Class name', type: 'string', example: 'car')]
-        private readonly ?string $className = null,
         #[Property(description: 'Type', type: 'string', example: 'image')]
         private readonly string $type,
-        #[Property(description: 'Published', type: 'bool', example: false)]
-        private readonly ?bool $published = null,
         #[Property(description: 'Has children', type: 'bool', example: false)]
         private readonly bool $hasChildren,
         #[Property(description: 'Full path', type: 'string', example: '/path/to/dataObject')]
@@ -61,6 +57,10 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
         bool $isLocked,
         ?int $creationDate,
         ?int $modificationDate,
+        #[Property(description: 'Class name', type: 'string', example: 'car')]
+        private readonly ?string $className = null,
+        #[Property(description: 'Published', type: 'bool', example: false)]
+        private readonly ?bool $published = null,
         #[Property(description: 'Detail object data', type: 'object', example: ['fieldKey' => 'field value'])]
         private array $objectData = [],
     ) {
@@ -121,10 +121,5 @@ final class DataObjectVersion extends Element implements AdditionalAttributesInt
     public function getObjectData(): array
     {
         return $this->objectData;
-    }
-
-    public function getFilename(): string
-    {
-        return $this->key;
     }
 }
