@@ -27,7 +27,7 @@ final class OpenApiServiceTest extends Unit
         $openApiService = new OpenApiService([]);
         $config = $openApiService->getConfig();
 
-        $this->assertSame('3.0.0', $config->openapi);
+        $this->assertSame('3.1.0', $config->openapi);
     }
 
     public function getConfigTestWithCustomPaths(): void
@@ -37,7 +37,7 @@ final class OpenApiServiceTest extends Unit
         ]);
         $config = $openApiService->getConfig();
 
-        $this->assertSame('3.0.0', $config->openapi);
+        $this->assertSame('3.1.0', $config->openapi);
     }
 
     public function getConfigTestWithCustomPathsException(): void

@@ -78,7 +78,7 @@ class Layout implements AdditionalAttributesInterface
         private readonly ?string $bodyStyle = null,
         #[Property(description: 'Locked', type: 'bool', example: false)]
         private readonly bool $locked = false,
-        #[Property(description: 'Children', type: 'array', items: new Items(), example: '[]')]
+        #[Property(description: 'Children', type: 'array', items: new Items(type: 'object'), example: '[{id: 1}]')]
         private readonly array $children = [],
         #[Property(description: 'Icon', type: ElementIcon::class)]
         private readonly ?ElementIcon $icon = null,

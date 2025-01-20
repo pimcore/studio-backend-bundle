@@ -49,7 +49,7 @@ final readonly class AllowedTransition
         #[Property(
             description: 'notes',
             type: 'array',
-            items: new Items(),
+            items: new Items(type: 'object'),
             example: ['commentEnabled' => true, 'commentRequired' => true],
         )]
         private array $notes = [],

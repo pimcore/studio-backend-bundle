@@ -34,7 +34,7 @@ final readonly class FixedCustomSettings
         #[Property(
             description: 'embedded meta data of the asset - array of any key-value pairs',
             type: 'array',
-            items: new Items(),
+            items: new Items(type: 'object'),
             example: '{ FileSize: "265 KiB", MIMEType: "image/jpeg" }'
         )]
         private array $embeddedMetadata = [],

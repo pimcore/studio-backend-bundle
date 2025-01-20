@@ -38,7 +38,7 @@ final readonly class SendNotificationParameters
         private string $message,
         #[Property(
             description: 'type of the attachment',
-            type: 'enum',
+            type: 'string',
             enum: [
                 ElementTypes::TYPE_ASSET,
                 ElementTypes::TYPE_DOCUMENT,

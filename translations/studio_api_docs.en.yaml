@@ -427,6 +427,12 @@ schedule_update_for_element_by_type_and_id_description: |
   See the full description of updatable fields with the schema <strong>UpdateSchedule</strong>
 schedule_update_for_element_by_type_and_id_success_response: List of updated schedules
 schedule_update_for_element_by_type_and_id_summary: Update schedules for an element
+simple_search_get_description: |
+  Search for elements based on the given <strong>{search term}</strong>. <br>
+  Elements are searched with the fulltext filter applied via Generic Data Index. <br>
+simple_search_get_search_term_parameter: Search term
+simple_search_get_success_response: Search results for elements
+simple_search_get_summary: Search for elements
 system_settings_get_description: |
   Get system settings from different providers. <br>
   System settings are public and need no login.
@@ -485,6 +491,7 @@ tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications
 tag_properties_description: Property operations to get/update/create/delete properties
 tag_role_description: Role Management operations
+tag_search_description: Operations to get search configuration, search elements and get search result previews
 tag_schedule_description: Get schedules for an element
 tag_settings_description: Get System Settings
 tag_tags_description: Tag operations to get/list/create/update/delete tags

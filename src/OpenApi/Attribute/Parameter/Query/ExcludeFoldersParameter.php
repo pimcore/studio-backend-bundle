@@ -30,7 +30,7 @@ final class ExcludeFoldersParameter extends QueryParameter
             description: 'Filter folders from result.',
             in: 'query',
             required: false,
-            schema: new Schema(type: 'boolean', example: null),
+            schema: new Schema(type: 'boolean', example: false),
         );
     }
 }

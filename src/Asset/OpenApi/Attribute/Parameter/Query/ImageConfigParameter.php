@@ -23,13 +23,13 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class ImageConfigParameter extends QueryParameter
 {
-    public function __construct(string $name, mixed $defaultValue = null)
+    public function __construct(string $name, mixed $example = null)
     {
         parent::__construct(
             name: $name,
             description: ucfirst($name) . ' of downloaded image',
             in: 'query',
-            schema: new Schema(type: 'integer', example: $defaultValue),
+            schema: new Schema(type: 'integer', example: $example),
         );
     }
 }

@@ -30,7 +30,7 @@ final class PathParameter extends QueryParameter
             description: 'Filter by path.',
             in: 'query',
             required: false,
-            schema: new Schema(type: 'string', example: null),
+            schema: new Schema(type: 'string', example: '/path/to/folder'),
 
         );
     }
