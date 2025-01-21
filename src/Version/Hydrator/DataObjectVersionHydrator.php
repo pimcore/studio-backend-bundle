@@ -45,9 +45,7 @@ final readonly class DataObjectVersionHydrator implements DataObjectVersionHydra
 
         $hydratedDataObject = new DataObjectVersion(
             $dataObject->getKey(),
-            $className,
             $dataObject->getType(),
-            $published,
             $dataObject->hasChildren(),
             $dataObject->getFullPath(),
             $dataObject->getIndex(),
@@ -60,7 +58,9 @@ final readonly class DataObjectVersionHydrator implements DataObjectVersionHydra
             $dataObject->getLocked(),
             $dataObject->isLocked(),
             $dataObject->getCreationDate(),
-            $dataObject->getModificationDate()
+            $dataObject->getModificationDate(),
+            $className,
+            $published
         );
 
         $this->dataService->setObjectDetailData($hydratedDataObject, $dataObject);

@@ -36,7 +36,7 @@ final readonly class EmailLogRepository implements EmailLogRepositoryInterface
 
     public function getListing(
         CollectionParameters $parameters,
-        string $email = null,
+        ?string $email = null,
     ): Listing {
         $limit = $parameters->getPageSize();
         $listing = new Listing();
