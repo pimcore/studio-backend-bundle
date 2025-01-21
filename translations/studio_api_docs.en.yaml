@@ -679,4 +679,8 @@ custom_reports_chart_success_response: Chart data as JSON. The actual data depen
 custom_reports_chart_sort_by_parameter: Sort by column parameter
 custom_reports_chart_report_limit_parameter: Limit of the report data
 custom_reports_chart_report_offset_parameter: Offset of the report data
+data_object_format_path_description: |
+  Format the path of the data given by the <strong>{targets}</strong> option.
+data_object_format_path_summary: Format the path of the data
+data_object_format_path_success_response: Formatted path of the objects
 

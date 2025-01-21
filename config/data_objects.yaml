@@ -50,11 +50,17 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsService
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PathFormatterServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PathFormatterService
+
   #
   # Legacy Services
   #
   Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\ApplyChangesHelperInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\ApplyChangesHelper
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PathFormatterHelperInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PathFormatterHelper
 
 
   #
@@ -62,6 +68,9 @@ services:
   #
   Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\FormatedPathHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\FormatedPathHydrator
 
 
   #
