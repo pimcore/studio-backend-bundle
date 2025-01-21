@@ -36,7 +36,9 @@ final class PathFormatterRequestBody extends RequestBody
                     new Property(
                         property: 'targets',
                         type: 'object',
-                        example: '{"object_10":{"id":10,"type":"object","label":"/Product Data/Cars/jaguar/E-Type/coupé","path":"/Product Data/Cars/jaguar/E-Type/coupé","nicePathKey":"object_10"}}'
+                        example: '{"object_10":{"id":10,"type":"object","label":"/Product 
+                        Data/Cars/jaguar/E-Type/coupé","path":"/Product Data/Cars/jaguar/E-Type/coupé",
+                        "nicePathKey":"object_10"}}'
                     ),
                     new Property(
                         property: 'context',
