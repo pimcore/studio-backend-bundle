@@ -46,9 +46,9 @@ asset_custom_settings_get_by_id_description: |
   Retrieves custom settings based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset
 asset_custom_settings_get_by_id_success_response: Successfully retrieved custom settings as JSON
 asset_custom_settings_get_by_id_summary: Get custom settings of an asset by ID
-asset_delete_csv_description: |
+export_delete_csv_description: |
   Delete the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
-asset_delete_csv_summary: Delete asset CSV file based on jobRunId
+export_delete_csv_summary: Delete asset CSV file based on jobRunId
 asset_delete_zip_description: |
   Delete the ZIP file with given <strong>{jobRunId}</strong> returned in the response of the create zip endpoint
 asset_delete_zip_summary: Delete asset ZIP file based on jobRunId
@@ -60,10 +60,10 @@ asset_download_by_id_description: |
   Download the original asset stream based on the provided <strong>{id}</strong>
 asset_download_by_id_success_response: Original asset binary file
 asset_download_by_id_summary: Download asset by ID
-asset_download_csv_description: |
+export_download_csv_description: |
   Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
-asset_download_csv_success_response: CSV File as attachment
-asset_download_csv_summary: Download CSV file for assets
+export_download_csv_success_response: CSV File as attachment
+export_download_csv_summary: Download CSV file for job run id
 asset_download_zip_description: |
   Download the ZIP archive with assets based on the given <strong>{jobRunId}</strong> returned in the response of the create zip endpoint
 asset_download_zip_success_response: ZIP archive as attachment
@@ -684,7 +684,7 @@ custom_report_export_csv_summary: Export report data as CSV
 custom_report_export_csv_created_response: Successfully created <strong>jobRun</strong> for csv export
 custom_report_export_csv_description: |
   Creating the CSV file for custom reports. <br> Parameters are: <ul>
-    <li><strong>name</strong>: Name of cusotm report</li>    
+    <li><strong>name</strong>: Name of custom report</li>    
     <li><strong>sortOrder</strong>: Sort order (ASC/DESC)</li>
     <li><strong>sortBy</strong>: Column name to sort the data by</li>
     <li><strong>filter</strong>: Filter to filter the data</li>

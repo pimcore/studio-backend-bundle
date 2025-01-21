@@ -17,18 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use Exception;
-use League\Flysystem\FilesystemException;
-use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\FormatTypes;
@@ -41,7 +34,6 @@ use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function in_array;
-use function sprintf;
 
 /**
  * @internal
@@ -53,7 +45,6 @@ final readonly class DownloadService implements DownloadServiceInterface
 
     public function __construct(
         private ExecutionEngineServiceInterface $executionEngineService,
-        private StorageServiceInterface $storageService,
         private ThumbnailServiceInterface $thumbnailService,
         private array $defaultFormats,
     ) {
@@ -144,89 +135,5 @@ final readonly class DownloadService implements DownloadServiceInterface
             $image,
             false
         );
-    }
-
-    /**
-     * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
-     */
-    public function downloadResourceByJobRunId(
-        int $jobRunId,
-        string $tempFileName,
-        string $tempFolderName,
-        string $mimeType,
-        string $downloadName,
-    ): StreamedResponse {
-        $this->executionEngineService->validateJobRun($jobRunId);
-        $fileName = $this->getTempFileName($jobRunId, $tempFileName);
-        $folderName = $this->getTempFileName($jobRunId, $tempFolderName);
-        $filePath = $folderName . '/' . $fileName;
-
-        $streamedResponse = $this->getFileStreamedResponse(
-            $filePath,
-            $mimeType,
-            $downloadName,
-            $this->validateStorage($filePath, $jobRunId)
-        );
-
-        try {
-            $this->storageService->cleanUpFolder($folderName);
-        } catch (FilesystemException) {
-            throw new EnvironmentException(
-                sprintf(
-                    'Failed to clean up temporary folder %s',
-                    $folderName
-                )
-            );
-        }
-
-        return $streamedResponse;
-    }
-
-    /**
-     * @throws EnvironmentException|NotFoundException
-     */
-    public function cleanupDataByJobRunId(
-        int $jobRunId,
-        string $folderName,
-        string $fileName
-    ): void {
-        $this->executionEngineService->validateJobRun($jobRunId);
-        $this->validateStorage($this->getTempFilePath($jobRunId, $folderName . '/' . $fileName), $jobRunId);
-
-        try {
-            $this->storageService->cleanUpFolder(
-                $this->getTempFileName(
-                    $jobRunId,
-                    $folderName
-                ),
-                true
-            );
-        } catch (FilesystemException $e) {
-            throw new EnvironmentException(
-                sprintf(
-                    'Failed to delete file based on jobRunId %d: %s',
-                    $jobRunId,
-                    $e->getMessage()
-                ),
-            );
-        }
-    }
-
-    /**
-     * @throws EnvironmentException
-     */
-    private function validateStorage(string $filePath, int $jobRunId): FilesystemOperator
-    {
-        $storage = $this->storageService->getTempStorage();
-        if (!$this->storageService->tempFileExists($filePath)) {
-            throw new EnvironmentException(
-                sprintf(
-                    'Resource not found for jobRun with Id %d',
-                    $jobRunId
-                )
-            );
-        }
-
-        return $storage;
     }
 }

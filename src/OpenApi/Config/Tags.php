@@ -152,6 +152,7 @@ enum Tags: string
     case Elements = 'Elements';
     case ExecutionEngine = 'Execution Engine';
     case Emails = 'E-Mails';
+    case Export = 'Export';
     case Mercure = 'Mercure';
     case Metadata = 'Metadata';
     case Notes = 'Notes';

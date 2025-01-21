@@ -14,11 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Download;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Header\ContentDisposition;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -53,18 +53,19 @@ final class DownloadCsvController extends AbstractApiController
     /**
      * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
      */
-    #[Route('/assets/download/csv/{jobRunId}', name: 'pimcore_studio_api_csv_download_asset', methods: ['GET'])]
+    #[Route('/export/download/csv/{jobRunId}', name: 'pimcore_studio_api_export_download_csv', methods: ['GET'])]
+    //Todo: permissions?
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/download/csv/{jobRunId}',
-        operationId: 'asset_download_csv',
-        description: 'asset_download_csv_description',
-        summary: 'asset_download_csv_summary',
-        tags: [Tags::Assets->name]
+        path: self::PREFIX . '/export/download/csv/{jobRunId}',
+        operationId: 'export_download_csv',
+        description: 'export_download_csv_description',
+        summary: 'export_download_csv_summary',
+        tags: [Tags::Export->value]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
     #[SuccessResponse(
-        description: 'asset_download_csv_success_response',
+        description: 'export_download_csv_success_response',
         content: [new MediaType('application/csv')],
         headers: [new ContentDisposition()]
     )]
@@ -73,14 +74,14 @@ final class DownloadCsvController extends AbstractApiController
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function assetDownloadCsv(int $jobRunId): StreamedResponse
+    public function downloadCsv(int $jobRunId): StreamedResponse
     {
         return $this->downloadService->downloadResourceByJobRunId(
             $jobRunId,
             CsvExportService::CSV_FILE_NAME,
             CsvExportService::CSV_FOLDER_NAME,
             MimeTypes::CSV->value,
-            'assets.csv'
+            'export.csv'
         );
     }
 }

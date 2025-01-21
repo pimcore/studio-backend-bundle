@@ -14,10 +14,10 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Download;
 
 use OpenApi\Attributes\Delete;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -49,14 +49,15 @@ final class DeleteCsvController extends AbstractApiController
     /**
      * @throws EnvironmentException|ForbiddenException|NotFoundException
      */
-    #[Route('/assets/download/csv/{jobRunId}', name: 'pimcore_studio_api_csv_delete', methods: ['DELETE'])]
+    #[Route('/export/download/csv/{jobRunId}', name: 'pimcore_studio_api_export_delete_csv', methods: ['DELETE'])]
+    //Todo: permissions?
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
-        path: self::PREFIX . '/assets/download/csv/{jobRunId}',
-        operationId: 'asset_delete_csv',
-        description: 'asset_delete_csv_description',
-        summary: 'asset_delete_csv_summary',
-        tags: [Tags::Assets->name]
+        path: self::PREFIX . '/export/download/csv/{jobRunId}',
+        operationId: 'export_delete_csv',
+        description: 'export_delete_csv_description',
+        summary: 'export_delete_csv_summary',
+        tags: [Tags::Export->value]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
     #[SuccessResponse]
@@ -65,7 +66,7 @@ final class DeleteCsvController extends AbstractApiController
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteAssetsCsv(int $jobRunId): Response
+    public function deleteCsv(int $jobRunId): Response
     {
         $this->downloadService->cleanupDataByJobRunId(
             $jobRunId,

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
@@ -34,34 +34,24 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 interface DownloadServiceInterface
 {
+
     /**
-     * @throws InvalidElementTypeException|ElementStreamResourceNotFoundException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
      */
-    public function downloadAsset(
-        Asset $asset
+    public function downloadResourceByJobRunId(
+        int $jobRunId,
+        string $tempFileName,
+        string $tempFolderName,
+        string $mimeType,
+        string $downloadName,
     ): StreamedResponse;
 
     /**
-     * @throws InvalidElementTypeException|ThumbnailResizingFailedException
+     * @throws EnvironmentException|NotFoundException
      */
-    public function downloadCustomImage(
-        Asset $image,
-        ImageDownloadConfigParameter $parameters
-    ): BinaryFileResponse;
-
-    /**
-     * @throws InvalidElementTypeException|InvalidAssetFormatTypeException|ThumbnailResizingFailedException
-     */
-    public function downloadImageByFormat(
-        Asset $image,
-        string $format
-    ): BinaryFileResponse;
-
-    /**
-     * @throws InvalidElementTypeException
-     */
-    public function downloadImageByThumbnail(
-        Asset $image,
-        string $thumbnailName
-    ): BinaryFileResponse;
+    public function cleanupDataByJobRunId(
+        int $jobRunId,
+        string $folderName,
+        string $fileName
+    ): void;
 }
