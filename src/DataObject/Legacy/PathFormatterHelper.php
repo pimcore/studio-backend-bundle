@@ -14,8 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
-
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface as FieldCollectionDefinitionResolverInterface;
@@ -31,14 +29,12 @@ use Pimcore\Model\DataObject\Concrete;
  *
  * @internal
  */
-
 final readonly class PathFormatterHelper implements PathFormatterHelperInterface
 {
     public function __construct(
         private ObjectBrickDefinitionResolverInterface $objectBrickDefinitionResolver,
         private FieldCollectionDefinitionResolverInterface $fieldCollectionDefinitionResolver
-    )
-    {
+    ) {
     }
 
     public function getPathFormatterFieldDefinition(Concrete $source, array $context): Data|bool|null

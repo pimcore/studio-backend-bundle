@@ -14,8 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
-
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
@@ -35,15 +33,13 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final readonly class PathFormatterService implements PathFormatterServiceInterface
 {
-
     public function __construct(
         private ConcreteObjectResolverInterface $concreteObjectResolver,
         private PathFormatterHelperInterface $pathFormatterHelper,
         private FormatedPathHydratorInterface $formatedPathHydrator,
         private EventDispatcherInterface $eventDispatcher,
         private \Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper\PathFormatterResolverInterface $pathFormatterResolver
-    )
-    {
+    ) {
     }
 
     public function formatPath(PathFormatterParameter $parameter): array
@@ -92,7 +88,7 @@ final readonly class PathFormatterService implements PathFormatterServiceInterfa
 
         $pathFormatter = $this->pathFormatterResolver->resolvePathFormatter($formatterClass);
 
-        if(!$pathFormatter instanceof PathFormatterInterface) {
+        if (!$pathFormatter instanceof PathFormatterInterface) {
             throw new InvalidArgumentException('PathFormatter is not an instance of PathFormatterInterface');
         }
 
@@ -101,5 +97,4 @@ final readonly class PathFormatterService implements PathFormatterServiceInterfa
             'context' => $context,
         ]);
     }
-
 }
