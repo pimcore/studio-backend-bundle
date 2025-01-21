@@ -120,7 +120,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         Concrete $element,
         Block $fieldDefinition,
         array $blockData,
-        FieldContextData $contextData = null
+        ?FieldContextData $contextData = null
     ): array {
         $resultBlockData = [];
         foreach ($blockData as $rawBlockElement) {
@@ -143,7 +143,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         Concrete $element,
         Block $fieldDefinition,
         array $rawBlockElement,
-        FieldContextData $contextData = null
+        ?FieldContextData $contextData = null
     ): array {
         $resultElement = [];
         $blockElement = $rawBlockElement['data'] ?? null;

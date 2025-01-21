@@ -46,7 +46,7 @@ final readonly class BlocklistService implements BlocklistServiceInterface
 
     public function listEntries(
         CollectionParameters $parameters,
-        string $email = null,
+        ?string $email = null,
     ): Collection {
         $list = [];
         $listing = $this->blocklistRepository->getListing($parameters, $email);
