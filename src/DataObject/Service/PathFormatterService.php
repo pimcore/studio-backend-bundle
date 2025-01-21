@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper\PathFormatterResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\FormatedPathEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\FormatedPathHydratorInterface;
@@ -27,7 +28,6 @@ use Pimcore\Model\DataObject\ClassDefinition\PathFormatterAwareInterface;
 use Pimcore\Model\DataObject\ClassDefinition\PathFormatterInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper\PathFormatterResolverInterface;
 
 /**
  * @internal
