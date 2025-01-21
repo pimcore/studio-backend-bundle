@@ -33,6 +33,7 @@ trait RelationDataTrait
 
     /**
      * @param ElementInterface[] $relations
+     *
      * @return RelationData[]
      */
     private function getRelationElementsData(array $relations): array

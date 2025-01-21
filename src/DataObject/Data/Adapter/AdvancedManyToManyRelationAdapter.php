@@ -66,8 +66,7 @@ final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInte
     public function normalize(
         mixed $value,
         Data $fieldDefinition
-    ): ?array
-    {
+    ): ?array {
         if (!is_array($value)) {
             return null;
         }

@@ -64,8 +64,7 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
     public function normalize(
         mixed $value,
         Data $fieldDefinition
-    ): ?array
-    {
+    ): ?array {
         if (!is_array($value)) {
             return null;
         }
