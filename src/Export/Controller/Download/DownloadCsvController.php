@@ -54,8 +54,6 @@ final class DownloadCsvController extends AbstractApiController
      * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
      */
     #[Route('/export/download/csv/{jobRunId}', name: 'pimcore_studio_api_export_download_csv', methods: ['GET'])]
-    //Todo: permissions?
-    #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
         path: self::PREFIX . '/export/download/csv/{jobRunId}',
         operationId: 'export_download_csv',
