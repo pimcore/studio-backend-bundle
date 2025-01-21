@@ -33,7 +33,7 @@ interface BlocklistRepositoryInterface
 
     public function getListing(
         CollectionParameters $parameters,
-        string $email = null,
+        ?string $email = null,
     ): Listing;
 
     /**

@@ -14,26 +14,26 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\FormatedPath;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 
-final class DataObjectVersionEvent extends AbstractPreResponseEvent
+final class FormatedPathEvent extends AbstractPreResponseEvent
 {
-    public const string EVENT_NAME = 'pre_response.data_object_version';
+    public const EVENT_NAME = 'pre_response.data_object.formated_path';
 
     public function __construct(
-        private readonly DataObjectVersion $version
+        private readonly FormatedPath $formatedPath
     ) {
-        parent::__construct($version);
+        parent::__construct($this->formatedPath);
     }
 
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getVersion(): DataObjectVersion
+    public function getFormatedPath(): FormatedPath
     {
-        return $this->version;
+        return $this->formatedPath;
     }
 }

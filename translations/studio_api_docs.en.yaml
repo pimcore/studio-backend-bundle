@@ -103,10 +103,10 @@ asset_get_tree_summary: Get all asset data for the tree
 asset_image_create_thumbnail_description: |
   Create a new image thumbnail based on the provided <strong>{id}</strong> and configuration parameters. <br> 
   The <strong>{id}</strong> must be an ID of existing asset image
-asset_image_clear_thumbnail_summary: Clear image thumbnail by ID
-asset_image_clear_thumbnail_description: |
+asset_clear_thumbnail_summary: Clear image thumbnail by ID
+asset_clear_thumbnail_description: |
     Clear the image thumbnail based on the provided <strong>{id}</strong>. <br> 
-    The <strong>{id}</strong> must be an ID of existing asset image
+    The <strong>{id}</strong> must be an ID of an existing asset image, video or pdf
 asset_image_download_by_format_success_response: Image asset binary file based on format
 asset_image_download_by_format_summary: Download image asset by ID and format
 asset_image_download_by_thumbnail_description: |
@@ -693,3 +693,8 @@ custom_report_export_csv_description: |
     <li><strong>includeHeaders</strong>: Include headers</li>
     </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong>. <br> 
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
+data_object_format_path_description: |
+  Format the path of the data given by the <strong>{targets}</strong> option.
+data_object_format_path_summary: Format the path of the data
+data_object_format_path_success_response: Formatted path of the objects
+

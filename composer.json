@@ -29,13 +29,13 @@
     "lcobucci/jwt": "^5.3"
   },
   "require-dev": {
-    "pimcore/admin-ui-classic-bundle": "^v1.3",
+    "pimcore/admin-ui-classic-bundle": "2.x-dev",
     "codeception/codeception": "^5.0.10",
     "roave/security-advisories": "dev-latest",
     "codeception/phpunit-wrapper": "^9",
     "codeception/module-asserts": "^2",
     "codeception/module-symfony": "^3.1.1",
-    "phpstan/phpstan": "1.10.5",
+    "phpstan/phpstan": "1.12.15",
     "phpstan/phpstan-symfony": "^1.2.20",
     "phpunit/phpunit": "10.2.7",
     "nyholm/psr7": "^1",

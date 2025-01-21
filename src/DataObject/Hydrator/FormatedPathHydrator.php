@@ -14,23 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
-use Pimcore\Model\UserInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\FormatedPath;
 
 /**
  * @internal
  */
-final class UserInformationHydrator implements UserInformationHydratorInterface
+final class FormatedPathHydrator implements FormatedPathHydratorInterface
 {
-    public function hydrate(UserInterface $user): UserInformation
+    public function hydrate(string|int $objectReference, int|string $path): FormatedPath
     {
-        return new UserInformation(
-            $user->getId(),
-            $user->getUsername(),
-            $user->getPermissions(),
-            $user->isAdmin()
-        );
+        return new FormatedPath($objectReference, $path);
     }
 }

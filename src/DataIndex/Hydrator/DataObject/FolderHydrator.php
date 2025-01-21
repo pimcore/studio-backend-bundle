@@ -40,6 +40,8 @@ final readonly class FolderHydrator implements FolderHydratorInterface
             $item->getFullPath(),
             $this->permissionsHydrator->hydrate($item->getPermissions()),
             $item->getIndex(),
+            $item->getChildrenSortBy(),
+            $item->getChildrenSortOrder(),
             $item->getId(),
             $item->getParentId(),
             $item->getPath(),

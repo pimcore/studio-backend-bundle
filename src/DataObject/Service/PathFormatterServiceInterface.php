@@ -14,23 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
-use Pimcore\Model\Document;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PathFormatterParameter;
 
 /**
  * @internal
  */
-final readonly class DocumentVersionHydrator
+interface PathFormatterServiceInterface
 {
-    public function hydrate(
-        Document $document
-    ): DocumentVersion {
-        return new DocumentVersion(
-            $document->getModificationDate(),
-            $document->getRealFullPath(),
-            $document->isPublished(),
-        );
-    }
+    public function formatPath(PathFormatterParameter $parameter): array;
 }

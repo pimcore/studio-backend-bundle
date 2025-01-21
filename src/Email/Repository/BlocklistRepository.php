@@ -44,7 +44,7 @@ final readonly class BlocklistRepository implements BlocklistRepositoryInterface
 
     public function getListing(
         CollectionParameters $parameters,
-        string $email = null,
+        ?string $email = null,
     ): Listing {
         $limit = $parameters->getPageSize();
         $listing = new Listing();
