@@ -20,7 +20,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
-use PImcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\Util\JobSteps as CustomReportJobSteps;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\Util\JobSteps as CustomReportJobSteps;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
@@ -40,10 +40,9 @@ final readonly class CsvService implements CsvServiceInterface
     ) {
     }
 
-    public function generateCsvFile(string $reportName, ExportParameter $exportParameter): int
+    public function generateCsvFile(ExportParameter $exportParameter): int
     {
         $collectionSettings = [
-            StepConfig::CUSTOM_REPORT_TO_EXPORT->value => $reportName,
             StepConfig::CUSTOM_REPORT_CONFIG->value => $exportParameter,
         ];
 

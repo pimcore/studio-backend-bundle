@@ -53,13 +53,13 @@ final class CsvCollectionHandler extends AbstractHandler
         if (!$this->shouldBeExecuted($jobRun)) {
             return;
         }
-
-        $name = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_TO_EXPORT->value);
+        $name = '';
 
         try {
             $exportParameter = ExportParameter::fromArray(
                 $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_CONFIG->value)
             );
+            $name = $exportParameter->getName();
             $reportConfig = $this->customReportService->getCustomReportByName($name);
             $exportFields = $this->customReportService->getFieldsForExport($reportConfig);
             $reportData = $this->customReportAdapterService->getData(
@@ -92,12 +92,6 @@ final class CsvCollectionHandler extends AbstractHandler
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(StepConfig::CUSTOM_REPORT_TO_EXPORT->value);
-        $this->stepConfiguration->setAllowedTypes(
-            StepConfig::CUSTOM_REPORT_TO_EXPORT->value,
-            StepConfig::CONFIG_TYPE_STRING->value
-        );
-
         $this->stepConfiguration->setRequired(StepConfig::CUSTOM_REPORT_CONFIG->value);
         $this->stepConfiguration->setAllowedTypes(
             StepConfig::CUSTOM_REPORT_CONFIG->value,

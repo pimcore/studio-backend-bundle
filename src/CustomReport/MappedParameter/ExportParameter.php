@@ -25,6 +25,7 @@ use function in_array;
 final readonly class ExportParameter
 {
     public function __construct(
+        private string $name,
         private ?array $filters = null,
         private ?array $drillDownFilters = null,
         private ?string $sortOrder = null,
@@ -43,18 +44,19 @@ final readonly class ExportParameter
         return $this->sortOrder;
     }
 
-    public static function fromArray(mixed $extractConfigFieldFromJobStepConfig): self
+    public static function fromArray(array $data): self
     {
         return new self(
-            filters: $extractConfigFieldFromJobStepConfig['filters'] ?? null,
-            drillDownFilters: $extractConfigFieldFromJobStepConfig['drillDownFilters'] ?? null,
-            sortOrder: $extractConfigFieldFromJobStepConfig['sortOrder'] ?? null,
-            sortBy: $extractConfigFieldFromJobStepConfig['sortBy'] ?? null,
-            reportOffset: $extractConfigFieldFromJobStepConfig['reportOffset'] ?? null,
-            reportLimit: $extractConfigFieldFromJobStepConfig['reportLimit'] ?? null,
-            fields: $extractConfigFieldFromJobStepConfig['fields'] ?? null,
-            includeHeaders: $extractConfigFieldFromJobStepConfig['includeHeaders'] ?? false,
-            defaultDelimiter: $extractConfigFieldFromJobStepConfig['defaultDelimiter'] ?? null
+            name: $data['name'],
+            filters: $data['filters'] ?? null,
+            drillDownFilters: $data['drillDownFilters'] ?? null,
+            sortOrder: $data['sortOrder'] ?? null,
+            sortBy: $data['sortBy'] ?? null,
+            reportOffset: $data['reportOffset'] ?? null,
+            reportLimit: $data['reportLimit'] ?? null,
+            fields: $data['fields'] ?? null,
+            includeHeaders: $data['includeHeaders'] ?? false,
+            defaultDelimiter: $data['defaultDelimiter'] ?? null
         );
     }
 
@@ -103,5 +105,10 @@ final readonly class ExportParameter
     public function getDefaultDelimiter(): ?string
     {
         return $this->defaultDelimiter;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 }

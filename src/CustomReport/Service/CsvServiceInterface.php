@@ -23,5 +23,5 @@ use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParame
  */
 interface CsvServiceInterface
 {
-    public function generateCsvFile(String $reportName, ExportParameter $exportParameter): int;
+    public function generateCsvFile(ExportParameter $exportParameter): int;
 }

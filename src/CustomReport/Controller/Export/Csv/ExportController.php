@@ -16,9 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller\Export\Csv;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Attribute\Request\CsvExportRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
@@ -34,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CustomReportPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -50,44 +52,16 @@ final class ExportController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/custom-report/export/csv/{name}', name: 'pimcore_studio_api_custom_report_export_csv', methods: ['GET'])]
+    #[Route('/custom-report/export/csv', name: 'pimcore_studio_api_custom_report_export_csv', methods: ['Post'])]
     #[IsGranted(CustomReportPermissions::REPORTS->value)]
-    #[Get(
-        path: self::PREFIX . '/custom-report/export/csv/{name}',
+    #[Post(
+        path: self::PREFIX . '/custom-report/export/csv',
         operationId: 'custom_report_export_csv',
         description: 'custom_report_export_csv_description',
         summary: 'custom_report_export_csv_summary',
         tags: [Tags::CustomReports->value]
     )]
-    #[NameParameter(
-        name: 'name',
-        description: 'custom_reports_export_csv_name_parameter',
-        example: 'Quality_Attributes'
-    )]
-    #[SortOrderParameter]
-    #[StringParameter(
-        name: 'sortBy',
-        example: '',
-        description: 'custom_reports_export_csv_sort_by_parameter',
-        required: false
-    )]
-    #[FilterParameter('chart data', example: '')]
-    #[IntParameter(
-        name: 'reportOffset',
-        description: 'custom_reports_export_csv_report_offset_parameter',
-        required: false
-    )]
-    #[IntParameter(
-        name: 'reportLimit',
-        description: 'custom_reports_export_csv_report_limit_parameter',
-        required: false
-    )]
-    #[BoolParameter(
-        name: 'includeHeaders',
-        description: 'custom_reports_export_csv_include_headers_parameter',
-        required: false,
-        example: false
-    )]
+    #[CsvExportRequestBody]
     #[CreatedResponse(
         description: 'custom_report_export_csv_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
@@ -97,12 +71,10 @@ final class ExportController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function exportCsv(
-        string $name,
-        #[MapQueryString] ExportParameter $exportParameter,
+        #[MapRequestPayload] ExportParameter $exportParameter
     ): Response {
         return $this->jsonResponse(
             $this->csvService->generateCsvFile(
-                $name,
                 $exportParameter
             )
         );
