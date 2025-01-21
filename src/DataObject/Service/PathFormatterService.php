@@ -27,6 +27,7 @@ use Pimcore\Model\DataObject\ClassDefinition\PathFormatterAwareInterface;
 use Pimcore\Model\DataObject\ClassDefinition\PathFormatterInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper\PathFormatterResolverInterface;
 
 /**
  * @internal
@@ -38,7 +39,7 @@ final readonly class PathFormatterService implements PathFormatterServiceInterfa
         private PathFormatterHelperInterface $pathFormatterHelper,
         private FormatedPathHydratorInterface $formatedPathHydrator,
         private EventDispatcherInterface $eventDispatcher,
-        private \Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper\PathFormatterResolverInterface $pathFormatterResolver
+        private PathFormatterResolverInterface $pathFormatterResolver
     ) {
     }
 
