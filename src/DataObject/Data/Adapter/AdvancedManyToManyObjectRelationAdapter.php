@@ -17,9 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationMetadataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
@@ -31,8 +35,11 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDataInterface
+final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use RelationDataTrait;
+    use RelationMetadataTrait;
+
     public function __construct(
         private ConcreteObjectResolverInterface $concreteObjectResolver
     ) {
@@ -54,6 +61,27 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
         return $this->buildRelationsMetadata($relationData, $fieldDefinition);
     }
 
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?array
+    {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        $normalizedData = [];
+        foreach ($value as $relation) {
+            if (!$relation instanceof ObjectMetadata) {
+                continue;
+            }
+
+            $normalizedData[] = $this->getAdvancedRelationElementData($relation);
+        }
+
+        return $normalizedData;
+    }
+
     private function buildRelationsMetadata(array $relationData, Data $fieldDefinition): array
     {
         if (!$fieldDefinition instanceof AdvancedManyToManyObjectRelation) {
@@ -62,39 +90,21 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
 
         $relationsMetadata = [];
         foreach ($relationData as $relation) {
-            $object = $this->concreteObjectResolver->getById($relation['id']);
+            if (empty($relation['element']['id']) || $relation['element']['type'] !== ElementTypes::TYPE_OBJECT) {
+                continue;
+            }
+
+            $object = $this->concreteObjectResolver->getById($relation['element']['id']);
             if ($object && $object->getClassName() === $fieldDefinition->getAllowedClassId()) {
-                $relationsMetadata[] = $this->createObjectMetadata($object, $fieldDefinition, $relation);
+                $fieldName = $fieldDefinition->getName();
+                $relationsMetadata[] = $this->addRelationMetadata(
+                    $object,
+                    $relation['data'],
+                    new ObjectMetadata($fieldName, $fieldDefinition->getColumnKeys(), $object)
+                );
             }
         }
 
         return $relationsMetadata;
-    }
-
-    private function createObjectMetadata(
-        Concrete $object,
-        AdvancedManyToManyObjectRelation $fieldDefinition,
-        array $relation,
-    ): ObjectMetadata {
-        $metaData = new ObjectMetadata(
-            $fieldDefinition->getName(),
-            $fieldDefinition->getColumnKeys(),
-            $object
-        );
-        $metaData->_setOwner($object);
-        $metaData->_setOwnerFieldname($fieldDefinition->getName());
-
-        foreach ($fieldDefinition->getColumns() as $column) {
-            $setter = 'set' . ucfirst($column['key']);
-            $value = $relation[$column['key']] ?? null;
-
-            if ($column['type'] === 'multiselect' && is_array($value)) {
-                $value = implode(',', $value);
-            }
-
-            $metaData->$setter($value);
-        }
-
-        return $metaData;
     }
 }
