@@ -111,7 +111,8 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         return $reportDetails;
     }
 
-    public function getFieldsForExport(Config $reportConfig): array {
+    public function getFieldsForExport(Config $reportConfig): array
+    {
         $columns = $reportConfig->getColumnConfiguration();
         $fields = [];
         foreach ($columns as $column) {
@@ -123,9 +124,10 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         return $fields;
     }
 
-    public function generateCsvData(array $reportData, array $exportFields, bool $includeHeaders): array {
+    public function generateCsvData(array $reportData, array $exportFields, bool $includeHeaders): array
+    {
         $csvData = [];
-        if($includeHeaders) {
+        if ($includeHeaders) {
             $csvData[] = $exportFields;
         }
 

@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
 
 /**
@@ -101,7 +100,7 @@ final readonly class CsvExportService implements ExportServiceInterface
 
     private function getHeaders(array $columns, bool $withGroup): array
     {
-        if(empty($columns)) {
+        if (empty($columns)) {
             return [];
         }
 
