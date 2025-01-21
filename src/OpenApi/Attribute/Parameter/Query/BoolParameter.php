@@ -17,20 +17,24 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query;
 
 use Attribute;
-use OpenApi\Attributes\QueryParameter as OpenApiQueryParameter;
+use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_METHOD)]
-final class FilterParameter extends OpenApiQueryParameter
+#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class BoolParameter extends QueryParameter
 {
-    public function __construct(string $filterFor = 'properties', string $example = null)
-    {
+    public function __construct(
+        string $name,
+        string $description,
+        bool $required = true,
+        ?bool $example = null,
+    ) {
         parent::__construct(
-            name: 'filter',
-            description: 'Filter for ' . $filterFor,
+            name: $name,
+            description: $description,
             in: 'query',
-            required: false,
-            schema: new Schema(type: 'string', example: $example ?? $filterFor),
+            required: $required,
+            schema: new Schema(type: 'bool', example: $example),
         );
     }
 }

@@ -56,12 +56,8 @@ final readonly class CsvExportService implements ExportServiceInterface
     ): void {
         $headers = [];
         $storage = $this->storageService->getTempStorage();
-        $columnCollection = $this->gridService->getConfigurationFromArray(
-            $columns,
-            true
-        );
         if ($withHeaders) {
-            $headers = $this->getHeaders($columnCollection, $withGroup);
+            $headers = $this->getHeaders($columns, $withGroup);
         }
         if ($delimiter === null) {
             $delimiter = $this->defaultDelimiter;
@@ -95,18 +91,6 @@ final readonly class CsvExportService implements ExportServiceInterface
         );
     }
 
-    /**
-     * @throws FilesystemException
-     */
-    private function createDirectory(
-        string $fileName,
-        FilesystemOperator $storage
-    ): void {
-        $storage->createDirectory(
-            $fileName
-        );
-    }
-
     private function encodeFunc(?string $value): string
     {
         $value = str_replace('"', '""', $value ?? '');
@@ -115,8 +99,17 @@ final readonly class CsvExportService implements ExportServiceInterface
         return '"' . $value . '"';
     }
 
-    private function getHeaders(ColumnCollection $columnCollection, bool $withGroup): array
+    private function getHeaders(array $columns, bool $withGroup): array
     {
+        if(empty($columns)) {
+            return [];
+        }
+
+        $columnCollection = $this->gridService->getConfigurationFromArray(
+            $columns,
+            true
+        );
+
         return $this->gridService->getColumnKeys(
             $columnCollection,
             $withGroup

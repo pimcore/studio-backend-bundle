@@ -688,3 +688,8 @@ custom_report_export_csv_description: |
     <li><strong>config</strong>: Delimiter and header options</li>
   </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
+custom_reports_export_csv_name_parameter: Name of the report
+custom_reports_export_csv_sort_by_parameter: Sort by column parameter
+custom_reports_export_csv_report_limit_parameter: Limit of the report data
+custom_reports_export_csv_report_offset_parameter: Offset of the report data
+custom_reports_export_csv_include_headers_parameter: Whether to include headers in the CSV file

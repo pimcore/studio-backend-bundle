@@ -23,7 +23,7 @@ enum StepConfig: string
     use EnumToValueArrayTrait;
 
     case ID = 'id';
-
+    case CUSTOM_REPORT_CONFIG = 'custom_report_config';
     case CUSTOM_REPORT_TO_EXPORT = 'custom_report_to_export';
     case ASSET_TO_EXPORT = 'asset_to_export';
     case FOLDER_TO_EXPORT = 'folder_to_export';
@@ -39,4 +39,6 @@ enum StepConfig: string
     case NEW_LINE = "\r\n";
     case CONFIG_TYPE_ARRAY = 'array';
     case CONFIG_TYPE_INT = 'int';
+    case CONFIG_TYPE_STRING = 'string';
+    case CONFIG_TYPE_BOOL = 'bool';
 }

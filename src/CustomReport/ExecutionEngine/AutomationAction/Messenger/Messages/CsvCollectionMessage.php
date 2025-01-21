@@ -21,6 +21,6 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecu
 /**
  * @internal
  */
-final class CustomReportCsvCollectionMessage extends AbstractExecutionEngineMessage
+final class CsvCollectionMessage extends AbstractExecutionEngineMessage
 {
 }

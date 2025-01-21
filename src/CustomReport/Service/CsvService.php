@@ -19,12 +19,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CustomReportCsvCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportCustomReportParameter;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\Util\JobSteps;
-use PImcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\Util\JobSteps as CustomReportJobSteps;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\Util\JobSteps as CustomReportJobSteps;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -40,31 +40,26 @@ final readonly class CsvService implements CsvServiceInterface
     ) {
     }
 
-    public function generateCsvFile(ExportCustomReportParameter $exportCustomReportParameter): int
+    public function generateCsvFile(string $reportName, ExportParameter $exportParameter): int
     {
         $collectionSettings = [
-            StepConfig::ID->value => $exportCustomReportParameter->getId(),
-        ];
-
-        $creationSettings = [
-            StepConfig::CONFIG_CONFIGURATION->value => $exportCustomReportParameter->getConfig(),
+            StepConfig::CUSTOM_REPORT_TO_EXPORT->value => $reportName,
+            StepConfig::CUSTOM_REPORT_CONFIG->value => $exportParameter
         ];
 
         return $this->generateCsvFileJob(
             $collectionSettings,
-            $creationSettings,
         );
     }
 
     private function generateCsvFileJob(
-        array $collectionSettings,
-        array $creationSettings
+        array $collectionSettings
     ): int {
 
         $jobSteps = [
             new JobStep(
                 CustomReportJobSteps::CUSTOM_REPORT_CSV_COLLECTION->value,
-                CustomReportCsvCollectionMessage::class,
+                CsvCollectionMessage::class,
                 '',
                 $collectionSettings
             ),
@@ -72,7 +67,7 @@ final readonly class CsvService implements CsvServiceInterface
                 JobSteps::CSV_CREATION->value,
                 CsvCreationMessage::class,
                 '',
-                $creationSettings
+                []
             ),
         ];
 

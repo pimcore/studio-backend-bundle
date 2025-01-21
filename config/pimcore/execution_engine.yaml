@@ -25,4 +25,4 @@ framework:
       Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CloneMessage: pimcore_generic_execution_engine
       Pimcore\Bundle\StudioBackendBundle\Tag\ExecutionEngine\AutomationAction\Messenger\Messages\BatchTagOperationMessage: pimcore_generic_execution_engine
-      Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CustomReportCsvCollectionMessage: pimcore_generic_execution_engine
+      Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage: pimcore_generic_execution_engine

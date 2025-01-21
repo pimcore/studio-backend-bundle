@@ -22,7 +22,7 @@ use function in_array;
 /**
  * @internal
  */
-final readonly class ChartDataParameter
+final readonly class ExportParameter
 {
     public function __construct(
         private ?array $filters = null,
@@ -31,6 +31,9 @@ final readonly class ChartDataParameter
         private ?string $sortBy = null,
         private ?int $reportOffset = null,
         private ?int $reportLimit = null,
+        private ?array $fields = null,
+        private bool $includeHeaders = false,
+        private ?string $defaultDelimiter = null
     ) {
         $this->validate();
     }
@@ -38,6 +41,21 @@ final readonly class ChartDataParameter
     public function getSortOrder(): ?string
     {
         return $this->sortOrder;
+    }
+
+    public static function fromArray(mixed $extractConfigFieldFromJobStepConfig): self
+    {
+        return new self(
+            filters: $extractConfigFieldFromJobStepConfig['filters'] ?? null,
+            drillDownFilters: $extractConfigFieldFromJobStepConfig['drillDownFilters'] ?? null,
+            sortOrder: $extractConfigFieldFromJobStepConfig['sortOrder'] ?? null,
+            sortBy: $extractConfigFieldFromJobStepConfig['sortBy'] ?? null,
+            reportOffset: $extractConfigFieldFromJobStepConfig['reportOffset'] ?? null,
+            reportLimit: $extractConfigFieldFromJobStepConfig['reportLimit'] ?? null,
+            fields: $extractConfigFieldFromJobStepConfig['fields'] ?? null,
+            includeHeaders: $extractConfigFieldFromJobStepConfig['includeHeaders'] ?? false,
+            defaultDelimiter: $extractConfigFieldFromJobStepConfig['defaultDelimiter'] ?? null
+        );
     }
 
     public function getSortBy(): ?string
@@ -70,5 +88,20 @@ final readonly class ChartDataParameter
     public function getDrillDownFilters(): ?array
     {
         return $this->drillDownFilters;
+    }
+
+    public function getFields(): ?array
+    {
+        return $this->fields;
+    }
+
+    public function getIncludeHeaders(): bool
+    {
+        return $this->includeHeaders;
+    }
+
+    public function getDefaultDelimiter(): ?string
+    {
+        return $this->defaultDelimiter;
     }
 }

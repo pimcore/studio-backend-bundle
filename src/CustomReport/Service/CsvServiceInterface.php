@@ -16,12 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportCustomReportParameter;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 
 /**
  * @internal
  */
 interface CsvServiceInterface
 {
-    public function generateCsvFile(ExportCustomReportParameter $exportCustomReportParameter): int;
+    public function generateCsvFile(String $reportName, ExportParameter $exportParameter): int;
 }

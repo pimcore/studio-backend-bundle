@@ -45,11 +45,11 @@ services:
   # Messages
   #
 
-  Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CustomReportCsvCollectionMessage: ~
+  Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage: ~
 
   #
   # Handler
   #
 
-  Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler\CustomReportCsvCollectionHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCollectionHandler: ~
 

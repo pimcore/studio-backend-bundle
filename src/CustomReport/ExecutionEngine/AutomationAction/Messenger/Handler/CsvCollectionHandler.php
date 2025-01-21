@@ -17,7 +17,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CustomReportCsvCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\AdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -29,12 +32,14 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class CustomReportCsvCollectionHandler extends AbstractHandler
+final class CsvCollectionHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
+        private readonly CustomReportServiceInterface $customReportService,
+        private readonly AdapterServiceInterface $customReportAdapterService
     ) {
         parent::__construct();
     }
@@ -42,22 +47,41 @@ final class CustomReportCsvCollectionHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(CustomReportCsvCollectionMessage $message): void
+    public function __invoke(CsvCollectionMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         if (!$this->shouldBeExecuted($jobRun)) {
             return;
         }
 
-        $id = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_TO_EXPORT->value);
+        $name = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_TO_EXPORT->value);
 
         try {
-                //TODO: implement csv data collection
+            $exportParameter = ExportParameter::fromArray(
+                $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CUSTOM_REPORT_CONFIG->value)
+            );
+            $reportConfig = $this->customReportService->getCustomReportByName($name);
+            $exportFields = $this->customReportService->getFieldsForExport($reportConfig);
+            $reportData = $this->customReportAdapterService->getData(
+                $reportConfig,
+                $exportParameter
+            );
+            $csvData = $this->customReportService->generateCsvData(
+                $reportData,
+                $exportFields,
+                $exportParameter->getIncludeHeaders()
+            );
+
+            $this->updateContextArrayValues(
+                $this->getJobRun($message),
+                StepConfig::CSV_EXPORT_DATA->value,
+                $csvData
+            );
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                 [
-                    'id' => $id,
+                    'id' => $name,
                     'message' => $e->getMessage(),
                 ]
             ));
@@ -71,7 +95,13 @@ final class CustomReportCsvCollectionHandler extends AbstractHandler
         $this->stepConfiguration->setRequired(StepConfig::CUSTOM_REPORT_TO_EXPORT->value);
         $this->stepConfiguration->setAllowedTypes(
             StepConfig::CUSTOM_REPORT_TO_EXPORT->value,
-            StepConfig::CONFIG_TYPE_INT->value
+            StepConfig::CONFIG_TYPE_STRING->value
+        );
+
+        $this->stepConfiguration->setRequired(StepConfig::CUSTOM_REPORT_CONFIG->value);
+        $this->stepConfiguration->setAllowedTypes(
+            StepConfig::CUSTOM_REPORT_CONFIG->value,
+            StepConfig::CONFIG_TYPE_ARRAY->value
         );
     }
 }
