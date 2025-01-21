@@ -20,9 +20,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
+use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\Concrete;
 
 /**
  * @internal
@@ -33,9 +33,8 @@ interface DataServiceInterface
      * @throws DatabaseException|NotFoundException
      */
     public function setObjectDetailData(
-        DataObjectFolder|DataObject $dataObject,
-        Concrete $element,
-        ClassDefinition $class
+        DataObjectFolder|DataObject|DataObjectVersion $dataObject,
+        DataObjectModel $element
     ): void;
 
     public function getNormalizedValue(

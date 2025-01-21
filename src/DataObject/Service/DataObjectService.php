@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DataObjectEv
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -64,13 +65,14 @@ final readonly class DataObjectService implements DataObjectServiceInterface
 {
     use ElementProviderTrait;
     use UserPermissionTrait;
+    use ValidateObjectDataTrait;
 
-    private const ALLOWED_TYPES = [
+    private const array ALLOWED_TYPES = [
         AbstractObject::OBJECT_TYPE_OBJECT,
         AbstractObject::OBJECT_TYPE_VARIANT,
     ];
 
-    private const INDEX_SORT = 'index';
+    private const string INDEX_SORT = 'index';
 
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
@@ -103,7 +105,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             throw new ElementSavingFailedException(null, 'Element with the same key and path already exists');
         }
 
-        $class = $this->getValidClass($parameters->getClassId());
+        $class = $this->getValidClass($this->classDefinitionResolver, $parameters->getClassId());
         $object = $this->getValidObjectByClass($parameters->getType(), $class->getName());
 
         return $this->createNewObject(
@@ -256,24 +258,6 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws DatabaseException|NotFoundException
-     */
-    private function getValidClass(string $classId): ClassDefinition
-    {
-        try {
-            $class = $this->classDefinitionResolver->getById($classId);
-        } catch (Exception $exception) {
-            throw new DatabaseException($exception->getMessage());
-        }
-
-        if (!$class) {
-            throw new NotFoundException(ElementTypes::TYPE_CLASS_DEFINITION, $classId);
-        }
-
-        return $class;
-    }
-
-    /**
      * @throws DatabaseException|InvalidElementTypeException
      */
     private function getValidObjectByClass(string $objectType, string $className): Concrete
@@ -347,11 +331,14 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObject->getId());
         $element = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
-        if (!$element instanceof Concrete) {
+        if (!$element instanceof DataObjectModel) {
             return;
         }
 
-        $this->dataService->setObjectDetailData($dataObject, $element, $this->getValidClass($element->getClassId()));
+        $this->dataService->setObjectDetailData(
+            $dataObject,
+            $element
+        );
     }
 
     private function dispatchDataObjectEvent(mixed $dataObject): void

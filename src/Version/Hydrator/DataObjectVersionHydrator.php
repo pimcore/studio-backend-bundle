@@ -16,10 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Version\Event\DataObjectVersionEvent;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Model\DataObject;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Pimcore\Model\DataObject\Concrete;
 
 /**
  * @internal
@@ -27,28 +28,42 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class DataObjectVersionHydrator implements DataObjectVersionHydratorInterface
 {
     public function __construct(
-        private EventDispatcherInterface $eventDispatcher,
+        private DataServiceInterface $dataService,
+        private IconServiceInterface $iconService
     ) {
     }
 
     public function hydrate(
         DataObject $dataObject
     ): DataObjectVersion {
-        $published = false;
-        if ($dataObject instanceof DataObject\Concrete) {
+        $className = null;
+        $published = null;
+        if ($dataObject instanceof Concrete) {
+            $className = $dataObject->getClassName();
             $published = $dataObject->isPublished();
         }
 
-        $hydratedDataObject =  new DataObjectVersion(
+        $hydratedDataObject = new DataObjectVersion(
+            $dataObject->getKey(),
+            $dataObject->getType(),
+            $dataObject->hasChildren(),
+            $dataObject->getFullPath(),
+            $dataObject->getIndex(),
+            $dataObject->getId(),
+            $dataObject->getParentId(),
+            $dataObject->getPath(),
+            $this->iconService->getIconForDataObject($dataObject),
+            $dataObject->getUserOwner(),
+            $dataObject->getUserModification(),
+            $dataObject->getLocked(),
+            $dataObject->isLocked(),
+            $dataObject->getCreationDate(),
             $dataObject->getModificationDate(),
-            $dataObject->getRealFullPath(),
-            $published,
+            $className,
+            $published
         );
 
-        $this->eventDispatcher->dispatch(
-            new DataObjectVersionEvent($hydratedDataObject),
-            DataObjectVersionEvent::EVENT_NAME
-        );
+        $this->dataService->setObjectDetailData($hydratedDataObject, $dataObject);
 
         return $hydratedDataObject;
     }
