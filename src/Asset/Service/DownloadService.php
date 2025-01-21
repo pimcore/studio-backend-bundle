@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidAssetFormatTypeExcep
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\FormatTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
@@ -44,7 +43,6 @@ final readonly class DownloadService implements DownloadServiceInterface
     use TempFilePathTrait;
 
     public function __construct(
-        private ExecutionEngineServiceInterface $executionEngineService,
         private ThumbnailServiceInterface $thumbnailService,
         private array $defaultFormats,
     ) {
