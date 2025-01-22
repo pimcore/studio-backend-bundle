@@ -38,6 +38,11 @@ final readonly class ImageDownloadConfigParameter
         private bool $frame = false,
         private bool $contain = false,
         private bool $forceResize = false,
+        private ?int $cropPercent = null,
+        private ?int $cropWidth = null,
+        private ?int $cropHeight = null,
+        private ?int $cropTop = null,
+        private ?int $cropLeft = null,
     ) {
 
         $this->validateResizeMode();
@@ -175,5 +180,30 @@ final readonly class ImageDownloadConfigParameter
                 'Width, height must be set and non-negative when using frame, cover, contain or resize'
             );
         }
+    }
+
+    public function getCropHeight(): ?int
+    {
+        return $this->cropHeight;
+    }
+
+    public function getCropPercent(): ?int
+    {
+        return $this->cropPercent;
+    }
+
+    public function getCropWidth(): ?int
+    {
+        return $this->cropWidth;
+    }
+
+    public function getCropTop(): ?int
+    {
+        return $this->cropTop;
+    }
+
+    public function getCropLeft(): ?int
+    {
+        return $this->cropLeft;
     }
 }
