@@ -22,15 +22,19 @@ use function in_array;
 /**
  * @internal
  */
-final readonly class ChartDataParameter
+final readonly class ExportParameter
 {
     public function __construct(
+        private string $name,
         private ?array $filters = null,
         private ?array $drillDownFilters = null,
         private ?string $sortOrder = null,
         private ?string $sortBy = null,
         private ?int $reportOffset = null,
         private ?int $reportLimit = null,
+        private ?array $fields = null,
+        private bool $includeHeaders = false,
+        private ?string $defaultDelimiter = null
     ) {
         $this->validate();
     }
@@ -38,6 +42,22 @@ final readonly class ChartDataParameter
     public function getSortOrder(): ?string
     {
         return $this->sortOrder;
+    }
+
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            name: $data['name'],
+            filters: $data['filters'] ?? null,
+            drillDownFilters: $data['drillDownFilters'] ?? null,
+            sortOrder: $data['sortOrder'] ?? null,
+            sortBy: $data['sortBy'] ?? null,
+            reportOffset: $data['reportOffset'] ?? null,
+            reportLimit: $data['reportLimit'] ?? null,
+            fields: $data['fields'] ?? null,
+            includeHeaders: $data['includeHeaders'] ?? false,
+            defaultDelimiter: $data['defaultDelimiter'] ?? null
+        );
     }
 
     public function getSortBy(): ?string
@@ -70,5 +90,25 @@ final readonly class ChartDataParameter
     public function getDrillDownFilters(): ?array
     {
         return $this->drillDownFilters;
+    }
+
+    public function getFields(): ?array
+    {
+        return $this->fields;
+    }
+
+    public function getIncludeHeaders(): bool
+    {
+        return $this->includeHeaders;
+    }
+
+    public function getDefaultDelimiter(): ?string
+    {
+        return $this->defaultDelimiter;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 }

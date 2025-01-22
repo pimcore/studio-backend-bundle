@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\ReportEvent;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\TreeConfigNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\TreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository\CustomReportRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
@@ -84,7 +84,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         return $this->customReportRepository->loadByName($reportName);
     }
 
-    public function getChartData(string $reportName, ChartDataParameter $chartDataParameter): CustomReportChartData
+    public function getChartData(string $reportName, ExportParameter $chartDataParameter): CustomReportChartData
     {
         $reportConfig = $this->getCustomReportByName($reportName);
         $data = $this->adapterService->getData($reportConfig, $chartDataParameter);
@@ -109,5 +109,32 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         );
 
         return $reportDetails;
+    }
+
+    public function getFieldsForExport(Config $reportConfig): array
+    {
+        $columns = $reportConfig->getColumnConfiguration();
+        $fields = [];
+        foreach ($columns as $column) {
+            if ($column['export']) {
+                $fields[] = $column['name'];
+            }
+        }
+
+        return $fields;
+    }
+
+    public function generateCsvData(array $reportData, array $exportFields, bool $includeHeaders): array
+    {
+        $csvData = [];
+        if ($includeHeaders) {
+            $csvData[] = $exportFields;
+        }
+
+        foreach ($reportData['data'] ?? [] as $row) {
+            $csvData[] = array_values($row);
+        }
+
+        return $csvData;
     }
 }

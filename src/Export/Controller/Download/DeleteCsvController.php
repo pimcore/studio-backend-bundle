@@ -14,29 +14,28 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Download;
 
 use OpenApi\Attributes\Delete;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class DeleteZipController extends AbstractApiController
+final class DeleteCsvController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -46,16 +45,15 @@ final class DeleteZipController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|ForbiddenException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException
      */
-    #[Route('/assets/download/zip/{jobRunId}', name: 'pimcore_studio_api_zip_delete', methods: ['DELETE'])]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[Route('/export/download/csv/{jobRunId}', name: 'pimcore_studio_api_export_delete_csv', methods: ['DELETE'])]
     #[Delete(
-        path: self::PREFIX . '/assets/download/zip/{jobRunId}',
-        operationId: 'asset_delete_zip',
-        description: 'asset_delete_zip_description',
-        summary: 'asset_delete_zip_summary',
-        tags: [Tags::Assets->name]
+        path: self::PREFIX . '/export/download/csv/{jobRunId}',
+        operationId: 'export_delete_csv',
+        description: 'export_delete_csv_description',
+        summary: 'export_delete_csv_summary',
+        tags: [Tags::Export->value]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
     #[SuccessResponse]
@@ -64,12 +62,12 @@ final class DeleteZipController extends AbstractApiController
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteAssetsZip(int $jobRunId): Response
+    public function deleteCsv(int $jobRunId): Response
     {
         $this->downloadService->cleanupDataByJobRunId(
             $jobRunId,
-            ZipServiceInterface::DOWNLOAD_ZIP_FOLDER_NAME,
-            ZipServiceInterface::DOWNLOAD_ZIP_FILE_NAME
+            CsvExportService::CSV_FOLDER_NAME,
+            CsvExportService::CSV_FILE_NAME
         );
 
         return new Response();

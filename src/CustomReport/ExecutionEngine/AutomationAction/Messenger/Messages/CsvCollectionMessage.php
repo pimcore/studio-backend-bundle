@@ -14,17 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
+namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderParameter;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-interface CsvServiceInterface
+final class CsvCollectionMessage extends AbstractExecutionEngineMessage
 {
-    public function generateCsvFileForAssets(ExportAssetParameter $exportAssetParameter): int;
-
-    public function generateCsvFileForFolders(ExportFolderParameter $exportFolderParameter): int;
 }

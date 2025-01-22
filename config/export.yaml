@@ -1,0 +1,33 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Export\Controller\:
+    resource: '../src/Export/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCreationHandler: ~
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService: ~
+  Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface: '@Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService'
+  Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadService
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber\Csv\CsvCreationSubscriber: ~

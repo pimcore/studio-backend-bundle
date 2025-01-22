@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterFactoryInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use stdClass;
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -34,7 +34,7 @@ final readonly class AdapterService implements AdapterServiceInterface
     ) {
     }
 
-    public function getData(Config $report, ChartDataParameter $chartDataParameter): array
+    public function getData(Config $report, ExportParameter $chartDataParameter): array
     {
         return $this->getAdapter($report)->getData(
             $chartDataParameter->getFilters(),
@@ -42,7 +42,7 @@ final readonly class AdapterService implements AdapterServiceInterface
             $chartDataParameter->getSortOrder(),
             $chartDataParameter->getReportOffset(),
             $chartDataParameter->getReportLimit(),
-            null,
+            $chartDataParameter->getFields(),
             $chartDataParameter->getDrillDownFilters()
         );
     }
