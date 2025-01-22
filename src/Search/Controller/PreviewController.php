@@ -34,7 +34,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -81,8 +80,7 @@ final class PreviewController extends AbstractApiController
     public function getSimpleSearchPreview(
         int $id,
         string $elementType
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return $this->jsonResponse(
             $this->searchService->getSearchPreview(new ElementParameters($elementType, $id))
         );

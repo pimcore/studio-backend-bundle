@@ -111,5 +111,4 @@ class SimpleSearchPreview implements AdditionalAttributesInterface
     {
         return $this->modificationDate;
     }
-
 }

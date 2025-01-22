@@ -42,5 +42,5 @@ interface DocumentServiceInterface
     /**
      * @throws AccessDeniedException|NotFoundException
      */
-    public function getDocumentElement(UserInterface $user, int $documentId,): DocumentModel;
+    public function getDocumentElement(UserInterface $user, int $documentId): DocumentModel;
 }

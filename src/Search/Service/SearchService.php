@@ -108,7 +108,6 @@ final readonly class SearchService implements SearchServiceInterface
         );
     }
 
-
     private function dispatchPreviewEvent(
         AssetSearchPreview|DataObjectSearchPreview|DocumentSearchPreview $preview
     ): void {

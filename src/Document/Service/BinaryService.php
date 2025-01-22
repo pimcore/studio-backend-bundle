@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Page;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use function sprintf;
 
 /**
  * @internal
@@ -37,6 +38,7 @@ final readonly class BinaryService implements BinaryServiceInterface
     use StreamedResponseTrait;
 
     private const string PAGE_PREVIEW_NAME = 'document-page-screenshot-%d@2x.jpeg';
+
     private const string PAGE_PREVIEW_LOCATION = '/document-page-previews/' . self::PAGE_PREVIEW_NAME;
 
     public function __construct(

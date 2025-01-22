@@ -28,7 +28,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 interface BinaryServiceInterface
 {
-
     /**
      * @throws EnvironmentException|InvalidElementTypeException|StreamResourceNotFoundException
      */
