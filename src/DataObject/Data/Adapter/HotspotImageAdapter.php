@@ -52,19 +52,20 @@ final readonly class HotspotImageAdapter implements SetterDataInterface
     ): ?Hotspotimage {
 
         $data = $data[$key];
+        $imageId = !empty($data['image']['id']) && $data['image']['id'] > 0 ? $data['image']['id'] : null;
+        if ($imageId === null) {
+            return null;
+        }
+
         $data['marker'] = $this->processData($data['marker'] ?? []);
         $data['hotspots'] = $this->processData($data['hotspots'] ?? []);
 
-        if (!empty($data['id']) && (int)$data['id'] > 0) {
-            return new Hotspotimage(
-                $data['id'],
-                $data['hotspots'],
-                $data['marker'],
-                $data['crop'] ?? []
-            );
-        }
-
-        return null;
+        return new Hotspotimage(
+            $imageId,
+            $data['hotspots'],
+            $data['marker'],
+            $data['crop']
+        );
     }
 
     private function processData(array $data): array
@@ -88,7 +89,7 @@ final readonly class HotspotImageAdapter implements SetterDataInterface
             $item = new MarkerHotspotItem($item);
             if ($this->isValidItem($item)) {
                 try {
-                    $element = $this->getElementByPath($this->serviceResolver, $item['type'], $item->getValue());
+                    $element = $this->getElement($this->serviceResolver, $item['type'], $item->getValue());
                 } catch (NotFoundException) {
                     continue;
                 }

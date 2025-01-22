@@ -36,10 +36,7 @@ final readonly class BooleanAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?bool {
-        return match((int) $data[$key]) {
-            1 => true,
-            -1 => false,
-            default => null,
-        };
+
+        return $data[$key] ?? null;
     }
 }

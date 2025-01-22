@@ -38,14 +38,13 @@ final readonly class StructuredTableAdapter implements SetterDataInterface
         array $data,
         ?FieldContextData $contextData = null
     ): ?StructuredTable {
-
         $table = new StructuredTable();
         $tableData = [];
-        foreach ($data[$key] as $dataLine) {
+        foreach ($data[$key] as $id => $dataLine) {
             /** @var StructuredTableDefinition $fieldDefinition */
             $cols = $fieldDefinition->getCols();
             foreach ($cols as $col) {
-                $tableData[$dataLine['__row_identifyer']][$col['key']] = $dataLine[$col['key']];
+                $tableData[$id][$col['key']] = $dataLine[$col['key']];
             }
         }
         $table->setData($tableData);

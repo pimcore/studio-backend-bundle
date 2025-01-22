@@ -44,7 +44,7 @@ final readonly class DateAdapter implements SetterDataInterface
 
         if (is_numeric($dateData)) {
             /** @var Date|Datetime $fieldDefinition */
-            return $fieldDefinition->denormalize($dateData / 1000);
+            return $fieldDefinition->denormalize($dateData);
         }
 
         if (is_string($dateData)) {

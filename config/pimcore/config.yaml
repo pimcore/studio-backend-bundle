@@ -65,10 +65,9 @@ pimcore_studio_backend:
             - "advancedManyToManyObjectRelation"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\BooleanAdapter:
             - "booleanSelect"
+            - "checkbox"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CalculatedValueAdapter:
             - "calculatedValue"
-        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CheckboxAdapter:
-            - "checkbox"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter:
             - "classificationstore"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\DateAdapter:

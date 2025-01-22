@@ -80,8 +80,8 @@ final readonly class LocalizedFieldsAdapter implements
         $localizedField = $this->getLocalizedField($contextData);
         $localizedField->setObject($element);
 
-        foreach ($languageData as $language => $fields) {
-            foreach ($fields as $name => $fieldData) {
+        foreach ($languageData as $name => $localizedData) {
+            foreach ($localizedData as $language => $fieldData) {
                 $childFieldDefinition = $fieldDefinition->getFieldDefinition($name);
                 if ($childFieldDefinition === null) {
                     continue;

@@ -14,14 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
-enum ElementIconTypes: string
+enum Coordinates: string
 {
     use EnumToValueArrayTrait;
 
-    case NAME = 'name';
-    case PATH = 'path';
+    case LATITUDE = 'latitude';
+    case LONGITUDE = 'longitude';
 }

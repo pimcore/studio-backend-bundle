@@ -43,7 +43,6 @@ use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as Key
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
-use function is_array;
 
 /**
  * @internal
@@ -82,11 +81,17 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         $store = $data[$key];
-        $container = $this->getContainer($element, $key, $contextData);
-        $this->setMapping($container, $store);
-        if (is_array($store['data'])) {
-            $this->setStoreValues($element, $fieldDefinition, $container, $store);
+        $activeGroups = $store['activeGroups'] ?? [];
+        if (empty($activeGroups)) {
+            return null;
         }
+        $groupCollectionMapping = $store['groupCollectionMapping'] ?? [];
+        $container = $this->getContainer($element, $key, $contextData);
+        if (!empty($groupCollectionMapping)) {
+            $this->setMapping($container, $store['activeGroups'], $store['groupCollectionMapping']);
+        }
+        unset($store['activeGroups'], $store['groupCollectionMapping']);
+        $this->setStoreValues($element, $fieldDefinition, $container, $store);
         $this->cleanupStoreGroups($container);
 
         return $container;
@@ -105,7 +110,10 @@ final readonly class ClassificationStoreAdapter implements
         $validLanguages = $this->getValidLanguages($fieldDefinition);
         $resultItems = [];
 
-        foreach ($this->getActiveGroups($value) as $groupId => $groupConfig) {
+        $resultItems['activeGroups'] = $value->getActiveGroups();
+        $resultItems['groupCollectionMapping'] = $value->getGroupCollectionMappings();
+
+        foreach ($this->getActiveGroupsConfig($resultItems['activeGroups']) as $groupId => $groupConfig) {
             $resultItems[$groupId] = [];
             $keys = $this->getClassificationStoreKeysFromGroup($groupId);
             foreach ($validLanguages as $validLanguage) {
@@ -174,11 +182,11 @@ final readonly class ClassificationStoreAdapter implements
         return $container;
     }
 
-    private function setMapping(Classificationstore $container, array $data): void
-    {
-        $activeGroups = $data['activeGroups'];
-        $groupCollectionMapping = $data['groupCollectionMapping'];
-
+    private function setMapping(
+        Classificationstore $container,
+        array $activeGroups,
+        array $groupCollectionMapping
+    ): void {
         $correctedMapping = array_filter($groupCollectionMapping, static function ($groupId) use ($activeGroups) {
             return isset($activeGroups[$groupId]) && $activeGroups[$groupId];
         }, ARRAY_FILTER_USE_KEY);
@@ -195,9 +203,11 @@ final readonly class ClassificationStoreAdapter implements
         Classificationstore $container,
         array $store
     ): void {
-        $activeGroups = $store['activeGroups'];
-        foreach ($store['data'] as $language => $groups) {
-            foreach ($groups as $groupId => $keys) {
+
+        $activeGroups = [];
+
+        foreach ($store as $groupId => $groupData) {
+            foreach ($groupData as $language => $keys) {
                 $this->processGroupKeys($element, $definition, $container, $language, $groupId, $keys);
                 $activeGroups[$groupId] = true;
             }
@@ -293,10 +303,10 @@ final readonly class ClassificationStoreAdapter implements
     /**
      * @return GroupConfig[]
      */
-    private function getActiveGroups(ClassificationstoreModel $value): array
+    private function getActiveGroupsConfig(array $activeGroups): array
     {
         $groups = [];
-        foreach ($value->getActiveGroups() as $groupId => $active) {
+        foreach ($activeGroups as $groupId => $active) {
             if ($active) {
                 $groupConfig = $this->groupConfigResolver->getById($groupId);
                 if ($groupConfig) {

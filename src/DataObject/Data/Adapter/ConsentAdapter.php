@@ -49,12 +49,8 @@ final readonly class ConsentAdapter implements SetterDataInterface, DataNormaliz
         array $data,
         ?FieldContextData $contextData = null
     ): Consent {
-        $value = $data[$key] ?? null;
+        $value = $data[$key] ? $data[$key]['consent'] : null;
         $noteId = null;
-
-        if ($value === 'false') {
-            $value = false;
-        }
 
         /** @var Consent|null $oldData */
         $oldData = $element->get($key);

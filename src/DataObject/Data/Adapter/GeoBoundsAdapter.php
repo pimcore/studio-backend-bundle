@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\Coordinates;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Geobounds;
@@ -32,6 +33,12 @@ use function is_array;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class GeoBoundsAdapter implements SetterDataInterface
 {
+    private const string NORTH_EAST = 'northEast';
+
+    private const string SOUTH_WEST = 'southWest';
+
+    private const array DIRECTIONS = [self::NORTH_EAST, self::SOUTH_WEST];
+
     public function getDataForSetter(
         Concrete $element,
         Data $fieldDefinition,
@@ -40,17 +47,37 @@ final readonly class GeoBoundsAdapter implements SetterDataInterface
         ?FieldContextData $contextData = null
     ): ?Geobounds {
 
-        $geoPointData = $data[$key];
-        if (!is_array($geoPointData) ||
-            $geoPointData['NElongitude'] === null || $geoPointData['NElatitude'] === null ||
-            $geoPointData['SWlongitude'] === null || $geoPointData['SWlatitude'] === null
-        ) {
+        $geoBoundsData = $data[$key];
+        if ($this->validateBounds($geoBoundsData) === false) {
             return null;
         }
 
         return new Geobounds(
-            new GeoCoordinates($data['NElatitude'], $data['NElongitude']),
-            new GeoCoordinates($data['SWlatitude'], $data['SWlongitude'])
+            new GeoCoordinates(
+                $geoBoundsData[self::NORTH_EAST][Coordinates::LATITUDE->value],
+                $geoBoundsData[self::NORTH_EAST][Coordinates::LONGITUDE->value]
+            ),
+            new GeoCoordinates(
+                $geoBoundsData[self::SOUTH_WEST][Coordinates::LATITUDE->value],
+                $geoBoundsData[self::SOUTH_WEST][Coordinates::LONGITUDE->value]
+            )
         );
+    }
+
+    private function validateBounds(array $data): bool
+    {
+        foreach (self::DIRECTIONS as $direction) {
+            if (!isset($data[$direction]) || !is_array($data[$direction])) {
+                return false;
+            }
+
+            foreach (Coordinates::values() as $coordinate) {
+                if (empty($data[$direction][$coordinate])) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }

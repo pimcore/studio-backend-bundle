@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInter
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\UrlSlug;
-use Pimcore\Model\Site;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 
@@ -48,31 +47,13 @@ final readonly class UrlSlugAdapter implements SetterDataInterface
             return [];
         }
         $result = [];
-        foreach ($urlData as $slug) {
-            if ($slug instanceof UrlSlug) {
-                $siteId = $slug->getSiteId();
-                $resultItem = [
-                    'slug' => $slug->getSlug(),
-                    'siteId' => $siteId,
-                    'domain' => $this->getDomain($siteId),
-                ];
+        foreach ($urlData as $slugData) {
+            $siteId = $slugData['siteId'];
+            $slug = $slugData['slug'];
 
-                $result[$siteId] = $resultItem;
-            }
+            $result[$siteId] = new UrlSlug($slug, $siteId);
         }
 
         return $result;
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function getDomain(?int $siteId): ?string
-    {
-        if ($siteId === null) {
-            return null;
-        }
-
-        return Site::getById($siteId)?->getMainDomain();
     }
 }

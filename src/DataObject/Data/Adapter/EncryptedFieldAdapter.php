@@ -93,7 +93,7 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
         array $data,
         ?FieldContextData $contextData = null
     ): ?EncryptedField {
-        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+        $adapter = $this->dataAdapterService->tryDataAdapter($delegateFieldDefinition->getFieldType());
         if ($adapter instanceof SetterDataInterface) {
             return new EncryptedField(
                 $fieldDefinition->getDelegate(),
