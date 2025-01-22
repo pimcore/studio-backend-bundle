@@ -180,6 +180,17 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
             $thumbnailConfig->addItem('contain', $parameters->getContainTransformation());
         }
 
+        if($parameters->getCropPercent()) {
+            $thumbnailConfig->addItemAt(0, 'cropPercent', [
+                'width' => $parameters->getCropWidth(),
+                'height' => $parameters->getCropHeight(),
+                'y' => $parameters->getCropTop(),
+                'x' => $parameters->getCropLeft(),
+            ]);
+
+            $thumbnailConfig->generateAutoName();
+        }
+
         return $thumbnailConfig;
     }
 

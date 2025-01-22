@@ -34,7 +34,7 @@ final class BoolParameter extends QueryParameter
             description: $description,
             in: 'query',
             required: $required,
-            schema: new Schema(type: 'bool', example: $example),
+            schema: new Schema(type: 'boolean', example: $example),
         );
     }
 }

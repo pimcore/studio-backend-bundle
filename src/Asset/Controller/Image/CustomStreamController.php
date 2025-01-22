@@ -35,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -101,15 +102,15 @@ final class CustomStreamController extends AbstractApiController
     #[ImageConfigParameter('height')]
     #[ImageConfigParameter('quality', 85)]
     #[ImageConfigParameter('dpi')]
-    #[ImageConfigParameter('cropPercent')]
-    #[ImageConfigParameter('cropWidth')]
-    #[ImageConfigParameter('cropHeight')]
-    #[ImageConfigParameter('cropTop')]
-    #[ImageConfigParameter('cropLeft')]
     #[ContainParameter]
     #[FrameParameter]
     #[CoverParameter]
     #[ForceResizeParameter]
+    #[BoolParameter('cropPercent', '', false, false)]
+    #[ImageConfigParameter('cropWidth')]
+    #[ImageConfigParameter('cropHeight')]
+    #[ImageConfigParameter('cropTop')]
+    #[ImageConfigParameter('cropLeft')]
     #[SuccessResponse(
         description: 'asset_image_stream_custom_success_response',
         content: [new MediaType('image/*')],
