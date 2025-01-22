@@ -14,23 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Response;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
-final readonly class Collection
+use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PreviewParameter;
+
+/**
+ * @interal
+ */
+interface PreviewUrlServiceInterface
 {
-    public function __construct(
-        private int $totalItems,
-        private array $items
-    ) {
-    }
-
-    public function getTotalItems(): int
-    {
-        return $this->totalItems;
-    }
-
-    public function getItems(): array
-    {
-        return $this->items;
-    }
+    public function getPreviewUrl(PreviewParameter $previewParameter): string;
 }

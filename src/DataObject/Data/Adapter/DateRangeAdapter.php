@@ -16,21 +16,22 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
-use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function count;
 use function is_array;
 
 /**
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class DateRangeAdapter implements SetterDataInterface
+final readonly class DateRangeAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function getDataForSetter(
         Concrete $element,
@@ -41,21 +42,22 @@ final readonly class DateRangeAdapter implements SetterDataInterface
     ): ?CarbonPeriod {
 
         $dateData = $data[$key];
-        if (is_array($dateData) && isset($dateData['start_date'], $dateData['end_date'])) {
-            $startDate = $this->getDateFromTimestamp($data['start_date'] / 1000);
-            $endDate = $this->getDateFromTimestamp($data['end_date'] / 1000);
-
-            return CarbonPeriod::create($startDate, $endDate);
+        if (!is_array($dateData) || count($dateData) !== 2) {
+            return null;
         }
 
-        return null;
+        return CarbonPeriod::create($dateData[0], $dateData[1]);
     }
 
-    private function getDateFromTimestamp(float|int|string $timestamp): Carbon
+    public function normalize(mixed $value, Data $fieldDefinition): array
     {
-        $date = new Carbon();
-        $date->setTimestamp($timestamp);
+        if (!$value instanceof CarbonPeriod) {
+            return [];
+        }
 
-        return $date;
+        return [
+            $value->getStartDate(),
+            $value->getEndDate(),
+        ];
     }
 }

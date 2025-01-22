@@ -14,23 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Response;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject;
 
-final readonly class Collection
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
+
+enum Coordinates: string
 {
-    public function __construct(
-        private int $totalItems,
-        private array $items
-    ) {
-    }
+    use EnumToValueArrayTrait;
 
-    public function getTotalItems(): int
-    {
-        return $this->totalItems;
-    }
-
-    public function getItems(): array
-    {
-        return $this->items;
-    }
+    case LATITUDE = 'latitude';
+    case LONGITUDE = 'longitude';
 }

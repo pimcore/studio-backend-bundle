@@ -50,6 +50,10 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\SelectOptionsService
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlService
+    arguments: [ '@request_stack' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PathFormatterServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PathFormatterService
 
@@ -87,9 +91,6 @@ services:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CalculatedValueAdapter:
-    tags: [ 'pimcore.studio_backend.data_adapter' ]
-
-  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\CheckboxAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\ClassificationStoreAdapter:

@@ -40,6 +40,6 @@ final readonly class SliderAdapter implements SetterDataInterface
         ?FieldContextData $contextData = null
     ): ?float {
 
-        return $this->getDefaultDataForSetter($element, $fieldDefinition, $key, $data);
+        return $this->getDefaultDataForSetter($fieldDefinition, $key, $data);
     }
 }

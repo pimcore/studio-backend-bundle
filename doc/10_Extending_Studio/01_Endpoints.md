@@ -112,3 +112,8 @@ final class CollectionController extends AbstractApiController
     }
 }
 ```
+
+### Available classes for simplification
+
+[Collection](https://github.com/pimcore/studio-backend-bundle/blob/1.x/src/Response/Collection.php) Predefined repsonse object for collections with the total item count and the items 
+[HttpResponseCodes](https://github.com/pimcore/studio-backend-bundle/blob/1.x/src/Util/Constant/HttpResponseCodes.php) Predefined http response codes

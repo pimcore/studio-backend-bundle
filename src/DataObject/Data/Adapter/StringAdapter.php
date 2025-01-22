@@ -43,6 +43,6 @@ final readonly class StringAdapter implements SetterDataInterface
             return null;
         }
 
-        return $this->getDefaultDataForSetter($element, $fieldDefinition, $key, $data);
+        return $this->getDefaultDataForSetter($fieldDefinition, $key, $data);
     }
 }
