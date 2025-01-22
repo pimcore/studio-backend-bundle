@@ -33,7 +33,7 @@ final readonly class ColumnMapper implements ColumnMapperInterface
         'filename' => 'string',
         'creationDate' => 'datetime',
         'modificationDate' => 'datetime',
-        'size' => 'fileSize',
+        'fileSize' => 'fileSize',
         'key' => 'string',
         'published' => 'boolean',
         'classname' => 'string',
