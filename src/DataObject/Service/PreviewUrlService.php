@@ -26,6 +26,9 @@ use Pimcore\Model\DataObject\ClassDefinition\PreviewGeneratorInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\HttpFoundation\RequestStack;
 
+/**
+ * @interal
+ */
 final readonly class PreviewUrlService implements PreviewUrlServiceInterface
 {
     use RequestTrait;
