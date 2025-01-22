@@ -19,9 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Event;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 
-/**
- * @internal
- */
 abstract class AbstractPreResponseEvent extends Event
 {
     public function __construct(protected readonly AdditionalAttributesInterface $responseObject)
