@@ -14,17 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
+namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 
 /**
  * @internal
  */
 interface CsvServiceInterface
 {
-    public function generateCsvFileForAssets(ExportAssetParameter $exportAssetParameter): int;
-
-    public function generateCsvFileForFolders(ExportFolderParameter $exportFolderParameter): int;
+    public function generateCsvFile(ExportParameter $exportParameter): int;
 }

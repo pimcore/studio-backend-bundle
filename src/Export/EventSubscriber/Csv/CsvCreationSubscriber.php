@@ -14,16 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\EventSubscriber;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber\Csv;
 
 use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -33,8 +32,7 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
-        private CsvServiceInterface $csvService,
-        private StorageServiceInterface $storageService,
+        private ExportServiceInterface $csvService
     ) {
 
     }
@@ -70,15 +68,6 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
      */
     private function cleanupOnFail(int $jobRunId): void
     {
-        $this->storageService->cleanUpFlysystemFile(
-            $this->csvService->getTempFilePath(
-                $jobRunId,
-                CsvServiceInterface::CSV_FOLDER_NAME . '/' . CsvServiceInterface::CSV_FILE_NAME
-            )
-        );
-
-        $this->storageService->cleanUpFolder(
-            $this->csvService->getTempFilePath($jobRunId, CsvServiceInterface::CSV_FOLDER_NAME)
-        );
+        $this->csvService->cleanupFileSystem($jobRunId);
     }
 }
