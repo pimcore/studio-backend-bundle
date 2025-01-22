@@ -21,8 +21,8 @@ services:
   # Services
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface: ~
   Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService: ~
+  Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface: '@Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService'
   Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadService
 

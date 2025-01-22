@@ -74,6 +74,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_emails_description'
 )]
 #[Tag(
+    name: Tags::Export->value,
+    description: 'tag_export_description'
+)]
+#[Tag(
     name: Tags::Mercure->value,
     description: 'tag_mercure_description'
 )]

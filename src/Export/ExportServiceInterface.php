@@ -29,4 +29,8 @@ interface ExportServiceInterface
         bool $withGroup = false,
         ?string $delimiter = null,
     ): void;
+
+    public function cleanUpFileSystem(
+        int $jobRunId
+    ): void;
 }

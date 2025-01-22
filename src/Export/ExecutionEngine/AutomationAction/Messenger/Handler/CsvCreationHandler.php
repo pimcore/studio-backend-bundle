@@ -22,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
-use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -37,7 +37,7 @@ final class CsvCreationHandler extends AbstractHandler
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
-        private readonly CsvExportService $csvService
+        private readonly ExportServiceInterface $csvService
     ) {
         parent::__construct();
     }

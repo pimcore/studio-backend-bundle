@@ -22,7 +22,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
+use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -32,7 +32,7 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
-        private CsvExportService $csvService
+        private ExportServiceInterface $csvService
     ) {
 
     }
