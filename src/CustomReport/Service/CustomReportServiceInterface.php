@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -34,15 +34,19 @@ interface CustomReportServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getCustomReportByName(string $reportName): ?Config;
+    public function getCustomReportByName(string $reportName): Config;
 
     /**
      * @throws NotFoundException
      */
-    public function getChartData(string $reportName, ChartDataParameter $chartDataParameter): CustomReportChartData;
+    public function getChartData(string $reportName, ExportParameter $chartDataParameter): CustomReportChartData;
 
     /**
      * @throws NotFoundException
      */
     public function getCustomReportDetails(string $reportName): CustomReportDetails;
+
+    public function getFieldsForExport(Config $reportConfig): array;
+
+    public function generateCsvData(array $reportData, array $exportFields, bool $includeHeaders): array;
 }

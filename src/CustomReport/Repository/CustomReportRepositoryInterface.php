@@ -32,5 +32,5 @@ interface CustomReportRepositoryInterface
     /**
      * @throws NotFoundException
      */
-    public function loadByName(string $name): ?Config;
+    public function loadByName(string $name): Config;
 }

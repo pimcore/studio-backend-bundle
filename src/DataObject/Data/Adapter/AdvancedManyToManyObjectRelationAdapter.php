@@ -17,9 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationMetadataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -33,8 +35,9 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDataInterface
+final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use RelationDataTrait;
     use RelationMetadataTrait;
 
     public function __construct(
@@ -56,6 +59,26 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
         }
 
         return $this->buildRelationsMetadata($relationData, $fieldDefinition);
+    }
+
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?array {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        $normalizedData = [];
+        foreach ($value as $relation) {
+            if (!$relation instanceof ObjectMetadata) {
+                continue;
+            }
+
+            $normalizedData[] = $this->getAdvancedRelationElementData($relation);
+        }
+
+        return $normalizedData;
     }
 
     private function buildRelationsMetadata(array $relationData, Data $fieldDefinition): array

@@ -30,6 +30,9 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CsvServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CsvService
+
   Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportService
 
@@ -37,3 +40,16 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\AdapterService
     arguments:
       $adapters: '@pimcore.custom_report.adapter.factories'
+
+  #
+  # Messages
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCollectionMessage: ~
+
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCollectionHandler: ~
+

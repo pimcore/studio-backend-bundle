@@ -101,13 +101,13 @@ trait ElementProviderTrait
     /**
      * @throws InvalidElementTypeException
      */
-    private function getElementType(ElementInterface $element, bool $getCoreValue = false): string
+    private function getElementType(ElementInterface $element, bool $getCoreType = false): string
     {
         return match (true) {
             $element instanceof Asset => ElementTypes::TYPE_ASSET,
             $element instanceof Document => ElementTypes::TYPE_DOCUMENT,
             $element instanceof DataObject =>
-                $getCoreValue ? ElementTypes::TYPE_OBJECT : ElementTypes::TYPE_DATA_OBJECT,
+                $getCoreType ? ElementTypes::TYPE_OBJECT : ElementTypes::TYPE_DATA_OBJECT,
             default => throw new InvalidElementTypeException($element->getType())
         };
     }

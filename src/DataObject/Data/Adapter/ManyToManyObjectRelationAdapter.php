@@ -17,9 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\RelationData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationDataTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -29,8 +32,10 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ManyToManyObjectRelationAdapter implements SetterDataInterface
+final readonly class ManyToManyObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use RelationDataTrait;
+
     public function __construct(
         private ConcreteObjectResolverInterface $concreteObjectResolver
     ) {
@@ -49,6 +54,20 @@ final readonly class ManyToManyObjectRelationAdapter implements SetterDataInterf
         }
 
         return $this->getRelationObjects($relationData);
+    }
+
+    /**
+     * @return RelationData[]|null
+     */
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?array {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        return $this->getRelationElementsData($value);
     }
 
     private function getRelationObjects(array $relationData): array

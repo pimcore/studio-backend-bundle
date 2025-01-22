@@ -25,7 +25,7 @@ use Pimcore\Model\Element\ElementInterface;
  */
 trait RelationMetadataTrait
 {
-    public function addRelationMetadata(
+    private function addRelationMetadata(
         ElementInterface $object,
         array $relationData,
         ObjectMetadata|ElementMetadata $metadata

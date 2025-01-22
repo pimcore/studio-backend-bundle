@@ -14,30 +14,32 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Download;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Download;
 
-use OpenApi\Attributes\Delete;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
+use OpenApi\Attributes\Get;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Header\ContentDisposition;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class DeleteCsvController extends AbstractApiController
+final class DownloadCsvController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -47,32 +49,35 @@ final class DeleteCsvController extends AbstractApiController
     }
 
     /**
-     * @throws EnvironmentException|ForbiddenException|NotFoundException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
      */
-    #[Route('/assets/download/csv/{jobRunId}', name: 'pimcore_studio_api_csv_delete', methods: ['DELETE'])]
-    #[IsGranted(UserPermissions::ASSETS->value)]
-    #[Delete(
-        path: self::PREFIX . '/assets/download/csv/{jobRunId}',
-        operationId: 'asset_delete_csv',
-        description: 'asset_delete_csv_description',
-        summary: 'asset_delete_csv_summary',
-        tags: [Tags::Assets->name]
+    #[Route('/export/download/csv/{jobRunId}', name: 'pimcore_studio_api_export_download_csv', methods: ['GET'])]
+    #[Get(
+        path: self::PREFIX . '/export/download/csv/{jobRunId}',
+        operationId: 'export_download_csv',
+        description: 'export_download_csv_description',
+        summary: 'export_download_csv_summary',
+        tags: [Tags::Export->value]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
-    #[SuccessResponse]
+    #[SuccessResponse(
+        description: 'export_download_csv_success_response',
+        content: [new MediaType('application/csv')],
+        headers: [new ContentDisposition()]
+    )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteAssetsCsv(int $jobRunId): Response
+    public function downloadCsv(int $jobRunId): StreamedResponse
     {
-        $this->downloadService->cleanupDataByJobRunId(
+        return $this->downloadService->downloadResourceByJobRunId(
             $jobRunId,
-            CsvServiceInterface::CSV_FOLDER_NAME,
-            CsvServiceInterface::CSV_FILE_NAME
+            CsvExportService::CSV_FILE_NAME,
+            CsvExportService::CSV_FOLDER_NAME,
+            MimeTypes::CSV->value,
+            'export.csv'
         );
-
-        return new Response();
     }
 }

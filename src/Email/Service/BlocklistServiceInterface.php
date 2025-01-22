@@ -33,7 +33,7 @@ interface BlocklistServiceInterface
 
     public function listEntries(
         CollectionParameters $parameters,
-        string $email = null,
+        ?string $email = null,
     ): Collection;
 
     /**

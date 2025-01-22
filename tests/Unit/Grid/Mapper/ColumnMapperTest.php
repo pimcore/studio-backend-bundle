@@ -79,7 +79,7 @@ final class ColumnMapperTest extends Unit
     public function testMapperForSize(): void
     {
         $mapper = new ColumnMapper();
-        $this->assertSame('fileSize', $mapper->getType('size'));
+        $this->assertSame('fileSize', $mapper->getType('fileSize'));
     }
 
     public function testMapperForKey(): void
