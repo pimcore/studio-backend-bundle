@@ -32,7 +32,6 @@ use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Normalizer\NormalizerInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @internal
@@ -123,8 +122,7 @@ final readonly class DataService implements DataServiceInterface
         mixed $value,
         Data $fieldDefinition,
         array $data
-    ): array
-    {
+    ): array {
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof SearchPreviewDataInterface) {
             return $adapter->getPreviewFieldData($value, $fieldDefinition, $data);

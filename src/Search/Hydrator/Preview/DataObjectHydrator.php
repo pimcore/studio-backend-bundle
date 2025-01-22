@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Concrete;
+use function sprintf;
 
 /**
  * @internal
