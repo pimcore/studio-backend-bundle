@@ -21,6 +21,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\AssetHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\AssetHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DataObjectHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DataObjectHydrator
+
   Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DocumentHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DocumentHydrator
 
@@ -50,3 +53,4 @@ services:
     arguments:
       - Pimcore\Model\Asset: '@Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\AssetHydratorInterface'
         Pimcore\Model\Document: '@Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DocumentHydratorInterface'
+        Pimcore\Model\DataObject: '@Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DataObjectHydratorInterface'
