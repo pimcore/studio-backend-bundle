@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 
 final class DataObjectVersionEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.data_object_version';
+    public const string EVENT_NAME = 'pre_response.data_object_version';
 
     public function __construct(
         private readonly DataObjectVersion $version

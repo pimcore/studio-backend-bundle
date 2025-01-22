@@ -23,5 +23,4 @@ enum JobSteps: string
     case ASSET_CLONING = 'studio_ee_job_step_asset_cloning';
     case ASSET_UPLOADING = 'studio_ee_job_step_asset_uploading';
     case CSV_COLLECTION = 'studio_ee_job_step_csv_collection';
-    case CSV_CREATION = 'studio_ee_job_step_csv_creation';
 }

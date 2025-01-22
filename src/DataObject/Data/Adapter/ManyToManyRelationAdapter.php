@@ -22,12 +22,10 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\RelationData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\Document;
-use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 
@@ -37,7 +35,7 @@ use function is_array;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class ManyToManyRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
-    use ElementProviderTrait;
+    use RelationDataTrait;
 
     public function __construct(
         private ServiceResolverInterface $serviceResolver
@@ -70,20 +68,7 @@ final readonly class ManyToManyRelationAdapter implements SetterDataInterface, D
             return null;
         }
 
-        $data = [];
-        /** @var ElementInterface[] $value */
-        foreach ($value as $relation) {
-            $elementType = $this->getElementType($relation);
-            $data[] = new RelationData(
-                $relation->getId(),
-                $elementType,
-                $this->getSubType($relation),
-                $relation->getRealFullPath(),
-                $this->getPublished($relation)
-            );
-        }
-
-        return $data;
+        return $this->getRelationElementsData($value);
     }
 
     private function getRelationElements(array $relationData): array
@@ -100,23 +85,5 @@ final readonly class ManyToManyRelationAdapter implements SetterDataInterface, D
         }
 
         return $relations;
-    }
-
-    private function getSubType(ElementInterface $element): string
-    {
-        if ($element instanceof Concrete) {
-            return $element->getClassName();
-        }
-
-        return $element->getType();
-    }
-
-    private function getPublished(ElementInterface $element): ?bool
-    {
-        if ($element instanceof Concrete || $element instanceof Document) {
-            return $element->getPublished();
-        }
-
-        return null;
     }
 }

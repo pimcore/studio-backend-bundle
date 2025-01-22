@@ -28,7 +28,7 @@ interface EmailLogRepositoryInterface
 {
     public function getListing(
         CollectionParameters $parameters,
-        string $email = null,
+        ?string $email = null,
     ): Listing;
 
     /**

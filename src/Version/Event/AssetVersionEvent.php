@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 
 final class AssetVersionEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.asset_version';
+    public const string EVENT_NAME = 'pre_response.asset_version';
 
     public function __construct(
         private readonly AssetVersion $version

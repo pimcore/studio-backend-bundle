@@ -20,7 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateFieldTypeTrait;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
@@ -31,7 +31,7 @@ use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
  */
 final readonly class InheritanceService implements InheritanceServiceInterface
 {
-    use ValidateFieldTypeTrait;
+    use ValidateObjectDataTrait;
 
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,

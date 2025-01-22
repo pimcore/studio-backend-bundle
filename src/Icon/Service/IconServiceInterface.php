@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Model\DataObject;
 
 interface IconServiceInterface
 {
@@ -26,7 +27,7 @@ interface IconServiceInterface
 
     public function getIconForAsset(string $assetType, string $mimeType): ElementIcon;
 
-    public function getIconForDataObject(DataObjectSearchResultItem $dataObject): ElementIcon;
+    public function getIconForDataObject(DataObjectSearchResultItem|DataObject $dataObject): ElementIcon;
 
     public function getIconForTag(): string;
 

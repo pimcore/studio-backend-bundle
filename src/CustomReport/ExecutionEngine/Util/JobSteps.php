@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Pimcore
@@ -14,13 +13,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages;
+namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\ExecutionEngine\Util;
 
-use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
-
-/**
- * @internal
- */
-final class CsvCreationMessage extends AbstractExecutionEngineMessage
+enum JobSteps: string
 {
+    case CUSTOM_REPORT_CSV_COLLECTION = 'studio_ee_job_step_custom_report_csv_collection';
 }

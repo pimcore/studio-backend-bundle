@@ -20,7 +20,7 @@ use Exception;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ChartDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -84,7 +84,7 @@ final class GetController extends AbstractApiController
         description: 'custom_reports_chart_sort_by_parameter',
         required: false
     )]
-    #[FilterParameter('chart data')]
+    #[FilterParameter('chart data', example: '')]
     #[IntParameter(
         name: 'reportOffset',
         description: 'custom_reports_chart_report_offset_parameter',
@@ -104,7 +104,7 @@ final class GetController extends AbstractApiController
     ])]
     public function getChartData(
         string $name,
-        #[MapQueryString] ChartDataParameter $chartDataParameter
+        #[MapQueryString] ExportParameter $chartDataParameter
     ): JsonResponse {
         return $this->jsonResponse(
             $this->customReportService->getChartData($name, $chartDataParameter)

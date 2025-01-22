@@ -19,9 +19,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\RelationData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
@@ -35,8 +38,10 @@ use function sprintf;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
+final readonly class ReverseObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
+    use RelationDataTrait;
+
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private ConcreteObjectResolverInterface $concreteObjectResolver,
@@ -70,6 +75,20 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         $this->processRemoteOwnerRelations($element, $relations, $relationData, $ownerFieldName);
 
         return null;
+    }
+
+    /**
+     * @return RelationData[]|null
+     */
+    public function normalize(
+        mixed $value,
+        Data $fieldDefinition
+    ): ?array {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        return $this->getRelationElementsData($value);
     }
 
     private function processRemoteOwnerRelations(

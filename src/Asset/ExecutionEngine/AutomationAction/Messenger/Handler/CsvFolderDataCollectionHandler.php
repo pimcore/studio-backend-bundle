@@ -107,7 +107,7 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
                     ),
                 ];
 
-                $this->updateContextArrayValues($jobRun, StepConfig::ASSET_EXPORT_DATA->value, $assetData);
+                $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $assetData);
             } catch (Exception $e) {
                 $this->abort($this->getAbortData(
                     Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,

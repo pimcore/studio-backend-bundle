@@ -56,7 +56,7 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
         );
     }
 
-    public function loadByName(string $name): ?Config
+    public function loadByName(string $name): Config
     {
         $report = null;
         $exception = null;

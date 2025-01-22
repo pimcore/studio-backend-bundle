@@ -19,11 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
-use Pimcore\Bundle\StudioBackendBundle\Version\Event\AssetVersionEvent;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionDetailServiceInterface;
 use Pimcore\Model\Asset;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @internal
@@ -32,7 +30,6 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
 {
     public function __construct(
         private DocumentServiceInterface $documentService,
-        private EventDispatcherInterface $eventDispatcher,
         private VersionDetailServiceInterface $versionDetailService,
         private CustomMetadataVersionHydratorInterface $customMetadataVersionHydrator,
     ) {
@@ -59,7 +56,7 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
 
     private function hydrateAsset(Asset $asset): AssetVersion
     {
-        $hydratedAsset = new AssetVersion(
+        return new AssetVersion(
             $asset->getType(),
             $asset->getFilename(),
             $asset->getCreationDate(),
@@ -69,12 +66,5 @@ final readonly class AssetVersionHydrator implements AssetVersionHydratorInterfa
             $this->customMetadataVersionHydrator->hydrate($asset->getMetadata()),
             $this->versionDetailService->getDimensions($asset)
         );
-
-        $this->eventDispatcher->dispatch(
-            new AssetVersionEvent($hydratedAsset),
-            AssetVersionEvent::EVENT_NAME
-        );
-
-        return $hydratedAsset;
     }
 }
