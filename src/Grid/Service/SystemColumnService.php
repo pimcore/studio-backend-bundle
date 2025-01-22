@@ -35,7 +35,7 @@ final readonly class SystemColumnService implements SystemColumnServiceInterface
         $systemColumns = Service::GRID_SYSTEM_COLUMNS;
         $columns = [];
         foreach ($systemColumns as $column) {
-            $column = $this->mapCustomColumKeys($column);
+            $column = $this->mapCustomColumnKeys($column);
 
             $columns[$column] = $this->columnMapper->getType($column);
         }
@@ -54,7 +54,7 @@ final readonly class SystemColumnService implements SystemColumnServiceInterface
         return $columns;
     }
 
-    private function mapCustomColumKeys(string $key): string
+    private function mapCustomColumnKeys(string $key): string
     {
         $keyMapping = [
             'size' => 'fileSize',
