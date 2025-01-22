@@ -27,7 +27,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * @interal
+ * @internal
  */
 final readonly class PreviewUrlService implements PreviewUrlServiceInterface
 {
