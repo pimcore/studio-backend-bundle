@@ -29,9 +29,12 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Thumbnails;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ConsoleExecutableTrait;
+use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageThumbnailConfig;
 use Pimcore\Model\Asset\Image\ThumbnailInterface;
+use Pimcore\Model\Asset\Video;
+use Pimcore\Model\Asset\Video\ImageThumbnailInterface;
 use Pimcore\Model\Asset\Video\Thumbnail\Config as VideoThumbnailConfig;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -95,17 +98,25 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
      */
     public function getImagePreviewThumbnail(Image $image): ThumbnailInterface
     {
-        $thumbnailConfig = $this->getDefaultImageThumbnailConfig();
-        $assetConfig = $this->systemConfigResolver->getSystemConfiguration('assets');
-        if (isset($assetConfig['preview_thumbnail']) && $assetConfig['preview_thumbnail']) {
-            try {
-                $thumbnailConfig = $this->imageConfigResolver->getByName($assetConfig['preview_thumbnail']);
-            } catch (Exception) {
-                throw new InvalidThumbnailException($assetConfig['preview_thumbnail']);
-            }
+        $thumbnailConfig = $this->getSystemImageThumbnailConfig();
+        if ($thumbnailConfig === null) {
+            $thumbnailConfig = $this->getDefaultImageThumbnailConfig();
         }
 
         return $image->getThumbnail($thumbnailConfig);
+    }
+
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getAssetImagePreviewThumbnail(Video|Document $asset): ImageThumbnailInterface
+    {
+        $thumbnailConfig = $this->getSystemImageThumbnailConfig();
+        if ($thumbnailConfig === null) {
+            $thumbnailConfig = $this->getDefaultImageThumbnailConfig();
+        }
+
+        return $asset->getImageThumbnail($thumbnailConfig);
     }
 
     /**
@@ -143,6 +154,21 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
                 'Width must be set for aspect ratio configuration'
             );
         }
+    }
+
+    private function getSystemImageThumbnailConfig(): ?ImageThumbnailConfig
+    {
+        $thumbnailConfig = null;
+        $assetConfig = $this->systemConfigResolver->getSystemConfiguration('assets');
+        if (isset($assetConfig['preview_thumbnail']) && $assetConfig['preview_thumbnail']) {
+            try {
+                $thumbnailConfig = $this->imageConfigResolver->getByName($assetConfig['preview_thumbnail']);
+            } catch (Exception) {
+                throw new InvalidThumbnailException($assetConfig['preview_thumbnail']);
+            }
+        }
+
+        return $thumbnailConfig;
     }
 
     private function getImageThumbnailConfig(

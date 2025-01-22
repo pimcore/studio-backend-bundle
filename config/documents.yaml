@@ -21,6 +21,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Document\Service\SiteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\SiteService
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\BinaryServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\BinaryService
+
 
   #
   # Repositories

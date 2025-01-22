@@ -28,6 +28,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schema\DevError;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schema\Error;
+use Pimcore\Bundle\StudioBackendBundle\Search\Schema\AssetSearchPreview;
+use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DataObjectSearchPreview;
+use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DocumentSearchPreview;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
@@ -37,7 +40,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
  */
 final readonly class Schemas
 {
-    public const ASSETS = [
+    public const array ASSETS = [
        Image::class,
        Document::class,
        Audio::class,
@@ -48,18 +51,24 @@ final readonly class Schemas
        Unknown::class,
     ];
 
-    public const DATA_OBJECTS = [
+    public const array DATA_OBJECTS = [
         DataObject::class,
         DataObjectFolder::class,
     ];
 
-    public const VERSIONS = [
+    public const array VERSIONS = [
         AssetVersion::class,
         DataObjectVersion::class,
         DocumentVersion::class,
     ];
 
-    public const ERRORS = [
+    public const array SEARCH_PREVIEWS = [
+        AssetSearchPreview::class,
+        DataObjectSearchPreview::class,
+        DocumentSearchPreview::class,
+    ];
+
+    public const array ERRORS = [
         Error::class,
         DevError::class,
     ];

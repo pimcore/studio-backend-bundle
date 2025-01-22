@@ -14,16 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Video;
+namespace Pimcore\Bundle\StudioBackendBundle\Document\Controller\Page;
 
-use League\Flysystem\FilesystemException;
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\ThumbnailNameParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\BinaryServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\BinaryServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -36,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -45,10 +44,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ThumbnailDownloadController extends AbstractApiController
+final class PreviewStreamController extends AbstractApiController
 {
+    private const string ROUTE = '/documents/{id}/page/stream/preview';
+
     public function __construct(
-        private readonly AssetServiceInterface $assetService,
+        private readonly DocumentServiceInterface $documentService,
         private readonly BinaryServiceInterface $binaryService,
         private readonly SecurityServiceInterface $securityService,
         SerializerInterface $serializer
@@ -58,47 +59,44 @@ final class ThumbnailDownloadController extends AbstractApiController
 
     /**
      * @throws AccessDeniedException
+     * @throws EnvironmentException
      * @throws NotFoundException
-     * @throws ElementProcessingNotCompletedException
-     * @throws FilesystemException
      * @throws InvalidElementTypeException
      * @throws InvalidThumbnailException
      * @throws UserNotFoundException
      */
     #[Route(
-        '/assets/{id}/video/download/{thumbnailName}',
-        name: 'pimcore_studio_api_download_video_thumbnail',
+        self::ROUTE,
+        name: 'pimcore_studio_api_stream_image_preview',
         methods: ['GET']
     )]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::DOCUMENTS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/{id}/video/download/{thumbnailName}',
-        operationId: 'asset_video_download_by_thumbnail',
-        description: 'asset_video_download_by_thumbnail_description',
-        summary: 'asset_video_download_by_thumbnail_summary',
-        tags: [Tags::Assets->name]
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'document_page_stream_preview',
+        description: 'document_page_stream_preview_description',
+        summary: 'document_page_stream_preview_summary',
+        tags: [Tags::Documents->name]
     )]
-    #[IdParameter(type: 'video')]
-    #[ThumbnailNameParameter]
+    #[IdParameter(type: 'image')]
     #[SuccessResponse(
-        description: 'asset_video_download_by_thumbnail_success_response',
-        content: new MediaType('video/mp4'),
-        headers: [new ContentDisposition()]
+        description: 'document_page_stream_preview_success_response',
+        content: [new MediaType('image/jpeg')],
+        headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function downloadVideoByThumbnail(int $id, string $thumbnailName): StreamedResponse
+    public function streamPagePreview(int $id): StreamedResponse
     {
-        $asset = $this->assetService->getAssetElement(
+        $document = $this->documentService->getDocumentElement(
             $this->securityService->getCurrentUser(),
             $id
         );
 
-        return $this->binaryService->downloadVideoByThumbnail(
-            $asset,
-            $thumbnailName
-        );
+        return $this->binaryService->streamPagePreviewImage($document);
     }
 }

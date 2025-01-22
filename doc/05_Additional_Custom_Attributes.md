@@ -139,3 +139,4 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.custom_report_tree_config_node`
 - `pre_response.custom_report_tree_node`
 - `pre_response.simple_search.result`
+- `pre_response.simple_search.preview`

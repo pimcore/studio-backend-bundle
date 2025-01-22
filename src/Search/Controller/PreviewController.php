@@ -18,34 +18,35 @@ namespace Pimcore\Bundle\StudioBackendBundle\Search\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SimpleSearchParameter;
-use Pimcore\Bundle\StudioBackendBundle\Search\Schema\SimpleSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\Search\Attribute\Response\Content\OneOfSearchPreviewsJson;
 use Pimcore\Bundle\StudioBackendBundle\Search\Service\SearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class SimpleController extends AbstractApiController
+final class PreviewController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
-    private const string ROUTE = '/search';
+    private const string ROUTE = '/search/{elementType}/{id}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -55,35 +56,35 @@ final class SimpleController extends AbstractApiController
     }
 
     /**
-     * @throws SearchException|UserNotFoundException
+     * @throws AccessDeniedException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
-    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_search', methods: ['GET'])]
+    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_search_preview', methods: ['GET'])]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'simple_search_get',
-        description: 'simple_search_get_description',
-        summary: 'simple_search_get_summary',
+        operationId: 'simple_search_preview_get',
+        description: 'simple_search_preview_get_description',
+        summary: 'simple_search_preview_get_summary',
         tags: [Tags::Search->name]
     )]
-    #[PageParameter]
-    #[PageSizeParameter]
-    #[TextFieldParameter(name: 'searchTerm', description: 'simple_search_get_search_term_parameter', required: false)]
+    #[IdParameter]
+    #[ElementTypeParameter]
     #[SuccessResponse(
-        description: 'simple_search_get_success_response',
-        content: new CollectionJson(new GenericCollection(SimpleSearchResult::class))
+        description: 'simple_search_preview_get_success_response',
+        content: new OneOfSearchPreviewsJson()
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function doSimpleSearch(#[MapQueryString] SimpleSearchParameter $parameters): JsonResponse
+    public function getSimpleSearchPreview(
+        int $id,
+        string $elementType
+    ): JsonResponse
     {
-        $collection = $this->searchService->doSimpleSearch($parameters);
-
-        return $this->getPaginatedCollection(
-            $this->serializer,
-            $collection->getItems(),
-            $collection->getTotalItems()
+        return $this->jsonResponse(
+            $this->searchService->getSearchPreview(new ElementParameters($elementType, $id))
         );
     }
 }
