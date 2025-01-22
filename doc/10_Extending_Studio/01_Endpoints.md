@@ -112,3 +112,8 @@ final class CollectionController extends AbstractApiController
     }
 }
 ```
+
+### Available classes for simplification
+
+[Collection](../../src/Response/Collection.php) Predefined repsonse object for collections with the total item count and the items 
+[HttpResponseCodes](../../src/Util/Constant/HttpResponseCodes.php) Predefined http response codes
