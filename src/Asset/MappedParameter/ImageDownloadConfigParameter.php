@@ -209,7 +209,7 @@ final readonly class ImageDownloadConfigParameter
 
     private function validateCropOptions(): void
     {
-        if($this->getCropPercent() &&
+        if ($this->getCropPercent() &&
             (!$this->getCropWidth() ||
             !$this->getCropHeight() ||
             !$this->getCropTop() ||
