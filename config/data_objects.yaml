@@ -52,7 +52,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlService
-    arguments: [ '@request_stack' ]
+    arguments: [ '@request_stack', '@Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PreviewGenerator' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PathFormatterServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PathFormatterService
@@ -66,6 +66,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PathFormatterHelperInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PathFormatterHelper
 
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PreviewGenerator: ~
 
   #
   # Hydrator
