@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 /**
  * Pimcore
  *
@@ -9,8 +10,8 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy;
@@ -27,20 +28,21 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Site\Listing;
 use Pimcore\Model\Translation;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function array_key_exists;
+use function in_array;
+use function is_null;
 
 /**
  * @internal - This class was mostly copied from AdminClassicBundle
  */
 final readonly class PreviewGenerator implements PreviewGeneratorInterface
 {
-
     public function __construct(
         private SecurityServiceInterface $securityService,
         private SiteResolverInterface $siteResolver,
         private ToolResolverInterface $toolResolver,
         private TranslatorInterface $translator
-    )
-    {
+    ) {
     }
 
     /**
@@ -122,7 +124,7 @@ final readonly class PreviewGenerator implements PreviewGeneratorInterface
             'name' => PreviewGeneratorInterface::PARAMETER_LOCALE,
             'label' => $this->translator->trans('preview_generator_locale', [], Translation::DOMAIN_ADMIN),
             'values' => $locales,
-            'defaultValue' => $defaultValue
+            'defaultValue' => $defaultValue,
         ];
     }
 
