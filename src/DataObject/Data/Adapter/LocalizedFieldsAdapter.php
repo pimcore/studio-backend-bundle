@@ -190,8 +190,7 @@ final readonly class LocalizedFieldsAdapter implements
         mixed $value,
         Data $fieldDefinition,
         array $data
-    ): array
-    {
+    ): array {
         if (!$value instanceof Localizedfield || !$fieldDefinition instanceof Localizedfields) {
             return $data;
         }
@@ -226,7 +225,6 @@ final readonly class LocalizedFieldsAdapter implements
 
         return $data;
     }
-
 
     private function getAllowedLanguages(
         Concrete $element,

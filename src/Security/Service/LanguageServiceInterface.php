@@ -30,5 +30,4 @@ interface LanguageServiceInterface
         string $permission,
         ?array $languages = null
     ): array;
-
 }

@@ -91,8 +91,7 @@ final readonly class SecurityService implements SecurityServiceInterface
         DataObject $dataObject,
         UserInterface $user,
         string $permission
-    ): array
-    {
+    ): array {
         /** @var User $user
          *  Because of isAllowed method in the GDI
          * */

@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\UserInterface;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -39,8 +41,7 @@ final readonly class LanguageService implements LanguageServiceInterface
         UserInterface $user,
         string $permission,
         ?array $languages = null
-    ): array
-    {
+    ): array {
         if (!in_array($permission, ElementPermissions::LANGUAGE_PERMISSIONS)) {
             throw new InvalidArgumentException(sprintf('Invalid permission "%s"', $permission));
         }
@@ -61,6 +62,7 @@ final readonly class LanguageService implements LanguageServiceInterface
     private function getAllLanguages(): array
     {
         $validLanguages = $this->toolResolver->getValidLanguages();
+
         return array_merge($validLanguages, [MappingProperty::NOT_LOCALIZED_KEY]);
     }
 }
