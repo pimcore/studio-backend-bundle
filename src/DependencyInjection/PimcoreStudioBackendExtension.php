@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInte
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
@@ -72,7 +71,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         }
 
         $this->checkValidUrlPrefix($config['url_prefix']);
-        $this->checkValidOpenApiScanPaths($config['open_api_scan_paths']);
         $this->checkValidServers($config['open_api_servers']);
 
         $definition = $container->getDefinition(OpenApiServiceInterface::class);
@@ -141,23 +139,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 'pimcore_studio_backend.mercure_settings.' . $key,
                 $containerConfig['mercure_settings'][$key]
             );
-        }
-    }
-
-    /**
-     * @throws InvalidPathException
-     */
-    private function checkValidOpenApiScanPaths(array $config): void
-    {
-        foreach ($config as $path) {
-            if (!is_dir($path)) {
-                throw new InvalidPathException(
-                    sprintf(
-                        'The path "%s" is not a valid directory.',
-                        $path
-                    )
-                );
-            }
         }
     }
 
