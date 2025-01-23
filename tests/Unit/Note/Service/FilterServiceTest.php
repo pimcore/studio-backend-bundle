@@ -58,14 +58,14 @@ final class FilterServiceTest extends Unit
     {
         $noteListing = $this->getNoteListing();
         $noteParameters = new NoteParameters(
-            fieldFilters: json_encode([
+            fieldFilters: [
                 [
                     'field' => 'date',
                     'type' => 'date',
                     'operator' => 'eq',
                     'value' => '05/04/2024',
                 ],
-            ], JSON_THROW_ON_ERROR)
+            ],
         );
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
@@ -86,14 +86,14 @@ final class FilterServiceTest extends Unit
     {
         $noteListing = $this->getNoteListing();
         $noteParameters = new NoteParameters(
-            fieldFilters: json_encode([
+            fieldFilters: [
                 [
                     'field' => 'numeric',
                     'type' => 'numeric',
                     'operator' => 'eq',
                     'value' => 10,
                 ],
-            ], JSON_THROW_ON_ERROR)
+            ],
         );
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
@@ -113,14 +113,14 @@ final class FilterServiceTest extends Unit
     {
         $noteListing = $this->getNoteListing();
         $noteParameters = new NoteParameters(
-            fieldFilters: json_encode([
+            fieldFilters: [
                 [
                     'field' => 'boolean',
                     'type' => 'boolean',
                     'operator' => 'boolean',
                     'value' => true,
                 ],
-            ], JSON_THROW_ON_ERROR)
+            ],
         );
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
@@ -140,14 +140,14 @@ final class FilterServiceTest extends Unit
     {
         $noteListing = $this->getNoteListing();
         $noteParameters = new NoteParameters(
-            fieldFilters: json_encode([
+            fieldFilters: [
                 [
                     'field' => 'list',
                     'type' => 'list',
                     'operator' => 'list',
                     'value' => 'list',
                 ],
-            ], JSON_THROW_ON_ERROR)
+            ],
         );
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
@@ -167,14 +167,14 @@ final class FilterServiceTest extends Unit
     {
         $noteListing = $this->getNoteListing();
         $noteParameters = new NoteParameters(
-            fieldFilters: json_encode([
+            fieldFilters: [
                 [
                     'field' => 'user',
                     'type' => 'user',
                     'operator' => 'user',
                     'value' => 'admin',
                 ],
-            ], JSON_THROW_ON_ERROR)
+            ],
         );
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
@@ -197,7 +197,11 @@ final class FilterServiceTest extends Unit
     {
         $noteListing = $this->getNoteListing();
         $noteParameters = new NoteParameters(
-            fieldFilters: 'invalid'
+            fieldFilters: [
+                [
+                    'invalidKey' => 'invalidValue',
+                ],
+            ],
         );
 
         $this->expectException(InvalidFilterException::class);
