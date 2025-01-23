@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -30,14 +31,13 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataT
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Localizedfield;
-use Pimcore\Model\DataObject\Service;
-use Pimcore\Model\User;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
 use function sprintf;
@@ -49,7 +49,8 @@ use function sprintf;
 final readonly class LocalizedFieldsAdapter implements
     SetterDataInterface,
     DataNormalizerInterface,
-    DataInheritanceInterface
+    DataInheritanceInterface,
+    SearchPreviewDataInterface
 {
     use ValidateObjectDataTrait;
 
@@ -57,8 +58,9 @@ final readonly class LocalizedFieldsAdapter implements
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
         private InheritanceServiceInterface $inheritanceService,
+        private LanguageServiceInterface $languageService,
         private SecurityServiceInterface $securityService,
-        private ToolResolverInterface $toolResolver
+        private ToolResolverInterface $toolResolver,
     ) {
     }
 
@@ -123,7 +125,12 @@ final readonly class LocalizedFieldsAdapter implements
         if ($originalValue === null) {
             return null;
         }
-        $languages = array_keys($originalValue);
+        $languages = $this->languageService->getUserAllowedLanguages(
+            $value->getObject(),
+            $this->securityService->getCurrentUser(),
+            ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+        );
+
         $attributes = array_keys(reset($originalValue));
         $result = [];
         foreach ($attributes as $attribute) {
@@ -179,6 +186,48 @@ final readonly class LocalizedFieldsAdapter implements
         return $inheritedData;
     }
 
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array
+    {
+        if (!$value instanceof Localizedfield || !$fieldDefinition instanceof Localizedfields) {
+            return $data;
+        }
+
+        $originalValue = $fieldDefinition->normalize($value);
+        if ($originalValue === null) {
+            return $data;
+        }
+        $language = $this->getPreviewLanguage($value);
+        $attributes = array_keys(reset($originalValue));
+
+        foreach ($attributes as $attribute) {
+            try {
+                $localizedValue = $value->getLocalizedValue($attribute, $language);
+            } catch (Exception $exception) {
+                throw new DatabaseException(
+                    sprintf(
+                        'Error while normalizing localized field: %s',
+                        $exception->getMessage()
+                    )
+                );
+            }
+            $fieldDefinition = $value->getFieldDefinition($attribute, $value->getContext());
+            if ($fieldDefinition === null) {
+                throw new NotFoundException(type: 'Field Definition', id: $attribute);
+            }
+
+            $fieldName = $fieldDefinition->getTitle() ?: $fieldDefinition->getName();
+            $localizedValue = $this->dataService->getPreviewFieldData($localizedValue, $fieldDefinition, $data);
+            $data[$fieldName . '(' . $language . ')'] = $localizedValue[$fieldName];
+        }
+
+        return $data;
+    }
+
+
     private function getAllowedLanguages(
         Concrete $element,
         array $languageData
@@ -188,24 +237,45 @@ final readonly class LocalizedFieldsAdapter implements
             return $languageData;
         }
 
-        /** @var User $user */
-        $allowedLanguages = Service::getLanguagePermissions(
+        $userLanguages = $this->languageService->getUserAllowedLanguages(
             $element,
             $user,
             ElementPermissions::LANGUAGE_EDIT_PERMISSIONS
         );
 
-        if (empty($allowedLanguages)) {
+        if (empty($userLanguages)) {
             return [];
         }
 
-        foreach ($languageData as $language => $data) {
-            if (!in_array($language, $allowedLanguages, true)) {
-                unset($languageData[$language]);
+        foreach ($languageData as $attribute => $data) {
+            foreach ($data as $language => $value) {
+                if (!in_array($language, $userLanguages, true)) {
+                    unset($languageData[$attribute][$language]);
+                }
             }
         }
 
         return $languageData;
+    }
+
+    private function getPreviewLanguage(Localizedfield $value): ?string
+    {
+        $user = $this->securityService->getCurrentUser();
+        if ($user->isAdmin()) {
+            return $this->toolResolver->getDefaultLanguage();
+        }
+
+        $userLanguages = $this->languageService->getUserAllowedLanguages(
+            $value->getObject(),
+            $user,
+            ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+        );
+
+        if (empty($userLanguages)) {
+            return null;
+        }
+
+        return array_keys($userLanguages)[0];
     }
 
     private function getLocalizedField(?FieldContextData $contextData): Localizedfield

@@ -20,6 +20,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionSe
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Model\DataObject;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
@@ -84,5 +85,21 @@ final readonly class SecurityService implements SecurityServiceInterface
         foreach ($permissions as $permission) {
             $this->hasElementPermission($element, $user, $permission);
         }
+    }
+
+    public function getSpecialDataObjectPermissions(
+        DataObject $dataObject,
+        UserInterface $user,
+        string $permission
+    ): array
+    {
+        /** @var User $user
+         *  Because of isAllowed method in the GDI
+         * */
+        return $this->elementPermissionService->getSpecialPermissions(
+            $dataObject,
+            $user,
+            $permission
+        );
     }
 }

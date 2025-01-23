@@ -14,15 +14,21 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
+namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
-use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\UserInterface;
 
-interface SearchPreviewDataInterface
+/**
+ * @internal
+ */
+interface LanguageServiceInterface
 {
-    public function getPreviewFieldData(
-        mixed $value,
-        Data $fieldDefinition,
-        array $data
+    public function getUserAllowedLanguages(
+        DataObject $dataObject,
+        UserInterface $user,
+        string $permission,
+        ?array $languages = null
     ): array;
+
 }
