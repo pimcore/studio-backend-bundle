@@ -38,11 +38,16 @@ final readonly class ImageDownloadConfigParameter
         private bool $frame = false,
         private bool $contain = false,
         private bool $forceResize = false,
+        private bool $cropPercent = false,
+        private ?int $cropWidth = null,
+        private ?int $cropHeight = null,
+        private ?int $cropTop = null,
+        private ?int $cropLeft = null,
     ) {
 
         $this->validateResizeMode();
-
         $this->validateTransformations();
+        $this->validateCropOptions();
     }
 
     public function getMimeType(): string
@@ -173,6 +178,45 @@ final readonly class ImageDownloadConfigParameter
         ) {
             throw new InvalidArgumentException(
                 'Width, height must be set and non-negative when using frame, cover, contain or resize'
+            );
+        }
+    }
+
+    public function getCropHeight(): ?int
+    {
+        return $this->cropHeight;
+    }
+
+    public function getCropPercent(): bool
+    {
+        return $this->cropPercent;
+    }
+
+    public function getCropWidth(): ?int
+    {
+        return $this->cropWidth;
+    }
+
+    public function getCropTop(): ?int
+    {
+        return $this->cropTop;
+    }
+
+    public function getCropLeft(): ?int
+    {
+        return $this->cropLeft;
+    }
+
+    private function validateCropOptions(): void
+    {
+        if ($this->getCropPercent() &&
+            (!$this->getCropWidth() ||
+            !$this->getCropHeight() ||
+            !$this->getCropTop() ||
+            !$this->getCropLeft())
+        ) {
+            throw new InvalidArgumentException(
+                'Crop percent cannot be used without crop width, height, top and left'
             );
         }
     }

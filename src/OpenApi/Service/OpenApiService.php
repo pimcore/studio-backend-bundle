@@ -23,14 +23,16 @@ use OpenApi\Attributes\Schema;
 use OpenApi\Attributes\Server;
 use OpenApi\Generator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use function in_array;
 use function is_array;
 use function is_string;
+use function sprintf;
 
 final readonly class OpenApiService implements OpenApiServiceInterface
 {
-    private const TRANSLATABLE_PROPERTIES = ['summary', 'description'];
+    private const array TRANSLATABLE_PROPERTIES = ['summary', 'description'];
 
     public function __construct(
         private TranslatorServiceInterface $translator,
@@ -40,8 +42,13 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     ) {
     }
 
+    /**
+     * @throws InvalidPathException
+     */
     public function getConfig(): OpenApi
     {
+        $this->checkValidOpenApiScanPaths();
+
         $config = Generator::scan([...$this->openApiScanPaths]);
 
         if ($config) {
@@ -121,5 +128,22 @@ final readonly class OpenApiService implements OpenApiServiceInterface
             static fn (array $server) => new Server(url: $server['url'], description: $server['description']),
             $this->openApiServers
         );
+    }
+
+    /**
+     * @throws InvalidPathException
+     */
+    private function checkValidOpenApiScanPaths(): void
+    {
+        foreach ($this->openApiScanPaths as $path) {
+            if (!is_dir($path)) {
+                throw new InvalidPathException(
+                    sprintf(
+                        'The path "%s" is not a valid directory.',
+                        $path
+                    )
+                );
+            }
+        }
     }
 }

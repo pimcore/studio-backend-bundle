@@ -26,7 +26,9 @@
     "ext-zip": "*",
     "symfony/mercure": "^0.6.5",
     "symfony/mercure-bundle": "^0.3.9",
-    "lcobucci/jwt": "^5.3"
+    "lcobucci/jwt": "^5.3",
+    "phpdocumentor/reflection-docblock": "^5.6",
+    "ext-intl": "*"
   },
   "require-dev": {
     "pimcore/admin-ui-classic-bundle": "2.x-dev",
