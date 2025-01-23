@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter;
 
-use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 
 /**
