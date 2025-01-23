@@ -20,13 +20,6 @@ use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
-use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Property\SaveConfigurationColumn;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\ListOfInteger;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleBoolean;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleInteger;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleString;
 
 /**
  * @internal
