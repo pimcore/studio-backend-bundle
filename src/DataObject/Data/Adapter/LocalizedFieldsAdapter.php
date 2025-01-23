@@ -54,6 +54,8 @@ final readonly class LocalizedFieldsAdapter implements
 {
     use ValidateObjectDataTrait;
 
+    private const string LOCALIZED_FIELDS_KEY = 'localizedfields';
+
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
@@ -79,7 +81,7 @@ final readonly class LocalizedFieldsAdapter implements
         }
 
         $languageData = $this->getAllowedLanguages($element, $data[$key]);
-        $localizedField = $this->getLocalizedField($contextData);
+        $localizedField = $this->getLocalizedField($contextData, $element);
         $localizedField->setObject($element);
 
         foreach ($languageData as $name => $localizedData) {
@@ -276,14 +278,14 @@ final readonly class LocalizedFieldsAdapter implements
         return array_keys($userLanguages)[0];
     }
 
-    private function getLocalizedField(?FieldContextData $contextData): Localizedfield
+    private function getLocalizedField(?FieldContextData $contextData, Concrete $element): Localizedfield
     {
         if ($contextData === null) {
-            return new Localizedfield();
+            return $this->getValidFieldValue($element, self::LOCALIZED_FIELDS_KEY);
         }
 
         if ($contextData->getContextObject() !== null) {
-            return $contextData->getFieldValueFromContextObject('localizedfields');
+            return $contextData->getFieldValueFromContextObject(self::LOCALIZED_FIELDS_KEY);
         }
 
         throw new InvalidArgumentException('Invalid context provided.');
