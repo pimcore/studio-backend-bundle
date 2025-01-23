@@ -30,7 +30,7 @@ final readonly class NoteParameters extends CollectionParameters
         private ?string $sortBy = null,
         private ?string $sortOrder = null,
         private ?string $filter = null,
-        private ?string $fieldFilters = null,
+        private ?array $fieldFilters = null,
     ) {
         parent::__construct($page, $pageSize);
     }
@@ -50,17 +50,8 @@ final readonly class NoteParameters extends CollectionParameters
         return $this->filter;
     }
 
-    /**
-     * @throws JsonException
-     */
     public function getFieldFilters(): ?array
     {
-        return $this->fieldFilters === null ? null :
-            json_decode(
-                $this->fieldFilters,
-                true,
-                512,
-                JSON_THROW_ON_ERROR
-            );
+        return $this->fieldFilters;
     }
 }
