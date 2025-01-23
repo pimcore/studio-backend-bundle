@@ -199,7 +199,7 @@ final class FilterServiceTest extends Unit
         $noteParameters = new NoteParameters(
             fieldFilters: [
                 [
-                    'invalidKey' => 'invalidValue'
+                    'invalidKey' => 'invalidValue',
                 ],
             ],
         );
