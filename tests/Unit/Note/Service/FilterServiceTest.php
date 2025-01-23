@@ -197,7 +197,11 @@ final class FilterServiceTest extends Unit
     {
         $noteListing = $this->getNoteListing();
         $noteParameters = new NoteParameters(
-            fieldFilters: 'invalid'
+            fieldFilters: [
+                [
+                    'invalidKey' => 'invalidValue'
+                ],
+            ],
         );
 
         $this->expectException(InvalidFilterException::class);
