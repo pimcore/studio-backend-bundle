@@ -35,8 +35,6 @@ final readonly class DataObjectPermissions extends Permissions
         private ?string $localizedEdit = null,
         #[Property(description: 'Localized View', type: 'string', example: 'default')]
         private ?string $localizedView = null,
-        #[Property(description: 'Layouts', type: 'string', example: 'default')]
-        private ?string $layouts = null,
         private bool $list = true,
         private bool $view = true,
         private bool $publish = true,
@@ -78,10 +76,5 @@ final readonly class DataObjectPermissions extends Permissions
     public function getLocalizedView(): ?string
     {
         return $this->localizedView;
-    }
-
-    public function getLayouts(): ?string
-    {
-        return $this->layouts;
     }
 }

@@ -28,7 +28,6 @@ final class PermissionsHydrator implements PermissionsHydratorInterface
             $permissions->isUnpublish(),
             $permissions->isLocalizedEdit(),
             $permissions->isLocalizedView(),
-            $permissions->isLayouts(),
             $permissions->isList(),
             $permissions->isView(),
             $permissions->isPublish(),
