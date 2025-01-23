@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInte
 use function in_array;
 use function is_array;
 use function is_string;
+use function sprintf;
 
 final readonly class OpenApiService implements OpenApiServiceInterface
 {
