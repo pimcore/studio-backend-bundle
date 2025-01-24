@@ -176,8 +176,7 @@ final readonly class ClassificationStoreAdapter implements
         mixed $value,
         Data $fieldDefinition,
         array $data
-    ): array
-    {
+    ): array {
         if (!$value instanceof ClassificationstoreModel ||
             !$fieldDefinition instanceof ClassificationstoreDefinition
         ) {
@@ -201,7 +200,6 @@ final readonly class ClassificationStoreAdapter implements
 
         return $data;
     }
-
 
     /**
      * @throws NotFoundException
