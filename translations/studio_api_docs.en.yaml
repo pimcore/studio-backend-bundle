@@ -702,3 +702,8 @@ data_object_format_path_description: |
 data_object_format_path_summary: Format the path of the data
 data_object_format_path_success_response: Formatted path of the objects
 tag_export_description: Export
+class_get_by_data_object_class: Get class definitions
+class_get_by_data_object_class_description: Get all class definitions for the given data object class
+class_get_by_data_object_class_summary: Get class definitions for data object class
+class_get_by_data_object_class_data_object_class: Data object class
+class_get_collection_success_response: List of class definitions
