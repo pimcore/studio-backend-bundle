@@ -220,7 +220,7 @@ final readonly class LocalizedFieldsAdapter implements
                 throw new NotFoundException(type: 'Field Definition', id: $attribute);
             }
 
-            $fieldName = $fieldDefinition->getTitle() ?: $fieldDefinition->getName();
+            $fieldName = $this->dataService->getPreviewFieldName($fieldDefinition);
             $localizedValue = $this->dataService->getPreviewFieldData($localizedValue, $fieldDefinition, $data);
             $data[$fieldName . '(' . $language . ')'] = $localizedValue[$fieldName];
         }
@@ -260,9 +260,10 @@ final readonly class LocalizedFieldsAdapter implements
 
     private function getPreviewLanguage(Localizedfield $value): ?string
     {
+        $defaultLanguage = $this->toolResolver->getDefaultLanguage();
         $user = $this->securityService->getCurrentUser();
         if ($user->isAdmin()) {
-            return $this->toolResolver->getDefaultLanguage();
+            return $defaultLanguage;
         }
 
         $userLanguages = $this->languageService->getUserAllowedLanguages(
@@ -275,13 +276,18 @@ final readonly class LocalizedFieldsAdapter implements
             return null;
         }
 
-        return array_keys($userLanguages)[0];
+        return in_array($defaultLanguage, $userLanguages, true) ? $defaultLanguage : reset($userLanguages);
     }
 
     private function getLocalizedField(?FieldContextData $contextData, Concrete $element): Localizedfield
     {
         if ($contextData === null) {
-            return $this->getValidFieldValue($element, self::LOCALIZED_FIELDS_KEY);
+            $localizedField =  $this->getValidFieldValue($element, self::LOCALIZED_FIELDS_KEY);
+            if (!$localizedField instanceof Localizedfield) {
+                return new Localizedfield();
+            }
+
+            return $localizedField;
         }
 
         if ($contextData->getContextObject() !== null) {

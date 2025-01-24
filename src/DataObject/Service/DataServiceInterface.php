@@ -55,4 +55,6 @@ interface DataServiceInterface
         Data $fieldDefinition,
         array $data
     ): mixed;
+
+    public function getPreviewFieldName(Data $fieldDefinition): string;
 }

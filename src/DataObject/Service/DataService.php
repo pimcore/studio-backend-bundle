@@ -128,10 +128,14 @@ final readonly class DataService implements DataServiceInterface
             return $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
         }
 
-        $fieldKey = !empty($fieldDefinition->getTitle()) ? $fieldDefinition->getTitle() : $fieldDefinition->getName();
-        $data[$fieldKey] = $fieldDefinition->getVersionPreview($value);
+        $data[$this->getPreviewFieldName($fieldDefinition)] = $fieldDefinition->getVersionPreview($value);
 
         return $data;
+    }
+
+    public function getPreviewFieldName(Data $fieldDefinition): string
+    {
+        return !empty($fieldDefinition->getTitle()) ? $fieldDefinition->getTitle() : $fieldDefinition->getName();
     }
 
     /**

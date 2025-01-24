@@ -16,8 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\SearchIndexAdapter\MappingProperty;
-use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject;
@@ -31,38 +29,23 @@ use function sprintf;
 final readonly class LanguageService implements LanguageServiceInterface
 {
     public function __construct(
-        private SecurityServiceInterface $securityService,
-        private ToolResolverInterface $toolResolver
+        private SecurityServiceInterface $securityService
     ) {
     }
 
     public function getUserAllowedLanguages(
         DataObject $dataObject,
         UserInterface $user,
-        string $permission,
-        ?array $languages = null
+        string $permission
     ): array {
         if (!in_array($permission, ElementPermissions::LANGUAGE_PERMISSIONS)) {
             throw new InvalidArgumentException(sprintf('Invalid permission "%s"', $permission));
         }
 
-        if ($languages === null) {
-            $languages = $this->getAllLanguages();
-        }
-
-        $userLanguages = $this->securityService->getSpecialDataObjectPermissions(
+        return $this->securityService->getSpecialDataObjectPermissions(
             $dataObject,
             $user,
             $permission
         );
-
-        return array_intersect($languages, $userLanguages);
-    }
-
-    private function getAllLanguages(): array
-    {
-        $validLanguages = $this->toolResolver->getValidLanguages();
-
-        return array_merge($validLanguages, [MappingProperty::NOT_LOCALIZED_KEY]);
     }
 }

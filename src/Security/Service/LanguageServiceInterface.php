@@ -27,7 +27,6 @@ interface LanguageServiceInterface
     public function getUserAllowedLanguages(
         DataObject $dataObject,
         UserInterface $user,
-        string $permission,
-        ?array $languages = null
+        string $permission
     ): array;
 }
