@@ -43,6 +43,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
             new ClassDefinitionEvent($cd),
             ClassDefinitionEvent::EVENT_NAME
         );
-       return $cd;
+
+        return $cd;
     }
 }

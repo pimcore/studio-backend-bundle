@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator;
 
-use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition as ClassDefinitionSchema;
+use Pimcore\Model\DataObject\ClassDefinition;
 
 /**
  * @internal

@@ -16,9 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
-use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
  * @internal
