@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
 
 /**
- * @internal$data->getEncryptedTables(),
+ * @internal
  */
 final readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInterface
 {
