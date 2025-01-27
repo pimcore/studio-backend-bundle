@@ -341,8 +341,7 @@ final readonly class ClassificationStoreAdapter implements
         Concrete $object,
         bool $isStoreLocalized,
         string $permissionType = ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
-    ): array
-    {
+    ): array {
         $languages = [MappingProperty::NOT_LOCALIZED_KEY];
         if ($isStoreLocalized === false) {
             return $languages;
