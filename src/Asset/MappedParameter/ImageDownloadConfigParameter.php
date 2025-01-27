@@ -26,6 +26,13 @@ use function in_array;
  */
 final readonly class ImageDownloadConfigParameter
 {
+    private const array ALLOWED_RESIZE_MIME_TYPES = [
+        MimeTypes::JPEG->value,
+        MimeTypes::PNG->value,
+        MimeTypes::ORIGINAL->value,
+        MimeTypes::SOURCE->value,
+    ];
+
     public function __construct(
         private string $mimeType,
         private string $resizeMode = ResizeModes::NONE,
@@ -148,7 +155,7 @@ final readonly class ImageDownloadConfigParameter
             return;
         }
 
-        if (!in_array($this->mimeType, [MimeTypes::JPEG->value, MimeTypes::PNG->value], true)) {
+        if (!in_array($this->mimeType, self::ALLOWED_RESIZE_MIME_TYPES, true)) {
             throw new InvalidArgumentException('Invalid mime type' . $this->mimeType);
         }
 

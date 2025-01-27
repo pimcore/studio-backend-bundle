@@ -18,8 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Carbon\Carbon;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Date;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Datetime;
@@ -31,8 +33,13 @@ use function is_string;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class DateAdapter implements SetterDataInterface
+final readonly class DateAdapter implements SetterDataInterface, SearchPreviewDataInterface
 {
+
+    public function __construct(private DataServiceInterface $dataService)
+    {
+    }
+
     public function getDataForSetter(
         Concrete $element,
         Data $fieldDefinition,
@@ -52,5 +59,18 @@ final readonly class DateAdapter implements SetterDataInterface
         }
 
         return null;
+    }
+
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array
+    {
+        if (!$fieldDefinition instanceof Date) {
+            return $data;
+        }
+
+        return $data[$this->dataService->getPreviewFieldName($fieldDefinition)] = $fieldDefinition->normalize($value);
     }
 }

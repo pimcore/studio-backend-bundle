@@ -29,8 +29,10 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\DataObject\Objectbrick;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
@@ -178,6 +180,7 @@ final readonly class ObjectBricksAdapter implements
             }
 
             $type = $item->getType();
+            $brickName = ucfirst($type);
             $definition = $this->definitionResolver->getByKey($type);
             if ($definition === null) {
                 continue;
@@ -185,9 +188,11 @@ final readonly class ObjectBricksAdapter implements
 
             foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
                 $getter = 'get' . ucfirst($brickFieldDefinition->getName());
-                $previewKey = $this->dataService->getPreviewFieldName($brickFieldDefinition);
-                $previewValue = $this->dataService->getPreviewFieldData($item->$getter(), $brickFieldDefinition, $data);
-                $data[ucfirst($type) . ' - ' . $previewKey] = $previewValue[$previewKey] ?? $previewValue;
+                $fieldValues = $this->dataService->getPreviewFieldData($item->$getter(), $brickFieldDefinition, []);
+                foreach ($fieldValues as $fieldKey => $fieldValue) {
+                    $data[$brickName . ' - ' . $fieldKey] = $fieldValue;
+                }
+
             }
         }
 
