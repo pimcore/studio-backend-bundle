@@ -210,10 +210,12 @@ final readonly class ImageDownloadConfigParameter
     private function validateCropOptions(): void
     {
         if ($this->getCropPercent() &&
-            (!$this->getCropWidth() ||
-            !$this->getCropHeight() ||
-            !$this->getCropTop() ||
-            !$this->getCropLeft())
+            (
+                $this->getCropWidth() === null ||
+                $this->getCropHeight() === null ||
+                $this->getCropTop() === null ||
+                $this->getCropLeft() === null
+            )
         ) {
             throw new InvalidArgumentException(
                 'Crop percent cannot be used without crop width, height, top and left'
