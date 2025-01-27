@@ -18,12 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\CustomLayout;
 
 use Exception;
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
@@ -36,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use function count;
 
 final class CollectionController extends AbstractApiController
 {

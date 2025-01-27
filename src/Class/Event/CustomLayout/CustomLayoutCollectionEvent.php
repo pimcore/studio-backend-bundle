@@ -16,10 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout;
 
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 
 final class CustomLayoutCollectionEvent extends AbstractPreResponseEvent
 {

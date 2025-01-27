@@ -39,7 +39,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         $compactLayouts = [];
         $layouts = $this->customLayoutRepository->getCustomLayouts($dataObjectClass);
 
-        foreach($layouts as $layout) {
+        foreach ($layouts as $layout) {
             $compactLayout = $this->customLayoutHydrator->hydrateCompactLayout($layout);
             $this->eventDispatcher->dispatch(
                 new CustomLayoutCollectionEvent($compactLayout),

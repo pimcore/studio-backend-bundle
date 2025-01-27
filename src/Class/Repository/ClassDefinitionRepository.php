@@ -16,11 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
+use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Listing;
-use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 
 /**
  * @internal

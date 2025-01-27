@@ -16,12 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout\Listing;
-use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
-use Pimcore\Model\DataObject\ClassDefinition\Layout;
 
 /**
  * @internal
