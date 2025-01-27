@@ -438,6 +438,11 @@ system_settings_get_description: |
   System settings are public and need no login.
 system_settings_get_success_response: System settings data
 system_settings_get_summary: Get system settings
+simple_search_preview_get_description: |
+  Returns search preview for elements based on the given type <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
+  The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
+simple_search_preview_get_summary: Preview for element search result
+simple_search_preview_get_success_response: Simple search results preview for elements
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
 tag_asset_grid_description: Asset Grid operations

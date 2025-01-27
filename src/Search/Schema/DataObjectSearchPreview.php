@@ -21,7 +21,7 @@ use OpenApi\Attributes\Schema;
 
 #[Schema(
     title: 'SimpleSearchDataObjectDetail',
-    required: ['objectData'],
+    required: ['class', 'objectData'],
     type: 'object'
 )]
 final class DataObjectSearchPreview extends SimpleSearchPreview
