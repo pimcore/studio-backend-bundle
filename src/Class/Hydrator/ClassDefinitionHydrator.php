@@ -28,6 +28,31 @@ final class ClassDefinitionHydrator implements ClassDefinitionHydratorInterface
     {
         return new ClassDefinitionSchema(
             $data->getId(),
+            $data->getName(),
+            $data->getTitle(),
+            $data->getDescription(),
+            $data->getCreationDate(),
+            $data->getModificationDate(),
+            $data->getUserOwner(),
+            $data->getParentClass(),
+            $data->getImplementsInterfaces(),
+            $data->getListingParentClass(),
+            $data->getUseTraits(),
+            $data->getListingUseTraits(),
+            $data->getEncryption(),
+            $data->getAllowInherit(),
+            $data->getAllowVariants(),
+            $data->getShowVariants(),
+            $data->getIcon(),
+            $data->getGroup(),
+            $data->getShowAppLoggerTab(),
+            $data->getLinkGeneratorReference(),
+            $data->getPreviewGeneratorReference(),
+            $data->getCompositeIndices(),
+            $data->getShowFieldLookup(),
+            $data->getPropertyVisibility(),
+            $data->isEnableGridLocking(),
+            $data->getBlockedVarsForExport(),
             $data->isWritable()
         );
     }
