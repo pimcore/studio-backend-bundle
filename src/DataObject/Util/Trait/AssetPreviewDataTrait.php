@@ -32,7 +32,6 @@ use Pimcore\Model\Asset\Video;
  */
 trait AssetPreviewDataTrait
 {
-
     private function getSearchPreviewThumbnailPath(Asset $image): string
     {
         return $this->getSearchPreviewThumbnail($image)->getPath();

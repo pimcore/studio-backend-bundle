@@ -35,7 +35,6 @@ use function is_string;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class DateAdapter implements SetterDataInterface, SearchPreviewDataInterface
 {
-
     public function __construct(private DataServiceInterface $dataService)
     {
     }
@@ -65,8 +64,7 @@ final readonly class DateAdapter implements SetterDataInterface, SearchPreviewDa
         mixed $value,
         Data $fieldDefinition,
         array $data
-    ): array
-    {
+    ): array {
         if (!$fieldDefinition instanceof Date) {
             return $data;
         }

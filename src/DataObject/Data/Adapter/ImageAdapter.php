@@ -68,8 +68,7 @@ final readonly class ImageAdapter implements SetterDataInterface, SearchPreviewD
         mixed $value,
         Data $fieldDefinition,
         array $data
-    ): array
-    {
+    ): array {
         if (!$fieldDefinition instanceof ImageData || !$value instanceof Image) {
             return $data;
         }

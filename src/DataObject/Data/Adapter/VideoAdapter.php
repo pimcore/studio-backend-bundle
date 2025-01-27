@@ -75,8 +75,7 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
         mixed $value,
         Data $fieldDefinition,
         array $data
-    ): array
-    {
+    ): array {
         if (!$fieldDefinition instanceof VideoData || !$value instanceof Video) {
             return $data;
         }

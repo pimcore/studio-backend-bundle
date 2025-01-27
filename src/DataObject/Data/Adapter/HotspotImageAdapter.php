@@ -80,8 +80,7 @@ final readonly class HotspotImageAdapter implements SetterDataInterface, SearchP
         mixed $value,
         Data $fieldDefinition,
         array $data
-    ): array
-    {
+    ): array {
         if (!$fieldDefinition instanceof HotspotImageData || !$value instanceof Image) {
             return $data;
         }
