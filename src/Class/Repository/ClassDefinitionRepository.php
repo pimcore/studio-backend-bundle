@@ -16,19 +16,29 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
-use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Listing;
+use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 
 /**
  * @internal
  */
-final readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInterface
+readonly class ClassDefinitionRepository implements ClassDefinitionRepositoryInterface
 {
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver
     ) {
+    }
+
+    public function getClassDefinitions(): array
+    {
+        $classesList = new Listing();
+        $classesList->setOrderKey('name');
+        $classesList->setOrder('asc');
+
+        return $classesList->load();
     }
 
     public function getClassDefinition(string $dataObjectClass): ClassDefinition

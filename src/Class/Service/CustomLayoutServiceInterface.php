@@ -14,25 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
-use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\DataObject\ClassDefinition\Listing;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
 
 /**
  * @internal
  */
-class ClassDefinitionRepository implements ClassDefinitionRepositoryInterface
+interface CustomLayoutServiceInterface
 {
     /**
-     * @return ClassDefinition[]
+     * @return CustomLayoutCompact[]
      */
-    public function getClassDefinitions(): array
-    {
-        $classesList = new Listing();
-        $classesList->setOrderKey('name');
-        $classesList->setOrder('asc');
-
-        return $classesList->load();
-    }
+    public function getCustomLayoutsCompact(string $dataObjectClass): array;
 }

@@ -14,13 +14,16 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\CustomLayout;
 
 use Exception;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
@@ -29,15 +32,18 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
-final class GetController extends AbstractApiController
+final class CollectionController extends AbstractApiController
 {
+    use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ClassDefinitionServiceInterface $classDefinitionService,
+        private readonly CustomLayoutServiceInterface $customLayoutService
     ) {
         parent::__construct($serializer);
     }
@@ -46,34 +52,38 @@ final class GetController extends AbstractApiController
      * @throws Exception|NotFoundException
      */
     #[Route(
-        '/class/definition/{dataObjectClass}',
-        name: 'pimcore_studio_api_class_get_by_data_object_class',
+        '/class/custom-layout/collection/{dataObjectClass}',
+        name: 'pimcore_studio_api_class_custom_layout_collection',
         methods: ['GET']
     )]
     #[Get(
-        path: self::PREFIX . '/class/definition/{dataObjectClass}',
-        operationId: 'class_get_by_data_object_class',
-        description: 'class_get_by_data_object_class_description',
-        summary: 'class_get_by_data_object_class_summary',
+        path: self::PREFIX . '/class/custom-layout/collection/{dataObjectClass}',
+        operationId: 'class_custom_layout_collection',
+        description: 'class_custom_layout_collection_description',
+        summary: 'class_custom_layout_collection_summary',
         tags: [Tags::ClassDefinition->value],
     )]
     #[StringParameter(
         name: 'dataObjectClass',
         example: 'CAR',
-        description: 'class_get_by_data_object_class_data_object_class',
+        description: 'class_custom_layout_collection_data_object_class',
         required: true
     )]
     #[SuccessResponse(
-        description: 'class_get_collection_success_response',
-        content: new CollectionJson(new GenericCollection(ClassDefinition::class))
+        description: 'class_custom_layout_collection_success_response',
+        content: new CollectionJson(new GenericCollection(CustomLayoutCompact::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getClassDefinition(string $dataObjectClass): JsonResponse
+    public function getCustomLayouts(string $dataObjectClass): JsonResponse
     {
-        return $this->jsonResponse(
-            $this->classDefinitionService->getClassDefinition($dataObjectClass)
+        $items = $this->customLayoutService->getCustomLayoutsCompact($dataObjectClass);
+
+        return $this->getPaginatedCollection(
+            $this->serializer,
+            $items,
+            count($items)
         );
     }
 }

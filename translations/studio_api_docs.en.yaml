@@ -707,3 +707,9 @@ class_get_by_data_object_class_description: Get all class definitions for the gi
 class_get_by_data_object_class_summary: Get class definitions for data object class
 class_get_by_data_object_class_data_object_class: Data object class
 class_get_collection_success_response: Class definition
+class_custom_layout_collection: Get custom layout collection
+class_custom_layout_collection_description: Get custom layout collection for the given data object class.
+class_custom_layout_collection_summary: Get custom layout collection for data object class
+class_custom_layout_collection_data_object_class: Data object class
+class_custom_layout_collection_success_response: |
+  List of custom layouts for the given data object class in a simple and compact format for listings.

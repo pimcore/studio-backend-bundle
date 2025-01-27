@@ -14,17 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout;
 
-use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
+use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 
 /**
  * @internal
  */
-interface ClassDefinitionRepositoryInterface
+interface CustomLayoutHydratorInterface
 {
-    /**
-     * @return ClassDefinition[]
-     */
-    public function getClassDefinitions(): array;
+    public function hydrateCompactLayout(CustomLayout $data): CustomLayoutCompact;
 }
