@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\Definition
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -42,7 +43,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class ObjectBricksAdapter implements
     SetterDataInterface,
     DataNormalizerInterface,
-    DataInheritanceInterface
+    DataInheritanceInterface,
+    SearchPreviewDataInterface
 {
     use ValidateObjectDataTrait;
 
@@ -158,6 +160,38 @@ final readonly class ObjectBricksAdapter implements
         }
 
         return $inheritanceData;
+    }
+
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array {
+        if (!$value instanceof Objectbrick) {
+            return $data;
+        }
+
+        $items = $value->getObjectVars();
+        foreach ($items as $item) {
+            if (!$item instanceof AbstractData) {
+                continue;
+            }
+
+            $type = $item->getType();
+            $definition = $this->definitionResolver->getByKey($type);
+            if ($definition === null) {
+                continue;
+            }
+
+            foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
+                $getter = 'get' . ucfirst($brickFieldDefinition->getName());
+                $previewKey = $this->dataService->getPreviewFieldName($brickFieldDefinition);
+                $previewValue = $this->dataService->getPreviewFieldData($item->$getter(), $brickFieldDefinition, $data);
+                $data[ucfirst($type) . ' - ' . $previewKey] = $previewValue[$previewKey] ?? $previewValue;
+            }
+        }
+
+        return $data;
     }
 
     /**

@@ -210,7 +210,7 @@ final readonly class LocalizedFieldsAdapter implements
             } catch (Exception $exception) {
                 throw new DatabaseException(
                     sprintf(
-                        'Error while normalizing localized field: %s',
+                        'Error while getting localized field preview data: %s',
                         $exception->getMessage()
                     )
                 );
@@ -222,7 +222,8 @@ final readonly class LocalizedFieldsAdapter implements
 
             $fieldName = $this->dataService->getPreviewFieldName($fieldDefinition);
             $localizedValue = $this->dataService->getPreviewFieldData($localizedValue, $fieldDefinition, $data);
-            $data[$fieldName . '(' . $language . ')'] = $localizedValue[$fieldName];
+            $key = sprintf('%s (%s)', $fieldName, $language);
+            $data[$key] = $localizedValue[$fieldName];
         }
 
         return $data;

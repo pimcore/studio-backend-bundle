@@ -191,8 +191,8 @@ final readonly class ClassificationStoreAdapter implements
             foreach ($keys as $key) {
                 foreach ($validLanguages as $validLanguage) {
                     $previewValue = $this->getPreviewValue($value, $groupId, $key, $validLanguage, $data);
-                    $previewKey = $groupName . '-' . $key->getName() .
-                        ($fieldDefinition->isLocalized() ? '/' . $validLanguage : null);
+                    $previewKey = $groupName . ' - ' . $key->getName() .
+                        ($fieldDefinition->isLocalized() ? ' / ' . $validLanguage : null);
                     $data[$fieldName][$previewKey] = $previewValue;
                 }
             }
@@ -244,7 +244,15 @@ final readonly class ClassificationStoreAdapter implements
 
         foreach ($store as $groupId => $groupData) {
             foreach ($groupData as $language => $keys) {
-                if (!in_array($language, $this->getValidLanguages($element, $definition->isLocalized()), true)) {
+                if (!in_array(
+                    $language,
+                    $this->getValidLanguages(
+                        $element,
+                        $definition->isLocalized(),
+                        ElementPermissions::LANGUAGE_EDIT_PERMISSIONS
+                    ),
+                    true
+                )) {
                     continue;
                 }
                 $this->processGroupKeys($element, $definition, $container, $language, $groupId, $keys);
@@ -329,7 +337,11 @@ final readonly class ClassificationStoreAdapter implements
         return $mapping;
     }
 
-    private function getValidLanguages(Concrete $object, bool $isStoreLocalized): array
+    private function getValidLanguages(
+        Concrete $object,
+        bool $isStoreLocalized,
+        string $permissionType = ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+    ): array
     {
         $languages = [MappingProperty::NOT_LOCALIZED_KEY];
         if ($isStoreLocalized === false) {
@@ -344,7 +356,7 @@ final readonly class ClassificationStoreAdapter implements
         return $this->languageService->getUserAllowedLanguages(
             $object,
             $user,
-            ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+            $permissionType
         );
     }
 
