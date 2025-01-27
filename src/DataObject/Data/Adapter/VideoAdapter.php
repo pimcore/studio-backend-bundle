@@ -27,10 +27,10 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\AssetPreviewDataTra
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Video;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Video as VideoData;
 use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\DataObject\Data\Video;
 use Pimcore\Normalizer\NormalizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
@@ -80,7 +80,10 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
             return $data;
         }
 
-        $data[$this->dataService->getPreviewFieldName($fieldDefinition)] = $this->getSearchPreviewThumbnailPath($value->getPoster());
+        $key = $this->dataService->getPreviewFieldName($fieldDefinition);
+        $data[$key] = $this->getSearchPreviewThumbnailPath($value);
+
+        return $data;
     }
 
     private function resolveAssetIfNeeded(?string $type, ?string $path): ?Asset

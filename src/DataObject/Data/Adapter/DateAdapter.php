@@ -69,6 +69,9 @@ final readonly class DateAdapter implements SetterDataInterface, SearchPreviewDa
             return $data;
         }
 
-        return $data[$this->dataService->getPreviewFieldName($fieldDefinition)] = $fieldDefinition->normalize($value);
+        $key = $this->dataService->getPreviewFieldName($fieldDefinition);
+        $data[$key] = $fieldDefinition->normalize($value);
+
+        return $data;
     }
 }
