@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryIn
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
-use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
