@@ -31,8 +31,7 @@ final readonly class CustomLayoutHydrator implements CustomLayoutHydratorInterfa
 {
     public function __construct(
         private IconServiceInterface $iconService
-    )
-    {
+    ) {
     }
 
     public function hydrateCompactLayout(CustomLayout $data): CustomLayoutCompact
@@ -49,7 +48,7 @@ final readonly class CustomLayoutHydrator implements CustomLayoutHydratorInterfa
         $panel = $data->getLayoutDefinitions();
         if (!($panel instanceof Panel)) {
             throw new NotFoundException(
-                "layout definition",
+                'layout definition',
                 $data->getId(),
                 'custom layout id'
             );
