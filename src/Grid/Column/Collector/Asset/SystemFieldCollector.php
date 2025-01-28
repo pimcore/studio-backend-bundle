@@ -96,7 +96,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
     private function getCustomFrontendAdapter(string $columnKey, string $defaultAdapter): string
     {
         $customFrontendAdapters = [
-            'fullpath' => FrontendType::ASSET_LINK->value
+            'fullpath' => FrontendType::ASSET_LINK->value,
         ];
 
         if (array_key_exists($columnKey, $customFrontendAdapters)) {

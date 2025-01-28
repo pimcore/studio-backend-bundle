@@ -51,7 +51,7 @@ final class AssetPreviewResolver implements ColumnResolverInterface
             $column,
             [
                 'thumbnail' => $thumbnail,
-                'icon' => $element->getIcon()
+                'icon' => $element->getIcon(),
             ]
         );
     }
@@ -64,7 +64,7 @@ final class AssetPreviewResolver implements ColumnResolverInterface
     public function supportedElementTypes(): array
     {
         return [
-            ElementTypes::TYPE_ASSET
+            ElementTypes::TYPE_ASSET,
         ];
     }
 }
