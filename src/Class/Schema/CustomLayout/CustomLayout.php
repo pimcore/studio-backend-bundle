@@ -39,7 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'classId',
         'layoutDefinitions',
         'default',
-        'blockedVarsForExport'
+        'blockedVarsForExport',
     ],
     type: 'object'
 )]
@@ -67,7 +67,7 @@ final class CustomLayout implements AdditionalAttributesInterface
         #[Property(description: 'Whether it is the default layout', type: 'boolean')]
         private readonly bool $default,
         #[Property(description: 'Variables blocked for export', type: 'array', items: new Items(type: 'string'))]
-        /* @var string[] */
+        // @var string[]
         private readonly array $blockedVarsForExport
     ) {
     }
