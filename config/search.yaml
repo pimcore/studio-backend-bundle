@@ -18,6 +18,15 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\SimpleSearchHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\SimpleSearchHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\AssetHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\AssetHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DataObjectHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DataObjectHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DocumentHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DocumentHydrator
+
   #
   # Repositories
   #
@@ -31,3 +40,17 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Search\Service\SearchServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Search\Service\SearchService
+    arguments:
+      $previewHydratorLocator: '@search.element_preview.service_locator'
+
+  #
+  # Service Locator
+  #
+
+  search.element_preview.service_locator:
+    class: Symfony\Component\DependencyInjection\ServiceLocator
+    tags: [ 'container.service_locator' ]
+    arguments:
+      - Pimcore\Model\Asset: '@Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\AssetHydratorInterface'
+        Pimcore\Model\Document: '@Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DocumentHydratorInterface'
+        Pimcore\Model\DataObject: '@Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview\DataObjectHydratorInterface'

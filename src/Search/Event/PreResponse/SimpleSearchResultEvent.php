@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Search\Schema\SimpleSearchResult;
 
 final class SimpleSearchResultEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.simple_search.result';
+    public const string EVENT_NAME = 'pre_response.simple_search.result';
 
     public function __construct(private readonly SimpleSearchResult $result)
     {

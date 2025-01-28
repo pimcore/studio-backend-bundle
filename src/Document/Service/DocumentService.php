@@ -16,16 +16,22 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
+use Pimcore\Model\Document as DocumentModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -34,12 +40,14 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  */
 final readonly class DocumentService implements DocumentServiceInterface
 {
+    use ElementProviderTrait;
     use UserPermissionTrait;
 
     public function __construct(
         private DocumentSearchServiceInterface $documentSearchService,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
+        private ServiceResolverInterface $serviceResolver,
         private WorkflowDetailsServiceInterface $workflowDetailsService
     ) {
     }
@@ -75,6 +83,23 @@ final readonly class DocumentService implements DocumentServiceInterface
         $document = $this->documentSearchService->getDocumentById($id, $user);
 
         $this->dispatchDocumentEvent($document);
+
+        return $document;
+    }
+
+    /**
+     * @throws AccessDeniedException|NotFoundException
+     */
+    public function getDocumentElement(
+        UserInterface $user,
+        int $documentId,
+    ): DocumentModel {
+        $document = $this->getElement($this->serviceResolver, ElementTypes::TYPE_DOCUMENT, $documentId);
+        $this->securityService->hasElementPermission($document, $user, ElementPermissions::VIEW_PERMISSION);
+
+        if (!$document instanceof DocumentModel) {
+            throw new InvalidElementTypeException($document->getType());
+        }
 
         return $document;
     }

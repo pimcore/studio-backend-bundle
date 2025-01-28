@@ -14,23 +14,24 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Header;
+namespace Pimcore\Bundle\StudioBackendBundle\Search\Attribute\Response\Content;
 
-use OpenApi\Attributes\Header;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
+use Pimcore\Bundle\StudioBackendBundle\Response\Schemas;
 
 /**
  * @internal
  */
-final class ContentDisposition extends Header
+final class OneOfSearchPreviewsJson extends JsonContent
 {
-    public function __construct(string $headerType = HttpResponseHeaders::ATTACHMENT_TYPE->value)
+    public function __construct()
     {
         parent::__construct(
-            header: HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value,
-            description: 'Content-Disposition header',
-            schema: new Schema(type: 'string', example: $headerType . '; filename="example.jpg"'),
+            type: 'object',
+            oneOf: array_map(static function ($class) {
+                return new Schema(ref: $class);
+            }, Schemas::SEARCH_PREVIEWS),
         );
     }
 }

@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
@@ -90,6 +91,51 @@ final readonly class DataService implements DataServiceInterface
         }
 
         return $fieldDefinition->normalize($value);
+    }
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function getPreviewObjectData(DataObjectModel $dataObject): array
+    {
+        if (!$dataObject instanceof Concrete) {
+            return [];
+        }
+
+        $class = $this->getValidClass($this->classDefinitionResolver, $dataObject->getClassId());
+        $data = [];
+        foreach ($class->getFieldDefinitions() as $key => $fieldDefinition) {
+            $data = $this->getPreviewFieldData(
+                $this->getValidFieldValue($dataObject, $key),
+                $fieldDefinition,
+                $data
+            );
+        }
+
+        return $data;
+    }
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array {
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+        if ($adapter instanceof SearchPreviewDataInterface) {
+            return $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
+        }
+
+        $data[$this->getPreviewFieldName($fieldDefinition)] = $fieldDefinition->getVersionPreview($value);
+
+        return $data;
+    }
+
+    public function getPreviewFieldName(Data $fieldDefinition): string
+    {
+        return !empty($fieldDefinition->getTitle()) ? $fieldDefinition->getTitle() : $fieldDefinition->getName();
     }
 
     /**

@@ -25,10 +25,12 @@ enum MimeTypes: string
 {
     use EnumToValueArrayTrait;
 
+    case CSV = 'text/csv';
     case JPEG = 'JPEG';
+    case ORIGINAL = 'original';
     case PJPEG = 'PJPEG';
     case PNG = 'PNG';
     case PDF = 'application/pdf';
-    case CSV = 'text/csv';
+    case SOURCE = 'source';
     case ZIP = 'application/zip';
 }

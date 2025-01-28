@@ -41,4 +41,20 @@ interface DataServiceInterface
         mixed $value,
         Data $fieldDefinition
     ): mixed;
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function getPreviewObjectData(DataObjectModel $dataObject): array;
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): mixed;
+
+    public function getPreviewFieldName(Data $fieldDefinition): string;
 }

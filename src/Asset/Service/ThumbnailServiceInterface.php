@@ -21,8 +21,11 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamCon
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
+use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Image\ThumbnailInterface;
+use Pimcore\Model\Asset\Video;
+use Pimcore\Model\Asset\Video\ImageThumbnailInterface;
 use Pimcore\Model\Asset\Video\Thumbnail\Config as VideoThumbnailConfig;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -49,6 +52,11 @@ interface ThumbnailServiceInterface
      * @throws InvalidThumbnailException
      */
     public function getImagePreviewThumbnail(Image $image): ThumbnailInterface;
+
+    /**
+     * @throws InvalidThumbnailException
+     */
+    public function getAssetImagePreviewThumbnail(Video|Document $asset): ImageThumbnailInterface;
 
     /**
      * @throws InvalidThumbnailException

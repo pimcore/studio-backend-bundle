@@ -16,10 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\SimpleSearchParameter;
+use Pimcore\Bundle\StudioBackendBundle\Search\Schema\AssetSearchPreview;
+use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DataObjectSearchPreview;
+use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DocumentSearchPreview;
 
 /**
  * @internal
@@ -30,4 +37,11 @@ interface SearchServiceInterface
      * @throws SearchException|UserNotFoundException
      */
     public function doSimpleSearch(SimpleSearchParameter $parameters): Collection;
+
+    /**
+     * @throws AccessDeniedException|InvalidElementTypeException|NotFoundException|UserNotFoundException
+     */
+    public function getSearchPreview(
+        ElementParameters $parameters
+    ): AssetSearchPreview|DataObjectSearchPreview|DocumentSearchPreview;
 }

@@ -108,11 +108,12 @@ trait StreamedResponseTrait
         string $mimeType,
         string $filename,
         FilesystemOperator $storage,
+        string $contentDisposition = HttpResponseHeaders::ATTACHMENT_TYPE->value,
     ): StreamedResponse {
         try {
             $stream = $storage->readStream($path);
 
-            $response = new StreamedResponse(
+            return new StreamedResponse(
                 function () use ($stream) {
                     fpassthru($stream);
                 },
@@ -121,13 +122,10 @@ trait StreamedResponseTrait
                     mimeType: $mimeType,
                     fileSize: $storage->fileSize($path),
                     filename: $filename,
-                    contentDisposition: HttpResponseHeaders::ATTACHMENT_TYPE->value
+                    contentDisposition: $contentDisposition
                 ),
             );
 
-            $storage->delete($path);
-
-            return $response;
         } catch (FilesystemException $e) {
             throw new StreamResourceNotFoundException(
                 sprintf(

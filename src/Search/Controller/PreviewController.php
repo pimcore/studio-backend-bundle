@@ -1,0 +1,88 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * Pimcore
+ *
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
+ * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\Search\Controller;
+
+use OpenApi\Attributes\Get;
+use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Search\Attribute\Response\Content\OneOfSearchPreviewsJson;
+use Pimcore\Bundle\StudioBackendBundle\Search\Service\SearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\SerializerInterface;
+
+/**
+ * @internal
+ */
+final class PreviewController extends AbstractApiController
+{
+    use PaginatedResponseTrait;
+
+    private const string ROUTE = '/search/{elementType}/{id}';
+
+    public function __construct(
+        SerializerInterface $serializer,
+        private readonly SearchServiceInterface $searchService,
+    ) {
+        parent::__construct($serializer);
+    }
+
+    /**
+     * @throws AccessDeniedException|InvalidElementTypeException|NotFoundException|UserNotFoundException
+     */
+    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_search_preview', methods: ['GET'])]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
+    #[Get(
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'simple_search_preview_get',
+        description: 'simple_search_preview_get_description',
+        summary: 'simple_search_preview_get_summary',
+        tags: [Tags::Search->name]
+    )]
+    #[IdParameter]
+    #[ElementTypeParameter]
+    #[SuccessResponse(
+        description: 'simple_search_preview_get_success_response',
+        content: new OneOfSearchPreviewsJson()
+    )]
+    #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
+    ])]
+    public function getSimpleSearchPreview(
+        int $id,
+        string $elementType
+    ): JsonResponse {
+        return $this->jsonResponse(
+            $this->searchService->getSearchPreview(new ElementParameters($elementType, $id))
+        );
+    }
+}

@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -33,6 +34,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore as ClassificationstoreDefinition;
 use Pimcore\Model\DataObject\Classificationstore;
@@ -51,7 +55,8 @@ use function in_array;
 final readonly class ClassificationStoreAdapter implements
     SetterDataInterface,
     DataNormalizerInterface,
-    DataInheritanceInterface
+    DataInheritanceInterface,
+    SearchPreviewDataInterface
 {
     use ValidateObjectDataTrait;
 
@@ -60,7 +65,9 @@ final readonly class ClassificationStoreAdapter implements
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
         private GroupConfigResolverInterface $groupConfigResolver,
+        private LanguageServiceInterface $languageService,
         private ServiceResolverInterface $serviceResolver,
+        private SecurityServiceInterface $securityService,
         private ToolResolverInterface $toolResolver
     ) {
     }
@@ -107,7 +114,7 @@ final readonly class ClassificationStoreAdapter implements
             return null;
         }
 
-        $validLanguages = $this->getValidLanguages($fieldDefinition);
+        $validLanguages = $this->getValidLanguages($value->getObject(), $fieldDefinition->isLocalized());
         $resultItems = [];
 
         $resultItems['activeGroups'] = $value->getActiveGroups();
@@ -140,7 +147,7 @@ final readonly class ClassificationStoreAdapter implements
         if (!$fieldDefinition instanceof ClassificationstoreDefinition) {
             return [];
         }
-        $languages = $this->getValidLanguages($fieldDefinition);
+        $languages = $this->getValidLanguages($object, $fieldDefinition->isLocalized());
 
         foreach ($this->getStoreDefinitions($object, $fieldDefinition) as $groupId => $groupDefinitions) {
             foreach ($groupDefinitions as $groupKeyId => $definition) {
@@ -165,15 +172,44 @@ final readonly class ClassificationStoreAdapter implements
         return $inheritedData;
     }
 
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array {
+        if (!$value instanceof ClassificationstoreModel ||
+            !$fieldDefinition instanceof ClassificationstoreDefinition
+        ) {
+            return $data;
+        }
+
+        $fieldName =$this->dataService->getPreviewFieldName($fieldDefinition);
+        $validLanguages = $this->getValidLanguages($value->getObject(), $fieldDefinition->isLocalized());
+        foreach ($this->getActiveGroupsConfig($value->getActiveGroups()) as $groupId => $groupConfig) {
+            $keys = $this->getClassificationStoreKeysFromGroup($groupId);
+            $groupName = $groupConfig->getName();
+            foreach ($keys as $key) {
+                foreach ($validLanguages as $validLanguage) {
+                    $previewValue = $this->getPreviewValue($value, $groupId, $key, $validLanguage, $data);
+                    $previewKey = $groupName . ' - ' . $key->getName() .
+                        ($fieldDefinition->isLocalized() ? ' / ' . $validLanguage : null);
+                    $data[$fieldName][$previewKey] = $previewValue;
+                }
+            }
+        }
+
+        return $data;
+    }
+
     /**
-     * @throws Exception
+     * @throws NotFoundException
      */
     private function getContainer(
         Concrete $element,
         string $key,
         ?FieldContextData $contextData
     ): Classificationstore {
-        $container = $element->get($key, $contextData?->getLanguage());
+        $container = $this->getValidFieldValue($element, $key, $contextData?->getLanguage());
 
         if (!$container instanceof Classificationstore) {
             return new Classificationstore();
@@ -208,6 +244,17 @@ final readonly class ClassificationStoreAdapter implements
 
         foreach ($store as $groupId => $groupData) {
             foreach ($groupData as $language => $keys) {
+                if (!in_array(
+                    $language,
+                    $this->getValidLanguages(
+                        $element,
+                        $definition->isLocalized(),
+                        ElementPermissions::LANGUAGE_EDIT_PERMISSIONS
+                    ),
+                    true
+                )) {
+                    continue;
+                }
                 $this->processGroupKeys($element, $definition, $container, $language, $groupId, $keys);
                 $activeGroups[$groupId] = true;
             }
@@ -290,14 +337,26 @@ final readonly class ClassificationStoreAdapter implements
         return $mapping;
     }
 
-    private function getValidLanguages(ClassificationstoreDefinition $classificationStore): array
-    {
+    private function getValidLanguages(
+        Concrete $object,
+        bool $isStoreLocalized,
+        string $permissionType = ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+    ): array {
         $languages = [MappingProperty::NOT_LOCALIZED_KEY];
-        if ($classificationStore->isLocalized()) {
-            $languages = array_merge($languages, $this->toolResolver->getValidLanguages());
+        if ($isStoreLocalized === false) {
+            return $languages;
         }
 
-        return $languages;
+        $user = $this->securityService->getCurrentUser();
+        if ($user->isAdmin()) {
+            return array_merge($languages, $this->toolResolver->getValidLanguages());
+        }
+
+        return $this->languageService->getUserAllowedLanguages(
+            $object,
+            $user,
+            $permissionType
+        );
     }
 
     /**
@@ -329,11 +388,43 @@ final readonly class ClassificationStoreAdapter implements
         return $listing->getList();
     }
 
+    /**
+     * @throws DatabaseException
+     */
     private function getNormalizedValue(
         ClassificationstoreModel $classificationstore,
         int $groupId,
         KeyGroupRelation $key,
         string $language
+    ): mixed {
+        return $this->getValue($classificationstore, $groupId, $key, $language);
+    }
+
+    /**
+     * @throws DatabaseException
+     */
+    private function getPreviewValue(
+        ClassificationstoreModel $classificationstore,
+        int $groupId,
+        KeyGroupRelation $key,
+        string $language,
+        array $data
+    ): mixed {
+        return $this->getValue($classificationstore, $groupId, $key, $language, $data, true);
+    }
+
+    /**
+     * Retrieves normalized or preview values for classification store keys.
+     *
+     * @throws DatabaseException
+     */
+    private function getValue(
+        ClassificationstoreModel $classificationstore,
+        int $groupId,
+        KeyGroupRelation $key,
+        string $language,
+        ?array $data = null,
+        bool $isPreview = false
     ): mixed {
         try {
             $value = $classificationstore->getLocalizedKeyValue(
@@ -355,6 +446,12 @@ final readonly class ClassificationStoreAdapter implements
         $fieldDefinition = $this->serviceResolver->getFieldDefinitionFromKeyConfig($keyConfig);
         if ($fieldDefinition === null) {
             return null;
+        }
+
+        if ($isPreview && $data !== null) {
+            $data = $this->dataService->getPreviewFieldData($value, $fieldDefinition, $data);
+
+            return $data[$this->dataService->getPreviewFieldName($fieldDefinition)];
         }
 
         return $this->dataService->getNormalizedValue($value, $fieldDefinition);

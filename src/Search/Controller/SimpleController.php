@@ -45,7 +45,7 @@ final class SimpleController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
-    private const ROUTE = '/search';
+    private const string ROUTE = '/search';
 
     public function __construct(
         SerializerInterface $serializer,
