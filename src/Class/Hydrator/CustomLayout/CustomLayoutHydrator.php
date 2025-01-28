@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout as CustomLayoutSchema;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
@@ -46,13 +45,26 @@ final readonly class CustomLayoutHydrator implements CustomLayoutHydratorInterfa
     public function hydrateLayout(CustomLayout $data): CustomLayoutSchema
     {
         $panel = $data->getLayoutDefinitions();
-        if (!($panel instanceof Panel)) {
-            throw new NotFoundException(
-                'layout definition',
-                $data->getId(),
-                'custom layout id'
-            );
-        }
+        $panelLayout = ($panel instanceof Panel) ? new Layout(
+            $panel->getName(),
+            $panel->getDatatype(),
+            $panel->fieldtype,
+            $panel->getType(),
+            $panel->getLayout(),
+            $panel->getRegion(),
+            $panel->getTitle(),
+            $panel->getWidth(),
+            $panel->getHeight(),
+            $panel->getCollapsible(),
+            $panel->getCollapsed(),
+            $panel->getBodyStyle(),
+            $panel->getLocked(),
+            $panel->getChildren(),
+            $this->iconService->getIconForLayout($panel->getIcon()),
+            $panel->getLabelAlign(),
+            $panel->getLabelWidth(),
+            $panel->getBorder()
+        ) : null;
 
         return new CustomLayoutSchema(
             $data->getId(),
@@ -62,28 +74,8 @@ final readonly class CustomLayoutHydrator implements CustomLayoutHydratorInterfa
             $data->getModificationDate(),
             $data->getUserOwner(),
             $data->getClassId(),
-            new Layout(
-                $panel->getName(),
-                $panel->getDatatype(),
-                $panel->fieldtype,
-                $panel->getType(),
-                $panel->getLayout(),
-                $panel->getRegion(),
-                $panel->getTitle(),
-                $panel->getWidth(),
-                $panel->getHeight(),
-                $panel->getCollapsible(),
-                $panel->getCollapsed(),
-                $panel->getBodyStyle(),
-                $panel->getLocked(),
-                $panel->getChildren(),
-                $this->iconService->getIconForLayout($panel->getIcon()),
-                $panel->getLabelAlign(),
-                $panel->getLabelWidth(),
-                $panel->getBorder()
-            ),
-            $data->getDefault(),
-            $data->getBlockedVarsForExport()
+            $data->getDefault() ?? false,
+            $panelLayout
         );
     }
 }

@@ -37,7 +37,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'modificationDate',
         'userOwner',
         'classId',
-        'layoutDefinitions',
         'default',
         'blockedVarsForExport',
     ],
@@ -62,13 +61,10 @@ final class CustomLayout implements AdditionalAttributesInterface
         private readonly int $userOwner,
         #[Property(description: 'Class id', type: 'string')]
         private readonly string $classId,
-        #[Property(ref: Layout::class, description: 'Layout definitions', type: 'object')]
-        private readonly Layout $layoutDefinition,
         #[Property(description: 'Whether it is the default layout', type: 'boolean')]
-        private readonly bool $default,
-        #[Property(description: 'Variables blocked for export', type: 'array', items: new Items(type: 'string'))]
-        // @var string[]
-        private readonly array $blockedVarsForExport
+        private readonly bool $default = false,
+        #[Property(ref: Layout::class, description: 'Layout definitions', type: 'object')]
+        private readonly ?Layout $layoutDefinition = null,
     ) {
     }
 
@@ -112,16 +108,8 @@ final class CustomLayout implements AdditionalAttributesInterface
         return $this->classId;
     }
 
-    public function getLayoutDefinition(): Layout
+    public function getLayoutDefinition(): ?Layout
     {
         return $this->layoutDefinition;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getBlockedVarsForExport(): array
-    {
-        return $this->blockedVarsForExport;
     }
 }

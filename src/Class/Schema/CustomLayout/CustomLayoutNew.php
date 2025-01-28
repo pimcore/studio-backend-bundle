@@ -18,48 +18,35 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 /**
  * @internal
  */
 #[Schema(
-    schema: 'CustomLayoutCompact',
-    title: 'Custom layouts in compact format to be used for e.g. listings',
+    schema: 'CustomLayoutNew',
+    title: 'Schema used to create custom layouts',
     required: [
-        'id',
         'name',
-        'default',
+        'classId',
     ],
     type: 'object'
 )]
-final class CustomLayoutCompact implements AdditionalAttributesInterface
+final readonly class CustomLayoutNew
 {
-    use AdditionalAttributesTrait;
-
     public function __construct(
-        #[Property(description: 'Id of custom layout', type: 'string')]
-        private readonly string $id,
         #[Property(description: 'Name', type: 'string')]
-        private readonly string $name,
-        #[Property(description: 'Whether it is the default layout', type: 'boolean')]
-        private readonly bool $default
+        private string $name,
+        #[Property(description: 'Data object class id', type: 'integer')]
+        private int $classId
     ) {
     }
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
     public function getName(): string
     {
         return $this->name;
     }
 
-    public function isDefault(): bool
+    public function getClassId(): int
     {
-        return $this->default;
+        return $this->classId;
     }
 }

@@ -66,7 +66,7 @@ final class DeleteController extends AbstractApiController
     #[StringParameter(
         name: 'customLayoutId',
         example: 'CarTodo',
-        description: 'pimcore_studio_api_class_custom_layout_get_layout_id',
+        description: 'pimcore_studio_api_class_custom_layout_delete_layout_id',
         required: true
     )]
     #[SuccessResponse(

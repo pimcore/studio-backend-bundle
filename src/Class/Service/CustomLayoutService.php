@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutEven
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
+use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -56,18 +58,31 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
 
     public function getCustomLayout(string $customLayoutId): CustomLayout
     {
-        $layout = $this->customLayoutRepository->getCustomLayout($customLayoutId);
-        $layout = $this->customLayoutHydrator->hydrateLayout($layout);
-        $this->eventDispatcher->dispatch(
-            new CustomLayoutEvent($layout),
-            CustomLayoutEvent::EVENT_NAME
+        return $this->hydrateLayout(
+            $this->customLayoutRepository->getCustomLayout($customLayoutId)
         );
-
-        return $layout;
     }
 
     public function deleteCustomLayout(string $customLayoutId): void
     {
         $this->customLayoutRepository->deleteCustomLayout($customLayoutId);
+    }
+
+    public function createCustomLayout(string $customLayoutId, CustomLayoutNewParameters $customLayoutParameters): CustomLayout
+    {
+        return $this->hydrateLayout(
+            $this->customLayoutRepository->createCustomLayout($customLayoutId, $customLayoutParameters)
+        );
+    }
+
+    private function hydrateLayout(CoreLayout $layout): CustomLayout
+    {
+        $hydratedLayout = $this->customLayoutHydrator->hydrateLayout($layout);
+        $this->eventDispatcher->dispatch(
+            new CustomLayoutEvent($hydratedLayout),
+            CustomLayoutEvent::EVENT_NAME
+        );
+
+        return $hydratedLayout;
     }
 }
