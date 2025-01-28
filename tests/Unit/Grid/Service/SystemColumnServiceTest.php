@@ -31,7 +31,7 @@ final class SystemColumnServiceTest extends Unit
         $systemColumnService = new SystemColumnService($mapper);
 
         $this->assertSame([
-            'preview' => 'image',
+            'preview' => 'preview',
             'id' => 'id',
             'type' => 'string',
             'fullpath' => 'string',
