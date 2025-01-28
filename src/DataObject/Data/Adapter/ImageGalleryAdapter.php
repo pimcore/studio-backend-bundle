@@ -54,7 +54,13 @@ final readonly class ImageGalleryAdapter implements SetterDataInterface
 
         $images = [];
         foreach ($galleryData as $item) {
-            $images[] = $this->hotspotImageAdapter->getDataForSetter($element, $fieldDefinition, $key, [$key => $item]);
+            $images[] = $this->hotspotImageAdapter->getDataForSetter(
+                $element,
+                $fieldDefinition,
+                $key,
+                [$key => $item],
+                $user,
+            );
         }
 
         return new ImageGallery($images);
