@@ -32,6 +32,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Hotspotimage as HotspotImageDa
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Hotspotimage;
 use Pimcore\Model\Element\Data\MarkerHotspotItem;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
 use function is_array;
@@ -56,6 +57,7 @@ final readonly class HotspotImageAdapter implements SetterDataInterface, SearchP
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?Hotspotimage {
 

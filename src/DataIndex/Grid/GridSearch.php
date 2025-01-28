@@ -88,6 +88,7 @@ final readonly class GridSearch implements GridSearchInterface
         UserInterface $user
     ): AssetSearchResult|DataObjectSearchResult {
         $filter = $gridParameter->getFilters();
+        $type = $this->getStudioElementType($type);
 
         $folder = match($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->getAssetById(
@@ -133,5 +134,13 @@ final readonly class GridSearch implements GridSearchInterface
         }
 
         return false;
+    }
+
+    private function getStudioElementType(string $type): string
+    {
+        return match (true) {
+            $type === ElementTypes::TYPE_OBJECT => ElementTypes::TYPE_DATA_OBJECT,
+            default => $type
+        };
     }
 }

@@ -101,7 +101,6 @@ final class PatchFolderHandler extends AbstractHandler
                 $item->getId(),
                 $validatedParameters->getUser()
             );
-            $elementId = $element->getId();
 
             try {
                 $this->patchService->patchElement(
@@ -115,7 +114,7 @@ final class PatchFolderHandler extends AbstractHandler
                     Config::ELEMENT_PATCH_FAILED_MESSAGE->value,
                     [
                         'type' => $elementType,
-                        'id' => $elementId,
+                        'id' => $element->getId(),
                         'message' => $exception->getMessage(),
                     ],
                 ));

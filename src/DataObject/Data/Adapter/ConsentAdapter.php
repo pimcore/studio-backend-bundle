@@ -26,6 +26,7 @@ use Pimcore\DataObject\Consent\Service;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Consent;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -47,6 +48,7 @@ final readonly class ConsentAdapter implements SetterDataInterface, DataNormaliz
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): Consent {
         $value = $data[$key] ? $data[$key]['consent'] : null;

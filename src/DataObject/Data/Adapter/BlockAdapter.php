@@ -29,6 +29,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function get_class;
 use function is_array;
@@ -55,6 +56,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?array {
         if (!$fieldDefinition instanceof Block) {
@@ -63,7 +65,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
 
         $blockData = $data[$key];
 
-        return $this->processBlockData($element, $fieldDefinition, $blockData, $contextData);
+        return $this->processBlockData($element, $user, $fieldDefinition, $blockData, $contextData);
     }
 
     public function normalize(
@@ -118,6 +120,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
      */
     private function processBlockData(
         Concrete $element,
+        UserInterface $user,
         Block $fieldDefinition,
         array $blockData,
         ?FieldContextData $contextData = null
@@ -126,6 +129,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         foreach ($blockData as $rawBlockElement) {
             $resultElement = $this->processBlockElement(
                 $element,
+                $user,
                 $fieldDefinition,
                 $rawBlockElement,
                 $contextData
@@ -141,6 +145,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
      */
     private function processBlockElement(
         Concrete $element,
+        UserInterface $user,
         Block $fieldDefinition,
         array $rawBlockElement,
         ?FieldContextData $contextData = null
@@ -158,6 +163,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
             $value = $this->createBlockElement(
                 $adapter,
                 $element,
+                $user,
                 $fd,
                 $elementName,
                 $rawBlockElement,
@@ -179,6 +185,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
     private function createBlockElement(
         SetterDataInterface $adapter,
         Concrete $element,
+        UserInterface $user,
         Data $fieldDefinition,
         string $elementName,
         ?array $blockElement,
@@ -192,6 +199,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
             $fieldDefinition,
             $elementName,
             [$elementName => $elementData],
+            $user,
             $fieldContextData
         );
         if (!$this->validateEncryptedField($fieldDefinition, $data)) {
@@ -201,13 +209,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         return new BlockElement(
             $elementName,
             $elementType,
-            $adapter->getDataForSetter(
-                $element,
-                $fieldDefinition,
-                $elementName,
-                [$elementName => $elementData],
-                $fieldContextData
-            )
+            $data
         );
     }
 }

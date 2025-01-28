@@ -28,6 +28,7 @@ use Pimcore\Model\Asset\Image;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Image as ImageData;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 
@@ -51,6 +52,7 @@ final readonly class ImageAdapter implements SetterDataInterface, SearchPreviewD
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?Image {
         $imageData = $data[$key] ?? null;

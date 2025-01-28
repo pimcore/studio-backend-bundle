@@ -45,6 +45,7 @@ use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing as KeyGroupRelationListing;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
 
@@ -80,6 +81,7 @@ final readonly class ClassificationStoreAdapter implements
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?Classificationstore {
 
@@ -98,7 +100,7 @@ final readonly class ClassificationStoreAdapter implements
             $this->setMapping($container, $store['activeGroups'], $store['groupCollectionMapping']);
         }
         unset($store['activeGroups'], $store['groupCollectionMapping']);
-        $this->setStoreValues($element, $fieldDefinition, $container, $store);
+        $this->setStoreValues($element, $user, $fieldDefinition, $container, $store);
         $this->cleanupStoreGroups($container);
 
         return $container;
@@ -235,6 +237,7 @@ final readonly class ClassificationStoreAdapter implements
      */
     private function setStoreValues(
         Concrete $element,
+        UserInterface $user,
         ClassificationstoreDefinition $definition,
         Classificationstore $container,
         array $store
@@ -249,13 +252,14 @@ final readonly class ClassificationStoreAdapter implements
                     $this->getValidLanguages(
                         $element,
                         $definition->isLocalized(),
-                        ElementPermissions::LANGUAGE_EDIT_PERMISSIONS
+                        ElementPermissions::LANGUAGE_EDIT_PERMISSIONS,
+                        $user
                     ),
                     true
                 )) {
                     continue;
                 }
-                $this->processGroupKeys($element, $definition, $container, $language, $groupId, $keys);
+                $this->processGroupKeys($element, $user, $definition, $container, $language, $groupId, $keys);
                 $activeGroups[$groupId] = true;
             }
         }
@@ -268,6 +272,7 @@ final readonly class ClassificationStoreAdapter implements
      */
     private function processGroupKeys(
         Concrete $element,
+        UserInterface $user,
         ClassificationstoreDefinition $definition,
         Classificationstore $container,
         string $language,
@@ -292,7 +297,8 @@ final readonly class ClassificationStoreAdapter implements
                 $element,
                 $fieldDefinition,
                 $fieldDefinition->getName(),
-                [$fieldDefinition->getName() => $value]
+                [$fieldDefinition->getName() => $value],
+                $user
             );
             if (!$this->validateEncryptedField($fieldDefinition, $setterData)) {
                 continue;
@@ -340,14 +346,18 @@ final readonly class ClassificationStoreAdapter implements
     private function getValidLanguages(
         Concrete $object,
         bool $isStoreLocalized,
-        string $permissionType = ElementPermissions::LANGUAGE_VIEW_PERMISSIONS
+        string $permissionType = ElementPermissions::LANGUAGE_VIEW_PERMISSIONS,
+        ?UserInterface $user = null
     ): array {
         $languages = [MappingProperty::NOT_LOCALIZED_KEY];
         if ($isStoreLocalized === false) {
             return $languages;
         }
 
-        $user = $this->securityService->getCurrentUser();
+        if ($user === null) {
+            $user = $this->securityService->getCurrentUser();
+        }
+
         if ($user->isAdmin()) {
             return array_merge($languages, $this->toolResolver->getValidLanguages());
         }

@@ -31,6 +31,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Fieldcollection;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData;
 use Pimcore\Model\Factory;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -61,6 +62,7 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?Fieldcollection {
         if (!$fieldDefinition instanceof Fieldcollections) {
@@ -72,7 +74,14 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
         $count = 0;
 
         foreach ($fcData as $collectionRaw) {
-            $collectionData = $this->processCollectionRaw($element, $fieldDefinition, $collectionRaw, $contextData);
+            $collectionData = $this->processCollectionRaw(
+                $element,
+                $user,
+                $fieldDefinition,
+                $collectionRaw,
+                $contextData
+            );
+
             $collection = $this->createCollection(
                 $element,
                 $fieldDefinition,
@@ -140,6 +149,7 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
      */
     private function processCollectionRaw(
         Concrete $element,
+        UserInterface $user,
         Data $fieldDefinition,
         array $collectionRaw,
         ?FieldContextData $contextData
@@ -161,6 +171,7 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
                 $fd,
                 $elementName,
                 [$elementName => $elementValue],
+                $user,
                 $fieldContextData
             );
             if (!$this->validateEncryptedField($fieldDefinition, $value)) {

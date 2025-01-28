@@ -17,10 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader;
 
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
 interface PatchAdapterInterface
 {
-    public function patch(ElementInterface $element, array $data): void;
+    public function patch(ElementInterface $element, array $data, UserInterface $user): void;
 
     public function getIndexKey(): string;
 

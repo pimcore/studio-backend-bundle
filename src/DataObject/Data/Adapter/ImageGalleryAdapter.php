@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ImageGallery;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 
@@ -43,6 +44,7 @@ final readonly class ImageGalleryAdapter implements SetterDataInterface
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?ImageGallery {
         $galleryData = $data[$key] ?? null;
@@ -52,7 +54,13 @@ final readonly class ImageGalleryAdapter implements SetterDataInterface
 
         $images = [];
         foreach ($galleryData as $item) {
-            $images[] = $this->hotspotImageAdapter->getDataForSetter($element, $fieldDefinition, $key, [$key => $item]);
+            $images[] = $this->hotspotImageAdapter->getDataForSetter(
+                $element,
+                $fieldDefinition,
+                $key,
+                [$key => $item],
+                $user,
+            );
         }
 
         return new ImageGallery($images);
