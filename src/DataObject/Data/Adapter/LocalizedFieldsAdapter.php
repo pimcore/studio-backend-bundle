@@ -38,6 +38,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Localizedfield;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
 use function sprintf;
@@ -74,13 +75,14 @@ final readonly class LocalizedFieldsAdapter implements
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?Localizedfield {
         if (!$fieldDefinition instanceof Localizedfields) {
             return null;
         }
 
-        $languageData = $this->getAllowedLanguages($element, $data[$key]);
+        $languageData = $this->getAllowedLanguages($element, $user, $data[$key]);
         $localizedField = $this->getLocalizedField($contextData, $element);
         $localizedField->setObject($element);
 
@@ -101,7 +103,8 @@ final readonly class LocalizedFieldsAdapter implements
                     $childFieldDefinition,
                     $name,
                     [$name => $fieldData],
-                    new FieldContextData(language: $language)
+                    $user,
+                    new FieldContextData(language: $language),
                 );
                 if (!$this->validateEncryptedField($childFieldDefinition, $value)) {
                     continue;
@@ -231,9 +234,9 @@ final readonly class LocalizedFieldsAdapter implements
 
     private function getAllowedLanguages(
         Concrete $element,
+        UserInterface $user,
         array $languageData
     ): array {
-        $user = $this->securityService->getCurrentUser();
         if ($user->isAdmin()) {
             return $languageData;
         }

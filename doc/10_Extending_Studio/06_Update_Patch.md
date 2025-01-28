@@ -80,7 +80,7 @@ use function array_key_exists;
  */
 final readonly class ParentIdAdapter implements PatchAdapterInterface
 {
-    public function patch(ElementInterface $element, array $data): void
+    public function patch(ElementInterface $element, array $data, UserInterface $user): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {
             return;

@@ -41,7 +41,7 @@ trait ElementProviderTrait
         string $type,
         int $id
     ): ElementInterface {
-        $element = $serviceResolver->getElementById($type, $id);
+        $element = $serviceResolver->getElementById($this->getCoreElementType($type), $id);
         if ($element === null) {
             throw new NotFoundException($type, $id);
         }
@@ -57,7 +57,7 @@ trait ElementProviderTrait
         string $type,
         string $path
     ): ElementInterface {
-        $element = $serviceResolver->getElementByPath($type, $path);
+        $element = $serviceResolver->getElementByPath($this->getCoreElementType($type), $path);
         if ($element === null) {
             throw new NotFoundException($type, $path, 'path');
         }
@@ -110,5 +110,14 @@ trait ElementProviderTrait
                 $getCoreType ? ElementTypes::TYPE_OBJECT : ElementTypes::TYPE_DATA_OBJECT,
             default => throw new InvalidElementTypeException($element->getType())
         };
+    }
+
+    private function getCoreElementType(string $type): string
+    {
+        if ($type === ElementTypes::TYPE_DATA_OBJECT) {
+            return ElementTypes::TYPE_OBJECT;
+        }
+
+        return $type;
     }
 }

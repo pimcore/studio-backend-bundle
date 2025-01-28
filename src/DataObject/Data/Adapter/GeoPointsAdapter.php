@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\Coordinates;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\GeoCoordinates;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 
@@ -40,6 +41,7 @@ final readonly class GeoPointsAdapter implements SetterDataInterface
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?array {
 

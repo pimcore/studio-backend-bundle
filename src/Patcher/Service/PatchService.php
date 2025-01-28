@@ -21,7 +21,6 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\Synchro
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
@@ -32,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -118,7 +118,8 @@ final readonly class PatchService implements PatchServiceInterface
             if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
                 $this->updateService->updateEditableData(
                     $element,
-                    $elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]
+                    $elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY],
+                    $user
                 );
 
                 unset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]);
@@ -126,7 +127,7 @@ final readonly class PatchService implements PatchServiceInterface
 
             $adapters = $this->adapterLoader->loadAdapters($elementType);
             foreach ($adapters as $adapter) {
-                $adapter->patch($element, $elementPatchData);
+                $adapter->patch($element, $elementPatchData, $user);
             }
 
             $this->synchronousProcessingService->enable();

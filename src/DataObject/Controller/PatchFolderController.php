@@ -18,17 +18,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 
 use OpenApi\Attributes\Patch;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\PatchDataObjectRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\PatchDataObjectFolderRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\DataParameter;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -44,7 +43,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class PatchController extends AbstractApiController
+final class PatchFolderController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -58,19 +57,16 @@ final class PatchController extends AbstractApiController
      * @throws AccessDeniedException|ElementSavingFailedException
      * @throws NotFoundException|UserNotFoundException|InvalidArgumentException
      */
-    #[Route('/data-objects', name: 'pimcore_studio_api_patch_data_object', methods: ['PATCH'])]
+    #[Route('/data-objects/folder', name: 'pimcore_studio_api_patch_data_object_folder', methods: ['PATCH'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Patch(
-        path: self::PREFIX . '/data-objects',
-        operationId: 'data_object_patch_by_id',
-        description: 'data_object_patch_by_id_description',
-        summary: 'data_object_patch_by_id_summary',
+        path: self::PREFIX . '/data-objects/folder',
+        operationId: 'data_object_patch_folder_by_id',
+        description: 'data_object_patch_folder_by_id_description',
+        summary: 'data_object_patch_folder_by_id_summary',
         tags: [Tags::DataObjects->value]
     )]
-    #[PatchDataObjectRequestBody]
-    #[SuccessResponse(
-        description: 'data_object_patch_by_id_success_response',
-    )]
+    #[PatchDataObjectFolderRequestBody]
     #[CreatedResponse(
         description: 'data_object_patch_by_id_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
@@ -81,18 +77,15 @@ final class PatchController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function dataObjectPatchById(#[MapRequestPayload] DataParameter $parameter): Response
+    public function dataObjectsPatchFolderById(#[MapRequestPayload] PatchFolderParameter $patchFolderParameter): Response
     {
-        $jobRunId = $this->patchService->patch(
+
+        $jobRunId = $this->patchService->patchFolder(
             ElementTypes::TYPE_OBJECT,
-            $parameter->getData(),
+            $patchFolderParameter,
             $this->securityService->getCurrentUser()
         );
 
-        if ($jobRunId) {
-            return $this->jsonResponse(['jobRunId' => $jobRunId], HttpResponseCodes::CREATED->value);
-        }
-
-        return new Response();
+        return $this->jsonResponse(['jobRunId' => $jobRunId], HttpResponseCodes::CREATED->value);
     }
 }

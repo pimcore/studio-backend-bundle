@@ -33,6 +33,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Video as VideoData;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Video;
 use Pimcore\Normalizer\NormalizerInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
 
@@ -56,6 +57,7 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?Video {
         $adapterData = $data[$key] ?? null;

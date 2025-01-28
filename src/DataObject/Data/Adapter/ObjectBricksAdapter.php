@@ -34,6 +34,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Objectbrick;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -64,6 +65,7 @@ final readonly class ObjectBricksAdapter implements
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?Objectbrick {
         if (!$fieldDefinition instanceof Objectbricks) {
@@ -82,7 +84,7 @@ final readonly class ObjectBricksAdapter implements
                 continue;
             }
 
-            $this->processBrickData($element, $container, $brick, $brickValue);
+            $this->processBrickData($element, $user, $container, $brick, $brickValue);
         }
 
         return $container;
@@ -235,6 +237,7 @@ final readonly class ObjectBricksAdapter implements
      */
     private function processBrickData(
         Concrete $element,
+        UserInterface $user,
         Objectbrick $container,
         AbstractData $brick,
         array $brickValue
@@ -250,6 +253,7 @@ final readonly class ObjectBricksAdapter implements
             $collectionDef,
             $brickValue,
             $element,
+            $user,
             $brick,
         ));
         $container->set($brickKey, $brick);
@@ -259,6 +263,7 @@ final readonly class ObjectBricksAdapter implements
         Definition $collectionDef,
         array $brickValue,
         Concrete $element,
+        UserInterface $user,
         AbstractData $brick
     ): array {
         $collectionData = [];
@@ -274,6 +279,7 @@ final readonly class ObjectBricksAdapter implements
                 $fd,
                 $fieldName,
                 [$fieldName => $brickValue[$fieldName]],
+                $user,
                 new FieldContextData($brick)
             );
             if (!$this->validateEncryptedField($fd, $value)) {

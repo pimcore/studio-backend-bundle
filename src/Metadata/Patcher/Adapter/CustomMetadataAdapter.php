@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdap
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 use function in_array;
@@ -48,7 +49,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function patch(ElementInterface $element, array $data): void
+    public function patch(ElementInterface $element, array $data, UserInterface $user): void
     {
         if (!$element instanceof Asset || !isset($data[self::INDEX_KEY])) {
             return;
@@ -73,7 +74,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
             }
             $patchedMetadata[] = $metadata;
 
-            // unset them, everything that is still in there needs to be added
+            // unset them, everything that is still in there, needs to be added
             unset($metadataForPatch[$index]);
         }
 

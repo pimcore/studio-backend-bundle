@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
 /**
  * @internal
  */
-final readonly class DataParameter
+readonly class DataParameter
 {
     public function __construct(
         private array $data
