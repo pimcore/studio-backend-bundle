@@ -26,7 +26,7 @@ use function sprintf;
 final readonly class ColumnMapper implements ColumnMapperInterface
 {
     private const COLUMN_MAPPING = [
-        'preview' => 'image',
+        'preview' => 'preview',
         'id' => 'id',
         'type' => 'string',
         'fullpath' => 'string',

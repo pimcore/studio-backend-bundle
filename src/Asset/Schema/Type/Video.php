@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     title: 'Video',
     type: 'object'
 )]
-class Video extends Asset
+class Video extends Asset implements ThumbnailPathInterface
 {
     public function __construct(
         #[Property(description: 'Duration', type: 'float', example: 43560.5)]
