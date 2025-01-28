@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Custom
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout\Listing;
+use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 
 /**
  * @internal
@@ -64,5 +65,13 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         }
 
         return $cl;
+    }
+
+    /**
+     * @throws DefinitionWriteException|NotFoundException
+     */
+    public function deleteCustomLayout(string $customLayoutId): void
+    {
+        $this->getCustomLayout($customLayoutId)->delete();
     }
 }

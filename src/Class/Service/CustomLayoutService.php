@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutEven
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
+use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -63,5 +64,10 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         );
 
         return $layout;
+    }
+
+    public function deleteCustomLayout(string $customLayoutId): void
+    {
+        $this->customLayoutRepository->deleteCustomLayout($customLayoutId);
     }
 }

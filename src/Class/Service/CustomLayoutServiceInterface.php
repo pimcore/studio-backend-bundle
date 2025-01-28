@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 
 /**
  * @internal
@@ -34,4 +35,9 @@ interface CustomLayoutServiceInterface
      * @throws NotFoundException
      */
     public function getCustomLayout(string $customLayoutId): CustomLayout;
+
+    /**
+     * @throws DefinitionWriteException|NotFoundException
+     */
+    public function deleteCustomLayout(string $customLayoutId): void;
 }

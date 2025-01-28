@@ -718,3 +718,7 @@ pimcore_studio_api_class_custom_layout_get_description: Get custom layout by giv
 pimcore_studio_api_class_custom_layout_get_summary: Get custom layout by given id
 pimcore_studio_api_class_custom_layout_get_layout_id: Id of custom layout
 pimcore_studio_api_class_custom_layout_get_success_response: Custom layout data
+pimcore_studio_api_class_custom_layout_delete: Delete custom layout by given id
+pimcore_studio_api_class_custom_layout_delete_description: Delete custom layout by given id
+pimcore_studio_api_class_custom_layout_delete_summary: Delete custom layout by given id
+pimcore_studio_api_class_custom_layout_delete_success_response: Custom layout deleted
