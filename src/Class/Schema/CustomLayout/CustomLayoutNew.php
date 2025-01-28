@@ -40,6 +40,7 @@ final readonly class CustomLayoutNew
         private int $classId
     ) {
     }
+
     public function getName(): string
     {
         return $this->name;
