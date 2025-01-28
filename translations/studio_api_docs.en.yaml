@@ -702,14 +702,19 @@ data_object_format_path_description: |
 data_object_format_path_summary: Format the path of the data
 data_object_format_path_success_response: Formatted path of the objects
 tag_export_description: Export
-class_get_by_data_object_class: Get class definitions
-class_get_by_data_object_class_description: Get all class definitions for the given data object class
-class_get_by_data_object_class_summary: Get class definitions for data object class
-class_get_by_data_object_class_data_object_class: Data object class
-class_get_collection_success_response: Class definition
+class_definition_get: Get class definition
+class_definition_get_description: Get class definition for the given data object class
+class_definition_get_summary: Get class definition for data object class
+class_definition_get_data_object_class: Data object class
+class_definition_get_success_response: Class definition
 class_custom_layout_collection: Get custom layout collection
 class_custom_layout_collection_description: Get custom layout collection for the given data object class.
 class_custom_layout_collection_summary: Get custom layout collection for data object class
 class_custom_layout_collection_data_object_class: Data object class
 class_custom_layout_collection_success_response: |
   List of custom layouts for the given data object class in a simple and compact format for listings.
+pimcore_studio_api_class_custom_layout_get: Get custom layout by given id
+pimcore_studio_api_class_custom_layout_get_description: Get custom layout by given id
+pimcore_studio_api_class_custom_layout_get_summary: Get custom layout by given id
+pimcore_studio_api_class_custom_layout_get_layout_id: Id of custom layout
+pimcore_studio_api_class_custom_layout_get_success_response: Custom layout data

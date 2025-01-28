@@ -18,8 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutCollectionEvent;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -34,12 +36,12 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
     ) {
     }
 
-    public function getCustomLayoutsCompact(string $dataObjectClass): array
+    public function getCustomLayoutCollection(string $dataObjectClass): array
     {
         $compactLayouts = [];
         $layouts = $this->customLayoutRepository->getCustomLayouts($dataObjectClass);
 
-        foreach ($layouts as $layout) {
+        foreach($layouts as $layout) {
             $compactLayout = $this->customLayoutHydrator->hydrateCompactLayout($layout);
             $this->eventDispatcher->dispatch(
                 new CustomLayoutCollectionEvent($compactLayout),
@@ -49,5 +51,17 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         }
 
         return $compactLayouts;
+    }
+
+    public function getCustomLayout(string $customLayoutId): CustomLayout
+    {
+        $layout = $this->customLayoutRepository->getCustomLayout($customLayoutId);
+        $layout = $this->customLayoutHydrator->hydrateLayout($layout);
+        $this->eventDispatcher->dispatch(
+            new CustomLayoutEvent($layout),
+            CustomLayoutEvent::EVENT_NAME
+        );
+
+        return $layout;
     }
 }

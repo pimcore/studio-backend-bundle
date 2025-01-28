@@ -14,14 +14,16 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\CustomLayout;
 
 use Exception;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
@@ -38,7 +40,7 @@ final class GetController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ClassDefinitionServiceInterface $classDefinitionService,
+        private readonly CustomLayoutServiceInterface $customLayoutService,
     ) {
         parent::__construct($serializer);
     }
@@ -47,34 +49,34 @@ final class GetController extends AbstractApiController
      * @throws Exception|NotFoundException
      */
     #[Route(
-        '/class/definition/{dataObjectClass}',
-        name: 'pimcore_studio_api_class_definition_get',
+        '/class/custom-layout/{customLayoutId}',
+        name: 'pimcore_studio_api_class_custom_layout_get',
         methods: ['GET']
     )]
     #[Get(
-        path: self::PREFIX . '/class/definition/{dataObjectClass}',
-        operationId: 'class_definition_get',
-        description: 'class_definition_get_description',
-        summary: 'class_definition_get_summary',
+        path: self::PREFIX . '/class/custom-layout/{customLayoutId}',
+        operationId: 'pimcore_studio_api_class_custom_layout_get',
+        description: 'pimcore_studio_api_class_custom_layout_get_description',
+        summary: 'pimcore_studio_api_class_custom_layout_get_summary',
         tags: [Tags::ClassDefinition->value],
     )]
     #[StringParameter(
-        name: 'dataObjectClass',
-        example: 'CAR',
-        description: 'class_definition_get_data_object_class',
+        name: 'customLayoutId',
+        example: 'CarTodo',
+        description: 'pimcore_studio_api_class_custom_layout_get_layout_id',
         required: true
     )]
     #[SuccessResponse(
-        description: 'class_definition_get_success_response',
-        content: new JsonContent(ref: ClassDefinition::class)
+        description: 'pimcore_studio_api_class_custom_layout_get_success_response',
+        content: new JsonContent(ref: Layout::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getClassDefinition(string $dataObjectClass): JsonResponse
+    public function getCustomLayout(string $customLayoutId): JsonResponse
     {
         return $this->jsonResponse(
-            $this->classDefinitionService->getClassDefinition($dataObjectClass)
+            $this->customLayoutService->getCustomLayout($customLayoutId)
         );
     }
 }

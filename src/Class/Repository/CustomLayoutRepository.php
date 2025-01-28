@@ -16,6 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
+use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\CustomLayout\CustomLayoutResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout\Listing;
 
@@ -25,6 +28,7 @@ use Pimcore\Model\DataObject\ClassDefinition\CustomLayout\Listing;
 readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
 {
     public function __construct(
+        private CustomLayoutResolverInterface $customLayoutResolver
     ) {
     }
 
@@ -38,5 +42,27 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         );
 
         return $customLayoutListing->load();
+    }
+
+    public function getCustomLayout(string $customLayoutId): CustomLayout
+    {
+        $cl = null;
+        $exception = null;
+
+        try {
+            $cl = $this->customLayoutResolver->getById($customLayoutId);
+        } catch (Exception $e) {
+            $exception = $e;
+        }
+        if (!$cl || $exception) {
+            throw new NotFoundException(
+                'custom layout',
+                $customLayoutId,
+                'id',
+                $exception
+            );
+        }
+
+        return $cl;
     }
 }

@@ -76,7 +76,7 @@ final class CollectionController extends AbstractApiController
     ])]
     public function getCustomLayouts(string $dataObjectClass): JsonResponse
     {
-        $items = $this->customLayoutService->getCustomLayoutsCompact($dataObjectClass);
+        $items = $this->customLayoutService->getCustomLayoutCollection($dataObjectClass);
 
         return $this->getPaginatedCollection(
             $this->serializer,

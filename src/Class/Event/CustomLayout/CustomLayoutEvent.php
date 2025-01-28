@@ -14,24 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
-/**
- * @internal
- */
-interface CustomLayoutServiceInterface
+final class CustomLayoutEvent extends AbstractPreResponseEvent
 {
-    /**
-     * @return CustomLayoutCompact[]
-     */
-    public function getCustomLayoutCollection(string $dataObjectClass): array;
+    public const string EVENT_NAME = 'pre_response.custom_layout';
 
-    /**
-     * @throws NotFoundException
-     */
-    public function getCustomLayout(string $customLayoutId): CustomLayout;
+    public function __construct(private readonly CustomLayout $customLayout)
+    {
+        parent::__construct($this->customLayout);
+    }
+
+    public function getClassDefinition(): CustomLayout
+    {
+        return $this->customLayout;
+    }
 }

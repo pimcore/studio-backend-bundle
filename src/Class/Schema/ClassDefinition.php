@@ -115,7 +115,8 @@ final class ClassDefinition implements AdditionalAttributesInterface
         private readonly array $propertyVisibility,
         #[Property(description: 'Whether grid locking is enabled', type: 'boolean')]
         private readonly bool $enableGridLocking,
-        #[Property(description: 'Blocked variables for export', type: 'array', items: new Items())]
+        #[Property(description: 'Blocked variables for export', type: 'array', items: new Items(type: 'string'))]
+        /** @var string[] */
         private readonly array $blockedVarsForExport,
         #[Property(description: 'Whether the class definition can be written to', type: 'boolean')]
         private readonly bool $isWriteable,
@@ -247,6 +248,9 @@ final class ClassDefinition implements AdditionalAttributesInterface
         return $this->enableGridLocking;
     }
 
+    /**
+     * @return string[]
+     */
     public function getBlockedVarsForExport(): array
     {
         return $this->blockedVarsForExport;

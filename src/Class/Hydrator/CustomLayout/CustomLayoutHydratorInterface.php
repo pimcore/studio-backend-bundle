@@ -16,7 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout;
 
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout as CustomLayoutSchema;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 
 /**
@@ -25,4 +27,9 @@ use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 interface CustomLayoutHydratorInterface
 {
     public function hydrateCompactLayout(CustomLayout $data): CustomLayoutCompact;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function hydrateLayout(CustomLayout $data): CustomLayoutSchema;
 }

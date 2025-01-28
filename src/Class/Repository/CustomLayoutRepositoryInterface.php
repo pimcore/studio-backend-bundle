@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 
 /**
@@ -27,4 +28,9 @@ interface CustomLayoutRepositoryInterface
      * @return CustomLayout[]
      */
     public function getCustomLayouts(string $dataObjectClassId): array;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getCustomLayout(string $customLayoutId): CustomLayout;
 }
