@@ -89,7 +89,7 @@ final readonly class DocumentHydrator implements DocumentHydratorInterface
             $document->getTitle(),
             $document->getDescription(),
             $document->getProperty(self::PROPERTY_NAVIGATION),
-            (bool)$this->binaryService->getPagePreviewPath($document)
+            $this->binaryService->hasPagePreview($document)
         );
     }
 }

@@ -37,4 +37,9 @@ interface BinaryServiceInterface
      * @throws EnvironmentException
      */
     public function getPagePreviewPath(Page $page): ?string;
+
+    /**
+     * @throws EnvironmentException
+     */
+    public function hasPagePreview(Page $page): bool;
 }

@@ -90,6 +90,14 @@ final readonly class BinaryService implements BinaryServiceInterface
         return $path;
     }
 
+    /**
+     * @throws EnvironmentException
+     */
+    public function hasPagePreview(Page $page): bool
+    {
+        return $this->getPagePreviewPath($page) !== null;
+    }
+
     private function isPagePreviewActive(): bool
     {
         $documentConfig = $this->systemConfigResolver->getSystemConfiguration('documents');
