@@ -77,8 +77,9 @@ final class PatchFolderController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function dataObjectsPatchFolderById(#[MapRequestPayload] PatchFolderParameter $patchFolderParameter): Response
-    {
+    public function dataObjectsPatchFolderById(
+        #[MapRequestPayload] PatchFolderParameter $patchFolderParameter
+    ): Response {
 
         $jobRunId = $this->patchService->patchFolder(
             ElementTypes::TYPE_OBJECT,
