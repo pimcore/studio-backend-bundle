@@ -17,11 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path;
 
 use Attribute;
-use OpenApi\Attributes\QueryParameter;
+use OpenApi\Attributes\PathParameter;
 use OpenApi\Attributes\Schema;
 
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class IntParameter extends QueryParameter
+final class IntParameter extends PathParameter
 {
     public function __construct(
         string $name,
@@ -32,7 +32,7 @@ final class IntParameter extends QueryParameter
         parent::__construct(
             name: $name,
             description: $description,
-            in: 'query',
+            in: 'path',
             required: $required,
             schema: new Schema(type: 'int', example: $example),
         );
