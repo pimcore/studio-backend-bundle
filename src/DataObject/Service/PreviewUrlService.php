@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PreviewParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\PreviewGeneratorInterface;
 use Pimcore\Model\DataObject\Concrete;
@@ -43,7 +44,11 @@ final readonly class PreviewUrlService implements PreviewUrlServiceInterface
      */
     public function getPreviewUrl(PreviewParameter $previewParameter): string
     {
-        $dataObject = $this->getElement($this->serviceResolver, 'object', $previewParameter->getId());
+        $dataObject = $this->getElement(
+            $this->serviceResolver,
+            ElementTypes::TYPE_OBJECT,
+            $previewParameter->getId()
+        );
 
         if (!$dataObject instanceof Concrete) {
             throw new NotFoundException('Data Object', $previewParameter->getId());
