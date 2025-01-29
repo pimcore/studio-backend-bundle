@@ -31,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     ],
     type: 'object'
 )]
-class Document extends Asset
+class Document extends Asset implements ThumbnailPathInterface
 {
     public function __construct(
         #[Property(description: 'Page count', type: 'integer', example: 2)]
