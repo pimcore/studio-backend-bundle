@@ -31,4 +31,5 @@ enum MimeTypes: string
     case PDF = 'application/pdf';
     case CSV = 'text/csv';
     case ZIP = 'application/zip';
+    case JSON = 'application/json';
 }

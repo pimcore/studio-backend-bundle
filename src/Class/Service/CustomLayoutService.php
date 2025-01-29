@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutCollectionEvent;
-
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * @internal
@@ -36,7 +37,8 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
     public function __construct(
         private CustomLayoutRepositoryInterface $customLayoutRepository,
         private CustomLayoutHydratorInterface $customLayoutHydrator,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
+        private readonly DownloadServiceInterface $downloadService
     ) {
     }
 
@@ -66,7 +68,9 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
 
     public function deleteCustomLayout(string $customLayoutId): void
     {
-        $this->customLayoutRepository->deleteCustomLayout($customLayoutId);
+        $this->customLayoutRepository->deleteCustomLayout(
+            $this->customLayoutRepository->getCustomLayout($customLayoutId)
+        );
     }
 
     public function createCustomLayout(
@@ -86,7 +90,20 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         CustomLayoutUpdateParameters $customLayoutParameters
     ): CustomLayout {
         return $this->hydrateLayout(
-            $this->customLayoutRepository->updateCustomLayout($customLayoutId, $customLayoutParameters)
+            $this->customLayoutRepository->updateCustomLayout(
+                $this->customLayoutRepository->getCustomLayout($customLayoutId),
+                $customLayoutParameters)
+        );
+    }
+
+    public function exportCustomLayoutAsJson(string $customLayoutId): JsonResponse
+    {
+        $customLayout = $this->customLayoutRepository->getCustomLayout($customLayoutId);
+        $json = $this->customLayoutRepository->exportCustomLayoutAsJson($customLayout);
+
+        return $this->downloadService->downloadJSON(
+            $json,
+            'custom_definition_' . $customLayout->getName() . '_export.json'
         );
     }
 

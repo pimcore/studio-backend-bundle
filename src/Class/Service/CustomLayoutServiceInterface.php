@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * @internal
@@ -58,4 +59,6 @@ interface CustomLayoutServiceInterface
         string $customLayoutId,
         CustomLayoutUpdateParameters $customLayoutParameters
     ): CustomLayout;
+
+    public function exportCustomLayoutAsJson(string $customLayoutId): JsonResponse;
 }

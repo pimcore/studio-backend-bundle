@@ -39,9 +39,9 @@ interface CustomLayoutRepositoryInterface
     public function getCustomLayout(string $customLayoutId): CustomLayout;
 
     /**
-     * @throws DefinitionWriteException|NotFoundException
+     * @throws DefinitionWriteException
      */
-    public function deleteCustomLayout(string $customLayoutId): void;
+    public function deleteCustomLayout(CustomLayout $customLayout): void;
 
     /**
      * @throws DefinitionWriteException
@@ -52,10 +52,12 @@ interface CustomLayoutRepositoryInterface
     ): CustomLayout;
 
     /**
-     * @throws DefinitionWriteException|NotFoundException|Exception
+     * @throws DefinitionWriteException|Exception
      */
     public function updateCustomLayout(
-        string $customLayoutId,
+        CustomLayout $customLayout,
         CustomLayoutUpdateParameters $customLayoutParameters
     ): CustomLayout;
+
+    public function exportCustomLayoutAsJson(CustomLayout $customLayout): string;
 }

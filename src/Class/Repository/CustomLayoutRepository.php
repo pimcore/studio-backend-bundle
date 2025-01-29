@@ -72,9 +72,9 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         return $cl;
     }
 
-    public function deleteCustomLayout(string $customLayoutId): void
+    public function deleteCustomLayout(CustomLayout $customLayout): void
     {
-        $this->getCustomLayout($customLayoutId)->delete();
+        $customLayout->delete();
     }
 
     public function createCustomLayout(
@@ -95,10 +95,9 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
     }
 
     public function updateCustomLayout(
-        string $customLayoutId,
+        CustomLayout $customLayout,
         CustomLayoutUpdateParameters $customLayoutParameters
     ): CustomLayout {
-        $customLayout = $this->getCustomLayout($customLayoutId);
         $config = $customLayoutParameters->getConfiguration();
         $values = $customLayoutParameters->getValues();
 
@@ -114,5 +113,10 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         $customLayout->save();
 
         return $customLayout;
+    }
+
+    public function exportCustomLayoutAsJson(CustomLayout $customLayout): string
+    {
+        return $this->classDefinitionServiceResolver->generateCustomLayoutJson($customLayout);
     }
 }
