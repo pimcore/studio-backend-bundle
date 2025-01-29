@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\CustomLayout;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Header\ContentDisposition;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
@@ -33,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -74,10 +72,10 @@ final class ExportController extends AbstractApiController
         headers: [new ContentDisposition()]
     )]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND
+        HttpResponseCodes::NOT_FOUND,
     ])]
     public function exportCustomLayout(string $customLayoutId): JsonResponse
     {
-       return $this->customLayoutService->exportCustomLayoutAsJson($customLayoutId);
+        return $this->customLayoutService->exportCustomLayoutAsJson($customLayoutId);
     }
 }
