@@ -63,7 +63,6 @@ final class ClassDefinition implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 
-    //TODO extend schema with additional properties
     public function __construct(
         #[Property(description: 'Id of class definition', type: 'string')]
         private readonly string $id,

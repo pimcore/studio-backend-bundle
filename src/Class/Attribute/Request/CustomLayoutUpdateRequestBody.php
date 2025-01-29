@@ -30,7 +30,8 @@ final class CustomLayoutUpdateRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                ref: CustomLayoutUpdate::class, type: 'object'
+                ref: CustomLayoutUpdate::class,
+                type: 'object'
             )
         );
     }
