@@ -23,10 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateP
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;

@@ -80,8 +80,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
     public function createCustomLayout(
         string $customLayoutId,
         CustomLayoutNewParameters $customLayoutParameters
-    ): CustomLayout
-    {
+    ): CustomLayout {
         $customLayout = $this->customLayoutResolver->create(
             [
                 'id' => $customLayoutId,
@@ -98,8 +97,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
     public function updateCustomLayout(
         string $customLayoutId,
         CustomLayoutUpdateParameters $customLayoutParameters
-    ): CustomLayout
-    {
+    ): CustomLayout {
         $customLayout = $this->getCustomLayout($customLayoutId);
         $config = $customLayoutParameters->getConfiguration();
         $values = $customLayoutParameters->getValues();
