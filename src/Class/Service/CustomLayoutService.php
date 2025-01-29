@@ -92,7 +92,8 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         return $this->hydrateLayout(
             $this->customLayoutRepository->updateCustomLayout(
                 $this->customLayoutRepository->getCustomLayout($customLayoutId),
-                $customLayoutParameters)
+                $customLayoutParameters
+            )
         );
     }
 
