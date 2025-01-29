@@ -72,8 +72,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
     public function createCustomLayout(
         string $customLayoutId,
         CustomLayoutNewParameters $customLayoutParameters
-    ): CustomLayout
-    {
+    ): CustomLayout {
         return $this->hydrateLayout(
             $this->customLayoutRepository->createCustomLayout($customLayoutId, $customLayoutParameters)
         );
@@ -85,8 +84,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
     public function updateCustomLayout(
         string $customLayoutId,
         CustomLayoutUpdateParameters $customLayoutParameters
-    ): CustomLayout
-    {
+    ): CustomLayout {
         return $this->hydrateLayout(
             $this->customLayoutRepository->updateCustomLayout($customLayoutId, $customLayoutParameters)
         );

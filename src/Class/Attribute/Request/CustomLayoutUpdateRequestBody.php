@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Attribute\Request;
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutNew;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutUpdate;
 
 #[Attribute(Attribute::TARGET_METHOD)]
