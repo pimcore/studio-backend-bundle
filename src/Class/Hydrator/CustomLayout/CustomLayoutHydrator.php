@@ -74,7 +74,7 @@ final readonly class CustomLayoutHydrator implements CustomLayoutHydratorInterfa
             $data->getModificationDate(),
             $data->getUserOwner(),
             $data->getClassId(),
-            $data->getDefault() ?? false,
+            $data->getDefault(),
             $panelLayout
         );
     }
