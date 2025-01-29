@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle;
 
+use Pimcore\Bundle\CustomReportsBundle\PimcoreCustomReportsBundle;
 use Pimcore\Bundle\GenericDataIndexBundle\PimcoreGenericDataIndexBundle;
 use Pimcore\Bundle\GenericExecutionEngineBundle\PimcoreGenericExecutionEngineBundle;
 use Pimcore\Bundle\StaticResolverBundle\PimcoreStaticResolverBundle;
@@ -90,5 +91,6 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $collection->addBundle(new PimcoreGenericDataIndexBundle());
         $collection->addBundle(new MercureBundle());
         $collection->addBundle(new PimcoreGenericExecutionEngineBundle());
+        $collection->addBundle(new PimcoreCustomReportsBundle());
     }
 }
