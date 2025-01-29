@@ -733,3 +733,8 @@ pimcore_studio_api_class_custom_layout_update_description: Update custom layout 
 pimcore_studio_api_class_custom_layout_update_summary: Update custom layout by given id
 pimcore_studio_api_class_custom_layout_update_layout_id: Id of custom layout
 pimcore_studio_api_class_custom_layout_update_success_response: Custom layout updated
+pimcore_studio_api_class_custom_layout_export: Export custom layout by given id
+pimcore_studio_api_class_custom_layout_export_description: Export custom layout by given id as JSON
+pimcore_studio_api_class_custom_layout_export_summary: Export custom layout by given id as JSON
+pimcore_studio_api_class_custom_layout_export_layout_id: Id of custom layout
+pimcore_studio_api_class_custom_layout_export_success_response: Custom layout data as JSON
