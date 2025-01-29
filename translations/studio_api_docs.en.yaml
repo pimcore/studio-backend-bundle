@@ -728,4 +728,8 @@ pimcore_studio_api_class_custom_layout_create_description: Create custom layout
 pimcore_studio_api_class_custom_layout_create_summary: Create custom layout
 pimcore_studio_api_class_custom_layout_create_success_response: Custom layout created
 pimcore_studio_api_class_custom_layout_create_layout_id: Id of custom layout
-
+pimcore_studio_api_class_custom_layout_update: Update custom layout by given id
+pimcore_studio_api_class_custom_layout_update_description: Update custom layout by given id
+pimcore_studio_api_class_custom_layout_update_summary: Update custom layout by given id
+pimcore_studio_api_class_custom_layout_update_layout_id: Id of custom layout
+pimcore_studio_api_class_custom_layout_update_success_response: Custom layout updated

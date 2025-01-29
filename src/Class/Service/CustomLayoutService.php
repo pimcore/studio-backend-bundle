@@ -21,9 +21,11 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutColl
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\CustomLayout\CustomLayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
+use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -67,10 +69,26 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         $this->customLayoutRepository->deleteCustomLayout($customLayoutId);
     }
 
-    public function createCustomLayout(string $customLayoutId, CustomLayoutNewParameters $customLayoutParameters): CustomLayout
+    public function createCustomLayout(
+        string $customLayoutId,
+        CustomLayoutNewParameters $customLayoutParameters
+    ): CustomLayout
     {
         return $this->hydrateLayout(
             $this->customLayoutRepository->createCustomLayout($customLayoutId, $customLayoutParameters)
+        );
+    }
+
+    /**
+     * @throws DefinitionWriteException
+     */
+    public function updateCustomLayout(
+        string $customLayoutId,
+        CustomLayoutUpdateParameters $customLayoutParameters
+    ): CustomLayout
+    {
+        return $this->hydrateLayout(
+            $this->customLayoutRepository->updateCustomLayout($customLayoutId, $customLayoutParameters)
         );
     }
 

@@ -18,12 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\CustomLayout\CustomLayoutResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
+use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout\Listing;
-use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 
 /**
  * @internal
@@ -31,6 +32,7 @@ use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
 {
     public function __construct(
+        private ClassDefinitionServiceResolverInterface $classDefinitionServiceResolver,
         private CustomLayoutResolverInterface $customLayoutResolver,
         private SecurityServiceInterface $securityService
     ) {
@@ -70,9 +72,6 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         return $cl;
     }
 
-    /**
-     * @throws DefinitionWriteException|NotFoundException
-     */
     public function deleteCustomLayout(string $customLayoutId): void
     {
         $this->getCustomLayout($customLayoutId)->delete();
@@ -81,8 +80,9 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
     public function createCustomLayout(
         string $customLayoutId,
         CustomLayoutNewParameters $customLayoutParameters
-    ): CustomLayout {
-        $customLayout =  $this->customLayoutResolver->create(
+    ): CustomLayout
+    {
+        $customLayout = $this->customLayoutResolver->create(
             [
                 'id' => $customLayoutId,
                 'name' => $customLayoutParameters->getName(),
@@ -90,6 +90,29 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
                 'classId' => $customLayoutParameters->getClassId(),
             ]
         );
+        $customLayout->save();
+
+        return $customLayout;
+    }
+
+    public function updateCustomLayout(
+        string $customLayoutId,
+        CustomLayoutUpdateParameters $customLayoutParameters
+    ): CustomLayout
+    {
+        $customLayout = $this->getCustomLayout($customLayoutId);
+        $config = $customLayoutParameters->getConfiguration();
+        $values = $customLayoutParameters->getValues();
+
+        $config['datatype'] = 'layout';
+        $config['fieldtype'] = 'panel';
+        $config['name'] = 'pimcore_root';
+
+        $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray($config, true);
+        $customLayout->setLayoutDefinitions($layout);
+        $customLayout->setName($values['name']);
+        $customLayout->setDescription($values['description'] ?? '');
+        $customLayout->setDefault($values['default'] ?? false);
         $customLayout->save();
 
         return $customLayout;
