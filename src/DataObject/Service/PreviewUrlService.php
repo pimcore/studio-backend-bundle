@@ -21,20 +21,18 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PreviewParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\PreviewGeneratorInterface;
 use Pimcore\Model\DataObject\Concrete;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * @internal
  */
 final readonly class PreviewUrlService implements PreviewUrlServiceInterface
 {
-    use RequestTrait;
+    use ElementProviderTrait;
 
     public function __construct(
-        private RequestStack $requestStack,
         private PreviewGeneratorInterface $defaultPreviewGenerator,
         private ServiceResolverInterface $serviceResolver
     ) {
@@ -45,13 +43,7 @@ final readonly class PreviewUrlService implements PreviewUrlServiceInterface
      */
     public function getPreviewUrl(PreviewParameter $previewParameter): string
     {
-        $session = $this->getCurrentSession($this->requestStack);
-
-        $dataObject = $this->serviceResolver->getElementFromSession(
-            'object',
-            $previewParameter->getId(),
-            $session->getId()
-        );
+        $dataObject = $this->getElement($this->serviceResolver, 'object', $previewParameter->getId());
 
         if (!$dataObject instanceof Concrete) {
             throw new NotFoundException('Data Object', $previewParameter->getId());
@@ -90,6 +82,7 @@ final readonly class PreviewUrlService implements PreviewUrlServiceInterface
         $urlParts = parse_url($url);
 
         $redirectParameters = array_filter([
+            'pimcore_studio_preview' => true,
             'pimcore_object_preview' => $previewParameter->getId(),
             'site' => $previewParameter->getSite(),
             'dc' => time(),
