@@ -18,15 +18,21 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\AssetPreviewDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\Asset\Image;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Hotspotimage as HotspotImageData;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Hotspotimage;
 use Pimcore\Model\Element\Data\MarkerHotspotItem;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function in_array;
 use function is_array;
@@ -35,12 +41,15 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class HotspotImageAdapter implements SetterDataInterface
+final readonly class HotspotImageAdapter implements SetterDataInterface, SearchPreviewDataInterface
 {
+    use AssetPreviewDataTrait;
     use ElementProviderTrait;
 
-    public function __construct(private ServiceResolverInterface $serviceResolver)
-    {
+    public function __construct(
+        private DataServiceInterface $dataService,
+        private ServiceResolverInterface $serviceResolver
+    ) {
     }
 
     public function getDataForSetter(
@@ -48,6 +57,7 @@ final readonly class HotspotImageAdapter implements SetterDataInterface
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?Hotspotimage {
 
@@ -66,6 +76,20 @@ final readonly class HotspotImageAdapter implements SetterDataInterface
             $data['marker'],
             $data['crop']
         );
+    }
+
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array {
+        if (!$fieldDefinition instanceof HotspotImageData || !$value instanceof Image) {
+            return $data;
+        }
+
+        $data[$this->dataService->getPreviewFieldName($fieldDefinition)] = $this->getSearchPreviewThumbnailPath($value);
+
+        return $data;
     }
 
     private function processData(array $data): array

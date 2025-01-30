@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
@@ -58,6 +59,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): null {
         if (!$fieldDefinition instanceof ReverseObjectRelation) {

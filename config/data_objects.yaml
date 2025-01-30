@@ -45,7 +45,7 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PreviewUrlService
-    arguments: [ '@request_stack', '@Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PreviewGenerator' ]
+    arguments: [ '@Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PreviewGenerator' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PathFormatterServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\PathFormatterService

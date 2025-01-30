@@ -65,4 +65,6 @@ interface UserServiceInterface
      * @throws DatabaseException
      */
     public function userSearch(string $searchQuery): Collection;
+
+    public function getUserNameById(int $userId): ?string;
 }

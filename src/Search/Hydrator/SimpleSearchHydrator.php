@@ -19,15 +19,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Search\Hydrator;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\SimpleSearchResult;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 
 /**
  * @internal
  */
 final readonly class SimpleSearchHydrator implements SimpleSearchHydratorInterface
 {
-    use ElementProviderTrait;
-
     public function __construct(
         private IconServiceInterface $iconService
     ) {

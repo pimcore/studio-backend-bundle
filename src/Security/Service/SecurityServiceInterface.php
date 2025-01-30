@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Model\DataObject;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
@@ -50,4 +51,10 @@ interface SecurityServiceInterface
         UserInterface $user,
         array $permissions
     ): void;
+
+    public function getSpecialDataObjectPermissions(
+        DataObject $dataObject,
+        UserInterface $user,
+        string $permission
+    ): array;
 }

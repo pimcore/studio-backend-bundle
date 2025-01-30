@@ -37,7 +37,7 @@ final class ColumnMapperTest extends Unit
     public function testMapperForPreview(): void
     {
         $mapper = new ColumnMapper();
-        $this->assertSame('image', $mapper->getType('preview'));
+        $this->assertSame('preview', $mapper->getType('preview'));
     }
 
     public function testMapperForId(): void

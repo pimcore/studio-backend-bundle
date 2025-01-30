@@ -237,6 +237,15 @@ final readonly class UserService implements UserServiceInterface
         return $this->getSimpleUserCollection($users);
     }
 
+    public function getUserNameById(int $userId): ?string
+    {
+        try {
+            return $this->userRepository->getUserById($userId)->getName();
+        } catch (NotFoundException) {
+            return null;
+        }
+    }
+
     /**
      * @param UserInterface[] $users
      */

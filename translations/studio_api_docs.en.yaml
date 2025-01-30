@@ -208,12 +208,16 @@ data_object_patch_by_id_description: |
   Patching data objects based on the given ID and data. <br> Patching can be used for updating single or multiple fields. <br> If single element is being patched, operation is executed synchronously. Multiple elements are patched asynchronously.
 data_object_patch_by_id_success_response: Successfully patched data object
 data_object_patch_by_id_summary: Patch data objects by ID
+data_object_patch_folder_by_id_description: |
+  Patching data objects based on the given folder ID, filters and data. <br> Patching on folders will be done asynchronously. <br>
+  You can also use filters and sorting. Filter data objects from folder based on the grid filter schema
+data_object_patch_folder_by_id_summary: Patch all data objects based on folder ID and filters
 data_object_replace_content_description: |
   Replace the content of the data object with the given <strong>{targetId}</strong> with the content of the data object matching the <strong>{sourceId}</strong>. <br> The <strong>{targetId}</strong> and <strong>{sourceId}</strong> must be an ID of existing data objects
 data_object_replace_content_success_response: Successfully replaced content of data object
 data_object_replace_content_summary: Replace content of a data object
 data_object_update_by_id_description: |
-  Update needs to have the complete data present. <br> You can create/update/delete list entries like properties. <br>  If you want to update only a single field, use the PATCH method.
+  You can create/update/delete list entries like properties or data object editable fields. <br>  If you want to update (add/remove) only some data of a field (e.g data of multi-relation fields), use the PATCH method.
 data_object_update_by_id_success_response: Successfully updated data object
 data_object_update_by_id_summary: Update a data object by ID
 documents_list_available_sites_description: |
@@ -438,6 +442,11 @@ system_settings_get_description: |
   System settings are public and need no login.
 system_settings_get_success_response: System settings data
 system_settings_get_summary: Get system settings
+simple_search_preview_get_description: |
+  Returns search preview for elements based on the given type <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
+  The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
+simple_search_preview_get_summary: Preview for element search result
+simple_search_preview_get_success_response: Simple search results preview for elements
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
 tag_asset_grid_description: Asset Grid operations

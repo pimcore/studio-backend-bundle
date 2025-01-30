@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\UserInterface;
 
 interface SetterDataInterface
 {
@@ -27,6 +28,7 @@ interface SetterDataInterface
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): mixed;
 }

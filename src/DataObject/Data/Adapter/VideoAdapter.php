@@ -19,14 +19,20 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\AssetPreviewDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
+use Pimcore\Model\Asset\Video as VideoAsset;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Video as VideoData;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Video;
+use Pimcore\Model\UserInterface;
 use Pimcore\Normalizer\NormalizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function is_array;
@@ -35,12 +41,15 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class VideoAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class VideoAdapter implements SetterDataInterface, DataNormalizerInterface, SearchPreviewDataInterface
 {
+    use AssetPreviewDataTrait;
     use ElementProviderTrait;
 
-    public function __construct(private AssetResolverInterface $assetResolver)
-    {
+    public function __construct(
+        private AssetResolverInterface $assetResolver,
+        private DataServiceInterface $dataService
+    ) {
     }
 
     public function getDataForSetter(
@@ -48,6 +57,7 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?Video {
         $adapterData = $data[$key] ?? null;
@@ -62,6 +72,21 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
         }
 
         return $this->createVideoObject($adapterData);
+    }
+
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array {
+        if (!$fieldDefinition instanceof VideoData || !$value instanceof VideoAsset) {
+            return $data;
+        }
+
+        $key = $this->dataService->getPreviewFieldName($fieldDefinition);
+        $data[$key] = $this->getSearchPreviewThumbnailPath($value);
+
+        return $data;
     }
 
     private function resolveAssetIfNeeded(?string $type, ?string $path): ?Asset

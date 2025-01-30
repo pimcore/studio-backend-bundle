@@ -47,7 +47,7 @@ final readonly class PublishAdapter implements PatchAdapterInterface
     /**
      * @throws ElementSavingFailedException
      */
-    public function patch(ElementInterface $element, array $data): void
+    public function patch(ElementInterface $element, array $data, UserInterface $user): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {
             return;
@@ -56,7 +56,7 @@ final readonly class PublishAdapter implements PatchAdapterInterface
         if (!$element instanceof Concrete && !$element instanceof Document) {
             return;
         }
-        $user = $this->securityService->getCurrentUser();
+
         match ($data[$this->getIndexKey()]) {
             true => $this->publishElement($element, $user),
             false => $this->unpublishElement($element, $user),
@@ -93,7 +93,11 @@ final readonly class PublishAdapter implements PatchAdapterInterface
 
     private function unpublishElement(Concrete|Document $element, UserInterface $user): void
     {
-        $this->securityService->hasElementPermission($element, $user, ElementPermissions::UNPUBLISH_PERMISSION);
+        $this->securityService->hasElementPermission(
+            $element,
+            $user,
+            ElementPermissions::UNPUBLISH_PERMISSION
+        );
         $element->setOmitMandatoryCheck(true);
         $element->setPublished(false);
     }

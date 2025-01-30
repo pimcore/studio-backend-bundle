@@ -84,7 +84,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\DatetimeDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\ImageDefinition:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\AssetPreviewDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\FileSizeDefinition:
@@ -133,7 +133,7 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\DatetimeResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\ImageResolver:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\AssetPreviewResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata\SelectResolver:

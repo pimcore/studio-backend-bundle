@@ -22,11 +22,11 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 /**
  * @internal
  */
-final readonly class ImageDefinition implements ColumnDefinitionInterface
+final readonly class AssetPreviewDefinition implements ColumnDefinitionInterface
 {
     public function getType(): string
     {
-        return 'system.image';
+        return 'system.preview';
     }
 
     public function getConfig(mixed $config): array
@@ -41,7 +41,7 @@ final readonly class ImageDefinition implements ColumnDefinitionInterface
 
     public function getFrontendType(): string
     {
-        return FrontendType::IMAGE->value;
+        return FrontendType::ASSET_PREVIEW->value;
     }
 
     public function isExportable(): bool

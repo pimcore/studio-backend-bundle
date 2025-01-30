@@ -57,15 +57,17 @@ final readonly class DownloadService implements DownloadServiceInterface
         $fileName = $this->getTempFileName($jobRunId, $tempFileName);
         $folderName = $this->getTempFileName($jobRunId, $tempFolderName);
         $filePath = $folderName . '/' . $fileName;
+        $storage = $this->validateStorage($filePath, $jobRunId);
 
         $streamedResponse = $this->getFileStreamedResponse(
             $filePath,
             $mimeType,
             $downloadName,
-            $this->validateStorage($filePath, $jobRunId)
+            $storage
         );
 
         try {
+            $storage->delete($filePath);
             $this->storageService->cleanUpFolder($folderName);
         } catch (FilesystemException) {
             throw new EnvironmentException(

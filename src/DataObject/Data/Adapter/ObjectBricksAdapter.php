@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\Definition
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -33,6 +34,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Objectbrick;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -42,7 +44,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final readonly class ObjectBricksAdapter implements
     SetterDataInterface,
     DataNormalizerInterface,
-    DataInheritanceInterface
+    DataInheritanceInterface,
+    SearchPreviewDataInterface
 {
     use ValidateObjectDataTrait;
 
@@ -62,6 +65,7 @@ final readonly class ObjectBricksAdapter implements
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?Objectbrick {
         if (!$fieldDefinition instanceof Objectbricks) {
@@ -80,7 +84,7 @@ final readonly class ObjectBricksAdapter implements
                 continue;
             }
 
-            $this->processBrickData($element, $container, $brick, $brickValue);
+            $this->processBrickData($element, $user, $container, $brick, $brickValue);
         }
 
         return $container;
@@ -160,6 +164,41 @@ final readonly class ObjectBricksAdapter implements
         return $inheritanceData;
     }
 
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array {
+        if (!$value instanceof Objectbrick) {
+            return $data;
+        }
+
+        $items = $value->getObjectVars();
+        foreach ($items as $item) {
+            if (!$item instanceof AbstractData) {
+                continue;
+            }
+
+            $type = $item->getType();
+            $brickName = ucfirst($type);
+            $definition = $this->definitionResolver->getByKey($type);
+            if ($definition === null) {
+                continue;
+            }
+
+            foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
+                $getter = 'get' . ucfirst($brickFieldDefinition->getName());
+                $fieldValues = $this->dataService->getPreviewFieldData($item->$getter(), $brickFieldDefinition, []);
+                foreach ($fieldValues as $fieldKey => $fieldValue) {
+                    $data[$brickName . ' - ' . $fieldKey] = $fieldValue;
+                }
+
+            }
+        }
+
+        return $data;
+    }
+
     /**
      * @throws Exception
      */
@@ -198,6 +237,7 @@ final readonly class ObjectBricksAdapter implements
      */
     private function processBrickData(
         Concrete $element,
+        UserInterface $user,
         Objectbrick $container,
         AbstractData $brick,
         array $brickValue
@@ -213,6 +253,7 @@ final readonly class ObjectBricksAdapter implements
             $collectionDef,
             $brickValue,
             $element,
+            $user,
             $brick,
         ));
         $container->set($brickKey, $brick);
@@ -222,6 +263,7 @@ final readonly class ObjectBricksAdapter implements
         Definition $collectionDef,
         array $brickValue,
         Concrete $element,
+        UserInterface $user,
         AbstractData $brick
     ): array {
         $collectionData = [];
@@ -237,6 +279,7 @@ final readonly class ObjectBricksAdapter implements
                 $fd,
                 $fieldName,
                 [$fieldName => $brickValue[$fieldName]],
+                $user,
                 new FieldContextData($brick)
             );
             if (!$this->validateEncryptedField($fd, $value)) {

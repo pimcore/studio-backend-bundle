@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\UserInterface;
 use function array_key_exists;
 
 /**
@@ -50,9 +51,10 @@ final readonly class UpdateService implements UpdateServiceInterface
      */
     public function update(string $elementType, int $id, array $data): void
     {
+        $user = $this->securityService->getCurrentUser();
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
-            $this->updateEditableData($element, $data[self::EDITABLE_DATA_KEY]);
+            $this->updateEditableData($element, $data[self::EDITABLE_DATA_KEY], $user);
             unset($data[self::EDITABLE_DATA_KEY]);
         }
 
@@ -62,7 +64,7 @@ final readonly class UpdateService implements UpdateServiceInterface
 
         try {
             $this->synchronousProcessingService->enable();
-            $element->setUserModification($this->securityService->getCurrentUser()->getId());
+            $element->setUserModification($user->getId());
             $element->save();
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
@@ -72,7 +74,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     /**
      * @throws ElementSavingFailedException
      */
-    public function updateEditableData(Concrete $element, array $editableData): void
+    public function updateEditableData(Concrete $element, array $editableData, UserInterface $user): void
     {
         try {
             $class = $element->getClass();
@@ -87,7 +89,7 @@ final readonly class UpdateService implements UpdateServiceInterface
                     continue;
                 }
 
-                $value = $adapter->getDataForSetter($element, $fieldDefinition, $key, $editableData);
+                $value = $adapter->getDataForSetter($element, $fieldDefinition, $key, $editableData, $user);
                 if (!$this->validateEncryptedField($fieldDefinition, $value)) {
                     continue;
                 }

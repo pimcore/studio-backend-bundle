@@ -97,7 +97,6 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
     {
         $customFrontendAdapters = [
             'fullpath' => FrontendType::ASSET_LINK->value,
-            'preview' => FrontendType::ASSET_PREVIEW->value,
         ];
 
         if (array_key_exists($columnKey, $customFrontendAdapters)) {

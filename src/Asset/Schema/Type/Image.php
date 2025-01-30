@@ -34,7 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     ],
     type: 'object'
 )]
-final class Image extends Asset
+final class Image extends Asset implements ThumbnailPathInterface
 {
     public function __construct(
         #[Property(description: 'Format', type: 'string', example: 'muhFormat')]

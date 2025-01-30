@@ -14,29 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
-
-use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
 
 /**
  * @internal
  */
-final readonly class PatchFolderParameter extends PatchAssetParameter
+readonly class DataParameter
 {
     public function __construct(
-        private array $data,
-        private ?FilterParameter $filters,
+        private array $data
     ) {
-        parent::__construct($data);
     }
 
     public function getData(): array
     {
         return $this->data;
-    }
-
-    public function getFilters(): FilterParameter
-    {
-        return $this->filters ?? new FilterParameter();
     }
 }

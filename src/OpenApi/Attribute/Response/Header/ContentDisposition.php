@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Header;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Header;
 
 use OpenApi\Attributes\Header;
 use OpenApi\Attributes\Schema;

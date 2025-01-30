@@ -25,3 +25,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService
+
+  Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Security\Service\LanguageService

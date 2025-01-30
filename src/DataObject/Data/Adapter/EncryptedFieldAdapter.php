@@ -26,6 +26,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField as EncryptedFieldDefinition;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\EncryptedField;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -45,6 +46,7 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
         Data $fieldDefinition,
         string $key,
         array $data,
+        UserInterface $user,
         ?FieldContextData $contextData = null
     ): ?EncryptedField {
         if (!$fieldDefinition instanceof EncryptedFieldDefinition) {
@@ -58,6 +60,7 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
 
         return $this->handleDelegatedField(
             $element,
+            $user,
             $delegateFieldDefinition,
             $fieldDefinition,
             $key,
@@ -87,6 +90,7 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
 
     private function handleDelegatedField(
         Concrete $element,
+        UserInterface $user,
         Data $delegateFieldDefinition,
         EncryptedFieldDefinition $fieldDefinition,
         string $key,
@@ -97,7 +101,7 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
         if ($adapter instanceof SetterDataInterface) {
             return new EncryptedField(
                 $fieldDefinition->getDelegate(),
-                $adapter->getDataForSetter($element, $delegateFieldDefinition, $key, $data, $contextData)
+                $adapter->getDataForSetter($element, $delegateFieldDefinition, $key, $data, $user, $contextData)
             );
         }
 

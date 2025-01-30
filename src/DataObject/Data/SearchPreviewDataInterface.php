@@ -14,20 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 
-/**
- * @internal
- */
-final readonly class DataParameter
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+
+interface SearchPreviewDataInterface
 {
-    public function __construct(
-        private array $data
-    ) {
-    }
-
-    public function getData(): array
-    {
-        return $this->data;
-    }
+    public function getPreviewFieldData(
+        mixed $value,
+        Data $fieldDefinition,
+        array $data
+    ): array;
 }

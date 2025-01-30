@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdap
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\AbstractElement;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 
@@ -34,7 +35,7 @@ final readonly class LockAdapter implements PatchAdapterInterface
 
     private const UNLOCK_PROPAGATE = 'unlockPropagate';
 
-    public function patch(ElementInterface $element, array $data): void
+    public function patch(ElementInterface $element, array $data, UserInterface $user): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {
             return;
