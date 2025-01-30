@@ -132,7 +132,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
             true
         );
         $customLayout->setLayoutDefinitions($layout);
-        $name = $importData['name'] ?? '';
+        $name = $data['name'] ?? '';
         if ($name !== '') {
             $customLayout->setName($name);
         }
