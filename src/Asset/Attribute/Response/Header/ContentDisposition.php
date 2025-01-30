@@ -25,12 +25,15 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
  */
 final class ContentDisposition extends Header
 {
-    public function __construct(string $headerType = HttpResponseHeaders::ATTACHMENT_TYPE->value)
+    public function __construct(
+        string $headerType = HttpResponseHeaders::ATTACHMENT_TYPE->value,
+        string $fileName = 'example.jpg'
+    )
     {
         parent::__construct(
             header: HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value,
             description: 'Content-Disposition header',
-            schema: new Schema(type: 'string', example: $headerType . '; filename="example.jpg"'),
+            schema: new Schema(type: 'string', example: $headerType . '; filename="' . $fileName . '"'),
         );
     }
 }

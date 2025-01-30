@@ -738,3 +738,8 @@ pimcore_studio_api_class_custom_layout_export_description: Export custom layout 
 pimcore_studio_api_class_custom_layout_export_summary: Export custom layout by given id as JSON
 pimcore_studio_api_class_custom_layout_export_layout_id: Id of custom layout
 pimcore_studio_api_class_custom_layout_export_success_response: Custom layout data as JSON
+pimcore_studio_api_class_custom_layout_import: Import custom layout
+pimcore_studio_api_class_custom_layout_import_description: Import custom layout using a previously exported JSON.
+pimcore_studio_api_class_custom_layout_import_summary: Import custom layout
+pimcore_studio_api_class_custom_layout_import_success_response: Http status code
+pimcore_studio_api_class_custom_layout_import_layout_id: Id of custom layout

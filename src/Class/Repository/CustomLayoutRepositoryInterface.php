@@ -60,4 +60,6 @@ interface CustomLayoutRepositoryInterface
     ): CustomLayout;
 
     public function exportCustomLayoutAsJson(CustomLayout $customLayout): string;
+
+    public function importCustomLayoutFromJson(CustomLayout $customLayout, string $json): CustomLayout;
 }

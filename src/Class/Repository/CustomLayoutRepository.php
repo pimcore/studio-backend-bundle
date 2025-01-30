@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
 use Exception;
+use JsonException;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\CustomLayout\CustomLayoutResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
@@ -118,5 +119,25 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
     public function exportCustomLayoutAsJson(CustomLayout $customLayout): string
     {
         return $this->classDefinitionServiceResolver->generateCustomLayoutJson($customLayout);
+    }
+
+    /**
+     * @throws JsonException|Exception
+     */
+    public function importCustomLayoutFromJson(CustomLayout $customLayout, string $json): CustomLayout
+    {
+        $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray(
+            $data['layoutDefinitions'],
+            true
+        );
+        $customLayout->setLayoutDefinitions($layout);
+        $name = $importData['name'] ?? '';
+        if ($name !== '') {
+            $customLayout->setName($name);
+        }
+        $customLayout->setDescription($data['description']);
+        $customLayout->save();
+        return $customLayout;
     }
 }

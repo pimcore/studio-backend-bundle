@@ -61,4 +61,6 @@ interface CustomLayoutServiceInterface
     ): CustomLayout;
 
     public function exportCustomLayoutAsJson(string $customLayoutId): JsonResponse;
+
+    public function importCustomLayoutActionFromJson(string $customLayoutId, string $json): CustomLayout;
 }

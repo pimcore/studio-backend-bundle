@@ -69,7 +69,7 @@ final class ExportController extends AbstractApiController
     #[SuccessResponse(
         description: 'pimcore_studio_api_class_custom_layout_export_success_response',
         content: [new MediaType(MimeTypes::JSON->value)],
-        headers: [new ContentDisposition()]
+        headers: [new ContentDisposition(fileName: 'custom_definition_CarToDo_export.json')]
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,

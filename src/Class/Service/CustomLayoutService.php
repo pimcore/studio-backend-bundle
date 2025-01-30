@@ -38,7 +38,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         private CustomLayoutRepositoryInterface $customLayoutRepository,
         private CustomLayoutHydratorInterface $customLayoutHydrator,
         private EventDispatcherInterface $eventDispatcher,
-        private readonly DownloadServiceInterface $downloadService
+        private DownloadServiceInterface $downloadService
     ) {
     }
 
@@ -106,6 +106,14 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
             $json,
             'custom_definition_' . $customLayout->getName() . '_export.json'
         );
+    }
+
+    public function importCustomLayoutActionFromJson(string $customLayoutId, string $json): CustomLayout
+    {
+        $customLayout = $this->customLayoutRepository->getCustomLayout($customLayoutId);
+        $customLayout = $this->customLayoutRepository->importCustomLayoutFromJson($customLayout, $json);
+
+        return $this->hydrateLayout($customLayout);
     }
 
     private function hydrateLayout(CoreLayout $layout): CustomLayout
