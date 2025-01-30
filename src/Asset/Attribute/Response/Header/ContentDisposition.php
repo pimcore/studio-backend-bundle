@@ -28,8 +28,7 @@ final class ContentDisposition extends Header
     public function __construct(
         string $headerType = HttpResponseHeaders::ATTACHMENT_TYPE->value,
         string $fileName = 'example.jpg'
-    )
-    {
+    ) {
         parent::__construct(
             header: HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value,
             description: 'Content-Disposition header',
