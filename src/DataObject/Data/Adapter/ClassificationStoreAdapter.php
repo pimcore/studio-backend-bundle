@@ -156,6 +156,7 @@ final readonly class ClassificationStoreAdapter implements
         $collection = $this->getStoreDefinitions($object, $fieldDefinition);
         if (empty($collection)) {
             $originId = $this->inheritanceService->getOriginId($object, $fieldDefinition, $key, $contextData);
+
             return [new InheritanceData($originId, $originId !== $object->getId())];
         }
 

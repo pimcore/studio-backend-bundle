@@ -35,7 +35,6 @@ use function is_array;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class ManyToManyObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
-
     public function __construct(
         private RelationDataServiceInterface $relationDataService,
         private ConcreteObjectResolverInterface $concreteObjectResolver

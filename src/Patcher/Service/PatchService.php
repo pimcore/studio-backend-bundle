@@ -36,13 +36,13 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use function array_key_exists;
 use function count;
 
 /**
@@ -202,7 +202,7 @@ final readonly class PatchService implements PatchServiceInterface
     {
         foreach ($newData as $newEntry) {
             $entryKey = $this->getFieldMapKey($newEntry, $dataKey);
-            if(isset($existingMap[$entryKey])) {
+            if (isset($existingMap[$entryKey])) {
                 unset($existingMap[$entryKey]);
             }
         }
@@ -216,7 +216,6 @@ final readonly class PatchService implements PatchServiceInterface
 
         return $elementData[FieldKeys::ID_KEY->value] . '_' . $elementData[FieldKeys::TYPE_KEY->value];
     }
-
 
     private function patchAsynchronously(
         string $elementType,

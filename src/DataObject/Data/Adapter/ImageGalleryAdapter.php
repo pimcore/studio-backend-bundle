@@ -79,8 +79,8 @@ final readonly class ImageGalleryAdapter implements SetterDataInterface
     }
 
     private function getPatchData(
-        array $newData, 
-        Concrete $object, 
+        array $newData,
+        Concrete $object,
         ImageGallery $fieldDefinition,
         ?FieldContextData $contextData
     ): array {
@@ -97,7 +97,8 @@ final readonly class ImageGalleryAdapter implements SetterDataInterface
         return $this->patchService->handlePatchDataField($newData, $existingValues, SubTypes::IMAGE->value);
     }
 
-    private function normalizeHotspotAndMarkerData(array $existingValues): array {
+    private function normalizeHotspotAndMarkerData(array $existingValues): array
+    {
         foreach ($existingValues as $index => $image) {
             $image['hotspots'] = $this->normalizeNestedData($image['hotspots']);
             $image['marker'] = $this->normalizeNestedData($image['marker']);
@@ -107,7 +108,8 @@ final readonly class ImageGalleryAdapter implements SetterDataInterface
         return $existingValues;
     }
 
-    private function normalizeNestedData(array $items): array {
+    private function normalizeNestedData(array $items): array
+    {
         foreach ($items as $index => $item) {
             if (!empty($item['data']) && is_array($item['data'])) {
                 foreach ($item['data'] as $dataIndex => $dataItem) {

@@ -23,6 +23,5 @@ enum PatchDataKeys: string
     use EnumToValueArrayTrait;
 
     case ACTION = 'action';
-
     case DATA = 'data';
 }

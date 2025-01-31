@@ -32,6 +32,7 @@ use Pimcore\Model\DataObject\Data\ElementMetadata;
 use Pimcore\Model\DataObject\Data\ObjectMetadata;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
+use function is_array;
 
 /**
  * @internal
@@ -43,8 +44,7 @@ final readonly class RelationDataService implements RelationDataServiceInterface
 
     public function __construct(
         private PatchServiceInterface $patchService
-    )
-    {
+    ) {
     }
 
     /**
@@ -82,8 +82,7 @@ final readonly class RelationDataService implements RelationDataServiceInterface
         ?array $fieldData,
         ?FieldContextData $contextData,
         bool $isAdvanced = false
-    ): ?array
-    {
+    ): ?array {
         if (!is_array($fieldData)) {
             return null;
         }
@@ -152,7 +151,6 @@ final readonly class RelationDataService implements RelationDataServiceInterface
 
             return $existingData;
         }
-
 
         foreach ($existingValues as $existingRelation) {
             $existingData[] = $this->getExistingElementData($existingRelation);

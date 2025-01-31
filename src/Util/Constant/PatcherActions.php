@@ -23,8 +23,6 @@ enum PatcherActions: string
     use EnumToValueArrayTrait;
 
     case ADD = 'add';
-
     case REMOVE = 'remove';
-
     case REPLACE = 'replace';
 }
