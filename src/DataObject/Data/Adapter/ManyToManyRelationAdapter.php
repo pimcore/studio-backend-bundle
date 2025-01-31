@@ -21,8 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\RelationData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -38,9 +38,9 @@ use function is_array;
 final readonly class ManyToManyRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     use ElementProviderTrait;
-    use RelationDataTrait;
 
     public function __construct(
+        private RelationDataServiceInterface $relationDataService,
         private ServiceResolverInterface $serviceResolver
     ) {
     }
@@ -51,10 +51,18 @@ final readonly class ManyToManyRelationAdapter implements SetterDataInterface, D
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?array {
-        $relationData = $data[$key];
-        if ($relationData === false || !is_array($relationData)) {
+        $relationData = $this->relationDataService->getSetterData(
+            $element,
+            $fieldDefinition,
+            $this,
+            $isPatch,
+            $data[$key],
+            $contextData
+        );
+        if ($relationData === null) {
             return null;
         }
 
@@ -72,7 +80,7 @@ final readonly class ManyToManyRelationAdapter implements SetterDataInterface, D
             return null;
         }
 
-        return $this->getRelationElementsData($value);
+        return $this->relationDataService->getRelationElementsData($value);
     }
 
     private function getRelationElements(array $relationData): array

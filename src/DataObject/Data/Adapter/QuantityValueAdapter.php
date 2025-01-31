@@ -37,7 +37,8 @@ final readonly class QuantityValueAdapter implements SetterDataInterface
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?QuantityValue {
         $value = $data[$key]['value'] ?? null;
         $unit = $data[$key]['unitId'] ?? null;

@@ -23,8 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\RelationData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
@@ -41,12 +41,11 @@ use function sprintf;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class ReverseObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
-    use RelationDataTrait;
-
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private ConcreteObjectResolverInterface $concreteObjectResolver,
         private LoggerInterface $pimcoreLogger,
+        private RelationDataServiceInterface $relationDataService,
         private SecurityServiceInterface $securityService
     ) {
     }
@@ -60,15 +59,23 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): null {
         if (!$fieldDefinition instanceof ReverseObjectRelation) {
             return null;
         }
 
-        $relationData = $data[$key];
+        $relationData = $this->relationDataService->getSetterData(
+            $element,
+            $fieldDefinition,
+            $this,
+            $isPatch,
+            $data[$key],
+            $contextData
+        );
         $remoteClass = $this->classDefinitionResolver->getByName($fieldDefinition->getOwnerClassName());
-        if ($remoteClass === null) {
+        if ($remoteClass === null || $relationData === null) {
             return null;
         }
 
@@ -90,7 +97,7 @@ final readonly class ReverseObjectRelationAdapter implements SetterDataInterface
             return null;
         }
 
-        return $this->getRelationElementsData($value);
+        return $this->relationDataService->getRelationElementsData($value);
     }
 
     private function processRemoteOwnerRelations(

@@ -53,7 +53,8 @@ final readonly class ImageAdapter implements SetterDataInterface, SearchPreviewD
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?Image {
         $imageData = $data[$key] ?? null;
 

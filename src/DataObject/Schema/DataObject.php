@@ -40,6 +40,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'customAttributes',
         'permissions',
         'index',
+        'childrenSortBy',
+        'childrenSortOrder',
         'objectData',
         'inheritanceData',
         'allowInheritance',

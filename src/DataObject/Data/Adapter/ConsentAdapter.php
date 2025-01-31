@@ -49,7 +49,8 @@ final readonly class ConsentAdapter implements SetterDataInterface, DataNormaliz
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): Consent {
         $value = $data[$key] ? $data[$key]['consent'] : null;
         $noteId = null;

@@ -57,7 +57,8 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?array {
         if (!$fieldDefinition instanceof Block) {
             return null;
@@ -65,7 +66,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
 
         $blockData = $data[$key];
 
-        return $this->processBlockData($element, $user, $fieldDefinition, $blockData, $contextData);
+        return $this->processBlockData($element, $user, $fieldDefinition, $blockData, $contextData, $isPatch);
     }
 
     public function normalize(
@@ -123,7 +124,8 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         UserInterface $user,
         Block $fieldDefinition,
         array $blockData,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch
     ): array {
         $resultBlockData = [];
         foreach ($blockData as $rawBlockElement) {
@@ -132,7 +134,8 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
                 $user,
                 $fieldDefinition,
                 $rawBlockElement,
-                $contextData
+                $isPatch,
+                $contextData,
             );
             $resultBlockData[] = $resultElement;
         }
@@ -148,6 +151,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         UserInterface $user,
         Block $fieldDefinition,
         array $rawBlockElement,
+        bool $isPatch,
         ?FieldContextData $contextData = null
     ): array {
         $resultElement = [];
@@ -166,8 +170,9 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
                 $user,
                 $fd,
                 $elementName,
+                $isPatch,
                 $rawBlockElement,
-                $fieldContextData
+                $fieldContextData,
             );
             if (!$value) {
                 continue;
@@ -188,6 +193,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         UserInterface $user,
         Data $fieldDefinition,
         string $elementName,
+        bool $isPatch,
         ?array $blockElement,
         ?FieldContextData $fieldContextData = null
     ): ?BlockElement {
@@ -200,7 +206,8 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
             $elementName,
             [$elementName => $elementData],
             $user,
-            $fieldContextData
+            $fieldContextData,
+            $isPatch
         );
         if (!$this->validateEncryptedField($fieldDefinition, $data)) {
             return null;

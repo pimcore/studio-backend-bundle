@@ -99,13 +99,13 @@ final readonly class InheritanceService implements InheritanceServiceInterface
     /**
      * @throws NotFoundException
      */
-    private function getOriginId(
+    public function getOriginId(
         Concrete $object,
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
     ): int {
-        if (!$fieldDefinition->isEmpty($this->getFieldValue($object, $fieldDefinition, $key, $contextData))) {
+        if (!$fieldDefinition->isEmpty($this->getValidFieldValue($object, $key, $contextData))) {
             return $object->getId();
         }
 
@@ -118,39 +118,7 @@ final readonly class InheritanceService implements InheritanceServiceInterface
             $parent,
             $fieldDefinition,
             $key,
-            $contextData
+            $contextData?->getContextObjectFromElement($parent)
         );
-    }
-
-    private function getFieldValue(
-        Concrete $object,
-        Data $fieldDefinition,
-        string $key,
-        ?FieldContextData $contextData = null
-    ): mixed {
-        $fieldKey = $this->getFieldKeyByContext($key, $fieldDefinition, $contextData);
-        $value = $this->getValidFieldValue($object, $fieldKey, $contextData?->getLanguage());
-
-        if ($contextData && $contextData->getContextObject() instanceof AbstractData) {
-            $value = $contextData->getBrickValueFromElement($value, $fieldDefinition->getName());
-        }
-
-        return $value;
-    }
-
-    private function getFieldKeyByContext(
-        string $key,
-        Data $fieldDefinition,
-        ?FieldContextData $contextData = null
-    ): string {
-        if (
-            $contextData &&
-            $contextData->getLanguage() &&
-            !$contextData->getContextObject() instanceof AbstractData
-        ) {
-            return $fieldDefinition->getName();
-        }
-
-        return $key;
     }
 }

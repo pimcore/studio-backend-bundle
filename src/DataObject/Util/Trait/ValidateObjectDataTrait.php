@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -43,10 +44,14 @@ trait ValidateObjectDataTrait
     private function getValidFieldValue(
         Concrete $object,
         string $key,
-        ?string $language = null
+        ?FieldContextData $contextData = null,
     ): mixed {
         try {
-            return $object->get($key, $language);
+            if ($contextData && $contextData->getContextObject() !== null) {
+                return $contextData->getFieldValueFromContextObject($key);
+            }
+
+            return $object->get($key, $contextData?->getLanguage());
         } catch (Exception) {
             throw new NotFoundException(type: 'field', id: $key);
         }

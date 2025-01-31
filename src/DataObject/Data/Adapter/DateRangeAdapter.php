@@ -40,7 +40,8 @@ final readonly class DateRangeAdapter implements SetterDataInterface, DataNormal
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?CarbonPeriod {
 
         $dateData = $data[$key];

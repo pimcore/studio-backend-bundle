@@ -21,8 +21,8 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationMetadataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -40,10 +40,10 @@ use function is_array;
 final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     use ElementProviderTrait;
-    use RelationDataTrait;
     use RelationMetadataTrait;
 
     public function __construct(
+        private RelationDataServiceInterface $relationDataService,
         private ServiceResolverInterface $serviceResolver
     ) {
     }
@@ -57,10 +57,19 @@ final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInte
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?array {
-        $relationData = $data[$key];
-        if ($relationData === false || !is_array($relationData)) {
+        $relationData = $this->relationDataService->getSetterData(
+            $element,
+            $fieldDefinition,
+            $this,
+            $isPatch,
+            $data[$key],
+            $contextData,
+            true
+        );
+        if ($relationData === null) {
             return null;
         }
 
@@ -81,7 +90,7 @@ final readonly class AdvancedManyToManyRelationAdapter implements SetterDataInte
                 continue;
             }
 
-            $normalizedData[] = $this->getAdvancedRelationElementData($relation);
+            $normalizedData[] = $this->relationDataService->getAdvancedRelationElementData($relation);
         }
 
         return $normalizedData;

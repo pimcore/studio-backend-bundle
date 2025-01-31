@@ -21,6 +21,8 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\Synchro
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
@@ -33,6 +35,10 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
@@ -44,12 +50,14 @@ use function count;
  */
 final readonly class PatchService implements PatchServiceInterface
 {
+    use ValidateObjectDataTrait;
+
     public function __construct(
         private AdapterLoaderInterface $adapterLoader,
+        private DataAdapterServiceInterface $dataAdapterService,
         private ElementServiceInterface $elementService,
         private JobExecutionAgentInterface $jobExecutionAgent,
-        private SynchronousProcessingServiceInterface $synchronousProcessingService,
-        private UpdateServiceInterface $updateService,
+        private SynchronousProcessingServiceInterface $synchronousProcessingService
     ) {
     }
 
@@ -116,7 +124,7 @@ final readonly class PatchService implements PatchServiceInterface
     ): void {
         try {
             if (isset($elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
-                $this->updateService->updateEditableData(
+                $this->patchEditableData(
                     $element,
                     $elementPatchData[UpdateServiceInterface::EDITABLE_DATA_KEY],
                     $user
@@ -137,6 +145,78 @@ final readonly class PatchService implements PatchServiceInterface
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }
     }
+
+    public function handlePatchDataField(array $fieldData, array $existingValues, ?string $dataKey = null): array
+    {
+        $newData = $fieldData[PatchDataKeys::DATA->value];
+        $action = $fieldData[PatchDataKeys::ACTION->value];
+
+        $existingMap = [];
+        foreach ($existingValues as $existingItem) {
+            $existingMap[$this->getFieldMapKey($existingItem, $dataKey)] = $existingItem;
+        }
+
+        return match ($action) {
+            PatcherActions::ADD->value => $this->handleAddition($existingMap, $newData, $dataKey),
+            PatcherActions::REMOVE->value => $this->handleRemoval($existingMap, $newData, $dataKey),
+            default => $fieldData
+        };
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function patchEditableData(Concrete $element, array $data, UserInterface $user): void
+    {
+        $class = $element->getClass();
+        foreach ($data as $key => $value) {
+            $fieldDefinition = $class->getFieldDefinition($key);
+            if ($fieldDefinition === null || !array_key_exists($key, $data)) {
+                continue;
+            }
+
+            $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldtype());
+            if ($adapter === null) {
+                continue;
+            }
+
+            $value = $adapter->getDataForSetter($element, $fieldDefinition, $key, $data, $user, isPatch: true);
+            if (!$this->validateEncryptedField($fieldDefinition, $value)) {
+                continue;
+            }
+
+            $element->setValue($key, $value);
+        }
+    }
+
+    private function handleAddition(array $existingMap, array $newData, ?string $dataKey = null): array
+    {
+        foreach ($newData as $newEntry) {
+            $existingMap[$this->getFieldMapKey($newEntry, $dataKey)] = $newEntry;
+        }
+
+        return array_values($existingMap);
+    }
+
+    private function handleRemoval(array $existingMap, array $newData, ?string $dataKey = null): array
+    {
+        foreach ($newData as $newEntry) {
+            $entryKey = $this->getFieldMapKey($newEntry, $dataKey);
+            if(isset($existingMap[$entryKey])) {
+                unset($existingMap[$entryKey]);
+            }
+        }
+
+        return array_values($existingMap);
+    }
+
+    private function getFieldMapKey(array $item, ?string $dataKey = null): string
+    {
+        $elementData = $dataKey ? $item[$dataKey] : $item;
+
+        return $elementData[FieldKeys::ID_KEY->value] . '_' . $elementData[FieldKeys::TYPE_KEY->value];
+    }
+
 
     private function patchAsynchronously(
         string $elementType,

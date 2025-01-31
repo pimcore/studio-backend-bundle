@@ -58,7 +58,8 @@ final readonly class HotspotImageAdapter implements SetterDataInterface, SearchP
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?Hotspotimage {
 
         $data = $data[$key];
@@ -90,6 +91,15 @@ final readonly class HotspotImageAdapter implements SetterDataInterface, SearchP
         $data[$this->dataService->getPreviewFieldName($fieldDefinition)] = $this->getSearchPreviewThumbnailPath($value);
 
         return $data;
+    }
+
+    public function normalizeImageData(MarkerHotspotItem $hotspotItem): array
+    {
+        return [
+            'name' => $hotspotItem->getName(),
+            'type' => $hotspotItem->getType(),
+            'value' => $hotspotItem->getValue(),
+        ];
     }
 
     private function processData(array $data): array
