@@ -66,7 +66,7 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
 
         $blockData = $data[$key];
 
-        return $this->processBlockData($element, $user, $fieldDefinition, $blockData, $contextData, $isPatch);
+        return $this->processBlockData($element, $user, $fieldDefinition, $blockData, $isPatch, $contextData);
     }
 
     public function normalize(
@@ -124,8 +124,8 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
         UserInterface $user,
         Block $fieldDefinition,
         array $blockData,
+        bool $isPatch,
         ?FieldContextData $contextData = null,
-        bool $isPatch
     ): array {
         $resultBlockData = [];
         foreach ($blockData as $rawBlockElement) {
