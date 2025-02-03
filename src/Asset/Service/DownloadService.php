@@ -144,8 +144,14 @@ final readonly class DownloadService implements DownloadServiceInterface
         $response = new JsonResponse(
             $json
         );
-        $response->headers->set('Content-Type', MimeTypes::JSON->value);
-        $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename .'"');
+        $response->headers->set(
+            HttpResponseHeaders::HEADER_CONTENT_TYPE->value,
+            MimeTypes::JSON->value
+        );
+        $response->headers->set(
+            HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value,
+            'attachment; filename="' . $filename .'"'
+        );
 
         return $response;
     }

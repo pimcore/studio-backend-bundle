@@ -77,7 +77,7 @@ final class UpdateController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function updateVersion(
+    public function updateCustomLayout(
         string $customLayoutId,
         #[MapRequestPayload] CustomLayoutUpdateParameters $parameters
     ): Response {
