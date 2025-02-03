@@ -16,8 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model;
 
+use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\DataObject\Classificationstore;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\BlockElement;
-use Pimcore\Model\DataObject\Fieldcollection;
+use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
 use Pimcore\Model\DataObject\Objectbrick;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
 use function is_array;
@@ -28,8 +32,10 @@ use function is_array;
 final readonly class FieldContextData
 {
     public function __construct(
-        private AbstractData|array|Fieldcollection|null $contextObject = null,
-        private ?string $language = null
+        private AbstractData|array|FieldCollectionData|Classificationstore|null $contextObject = null,
+        private ?string $language = null,
+        private ?int $classificationStoreGroupId = null,
+        private ?int $classificationStoreKeyId = null,
     ) {
     }
 
@@ -38,39 +44,76 @@ final readonly class FieldContextData
         return $this->language;
     }
 
-    public function getContextObject(): Fieldcollection|array|AbstractData|null
+    public function getContextObject(): FieldCollectionData|array|AbstractData|Classificationstore|null
     {
         return $this->contextObject;
     }
 
+    public function getClassificationStoreGroupId(): ?int
+    {
+        return $this->contextObject instanceof Classificationstore ? $this->classificationStoreGroupId : null;
+    }
+
+    public function getClassificationStoreKeyId(): ?int
+    {
+        return $this->contextObject instanceof Classificationstore ? $this->classificationStoreKeyId : null;
+    }
+
+    /**
+     * @throws Exception
+     */
     public function getFieldValueFromContextObject(string $fieldName): mixed
     {
         $contextObject = $this->getContextObject();
 
-        if ($contextObject instanceof Fieldcollection || $contextObject instanceof AbstractData) {
-            return $contextObject->get($fieldName);
-        }
-
-        if (is_array($contextObject)) {
-            return $this->getFromBlockData($fieldName, $contextObject);
-        }
-
-        return null;
+        return match (true) {
+            $contextObject instanceof AbstractData, $contextObject instanceof FieldCollectionData =>
+                $contextObject->get($fieldName, $this->language),
+            $contextObject instanceof Classificationstore => $this->getDataFromClassificationStore($contextObject),
+            is_array($contextObject) => $this->getDataFromBlock($fieldName, $contextObject),
+            default => null,
+        };
     }
 
-    public function getBrickValueFromElement(Objectbrick $brick, string $fieldName): mixed
-    {
+    /**
+     * @throws NotFoundException
+     */
+    public function getContextObjectFromElement(
+        Concrete $object
+    ): self {
         $contextObject = $this->getContextObject();
-        if (!$contextObject instanceof AbstractData) {
-            return null;
+        if (!$contextObject instanceof AbstractData &&
+            !$contextObject instanceof FieldCollectionData &&
+            !$contextObject instanceof Classificationstore
+        ) {
+            return $this;
         }
-        $brickGetter = 'get' . ucfirst($contextObject->getType());
-        $fieldGetter = 'get' . ucfirst($fieldName);
 
-        return $brick->$brickGetter()->$fieldGetter($this->getLanguage());
+        try {
+            $elementContext = $object->get($contextObject->getFieldname());
+        } catch (Exception) {
+            throw new NotFoundException('field', $contextObject->getFieldname(), 'name');
+        }
+
+        if ($elementContext instanceof Objectbrick) {
+            $elementContext = $elementContext->get($contextObject->getType());
+        }
+
+        return $this->createFieldContextData($elementContext);
     }
 
-    private function getFromBlockData(string $fieldName, array $blockData): mixed
+    private function createFieldContextData(
+        FieldCollectionData|array|AbstractData|Classificationstore|null $contextObject
+    ): self {
+        return new self(
+            $contextObject,
+            $this->language,
+            $this->classificationStoreGroupId,
+            $this->classificationStoreKeyId
+        );
+    }
+
+    private function getDataFromBlock(string $fieldName, array $blockData): mixed
     {
         foreach ($blockData as $value) {
             $fieldValue = $value[$fieldName] ?? null;
@@ -80,5 +123,21 @@ final readonly class FieldContextData
         }
 
         return null;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function getDataFromClassificationStore(Classificationstore $classificationstore): mixed
+    {
+        if ($this->getClassificationStoreKeyId() === null || $this->getClassificationStoreGroupId() === null) {
+            return null;
+        }
+
+        return $classificationstore->getLocalizedKeyValue(
+            $this->classificationStoreGroupId,
+            $this->classificationStoreKeyId,
+            $this->language
+        );
     }
 }

@@ -50,7 +50,8 @@ final readonly class ManyToOneRelationAdapter implements SetterDataInterface, Da
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?ElementInterface {
         $relationData = $data[$key];
         if (!is_array($relationData) || empty($relationData['id']) || empty($relationData['type'])) {

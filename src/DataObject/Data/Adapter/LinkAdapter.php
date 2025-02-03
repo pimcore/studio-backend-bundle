@@ -52,7 +52,8 @@ final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerI
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?Link {
 
         $link = new Link();

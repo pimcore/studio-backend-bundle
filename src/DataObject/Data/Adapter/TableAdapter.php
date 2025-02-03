@@ -41,7 +41,8 @@ final readonly class TableAdapter implements SetterDataInterface
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?array {
 
         $tableData = $data[$key];

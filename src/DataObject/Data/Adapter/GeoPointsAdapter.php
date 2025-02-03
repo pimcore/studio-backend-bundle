@@ -42,7 +42,8 @@ final readonly class GeoPointsAdapter implements SetterDataInterface
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?array {
 
         $geoPointData = $data[$key];

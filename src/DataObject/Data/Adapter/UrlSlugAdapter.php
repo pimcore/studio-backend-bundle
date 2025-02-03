@@ -42,7 +42,8 @@ final readonly class UrlSlugAdapter implements SetterDataInterface
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): array {
         $urlData = $data[$key];
         if (!is_array($urlData)) {

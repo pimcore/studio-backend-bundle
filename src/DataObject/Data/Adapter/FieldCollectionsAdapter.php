@@ -42,9 +42,9 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
 {
     use ValidateObjectDataTrait;
 
-    private const TYPE_KEY = 'type';
+    private const string TYPE_KEY = 'type';
 
-    private const DATA_KEY = 'data';
+    private const string DATA_KEY = 'data';
 
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
@@ -63,7 +63,8 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?Fieldcollection {
         if (!$fieldDefinition instanceof Fieldcollections) {
             return null;
@@ -73,13 +74,14 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
         $values = [];
         $count = 0;
 
-        foreach ($fcData as $collectionRaw) {
+        foreach ($fcData as $index => $collectionRaw) {
             $collectionData = $this->processCollectionRaw(
                 $element,
                 $user,
                 $fieldDefinition,
                 $collectionRaw,
-                $contextData
+                $isPatch,
+                $this->createFieldContextData($element, $fieldDefinition, $index, $contextData),
             );
 
             $collection = $this->createCollection(
@@ -134,12 +136,13 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
     private function createFieldContextData(
         Concrete $element,
         Data $fieldDefinition,
-        ?FieldContextData $contextData = null
+        int $index,
+        ?FieldContextData $contextData = null,
     ): FieldContextData {
         $object = $contextData?->getContextObject() ?? $element;
 
         return new FieldContextData(
-            $object->get($fieldDefinition->getName()),
+            $object->get($fieldDefinition->getName())?->get($index),
             $contextData?->getLanguage()
         );
     }
@@ -152,12 +155,12 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
         UserInterface $user,
         Data $fieldDefinition,
         array $collectionRaw,
+        bool $isPatch,
         ?FieldContextData $contextData
     ): array {
         $collectionData = [];
         $blockElement = $collectionRaw['data'] ?? null;
         $collectionDef = Fieldcollection\Definition::getByKey($collectionRaw['type']);
-        $fieldContextData = $this->createFieldContextData($element, $fieldDefinition, $contextData);
 
         foreach ($collectionDef?->getFieldDefinitions() as $elementName => $fd) {
             $elementValue = $blockElement[$elementName] ?? null;
@@ -172,7 +175,8 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
                 $elementName,
                 [$elementName => $elementValue],
                 $user,
-                $fieldContextData
+                $contextData,
+                $isPatch,
             );
             if (!$this->validateEncryptedField($fieldDefinition, $value)) {
                 continue;
