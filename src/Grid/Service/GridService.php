@@ -123,7 +123,7 @@ final class GridService implements GridServiceInterface
                     $resolver->resolveForStudioElement($column, $element),
                 default =>
                     throw new InvalidArgumentException(
-                        'Resolver must implement either StudioElementColumnResolverInterface or 
+                        'Resolver must implement either StudioElementColumnResolverInterface or
                         CoreElementColumnResolverInterface'
                     ),
             };
