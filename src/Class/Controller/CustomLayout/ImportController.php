@@ -22,15 +22,10 @@ use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
@@ -103,7 +98,7 @@ final class ImportController extends AbstractApiController
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::BAD_REQUEST
+        HttpResponseCodes::BAD_REQUEST,
     ])]
     public function importCustomLayout(
         string $customLayoutId,

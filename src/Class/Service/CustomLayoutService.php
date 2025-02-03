@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateP
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
-use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 

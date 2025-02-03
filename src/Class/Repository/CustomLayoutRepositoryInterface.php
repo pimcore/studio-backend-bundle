@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
-use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -24,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
-use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 
 /**
  * @internal
@@ -45,7 +43,6 @@ interface CustomLayoutRepositoryInterface
      * @throws NotWriteableException
      */
     public function deleteCustomLayout(CustomLayout $customLayout): void;
-
 
     /**
      * @throws NotWriteableException

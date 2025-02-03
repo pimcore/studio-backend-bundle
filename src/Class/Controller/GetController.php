@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller;
 
-use Exception;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
@@ -71,7 +70,7 @@ final class GetController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getClassDefinition(string $dataObjectClass): JsonResponse
     {
