@@ -31,7 +31,10 @@ use Pimcore\Model\Element\ElementInterface;
 /**
  * @internal
  */
-final class StringResolver implements ColumnResolverInterface, StudioElementColumnResolverInterface, CoreElementColumnResolverInterface
+final class StringResolver implements
+    ColumnResolverInterface,
+    StudioElementColumnResolverInterface,
+    CoreElementColumnResolverInterface
 {
     use SimpleGetterTrait;
     use ColumnDataTrait;
