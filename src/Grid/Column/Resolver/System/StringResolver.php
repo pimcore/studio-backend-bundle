@@ -55,7 +55,6 @@ final class StringResolver implements ColumnResolverInterface, StudioElementColu
         );
     }
 
-
     public function getType(): string
     {
         return 'system.string';

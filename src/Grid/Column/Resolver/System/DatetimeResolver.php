@@ -55,7 +55,6 @@ final class DatetimeResolver implements ColumnResolverInterface, StudioElementCo
         );
     }
 
-
     public function getType(): string
     {
         return 'system.datetime';

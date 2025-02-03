@@ -59,7 +59,6 @@ final class IdResolver implements
         );
     }
 
-
     public function getType(): string
     {
         return ColumnType::SYSTEM_ID->value;
