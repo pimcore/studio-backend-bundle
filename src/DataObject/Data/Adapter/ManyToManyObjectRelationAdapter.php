@@ -56,8 +56,8 @@ final readonly class ManyToManyObjectRelationAdapter implements SetterDataInterf
             $this,
             $isPatch,
             $data[$key],
-            $contextData)
-        ;
+            $contextData
+        );
         if ($relationData === null) {
             return null;
         }
