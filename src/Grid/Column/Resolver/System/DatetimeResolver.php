@@ -32,9 +32,9 @@ use Pimcore\Model\Element\ElementInterface;
  * @internal
  */
 final class DatetimeResolver implements
-    ColumnResolverInterface,
-    StudioElementColumnResolverInterface,
-    CoreElementColumnResolverInterface
+            ColumnResolverInterface,
+            StudioElementColumnResolverInterface,
+            CoreElementColumnResolverInterface
 {
     use SimpleGetterTrait;
     use ColumnDataTrait;
