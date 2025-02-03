@@ -33,9 +33,9 @@ use Pimcore\Model\Element\ElementInterface;
  * @internal
  */
 final class IdResolver implements
-    ColumnResolverInterface,
-    StudioElementColumnResolverInterface,
-    CoreElementColumnResolverInterface
+        ColumnResolverInterface,
+        StudioElementColumnResolverInterface,
+        CoreElementColumnResolverInterface
 {
     use SimpleGetterTrait;
     use ColumnDataTrait;
