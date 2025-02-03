@@ -36,6 +36,8 @@ use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
  */
 readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
 {
+    const string NOT_WRITEABLE_EXCEPTION_MESSAGE = 'Custom Layout';
+
     public function __construct(
         private ClassDefinitionServiceResolverInterface $classDefinitionServiceResolver,
         private CustomLayoutResolverInterface $customLayoutResolver,
@@ -67,7 +69,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         }
         if (!$cl || $exception) {
             throw new NotFoundException(
-                'custom layout',
+                self::NOT_WRITEABLE_EXCEPTION_MESSAGE,
                 $customLayoutId,
                 'id',
                 $exception
@@ -83,7 +85,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
             $customLayout->delete();
         }
         catch(DefinitionWriteException) {
-            throw new NotWriteableException('Custom Layout');
+            throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
         }
     }
 
@@ -105,7 +107,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
             return $customLayout;
         }
         catch(DefinitionWriteException) {
-            throw new NotWriteableException('Custom Layout');
+            throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
         }
     }
 
@@ -134,7 +136,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
             return $customLayout;
         }
         catch(DefinitionWriteException) {
-            throw new NotWriteableException('Custom Layout');
+            throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
         }
         catch(Exception $e) {
             throw new InvalidArgumentException($e->getMessage());
@@ -165,7 +167,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
             return $customLayout;
         }
         catch(DefinitionWriteException) {
-            throw new NotWriteableException('Custom Layout');
+            throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
         }
         catch(JsonException $e) {
             throw new JsonEncodingException($e->getMessage());
