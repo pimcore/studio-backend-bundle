@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 
 /**
  * @internal
@@ -29,7 +29,7 @@ trait LocalizedValueTrait
     /**
      * @throws InvalidArgumentException
      */
-    private function getLocalizedValue(Column $column, ElementInterface $element): mixed
+    private function getLocalizedValue(Column $column, StudioElementInterface $element): mixed
     {
         if (!$element instanceof Asset) {
             throw new InvalidArgumentException('Element must be an instance of Asset');

@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 /**
  * @internal
  */
-interface ElementInterface
+interface StudioElementInterface
 {
     public function getId(): int;
 

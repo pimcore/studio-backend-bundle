@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
@@ -36,7 +36,7 @@ final class AssetPreviewResolver implements ColumnResolverInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function resolve(Column $column, ElementInterface $element): ColumnData
+    public function resolve(Column $column, StudioElementInterface $element): ColumnData
     {
         if (!$element instanceof Asset) {
             throw new InvalidArgumentException('Element must be an instance of ' . Asset::class);

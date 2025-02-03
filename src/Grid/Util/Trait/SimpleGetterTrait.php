@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use function get_class;
 
 trait SimpleGetterTrait
@@ -26,7 +26,7 @@ trait SimpleGetterTrait
     /**
      * @throws InvalidArgumentException
      */
-    private function getValue(Column $column, ElementInterface $element): mixed
+    private function getValue(Column $column, StudioElementInterface $element): mixed
     {
         $getter = $this->getGetter($column);
         if (method_exists($element, $getter) === false) {

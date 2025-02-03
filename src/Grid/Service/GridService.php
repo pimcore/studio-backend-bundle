@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface as IndexElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -90,7 +90,7 @@ final class GridService implements GridServiceInterface
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
-        IndexElementInterface $element,
+        StudioElementInterface $element,
         string $elementType
     ): array {
         $data = [];
@@ -121,7 +121,7 @@ final class GridService implements GridServiceInterface
      */
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
-        IndexElementInterface $element,
+        StudioElementInterface $element,
         string $elementType
     ): array {
         $data = $this->getGridDataForElement($columnCollection, $element, $elementType);
