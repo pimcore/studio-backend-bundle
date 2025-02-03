@@ -37,7 +37,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'userOwner',
         'classId',
         'default',
-        'blockedVarsForExport',
+        'layoutDefinition',
     ],
     type: 'object'
 )]
