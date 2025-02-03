@@ -68,7 +68,7 @@ final class ImportController extends AbstractApiController
         name: 'pimcore_studio_api_class_custom_layout_import',
         methods: ['POST']
     )]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
         path: self::PREFIX . '/class/custom-layout/import/{customLayoutId}',
         operationId: 'pimcore_studio_api_class_custom_layout_import',

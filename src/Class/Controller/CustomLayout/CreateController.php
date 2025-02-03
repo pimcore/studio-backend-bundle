@@ -30,10 +30,12 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -53,6 +55,7 @@ final class CreateController extends AbstractApiController
      * @throws NotFoundException|UserNotFoundException|DefinitionWriteException
      */
     #[Route('/class/{customLayoutId}', name: 'pimcore_studio_api_class_custom_layout_create', methods: ['POST'])]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
         path: self::PREFIX . '/class/{customLayoutId}',
         operationId: 'pimcore_studio_api_class_custom_layout_create',
