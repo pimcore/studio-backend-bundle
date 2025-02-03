@@ -76,7 +76,8 @@ final readonly class LocalizedFieldsAdapter implements
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?Localizedfield {
         if (!$fieldDefinition instanceof Localizedfields) {
             return null;
@@ -105,6 +106,7 @@ final readonly class LocalizedFieldsAdapter implements
                     [$name => $fieldData],
                     $user,
                     new FieldContextData(language: $language),
+                    $isPatch
                 );
                 if (!$this->validateEncryptedField($childFieldDefinition, $value)) {
                     continue;
@@ -283,6 +285,9 @@ final readonly class LocalizedFieldsAdapter implements
         return in_array($defaultLanguage, $userLanguages, true) ? $defaultLanguage : reset($userLanguages);
     }
 
+    /**
+     * @throws Exception
+     */
     private function getLocalizedField(?FieldContextData $contextData, Concrete $element): Localizedfield
     {
         if ($contextData === null) {

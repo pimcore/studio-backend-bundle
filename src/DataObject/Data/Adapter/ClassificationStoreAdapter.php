@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\InheritanceServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -66,6 +67,7 @@ final readonly class ClassificationStoreAdapter implements
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService,
         private GroupConfigResolverInterface $groupConfigResolver,
+        private InheritanceServiceInterface $inheritanceService,
         private LanguageServiceInterface $languageService,
         private ServiceResolverInterface $serviceResolver,
         private SecurityServiceInterface $securityService,
@@ -82,7 +84,8 @@ final readonly class ClassificationStoreAdapter implements
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?Classificationstore {
 
         if (!$fieldDefinition instanceof ClassificationstoreDefinition) {
@@ -100,7 +103,7 @@ final readonly class ClassificationStoreAdapter implements
             $this->setMapping($container, $store['activeGroups'], $store['groupCollectionMapping']);
         }
         unset($store['activeGroups'], $store['groupCollectionMapping']);
-        $this->setStoreValues($element, $user, $fieldDefinition, $container, $store);
+        $this->setStoreValues($element, $user, $fieldDefinition, $container, $store, $isPatch);
         $this->cleanupStoreGroups($container);
 
         return $container;
@@ -150,17 +153,22 @@ final readonly class ClassificationStoreAdapter implements
             return [];
         }
         $languages = $this->getValidLanguages($object, $fieldDefinition->isLocalized());
+        $collection = $this->getStoreDefinitions($object, $fieldDefinition);
+        if (empty($collection)) {
+            $originId = $this->inheritanceService->getOriginId($object, $fieldDefinition, $key, $contextData);
 
-        foreach ($this->getStoreDefinitions($object, $fieldDefinition) as $groupId => $groupDefinitions) {
+            return [new InheritanceData($originId, $originId !== $object->getId())];
+        }
+
+        $container = $this->getContainer($object, $key, $contextData);
+        foreach ($collection as $groupId => $groupDefinitions) {
             foreach ($groupDefinitions as $groupKeyId => $definition) {
                 foreach ($languages as $language) {
-                    $originId = $this->getOriginId(
+                    $originId = $this->inheritanceService->getOriginId(
                         $object,
                         $definition,
                         $key,
-                        $groupId,
-                        $groupKeyId,
-                        $language
+                        new FieldContextData($container, $language, $groupId, $groupKeyId)
                     );
 
                     $inheritedData[$groupId][$language][$groupKeyId] = new InheritanceData(
@@ -211,7 +219,7 @@ final readonly class ClassificationStoreAdapter implements
         string $key,
         ?FieldContextData $contextData
     ): Classificationstore {
-        $container = $this->getValidFieldValue($element, $key, $contextData?->getLanguage());
+        $container = $this->getValidFieldValue($element, $key, $contextData);
 
         if (!$container instanceof Classificationstore) {
             return new Classificationstore();
@@ -240,7 +248,8 @@ final readonly class ClassificationStoreAdapter implements
         UserInterface $user,
         ClassificationstoreDefinition $definition,
         Classificationstore $container,
-        array $store
+        array $store,
+        bool $isPatch
     ): void {
 
         $activeGroups = [];
@@ -259,7 +268,7 @@ final readonly class ClassificationStoreAdapter implements
                 )) {
                     continue;
                 }
-                $this->processGroupKeys($element, $user, $definition, $container, $language, $groupId, $keys);
+                $this->processGroupKeys($element, $user, $definition, $container, $language, $groupId, $keys, $isPatch);
                 $activeGroups[$groupId] = true;
             }
         }
@@ -277,7 +286,8 @@ final readonly class ClassificationStoreAdapter implements
         Classificationstore $container,
         string $language,
         int $groupId,
-        array $keys
+        array $keys,
+        bool $isPatch
     ): void {
         foreach ($keys as $keyId => $value) {
             $fieldDefinition = $this->serviceResolver->getFieldDefinitionFromKeyConfig(
@@ -298,7 +308,9 @@ final readonly class ClassificationStoreAdapter implements
                 $fieldDefinition,
                 $fieldDefinition->getName(),
                 [$fieldDefinition->getName() => $value],
-                $user
+                $user,
+                new FieldContextData($container, $language, $groupId, $keyId),
+                $isPatch
             );
             if (!$this->validateEncryptedField($fieldDefinition, $setterData)) {
                 continue;
@@ -465,38 +477,5 @@ final readonly class ClassificationStoreAdapter implements
         }
 
         return $this->dataService->getNormalizedValue($value, $fieldDefinition);
-    }
-
-    /**
-     * @throws NotFoundException
-     */
-    private function getOriginId(
-        Concrete $object,
-        Data $fieldDefinition,
-        string $key,
-        int $groupId,
-        int $groupKeyId,
-        string $language
-    ): int {
-        $data = $this->getValidFieldValue($object, $key)
-            ->getLocalizedKeyValue($groupId, $groupKeyId, $language, true, true);
-
-        if (!$fieldDefinition->isEmpty($data)) {
-            return $object->getId();
-        }
-
-        $parent = $object->getNextParentForInheritance();
-        if ($parent === null) {
-            return $object->getId();
-        }
-
-        return $this->getOriginId(
-            $parent,
-            $fieldDefinition,
-            $key,
-            $groupId,
-            $groupKeyId,
-            $language
-        );
     }
 }

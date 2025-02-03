@@ -58,7 +58,8 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?Video {
         $adapterData = $data[$key] ?? null;
         if (!is_array($adapterData)) {

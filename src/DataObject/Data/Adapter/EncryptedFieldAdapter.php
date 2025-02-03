@@ -47,14 +47,15 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?EncryptedField {
         if (!$fieldDefinition instanceof EncryptedFieldDefinition) {
             return null;
         }
 
         $delegateFieldDefinition = $fieldDefinition->getDelegateDatatypeDefinition();
-        if (!$delegateFieldDefinition) {
+        if (!$delegateFieldDefinition instanceof Data) {
             return null;
         }
 
@@ -62,9 +63,9 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
             $element,
             $user,
             $delegateFieldDefinition,
-            $fieldDefinition,
             $key,
             $data,
+            $isPatch,
             $contextData
         );
     }
@@ -91,17 +92,17 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
     private function handleDelegatedField(
         Concrete $element,
         UserInterface $user,
-        Data $delegateFieldDefinition,
-        EncryptedFieldDefinition $fieldDefinition,
+        Data $delegate,
         string $key,
         array $data,
+        bool $isPatch,
         ?FieldContextData $contextData = null
     ): ?EncryptedField {
-        $adapter = $this->dataAdapterService->tryDataAdapter($delegateFieldDefinition->getFieldType());
+        $adapter = $this->dataAdapterService->tryDataAdapter($delegate->getFieldType());
         if ($adapter instanceof SetterDataInterface) {
             return new EncryptedField(
-                $fieldDefinition->getDelegate(),
-                $adapter->getDataForSetter($element, $delegateFieldDefinition, $key, $data, $user, $contextData)
+                $delegate,
+                $adapter->getDataForSetter($element, $delegate, $key, $data, $user, $contextData, $isPatch)
             );
         }
 

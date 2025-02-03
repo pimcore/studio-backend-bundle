@@ -66,7 +66,8 @@ final readonly class ObjectBricksAdapter implements
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?Objectbrick {
         if (!$fieldDefinition instanceof Objectbricks) {
             return null;
@@ -84,7 +85,7 @@ final readonly class ObjectBricksAdapter implements
                 continue;
             }
 
-            $this->processBrickData($element, $user, $container, $brick, $brickValue);
+            $this->processBrickData($element, $user, $container, $brick, $brickValue, $isPatch);
         }
 
         return $container;
@@ -152,10 +153,11 @@ final readonly class ObjectBricksAdapter implements
 
             $contextData = new FieldContextData($brick, $contextData?->getLanguage());
             foreach ($brickDefinition->getFieldDefinitions() as $definition) {
-                $inheritanceData[$type][$definition->getName()] = $this->inheritanceService->processFieldDefinition(
+                $fieldName = $definition->getName();
+                $inheritanceData[$type][$fieldName] = $this->inheritanceService->processFieldDefinition(
                     $object,
                     $definition,
-                    $key,
+                    $fieldName,
                     $contextData
                 );
             }
@@ -240,7 +242,8 @@ final readonly class ObjectBricksAdapter implements
         UserInterface $user,
         Objectbrick $container,
         AbstractData $brick,
-        array $brickValue
+        array $brickValue,
+        bool $isPatch
     ): void {
 
         $brickKey = $brick->getType();
@@ -255,6 +258,7 @@ final readonly class ObjectBricksAdapter implements
             $element,
             $user,
             $brick,
+            $isPatch
         ));
         $container->set($brickKey, $brick);
     }
@@ -264,7 +268,8 @@ final readonly class ObjectBricksAdapter implements
         array $brickValue,
         Concrete $element,
         UserInterface $user,
-        AbstractData $brick
+        AbstractData $brick,
+        bool $isPatch
     ): array {
         $collectionData = [];
         foreach ($collectionDef->getFieldDefinitions() as $fd) {
@@ -280,7 +285,8 @@ final readonly class ObjectBricksAdapter implements
                 $fieldName,
                 [$fieldName => $brickValue[$fieldName]],
                 $user,
-                new FieldContextData($brick)
+                new FieldContextData($brick),
+                $isPatch
             );
             if (!$this->validateEncryptedField($fd, $value)) {
                 continue;

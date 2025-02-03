@@ -56,4 +56,6 @@ interface PatchServiceInterface
         array $elementPatchData,
         UserInterface $user
     ): void;
+
+    public function handlePatchDataField(array $fieldData, array $existingValues, ?string $dataKey = null): array;
 }

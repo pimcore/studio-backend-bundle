@@ -38,7 +38,8 @@ final readonly class NumericRangeAdapter implements SetterDataInterface
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?NumericRange {
         $numericRangeData = $data[$key] ?? null;
         if (!isset($numericRangeData['minimum'], $numericRangeData['maximum']) || !is_array($numericRangeData)) {
