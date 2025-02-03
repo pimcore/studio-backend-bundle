@@ -18,11 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
-use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
+use Pimcore\Model\Element\ElementInterface;
 
-interface ColumnResolverInterface
+interface CoreElementColumnResolverInterface
 {
-    public function getType(): string;
-
-    public function supportedElementTypes(): array;
+    public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData;
 }

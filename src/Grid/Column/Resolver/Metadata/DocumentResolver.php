@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
@@ -30,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 /**
  * @internal
  */
-final class DocumentResolver implements ColumnResolverInterface
+final class DocumentResolver implements ColumnResolverInterface, StudioElementColumnResolverInterface
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;
@@ -40,7 +41,7 @@ final class DocumentResolver implements ColumnResolverInterface
     ) {
     }
 
-    public function resolve(Column $column, StudioElementInterface $element): ColumnData
+    public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
         $document = $this->getLocalizedValue($column, $element);
 

@@ -20,9 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 
-interface ColumnResolverInterface
+interface StudioElementColumnResolverInterface
 {
-    public function getType(): string;
-
-    public function supportedElementTypes(): array;
+    public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData;
 }
