@@ -83,8 +83,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
     {
         try {
             $customLayout->delete();
-        }
-        catch(DefinitionWriteException) {
+        } catch (DefinitionWriteException) {
             throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
         }
     }
@@ -105,8 +104,7 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
             $customLayout->save();
 
             return $customLayout;
-        }
-        catch(DefinitionWriteException) {
+        } catch (DefinitionWriteException) {
             throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
         }
     }
@@ -134,11 +132,9 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
             $customLayout->save();
 
             return $customLayout;
-        }
-        catch(DefinitionWriteException) {
+        } catch (DefinitionWriteException) {
             throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
-        }
-        catch(Exception $e) {
+        } catch (Exception $e) {
             throw new InvalidArgumentException($e->getMessage());
         }
     }
@@ -165,14 +161,11 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
             $customLayout->save();
 
             return $customLayout;
-        }
-        catch(DefinitionWriteException) {
+        } catch (DefinitionWriteException) {
             throw new NotWriteableException(self::NOT_WRITEABLE_EXCEPTION_MESSAGE);
-        }
-        catch(JsonException $e) {
+        } catch (JsonException $e) {
             throw new JsonEncodingException($e->getMessage());
-        }
-        catch(Exception $e) {
+        } catch (Exception $e) {
             throw new InvalidArgumentException($e->getMessage());
         }
     }

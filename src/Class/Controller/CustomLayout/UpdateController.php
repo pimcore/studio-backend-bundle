@@ -32,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -81,7 +80,7 @@ final class UpdateController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::BAD_REQUEST
+        HttpResponseCodes::BAD_REQUEST,
     ])]
     public function updateCustomLayout(
         string $customLayoutId,
