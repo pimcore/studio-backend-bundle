@@ -8,6 +8,9 @@ E.g. the metadata for the asset grid have its own column definitions, resolvers 
 In order that the grid can work with a custom column you have to implement the following classes:
 - Column Definition with the `ColumnDefinitionInterface` and tag it with `pimcore.studio_backend.column_definition`
 - Column Resolver with the `ColumnResolverInterface` and tag it with `pimcore.studio_backend.column_resolver`
+
+  You must implement the `CoreElementColumnResolverInterface` or `StudioElementColumnResolverInterface` depending on it the data is coming from the or the studio (GDI).
+  It is also possible to implement both interfaces. But `CoreElementColumnResolverInterface` has a higher priority than `StudioElementColumnResolverInterface`.
 - Column Collector with the `ColumnCollectorInterface` and tag it with `pimcore.studio_backend.column_collector`
 
 Once everything is implemented column will show up in the available columns in the grid configuration e.g. via `/studio/api/assets/grid/available-configuration`
@@ -80,23 +83,26 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
-final class CheckboxResolver implements ColumnResolverInterface
+final class FullPathResolver implements ColumnResolverInterface, StudioElementColumnResolverInterface, CoreElementColumnResolverInterface
 {
-    public function resolve(Column $column, ElementInterface $element): ColumnData
+    public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
-        $value = false;
-        /** @var Asset $element */
-        if ($element->getMetadata($column->getKey()) === '1') {
-            $value = true;
-        }
-
-        return new ColumnData($column->getKey(), $column->getLocale(), $value);
+        return new ColumnData($column->getKey(), $column->getLocale(), $element->getFullPath());
+    }
+    
+    
+    public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
+    {
+        return new ColumnData($column->getKey(), $column->getLocale(), $element->getFullPath());
     }
 
     public function getType(): string
@@ -107,7 +113,9 @@ final class CheckboxResolver implements ColumnResolverInterface
     public function supportedElementTypes(): array
     {
         return [
-            'asset',
+            ElementTypes::TYPE_ASSET,
+            ElementTypes::TYPE_DOCUMENT,
+            ElementTypes::TYPE_OBJECT,
         ];
     }
 }

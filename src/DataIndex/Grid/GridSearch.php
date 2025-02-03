@@ -31,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\UserInterface;
@@ -123,7 +123,7 @@ final readonly class GridSearch implements GridSearchInterface
         };
     }
 
-    private function isFolderOfType(string $type, ElementInterface $element): bool
+    private function isFolderOfType(string $type, StudioElementInterface $element): bool
     {
         if ($type === ElementTypes::TYPE_ASSET && $element instanceof AssetFolder) {
             return true;

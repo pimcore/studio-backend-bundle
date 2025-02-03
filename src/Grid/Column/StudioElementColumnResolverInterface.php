@@ -16,9 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
-interface ColumnResolverInterface
-{
-    public function getType(): string;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 
-    public function supportedElementTypes(): array;
+interface StudioElementColumnResolverInterface
+{
+    public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData;
 }
