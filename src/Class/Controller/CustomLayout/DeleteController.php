@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\CustomLayout;
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -41,7 +43,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws DefinitionWriteException
+     * @throws NotWriteableException|NotFoundException
      */
     #[Route('/class/custom-layout/{customLayoutId}',
         name: 'pimcore_studio_api_class_custom_layout_delete',
@@ -66,6 +68,7 @@ final class DeleteController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        httpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
     ])]
     public function deleteCustomLayout(string $customLayoutId): Response

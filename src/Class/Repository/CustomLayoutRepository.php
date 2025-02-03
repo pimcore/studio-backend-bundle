@@ -22,10 +22,14 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Custom
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout\Listing;
+use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 
 /**
  * @internal
@@ -75,45 +79,66 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
 
     public function deleteCustomLayout(CustomLayout $customLayout): void
     {
-        $customLayout->delete();
+        try {
+            $customLayout->delete();
+        }
+        catch(DefinitionWriteException) {
+            throw new NotWriteableException('Custom Layout');
+        }
     }
 
     public function createCustomLayout(
         string $customLayoutId,
         CustomLayoutNewParameters $customLayoutParameters
     ): CustomLayout {
-        $customLayout = $this->customLayoutResolver->create(
-            [
-                'id' => $customLayoutId,
-                'name' => $customLayoutParameters->getName(),
-                'userOwner' => $this->securityService->getCurrentUser()->getId(),
-                'classId' => $customLayoutParameters->getClassId(),
-            ]
-        );
-        $customLayout->save();
+        try {
+            $customLayout = $this->customLayoutResolver->create(
+                [
+                    'id' => $customLayoutId,
+                    'name' => $customLayoutParameters->getName(),
+                    'userOwner' => $this->securityService->getCurrentUser()->getId(),
+                    'classId' => $customLayoutParameters->getClassId(),
+                ]
+            );
+            $customLayout->save();
 
-        return $customLayout;
+            return $customLayout;
+        }
+        catch(DefinitionWriteException) {
+            throw new NotWriteableException('Custom Layout');
+        }
     }
 
     public function updateCustomLayout(
         CustomLayout $customLayout,
         CustomLayoutUpdateParameters $customLayoutParameters
     ): CustomLayout {
-        $config = $customLayoutParameters->getConfiguration();
-        $values = $customLayoutParameters->getValues();
+        try {
+            $config = $customLayoutParameters->getConfiguration();
+            $values = $customLayoutParameters->getValues();
 
-        $config['datatype'] = 'layout';
-        $config['fieldtype'] = 'panel';
-        $config['name'] = 'pimcore_root';
+            $config['datatype'] = 'layout';
+            $config['fieldtype'] = 'panel';
+            $config['name'] = 'pimcore_root';
 
-        $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray($config, true);
-        $customLayout->setLayoutDefinitions($layout);
-        $customLayout->setName($values['name']);
-        $customLayout->setDescription($values['description'] ?? '');
-        $customLayout->setDefault($values['default'] ?? false);
-        $customLayout->save();
+            $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray(
+                $config,
+                true
+            );
+            $customLayout->setLayoutDefinitions($layout);
+            $customLayout->setName($values['name']);
+            $customLayout->setDescription($values['description'] ?? '');
+            $customLayout->setDefault($values['default'] ?? false);
+            $customLayout->save();
 
-        return $customLayout;
+            return $customLayout;
+        }
+        catch(DefinitionWriteException) {
+            throw new NotWriteableException('Custom Layout');
+        }
+        catch(Exception $e) {
+            throw new InvalidArgumentException($e->getMessage());
+        }
     }
 
     public function exportCustomLayoutAsJson(CustomLayout $customLayout): string
@@ -121,24 +146,32 @@ readonly class CustomLayoutRepository implements CustomLayoutRepositoryInterface
         return $this->classDefinitionServiceResolver->generateCustomLayoutJson($customLayout);
     }
 
-    /**
-     * @throws JsonException|Exception
-     */
     public function importCustomLayoutFromJson(CustomLayout $customLayout, string $json): CustomLayout
     {
-        $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray(
-            $data['layoutDefinitions'],
-            true
-        );
-        $customLayout->setLayoutDefinitions($layout);
-        $name = $data['name'] ?? '';
-        if ($name !== '') {
-            $customLayout->setName($name);
-        }
-        $customLayout->setDescription($data['description']);
-        $customLayout->save();
+        try {
+            $data = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+            $layout = $this->classDefinitionServiceResolver->generateLayoutTreeFromArray(
+                $data['layoutDefinitions'],
+                true
+            );
+            $customLayout->setLayoutDefinitions($layout);
+            $name = $data['name'] ?? '';
+            if ($name !== '') {
+                $customLayout->setName($name);
+            }
+            $customLayout->setDescription($data['description']);
+            $customLayout->save();
 
-        return $customLayout;
+            return $customLayout;
+        }
+        catch(DefinitionWriteException) {
+            throw new NotWriteableException('Custom Layout');
+        }
+        catch(JsonException $e) {
+            throw new JsonEncodingException($e->getMessage());
+        }
+        catch(Exception $e) {
+            throw new InvalidArgumentException($e->getMessage());
+        }
     }
 }

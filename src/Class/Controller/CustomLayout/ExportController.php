@@ -50,7 +50,7 @@ final class ExportController extends AbstractApiController
     }
 
     /**
-     * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
+     * @throws NotFoundException
      */
     #[Route('/class/custom-layout/export/{customLayoutId}',
         name: 'pimcore_studio_api_class_custom_layout_export',
@@ -76,6 +76,7 @@ final class ExportController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED
     ])]
     public function exportCustomLayout(string $customLayoutId): JsonResponse
     {

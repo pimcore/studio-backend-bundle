@@ -48,9 +48,6 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws Exception|NotFoundException
-     */
     #[Route(
         '/class/custom-layout/collection/{dataObjectClass}',
         name: 'pimcore_studio_api_class_custom_layout_collection',
@@ -75,7 +72,7 @@ final class CollectionController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(CustomLayoutCompact::class))
     )]
     #[DefaultResponses([
-        HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED
     ])]
     public function getCustomLayouts(string $dataObjectClass): JsonResponse
     {

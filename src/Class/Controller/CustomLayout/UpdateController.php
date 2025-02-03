@@ -23,6 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateP
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -49,7 +52,7 @@ final class UpdateController extends AbstractApiController
     }
 
     /**
-     * @throws DefinitionWriteException
+     * @throws NotFoundException|NotWriteableException|InvalidArgumentException
      */
     #[Route('/class/custom-layout/{customLayoutId}',
         name: 'pimcore_studio_api_class_custom_layout_update',
@@ -76,6 +79,9 @@ final class UpdateController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
+        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST
     ])]
     public function updateCustomLayout(
         string $customLayoutId,

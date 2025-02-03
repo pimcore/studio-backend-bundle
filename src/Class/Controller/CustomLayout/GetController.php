@@ -44,7 +44,7 @@ final class GetController extends AbstractApiController
     }
 
     /**
-     * @throws Exception|NotFoundException
+     * @throws NotFoundException
      */
     #[Route(
         '/class/custom-layout/{customLayoutId}',
@@ -71,6 +71,7 @@ final class GetController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED
     ])]
     public function getCustomLayout(string $customLayoutId): JsonResponse
     {

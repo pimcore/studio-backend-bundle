@@ -82,9 +82,6 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         );
     }
 
-    /**
-     * @throws DefinitionWriteException
-     */
     public function updateCustomLayout(
         string $customLayoutId,
         CustomLayoutUpdateParameters $customLayoutParameters

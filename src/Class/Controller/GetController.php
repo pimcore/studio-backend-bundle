@@ -28,8 +28,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 final class GetController extends AbstractApiController
@@ -42,13 +44,14 @@ final class GetController extends AbstractApiController
     }
 
     /**
-     * @throws Exception|NotFoundException
+     * @throws NotFoundException
      */
     #[Route(
         '/class/definition/{dataObjectClass}',
         name: 'pimcore_studio_api_class_definition_get',
         methods: ['GET']
     )]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::PREFIX . '/class/definition/{dataObjectClass}',
         operationId: 'class_definition_get',
@@ -68,6 +71,7 @@ final class GetController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED
     ])]
     public function getClassDefinition(string $dataObjectClass): JsonResponse
     {

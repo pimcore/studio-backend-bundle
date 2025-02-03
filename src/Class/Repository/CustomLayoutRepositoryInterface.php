@@ -19,7 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
 
@@ -39,12 +42,13 @@ interface CustomLayoutRepositoryInterface
     public function getCustomLayout(string $customLayoutId): CustomLayout;
 
     /**
-     * @throws DefinitionWriteException
+     * @throws NotWriteableException
      */
     public function deleteCustomLayout(CustomLayout $customLayout): void;
 
+
     /**
-     * @throws DefinitionWriteException
+     * @throws NotWriteableException
      */
     public function createCustomLayout(
         string $customLayoutId,
@@ -52,7 +56,7 @@ interface CustomLayoutRepositoryInterface
     ): CustomLayout;
 
     /**
-     * @throws DefinitionWriteException|Exception
+     * @throws NotWriteableException|InvalidArgumentException
      */
     public function updateCustomLayout(
         CustomLayout $customLayout,
@@ -61,5 +65,8 @@ interface CustomLayoutRepositoryInterface
 
     public function exportCustomLayoutAsJson(CustomLayout $customLayout): string;
 
+    /**
+     * @throws NotWriteableException|JsonEncodingException|InvalidArgumentException
+     */
     public function importCustomLayoutFromJson(CustomLayout $customLayout, string $json): CustomLayout;
 }

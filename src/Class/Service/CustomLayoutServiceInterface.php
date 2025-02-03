@@ -20,8 +20,12 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewPara
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Model\DataObject\Exception\DefinitionWriteException;
+use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
@@ -40,12 +44,12 @@ interface CustomLayoutServiceInterface
     public function getCustomLayout(string $customLayoutId): CustomLayout;
 
     /**
-     * @throws DefinitionWriteException|NotFoundException
+     * @throws NotWriteableException|NotFoundException
      */
     public function deleteCustomLayout(string $customLayoutId): void;
 
     /**
-     * @throws DefinitionWriteException
+     * @throws NotWriteableException
      */
     public function createCustomLayout(
         string $customLayoutId,
@@ -53,14 +57,20 @@ interface CustomLayoutServiceInterface
     ): CustomLayout;
 
     /**
-     * @throws DefinitionWriteException
+     * @throws NotWriteableException|NotFoundException|InvalidArgumentException
      */
     public function updateCustomLayout(
         string $customLayoutId,
         CustomLayoutUpdateParameters $customLayoutParameters
     ): CustomLayout;
 
+    /**
+     * @throws NotFoundException
+     */
     public function exportCustomLayoutAsJson(string $customLayoutId): JsonResponse;
 
+    /**
+     * @throws NotFoundException|NotWriteableException|JsonEncodingException|InvalidArgumentException
+     */
     public function importCustomLayoutActionFromJson(string $customLayoutId, string $json): CustomLayout;
 }

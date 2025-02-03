@@ -27,8 +27,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\MultipartFormDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -56,12 +59,11 @@ final class ImportController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
-     * @throws DatabaseException
-     * @throws EnvironmentException
-     * @throws ForbiddenException
      * @throws NotFoundException
-     * @throws UserNotFoundException
+     * @throws ElementStreamResourceNotFoundException
+     * @throws NotWriteableException
+     * @throws JsonEncodingException
+     * @throws InvalidArgumentException
      */
     #[Route(
         '/class/custom-layout/import/{customLayoutId}',
@@ -99,7 +101,9 @@ final class ImportController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
+        HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::BAD_REQUEST
     ])]
     public function importCustomLayout(
         string $customLayoutId,
