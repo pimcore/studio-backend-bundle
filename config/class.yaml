@@ -20,6 +20,22 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Service\ObjectBrick\LayoutDefinitionService
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionService
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutService
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepository
+
   #
   # Hydrators
   #
@@ -28,3 +44,10 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ObjectBrick\LayoutDefinitionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydrator
+

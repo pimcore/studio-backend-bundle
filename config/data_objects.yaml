@@ -13,13 +13,6 @@ services:
 
 
   #
-  # Repositories
-  #
-
-  Pimcore\Bundle\StudioBackendBundle\DataObject\Repository\ClassDefinitionRepositoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Repository\ClassDefinitionRepository
-
-  #
   # Services
   #
 

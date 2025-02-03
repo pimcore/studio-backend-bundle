@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ThumbnailResizingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\FormatTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
@@ -31,6 +32,7 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use function in_array;
 
@@ -133,5 +135,24 @@ final readonly class DownloadService implements DownloadServiceInterface
             $image,
             false
         );
+    }
+
+    public function downloadJSON(
+        string $json,
+        string $filename
+    ): JsonResponse {
+        $response = new JsonResponse(
+            $json
+        );
+        $response->headers->set(
+            HttpResponseHeaders::HEADER_CONTENT_TYPE->value,
+            MimeTypes::JSON->value
+        );
+        $response->headers->set(
+            HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value,
+            'attachment; filename="' . $filename .'"'
+        );
+
+        return $response;
     }
 }

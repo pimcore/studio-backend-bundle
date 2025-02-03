@@ -14,17 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Repository;
-
-use Pimcore\Model\DataObject\ClassDefinition;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter;
 
 /**
  * @internal
  */
-interface ClassDefinitionRepositoryInterface
+final readonly class CustomLayoutUpdateParameters
 {
-    /**
-     * @return ClassDefinition[]
-     */
-    public function getClassDefinitions(): array;
+    public function __construct(
+        private array $configuration,
+        private array $values
+    ) {
+
+    }
+
+    public function getConfiguration(): array
+    {
+        return $this->configuration;
+    }
+
+    public function getValues(): array
+    {
+        return $this->values;
+    }
 }

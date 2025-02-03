@@ -14,24 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Model\DataObject\ClassDefinition;
 
 /**
  * @internal
  */
-enum MimeTypes: string
+interface ClassDefinitionRepositoryInterface
 {
-    use EnumToValueArrayTrait;
+    /**
+     * @return ClassDefinition[]
+     */
+    public function getClassDefinitions(): array;
 
-    case CSV = 'text/csv';
-    case JPEG = 'JPEG';
-    case ORIGINAL = 'original';
-    case PJPEG = 'PJPEG';
-    case PNG = 'PNG';
-    case PDF = 'application/pdf';
-    case SOURCE = 'source';
-    case ZIP = 'application/zip';
-    case JSON = 'application/json';
+    /**
+     * @throws NotFoundException
+     */
+    public function getClassDefinition(string $dataObjectClass): ClassDefinition;
 }

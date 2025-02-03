@@ -14,24 +14,27 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset;
-
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter;
 
 /**
  * @internal
  */
-enum MimeTypes: string
+final readonly class CustomLayoutNewParameters
 {
-    use EnumToValueArrayTrait;
+    public function __construct(
+        private string $name,
+        private int $classId
+    ) {
 
-    case CSV = 'text/csv';
-    case JPEG = 'JPEG';
-    case ORIGINAL = 'original';
-    case PJPEG = 'PJPEG';
-    case PNG = 'PNG';
-    case PDF = 'application/pdf';
-    case SOURCE = 'source';
-    case ZIP = 'application/zip';
-    case JSON = 'application/json';
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getClassId(): int
+    {
+        return $this->classId;
+    }
 }
