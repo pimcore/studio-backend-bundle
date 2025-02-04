@@ -24,6 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\JsonEncodingException;
+use Pimcore\Model\DataObject;
+use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
@@ -34,12 +37,25 @@ interface CustomLayoutServiceInterface
     /**
      * @return CustomLayoutCompact[]
      */
+    public function getCustomLayoutEditorCollection(
+        int $dataObjectId,
+        UserInterface $user
+    ): array;
+
+    /**
+     * @return CustomLayoutCompact[]
+     */
     public function getCustomLayoutCollection(string $dataObjectClass): array;
 
     /**
      * @throws NotFoundException
      */
     public function getCustomLayout(string $customLayoutId): CustomLayout;
+
+    /**
+     * @return CoreLayout[]
+     */
+    public function getUserCustomLayouts(DataObject $dataObject, UserInterface $user, array $allowedLayouts): array;
 
     /**
      * @throws NotWriteableException|NotFoundException
@@ -71,4 +87,8 @@ interface CustomLayoutServiceInterface
      * @throws NotFoundException|NotWriteableException|JsonEncodingException|InvalidArgumentException
      */
     public function importCustomLayoutActionFromJson(string $customLayoutId, string $json): CustomLayout;
+
+    public function getMainLayout(): CoreLayout;
+
+    public function getMainAdminLayout(): CoreLayout;
 }
