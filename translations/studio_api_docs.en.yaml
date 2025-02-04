@@ -722,6 +722,11 @@ class_custom_layout_collection_summary: Get custom layout collection for data ob
 class_custom_layout_collection_data_object_class: Data object class
 class_custom_layout_collection_success_response: |
   List of custom layouts for the given data object class in a simple and compact format for listings.
+class_custom_layout_editor_collection_description: | 
+  Get custom layout collection based on the <strong>{objectId}</strong> and current user permissions. <br>
+  The <strong>{objectId}</strong> must be an ID of an existing object.
+class_custom_layout_editor_collection_summary: Get custom layout collection for the data object
+class_custom_layout_editor_collection_success_response: List of custom layouts for the given data object id
 pimcore_studio_api_class_custom_layout_get: Get custom layout by given id
 pimcore_studio_api_class_custom_layout_get_description: Get custom layout by given id
 pimcore_studio_api_class_custom_layout_get_summary: Get custom layout by given id
