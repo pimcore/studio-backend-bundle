@@ -181,10 +181,11 @@ final readonly class LocalizedFieldsAdapter implements
 
         foreach ($fields as $field) {
             foreach ($this->toolResolver->getValidLanguages() as $language) {
-                $inheritedData[$field->getName()][$language] = $this->inheritanceService->processFieldDefinition(
+                $fieldKey = $field->getName();
+                $inheritedData[$fieldKey][$language] = $this->inheritanceService->processFieldDefinition(
                     $object,
                     $field,
-                    $key,
+                    $fieldKey,
                     new FieldContextData(contextObject: $contextObject, language: $language)
                 );
             }

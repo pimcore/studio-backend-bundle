@@ -69,6 +69,10 @@ services:
   #
   # Hydrator
   #
+
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\ObjectLayoutHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\ObjectLayoutHydrator
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\SelectOptionHydrator
 

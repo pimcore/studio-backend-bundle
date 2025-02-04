@@ -24,7 +24,13 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewPara
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface;
+use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
@@ -33,12 +39,40 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 final readonly class CustomLayoutService implements CustomLayoutServiceInterface
 {
+    use ValidateObjectDataTrait;
+
     public function __construct(
         private CustomLayoutRepositoryInterface $customLayoutRepository,
         private CustomLayoutHydratorInterface $customLayoutHydrator,
+        private DataObjectServiceInterface $dataObjectResolver,
+        private DownloadServiceInterface $downloadService,
         private EventDispatcherInterface $eventDispatcher,
-        private DownloadServiceInterface $downloadService
+        private LayoutServiceInterface $securityLayoutService
     ) {
+    }
+
+    public function getCustomLayoutEditorCollection(
+        int $dataObjectId,
+        UserInterface $user
+    ): array
+    {
+        $dataObject = $this->dataObjectResolver->getDataObjectElement($user, $dataObjectId);
+        $allowedLayouts = [];
+        if (!$user->isAdmin()) {
+            $allowedLayouts = $this->securityLayoutService->getUserAllowedLayoutsByClass($dataObject, $user);
+        }
+
+        $layouts = $this->getUserCustomLayouts($dataObject, $user, $allowedLayouts);
+        usort($layouts, static function (CoreLayout $a, CoreLayout $b) {
+            return strcmp($a->getName(), $b->getName());
+        });
+
+        $compactLayouts = [];
+        foreach ($layouts as $layout) {
+            $compactLayouts[] = $this->hydrateCompactLayout($layout);
+        }
+
+        return $compactLayouts;
     }
 
     public function getCustomLayoutCollection(string $dataObjectClass): array
@@ -47,12 +81,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         $layouts = $this->customLayoutRepository->getCustomLayouts($dataObjectClass);
 
         foreach ($layouts as $layout) {
-            $compactLayout = $this->customLayoutHydrator->hydrateCompactLayout($layout);
-            $this->eventDispatcher->dispatch(
-                new CustomLayoutCollectionEvent($compactLayout),
-                CustomLayoutCollectionEvent::EVENT_NAME
-            );
-            $compactLayouts[] = $compactLayout;
+            $compactLayouts[] = $this->hydrateCompactLayout($layout);
         }
 
         return $compactLayouts;
@@ -63,6 +92,20 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         return $this->hydrateLayout(
             $this->customLayoutRepository->getCustomLayout($customLayoutId)
         );
+    }
+
+    /**
+     * @return CoreLayout[]
+     */
+    public function getUserCustomLayouts(DataObject $dataObject, UserInterface $user, array $allowedLayouts): array
+    {
+        $layouts = $this->handleCustomLayoutPermissions(
+            $this->customLayoutRepository->getCustomLayouts($dataObject->getClassId()),
+            $user,
+            $allowedLayouts
+        );
+
+        return $this->addMainLayouts($user, $allowedLayouts, $layouts);
     }
 
     public function deleteCustomLayout(string $customLayoutId): void
@@ -112,6 +155,22 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         return $this->hydrateLayout($customLayout);
     }
 
+    public function getMainLayout(): CoreLayout
+    {
+        return (new CoreLayout())
+            ->setName('main')
+            ->setId('0')
+            ->setDefault(false);
+    }
+
+    public function getMainAdminLayout(): CoreLayout
+    {
+        return (new CoreLayout())
+            ->setName('main_admin')
+            ->setId('-1')
+            ->setDefault(false);
+    }
+
     private function hydrateLayout(CoreLayout $layout): CustomLayout
     {
         $hydratedLayout = $this->customLayoutHydrator->hydrateLayout($layout);
@@ -121,5 +180,55 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
         );
 
         return $hydratedLayout;
+    }
+
+    private function hydrateCompactLayout(CoreLayout $layout): CustomLayoutCompact
+    {
+        $compactLayout = $this->customLayoutHydrator->hydrateCompactLayout($layout);
+        $this->eventDispatcher->dispatch(
+            new CustomLayoutCollectionEvent($compactLayout),
+            CustomLayoutCollectionEvent::EVENT_NAME
+        );
+
+        return $compactLayout;
+    }
+
+    /**
+     * @param CoreLayout[] $layouts
+     * @return CoreLayout[]
+     */
+    private function handleCustomLayoutPermissions(array $layouts, UserInterface $user, array $allowedLayouts): array
+    {
+        if ($user->isAdmin()) {
+            return $layouts;
+        }
+
+        foreach ($layouts as $key => $layout) {
+            if (!in_array($layout->getId(), $allowedLayouts, true)) {
+                unset($layouts[$key]);
+            }
+        }
+
+        return $layouts;
+    }
+
+    /**
+     * @param string[] $allowedLayouts
+     * @param CoreLayout[] $hydratedLayouts
+     * @return CoreLayout[]
+     */
+    private function addMainLayouts(UserInterface $user, array $allowedLayouts, array $hydratedLayouts): array
+    {
+        if ($user->isAdmin()) {
+            array_unshift($hydratedLayouts, $this->getMainAdminLayout(), $this->getMainLayout());
+
+            return $hydratedLayouts;
+        }
+
+        if (in_array('0', $allowedLayouts, true)) {
+            array_unshift($hydratedLayouts, $this->getMainLayout());
+        }
+
+        return $hydratedLayouts;
     }
 }
