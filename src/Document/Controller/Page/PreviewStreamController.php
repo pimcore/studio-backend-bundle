@@ -67,7 +67,7 @@ final class PreviewStreamController extends AbstractApiController
      */
     #[Route(
         self::ROUTE,
-        name: 'pimcore_studio_api_stream_image_preview',
+        name: 'pimcore_studio_api_stream_page_preview',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DOCUMENTS->value)]
