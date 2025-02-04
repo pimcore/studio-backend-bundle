@@ -22,8 +22,7 @@ use Pimcore\Model\UserInterface;
 /**
  * @internal
  */
-interface
-LayoutServiceInterface
+interface LayoutServiceInterface
 {
     public function getUserAllowedLayoutsByClass(DataObject $dataObject, UserInterface $user): array;
 

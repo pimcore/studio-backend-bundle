@@ -27,8 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface as SecurityLayoutServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
@@ -37,7 +37,9 @@ use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
 use function get_class;
+use function in_array;
 use function sprintf;
 
 /**
@@ -103,8 +105,7 @@ final readonly class LayoutService implements LayoutServiceInterface
         Concrete $dataObject,
         ClassDefinition $class,
         ?string $layoutId = null
-    ): CoreLayout
-    {
+    ): CoreLayout {
         if ($user->isAdmin()) {
             return $this->getAdminLayoutDefinitions($dataObject, $class, $user, $layoutId);
         }
@@ -127,8 +128,7 @@ final readonly class LayoutService implements LayoutServiceInterface
         ClassDefinition $class,
         UserInterface $user,
         ?string $layoutId = null
-    ): CoreLayout
-    {
+    ): CoreLayout {
         $defaultLayout = $this->getCustomLayout($dataObject, $user, $layoutId);
 
         return match ($defaultLayout->getId()) {
@@ -146,8 +146,7 @@ final readonly class LayoutService implements LayoutServiceInterface
         UserInterface $user,
         ?string $layoutId = null,
         array $allowedLayouts = [],
-    ): CustomLayout
-    {
+    ): CustomLayout {
         if ($layoutId !== null) {
             if (!$user->isAdmin() && !in_array($layoutId, $allowedLayouts, true)) {
                 throw new AccessDeniedException('Layout not allowed for this user');

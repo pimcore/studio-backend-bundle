@@ -29,7 +29,6 @@ use function sprintf;
  */
 final readonly class LayoutService implements LayoutServiceInterface
 {
-
     public function getUserAllowedLayoutsByClass(DataObject $dataObject, UserInterface $user): array
     {
         $allowedLayouts = $this->getUserAllowedLayouts($dataObject, $user);

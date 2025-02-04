@@ -33,6 +33,7 @@ use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use function in_array;
 
 /**
  * @internal
@@ -54,8 +55,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
     public function getCustomLayoutEditorCollection(
         int $dataObjectId,
         UserInterface $user
-    ): array
-    {
+    ): array {
         $dataObject = $this->dataObjectResolver->getDataObjectElement($user, $dataObjectId);
         $allowedLayouts = [];
         if (!$user->isAdmin()) {
@@ -195,6 +195,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
 
     /**
      * @param CoreLayout[] $layouts
+     *
      * @return CoreLayout[]
      */
     private function handleCustomLayoutPermissions(array $layouts, UserInterface $user, array $allowedLayouts): array
@@ -215,6 +216,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
     /**
      * @param string[] $allowedLayouts
      * @param CoreLayout[] $hydratedLayouts
+     *
      * @return CoreLayout[]
      */
     private function addMainLayouts(UserInterface $user, array $allowedLayouts, array $hydratedLayouts): array

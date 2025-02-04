@@ -27,8 +27,7 @@ final readonly class ObjectLayoutHydrator implements ObjectLayoutHydratorInterfa
 {
     public function __construct(
         private IconServiceInterface $iconService
-    )
-    {
+    ) {
     }
 
     public function hydrateLayout(Panel $panel): Layout
