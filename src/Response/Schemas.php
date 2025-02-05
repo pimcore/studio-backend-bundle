@@ -62,7 +62,7 @@ final readonly class Schemas
     public const array ELEMENT_CONTEXT_PERMISSIONS = [
         AssetContextPermissions::class,
         DataObjectContextPermissions::class,
-        DocumentContextPermissions::class
+        DocumentContextPermissions::class,
     ];
 
     public const array ERRORS = [

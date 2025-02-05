@@ -40,6 +40,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class GetContextPermissionsController extends AbstractApiController
 {
     private const string ROUTE = '/elements/{elementType}/context-permissions/';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly ElementServiceInterface $elementService

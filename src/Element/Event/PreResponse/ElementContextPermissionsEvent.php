@@ -27,8 +27,7 @@ final class ElementContextPermissionsEvent extends AbstractPreResponseEvent
 
     public function __construct(
         private readonly AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions $permissions
-    )
-    {
+    ) {
         parent::__construct($this->permissions);
     }
 
