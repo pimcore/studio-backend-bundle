@@ -10,8 +10,8 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
@@ -50,10 +50,8 @@ final class AdapterResolver implements ColumnResolverInterface, CoreElementColum
         private readonly InheritanceServiceInterface $inheritanceService,
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver
 
-    )
-    {
+    ) {
     }
-
 
     /**
      * @throws Exception

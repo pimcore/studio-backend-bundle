@@ -73,6 +73,6 @@ final class GetController extends AbstractApiController
     ])]
     public function getDataObjectGrid(#[MapRequestPayload] GridParameter $gridParameter, string $classId): JsonResponse
     {
-        return $this->jsonResponse($this->gridService->getDataObjectGrid($gridParameter,  $classId));
+        return $this->jsonResponse($this->gridService->getDataObjectGrid($gridParameter, $classId));
     }
 }
