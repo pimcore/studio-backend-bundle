@@ -27,8 +27,7 @@ final readonly class ClassDefinitionHydrator implements ClassDefinitionHydratorI
 {
     public function __construct(
         private IconServiceInterface $iconService
-    )
-    {
+    ) {
     }
 
     public function hydrate(ClassDefinition $data): ClassDefinitionSchema
