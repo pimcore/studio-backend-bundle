@@ -16,9 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid;
 
+use Exception;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\GridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
@@ -49,6 +51,8 @@ final class GetController extends AbstractApiController
 
     /**
      * @throws InvalidArgumentException
+     * @throws Exception
+     * @throws NotFoundException
      */
     #[Route('/data-objects/grid/{classId}', name: 'pimcore_studio_api_get_data_object_grid', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
