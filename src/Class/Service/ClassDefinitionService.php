@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionListHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -30,8 +32,27 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     public function __construct(
         private ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private ClassDefinitionHydratorInterface $classDefinitionHydrator,
+        private ClassDefinitionListHydratorInterface $classDefinitionListHydrator,
         private EventDispatcherInterface $eventDispatcher,
     ) {
+    }
+
+    public function getClassDefinitionCollection(): array
+    {
+        $hydrated = [];
+        $cds = $this->classDefinitionRepository->getClassDefinitions();
+
+        foreach ($cds as $definition) {
+            $hydratedDefinition = $this->classDefinitionListHydrator->hydrate($definition);
+
+            $this->eventDispatcher->dispatch(
+                new ClassDefinitionListEvent($hydratedDefinition),
+                ClassDefinitionListEvent::EVENT_NAME
+            );
+            $hydrated[] = $hydratedDefinition;
+        }
+
+        return $hydrated;
     }
 
     public function getClassDefinition(string $dataObjectClass): ClassDefinition

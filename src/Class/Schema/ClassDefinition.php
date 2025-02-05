@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Class\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
@@ -96,10 +97,8 @@ final class ClassDefinition implements AdditionalAttributesInterface
         private readonly bool $allowVariants,
         #[Property(description: 'Whether variants are visible in the tree', type: 'boolean')]
         private readonly bool $showVariants,
-        #[Property(description: 'Icon', type: 'string')]
-        private readonly string $icon,
-        #[Property(description: 'Group', type: 'string')]
-        private readonly string $group,
+        #[Property(description: 'icon', type: ElementIcon::class)]
+        private readonly ElementIcon $icon,
         #[Property(description: 'Show application logger tab', type: 'boolean')]
         private readonly bool $showAppLoggerTab,
         #[Property(description: 'Namespace of link generator', type: 'string')]
@@ -119,6 +118,8 @@ final class ClassDefinition implements AdditionalAttributesInterface
         private readonly array $blockedVarsForExport,
         #[Property(description: 'Whether the class definition can be written to', type: 'boolean')]
         private readonly bool $isWriteable,
+        #[Property(description: 'Group', type: 'string')]
+        private readonly ?string $group = null,
     ) {
     }
 
@@ -202,12 +203,12 @@ final class ClassDefinition implements AdditionalAttributesInterface
         return $this->showVariants;
     }
 
-    public function getIcon(): string
+    public function getIcon(): ElementIcon
     {
         return $this->icon;
     }
 
-    public function getGroup(): string
+    public function getGroup(): ?string
     {
         return $this->group;
     }
