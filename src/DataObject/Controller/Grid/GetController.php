@@ -74,7 +74,7 @@ final class GetController extends AbstractApiController
     #[StringParameter(
         name: 'classId',
         example: 'MyClass',
-        description: 'Identifies the class name for which the columns should be retrieved.',
+        description: 'Identifies the class name for which the the grid should be build.',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
