@@ -122,7 +122,7 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
     {
         $columns = [];
         foreach ($this->groupedDefinitions as $definition) {
-            $columns[] = $this->columnConfigurationService->buildColumnConfiguration($definition);
+            $columns[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration($definition);
         }
 
         return $columns;

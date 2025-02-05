@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
@@ -38,7 +39,9 @@ final class ColumnData implements AdditionalAttributesInterface
         #[Property(description: 'Locale', type: 'string', example: 'en')]
         private readonly ?string $locale,
         #[Property(description: 'Value', type: 'mixed', example: 73)]
-        private readonly mixed $value
+        private readonly mixed $value,
+        #[Property(description: 'inheritance', type: 'object', example: ['objectId' => 42, 'inInherited' => true], nullable: true)]
+        private readonly ?InheritanceData $inheritance = null
     ) {
     }
 
@@ -55,5 +58,10 @@ final class ColumnData implements AdditionalAttributesInterface
     public function getValue(): mixed
     {
         return $this->value;
+    }
+
+    public function getInheritance(): ?InheritanceData
+    {
+        return $this->inheritance;
     }
 }
