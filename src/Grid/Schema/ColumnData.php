@@ -40,7 +40,12 @@ final class ColumnData implements AdditionalAttributesInterface
         private readonly ?string $locale,
         #[Property(description: 'Value', type: 'mixed', example: 73)]
         private readonly mixed $value,
-        #[Property(description: 'inheritance', type: 'object', example: ['objectId' => 42, 'inInherited' => true], nullable: true)]
+        #[Property(
+            description: 'inheritance',
+            type: 'object',
+            example: ['objectId' => 42, 'inInherited' => true],
+            nullable: true
+        )]
         private readonly ?InheritanceData $inheritance = null
     ) {
     }
