@@ -108,6 +108,17 @@ final readonly class IconService implements IconServiceInterface
         return 'tag';
     }
 
+    public function getIconForClassDefinition(?string $iconPath): ElementIcon
+    {
+        $type = ElementIconTypes::PATH->value;
+        if ($iconPath === null) {
+            $type = ElementIconTypes::NAME->value;
+            $iconPath = 'class';
+        }
+
+        return new ElementIcon($type, $iconPath);
+    }
+
     public function getIconForLayout(?string $iconPath): ?ElementIcon
     {
         if ($iconPath === null) {

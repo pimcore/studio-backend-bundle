@@ -48,6 +48,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionListHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionListHydrator
+
   Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\CustomLayout\CustomLayoutHydrator
 

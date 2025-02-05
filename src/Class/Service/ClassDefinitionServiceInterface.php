@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinitionList;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
@@ -24,6 +25,11 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
  */
 interface ClassDefinitionServiceInterface
 {
+    /**
+     * @return ClassDefinitionList[]
+     */
+    public function getClassDefinitionCollection(): array;
+
     /**
      * @throws NotFoundException
      */

@@ -17,13 +17,19 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition as ClassDefinitionSchema;
+use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition;
 
 /**
  * @internal
  */
-final class ClassDefinitionHydrator implements ClassDefinitionHydratorInterface
+final readonly class ClassDefinitionHydrator implements ClassDefinitionHydratorInterface
 {
+    public function __construct(
+        private IconServiceInterface $iconService
+    ) {
+    }
+
     public function hydrate(ClassDefinition $data): ClassDefinitionSchema
     {
         return new ClassDefinitionSchema(
@@ -43,8 +49,7 @@ final class ClassDefinitionHydrator implements ClassDefinitionHydratorInterface
             $data->getAllowInherit(),
             $data->getAllowVariants(),
             $data->getShowVariants(),
-            $data->getIcon(),
-            $data->getGroup(),
+            $this->iconService->getIconForClassDefinition($data->getIcon()),
             $data->getShowAppLoggerTab(),
             $data->getLinkGeneratorReference(),
             $data->getPreviewGeneratorReference(),
@@ -53,7 +58,8 @@ final class ClassDefinitionHydrator implements ClassDefinitionHydratorInterface
             $data->getPropertyVisibility(),
             $data->isEnableGridLocking(),
             $data->getBlockedVarsForExport(),
-            $data->isWritable()
+            $data->isWritable(),
+            $data->getGroup(),
         );
     }
 }
