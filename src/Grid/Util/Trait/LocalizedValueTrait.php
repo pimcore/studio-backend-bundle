@@ -24,12 +24,18 @@ use Pimcore\Model\Element\ElementInterface;
  */
 trait LocalizedValueTrait
 {
-    private function getLocalizedValue(Column $column, ElementInterface $element, string $getter): mixed
+    private function getLocalizedValue(Column $column, ElementInterface $element): mixed
     {
+        $getter = $this->getGetter($column);
         if ($column->getLocale()) {
             return $element->$getter($column->getLocale());
         }
 
         return $element->$getter();
+    }
+
+    private function getGetter(Column $column): string
+    {
+        return 'get' . ucfirst($column->getKey());
     }
 }

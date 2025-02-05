@@ -103,7 +103,7 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
         foreach ($dataFields as $dataField) {
             $groupName = $objectBrick->getTitle() !== '' ? $objectBrick->getTitle() : $objectBrick->getKey();
 
-            $this->configurations[] = $this->columnConfigurationService->buildColumnConfiguration(
+            $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
                 new ColumnFieldDefinition($dataField, $groupName, false)
             );
         }

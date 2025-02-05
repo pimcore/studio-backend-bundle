@@ -16,7 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
@@ -57,7 +59,11 @@ interface GridServiceInterface
 
     public function getAssetGrid(GridParameter $gridParameter): Collection;
 
-    public function getDataObjectGrid(GridParameter $gridParameter): Collection;
+    /**
+     * @throws NotFoundException
+     * @throws Exception
+     */
+    public function getDataObjectGrid(GridParameter $gridParameter, string $classId): Collection;
 
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array;
 

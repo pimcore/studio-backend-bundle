@@ -17,10 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
@@ -69,6 +71,7 @@ final class GridService implements GridServiceInterface
         private readonly GridSearchInterface $gridSearch,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly ServiceResolverInterface $serviceResolver,
+        private readonly ClassDefinitionResolverInterface $classDefinitionResolver
     ) {
     }
 
@@ -82,8 +85,21 @@ final class GridService implements GridServiceInterface
         return $this->getCollectionFromSearchResult($result, $gridParameter, ElementTypes::TYPE_ASSET);
     }
 
-    public function getDataObjectGrid(GridParameter $gridParameter): Collection
+    /**
+     * @throws NotFoundException
+     * @throws Exception
+     */
+    public function getDataObjectGrid(GridParameter $gridParameter, string $classId): Collection
     {
+        $filter = $gridParameter->getFilters();
+        $classDefinition = $this->classDefinitionResolver->getById($classId);
+
+        if (!$classDefinition instanceof ClassDefinition) {
+            throw new NotFoundException('Class definition', $classId);
+        }
+
+        $filter->setClassName($classDefinition->getName());
+
         $result = $this->gridSearch->searchDataObjects($gridParameter);
 
         return $this->getCollectionFromSearchResult($result, $gridParameter, ElementTypes::TYPE_OBJECT);

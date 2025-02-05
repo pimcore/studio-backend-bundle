@@ -92,7 +92,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
 
     }
 
-    public function buildColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration
+    public function buildDataObjectAdapterColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration
     {
         $options = null;
         $fieldDefinition = $definition->getFieldDefinition();
@@ -108,7 +108,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
             exportable: true,
             localizable: $definition->isLocalized(),
             locale: null,
-            type: 'dataobject.' . $fieldDefinition->getFieldType(),
+            type: 'dataobject.adapter',
             frontendType: $fieldDefinition->getFieldType(),
             config: $options ? ['options' => $options] : [],
         );
