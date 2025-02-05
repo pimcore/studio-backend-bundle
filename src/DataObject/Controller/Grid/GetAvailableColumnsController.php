@@ -78,7 +78,7 @@ final class GetAvailableColumnsController extends AbstractApiController
     )]
     #[StringParameter(
         name: 'classId',
-        example: 'MyClass',
+        example: 'EV',
         description: 'Identifies the class name for which the columns should be retrieved.',
     )]
     #[IdParameter(

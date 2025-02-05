@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\GridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -69,6 +70,11 @@ final class GetController extends AbstractApiController
         content: new CollectionJson(
             collection: new GridCollection()
         )
+    )]
+    #[StringParameter(
+        name: 'classId',
+        example: 'EV',
+        description: 'Identifies the class name for which the the grid should be build.',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
