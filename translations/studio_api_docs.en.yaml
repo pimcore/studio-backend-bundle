@@ -366,6 +366,9 @@ notification_send_description: |
   Send a notification to the given <strong>{recipientId}</strong>. <br> See the full description of request fields with the schema <strong>SendNotificationParameters</strong>
 notification_send_success_response: Successfully sent notification
 notification_send_summary: Send a notification
+perspective_widget_get_type_collection_description: Get widget types collection
+perspective_widget_get_type_collection_success_response: List of widget types
+perspective_widget_get_type_collection_summary: Get widget types
 property_create_description: |
   Creating the property with default values. <br>
   <ul>
@@ -502,6 +505,7 @@ tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
 tag_metadata_description: Metadata operations to get/update/create/delete metadata
 tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications
+tag_perspectives_description: Operations to get/update/create/delete properties and widgets
 tag_properties_description: Property operations to get/update/create/delete properties
 tag_role_description: Role Management operations
 tag_search_description: Operations to get search configuration, search elements and get search result previews
