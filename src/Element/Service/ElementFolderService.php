@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectFolderResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -67,7 +68,7 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
         );
 
         if ($existingElement) {
-            throw new ElementSavingFailedException(null, 'Folder already exists');
+            throw new ElementExistsException('Folder already exists');
         }
 
         if (!$parent->isAllowed(ElementPermissions::CREATE_PERMISSION)) {

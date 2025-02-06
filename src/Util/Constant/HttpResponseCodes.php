@@ -28,6 +28,8 @@ enum HttpResponseCodes: int
     case FORBIDDEN = 403;
     case NOT_FOUND = 404;
     case METHOD_NOT_ALLOWED = 405;
+
+    case CONFLICT = 409;
     case MAX_FILE_SIZE_EXCEEDED = 413;
     case UNSUPPORTED_MEDIA_TYPE = 415;
     case UNPROCESSABLE_CONTENT = 422;
