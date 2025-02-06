@@ -26,6 +26,9 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schema\DevError;
 use Pimcore\Bundle\StudioBackendBundle\Response\Schema\Error;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\AssetSearchPreview;
@@ -56,10 +59,15 @@ final readonly class Schemas
         DataObjectFolder::class,
     ];
 
-    public const array VERSIONS = [
-        AssetVersion::class,
-        DataObjectVersion::class,
-        DocumentVersion::class,
+    public const array ELEMENT_CONTEXT_PERMISSIONS = [
+        AssetContextPermissions::class,
+        DataObjectContextPermissions::class,
+        DocumentContextPermissions::class,
+    ];
+
+    public const array ERRORS = [
+        Error::class,
+        DevError::class,
     ];
 
     public const array SEARCH_PREVIEWS = [
@@ -68,8 +76,9 @@ final readonly class Schemas
         DocumentSearchPreview::class,
     ];
 
-    public const array ERRORS = [
-        Error::class,
-        DevError::class,
+    public const array VERSIONS = [
+        AssetVersion::class,
+        DataObjectVersion::class,
+        DocumentVersion::class,
     ];
 }

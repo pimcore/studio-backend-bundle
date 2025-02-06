@@ -243,6 +243,10 @@ element_get_id_by_path_description: |
   Get the element ID based on the given <strong>{path}</strong> and <strong>{elementType}</strong>. <br> The <strong>{path}</strong> must be a valid path of an existing element with provided <strong>{elementType}</strong>
 element_get_id_by_path_success_response: ID of the element
 element_get_id_by_path_summary: Get ID of the element by path query parameter and element type path parameter
+element_get_context_permissions_description: |
+    Get the context permission list relevant for the given <strong>{elementType}</strong>.
+element_get_context_permissions_success_response: Context permission list
+element_get_context_permissions_summary: Get context permissions for the element type path parameter
 element_get_subtype_description: |
   Get the subtype of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>.
 element_get_subtype_success_response: Subtype of the element
