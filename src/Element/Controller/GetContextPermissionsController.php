@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Element\Attribute\Response\Content\OneOfContextPermissionsJson;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
@@ -49,7 +50,7 @@ final class GetContextPermissionsController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|UserNotFoundException|NotFoundException
+     * @throws InvalidElementTypeException|UserNotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_elements_get_context_permissions', methods: ['GET'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
@@ -68,7 +69,6 @@ final class GetContextPermissionsController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getElementContextPermissions(string $elementType): JsonResponse
     {
