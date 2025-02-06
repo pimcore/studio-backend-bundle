@@ -59,6 +59,7 @@ class Configuration implements ConfigurationInterface
         $this->addDataObjectAdapterMapping($rootNode);
         $this->addUserNode($rootNode);
         $this->addServerNode($rootNode);
+        $this->addWidgetTypesNode($rootNode);
 
         return $treeBuilder;
     }
@@ -326,5 +327,14 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
             ->end();
+    }
+
+    private function addWidgetTypesNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('widget_types')
+                ->prototype('scalar')->end()
+            ->end()
+        ->end();
     }
 }

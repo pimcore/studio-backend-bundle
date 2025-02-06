@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterfac
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -109,6 +110,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(KeyBindingServiceInterface::class);
         $definition->setArgument('$defaultKeyBindings', $config['user']['default_key_bindings']);
+
+        $definition = $container->getDefinition(WidgetServiceInterface::class);
+        $definition->setArgument('$widgetTypes', $config['widget_types']);
     }
 
     public function prepend(ContainerBuilder $container): void

@@ -94,6 +94,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_notifications_description'
 )]
 #[Tag(
+    name: Tags::Perspectives->value,
+    description: 'tag_perspectives_description'
+)]
+#[Tag(
     name: Tags::Properties->value,
     description: 'tag_properties_description'
 )]
@@ -161,6 +165,7 @@ enum Tags: string
     case Metadata = 'Metadata';
     case Notes = 'Notes';
     case Notifications = 'Notifications';
+    case Perspectives = 'Perspectives';
     case Properties = 'Properties';
     case Role = 'Role Management';
     case Search = 'Search';
