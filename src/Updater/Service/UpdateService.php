@@ -66,7 +66,7 @@ final readonly class UpdateService implements UpdateServiceInterface
             $this->elementSaveService->save(
                 $element,
                 $user,
-                $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
+                $data[ElementSaveServiceInterface::INDEX_TASK] ?? null
             );
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
