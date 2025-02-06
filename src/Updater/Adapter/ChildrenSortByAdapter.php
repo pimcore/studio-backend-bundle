@@ -37,12 +37,6 @@ final readonly class ChildrenSortByAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'childrenSortBy';
 
-    public function __construct(
-        private SecurityServiceInterface $securityService
-    ) {
-
-    }
-
     /**
      * @throws ElementSavingFailedException
      */
@@ -52,7 +46,6 @@ final readonly class ChildrenSortByAdapter implements UpdateAdapterInterface
             return;
         }
 
-        $user = $this->securityService->getCurrentUser();
         if (!$user->isAllowed(UserPermissions::OBJECTS_SORT_METHOD->value)) {
             throw new AccessDeniedException('You are not allowed to change the sort method');
         }
