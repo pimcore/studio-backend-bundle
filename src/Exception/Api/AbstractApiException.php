@@ -29,8 +29,7 @@ abstract class AbstractApiException extends HttpException
         array $headers = [],
         ?int $code = 0,
         private readonly string $errorKey = HttpResponseErrorKeys::GENERIC_ERROR->value
-    )
-    {
+    ) {
         parent::__construct($statusCode, $message, $previous, $headers, $code);
     }
 

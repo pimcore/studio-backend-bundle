@@ -64,10 +64,9 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
             return new Response(null, $exception->getStatusCode());
         }
 
-
         $responseData = [
             'message' => $exception->getMessage(),
-            'errorKey' => $exception->getErrorKey()
+            'errorKey' => $exception->getErrorKey(),
         ];
 
         if ($this->environment === 'dev') {

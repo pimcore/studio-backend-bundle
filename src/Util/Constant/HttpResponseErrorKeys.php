@@ -23,5 +23,4 @@ enum HttpResponseErrorKeys: string
     use EnumToValueArrayTrait;
 
     case GENERIC_ERROR = 'something_generic_went_wrong';
-
 }
