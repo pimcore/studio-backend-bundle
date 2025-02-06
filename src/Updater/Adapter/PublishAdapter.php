@@ -41,13 +41,12 @@ final readonly class PublishAdapter implements UpdateAdapterInterface
     public function __construct(
         private SecurityServiceInterface $securityService
     ) {
-
     }
 
     /**
      * @throws ElementSavingFailedException
      */
-    public function update(ElementInterface $element, array $data, UserInterface $user): void
+    public function update(ElementInterface $element, array $data): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {
             return;
@@ -57,6 +56,7 @@ final readonly class PublishAdapter implements UpdateAdapterInterface
             return;
         }
 
+        $user = $this->securityService->getCurrentUser();
         match ($data[$this->getIndexKey()]) {
             true => $this->publishElement($element, $user),
             false => $this->unpublishElement($element, $user),

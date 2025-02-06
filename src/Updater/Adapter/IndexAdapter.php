@@ -37,7 +37,7 @@ final readonly class IndexAdapter implements UpdateAdapterInterface
     /**
      * @throws ElementSavingFailedException
      */
-    public function update(ElementInterface $element, array $data, UserInterface $user): void
+    public function update(ElementInterface $element, array $data): void
     {
         if (!$element instanceof AbstractObject || !array_key_exists($this->getIndexKey(), $data)) {
             return;

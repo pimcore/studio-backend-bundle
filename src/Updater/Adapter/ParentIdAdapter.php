@@ -30,7 +30,7 @@ final readonly class ParentIdAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'parentId';
 
-    public function update(ElementInterface $element, array $data, UserInterface $user): void
+    public function update(ElementInterface $element, array $data): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {
             return;

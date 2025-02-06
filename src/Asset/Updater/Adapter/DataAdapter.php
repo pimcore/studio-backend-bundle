@@ -31,7 +31,7 @@ final readonly class DataAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'data';
 
-    public function update(ElementInterface $element, array $data, UserInterface $user): void
+    public function update(ElementInterface $element, array $data): void
     {
         if (!$element instanceof Text) {
             return;

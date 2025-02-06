@@ -33,7 +33,7 @@ final readonly class LockedAdapter implements UpdateAdapterInterface
 
     private const UNLOCK_PROPAGATE = 'unlockPropagate';
 
-    public function update(ElementInterface $element, array $data, UserInterface $user): void
+    public function update(ElementInterface $element, array $data): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {
             return;

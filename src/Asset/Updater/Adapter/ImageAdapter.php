@@ -32,7 +32,7 @@ final readonly class ImageAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'image';
 
-    public function update(ElementInterface $element, array $data, UserInterface $user): void
+    public function update(ElementInterface $element, array $data): void
     {
         if (!$element instanceof Image) {
             return;

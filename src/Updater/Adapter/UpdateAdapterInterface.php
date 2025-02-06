@@ -21,7 +21,7 @@ use Pimcore\Model\UserInterface;
 
 interface UpdateAdapterInterface
 {
-    public function update(ElementInterface $element, array $data, UserInterface $user): void;
+    public function update(ElementInterface $element, array $data): void;
 
     public function getIndexKey(): string;
 

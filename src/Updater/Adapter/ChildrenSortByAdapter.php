@@ -18,11 +18,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 use function in_array;
@@ -36,15 +36,21 @@ final readonly class ChildrenSortByAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'childrenSortBy';
 
+    public function __construct(
+        private SecurityServiceInterface $securityService
+    ) {
+    }
+
     /**
      * @throws ElementSavingFailedException
      */
-    public function update(ElementInterface $element, array $data, UserInterface $user): void
+    public function update(ElementInterface $element, array $data): void
     {
         if (!$element instanceof AbstractObject || !array_key_exists($this->getIndexKey(), $data)) {
             return;
         }
 
+        $user = $this->securityService->getCurrentUser();
         if (!$user->isAllowed(UserPermissions::OBJECTS_SORT_METHOD->value)) {
             throw new AccessDeniedException('You are not allowed to change the sort method');
         }
