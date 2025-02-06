@@ -59,7 +59,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         }
 
         foreach ($this->adapterLoader->loadAdapters($elementType) as $adapter) {
-            $adapter->update($element, $data, $user);
+            $adapter->update($element, $data);
         }
 
         try {
