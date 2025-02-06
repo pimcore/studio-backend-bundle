@@ -11,16 +11,24 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
+  #
   # Hydrators
+  #
   Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Note\Hydrator\NoteHydrator
 
+  #
+  # Repositories
+  #
   Pimcore\Bundle\StudioBackendBundle\Note\Resolver\NoteDataResolverInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Note\Resolver\NoteDataResolver
 
   Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Note\Repository\NoteRepository
 
+  #
+  # Services
+  #
   Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteService
 
