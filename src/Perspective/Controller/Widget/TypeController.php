@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Controller\Widget;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -45,9 +44,6 @@ final class TypeController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws NotFoundException
-     */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_get_perspectives_widgets_types', methods: ['GET'])]
     #[IsGranted(UserPermissions::WIDGET_EDIT->value)]
     #[Get(
