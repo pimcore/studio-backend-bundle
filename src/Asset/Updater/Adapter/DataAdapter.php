@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset\Text;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**

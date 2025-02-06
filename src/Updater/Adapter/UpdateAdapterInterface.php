@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\UserInterface;
 
 interface UpdateAdapterInterface
 {
