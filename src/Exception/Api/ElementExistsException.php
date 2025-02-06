@@ -24,7 +24,7 @@ use function sprintf;
  */
 final class ElementExistsException extends AbstractApiException
 {
-    public function __construct(string $error = null)
+    public function __construct(?string $error = null)
     {
         $message = sprintf(
             'Failed to create new element: %s',
