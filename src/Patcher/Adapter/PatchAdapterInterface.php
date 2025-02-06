@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader;
+namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
 
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;

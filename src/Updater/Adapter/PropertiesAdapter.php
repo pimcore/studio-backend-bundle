@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\Property\Repository\PropertyRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 
@@ -32,7 +33,7 @@ final readonly class PropertiesAdapter implements UpdateAdapterInterface
     {
     }
 
-    public function update(ElementInterface $element, array $data): void
+    public function update(ElementInterface $element, array $data, UserInterface $user): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {
             return;

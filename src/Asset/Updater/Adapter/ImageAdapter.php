@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 
@@ -31,7 +32,7 @@ final readonly class ImageAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'image';
 
-    public function update(ElementInterface $element, array $data): void
+    public function update(ElementInterface $element, array $data, UserInterface $user): void
     {
         if (!$element instanceof Image) {
             return;

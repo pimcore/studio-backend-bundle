@@ -17,10 +17,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
 use Exception;
-use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -42,7 +42,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private DataAdapterServiceInterface $dataAdapterService,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private SynchronousProcessingServiceInterface $synchronousProcessingService
+        private ElementSaveServiceInterface $elementSaveService,
     ) {
     }
 
@@ -59,13 +59,15 @@ final readonly class UpdateService implements UpdateServiceInterface
         }
 
         foreach ($this->adapterLoader->loadAdapters($elementType) as $adapter) {
-            $adapter->update($element, $data);
+            $adapter->update($element, $data, $user);
         }
 
         try {
-            $this->synchronousProcessingService->enable();
-            $element->setUserModification($user->getId());
-            $element->save();
+           $this->elementSaveService->save(
+               $element,
+               $user,
+               $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
+           );
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
         }

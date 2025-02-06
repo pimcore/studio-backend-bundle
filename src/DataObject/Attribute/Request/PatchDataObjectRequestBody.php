@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateBooleanP
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateObjectProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 
 /**
  * @internal
@@ -54,6 +55,7 @@ final class PatchDataObjectRequestBody extends RequestBody
                                 new UpdateIntegerProperty('parentId'),
                                 new UpdateIntegerProperty('index', 0),
                                 new UpdateStringProperty('key'),
+                                new Property(property:'task', type: 'string', enum: ElementSaveTasks::values()),
                                 new UpdateStringProperty('locked'),
                                 new UpdateStringProperty('childrenSortBy'),
                                 new UpdateStringProperty('childrenSortOrder'),

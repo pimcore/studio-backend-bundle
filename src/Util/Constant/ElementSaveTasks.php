@@ -14,19 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
 
-use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\UserInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
-interface UpdateAdapterInterface
+/**
+ * @internal
+ */
+enum ElementSaveTasks: string
 {
-    public function update(ElementInterface $element, array $data, UserInterface $user): void;
+    use EnumToValueArrayTrait;
 
-    public function getIndexKey(): string;
-
-    /**
-     * @return array<string>
-     */
-    public function supportedElementTypes(): array;
+    case VERSION = 'version';
+    case AUTOSAVE = 'autoSave';
 }

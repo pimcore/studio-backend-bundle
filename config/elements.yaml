@@ -29,6 +29,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteService
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveService
 
   #
   # Handler

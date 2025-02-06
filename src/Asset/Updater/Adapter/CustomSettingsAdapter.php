@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\CustomSettings;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 
@@ -32,7 +33,7 @@ final readonly class CustomSettingsAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'customSettings';
 
-    public function update(ElementInterface $element, array $data): void
+    public function update(ElementInterface $element, array $data, UserInterface $user): void
     {
         if (!($element instanceof Asset) || !array_key_exists($this->getIndexKey(), $data)) {
             return;
