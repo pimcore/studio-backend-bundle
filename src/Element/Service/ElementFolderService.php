@@ -21,12 +21,14 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Asset\AssetResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectFolderResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
 use function sprintf;
@@ -67,7 +69,10 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
         );
 
         if ($existingElement) {
-            throw new ElementSavingFailedException(null, 'Folder already exists');
+            throw new ElementExistsException(
+                'Folder already exists',
+                HttpResponseErrorKeys::FOLDER_EXISTS->value
+            );
         }
 
         if (!$parent->isAllowed(ElementPermissions::CREATE_PERMISSION)) {
