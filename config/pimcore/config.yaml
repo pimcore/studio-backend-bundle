@@ -154,6 +154,13 @@ pimcore_studio_backend:
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\FieldCollectionsAdapter:
             - "fieldcollections"
 
+    config_location:
+        element_tree_widgets:
+            read_target:
+                type: 'symfony-config'
+            write_target:
+                type: 'settings-store'
+
     widget_types:
         - 'element_tree'
 

@@ -14,18 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
+namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Throwable;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
-/**
- * @internal
- */
-final class InvalidArgumentException extends AbstractApiException
+enum WidgetPositions: string
 {
-    public function __construct(string $message, ?Throwable $previous = null)
-    {
-        parent::__construct(HttpResponseCodes::BAD_REQUEST->value, $message, previous: $previous);
-    }
+    use EnumToValueArrayTrait;
+
+    case LEFT = 'left';
+
+    case RIGHT = 'right';
+
+    case BOTTOM = 'bottom';
 }

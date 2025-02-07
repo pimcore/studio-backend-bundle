@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class WidgetTypeParameter extends PathParameter
 {
-    public function __construct(WidgetServiceInterface $widgetService)
+    public function __construct()
     {
         parent::__construct(
             name: 'widgetType',
@@ -34,7 +34,6 @@ final class WidgetTypeParameter extends PathParameter
             required: true,
             schema: new Schema(
                 type: 'string',
-                enum: $widgetService->getWidgetTypes(),
                 example: WidgetTypes::ELEMENT_TREE->value,
             ),
         );

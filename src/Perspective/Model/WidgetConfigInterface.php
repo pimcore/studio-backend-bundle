@@ -14,18 +14,8 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
+namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Model;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Throwable;
-
-/**
- * @internal
- */
-final class InvalidArgumentException extends AbstractApiException
+interface WidgetConfigInterface
 {
-    public function __construct(string $message, ?Throwable $previous = null)
-    {
-        parent::__construct(HttpResponseCodes::BAD_REQUEST->value, $message, previous: $previous);
-    }
 }

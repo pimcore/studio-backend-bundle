@@ -15,6 +15,12 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigRepositoryLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedIteratorRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigHydratorLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedIteratorHydrator
+
   Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetService
 
@@ -24,6 +30,16 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetTypeHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetTypeHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\ElementTreeWidgetConfigHydrator:
+    tags: [ 'pimcore.studio_backend.widget_hydrator' ]
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository:
+    tags: [ 'pimcore.studio_backend.widget_repository' ]
 
 
 

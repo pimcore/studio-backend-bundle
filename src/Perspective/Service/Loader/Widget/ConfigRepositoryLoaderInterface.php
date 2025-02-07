@@ -14,28 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\WidgetConfigInterface;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\WidgetConfigRepositoryInterface;
 
 /**
  * @internal
  */
-interface WidgetServiceInterface
+interface ConfigRepositoryLoaderInterface
 {
     /**
-     * @return WidgetType[]
+     * @throws MustImplementInterfaceException|NotFoundException
      */
-    public function listWidgetTypes(): array;
-
-    public function getWidgetTypes(): array;
-
-    /**
-     * @throws InvalidArgumentException|NotFoundException
-     */
-    public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfigInterface;
+    public function loadRepository(string $widgetType): WidgetConfigRepositoryInterface;
 }

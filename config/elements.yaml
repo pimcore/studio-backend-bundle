@@ -11,6 +11,10 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
+  #
+  # Services
+  #
+
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementService
 
@@ -29,6 +33,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteService
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsService
 
   #
   # Handler
@@ -54,3 +60,16 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Element\Mercure\Provider\ElementTopicProvider:
     tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]
+
+  #
+  # Hydrator
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\AssetContextPermissionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\AssetContextPermissionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DataObjectContextPermissionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DataObjectContextPermissionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DocumentContextPermissionHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DocumentContextPermissionHydrator
