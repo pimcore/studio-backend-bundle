@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\Finder\Exception\AccessDeniedException;
 use function sprintf;
@@ -68,7 +69,10 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
         );
 
         if ($existingElement) {
-            throw new ElementExistsException('Folder already exists');
+            throw new ElementExistsException(
+                'Folder already exists',
+                HttpResponseErrorKeys::FOLDER_EXISTS->value
+            );
         }
 
         if (!$parent->isAllowed(ElementPermissions::CREATE_PERMISSION)) {

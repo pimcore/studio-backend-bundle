@@ -23,4 +23,6 @@ enum HttpResponseErrorKeys: string
     use EnumToValueArrayTrait;
 
     case GENERIC_ERROR = 'error_something_generic_went_wrong';
+    case ELEMENT_EXISTS = 'error_element_exists';
+    case FOLDER_EXISTS = 'error_folder_exists';
 }

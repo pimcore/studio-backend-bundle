@@ -302,6 +302,8 @@ email_send_test_description: |
 email_send_test_success_response: E-Mail was successfully sent
 email_send_test_summary: Send a test E-Mail
 error_something_generic_went_wrong: Oops, sorry seems like something unexpectedly went wrong.
+error_element_exists: Element already exists
+error_folder_exists: Folder already exists
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
 login_description: Logs in a user with the provided credentials and returns the user information.
