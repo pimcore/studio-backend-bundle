@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\EventSubscriber;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AbstractApiException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StudioBackendPathTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -59,11 +60,13 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 
     private function createResponse(HttpExceptionInterface $exception): Response
     {
-        if (!$exception->getMessage()) {
+        if (!$exception instanceof AbstractApiException || !$exception->getMessage()) {
             return new Response(null, $exception->getStatusCode());
         }
+
         $responseData = [
             'message' => $exception->getMessage(),
+            'errorKey' => $exception->getErrorKey(),
         ];
 
         if ($this->environment === 'dev') {
