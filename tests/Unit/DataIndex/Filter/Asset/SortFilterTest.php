@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\SortFilter;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter as SortFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilterParameterInterface;
