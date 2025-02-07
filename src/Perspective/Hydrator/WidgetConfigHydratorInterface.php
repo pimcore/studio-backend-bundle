@@ -16,11 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\WidgetConfigInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 
 interface WidgetConfigHydratorInterface
 {
     public function getSupportedWidgetType(): string;
 
-    public function hydrate(array $widgetData): WidgetConfigInterface;
+    public function hydrate(array $widgetData): WidgetConfig;
 }

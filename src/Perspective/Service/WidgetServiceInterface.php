@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\WidgetConfigInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
 
 /**
@@ -36,5 +36,5 @@ interface WidgetServiceInterface
     /**
      * @throws InvalidArgumentException|NotFoundException
      */
-    public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfigInterface;
+    public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfig;
 }

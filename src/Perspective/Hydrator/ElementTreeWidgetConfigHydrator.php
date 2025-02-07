@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\WidgetConfigInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 
@@ -38,7 +37,7 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
         return WidgetTypes::ELEMENT_TREE->value;
     }
 
-    public function hydrate(array $widgetData): WidgetConfigInterface
+    public function hydrate(array $widgetData): ElementTreeWidgetConfig
     {
         return new ElementTreeWidgetConfig(
             $widgetData['id'],
@@ -47,8 +46,8 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
                 $widgetData['elementType'],
                 $widgetData['contextPermissions']
             ),
-            $widgetData['elementType'],
             $this->iconService->getIconFromValue($widgetData['icon']['type'], $widgetData['icon']['value']),
+            $widgetData['elementType'],
             $widgetData['rootFolder'],
             $widgetData['showRoot'],
             $widgetData['classes'],

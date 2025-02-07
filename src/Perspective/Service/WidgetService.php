@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\WidgetConfigEvent;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\WidgetTypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetTypeHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\WidgetConfigInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigHydratorLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigRepositoryLoaderInterface;
@@ -62,7 +62,7 @@ final readonly class WidgetService implements WidgetServiceInterface
     /**
      * @throws InvalidArgumentException|NotFoundException
      */
-    public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfigInterface
+    public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfig
     {
         $this->validateWidgetType($widgetType);
 

@@ -21,21 +21,19 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions as APermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions as DOPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions as DPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\WidgetConfigInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetPositions;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'Element Tree Widget',
     required: [
-        'id',
-        'name',
         'contextPermissions',
         'elementType',
-        'icon',
         'rootFolder',
         'showRoot',
         'classes',
@@ -43,27 +41,23 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'position',
         'sort',
         'expanded',
+        'isWriteable',
     ],
     type: 'object'
 )]
-final class ElementTreeWidgetConfig implements AdditionalAttributesInterface, WidgetConfigInterface
+final class ElementTreeWidgetConfig extends WidgetConfig
 {
-    use AdditionalAttributesTrait;
-
     public function __construct(
-        #[Property(description: 'Widget ID', type: 'string', example: '5026c239_eb75_499a_8576_841bca283350')]
-        private readonly string $id,
-        #[Property(description: 'Name', type: 'string', example: 'Cars')]
-        private readonly string $name,
+        string $id,
+        string $name,
         #[Property(
             description: 'Context Permissions',
             type: [APermissions::class, DOPermissions::class, DPermissions::class]
         )]
         private readonly APermissions|DOPermissions|DPermissions $contextPermissions,
+        ?ElementIcon $icon = null,
         #[Property(description: 'Element Type', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
         private readonly string $elementType = ElementTypes::TYPE_DATA_OBJECT,
-        #[Property(description: 'Icon', type: ElementIcon::class)]
-        private readonly ?ElementIcon $icon = null,
         #[Property(description: 'Root Folder', type: 'string', example: '/Product Data/Cars')]
         private readonly string $rootFolder = '/',
         #[Property(description: 'Show Root', type: 'bool', example: false)]
@@ -81,26 +75,12 @@ final class ElementTreeWidgetConfig implements AdditionalAttributesInterface, Wi
         #[Property(description: 'Is Writeable', type: 'bool', example: true)]
         private readonly bool $isWriteable = true,
     ) {
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
+        parent::__construct($id, $name, WidgetTypes::ELEMENT_TREE->value, $icon);
     }
 
     public function getElementType(): string
     {
         return $this->elementType;
-    }
-
-    public function getIcon(): ?ElementIcon
-    {
-        return $this->icon;
     }
 
     public function getRootFolder(): string

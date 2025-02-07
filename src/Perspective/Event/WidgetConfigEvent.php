@@ -17,14 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Event;
 
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\WidgetConfigInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 
 final class WidgetConfigEvent extends AbstractPreResponseEvent
 {
     public const string EVENT_NAME = 'pre_response.perspective.widget.config.get';
 
     public function __construct(
-        private readonly WidgetConfigInterface $widgetConfig
+        private readonly WidgetConfig $widgetConfig
     ) {
         parent::__construct($widgetConfig);
     }
@@ -32,7 +32,7 @@ final class WidgetConfigEvent extends AbstractPreResponseEvent
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getWidgetConfig(): WidgetConfigInterface
+    public function getWidgetConfig(): WidgetConfig
     {
         return $this->widgetConfig;
     }

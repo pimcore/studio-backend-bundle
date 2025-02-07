@@ -64,8 +64,8 @@ final class GetConfigurationController extends AbstractApiController
         summary: 'perspective_widget_get_config_by_id_summary',
         tags: [Tags::Perspectives->value]
     )]
-    #[StringParameter('widgetId', 'd061699e_da42_4075_b504_c2c93c687819', 'Filter widgets by matching widget Id', )]
-    #[StringParameter('widgetType', 'element_tree', 'Filter widgets by matching widget type', )]
+    #[StringParameter('widgetId', 'd061699e_da42_4075_b504_c2c93c687819', 'Filter widgets by matching widget Id')]
+    #[StringParameter('widgetType', 'element_tree', 'Filter widgets by matching widget type')]
     #[SuccessResponse(
         description: 'perspective_widget_get_config_by_id_success_response',
         content: new DataJson('Data of the widget configuration')
