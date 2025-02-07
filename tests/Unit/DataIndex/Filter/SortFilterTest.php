@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
