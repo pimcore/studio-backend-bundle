@@ -18,6 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
 
+/**
+ * @internal
+ */
 interface AssetContextPermissionHydratorInterface
 {
     public function hydrate(array $data): AssetContextPermissions;

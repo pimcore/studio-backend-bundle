@@ -18,6 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
 
+/**
+ * @internal
+ */
 interface DocumentContextPermissionHydratorInterface
 {
     public function hydrate(array $data): DocumentContextPermissions;
