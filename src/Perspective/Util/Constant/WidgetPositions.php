@@ -23,8 +23,6 @@ enum WidgetPositions: string
     use EnumToValueArrayTrait;
 
     case LEFT = 'left';
-
     case RIGHT = 'right';
-
     case BOTTOM = 'bottom';
 }

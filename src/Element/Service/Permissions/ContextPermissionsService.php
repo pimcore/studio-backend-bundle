@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
  */
 final readonly class ContextPermissionsService implements ContextPermissionServiceInterface
 {
-
     public function __construct(
         private AssetContextPermissionHydratorInterface $assetHydrator,
         private DataObjectContextPermissionHydratorInterface $dataObjectHydrator,
@@ -44,9 +43,8 @@ final readonly class ContextPermissionsService implements ContextPermissionServi
     public function setElementContextPermissions(
         string $elementType,
         array $permissionData
-    ): AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions
-    {
-         return match ($elementType) {
+    ): AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions {
+        return match ($elementType) {
             ElementTypes::TYPE_ASSET => $this->assetHydrator->hydrate($permissionData),
             ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectHydrator->hydrate($permissionData),
             ElementTypes::TYPE_DOCUMENT => $this->documentHydrator->hydrate($permissionData),

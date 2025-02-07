@@ -27,6 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigHydratorLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigRepositoryLoaderInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -63,6 +65,7 @@ final readonly class WidgetService implements WidgetServiceInterface
     public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfigInterface
     {
         $this->validateWidgetType($widgetType);
+
         try {
             $data = $this->configRepositoryLoader->loadRepository($widgetType)->getConfigData($widgetId);
             $hydrator = $this->configHydratorLoader->loadHydrator($widgetType);

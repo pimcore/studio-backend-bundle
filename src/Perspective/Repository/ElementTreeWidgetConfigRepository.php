@@ -34,8 +34,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     public function __construct(
         private readonly array $widgetConfigurations,
         private readonly array $storageConfig,
-    )
-    {
+    ) {
     }
 
     private ?LocationAwareConfigRepository $repository = null;

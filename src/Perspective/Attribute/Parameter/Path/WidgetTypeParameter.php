@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Attribute\Parameter\Pat
 use Attribute;
 use OpenApi\Attributes\PathParameter;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 
 #[Attribute(Attribute::TARGET_METHOD)]

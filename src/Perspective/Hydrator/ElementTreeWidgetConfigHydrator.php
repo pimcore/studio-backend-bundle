@@ -30,8 +30,7 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
     public function __construct(
         private ContextPermissionServiceInterface $contextPermissionService,
         private IconServiceInterface $iconService,
-    )
-    {
+    ) {
     }
 
     public function getSupportedWidgetType(): string
