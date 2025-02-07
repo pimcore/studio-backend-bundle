@@ -301,6 +301,7 @@ email_send_test_description: |
   Send a test E-Mail based on the provided query parameters. <br> See the full description of request fields with the schema <strong>SendEmailParameters</strong>
 email_send_test_success_response: E-Mail was successfully sent
 email_send_test_summary: Send a test E-Mail
+error_something_generic_went_wrong: Oops, sorry seems like something unexpectedly went wrong.
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
 login_description: Logs in a user with the provided credentials and returns the user information.
