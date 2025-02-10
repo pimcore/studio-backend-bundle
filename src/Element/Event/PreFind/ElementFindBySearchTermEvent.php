@@ -16,13 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Event\PreFind;
 
-final readonly class ElementFindBySearchTermEvent
+final class ElementFindBySearchTermEvent
 {
     public const string EVENT_NAME = 'pre_find.element.search_term';
 
-    private ?string $modifiedSearchTerm;
+    private ?string $modifiedSearchTerm = null;
 
-    public function __construct(private string $searchTerm)
+    public function __construct(private readonly string $searchTerm)
     {
 
     }

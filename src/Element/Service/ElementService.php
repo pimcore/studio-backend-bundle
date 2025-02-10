@@ -169,7 +169,8 @@ final readonly class ElementService implements ElementServiceInterface
     public function findBySearchTerm(string $elementType, SearchTermParameter $searchTerm, UserInterface $user): int
     {
         $event = $this->eventDispatcher->dispatch(
-            new ElementFindBySearchTermEvent($searchTerm->getSearchTerm()), ElementFindBySearchTermEvent::EVENT_NAME
+            new ElementFindBySearchTermEvent($searchTerm->getSearchTerm()),
+            ElementFindBySearchTermEvent::EVENT_NAME
         );
 
         $modifiedSearchTerm = $event->getSearchTerm();

@@ -39,7 +39,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class FindByTermController extends AbstractApiController
+final class FindBySearchTermController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
