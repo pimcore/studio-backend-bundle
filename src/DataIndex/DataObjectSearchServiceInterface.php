@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
 
@@ -54,5 +55,8 @@ interface DataObjectSearchServiceInterface
         ?string $sortDirection = null
     ): int;
 
+    /**
+     * @throws NotFoundException|SearchException
+     */
     public function getSearchTerm(string $searchTerm, ?UserInterface $user): int;
 }

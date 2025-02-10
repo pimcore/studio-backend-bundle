@@ -33,5 +33,8 @@ interface DocumentSearchServiceInterface
 
     public function getChildrenIds(string $parentPath, ?string $sortDirection = null): array;
 
+    /**
+     * @throws NotFoundException|SearchException
+     */
     public function getSearchTerm(string $searchTerm, ?UserInterface $user): int;
 }
