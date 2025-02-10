@@ -49,7 +49,6 @@ use OpenApi\Attributes\Schema;
 )]
 class SaveAssetContextPermissions
 {
-
     public function __construct(
         #[Property(description: 'Hide Add Menu', type: 'bool', example: true)]
         private readonly bool $hideAdd = false,

@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use function in_array;
 use function sprintf;
+use function strlen;
 
 /**
  * @internal
