@@ -66,6 +66,19 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
         return $configData;
     }
 
+    /**
+     * @throws NotFoundException|NotWriteableException
+     */
+    public function listConfigurations(): array
+    {
+        $configurations = [];
+        foreach ($this->getRepository()->fetchAllKeys() as $key) {
+            $configurations[] = $this->getConfigData($key);
+        }
+
+        return $configurations;
+    }
+
     private function getRepository(): LocationAwareConfigRepository
     {
         if (!$this->repository) {

@@ -14,13 +14,11 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
-interface WidgetConfigRepositoryInterface
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
+
+interface WidgetConfigListHydratorInterface
 {
-    public function getSupportedWidgetType(): string;
-
-    public function getConfigData(string $widgetId): array;
-
-    public function listConfigurations(): array;
+    public function hydrate(array $widgetData): WidgetConfig;
 }

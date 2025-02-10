@@ -35,5 +35,5 @@ interface IconServiceInterface
 
     public function getIconForLayout(?string $iconPath): ?ElementIcon;
 
-    public function getIconFromValue(?string $iconType = null, ?string $iconValue = null): ?ElementIcon;
+    public function getIconForWidget(?array $iconData = null): ElementIcon;
 }

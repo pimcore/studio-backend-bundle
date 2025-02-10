@@ -38,6 +38,21 @@ final class TaggedIteratorRepository implements ConfigRepositoryLoaderInterface
     }
 
     /**
+     * @throws MustImplementInterfaceException
+     * @return WidgetConfigRepositoryInterface[]
+     */
+    public function loadRepositories(): array
+    {
+        $repositories = [];
+        foreach ($this->taggedRepositories as $repository) {
+            $this->checkInterface($repository::class, WidgetConfigRepositoryInterface::class);
+            $repositories[] = $repository;
+        }
+
+        return $repositories;
+    }
+
+    /**
      * @throws MustImplementInterfaceException|NotFoundException
      */
     public function loadRepository(string $widgetType): WidgetConfigRepositoryInterface
