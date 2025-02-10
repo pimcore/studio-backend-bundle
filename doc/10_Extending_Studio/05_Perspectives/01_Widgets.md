@@ -13,3 +13,124 @@ pimcore_studio_backend:
     widget_types:
       - my_custom_widget_id
 ```
+
+## How to add a custom widget configuration
+
+The widget configuration utilizes the `LocationAwareConfigRepository` for storing the configuration. In the symfony tree the
+storage location can be configured. Following values are possible:
+- `symfony-config` - write configs as Symfony Config as YAML files to `/var/config/alternative_object_trees/custom_object_tree.yaml`
+- `settings-store` - write configs to the SettingsStore
+- `disabled` - do not allow to edit/write configs at all
+
+Details also see [Pimcore Docs](https://pimcore.com/docs/platform/Pimcore/Deployment/Configuration_Environments/#configuration-storage-locations--fallbacks).
+
+#### Example
+```yaml
+pimcore_studio_backend:
+  config_location:
+    element_tree_widgets:
+      write_target:
+        type: 'symfony-config'
+        options:
+            directory: '/var/www/html/var/config/element_tree_widgets'
+```
+
+To add a custom widget configuration, following steps need to be done:
+1. Create a new custom **widget type**.
+2. Create a new **repository** using `LocationAwareConfigRepository` and implementing the mandatory `WidgetConfigRepositoryInterface` and register the service with the `pimcore.studio_backend.widget_repository` tag.
+3. Create a new **hydrator** which implements the mandatory `WidgetConfigHydratorInterface` and register the service with the `pimcore.studio_backend.widget_hydrator` tag.
+
+### Example Widget Configuration Repository
+
+TBD (maybe link the existing repository?)
+
+### Example Widget Configuration Hydrator
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\Perspective\Widget\Hydrator;
+
+use App\Perspective\Widget\Model\CustomWidgetConfig;
+
+final readonly class CustomWidgetConfigHydrator implements WidgetConfigHydratorInterface
+{
+    public function getSupportedWidgetType(): string
+    {
+        return 'my_custom_widget_type';
+    }
+
+    public function hydrate(array $widgetData): CustomWidgetConfig
+    {
+        return new CustomWidgetConfig(
+            $widgetData['id'],
+            $widgetData['name'],
+            $widgetData['icon'],
+            $widgetData['customField'],
+            $widgetData['createdAt'],
+            $widgetData['isWriteable']
+        );
+    }
+}
+```
+
+### Example Widget Configuration Schema
+
+```php
+<?php
+declare(strict_types=1);
+
+namespace App\Perspective\Schema;
+
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
+
+#[Schema(
+    title: 'Custom Widget',
+    required: [
+        'customField',
+        'createdAt',
+        'isWriteable',
+    ],
+    type: 'object'
+)]
+final class MyCustomWidget extends WidgetConfig
+{
+    public function __construct(
+        string $id,
+        string $name,
+        ?ElementIcon $icon = null,
+        #[Property(description: 'Custom Field', type: 'string', example: 'Some Value')]
+        private readonly string $customField = 'Some Value',
+        #[Property(description: 'Created At timestamp', type: 'int', example: 1738917191)]
+        private readonly ?int $createdAt = null,
+        #[Property(description: 'Is Writeable', type: 'bool', example: false)]
+        private readonly bool $isWriteable = false,
+    ) {
+        parent::__construct($id, $name, 'my_custom_widget_type', $icon);
+    }
+    
+    public function getCustomField(): string
+    {
+        return $this->customField;
+    }
+    
+    public function getCreatedAt(): ?int
+    {
+        return $this->createdAt;
+    }
+    
+    public function isWriteable(): bool
+    {
+        return $this->isWriteable;
+    }
+}
+```
+
+:::info
+
+Please note that the Hydrator must return a class extending the `Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig` class.
+
+:::
+
+Repository and Hydrator will be automatically registered and used by the Pimcore Studio Backend service to handle the widget configuration by defined type.

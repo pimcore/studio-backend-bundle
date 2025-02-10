@@ -128,6 +128,15 @@ final readonly class IconService implements IconServiceInterface
         return new ElementIcon(ElementIconTypes::PATH->value, $iconPath);
     }
 
+    public function getIconFromValue(?string $iconType = null, ?string $iconValue = null): ?ElementIcon
+    {
+        if ($iconType === null || $iconValue === null) {
+            return null;
+        }
+
+        return new ElementIcon($iconType, $iconValue);
+    }
+
     private function getClassIcon(DataObjectSearchResultItem|DataObject $dataObject): ?ElementIcon
     {
         if ($dataObject instanceof Concrete) {

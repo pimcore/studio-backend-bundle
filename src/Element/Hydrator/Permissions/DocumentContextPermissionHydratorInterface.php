@@ -14,18 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Throwable;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
 
 /**
  * @internal
  */
-final class InvalidArgumentException extends AbstractApiException
+interface DocumentContextPermissionHydratorInterface
 {
-    public function __construct(string $message, ?Throwable $previous = null)
-    {
-        parent::__construct(HttpResponseCodes::BAD_REQUEST->value, $message, previous: $previous);
-    }
+    public function hydrate(array $data): DocumentContextPermissions;
 }
