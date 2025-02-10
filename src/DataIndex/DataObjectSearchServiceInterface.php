@@ -53,4 +53,6 @@ interface DataObjectSearchServiceInterface
         string $parentPath,
         ?string $sortDirection = null
     ): int;
+
+    public function getSearchTerm(string $searchTerm, ?UserInterface $user): int;
 }

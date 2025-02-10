@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
@@ -29,6 +31,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -106,5 +110,37 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
         $query->searchByIds($ids);
 
         return $this->assetSearchAdapter->getTotalFileSizeByIds($query);
+    }
+
+    public function getBySearchTerm(string $searchTerm, ?UserInterface $user): int
+    {
+        $query = $this->assetQueryProvider->createAssetQuery();
+        $query->setPageSize(1);
+        $this->applyModifier($query, $searchTerm);
+
+        if ($user !== null) {
+            $query->setUser($user);
+        }
+
+        $result = $this->assetSearchAdapter->fetchAssetIds($query);
+        p_r($result);
+        die();
+        if(empty($result)) {
+            throw new NotFoundException('asset', $searchTerm);
+        }
+
+        return reset($result);
+    }
+
+    private function applyModifier(QueryInterface $query, string $searchTerm): void
+    {
+        $search = $query->getSearch();
+        $modifier =  match(true) {
+            !is_numeric($searchTerm) && $query instanceof DocumentQueryInterface => new PathFilter($searchTerm),
+            !is_numeric($searchTerm)  => new PathFilter($searchTerm, includeParentItem: true),
+            default => new IdFilter((int)$searchTerm)
+        };
+
+        $search->addModifier($modifier);
     }
 }

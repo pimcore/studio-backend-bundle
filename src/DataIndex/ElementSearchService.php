@@ -49,4 +49,14 @@ final readonly class ElementSearchService implements ElementSearchServiceInterfa
             default => throw new InvalidElementTypeException($type),
         };
     }
+
+    public function getElementBySearchTerm(string $type, string $searchTerm, ?UserInterface $user = null): int
+    {
+        return match ($type) {
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->getBySearchTerm($searchTerm, $user),
+            ElementTypes::TYPE_OBJECT => $this->dataObjectSearchService->getSearchTerm($searchTerm, $user),
+            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->getSearchTerm($searchTerm, $user),
+            default => throw new InvalidElementTypeException($type),
+        };
+    }
 }

@@ -32,4 +32,6 @@ interface DocumentSearchServiceInterface
     public function getDocumentById(int $id, ?UserInterface $user): Document;
 
     public function getChildrenIds(string $parentPath, ?string $sortDirection = null): array;
+
+    public function getSearchTerm(string $searchTerm, ?UserInterface $user): int;
 }

@@ -14,15 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Request;
 
-use Pimcore\Model\UserInterface;
-
-interface ElementSearchServiceInterface
+/**
+ * @internal
+ */
+final readonly class SearchTermParameter
 {
-    public function getElementById(string $type, int $id, ?UserInterface $user = null): mixed;
+    public function __construct(
+        private string $searchTerm
+    ) {
+    }
 
-    public function getChildrenIds(string $type, string $parentPath, ?string $sortDirection = null): array;
-
-    public function getElementBySearchTerm(string $type, string $searchTerm, ?UserInterface $user = null): int;
+    public function getSearchTerm(): string
+    {
+        return $this->searchTerm;
+    }
 }

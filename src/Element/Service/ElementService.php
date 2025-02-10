@@ -17,9 +17,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreFind\ElementFindBySearchTermEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementContextPermissionsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementSubtypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Request\SearchTermParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
@@ -48,9 +51,11 @@ final readonly class ElementService implements ElementServiceInterface
     use ElementProviderTrait;
 
     public function __construct(
+        private ElementSearchServiceInterface $elementSearchService,
         private EventDispatcherInterface $eventDispatcher,
         private ServiceResolverInterface $serviceResolver,
         private SecurityServiceInterface $securityService,
+
     ) {
     }
 
@@ -159,5 +164,16 @@ final readonly class ElementService implements ElementServiceInterface
         }
 
         return $subtype;
+    }
+
+    public function findBySearchTerm(string $elementType, SearchTermParameter $searchTerm, UserInterface $user): int
+    {
+        $event = $this->eventDispatcher->dispatch(
+            new ElementFindBySearchTermEvent($searchTerm->getSearchTerm()), ElementFindBySearchTermEvent::EVENT_NAME
+        );
+
+        $modifiedSearchTerm = $event->getSearchTerm();
+
+        return $this->elementSearchService->getElementBySearchTerm($elementType, $modifiedSearchTerm, $user);
     }
 }

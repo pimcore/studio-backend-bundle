@@ -78,4 +78,10 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
 
         return count($this->getChildrenIds($parentPath, $sortDirection));
     }
+
+
+    public function getSearchTerm(string $searchTerm, ?UserInterface $user): int
+    {
+        return 1;
+    }
 }

@@ -58,4 +58,9 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     {
         return $this->documentSearchAdapter->fetchDocumentIds($documentQuery);
     }
+
+    public function getSearchTerm(string $searchTerm, ?UserInterface $user): int
+    {
+        return 1;
+    }
 }

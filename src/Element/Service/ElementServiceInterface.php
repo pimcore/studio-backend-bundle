@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Request\SearchTermParameter;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
@@ -73,4 +74,10 @@ interface ElementServiceInterface
     public function getElementContextPermissions(
         string $elementType
     ): AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions;
+
+    public function findBySearchTerm(
+        string $elementType,
+        SearchTermParameter $searchTerm,
+        UserInterface $user
+    ): int;
 }

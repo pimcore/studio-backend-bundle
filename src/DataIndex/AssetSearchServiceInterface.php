@@ -77,4 +77,6 @@ interface AssetSearchServiceInterface
      * @throws AssetSearchException
      */
     public function getTotalFileSizeByIds(array $ids): int;
+
+    public function getBySearchTerm(string $searchTerm, ?UserInterface $user): int;
 }
