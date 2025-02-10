@@ -37,4 +37,11 @@ interface WidgetServiceInterface
      * @throws InvalidArgumentException|NotFoundException
      */
     public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfig;
+
+    /**
+     * @throws InvalidArgumentException|NotFoundException
+     *
+     * @return WidgetConfig[]
+     */
+    public function listWidgetConfigurations(): array;
 }

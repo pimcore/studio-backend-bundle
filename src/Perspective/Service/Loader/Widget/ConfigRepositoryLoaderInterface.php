@@ -26,6 +26,13 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\WidgetConfigReposi
 interface ConfigRepositoryLoaderInterface
 {
     /**
+     * @throws MustImplementInterfaceException
+     *
+     * @return WidgetConfigRepositoryInterface[]
+     */
+    public function loadRepositories(): array;
+
+    /**
      * @throws MustImplementInterfaceException|NotFoundException
      */
     public function loadRepository(string $widgetType): WidgetConfigRepositoryInterface;

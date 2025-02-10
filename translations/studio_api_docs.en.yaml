@@ -369,6 +369,9 @@ notification_send_description: |
   Send a notification to the given <strong>{recipientId}</strong>. <br> See the full description of request fields with the schema <strong>SendNotificationParameters</strong>
 notification_send_success_response: Successfully sent notification
 notification_send_summary: Send a notification
+perspective_widget_get_config_collection_description: Listing of all available widget configurations
+perspective_widget_get_config_collection_success_response: List of widget configurations
+perspective_widget_get_config_collection_summary: Get all widget configurations
 perspective_widget_get_config_by_id_description: |
   Get the widget configuration with the given <strong>{widgetId}</strong> and <strong>{widgetType}</strong>. <br> 
   The <strong>{widgetId}</strong> must be an ID of an existing widget. The widget type has to be registered via Symfony Configuration.

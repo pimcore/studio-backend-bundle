@@ -21,6 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectCont
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 
+/**
+ * @internal
+ */
 interface ContextPermissionServiceInterface
 {
     /**

@@ -31,6 +31,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetTypeHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetTypeHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetConfigListHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetConfigListHydrator
+
   Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\ElementTreeWidgetConfigHydrator:
     tags: [ 'pimcore.studio_backend.widget_hydrator' ]
 
@@ -40,7 +43,3 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository:
     tags: [ 'pimcore.studio_backend.widget_repository' ]
-
-
-
-

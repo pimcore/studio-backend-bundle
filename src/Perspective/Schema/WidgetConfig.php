@@ -44,7 +44,7 @@ class WidgetConfig implements AdditionalAttributesInterface
         #[Property(description: 'Widget Type', type: 'string', example: 'element_trees')]
         private readonly string $widgetType,
         #[Property(description: 'Icon', type: ElementIcon::class)]
-        private readonly ?ElementIcon $icon = null,
+        private readonly ElementIcon $icon,
     ) {
     }
 
@@ -63,7 +63,7 @@ class WidgetConfig implements AdditionalAttributesInterface
         return $this->widgetType;
     }
 
-    public function getIcon(): ?ElementIcon
+    public function getIcon(): ElementIcon
     {
         return $this->icon;
     }
