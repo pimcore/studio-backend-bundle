@@ -367,6 +367,7 @@ class Configuration implements ConfigurationInterface
                             ->defaultValue(ElementTypes::TYPE_OBJECT)
                         ->end()
                         ->arrayNode('icon')
+                            ->isRequired()
                             ->beforeNormalization()
                                 ->ifNull()
                                 ->then(fn () => [])
