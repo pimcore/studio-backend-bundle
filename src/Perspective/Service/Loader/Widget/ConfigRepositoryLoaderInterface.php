@@ -27,6 +27,7 @@ interface ConfigRepositoryLoaderInterface
 {
     /**
      * @throws MustImplementInterfaceException
+     *
      * @return WidgetConfigRepositoryInterface[]
      */
     public function loadRepositories(): array;

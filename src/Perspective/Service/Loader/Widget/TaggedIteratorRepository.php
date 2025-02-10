@@ -39,6 +39,7 @@ final class TaggedIteratorRepository implements ConfigRepositoryLoaderInterface
 
     /**
      * @throws MustImplementInterfaceException
+     *
      * @return WidgetConfigRepositoryInterface[]
      */
     public function loadRepositories(): array

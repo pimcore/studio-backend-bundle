@@ -129,8 +129,7 @@ final readonly class WidgetService implements WidgetServiceInterface
     private function processRepositoryConfiguration(
         array $configData,
         string $widgetType
-    ): WidgetConfig
-    {
+    ): WidgetConfig {
         $configData['widgetType'] = $widgetType;
         $hydratedConfig = $this->configListHydrator->hydrate($configData);
         $this->dispatchConfigEvent($hydratedConfig);

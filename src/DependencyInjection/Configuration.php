@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use function is_array;
 use function sprintf;
 
 /**
@@ -368,10 +369,10 @@ class Configuration implements ConfigurationInterface
                         ->arrayNode('icon')
                             ->beforeNormalization()
                                 ->ifNull()
-                                ->then(fn() => [])
+                                ->then(fn () => [])
                             ->end()
                             ->validate()
-                                ->ifTrue(fn($icon) => is_array($icon) &&
+                                ->ifTrue(fn ($icon) => is_array($icon) &&
                                     (isset($icon['type']) xor isset($icon['value']))
                                 )
                                 ->thenInvalid('Both "type" and "value" must be defined together in "icon".')
