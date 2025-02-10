@@ -14,17 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
 
-use Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\PatchAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
 /**
  * @internal
  */
-interface AdapterLoaderInterface
+enum ElementSaveTasks: string
 {
-    /**
-     * @return array<int, PatchAdapterInterface>
-     */
-    public function loadAdapters(string $elementType): array;
+    use EnumToValueArrayTrait;
+
+    case VERSION = 'version';
+    case AUTOSAVE = 'autoSave';
 }

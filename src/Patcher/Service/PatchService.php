@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
 
 use Exception;
-use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
@@ -26,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataT
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchFolderMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\Messenger\Messages\PatchMessage;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -57,7 +57,7 @@ final readonly class PatchService implements PatchServiceInterface
         private DataAdapterServiceInterface $dataAdapterService,
         private ElementServiceInterface $elementService,
         private JobExecutionAgentInterface $jobExecutionAgent,
-        private SynchronousProcessingServiceInterface $synchronousProcessingService
+        private ElementSaveServiceInterface $elementSaveService
     ) {
     }
 
@@ -138,9 +138,11 @@ final readonly class PatchService implements PatchServiceInterface
                 $adapter->patch($element, $elementPatchData, $user);
             }
 
-            $this->synchronousProcessingService->enable();
-            $element->setUserModification($user->getId());
-            $element->save();
+            $this->elementSaveService->save(
+                $element,
+                $user,
+                $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
+            );
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }

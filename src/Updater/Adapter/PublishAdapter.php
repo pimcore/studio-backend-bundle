@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
@@ -33,20 +34,19 @@ use function sprintf;
  * @internal
  */
 #[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
-final readonly class PublishAdapter implements PatchAdapterInterface
+final readonly class PublishAdapter implements UpdateAdapterInterface
 {
     private const INDEX_KEY = 'published';
 
     public function __construct(
         private SecurityServiceInterface $securityService
     ) {
-
     }
 
     /**
      * @throws ElementSavingFailedException
      */
-    public function patch(ElementInterface $element, array $data, UserInterface $user): void
+    public function update(ElementInterface $element, array $data): void
     {
         if (!array_key_exists($this->getIndexKey(), $data)) {
             return;
@@ -56,6 +56,7 @@ final readonly class PublishAdapter implements PatchAdapterInterface
             return;
         }
 
+        $user = $this->securityService->getCurrentUser();
         match ($data[$this->getIndexKey()]) {
             true => $this->publishElement($element, $user),
             false => $this->unpublishElement($element, $user),

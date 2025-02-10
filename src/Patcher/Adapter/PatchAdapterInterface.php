@@ -14,17 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\PatchAdapterInterface;
+use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\UserInterface;
 
-/**
- * @internal
- */
-interface AdapterLoaderInterface
+interface PatchAdapterInterface
 {
+    public function patch(ElementInterface $element, array $data, UserInterface $user): void;
+
+    public function getIndexKey(): string;
+
     /**
-     * @return array<int, PatchAdapterInterface>
+     * @return array<string>
      */
-    public function loadAdapters(string $elementType): array;
+    public function supportedElementTypes(): array;
 }
