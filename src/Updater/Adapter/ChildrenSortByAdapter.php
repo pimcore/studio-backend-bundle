@@ -39,7 +39,6 @@ final readonly class ChildrenSortByAdapter implements UpdateAdapterInterface
     public function __construct(
         private SecurityServiceInterface $securityService
     ) {
-
     }
 
     /**

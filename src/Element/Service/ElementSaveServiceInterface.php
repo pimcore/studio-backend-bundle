@@ -14,19 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
+use Exception;
+use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
-interface PatchAdapterInterface
+/**
+ * @internal
+ */
+interface ElementSaveServiceInterface
 {
-    public function patch(ElementInterface $element, array $data, UserInterface $user): void;
-
-    public function getIndexKey(): string;
+    public const string INDEX_TASK = 'task';
 
     /**
-     * @return array<string>
+     * @throws DuplicateFullPathException
+     * @throws Exception
      */
-    public function supportedElementTypes(): array;
+    public function save(ElementInterface $element, UserInterface $user, ?string $task): void;
 }
