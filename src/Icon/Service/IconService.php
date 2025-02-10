@@ -128,6 +128,16 @@ final readonly class IconService implements IconServiceInterface
         return new ElementIcon(ElementIconTypes::PATH->value, $iconPath);
     }
 
+    public function getIconForWidget(?array $iconData = null): ElementIcon
+    {
+        if ($iconData === null || !isset($iconData['type'], $iconData['value'])) {
+            // ToDo: Add default icon for widgets when available
+            return new ElementIcon(ElementIconTypes::NAME->value, self::DEFAULT_ICON);
+        }
+
+        return new ElementIcon($iconData['type'], $iconData['value']);
+    }
+
     private function getClassIcon(DataObjectSearchResultItem|DataObject $dataObject): ?ElementIcon
     {
         if ($dataObject instanceof Concrete) {

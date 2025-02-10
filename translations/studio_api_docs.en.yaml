@@ -243,6 +243,10 @@ element_get_id_by_path_description: |
   Get the element ID based on the given <strong>{path}</strong> and <strong>{elementType}</strong>. <br> The <strong>{path}</strong> must be a valid path of an existing element with provided <strong>{elementType}</strong>
 element_get_id_by_path_success_response: ID of the element
 element_get_id_by_path_summary: Get ID of the element by path query parameter and element type path parameter
+element_get_context_permissions_description: |
+    Get the context permission list relevant for the given <strong>{elementType}</strong>.
+element_get_context_permissions_success_response: Context permission list
+element_get_context_permissions_summary: Get context permissions for the element type path parameter
 element_get_subtype_description: |
   Get the subtype of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>.
 element_get_subtype_success_response: Subtype of the element
@@ -297,6 +301,9 @@ email_send_test_description: |
   Send a test E-Mail based on the provided query parameters. <br> See the full description of request fields with the schema <strong>SendEmailParameters</strong>
 email_send_test_success_response: E-Mail was successfully sent
 email_send_test_summary: Send a test E-Mail
+error_something_generic_went_wrong: Oops, sorry seems like something unexpectedly went wrong.
+error_element_exists: Element already exists
+error_folder_exists: Folder already exists
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
 login_description: Logs in a user with the provided credentials and returns the user information.
@@ -362,6 +369,17 @@ notification_send_description: |
   Send a notification to the given <strong>{recipientId}</strong>. <br> See the full description of request fields with the schema <strong>SendNotificationParameters</strong>
 notification_send_success_response: Successfully sent notification
 notification_send_summary: Send a notification
+perspective_widget_get_config_collection_description: Listing of all available widget configurations
+perspective_widget_get_config_collection_success_response: List of widget configurations
+perspective_widget_get_config_collection_summary: Get all widget configurations
+perspective_widget_get_config_by_id_description: |
+  Get the widget configuration with the given <strong>{widgetId}</strong> and <strong>{widgetType}</strong>. <br> 
+  The <strong>{widgetId}</strong> must be an ID of an existing widget. The widget type has to be registered via Symfony Configuration.
+perspective_widget_get_config_by_id_success_response: Widget configuration data as JSON
+perspective_widget_get_config_by_id_summary: Get widget configuration by id and type
+perspective_widget_get_type_collection_description: Get widget types collection
+perspective_widget_get_type_collection_success_response: List of widget types
+perspective_widget_get_type_collection_summary: Get widget types
 property_create_description: |
   Creating the property with default values. <br>
   <ul>
@@ -498,6 +516,7 @@ tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
 tag_metadata_description: Metadata operations to get/update/create/delete metadata
 tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications
+tag_perspectives_description: Operations to get/update/create/delete properties and widgets
 tag_properties_description: Property operations to get/update/create/delete properties
 tag_role_description: Role Management operations
 tag_search_description: Operations to get search configuration, search elements and get search result previews

@@ -154,6 +154,9 @@ pimcore_studio_backend:
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\FieldCollectionsAdapter:
             - "fieldcollections"
 
+    widget_types:
+        - 'element_tree'
+
 mercure:
     hubs:
         studio_server:

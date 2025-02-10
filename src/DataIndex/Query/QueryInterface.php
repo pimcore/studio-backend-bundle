@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Model\UserInterface;
 
@@ -51,4 +52,6 @@ interface QueryInterface
     public function filterInteger(string $field, int $value): self;
 
     public function filterFullText(string $value): self;
+
+    public function orderByField(string $fieldName, SortDirection $direction): self;
 }
