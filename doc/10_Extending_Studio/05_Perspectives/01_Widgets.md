@@ -52,7 +52,7 @@ There are a couple of restrictions and requirements for the widget configuration
 
 ### Example Widget Configuration Repository
 
-For an example implementation please have a look at the [ElementTreeWidgetConfigRepository](/src/Perspective/Repository/ElementTreeWidgetConfigRepository.php) file.
+For an example implementation please have a look at the `Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository` file.
 
 ### Example Widget Configuration Hydrator
 

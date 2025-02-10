@@ -53,10 +53,11 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
     ): void {
         if (strlen($configurationName) < 3 ||
             strlen($configurationName) > 80 ||
-            !preg_match('/^[a-zA-Z][\w\s]+$/', $configurationName)
+            !preg_match('/^\p{L}[\p{L}\p{N}\s]+$/u', $configurationName)
         ) {
             throw new InvalidArgumentException(
-                'Invalid widget name', errorKey: HttpResponseErrorKeys::WIDGET_NAME_INVALID->value
+                'Invalid widget name',
+                errorKey: HttpResponseErrorKeys::WIDGET_NAME_INVALID->value
             );
         }
     }
