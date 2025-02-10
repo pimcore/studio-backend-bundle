@@ -18,6 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 
+/**
+ * @internal
+ */
 interface WidgetConfigListHydratorInterface
 {
     public function hydrate(array $widgetData): WidgetConfig;
