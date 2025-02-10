@@ -83,7 +83,6 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
         return count($this->getChildrenIds($parentPath, $sortDirection));
     }
 
-
     /**
      * @throws NotFoundException|SearchException
      */
@@ -93,7 +92,7 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
         $this->applySearchTerm($query, $searchTerm, $user);
         $result = $this->dataObjectSearchAdapter->fetchDataObjectIds($query);
 
-        if(empty($result)) {
+        if (empty($result)) {
             throw new NotFoundException('asset', $searchTerm);
         }
 

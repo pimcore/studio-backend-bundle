@@ -71,7 +71,7 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
         $this->applySearchTerm($query, $searchTerm, $user);
         $result = $this->documentSearchAdapter->fetchDocumentIds($query);
 
-        if(empty($result)) {
+        if (empty($result)) {
             throw new NotFoundException('asset', $searchTerm);
         }
 
