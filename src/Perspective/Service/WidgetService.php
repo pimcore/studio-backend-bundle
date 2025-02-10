@@ -16,20 +16,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\WidgetConfigEvent;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\WidgetTypeEvent;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetConfigHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetConfigListHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetTypeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\MappedParameter\WidgetDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\WidgetConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigHydratorLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigRepositoryLoaderInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function in_array;
+use Symfony\Component\Uid\Factory\UuidFactory;
 use function sprintf;
 
 /**
@@ -41,8 +44,10 @@ final readonly class WidgetService implements WidgetServiceInterface
         private ConfigHydratorLoaderInterface $configHydratorLoader,
         private ConfigRepositoryLoaderInterface $configRepositoryLoader,
         private EventDispatcherInterface $eventDispatcher,
+        private UuidFactory $uuidFactory,
         private WidgetTypeHydratorInterface $widgetTypeHydrator,
         private WidgetConfigListHydratorInterface $configListHydrator,
+        private WidgetValidationServiceInterface $widgetValidationService,
         private array $widgetTypes
     ) {
     }
@@ -53,7 +58,7 @@ final readonly class WidgetService implements WidgetServiceInterface
     public function listWidgetTypes(): array
     {
         $widgetTypes = [];
-        foreach ($this->getWidgetTypes() as $type) {
+        foreach ($this->widgetTypes as $type) {
             $hydratedType = $this->widgetTypeHydrator->hydrate($type);
             $this->eventDispatcher->dispatch(new WidgetTypeEvent($hydratedType), WidgetTypeEvent::EVENT_NAME);
             $widgetTypes[] = $hydratedType;
@@ -63,23 +68,27 @@ final readonly class WidgetService implements WidgetServiceInterface
     }
 
     /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException
+     */
+    public function addWidgetConfig(string $widgetType, WidgetDataParameter $widgetData): string
+    {
+        $this->widgetValidationService->validateWidgetType($widgetType);
+        $configData = $widgetData->getData();
+
+        $configData['name'] = $this->widgetValidationService->getValidWidgetName($configData);
+        $configData['id'] = $this->getConfigurationIdentifier();
+
+        return $this->loadRepositoryByType($widgetType)->createConfiguration($configData);
+    }
+
+    /**
      * @throws InvalidArgumentException|NotFoundException
      */
     public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfig
     {
-        $this->validateWidgetType($widgetType);
-
-        try {
-            $data = $this->configRepositoryLoader->loadRepository($widgetType)->getConfigData($widgetId);
-            $hydrator = $this->configHydratorLoader->loadHydrator($widgetType);
-        } catch (MustImplementInterfaceException $exception) {
-            throw new InvalidArgumentException(
-                sprintf('Invalid widget config implementation: %s', $exception->getMessage()),
-                $exception
-            );
-        }
-
-        $hydrated = $hydrator->hydrate($data);
+        $this->widgetValidationService->validateWidgetType($widgetType);
+        $data = $this->loadRepositoryByType($widgetType)->getConfigData($widgetId);
+        $hydrated = $this->loadHydratorByType($widgetType)->hydrate($data);
         $this->dispatchConfigEvent($hydrated);
 
         return $hydrated;
@@ -95,18 +104,13 @@ final readonly class WidgetService implements WidgetServiceInterface
         $hydrated = [];
         foreach ($this->loadRepositories() as $repository) {
             $widgetType = $repository->getSupportedWidgetType();
-            $this->validateWidgetType($widgetType);
+            $this->widgetValidationService->validateWidgetType($widgetType);
             foreach ($repository->listConfigurations() as $configData) {
                 $hydrated[] = $this->processRepositoryConfiguration($configData, $widgetType);
             }
         }
 
         return $hydrated;
-    }
-
-    public function getWidgetTypes(): array
-    {
-        return $this->widgetTypes;
     }
 
     /**
@@ -126,6 +130,36 @@ final readonly class WidgetService implements WidgetServiceInterface
         }
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function loadHydratorByType(string $widgetType): WidgetConfigHydratorInterface
+    {
+        try {
+            return $this->configHydratorLoader->loadHydrator($widgetType);
+        } catch (MustImplementInterfaceException $exception) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid widget config hydrator implementation: %s', $exception->getMessage()),
+                $exception
+            );
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function loadRepositoryByType(string $widgetType): WidgetConfigRepositoryInterface
+    {
+        try {
+            return $this->configRepositoryLoader->loadRepository($widgetType);
+        } catch (MustImplementInterfaceException $exception) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid widget config repository implementation: %s', $exception->getMessage()),
+                $exception
+            );
+        }
+    }
+
     private function processRepositoryConfiguration(
         array $configData,
         string $widgetType
@@ -137,18 +171,13 @@ final readonly class WidgetService implements WidgetServiceInterface
         return $hydratedConfig;
     }
 
-    /**
-     * @throws InvalidArgumentException
-     */
-    private function validateWidgetType(string $widgetType): void
-    {
-        if (!in_array($widgetType, $this->getWidgetTypes(), true)) {
-            throw new InvalidArgumentException(sprintf('Invalid widget type: %s', $widgetType));
-        }
-    }
-
     private function dispatchConfigEvent(WidgetConfig $config): void
     {
         $this->eventDispatcher->dispatch(new WidgetConfigEvent($config), WidgetConfigEvent::EVENT_NAME);
+    }
+
+    private function getConfigurationIdentifier(): string
+    {
+        return str_replace('-', '_', (string)$this->uuidFactory->create());
     }
 }

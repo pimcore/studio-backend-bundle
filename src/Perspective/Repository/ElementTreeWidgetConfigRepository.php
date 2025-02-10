@@ -18,12 +18,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Repository;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDataObjectContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedIteratorRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Config\LocationAwareConfigRepository;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /**
  * @internal
@@ -32,6 +38,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryInterface
 {
     public function __construct(
+        private readonly IconServiceInterface $iconService,
+        private readonly NormalizerInterface $normalizer,
         private readonly array $widgetConfigurations,
         private readonly array $storageConfig,
     ) {
@@ -42,6 +50,29 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     public function getSupportedWidgetType(): string
     {
         return WidgetTypes::ELEMENT_TREE->value;
+    }
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function createConfiguration(array $widgetData): string
+    {
+        $config = new SaveElementTreeWidgetConfig(
+            $widgetData['id'],
+            $widgetData['name'],
+            $this->iconService->getIconForWidget(),
+            new SaveDataObjectContextPermissions(),
+        );
+
+        try {
+            $configData = $this->normalizer->normalize($config);
+        } catch (Exception|ExceptionInterface $exception) {
+            throw new ElementSavingFailedException(null, $exception->getMessage());
+        }
+
+        $this->saveConfigData($widgetData['id'], $configData);
+
+        return $widgetData['id'];
     }
 
     /**
@@ -56,14 +87,29 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
             throw new NotFoundException('Element Tree Widget', $widgetId);
         }
 
-        try {
-            $configData['isWriteable'] = $repository->isWriteable($widgetId, $dataSource);
-        } catch (Exception $exception) {
-            throw new NotWriteableException('Widget configuration export', $exception);
-        }
+        $configData['isWriteable'] = $this->isRepositoryWritable($widgetId, $dataSource);
         $configData['id'] = $widgetId;
 
         return $configData;
+    }
+
+    public function saveConfigData(string $configId, array $widgetData): void
+    {
+        $this->isRepositoryWritable();
+
+        try {
+            $this->getRepository()->saveConfig($configId, $widgetData, function ($key, $data) {
+                return [
+                    Configuration::ROOT_NODE => [
+                        Configuration::TREE_WIDGETS_NODE => [
+                            $key => $data,
+                        ],
+                    ],
+                ];
+            });
+        } catch (Exception $exception) {
+            throw new ElementSavingFailedException(null, $exception->getMessage());
+        }
     }
 
     /**
@@ -90,5 +136,17 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
         }
 
         return $this->repository;
+    }
+
+    /**
+     * @throws NotWriteableException
+     */
+    private function isRepositoryWritable(?string $widgetId = null, ?string $dataSource = null): bool
+    {
+        try {
+            return $this->getRepository()->isWriteable($widgetId, $dataSource);
+        } catch (Exception $exception) {
+            throw new NotWriteableException('Widget configuration export', $exception);
+        }
     }
 }

@@ -16,8 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\MappedParameter\WidgetDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
 
@@ -31,7 +33,10 @@ interface WidgetServiceInterface
      */
     public function listWidgetTypes(): array;
 
-    public function getWidgetTypes(): array;
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException
+     */
+    public function addWidgetConfig(string $widgetType, WidgetDataParameter $widgetData): string;
 
     /**
      * @throws InvalidArgumentException|NotFoundException

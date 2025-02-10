@@ -24,6 +24,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetService
 
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface:
+      class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationService
+
   #
   # Hydrators
   #

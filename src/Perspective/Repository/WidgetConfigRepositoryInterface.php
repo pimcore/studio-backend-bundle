@@ -16,11 +16,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+
 interface WidgetConfigRepositoryInterface
 {
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function createConfiguration(array $widgetData): string;
+
     public function getSupportedWidgetType(): string;
 
     public function getConfigData(string $widgetId): array;
+
+    public function saveConfigData(string $configId, array $widgetData): void;
 
     public function listConfigurations(): array;
 }
