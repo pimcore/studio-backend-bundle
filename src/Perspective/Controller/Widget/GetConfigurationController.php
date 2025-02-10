@@ -75,7 +75,7 @@ final class GetConfigurationController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getDataObjectById(string $widgetType, string $widgetId): JsonResponse
+    public function getWidgetConfig(string $widgetType, string $widgetId): JsonResponse
     {
         return $this->jsonResponse(['data' => $this->widgetService->getWidgetConfigData($widgetType, $widgetId)]);
     }

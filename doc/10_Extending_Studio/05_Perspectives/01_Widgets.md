@@ -83,7 +83,6 @@ declare(strict_types=1);
 
 namespace App\Perspective\Schema;
 
-use App\Perspective\Widget\Model\CustomWidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 
 #[Schema(
