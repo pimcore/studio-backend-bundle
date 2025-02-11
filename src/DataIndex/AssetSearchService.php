@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Util\Trait\SearchTermTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -37,6 +38,8 @@ use function count;
 
 final readonly class AssetSearchService implements AssetSearchServiceInterface
 {
+    use SearchTermTrait;
+
     public function __construct(
         private AssetSearchAdapterInterface $assetSearchAdapter,
         private AssetQueryProviderInterface $assetQueryProvider,
@@ -106,5 +109,21 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
         $query->searchByIds($ids);
 
         return $this->assetSearchAdapter->getTotalFileSizeByIds($query);
+    }
+
+    /**
+     * @throws NotFoundException|SearchException
+     */
+    public function getBySearchTerm(string $searchTerm, ?UserInterface $user): int
+    {
+        $query = $this->assetQueryProvider->createAssetQuery();
+        $this->applySearchTerm($query, $searchTerm, $user);
+        $result = $this->assetSearchAdapter->fetchAssetIds($query);
+
+        if (empty($result)) {
+            throw $this->getNotFoundException('Asset', $searchTerm);
+        }
+
+        return reset($result);
     }
 }

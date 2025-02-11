@@ -21,12 +21,16 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProvide
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Element\Util\Trait\SearchTermTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
 use function count;
 
 final readonly class DataObjectSearchService implements DataObjectSearchServiceInterface
 {
+    use SearchTermTrait;
+
     public function __construct(
         private DataObjectSearchAdapterInterface $dataObjectSearchAdapter,
         private DataObjectQueryProviderInterface $dataObjectQueryProvider
@@ -77,5 +81,21 @@ final readonly class DataObjectSearchService implements DataObjectSearchServiceI
     ): int {
 
         return count($this->getChildrenIds($parentPath, $sortDirection));
+    }
+
+    /**
+     * @throws NotFoundException|SearchException
+     */
+    public function getSearchTerm(string $searchTerm, ?UserInterface $user): int
+    {
+        $query = $this->dataObjectQueryProvider->createDataObjectQuery();
+        $this->applySearchTerm($query, $searchTerm, $user);
+        $result = $this->dataObjectSearchAdapter->fetchDataObjectIds($query);
+
+        if (empty($result)) {
+            throw new NotFoundException('asset', $searchTerm);
+        }
+
+        return reset($result);
     }
 }
