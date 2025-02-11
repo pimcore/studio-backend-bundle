@@ -16,8 +16,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
+use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetPositions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
+use Throwable;
 use function in_array;
 use function sprintf;
 use function strlen;
@@ -28,6 +36,8 @@ use function strlen;
 final readonly class WidgetValidationService implements WidgetValidationServiceInterface
 {
     public function __construct(
+        private ContextPermissionServiceInterface $contextPermissionService,
+        private IconServiceInterface $iconService,
         private array $widgetTypes
     ) {
     }
@@ -70,5 +80,65 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
         if (!in_array($widgetType, $this->widgetTypes, true)) {
             throw new InvalidArgumentException(sprintf('Invalid widget type: %s', $widgetType));
         }
+    }
+
+    /**
+     * @throws ValidationFailedException
+     */
+    public function validateWidgetConfigData(array $widgetData): SaveElementTreeWidgetConfig
+    {
+        try {
+            $configuration = new SaveElementTreeWidgetConfig(
+                $widgetData['id'],
+                $widgetData['name'],
+                $this->iconService->getIconForWidget($widgetData['icon']),
+                $this->contextPermissionService->saveElementContextPermissions(
+                    $widgetData['elementType'],
+                    $widgetData['contextPermissions']
+                ),
+                $widgetData['elementType'],
+                $widgetData['rootFolder'],
+                $widgetData['showRoot'],
+                $this->getValidClasses($widgetData),
+                $widgetData['pql'],
+                $widgetData['position'],
+                $widgetData['sort'],
+                $widgetData['expanded'],
+            );
+        } catch (Exception|Throwable $exception) {
+            throw new ValidationFailedException(
+                sprintf('Could not process data: %s', $exception->getMessage()),
+                previous: $exception
+            );
+        }
+        $this->validatePosition($configuration->getPosition());
+
+        return $configuration;
+    }
+
+    /**
+     * @throws ValidationFailedException
+     */
+    private function validatePosition(string $position): void
+    {
+        if (!in_array($position, WidgetPositions::values(), true)
+        ) {
+            throw new ValidationFailedException(
+                sprintf('Invalid widget position provided: %s', $position)
+            );
+        }
+    }
+
+    private function getValidClasses(array $widgetData): array
+    {
+        if (!isset($widgetData['classes'])) {
+            return [];
+        }
+
+        if ($widgetData['elementType'] !== ElementTypes::TYPE_DATA_OBJECT) {
+            return [];
+        }
+
+        return $widgetData['classes'];
     }
 }

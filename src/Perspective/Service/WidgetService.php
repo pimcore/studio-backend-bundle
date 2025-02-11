@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\WidgetConfigEvent;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\WidgetTypeEvent;
@@ -83,12 +84,25 @@ final readonly class WidgetService implements WidgetServiceInterface
     }
 
     /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|ValidationFailedException
+     */
+    public function updateWidgetConfig(string $widgetType, string $widgetId, WidgetDataParameter $widgetData): void
+    {
+        $this->widgetValidationService->validateWidgetType($widgetType);
+        $configData = $widgetData->getData();
+
+        $configData['name'] = $this->widgetValidationService->getValidWidgetName($configData);
+        $configData['id'] = $widgetId;
+        $this->loadRepositoryByType($widgetType)->updateConfiguration($configData);
+    }
+
+    /**
      * @throws InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfig
     {
         $this->widgetValidationService->validateWidgetType($widgetType);
-        $data = $this->loadRepositoryByType($widgetType)->getConfigData($widgetId);
+        $data = $this->loadRepositoryByType($widgetType)->getConfiguration($widgetId);
         $hydrated = $this->loadHydratorByType($widgetType)->hydrate($data);
         $this->dispatchConfigEvent($hydrated);
 

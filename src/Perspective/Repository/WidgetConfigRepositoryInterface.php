@@ -22,9 +22,9 @@ interface WidgetConfigRepositoryInterface
 
     public function createConfiguration(array $widgetData): string;
 
-    public function getConfigData(string $widgetId): array;
+    public function updateConfiguration(array $widgetData): void;
 
-    public function saveConfigData(string $configId, array $widgetData): void;
+    public function getConfiguration(string $widgetId): array;
 
     public function listConfigurations(): array;
 

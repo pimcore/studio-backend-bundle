@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedIteratorRepository;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Config\LocationAwareConfigRepository;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -41,6 +42,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     public function __construct(
         private readonly IconServiceInterface $iconService,
         private readonly NormalizerInterface $normalizer,
+        private readonly WidgetValidationServiceInterface $validationService,
         private readonly array $widgetConfigurations,
         private readonly array $storageConfig,
     ) {
@@ -65,21 +67,24 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
             new SaveDataObjectContextPermissions(),
         );
 
-        try {
-            $configData = $this->normalizer->normalize($config);
-        } catch (Exception|ExceptionInterface $exception) {
-            throw new ElementSavingFailedException(null, $exception->getMessage());
-        }
-
-        $this->saveConfigData($widgetData['id'], $configData);
+        $this->saveConfigData($config);
 
         return $widgetData['id'];
     }
 
     /**
+     * @throws ElementSavingFailedException|NotWriteableException
+     */
+    public function updateConfiguration(array $widgetData): void
+    {
+        $configData = $this->validationService->validateWidgetConfigData($widgetData);
+        $this->saveConfigData($configData);
+    }
+
+    /**
      * @throws NotFoundException|NotWriteableException
      */
-    public function getConfigData(string $widgetId): array
+    public function getConfiguration(string $widgetId): array
     {
         $repository = $this->getRepository();
         $data = $repository->loadConfigByKey($widgetId);
@@ -97,12 +102,18 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     /**
      * @throws ElementSavingFailedException|NotWriteableException
      */
-    public function saveConfigData(string $configId, array $widgetData): void
+    private function saveConfigData(SaveElementTreeWidgetConfig $widgetConfiguration): void
     {
+        try {
+            $widgetData = $this->normalizer->normalize($widgetConfiguration);
+        } catch (Exception|ExceptionInterface $exception) {
+            throw new ElementSavingFailedException(null, $exception->getMessage());
+        }
+
         $this->isRepositoryWritable(message: 'Could not save the widget configuration: %s');
 
         try {
-            $this->getRepository()->saveConfig($configId, $widgetData, function ($key, $data) {
+            $this->getRepository()->saveConfig($widgetConfiguration->getId(), $widgetData, function ($key, $data) {
                 return [
                     Configuration::ROOT_NODE => [
                         Configuration::TREE_WIDGETS_NODE => [
@@ -123,7 +134,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     {
         $configurations = [];
         foreach ($this->getRepository()->fetchAllKeys() as $key) {
-            $configurations[] = $this->getConfigData($key);
+            $configurations[] = $this->getConfiguration($key);
         }
 
         return $configurations;

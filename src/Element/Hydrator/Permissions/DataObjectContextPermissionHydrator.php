@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDataObjectContextPermissions;
 
 /**
  * @internal
@@ -25,7 +26,17 @@ final readonly class DataObjectContextPermissionHydrator implements DataObjectCo
 {
     public function hydrate(array $data): DataObjectContextPermissions
     {
-        return new DataObjectContextPermissions(
+        return new DataObjectContextPermissions(...$this->extractPermissions($data));
+    }
+
+    public function hydrateSavePermissions(array $data): SaveDataObjectContextPermissions
+    {
+        return new SaveDataObjectContextPermissions(...$this->extractPermissions($data));
+    }
+
+    private function extractPermissions(array $data): array
+    {
+        return [
             $data['add'] ?? true,
             $data['addFolder'] ?? true,
             $data['changeChildrenSortBy'] ?? true,
@@ -43,6 +54,6 @@ final readonly class DataObjectContextPermissionHydrator implements DataObjectCo
             $data['unlock'] ?? true,
             $data['unlockAndPropagate'] ?? true,
             $data['unpublish'] ?? true
-        );
+        ];
     }
 }

@@ -28,4 +28,5 @@ enum HttpResponseErrorKeys: string
     case WIDGET_NAME_INVALID = 'error_widget_name_invalid';
     case WIDGET_NAME_MISSING = 'error_widget_name_missing';
     case INVALID_ARGUMENT = 'error_invalid_argument';
+    case VALIDATION_FAILED = 'error_validation_failed';
 }

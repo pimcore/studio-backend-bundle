@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDocumentContextPermissions;
 
 /**
  * @internal
@@ -25,7 +26,17 @@ final readonly class DocumentContextPermissionHydrator implements DocumentContex
 {
     public function hydrate(array $data): DocumentContextPermissions
     {
-        return new DocumentContextPermissions(
+        return new DocumentContextPermissions(...$this->extractPermissions($data));
+    }
+
+    public function hydrateSavePermissions(array $data): SaveDocumentContextPermissions
+    {
+        return new SaveDocumentContextPermissions(...$this->extractPermissions($data));
+    }
+
+    private function extractPermissions(array $data): array
+    {
+        return [
             $data['add'] ?? true,
             $data['addEmail'] ?? true,
             $data['addFolder'] ?? true,
@@ -54,6 +65,6 @@ final readonly class DocumentContextPermissionHydrator implements DocumentContex
             $data['unlockAndPropagate'] ?? true,
             $data['unpublish'] ?? true,
             $data['useAsSite'] ?? true
-        );
+        ];
     }
 }
