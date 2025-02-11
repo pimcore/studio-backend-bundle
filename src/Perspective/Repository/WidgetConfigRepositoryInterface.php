@@ -18,13 +18,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Repository;
 
 interface WidgetConfigRepositoryInterface
 {
-    public function createConfiguration(array $widgetData): string;
-
     public function getSupportedWidgetType(): string;
+
+    public function createConfiguration(array $widgetData): string;
 
     public function getConfigData(string $widgetId): array;
 
     public function saveConfigData(string $configId, array $widgetData): void;
 
     public function listConfigurations(): array;
+
+    public function deleteConfiguration(
+        string $configId
+    ): void;
 }

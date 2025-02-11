@@ -25,14 +25,18 @@ use function sprintf;
  */
 final class NotWriteableException extends AbstractApiException
 {
-    public function __construct(string $type, ?Throwable $previous = null)
+    public function __construct(string $type, ?string $message = null, ?Throwable $previous = null)
     {
-        parent::__construct(
-            HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
-            sprintf(
+        if ($message === null) {
+            $message = sprintf(
                 'Cannot create: %s',
                 $type
-            ),
+            );
+        }
+
+        parent::__construct(
+            HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
+            $message,
             previous: $previous
         );
     }
