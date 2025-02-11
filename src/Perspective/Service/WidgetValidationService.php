@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
-use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
@@ -105,7 +104,7 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
                 $widgetData['sort'],
                 $widgetData['expanded'],
             );
-        } catch (Exception|Throwable $exception) {
+        } catch (Throwable $exception) {
             throw new ValidationFailedException(
                 sprintf('Could not process data: %s', $exception->getMessage()),
                 previous: $exception
