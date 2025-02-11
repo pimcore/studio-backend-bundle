@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Throwable;
 
 /**
@@ -24,8 +25,11 @@ use Throwable;
  */
 final class InvalidArgumentException extends AbstractApiException
 {
-    public function __construct(string $message, ?Throwable $previous = null)
-    {
-        parent::__construct(HttpResponseCodes::BAD_REQUEST->value, $message, previous: $previous);
+    public function __construct(
+        string $message,
+        ?Throwable $previous = null,
+        string $errorKey = HttpResponseErrorKeys::INVALID_ARGUMENT->value
+    ) {
+        parent::__construct(HttpResponseCodes::BAD_REQUEST->value, $message, previous: $previous, errorKey: $errorKey);
     }
 }

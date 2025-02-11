@@ -25,4 +25,7 @@ enum HttpResponseErrorKeys: string
     case GENERIC_ERROR = 'error_something_generic_went_wrong';
     case ELEMENT_EXISTS = 'error_element_exists';
     case FOLDER_EXISTS = 'error_folder_exists';
+    case WIDGET_NAME_INVALID = 'error_widget_name_invalid';
+    case WIDGET_NAME_MISSING = 'error_widget_name_missing';
+    case INVALID_ARGUMENT = 'error_invalid_argument';
 }

@@ -14,17 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\Perspective\MappedParameter;
 
-interface WidgetConfigRepositoryInterface
+/**
+ * @internal
+ */
+final readonly class WidgetDataParameter
 {
-    public function createConfiguration(array $widgetData): string;
+    public function __construct(
+        private array $data
+    ) {
+    }
 
-    public function getSupportedWidgetType(): string;
-
-    public function getConfigData(string $widgetId): array;
-
-    public function saveConfigData(string $configId, array $widgetData): void;
-
-    public function listConfigurations(): array;
+    public function getData(): array
+    {
+        return $this->data;
+    }
 }

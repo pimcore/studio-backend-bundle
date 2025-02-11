@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -113,6 +114,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition->setArgument('$defaultKeyBindings', $config['user']['default_key_bindings']);
 
         $definition = $container->getDefinition(WidgetServiceInterface::class);
+        $definition->setArgument('$widgetTypes', $config['widget_types']);
+
+        $definition = $container->getDefinition(WidgetValidationServiceInterface::class);
         $definition->setArgument('$widgetTypes', $config['widget_types']);
 
         $definition = $container->getDefinition(ElementTreeWidgetConfigRepository::class);

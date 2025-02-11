@@ -304,6 +304,9 @@ email_send_test_summary: Send a test E-Mail
 error_something_generic_went_wrong: Oops, sorry seems like something unexpectedly went wrong.
 error_element_exists: Element already exists
 error_folder_exists: Folder already exists
+error_invalid_argument: Invalid argument
+error_widget_name_missing: Widget name have to be provided
+error_widget_name_invalid: Widget name is invalid (only alphanumeric characters, underscores and spaces are allowed, must be at least 3 characters long and less than 80 long)
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
 login_description: Logs in a user with the provided credentials and returns the user information.
@@ -369,6 +372,12 @@ notification_send_description: |
   Send a notification to the given <strong>{recipientId}</strong>. <br> See the full description of request fields with the schema <strong>SendNotificationParameters</strong>
 notification_send_success_response: Successfully sent notification
 notification_send_summary: Send a notification
+perspective_widget_create_description: |
+    Create a new widget with default values based on the provided <strong>{widgetType}</strong>.
+    <br> The widget type has to be registered via Symfony Configuration.
+    <br> Please note that <strong>{name}</strong> has to be provided.
+perspective_widget_create_success_response: Id of the new widget
+perspective_widget_create_summary: Create a new widget
 perspective_widget_get_config_collection_description: Listing of all available widget configurations
 perspective_widget_get_config_collection_success_response: List of widget configurations
 perspective_widget_get_config_collection_summary: Get all widget configurations
