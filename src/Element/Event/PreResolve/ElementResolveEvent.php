@@ -26,8 +26,7 @@ final class ElementResolveEvent
         private readonly string $elementType,
         private readonly string $searchTerm
 
-    )
-    {
+    ) {
     }
 
     public function getElementType(): string

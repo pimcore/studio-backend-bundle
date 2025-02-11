@@ -50,15 +50,17 @@ trait SearchTermTrait
         // add a leading slash if it is missing to the search term
         // include the parent since we actually want the parent item
         $searchTerm = '/' . ltrim($searchTerm, '/');
+
         return new PathFilter($searchTerm, includeParentItem: true);
     }
 
     private function getNotFoundException(string $type, string $searchTerm): NotFoundException
     {
         $parameter = 'ID';
-        if(!is_numeric($searchTerm)) {
+        if (!is_numeric($searchTerm)) {
             $parameter = 'Path';
         }
+
         return new NotFoundException($type, $searchTerm, $parameter);
     }
 }
