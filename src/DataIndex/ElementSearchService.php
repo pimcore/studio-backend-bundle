@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\UserInterface;
 
@@ -50,6 +52,9 @@ final readonly class ElementSearchService implements ElementSearchServiceInterfa
         };
     }
 
+    /**
+     * @throws InvalidElementTypeException|NotFoundException|SearchException
+     */
     public function getElementBySearchTerm(string $type, string $searchTerm, ?UserInterface $user = null): int
     {
         return match ($type) {
