@@ -88,8 +88,7 @@ final class UpdateController extends AbstractApiController
         string $widgetId,
         string $widgetType,
         #[MapRequestPayload] WidgetDataParameter $widgetDataParameter
-    ): Response
-    {
+    ): Response {
         $this->widgetService->updateWidgetConfig($widgetType, $widgetId, $widgetDataParameter);
 
         return new Response();

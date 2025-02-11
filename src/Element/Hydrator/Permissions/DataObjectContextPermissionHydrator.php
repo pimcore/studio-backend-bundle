@@ -53,7 +53,7 @@ final readonly class DataObjectContextPermissionHydrator implements DataObjectCo
             $data['searchAndMove'] ?? true,
             $data['unlock'] ?? true,
             $data['unlockAndPropagate'] ?? true,
-            $data['unpublish'] ?? true
+            $data['unpublish'] ?? true,
         ];
     }
 }

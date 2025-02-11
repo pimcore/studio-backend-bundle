@@ -55,7 +55,7 @@ final readonly class AssetContextPermissionHydrator implements AssetContextPermi
             $data['rename'] ?? true,
             $data['searchAndMove'] ?? true,
             $data['unlock'] ?? true,
-            $data['unlockAndPropagate'] ?? true
+            $data['unlockAndPropagate'] ?? true,
         ];
     }
 }

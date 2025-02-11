@@ -29,8 +29,7 @@ final class ValidationFailedException extends AbstractApiException
         string $message,
         ?Throwable $previous = null,
         string $errorKey = HttpResponseErrorKeys::VALIDATION_FAILED->value
-    )
-    {
+    ) {
         parent::__construct(
             HttpResponseCodes::BAD_REQUEST->value,
             $message,

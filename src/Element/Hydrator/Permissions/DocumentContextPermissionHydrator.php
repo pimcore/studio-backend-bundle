@@ -64,7 +64,7 @@ final readonly class DocumentContextPermissionHydrator implements DocumentContex
             $data['unlock'] ?? true,
             $data['unlockAndPropagate'] ?? true,
             $data['unpublish'] ?? true,
-            $data['useAsSite'] ?? true
+            $data['useAsSite'] ?? true,
         ];
     }
 }
