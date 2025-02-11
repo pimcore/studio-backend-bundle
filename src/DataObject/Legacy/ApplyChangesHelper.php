@@ -27,6 +27,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ReverseObjectRelation;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\DuplicateFullPathException;
+use Pimcore\Model\User;
 use Psr\Log\LoggerInterface;
 use function count;
 use function in_array;
@@ -66,6 +67,7 @@ final readonly class ApplyChangesHelper implements ApplyChangesHelperInterface
 
             if ($fd) {
                 if ($fd instanceof Localizedfields) {
+                    /** @var User $user */
                     $user = $this->securityService->getCurrentUser();
                     if (!$user->getAdmin()) {
                         $allowedLanguages = $this->dataObjectServiceResolver->getLanguagePermissions(

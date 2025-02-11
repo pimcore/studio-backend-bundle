@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\UserInterface;
 
@@ -46,6 +48,19 @@ final readonly class ElementSearchService implements ElementSearchServiceInterfa
             ElementTypes::TYPE_ASSET => $this->assetSearchService->getChildrenIds($parentPath, $sortDirection),
             ElementTypes::TYPE_OBJECT => $this->dataObjectSearchService->getChildrenIds($parentPath, $sortDirection),
             ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->getChildrenIds($parentPath, $sortDirection),
+            default => throw new InvalidElementTypeException($type),
+        };
+    }
+
+    /**
+     * @throws InvalidElementTypeException|NotFoundException|SearchException
+     */
+    public function getElementBySearchTerm(string $type, string $searchTerm, ?UserInterface $user = null): int
+    {
+        return match ($type) {
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->getBySearchTerm($searchTerm, $user),
+            ElementTypes::TYPE_OBJECT => $this->dataObjectSearchService->getSearchTerm($searchTerm, $user),
+            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->getSearchTerm($searchTerm, $user),
             default => throw new InvalidElementTypeException($type),
         };
     }

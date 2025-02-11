@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DocumentSearchAdapterIn
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Element\Util\Trait\SearchTermTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
@@ -29,6 +30,8 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class DocumentSearchService implements DocumentSearchServiceInterface
 {
+    use SearchTermTrait;
+
     public function __construct(
         private DocumentSearchAdapterInterface $documentSearchAdapter,
         private DocumentQueryProviderInterface $documentQueryProvider,
@@ -57,5 +60,21 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     public function fetchDocumentIds(DocumentQueryInterface $documentQuery): array
     {
         return $this->documentSearchAdapter->fetchDocumentIds($documentQuery);
+    }
+
+    /**
+     * @throws NotFoundException|SearchException
+     */
+    public function getSearchTerm(string $searchTerm, ?UserInterface $user): int
+    {
+        $query = $this->documentQueryProvider->createDocumentQuery();
+        $this->applySearchTerm($query, $searchTerm, $user);
+        $result = $this->documentSearchAdapter->fetchDocumentIds($query);
+
+        if (empty($result)) {
+            throw new NotFoundException('asset', $searchTerm);
+        }
+
+        return reset($result);
     }
 }

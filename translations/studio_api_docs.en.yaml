@@ -251,6 +251,10 @@ element_get_subtype_description: |
   Get the subtype of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>.
 element_get_subtype_success_response: Subtype of the element
 element_get_subtype_summary: Get subtype of the element by id and element type path parameter
+element_resolve_by_search_term_description: |
+  Get the element ID based on the given <strong>{searchTerm}</strong>. <br> The <strong>{searchTerm}</strong> must be a valid ID or Path of an existing element. <br> The <strong>{searchTerm}</strong> can be modified via the <strong>ElementResolveEvent</strong>.
+element_resolve_by_search_term_summary: Get ID of the element with given search term
+element_resolve_response_description: ID of the element with given search term
 email_blocklist_add_description: |
   Add an E-mail address to the blocklist. <br> The E-mail address has to be compliant with the PHP validate filter.
 email_blocklist_add_success_response: Successfully added E-mail address to blocklist
