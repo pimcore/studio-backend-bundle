@@ -14,17 +14,25 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Element\Event\PreFind;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResolve;
 
-final class ElementFindBySearchTermEvent
+final class ElementResolveEvent
 {
-    public const string EVENT_NAME = 'pre_find.element.search_term';
+    public const string EVENT_NAME = 'pre_resolve.element_resolve';
 
     private ?string $modifiedSearchTerm = null;
 
-    public function __construct(private readonly string $searchTerm)
-    {
+    public function __construct(
+        private readonly string $elementType,
+        private readonly string $searchTerm
 
+    )
+    {
+    }
+
+    public function getElementType(): string
+    {
+        return $this->elementType;
     }
 
     public function getSearchTerm(): string

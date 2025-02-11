@@ -39,7 +39,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class FindBySearchTermController extends AbstractApiController
+final class ResolveBySearchTermController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -50,16 +50,16 @@ final class FindBySearchTermController extends AbstractApiController
     }
 
     #[Route(
-        '/elements/{elementType}/find',
-        name: 'pimcore_studio_api_elements_find',
+        '/elements/{elementType}/resolve',
+        name: 'pimcore_studio_api_elements_resolve',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Get(
-        path: self::PREFIX . '/elements/{elementType}/find',
-        operationId: 'element_find_by_search_term',
-        description: 'element_find_by_search_term_description',
-        summary: 'element_find_by_search_term_summary',
+        path: self::PREFIX . '/elements/{elementType}/resolve',
+        operationId: 'element_resolve_by_search_term',
+        description: 'element_resolve_by_search_term_description',
+        summary: 'element_resolve_by_search_term_summary',
         tags: [Tags::Elements->name]
     )]
     #[ElementTypeParameter]
@@ -70,7 +70,7 @@ final class FindBySearchTermController extends AbstractApiController
         required: true
     )]
     #[SuccessResponse(
-        description: 'element_open_response_description',
+        description: 'element_resolve_response_description',
         content: new IdJson('ID of the element')
     )]
     #[DefaultResponses([
@@ -84,7 +84,7 @@ final class FindBySearchTermController extends AbstractApiController
 
         return $this->jsonResponse(
             [
-                'id' => $this->elementService->findBySearchTerm(
+                'id' => $this->elementService->resolveBySearchTerm(
                     (new MappedElementTypeParameter($elementType))->getType(),
                     $searchTerm,
                     $this->securityService->getCurrentUser()

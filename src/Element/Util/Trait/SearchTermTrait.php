@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Util\Trait;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -34,14 +35,30 @@ trait SearchTermTrait
             $query->setUser($user);
         }
 
-        $search = $query->getSearch();
-        $modifier =  match(true) {
-            !is_numeric($searchTerm)  => new PathFilter($searchTerm, includeParentItem: true),
+        $filter = match(true) {
+            !is_numeric($searchTerm) => $this->getPathFilter($searchTerm),
             default => new IdFilter((int)$searchTerm)
         };
 
-        $search->addModifier($modifier);
+        $query->getSearch()->addModifier($filter);
 
         return $query;
+    }
+
+    private function getPathFilter(string $searchTerm): PathFilter
+    {
+        // add a leading slash if it is missing to the search term
+        // include the parent since we actually want the parent item
+        $searchTerm = '/' . ltrim($searchTerm, '/');
+        return new PathFilter($searchTerm, includeParentItem: true);
+    }
+
+    private function getNotFoundException(string $type, string $searchTerm): NotFoundException
+    {
+        $parameter = 'ID';
+        if(!is_numeric($searchTerm)) {
+            $parameter = 'Path';
+        }
+        return new NotFoundException($type, $searchTerm, $parameter);
     }
 }

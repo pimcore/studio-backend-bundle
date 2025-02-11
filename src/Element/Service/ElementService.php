@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreFind\ElementFindBySearchTermEvent;
+use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResolve\ElementResolveEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementContextPermissionsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementSubtypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContex
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -166,11 +167,11 @@ final readonly class ElementService implements ElementServiceInterface
         return $subtype;
     }
 
-    public function findBySearchTerm(string $elementType, SearchTermParameter $searchTerm, UserInterface $user): int
+    public function resolveBySearchTerm(string $elementType, SearchTermParameter $searchTerm, UserInterface $user): int
     {
         $event = $this->eventDispatcher->dispatch(
-            new ElementFindBySearchTermEvent($searchTerm->getSearchTerm()),
-            ElementFindBySearchTermEvent::EVENT_NAME
+            new ElementResolveEvent($elementType, $searchTerm->getSearchTerm()),
+            ElementResolveEvent::EVENT_NAME
         );
 
         $modifiedSearchTerm = $event->getSearchTerm();

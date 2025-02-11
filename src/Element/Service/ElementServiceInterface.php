@@ -75,7 +75,7 @@ interface ElementServiceInterface
         string $elementType
     ): AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions;
 
-    public function findBySearchTerm(
+    public function resolveBySearchTerm(
         string $elementType,
         SearchTermParameter $searchTerm,
         UserInterface $user

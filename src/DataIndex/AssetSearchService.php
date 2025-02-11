@@ -121,7 +121,7 @@ final readonly class AssetSearchService implements AssetSearchServiceInterface
         $result = $this->assetSearchAdapter->fetchAssetIds($query);
 
         if (empty($result)) {
-            throw new NotFoundException('asset', $searchTerm);
+            throw $this->getNotFoundException('Asset', $searchTerm);
         }
 
         return reset($result);
