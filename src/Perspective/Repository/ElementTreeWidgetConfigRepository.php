@@ -30,6 +30,7 @@ use Pimcore\Config\LocationAwareConfigRepository;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -135,6 +136,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
         string $configId
     ): void {
         $repository = $this->getRepository();
+
         try {
             $repository->deleteData($configId, $repository->getWriteTarget());
         } catch (Exception $exception) {
@@ -170,12 +172,12 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
         ?string $widgetId = null,
         ?string $dataSource = null,
         string $message = 'Could not export the widget configuration: %s'
-    ): bool
-    {
+    ): bool {
         try {
             return $this->getRepository()->isWriteable($widgetId, $dataSource);
         } catch (Exception $exception) {
             $message = sprintf($message, $exception->getMessage());
+
             throw new NotWriteableException('widget', $message, $exception);
         }
     }

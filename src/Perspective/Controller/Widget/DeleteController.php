@@ -39,7 +39,6 @@ final class DeleteController extends AbstractApiController
 {
     private const string ROUTE = '/perspectives/widgets/{widgetType}/configuration/{widgetId}';
 
-
     public function __construct(
         SerializerInterface $serializer,
         private readonly WidgetServiceInterface $widgetService,
@@ -70,7 +69,8 @@ final class DeleteController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function deleteWidgetConfig(string $widgetType, string $widgetId): Response {
+    public function deleteWidgetConfig(string $widgetType, string $widgetId): Response
+    {
         $this->widgetService->deleteWidgetConfig($widgetType, $widgetId);
 
         return new Response();
