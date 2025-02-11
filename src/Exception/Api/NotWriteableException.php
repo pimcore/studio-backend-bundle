@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Throwable;
 use function sprintf;
 
 /**
@@ -24,14 +25,15 @@ use function sprintf;
  */
 final class NotWriteableException extends AbstractApiException
 {
-    public function __construct(string $type)
+    public function __construct(string $type, ?Throwable $previous = null)
     {
         parent::__construct(
             HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
             sprintf(
                 'Cannot create: %s',
                 $type
-            )
+            ),
+            previous: $previous
         );
     }
 }

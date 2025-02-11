@@ -14,19 +14,14 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader;
+namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions;
 
-use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\UserInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
 
-interface PatchAdapterInterface
+/**
+ * @internal
+ */
+interface DocumentContextPermissionHydratorInterface
 {
-    public function patch(ElementInterface $element, array $data, UserInterface $user): void;
-
-    public function getIndexKey(): string;
-
-    /**
-     * @return array<string>
-     */
-    public function supportedElementTypes(): array;
+    public function hydrate(array $data): DocumentContextPermissions;
 }

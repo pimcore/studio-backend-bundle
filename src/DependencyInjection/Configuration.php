@@ -16,14 +16,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
+use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetPositions;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use function is_array;
 use function sprintf;
 
 /**
@@ -33,7 +38,9 @@ use function sprintf;
  */
 class Configuration implements ConfigurationInterface
 {
-    public const ROOT_NODE = 'pimcore_studio_backend';
+    public const string ROOT_NODE = 'pimcore_studio_backend';
+
+    public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
     /**
      * {@inheritdoc}
@@ -60,6 +67,13 @@ class Configuration implements ConfigurationInterface
         $this->addUserNode($rootNode);
         $this->addServerNode($rootNode);
         $this->addWidgetTypesNode($rootNode);
+        $this->addElementTreeWidgetConfigurationNode($rootNode);
+
+        ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
+            $rootNode,
+            [self::TREE_WIDGETS_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE],
+            ['read_target']
+        );
 
         return $treeBuilder;
     }
@@ -334,6 +348,80 @@ class Configuration implements ConfigurationInterface
         $node->children()
             ->arrayNode('widget_types')
                 ->prototype('scalar')->end()
+            ->end()
+        ->end();
+    }
+
+    private function addElementTreeWidgetConfigurationNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode(self::TREE_WIDGETS_NODE)
+                ->defaultValue([])
+                ->useAttributeAsKey('id')
+                ->arrayPrototype()
+                    ->children()
+                        ->scalarNode('name')
+                            ->isRequired()
+                        ->end()
+                        ->scalarNode('elementType')
+                            ->defaultValue(ElementTypes::TYPE_OBJECT)
+                        ->end()
+                        ->arrayNode('icon')
+                            ->isRequired()
+                            ->beforeNormalization()
+                                ->ifNull()
+                                ->then(fn () => [])
+                            ->end()
+                            ->validate()
+                                ->ifTrue(fn ($icon) => is_array($icon) &&
+                                    (isset($icon['type']) xor isset($icon['value']))
+                                )
+                                ->thenInvalid('Both "type" and "value" must be defined together in "icon".')
+                            ->end()
+                            ->children()
+                                ->enumNode('type')
+                                    ->values(ElementIconTypes::values())
+                                ->end()
+                                ->scalarNode('value')
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->scalarNode('rootFolder')
+                            ->defaultValue('/')
+                            ->isRequired()
+                        ->end()
+                        ->booleanNode('showRoot')
+                            ->defaultFalse()
+                        ->end()
+                        ->arrayNode('classes')
+                            ->defaultValue([])
+                            ->beforeNormalization()
+                                ->ifString()->then(function ($v) { return [$v]; })
+                            ->end()
+                            ->scalarPrototype()->end()
+                        ->end()
+                        ->scalarNode('pql')
+                            ->defaultNull()
+                        ->end()
+                        ->scalarNode('position')
+                            ->defaultValue(WidgetPositions::LEFT->value)
+                        ->end()
+                        ->scalarNode('sort')
+                            ->defaultValue(3)
+                        ->end()
+                        ->booleanNode('expanded')
+                            ->defaultTrue()
+                        ->end()
+                        ->arrayNode('contextPermissions')
+                            ->scalarPrototype()
+                                ->validate()
+                                    ->ifNotInArray([true, false])
+                                    ->thenInvalid('Each permission value must be a boolean.')
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
             ->end()
         ->end();
     }

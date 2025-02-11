@@ -30,7 +30,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterfac
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -113,13 +115,26 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(WidgetServiceInterface::class);
         $definition->setArgument('$widgetTypes', $config['widget_types']);
+
+        $definition = $container->getDefinition(WidgetValidationServiceInterface::class);
+        $definition->setArgument('$widgetTypes', $config['widget_types']);
+
+        $definition = $container->getDefinition(ElementTreeWidgetConfigRepository::class);
+
+        $definition->setArguments([
+            '$widgetConfigurations' => $config[Configuration::TREE_WIDGETS_NODE],
+            '$storageConfig' => $config['config_location'][Configuration::TREE_WIDGETS_NODE],
+        ]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function prepend(ContainerBuilder $container): void
     {
         $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
             $container,
-            'pimcore_studio_backend'
+            Configuration::ROOT_NODE
         );
 
         $urlPrefix = rtrim($containerConfig['url_prefix'], '/');
@@ -144,6 +159,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 $containerConfig['mercure_settings'][$key]
             );
         }
+
+        $this->prependTreeWidgetsConfig($container, $containerConfig);
     }
 
     /**
@@ -180,6 +197,25 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             throw new InvalidUrlPrefixException(
                 sprintf('The URL prefix "%s" must only contain valid URL characters.', $urlPrefix)
             );
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function prependTreeWidgetsConfig(ContainerBuilder $container, array $containerConfig): void
+    {
+        $configLocation = $containerConfig['config_location'][Configuration::TREE_WIDGETS_NODE];
+        $configDir = $configLocation['write_target']['options']['directory'];
+
+        $configLoader = new YamlFileLoader(
+            $container,
+            new FileLocator($configDir)
+        );
+
+        $configs = ConfigurationHelper::getSymfonyConfigFiles($configDir);
+        foreach ($configs as $config) {
+            $configLoader->load($config);
         }
     }
 }
