@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\MustImplementInterfaceException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\WidgetConfigEvent;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\WidgetTypeEvent;
@@ -82,7 +83,7 @@ final readonly class WidgetService implements WidgetServiceInterface
     }
 
     /**
-     * @throws InvalidArgumentException|NotFoundException
+     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfig
     {
@@ -111,6 +112,15 @@ final readonly class WidgetService implements WidgetServiceInterface
         }
 
         return $hydrated;
+    }
+
+    /**
+     * @throws InvalidArgumentException|NotWriteableException
+     */
+    public function deleteWidgetConfig(string $widgetType, string $widgetId): void
+    {
+        $this->widgetValidationService->validateWidgetType($widgetType);
+        $this->loadRepositoryByType($widgetType)->deleteConfiguration($widgetId);
     }
 
     /**

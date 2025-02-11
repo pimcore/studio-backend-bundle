@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\MappedParameter\WidgetDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
@@ -34,12 +35,12 @@ interface WidgetServiceInterface
     public function listWidgetTypes(): array;
 
     /**
-     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function addWidgetConfig(string $widgetType, WidgetDataParameter $widgetData): string;
 
     /**
-     * @throws InvalidArgumentException|NotFoundException
+     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfig;
 
@@ -49,4 +50,9 @@ interface WidgetServiceInterface
      * @return WidgetConfig[]
      */
     public function listWidgetConfigurations(): array;
+
+    /**
+     * @throws InvalidArgumentException|NotWriteableException
+     */
+    public function deleteWidgetConfig(string $widgetType, string $widgetId): void;
 }

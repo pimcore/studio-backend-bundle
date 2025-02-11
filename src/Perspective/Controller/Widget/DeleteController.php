@@ -16,23 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Controller\Widget;
 
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Attribute\Request\WidgetRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\MappedParameter\WidgetDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -40,9 +35,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class AddController extends AbstractApiController
+final class DeleteController extends AbstractApiController
 {
-    private const string ROUTE = '/perspectives/widgets/{widgetType}/configuration}';
+    private const string ROUTE = '/perspectives/widgets/{widgetType}/configuration/{widgetId}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -52,25 +47,21 @@ final class AddController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException
+     * @throws InvalidArgumentException|NotWriteableException
      */
-    #[Route(
-        self::ROUTE,
-        name: 'pimcore_studio_api_create_perspectives_widgets_config',
-        methods: ['POST']
-    )]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_delete_perspectives_widgets_config', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::WIDGET_EDIT->value)]
-    #[Post(
+    #[Delete(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'perspective_widget_create',
-        description: 'perspective_widget_create_description',
-        summary: 'perspective_widget_create_summary',
-        tags: [Tags::Perspectives->name]
+        operationId: 'perspective_widget_delete',
+        description: 'perspective_widget_delete_description',
+        summary: 'perspective_widget_delete_summary',
+        tags: [Tags::Perspectives->value]
     )]
-    #[StringParameter('widgetType', 'element_tree', 'Create widget by matching widget type')]
-    #[WidgetRequestBody]
+    #[StringParameter('widgetId', 'd061699e_da42_4075_b504_c2c93c687819', 'Filter widgets by matching widget Id')]
+    #[StringParameter('widgetType', 'element_tree', 'Filter widgets by matching widget type')]
     #[SuccessResponse(
-        description: 'perspective_widget_create_success_response',
+        description: 'perspective_widget_delete_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
@@ -78,11 +69,10 @@ final class AddController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function addWidget(
-        string $widgetType,
-        #[MapRequestPayload] WidgetDataParameter $widgetDataParameter
-    ): JsonResponse {
+    public function deleteWidgetConfig(string $widgetType, string $widgetId): Response
+    {
+        $this->widgetService->deleteWidgetConfig($widgetType, $widgetId);
 
-        return $this->jsonResponse(['id' => $this->widgetService->addWidgetConfig($widgetType, $widgetDataParameter)]);
+        return new Response();
     }
 }
