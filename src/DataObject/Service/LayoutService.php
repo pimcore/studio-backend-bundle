@@ -19,11 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\CustomLayoutRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Class\Service\CustomLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\LayoutEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\ObjectLayoutHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -31,13 +30,11 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface a
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
-use Pimcore\Model\DataObject\ClassDefinition\CustomLayout;
 use Pimcore\Model\DataObject\ClassDefinition\Layout as CoreLayout;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function count;
 use function get_class;
 use function in_array;
 use function sprintf;
@@ -51,7 +48,6 @@ final readonly class LayoutService implements LayoutServiceInterface
 
     public function __construct(
         private CustomLayoutRepositoryInterface $customLayoutRepository,
-        private CustomLayoutServiceInterface $customLayoutService,
         private DataObjectServiceInterface $dataObjectService,
         private DataObjectServiceResolverInterface $dataObjectServiceResolver,
         private EventDispatcherInterface $eventDispatcher,
@@ -62,7 +58,7 @@ final readonly class LayoutService implements LayoutServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|InvalidElementTypeException|NotFoundException|UserNotFoundException
+     * @throws ForbiddenException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
     public function getDataObjectLayout(int $id, ?string $layoutId = null): Layout
     {
@@ -98,7 +94,7 @@ final readonly class LayoutService implements LayoutServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     private function getLayoutDefinitions(
         UserInterface $user,
@@ -106,74 +102,33 @@ final readonly class LayoutService implements LayoutServiceInterface
         ClassDefinition $class,
         ?string $layoutId = null
     ): CoreLayout {
-        if ($user->isAdmin()) {
-            return $this->getAdminLayoutDefinitions($dataObject, $class, $user, $layoutId);
-        }
-
-        $allowedLayouts = $this->securityLayoutService->getUserAllowedLayoutsByClass($dataObject, $user);
-        if (empty($allowedLayouts)) {
-            throw new AccessDeniedException('No layouts found for this user');
-        }
-
-        $defaultLayout = $this->getCustomLayout($dataObject, $user, $layoutId, $allowedLayouts);
-        if ($defaultLayout->getId() === '0') {
+        if ($layoutId === null) {
             return $class->getLayoutDefinitions();
         }
 
-        return $defaultLayout->getLayoutDefinitions();
-    }
-
-    private function getAdminLayoutDefinitions(
-        Concrete $dataObject,
-        ClassDefinition $class,
-        UserInterface $user,
-        ?string $layoutId = null
-    ): CoreLayout {
-        $defaultLayout = $this->getCustomLayout($dataObject, $user, $layoutId);
-
-        return match ($defaultLayout->getId()) {
-            '0' => $class->getLayoutDefinitions(),
-            '-1' => $this->dataObjectServiceResolver->getSuperLayoutDefinition($dataObject),
-            default => $defaultLayout->getLayoutDefinitions(),
-        };
+        return $this->getLayoutById($dataObject, $class, $layoutId, $user);
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException|NotFoundException
      */
-    private function getCustomLayout(
+    private function getLayoutById(
         Concrete $dataObject,
-        UserInterface $user,
-        ?string $layoutId = null,
-        array $allowedLayouts = [],
-    ): CustomLayout {
-        if ($layoutId !== null) {
-            if (!$user->isAdmin() && !in_array($layoutId, $allowedLayouts, true)) {
-                throw new AccessDeniedException('Layout not allowed for this user');
-            }
-
-            return match ($layoutId) {
-                '0' => $this->customLayoutService->getMainLayout(),
-                '-1' => $this->customLayoutService->getMainAdminLayout(),
-                default => $this->customLayoutRepository->getCustomLayout($layoutId),
-            };
-        }
-
-        $userLayouts = $this->customLayoutService->getUserCustomLayouts($dataObject, $user, $allowedLayouts);
-
-        return $this->getDefaultLayout($userLayouts);
-    }
-
-    private function getDefaultLayout(array $allowedLayouts): CustomLayout
-    {
-        if (count($allowedLayouts) > 1) {
-            foreach ($allowedLayouts as $layout) {
-                if ($layout->getDefault() === true) {
-                    return $layout;
-                }
+        ClassDefinition $class,
+        string $layoutId,
+        UserInterface $user
+    ): CoreLayout {
+        if (!$user->isAdmin()) {
+            $allowedLayouts = $this->securityLayoutService->getUserAllowedLayoutsByClass($dataObject, $user);
+            if ($layoutId === '-1' || !in_array($layoutId, $allowedLayouts, true)) {
+                throw new ForbiddenException('Layout not allowed for this user');
             }
         }
 
-        return reset($allowedLayouts);
+        return match ($layoutId) {
+            '0' => $class->getLayoutDefinitions(),
+            '-1' => $this->dataObjectServiceResolver->getSuperLayoutDefinition($dataObject),
+            default => $this->customLayoutRepository->getCustomLayout($layoutId)->getLayoutDefinitions(),
+        };
     }
 }
