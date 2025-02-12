@@ -72,7 +72,9 @@ final readonly class LayoutService implements LayoutServiceInterface
             $id
         );
 
-        $dataObject = $this->getLatestVersionForUser($dataObject, $user);
+        $version = $this->getLatestVersionForUser($dataObject, $user);
+        $dataObject = $this->getVersionData($dataObject, $version);
+
         if (!$dataObject instanceof Concrete) {
             throw new InvalidElementTypeException(
                 sprintf('DataObject class (%s) is not a concrete object', get_class($dataObject))

@@ -330,14 +330,17 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     private function getObjectDetailData(DataObjectFolder|DataObject $dataObject): void
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $dataObject->getId());
-        $element = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
+        $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
+        $element = $this->getVersionData($element, $version);
+
         if (!$element instanceof DataObjectModel) {
             return;
         }
 
         $this->dataService->setObjectDetailData(
             $dataObject,
-            $element
+            $element,
+            $version
         );
     }
 
