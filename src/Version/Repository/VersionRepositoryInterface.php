@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
@@ -33,7 +33,7 @@ use Pimcore\Model\Version\Listing as VersionListing;
 interface VersionRepositoryInterface
 {
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      */
     public function listVersions(
         ElementInterface $element,
@@ -49,7 +49,7 @@ interface VersionRepositoryInterface
     ): ?Version;
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      */
     public function getElementFromVersion(
         Version $version,

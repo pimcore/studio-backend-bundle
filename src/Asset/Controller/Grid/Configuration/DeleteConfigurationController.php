@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration
 use OpenApi\Attributes\Delete;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
@@ -48,7 +48,7 @@ final class DeleteConfigurationController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|InvalidArgumentException|AccessDeniedException
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException
      */
     #[Route(
         '/assets/grid/configuration/{folderId}/{configurationId}',
@@ -69,6 +69,7 @@ final class DeleteConfigurationController extends AbstractApiController
         content: new JsonContent(ref: DetailedConfiguration::class)
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

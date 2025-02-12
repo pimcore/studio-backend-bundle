@@ -19,8 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 use OpenApi\Attributes\Patch;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\PatchDataObjectRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -55,7 +55,7 @@ final class PatchController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|ElementSavingFailedException
+     * @throws ForbiddenException|ElementSavingFailedException
      * @throws NotFoundException|UserNotFoundException|InvalidArgumentException
      */
     #[Route('/data-objects', name: 'pimcore_studio_api_patch_data_object', methods: ['PATCH'])]
@@ -77,6 +77,7 @@ final class PatchController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,

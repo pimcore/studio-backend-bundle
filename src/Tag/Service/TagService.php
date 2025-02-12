@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidParentIdException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -114,7 +114,7 @@ final readonly class TagService implements TagServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|UserNotFoundException|NotFoundException
+     * @throws ForbiddenException|UserNotFoundException|NotFoundException
      */
     public function batchAssignTagsToElements(BatchCollectionParameters $collection, UserInterface $user): void
     {
@@ -131,7 +131,7 @@ final readonly class TagService implements TagServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|UserNotFoundException|NotFoundException
+     * @throws ForbiddenException|UserNotFoundException|NotFoundException
      */
     public function batchReplaceTagsToElements(BatchCollectionParameters $collection, UserInterface $user): void
     {
@@ -226,7 +226,7 @@ final readonly class TagService implements TagServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|UserNotFoundException|NotFoundException
+     * @throws ForbiddenException|UserNotFoundException|NotFoundException
      */
     private function checkElementPermission(
         string $type,

@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;
@@ -108,7 +107,7 @@ final readonly class ZipService implements ZipServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException
      */
     public function uploadZipAssets(
         UserInterface $user,

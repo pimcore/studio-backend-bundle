@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 use Doctrine\DBAL\Exception;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -54,19 +54,19 @@ final class UserPermissionVoter extends Voter
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         if (!$this->securityService->getCurrentUser()->isAllowed($attribute)) {
-            throw new AccessDeniedException(sprintf('User does not have permission: %s', $attribute));
+            throw new ForbiddenException(sprintf('User does not have permission: %s', $attribute));
         }
 
         return true;
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      */
     private function getUserPermissions(): void
     {
@@ -89,7 +89,7 @@ final class UserPermissionVoter extends Voter
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      */
     private function getUserPermissionsFromDataBase(): array
     {
@@ -98,7 +98,7 @@ final class UserPermissionVoter extends Voter
                 'SELECT `key` FROM users_permission_definitions'
             );
         } catch (Exception) {
-            throw new AccessDeniedException('Cannot resolve user permissions');
+            throw new ForbiddenException('Cannot resolve user permissions');
         }
 
         return $userPermissions;

@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
@@ -32,7 +32,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 interface VersionBinaryServiceInterface
 {
     /**
-     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
+     * @throws ForbiddenException|NotFoundException|InvalidElementTypeException
      */
     public function downloadAsset(
         int $id,
@@ -40,7 +40,7 @@ interface VersionBinaryServiceInterface
     ): StreamedResponse;
 
     /**
-     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
+     * @throws ForbiddenException|NotFoundException|InvalidElementTypeException
      */
     public function streamThumbnailImage(
         int $id,
@@ -48,10 +48,10 @@ interface VersionBinaryServiceInterface
     ): StreamedResponse;
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementProcessingNotCompletedException
      * @throws ElementStreamResourceNotFoundException
      * @throws EnvironmentException
+     * @throws ForbiddenException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
      * @throws UnprocessableContentException

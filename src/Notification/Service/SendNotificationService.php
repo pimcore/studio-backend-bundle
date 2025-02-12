@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Service;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -48,7 +48,7 @@ final readonly class SendNotificationService implements SendNotificationServiceI
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws InvalidArgumentException
      * @throws UserNotFoundException
      * @throws NotFoundException
@@ -102,7 +102,7 @@ final readonly class SendNotificationService implements SendNotificationServiceI
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      */
     private function getAttachment(SendNotificationParameters $parameters, ?UserInterface $sender): ?ElementInterface

@@ -19,8 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ReplaceServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -49,8 +49,8 @@ final class ReplaceController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementSavingFailedException
+     * @throws ForbiddenException
      * @throws InvalidElementTypeException
      * @throws UserNotFoundException
      * @throws NotFoundException
@@ -74,6 +74,8 @@ final class ReplaceController extends AbstractApiController
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'sourceId')]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'targetId')]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

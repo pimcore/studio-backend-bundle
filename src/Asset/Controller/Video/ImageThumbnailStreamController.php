@@ -26,8 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\W
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\BinaryServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
@@ -63,8 +63,8 @@ final class ImageThumbnailStreamController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementStreamResourceNotFoundException
+     * @throws ForbiddenException
      * @throws InvalidElementTypeException
      * @throws InvalidThumbnailConfigurationException
      * @throws InvalidThumbnailException
@@ -95,6 +95,8 @@ final class ImageThumbnailStreamController extends AbstractApiController
         headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

@@ -18,9 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Attribute\Request\SendNotificationRequestBody;
@@ -52,11 +51,10 @@ final class SendController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
-     * @throws EnvironmentException
-     * @throws InvalidElementTypeException
-     * @throws NotFoundException
+     * @throws ForbiddenException
+     * @throws InvalidArgumentException
      * @throws UserNotFoundException
+     * @throws NotFoundException
      */
     #[Route('/notifications/send', name: 'pimcore_studio_api_notification_send', methods: ['POST'])]
     #[IsGranted(UserPermissions::NOTIFICATIONS_SEND->value)]
@@ -72,6 +70,9 @@ final class SendController extends AbstractApiController
         description: 'notification_send_success_response',
     )]
     #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function sendNotification(

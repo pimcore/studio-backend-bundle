@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
@@ -44,7 +44,7 @@ final readonly class NotificationService implements NotificationServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws UserNotFoundException
      */
     public function getNotificationById(int $id): Notification
@@ -65,7 +65,7 @@ final readonly class NotificationService implements NotificationServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws UserNotFoundException
      */
     public function markNotificationAsRead(int $id): void
@@ -103,7 +103,7 @@ final readonly class NotificationService implements NotificationServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
@@ -130,13 +130,13 @@ final readonly class NotificationService implements NotificationServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws UserNotFoundException
      */
     private function validateNotificationAccess(NotificationModel $notification): void
     {
         if ($this->securityService->getCurrentUser() !== $notification->getRecipient()) {
-            throw new AccessDeniedException('User has no permissions to access this notification');
+            throw new ForbiddenException('User has no permissions to access this notification');
         }
     }
 

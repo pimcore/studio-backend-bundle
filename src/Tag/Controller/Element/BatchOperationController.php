@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tag\Controller\Element;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -49,7 +50,7 @@ final class BatchOperationController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws ElementSavingFailedException|ForbiddenException|NotFoundException
      */
     #[Route(
         '/tags/batch/{operation}/{elementType}/{id}',
@@ -72,8 +73,10 @@ final class BatchOperationController extends AbstractApiController
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function assignTag(
         string $elementType,
