@@ -43,7 +43,7 @@ final class CollectionConfigurationController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
-    private const string ROUTE = '/perspectives/widgets/configurations/';
+    private const string ROUTE = '/perspectives/widgets/configurations';
 
     public function __construct(
         SerializerInterface $serializer,
