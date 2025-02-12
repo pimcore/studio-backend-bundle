@@ -52,13 +52,13 @@ final class SaveConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/assets/grid/configuration/save/',
+        '/assets/grid/configuration/save',
         name: 'pimcore_studio_api_save_asset_grid_configuration',
         methods: ['POST'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/assets/grid/configuration/save/',
+        path: self::PREFIX . '/assets/grid/configuration/save',
         operationId: 'asset_save_grid_configuration',
         description: 'asset_save_grid_configuration_description',
         summary: 'asset_save_grid_configuration_description',
