@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\UpdateConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\ConfigurationRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
@@ -47,7 +49,7 @@ final class UpdateConfigurationController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException
+     * @throws NotFoundException|InvalidArgumentException|ForbiddenException
      */
     #[Route(
         '/assets/grid/configuration/update/{configurationId}',

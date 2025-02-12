@@ -27,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParamet
 interface UpdateConfigurationServiceInterface
 {
     /**
-     * @throws NotFoundException
+     * @throws NotFoundException|InvalidArgumentException|ForbiddenException
      */
     public function updateAssetGridConfigurationById(ConfigurationParameter $configurationParams, int $id): void;
 
