@@ -25,5 +25,9 @@ interface ConfigurationFavoriteRepositoryInterface
 {
     public function getByUserAndAssetFolder(int $user, int $assetFolderId): ?GridConfigurationFavorite;
 
-    public function getByUserAndDataObject(int $user, int $dataObjectFolderId, string $classId): ?GridConfigurationFavorite;
+    public function getByUserAndDataObject(
+        int $user,
+        int $dataObjectFolderId,
+        string $classId
+    ): ?GridConfigurationFavorite;
 }

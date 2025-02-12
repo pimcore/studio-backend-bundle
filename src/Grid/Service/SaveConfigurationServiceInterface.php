@@ -30,5 +30,8 @@ interface SaveConfigurationServiceInterface
      */
     public function saveAssetGridConfiguration(ConfigurationParameter $configuration): Configuration;
 
-    public function saveDataObjectGridConfiguration(ConfigurationParameter $configuration, string $classId): Configuration;
+    public function saveDataObjectGridConfiguration(
+        ConfigurationParameter $configuration,
+        string $classId
+    ): Configuration;
 }

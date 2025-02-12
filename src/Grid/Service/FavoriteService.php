@@ -65,7 +65,11 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         return $gridConfiguration;
     }
 
-    public function setDataObjectConfigurationAsFavoriteForCurrentUser(GridConfiguration $gridConfiguration, string $classId, int $folderId): GridConfiguration
+    public function setDataObjectConfigurationAsFavoriteForCurrentUser(
+        GridConfiguration $gridConfiguration,
+        string $classId,
+        int $folderId
+    ): GridConfiguration
     {
         $currentUser = $this->securityService->getCurrentUser();
         if (!$this->userRoleShareService->isConfigurationSharedWithUser($gridConfiguration, $currentUser)) {

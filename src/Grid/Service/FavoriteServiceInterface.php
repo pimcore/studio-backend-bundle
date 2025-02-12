@@ -30,7 +30,7 @@ interface FavoriteServiceInterface
     public function setDataObjectConfigurationAsFavoriteForCurrentUser(
         GridConfiguration $gridConfiguration,
         string $classId,
-        int $folderid
+        int $folderId
     ): GridConfiguration;
 
     public function removeAssetConfigurationAsFavoriteForCurrentUser(

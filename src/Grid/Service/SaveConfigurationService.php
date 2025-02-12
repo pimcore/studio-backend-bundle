@@ -77,7 +77,10 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
      * @throws Exception
      * @throws NotFoundException
      */
-    public function saveDataObjectGridConfiguration(ConfigurationParameter $configuration, string $classId): Configuration
+    public function saveDataObjectGridConfiguration(
+        ConfigurationParameter $configuration,
+        string $classId
+    ): Configuration
     {
         if (!$this->classDefinitionResolver->getById($classId)) {
             throw new NotFoundException('ClassID', $classId);
