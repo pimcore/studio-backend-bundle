@@ -36,7 +36,7 @@ interface DataServiceInterface
     public function setObjectDetailData(
         DataObjectFolder|DataObject|DataObjectVersion $dataObject,
         DataObjectModel $element,
-        DataObjectVersionModal $version = null,
+        ?DataObjectVersionModal $version = null,
     ): void;
 
     public function getNormalizedValue(
