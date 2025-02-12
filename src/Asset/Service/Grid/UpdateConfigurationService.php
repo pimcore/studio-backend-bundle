@@ -39,11 +39,19 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
     }
 
     /**
-     * @throws NotFoundException
+     * @throws NotFoundException|InvalidArgumentException|ForbiddenException
      */
     public function updateAssetGridConfigurationById(ConfigurationParameter $configurationParams, int $id): void
     {
         $configuration = $this->gridConfigurationRepository->getById($id);
+
+        if (!$configuration->getAssetFolderId()) {
+            throw new NotFoundException('Configuration', $id);
+        }
+
+        if ($configuration->getAssetFolderId() !== $configurationParams->getFolderId()) {
+            throw new InvalidArgumentException('Configuration does not belong to the given folder.');
+        }
 
         if ($configuration->getOwner() !== $this->securityService->getCurrentUser()->getId()) {
             throw new ForbiddenException('You are not allowed to update this configuration.');

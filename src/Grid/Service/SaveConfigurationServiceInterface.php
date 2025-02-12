@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
@@ -28,5 +28,7 @@ interface SaveConfigurationServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function saveAssetGridConfiguration(ConfigurationParameter $configuration, int $folderId): Configuration;
+    public function saveAssetGridConfiguration(ConfigurationParameter $configuration): Configuration;
+
+    public function saveDataObjectGridConfiguration(ConfigurationParameter $configuration, string $classId): Configuration;
 }

@@ -38,8 +38,9 @@ final class ConfigurationRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['pageSize', 'name', 'description', 'columns'],
+                required: ['folderId', 'pageSize', 'name', 'description', 'columns'],
                 properties: [
+                    new SingleInteger('folderId'),
                     new SingleInteger('pageSize'),
                     new SingleString('name'),
                     new SingleString('description'),

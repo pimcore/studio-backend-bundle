@@ -30,6 +30,8 @@ final readonly class ConfigurationParameter implements ConfigurationParameterInt
 
     public function __construct(
         #[NotBlank]
+        private int $folderId,
+        #[NotBlank]
         private int $pageSize,
         #[NotBlank]
         private string $name,
@@ -97,5 +99,10 @@ final readonly class ConfigurationParameter implements ConfigurationParameterInt
     public function getFilter(): ?Filter
     {
         return $this->filter;
+    }
+
+    public function getFolderId(): int
+    {
+        return $this->folderId;
     }
 }
