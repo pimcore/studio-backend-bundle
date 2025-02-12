@@ -58,7 +58,6 @@ final class ReplaceController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws EnvironmentException
      * @throws ForbiddenException

@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -30,7 +29,6 @@ use Pimcore\Model\UserInterface;
 interface ElementDeleteServiceInterface
 {
     /**
-     * @throws AccessDeniedException
      * @throws ElementDeletionFailedException
      * @throws EnvironmentException
      * @throws ForbiddenException

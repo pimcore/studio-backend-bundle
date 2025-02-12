@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Search\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -55,7 +55,7 @@ final class PreviewController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|InvalidElementTypeException|NotFoundException|UserNotFoundException
+     * @throws ForbiddenException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
     #[Route(path: self::ROUTE, name: 'pimcore_studio_api_search_preview', methods: ['GET'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
@@ -74,6 +74,7 @@ final class PreviewController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]

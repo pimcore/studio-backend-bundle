@@ -21,7 +21,6 @@ use OpenApi\Attributes\Post;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -58,7 +57,6 @@ final class AddController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws EnvironmentException
      * @throws ForbiddenException
@@ -92,6 +90,8 @@ final class AddController extends AbstractApiController
         ['file']
     )]
     #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

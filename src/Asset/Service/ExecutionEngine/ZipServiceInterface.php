@@ -61,7 +61,7 @@ interface ZipServiceInterface
     ): array;
 
     /**
-     * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException
      */
     public function uploadZipAssets(
         UserInterface $user,

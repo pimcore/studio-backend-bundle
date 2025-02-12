@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementPublishingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -30,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -49,10 +49,10 @@ final class PublishController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
-     * @throws NotFoundException
+     * @throws ForbiddenException
      * @throws ElementPublishingFailedException
      * @throws InvalidElementTypeException
+     * @throws NotFoundException
      * @throws UserNotFoundException
      */
     #[Route('/versions/{id}', name: 'pimcore_studio_api_publish_version', methods: ['POST'])]
@@ -70,6 +70,8 @@ final class PublishController extends AbstractApiController
         content: new IdJson('ID of published version')
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

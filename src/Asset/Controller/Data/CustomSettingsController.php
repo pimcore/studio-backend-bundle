@@ -20,7 +20,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Response\Content\CustomSettingsJson;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Data\CustomSettingsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -49,7 +49,7 @@ final class CustomSettingsController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      */
     #[Route('/assets/{id}/custom-settings', name: 'pimcore_studio_api_get_asset_custom_settings', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
@@ -66,6 +66,7 @@ final class CustomSettingsController extends AbstractApiController
         content: new CustomSettingsJson()
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

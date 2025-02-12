@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Property\Controller\Element;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
@@ -32,7 +33,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -49,7 +49,7 @@ final class CollectionController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException|AccessDeniedException
+     * @throws NotFoundException|ForbiddenException
      */
     #[Route('/properties/{elementType}/{id}', name: 'pimcore_studio_api_get_element_properties', methods: ['GET'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
@@ -67,8 +67,9 @@ final class CollectionController extends AbstractApiController
         content: new ItemsJson(ElementProperty::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getProperties(string $elementType, int $id): JsonResponse
     {

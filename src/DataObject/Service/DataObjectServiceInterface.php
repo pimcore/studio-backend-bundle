@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
@@ -40,9 +41,9 @@ use Pimcore\Model\UserInterface;
 interface DataObjectServiceInterface
 {
     /**
-     * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws ElementSavingFailedException
+     * @throws ForbiddenException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
      * @throws UserNotFoundException
@@ -53,7 +54,7 @@ interface DataObjectServiceInterface
     ): int;
 
     /**
-     * @throws AccessDeniedException|InvalidFilterServiceTypeException|InvalidQueryTypeException
+     * @throws ForbiddenException|InvalidFilterServiceTypeException|InvalidQueryTypeException
      * @throws InvalidFilterTypeException|NotFoundException|SearchException|UserNotFoundException
      */
     public function getDataObjects(DataObjectParameters $parameters): Collection;
@@ -79,7 +80,7 @@ interface DataObjectServiceInterface
     public function getDataObjectFolderForUser(int $id, UserInterface $user): DataObjectFolder;
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getDataObjectElement(
         UserInterface $user,
@@ -87,7 +88,7 @@ interface DataObjectServiceInterface
     ): DataObjectModel;
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getDataObjectElementByPath(
         UserInterface $user,

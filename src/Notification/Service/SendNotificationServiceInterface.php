@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -29,7 +29,7 @@ use Pimcore\Model\UserInterface;
 interface SendNotificationServiceInterface
 {
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws InvalidArgumentException
      * @throws UserNotFoundException
      * @throws NotFoundException

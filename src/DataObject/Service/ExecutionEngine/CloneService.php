@@ -58,7 +58,6 @@ final readonly class CloneService implements CloneServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementSavingFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -128,7 +127,7 @@ final readonly class CloneService implements CloneServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getNewCloneTarget(
         UserInterface $user,

@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\Helper\MailResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Mail;
@@ -122,7 +123,7 @@ final readonly class MailService implements MailServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      */
     public function addMailAttachment(?int $attachmentId, Mail $mail, UserInterface $user): void

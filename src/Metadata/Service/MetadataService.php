@@ -17,7 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\CustomMetadataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreResponse\PredefinedMetadataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydratorInterface;
@@ -50,7 +51,7 @@ final readonly class MetadataService implements MetadataServiceInterface
     /**
      * @return array<int, CustomMetadata>
      *
-     * @throws AccessDeniedException
+     * @throws ForbiddenException|NotFoundException
      *
      */
     public function getCustomMetadata(int $id): array

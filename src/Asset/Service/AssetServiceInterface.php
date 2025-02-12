@@ -89,7 +89,7 @@ interface AssetServiceInterface
     public function assetFolderExistsForUser(int $id, UserInterface $user): bool;
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getAssetElement(
         UserInterface $user,
@@ -97,7 +97,7 @@ interface AssetServiceInterface
     ): AssetModel;
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getAssetElementByPath(
         UserInterface $user,

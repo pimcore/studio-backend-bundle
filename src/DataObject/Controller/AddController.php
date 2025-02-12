@@ -21,9 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\AddDataObjectRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -54,9 +54,9 @@ final class AddController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws ElementSavingFailedException
+     * @throws ForbiddenException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
      * @throws UserNotFoundException
@@ -77,6 +77,9 @@ final class AddController extends AbstractApiController
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'parentId')]
     #[AddDataObjectRequestBody]
     #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

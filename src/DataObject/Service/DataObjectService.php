@@ -30,9 +30,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
@@ -88,9 +88,9 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws ElementSavingFailedException
+     * @throws ForbiddenException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
      * @throws UserNotFoundException
@@ -118,7 +118,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|InvalidFilterServiceTypeException|InvalidQueryTypeException
+     * @throws ForbiddenException|InvalidFilterServiceTypeException|InvalidQueryTypeException
      * @throws InvalidFilterTypeException|NotFoundException|SearchException|UserNotFoundException
      */
     public function getDataObjects(DataObjectParameters $parameters): Collection
@@ -213,7 +213,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getDataObjectElement(
         UserInterface $user,
@@ -230,7 +230,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getDataObjectElementByPath(
         UserInterface $user,
@@ -247,7 +247,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     private function getValidParent(UserInterface $user, int $parentId): DataObjectModel
     {
@@ -303,7 +303,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|InvalidQueryTypeException|NotFoundException|UserNotFoundException
+     * @throws ForbiddenException|InvalidQueryTypeException|NotFoundException|UserNotFoundException
      */
     private function setTreeSorting(int $parentId, QueryInterface $dataObjectQuery): void
     {

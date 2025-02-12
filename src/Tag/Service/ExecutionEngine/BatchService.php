@@ -22,6 +22,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -35,7 +36,6 @@ use Pimcore\Bundle\StudioBackendBundle\Tag\Service\TagServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Tag\Util\Constant\BatchOperations;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Element\ElementDescriptor;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 use function sprintf;
 
 /**
@@ -55,7 +55,7 @@ final readonly class BatchService implements BatchServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|UserNotFoundException|NotFoundException
+     * @throws ForbiddenException|UserNotFoundException|NotFoundException
      */
     public function createJobRunForBatchOperation(BatchOperationParameters $parameters): int
     {

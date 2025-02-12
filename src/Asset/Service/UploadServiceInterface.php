@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service;
 
 use League\Flysystem\FilesystemException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -33,7 +32,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 interface UploadServiceInterface
 {
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      */
     public function fileExists(
@@ -43,7 +42,6 @@ interface UploadServiceInterface
     ): bool;
 
     /**
-     * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws EnvironmentException
      * @throws FilesystemException
@@ -72,7 +70,6 @@ interface UploadServiceInterface
     public function uploadParentFolder(string $filePath, int $rootParentId, UserInterface $user): int;
 
     /**
-     * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws EnvironmentException
      * @throws ForbiddenException
@@ -85,7 +82,7 @@ interface UploadServiceInterface
     ): string;
 
     /**
-     * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException
      */
     public function validateParent(UserInterface $user, int $parentId): ElementInterface;
 

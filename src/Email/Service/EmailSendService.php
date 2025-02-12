@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Email\Util\Constant\EmailAddressType;
 use Pimcore\Bundle\StudioBackendBundle\Email\Util\Constant\EmailContentType;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Mail;
@@ -43,7 +44,7 @@ final readonly class EmailSendService implements EmailSendServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws EnvironmentException
      * @throws InvalidElementTypeException
      * @throws NotFoundException

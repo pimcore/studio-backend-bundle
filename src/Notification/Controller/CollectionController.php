@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
@@ -53,7 +52,6 @@ final class CollectionController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws UserNotFoundException
      */
     #[Route('/notifications', name: 'pimcore_studio_api_notifications_list', methods: ['POST'])]

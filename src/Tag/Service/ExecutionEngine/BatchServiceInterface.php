@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tag\Service\ExecutionEngine;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Tag\MappedParameter\BatchOperationParameters;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 /**
  * @internal
@@ -27,7 +27,7 @@ use Symfony\Component\Finder\Exception\AccessDeniedException;
 interface BatchServiceInterface
 {
     /**
-     * @throws AccessDeniedException|UserNotFoundException|NotFoundException
+     * @throws ForbiddenException|UserNotFoundException|NotFoundException
      */
     public function createJobRunForBatchOperation(BatchOperationParameters $parameters): int;
 }

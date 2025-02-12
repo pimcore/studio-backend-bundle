@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailAddressParameter;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\SendEmailParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\UserInterface;
@@ -30,7 +31,7 @@ use Pimcore\Model\UserInterface;
 interface EmailSendServiceInterface
 {
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws EnvironmentException
      * @throws InvalidElementTypeException
      * @throws NotFoundException

@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -43,7 +43,7 @@ final class ReplaceService implements ReplaceServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws ElementSavingFailedException
      * @throws InvalidElementTypeException
      * @throws UserNotFoundException
@@ -70,7 +70,7 @@ final class ReplaceService implements ReplaceServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
      */

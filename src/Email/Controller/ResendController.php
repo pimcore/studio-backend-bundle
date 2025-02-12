@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailSendServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -48,7 +47,6 @@ final class ResendController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws EnvironmentException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
@@ -67,8 +65,10 @@ final class ResendController extends AbstractApiController
         description: 'email_log_resend_by_id_success_response',
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function resendEmail(
         int $id

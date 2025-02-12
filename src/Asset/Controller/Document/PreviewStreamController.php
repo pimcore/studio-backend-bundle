@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -59,10 +60,10 @@ final class PreviewStreamController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementProcessingNotCompletedException
      * @throws ElementStreamResourceNotFoundException
      * @throws EnvironmentException
+     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws UnprocessableContentException
      * @throws UserNotFoundException
@@ -87,8 +88,12 @@ final class PreviewStreamController extends AbstractApiController
         headers: [new ContentDisposition('inline')]
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_COMPLETED,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNPROCESSABLE_CONTENT,
     ])]
     public function streamDocumentPreview(int $id): StreamedResponse
     {
