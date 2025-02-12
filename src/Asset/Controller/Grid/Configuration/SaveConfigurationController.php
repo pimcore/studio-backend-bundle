@@ -18,12 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\Grid\SaveConfigurationRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\SaveConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\ConfigurationRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -51,19 +52,20 @@ final class SaveConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/assets/grid/configuration/save',
+        '/assets/grid/configuration/save/{folderId}',
         name: 'pimcore_studio_api_save_asset_grid_configuration',
         methods: ['POST'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/assets/grid/configuration/save',
+        path: self::PREFIX . '/assets/grid/configuration/save/{folderId}',
         operationId: 'asset_save_grid_configuration',
         description: 'asset_save_grid_configuration_description',
         summary: 'asset_save_grid_configuration_description',
         tags: [Tags::AssetGrid->value]
     )]
-    #[SaveConfigurationRequestBody]
+    #[ConfigurationRequestBody]
+    #[IdParameter(type: 'folder', name: 'folderId', required: true)]
     #[SuccessResponse(
         description: 'asset_save_grid_configuration_success_response',
         content: new JsonContent(ref: Configuration::class)
@@ -73,9 +75,13 @@ final class SaveConfigurationController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function saveAssetGridConfiguration(
-        #[MapRequestPayload] SaveConfigurationParameter $saveConfigurationParameter
+        #[MapRequestPayload] ConfigurationParameter $saveConfigurationParameter,
+        int $folderId
     ): Response {
-        $configuration = $this->gridSaveConfigurationService->saveAssetGridConfiguration($saveConfigurationParameter);
+        $configuration = $this->gridSaveConfigurationService->saveAssetGridConfiguration(
+            $saveConfigurationParameter,
+            $folderId
+        );
 
         return $this->jsonResponse($configuration);
     }

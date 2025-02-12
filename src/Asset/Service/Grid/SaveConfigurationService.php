@@ -16,12 +16,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface;
@@ -48,14 +48,14 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
     /**
      * @throws NotFoundException
      */
-    public function saveAssetGridConfiguration(SaveConfigurationParameter $configuration): Configuration
+    public function saveAssetGridConfiguration(ConfigurationParameter $configuration, int $folderId): Configuration
     {
-        if (!$this->assetService->assetFolderExists($configuration->getFolderId())) {
-            throw new NotFoundException('Asset Folder', $configuration->getFolderId());
+        if (!$this->assetService->assetFolderExists($folderId)) {
+            throw new NotFoundException('Asset Folder', $folderId);
         }
 
         $gridConfiguration = new GridConfiguration();
-        $gridConfiguration->setAssetFolderId($configuration->getFolderId());
+        $gridConfiguration->setAssetFolderId($folderId);
         $gridConfiguration->setPageSize($configuration->getPageSize());
         $gridConfiguration->setName($configuration->getName());
         $gridConfiguration->setDescription($configuration->getDescription());

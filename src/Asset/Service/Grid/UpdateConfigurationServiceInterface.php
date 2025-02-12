@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\UpdateConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
 
 /**
  * @internal
@@ -29,7 +29,7 @@ interface UpdateConfigurationServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function updateAssetGridConfigurationById(UpdateConfigurationParameter $configurationParams, int $id): void;
+    public function updateAssetGridConfigurationById(ConfigurationParameter $configurationParams, int $id): void;
 
     /**
      * @throws NotFoundException

@@ -14,8 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter;
 
+use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\ColumnsAsArrayTrait;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -23,13 +24,11 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 /**
  * @internal
  */
-final readonly class SaveConfigurationParameter implements ConfigurationParameterInterface
+final readonly class ConfigurationParameter implements ConfigurationParameterInterface
 {
     use ColumnsAsArrayTrait;
 
     public function __construct(
-        #[NotBlank]
-        private int $folderId,
         #[NotBlank]
         private int $pageSize,
         #[NotBlank]
@@ -45,11 +44,6 @@ final readonly class SaveConfigurationParameter implements ConfigurationParamete
         private bool $shareGlobal = false,
         private bool $setAsFavorite = false,
     ) {
-    }
-
-    public function getFolderId(): int
-    {
-        return $this->folderId;
     }
 
     public function getPageSize(): int

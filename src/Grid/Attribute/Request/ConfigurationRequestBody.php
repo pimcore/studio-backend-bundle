@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\Grid;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
@@ -31,16 +31,15 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleString;
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class SaveConfigurationRequestBody extends RequestBody
+final class ConfigurationRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['folderId', 'pageSize', 'name', 'description', 'columns'],
+                required: ['pageSize', 'name', 'description', 'columns'],
                 properties: [
-                    new SingleInteger('folderId'),
                     new SingleInteger('pageSize'),
                     new SingleString('name'),
                     new SingleString('description'),

@@ -244,6 +244,8 @@ final class Installer extends SettingsStoreAwareInstaller
             'unsigned' => true,
         ]);
 
+        $table->addColumn('classId', 'string', ['notnull' => false, 'length' => 10]);
+
         $table->addColumn(
             'owner',
             'integer',

@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 
 /**
@@ -28,5 +28,5 @@ interface SaveConfigurationServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function saveAssetGridConfiguration(SaveConfigurationParameter $configuration): Configuration;
+    public function saveAssetGridConfiguration(ConfigurationParameter $configuration, int $folderId): Configuration;
 }
