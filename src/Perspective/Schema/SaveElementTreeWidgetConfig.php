@@ -21,7 +21,6 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveAssetContextPermissions as APermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDataObjectContextPermissions as DOPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDocumentContextPermissions as DPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetPositions;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
@@ -40,9 +39,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
         'showRoot',
         'classes',
         'pql',
-        'position',
-        'sort',
-        'expanded',
     ],
     type: 'object'
 )]
@@ -69,13 +65,7 @@ final readonly class SaveElementTreeWidgetConfig
         #[Property(description: 'Classes', type: 'object', example: ['CAR'])]
         private array $classes = [],
         #[Property(description: 'PQL', type: 'string', example: null)]
-        private ?string $pql = null,
-        #[Property(description: 'Position', type: 'string', example: WidgetPositions::LEFT->value)]
-        private string $position = WidgetPositions::LEFT->value,
-        #[Property(description: 'Sort', type: 'int', example: 3)]
-        private int $sort = 3,
-        #[Property(description: 'Expanded', type: 'bool', example: true)]
-        private bool $expanded = true
+        private ?string $pql = null
     ) {
     }
 
@@ -122,20 +112,5 @@ final readonly class SaveElementTreeWidgetConfig
     public function getPql(): ?string
     {
         return $this->pql;
-    }
-
-    public function getPosition(): string
-    {
-        return $this->position;
-    }
-
-    public function getSort(): int
-    {
-        return $this->sort;
-    }
-
-    public function isExpanded(): bool
-    {
-        return $this->expanded;
     }
 }

@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetConfig;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetPositions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Throwable;
@@ -100,9 +99,6 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
                 $widgetData['showRoot'],
                 $this->getValidClasses($widgetData),
                 $widgetData['pql'],
-                $widgetData['position'],
-                $widgetData['sort'],
-                $widgetData['expanded'],
             );
         } catch (Throwable $exception) {
             throw new ValidationFailedException(
@@ -110,22 +106,8 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
                 previous: $exception
             );
         }
-        $this->validatePosition($configuration->getPosition());
 
         return $configuration;
-    }
-
-    /**
-     * @throws ValidationFailedException
-     */
-    private function validatePosition(string $position): void
-    {
-        if (!in_array($position, WidgetPositions::values(), true)
-        ) {
-            throw new ValidationFailedException(
-                sprintf('Invalid widget position provided: %s', $position)
-            );
-        }
     }
 
     private function getValidClasses(array $widgetData): array

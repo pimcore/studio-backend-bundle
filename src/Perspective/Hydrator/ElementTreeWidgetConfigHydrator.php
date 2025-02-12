@@ -52,9 +52,6 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
             $widgetData['showRoot'],
             $widgetData['classes'],
             $widgetData['pql'],
-            $widgetData['position'],
-            $widgetData['sort'],
-            $widgetData['expanded'],
             $widgetData['isWriteable']
         );
     }
