@@ -56,7 +56,7 @@ final class SaveConfigurationController extends AbstractApiController
         name: 'pimcore_studio_api_save_data_object_grid_configuration',
         methods: ['POST'],
     )]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
         path: self::PREFIX . '/data-object/grid/configuration/save/{classId}',
         operationId: 'data_object_save_grid_configuration',
