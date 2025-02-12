@@ -39,8 +39,7 @@ final readonly class ConfigurationFavoriteRepository implements ConfigurationFav
         int $user,
         int $dataObjectFolderId,
         string $classId
-    ): ?GridConfigurationFavorite
-    {
+    ): ?GridConfigurationFavorite {
         return $this->entityManager->getRepository(GridConfigurationFavorite::class)
             ->findOneBy(['user' => $user, 'folder' => $dataObjectFolderId, 'classId' => $classId]);
     }

@@ -80,8 +80,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
     public function saveDataObjectGridConfiguration(
         ConfigurationParameter $configuration,
         string $classId
-    ): Configuration
-    {
+    ): Configuration {
         if (!$this->classDefinitionResolver->getById($classId)) {
             throw new NotFoundException('ClassID', $classId);
         }

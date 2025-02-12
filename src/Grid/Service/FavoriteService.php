@@ -69,8 +69,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         GridConfiguration $gridConfiguration,
         string $classId,
         int $folderId
-    ): GridConfiguration
-    {
+    ): GridConfiguration {
         $currentUser = $this->securityService->getCurrentUser();
         if (!$this->userRoleShareService->isConfigurationSharedWithUser($gridConfiguration, $currentUser)) {
             throw new ForbiddenException(
