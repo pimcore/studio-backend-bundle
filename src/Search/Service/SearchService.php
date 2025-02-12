@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Search\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -77,7 +77,7 @@ final readonly class SearchService implements SearchServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|InvalidElementTypeException|NotFoundException|UserNotFoundException
+     * @throws ForbiddenException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
     public function getSearchPreview(
         ElementParameters $parameters

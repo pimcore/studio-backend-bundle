@@ -16,6 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Export;
 
+use League\Flysystem\FilesystemException;
+
 /**
  * @internal
  */
@@ -30,6 +32,9 @@ interface ExportServiceInterface
         ?string $delimiter = null,
     ): void;
 
+    /**
+     * @throws FilesystemException
+     */
     public function cleanUpFileSystem(
         int $jobRunId
     ): void;

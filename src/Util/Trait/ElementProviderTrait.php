@@ -26,6 +26,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\Version;
 use function get_class;
 
 /**
@@ -67,22 +68,26 @@ trait ElementProviderTrait
 
     private function getLatestVersionForUser(
         ElementInterface $element,
-        ?UserInterface $user
-    ): ElementInterface {
+        ?UserInterface $user,
+    ): ?Version {
         if (!$element instanceof Asset &&
             !$element instanceof Document\PageSnippet &&
             !$element instanceof Concrete
         ) {
-            return $element;
+            return null;
         }
 
         // check for latest version
-        $version = $element->getLatestVersion($user?->getId());
-        if ($version) {
-            return $version->getData();
+        return $element->getLatestVersion($user?->getId());
+    }
+
+    private function getVersionData(ElementInterface $element, ?Version $version): ElementInterface
+    {
+        if (!$version) {
+            return $element;
         }
 
-        return $element;
+        return $version->getData();
     }
 
     /**

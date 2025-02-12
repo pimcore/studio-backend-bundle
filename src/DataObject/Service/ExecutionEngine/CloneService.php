@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationActi
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\CloneParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -58,7 +57,6 @@ final readonly class CloneService implements CloneServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementSavingFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -128,7 +126,7 @@ final readonly class CloneService implements CloneServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getNewCloneTarget(
         UserInterface $user,

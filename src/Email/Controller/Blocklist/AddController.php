@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Attribute\Request\BlocklistRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailAddressParameter;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -47,7 +46,6 @@ final class AddController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws EnvironmentException
      */
     #[Route('/emails/blocklist', name: 'pimcore_studio_api_emails_blocklist_add', methods: ['POST'])]
@@ -64,6 +62,7 @@ final class AddController extends AbstractApiController
         description: 'email_blocklist_add_success_response',
     )]
     #[DefaultResponses([
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function addBlocklistEntry(

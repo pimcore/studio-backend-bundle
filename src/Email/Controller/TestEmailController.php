@@ -21,8 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Attribute\Request\TestEmailRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\SendEmailParameters;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailSendServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -52,8 +52,8 @@ final class TestEmailController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws EnvironmentException
+     * @throws ForbiddenException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
      * @throws UserNotFoundException
@@ -72,6 +72,10 @@ final class TestEmailController extends AbstractApiController
         description: 'email_send_test_success_response',
     )]
     #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
+        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function sendTestEmail(

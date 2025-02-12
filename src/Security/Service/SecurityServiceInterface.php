@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Element\ElementInterface;
@@ -33,7 +33,7 @@ interface SecurityServiceInterface
     public function getCurrentUser(): UserInterface;
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      */
     public function hasElementPermission(
         ElementInterface $element,
@@ -42,7 +42,7 @@ interface SecurityServiceInterface
     ): void;
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      *
      * @param array<string> $permissions
      */

@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetConfig;
 
 /**
  * @internal
@@ -39,4 +41,9 @@ interface WidgetValidationServiceInterface
      * @throws InvalidArgumentException
      */
     public function validateWidgetType(string $widgetType): void;
+
+    /**
+     * @throws ValidationFailedException
+     */
+    public function validateWidgetConfigData(array $widgetData): SaveElementTreeWidgetConfig;
 }

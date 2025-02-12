@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveAssetContextPermissions;
 
 /**
  * @internal
@@ -25,7 +26,17 @@ final readonly class AssetContextPermissionHydrator implements AssetContextPermi
 {
     public function hydrate(array $data): AssetContextPermissions
     {
-        return new AssetContextPermissions(
+        return new AssetContextPermissions(...$this->extractPermissions($data));
+    }
+
+    public function hydrateSavePermissions(array $data): SaveAssetContextPermissions
+    {
+        return new SaveAssetContextPermissions(...$this->extractPermissions($data));
+    }
+
+    private function extractPermissions(array $data): array
+    {
+        return [
             $data['hideAdd'] ?? false,
             $data['addImportFromServer'] ?? true,
             $data['addUpload'] ?? true,
@@ -44,7 +55,7 @@ final readonly class AssetContextPermissionHydrator implements AssetContextPermi
             $data['rename'] ?? true,
             $data['searchAndMove'] ?? true,
             $data['unlock'] ?? true,
-            $data['unlockAndPropagate'] ?? true
-        );
+            $data['unlockAndPropagate'] ?? true,
+        ];
     }
 }

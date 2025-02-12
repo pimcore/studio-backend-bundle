@@ -27,6 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\ClassDefinition\CustomLayout as CoreLayout;
@@ -52,6 +54,11 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
     ) {
     }
 
+    /**
+     * @throws ForbiddenException|NotFoundException
+     *
+     * @return CustomLayoutCompact[]
+     */
     public function getCustomLayoutEditorCollection(
         int $dataObjectId,
         UserInterface $user

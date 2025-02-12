@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\Element\ElementInterface;
@@ -51,7 +51,7 @@ final readonly class SecurityService implements SecurityServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      */
     public function hasElementPermission(
         ElementInterface $element,
@@ -66,14 +66,14 @@ final readonly class SecurityService implements SecurityServiceInterface
             $element,
             $user
         )) {
-            throw new AccessDeniedException(
+            throw new ForbiddenException(
                 sprintf('You dont have %s permission', $permission)
             );
         }
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      *
      * @param array<string> $permissions
      */

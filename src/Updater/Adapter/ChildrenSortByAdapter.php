@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -52,7 +52,7 @@ final readonly class ChildrenSortByAdapter implements UpdateAdapterInterface
 
         $user = $this->securityService->getCurrentUser();
         if (!$user->isAllowed(UserPermissions::OBJECTS_SORT_METHOD->value)) {
-            throw new AccessDeniedException('You are not allowed to change the sort method');
+            throw new ForbiddenException('You are not allowed to change the sort method');
         }
 
         $value = $data[$this->getIndexKey()];
