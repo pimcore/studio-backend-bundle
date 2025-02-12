@@ -61,7 +61,7 @@ final class TypeController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getNoteTypes(
+    public function getWidgetTypes(
     ): JsonResponse {
 
         return $this->jsonResponse($this->widgetService->listWidgetTypes());

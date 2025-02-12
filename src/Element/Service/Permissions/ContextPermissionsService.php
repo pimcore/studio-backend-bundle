@@ -22,6 +22,9 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions\DocumentCont
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveAssetContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDataObjectContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDocumentContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
@@ -48,6 +51,21 @@ final readonly class ContextPermissionsService implements ContextPermissionServi
             ElementTypes::TYPE_ASSET => $this->assetHydrator->hydrate($permissionData),
             ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectHydrator->hydrate($permissionData),
             ElementTypes::TYPE_DOCUMENT => $this->documentHydrator->hydrate($permissionData),
+            default => throw new InvalidElementTypeException($elementType),
+        };
+    }
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    public function saveElementContextPermissions(
+        string $elementType,
+        array $permissionData
+    ): SaveAssetContextPermissions|SaveDataObjectContextPermissions|SaveDocumentContextPermissions {
+        return match ($elementType) {
+            ElementTypes::TYPE_ASSET => $this->assetHydrator->hydrateSavePermissions($permissionData),
+            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectHydrator->hydrateSavePermissions($permissionData),
+            ElementTypes::TYPE_DOCUMENT => $this->documentHydrator->hydrateSavePermissions($permissionData),
             default => throw new InvalidElementTypeException($elementType),
         };
     }

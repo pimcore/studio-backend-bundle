@@ -19,6 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveAssetContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDataObjectContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDocumentContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 
 /**
@@ -33,4 +36,12 @@ interface ContextPermissionServiceInterface
         string $elementType,
         array $permissionData
     ): AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions;
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    public function saveElementContextPermissions(
+        string $elementType,
+        array $permissionData
+    ): SaveAssetContextPermissions|SaveDataObjectContextPermissions|SaveDocumentContextPermissions;
 }

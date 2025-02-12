@@ -311,6 +311,7 @@ error_folder_exists: Folder already exists
 error_invalid_argument: Invalid argument
 error_widget_name_missing: Widget name have to be provided
 error_widget_name_invalid: Widget name is invalid (only alphanumeric characters, underscores and spaces are allowed, must be at least 3 characters long and less than 80 long)
+error_validation_failed: Validation failed
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
 login_description: Logs in a user with the provided credentials and returns the user information.
@@ -398,6 +399,12 @@ perspective_widget_get_config_by_id_summary: Get widget configuration by id and 
 perspective_widget_get_type_collection_description: Get widget types collection
 perspective_widget_get_type_collection_success_response: List of widget types
 perspective_widget_get_type_collection_summary: Get widget types
+perspective_widget_update_config_by_id_description: |
+  Update the widget configuration with the given <strong>{widgetId}</strong> and <strong>{widgetType}</strong>. <br> 
+  The <strong>{widgetId}</strong> must be an ID of an existing widget. The widget type has to be registered via Symfony Configuration. <br>
+  Please note that <strong>all configuration fields<strong> have to be provided.
+perspective_widget_update_config_by_id_success_response: Successfully updated widget configuration
+perspective_widget_update_config_by_id_summary: Update widget configuration by id and type
 property_create_description: |
   Creating the property with default values. <br>
   <ul>

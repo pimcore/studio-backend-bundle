@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Hydrator\Permissions;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveAssetContextPermissions;
 
 /**
  * @internal
@@ -24,4 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPe
 interface AssetContextPermissionHydratorInterface
 {
     public function hydrate(array $data): AssetContextPermissions;
+
+    public function hydrateSavePermissions(array $data): SaveAssetContextPermissions;
 }
