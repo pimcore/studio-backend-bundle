@@ -173,8 +173,7 @@ final readonly class DataService implements DataServiceInterface
     private function getDraftData(
         DataObjectModel $dataObject,
         ?DataObjectVersionModal $version = null
-    ): ?DataObjectDraftData
-    {
+    ): ?DataObjectDraftData {
         if (!$version || $dataObject->getModificationDate() >= $version->getDate()) {
             return null;
         }
@@ -185,5 +184,4 @@ final readonly class DataService implements DataServiceInterface
             $version->isAutoSave()
         );
     }
-
 }
