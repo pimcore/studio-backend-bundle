@@ -31,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -51,7 +50,6 @@ final class DeleteController extends AbstractApiController
      * @throws ForbiddenException|NotFoundException|UserNotFoundException
      */
     #[Route('/versions/{id}', name: 'pimcore_studio_api_delete_version', methods: ['DELETE'])]
-    #[IsGranted(ElementPermissions::VERSIONS_PERMISSION)]
     #[Delete(
         path: self::PREFIX . '/versions/{id}',
         operationId: 'version_delete_by_id',
