@@ -79,15 +79,7 @@ final readonly class DataService implements DataServiceInterface
             );
         }
 
-        if ($version && $dataObject->getModificationDate() < $version->getDate()) {
-            $dataObject->setDraftData(
-                new DataObjectDraftData(
-                    $version->getId(),
-                    $version->getDate(),
-                    $version->isAutoSave()
-                )
-            );
-        }
+        $dataObject->setDraftData($this->getDraftData($element, $version));
     }
 
     public function getNormalizedValue(
@@ -177,4 +169,21 @@ final readonly class DataService implements DataServiceInterface
             (bool)$class->getLinkGeneratorReference()
         );
     }
+
+    private function getDraftData(
+        DataObjectModel $dataObject,
+        ?DataObjectVersionModal $version = null
+    ): ?DataObjectDraftData
+    {
+        if (!$version || $dataObject->getModificationDate() >= $version->getDate()) {
+            return null;
+        }
+
+        return new DataObjectDraftData(
+            $version->getId(),
+            $version->getDate(),
+            $version->isAutoSave()
+        );
+    }
+
 }
