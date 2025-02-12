@@ -43,6 +43,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'childrenSortBy',
         'childrenSortOrder',
         'objectData',
+        'draftData',
         'inheritanceData',
         'allowInheritance',
         'allowVariants',
@@ -99,6 +100,8 @@ class DataObject extends Element implements AdditionalAttributesInterface
             example: ['fieldKey' => new InheritanceData(1, true)])
         ]
         private array $inheritanceData = [],
+        #[Property(ref: DataObjectDraftData::class)]
+        private ?DataObjectDraftData $draftData = null,
     ) {
         parent::__construct(
             $id,
@@ -174,11 +177,6 @@ class DataObject extends Element implements AdditionalAttributesInterface
         $this->objectData = $objectData;
     }
 
-    public function getObjectData(): array
-    {
-        return $this->objectData;
-    }
-
     public function setInheritanceData(array $inheritanceData): void
     {
         $this->inheritanceData = $inheritanceData;
@@ -187,6 +185,21 @@ class DataObject extends Element implements AdditionalAttributesInterface
     public function getInheritanceData(): array
     {
         return $this->inheritanceData;
+    }
+
+    public function getObjectData(): array
+    {
+        return $this->objectData;
+    }
+
+    public function getDraftData(): ?DataObjectDraftData
+    {
+        return $this->draftData;
+    }
+
+    public function setDraftData(?DataObjectDraftData $draftData): void
+    {
+        $this->draftData = $draftData;
     }
 
     public function getFilename(): string
