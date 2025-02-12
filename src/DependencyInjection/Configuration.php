@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetPositions;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\DownloadLimits;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\MimeTypes;
@@ -402,15 +401,6 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->scalarNode('pql')
                             ->defaultNull()
-                        ->end()
-                        ->scalarNode('position')
-                            ->defaultValue(WidgetPositions::LEFT->value)
-                        ->end()
-                        ->scalarNode('sort')
-                            ->defaultValue(3)
-                        ->end()
-                        ->booleanNode('expanded')
-                            ->defaultTrue()
                         ->end()
                         ->arrayNode('contextPermissions')
                             ->scalarPrototype()

@@ -21,7 +21,6 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions as APermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions as DOPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions as DPermissions;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetPositions;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -38,9 +37,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
         'showRoot',
         'classes',
         'pql',
-        'position',
-        'sort',
-        'expanded',
         'isWriteable',
     ],
     type: 'object'
@@ -55,7 +51,7 @@ final class ElementTreeWidgetConfig extends WidgetConfig
             type: [APermissions::class, DOPermissions::class, DPermissions::class]
         )]
         private readonly APermissions|DOPermissions|DPermissions $contextPermissions,
-        ?ElementIcon $icon = null,
+        ElementIcon $icon,
         #[Property(description: 'Element Type', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
         private readonly string $elementType = ElementTypes::TYPE_DATA_OBJECT,
         #[Property(description: 'Root Folder', type: 'string', example: '/Product Data/Cars')]
@@ -66,12 +62,6 @@ final class ElementTreeWidgetConfig extends WidgetConfig
         private readonly array $classes = [],
         #[Property(description: 'PQL', type: 'string', example: null)]
         private readonly ?string $pql = null,
-        #[Property(description: 'Position', type: 'string', example: WidgetPositions::LEFT->value)]
-        private readonly string $position = WidgetPositions::LEFT->value,
-        #[Property(description: 'Sort', type: 'int', example: 3)]
-        private readonly int $sort = 3,
-        #[Property(description: 'Expanded', type: 'bool', example: true)]
-        private readonly bool $expanded = true,
         #[Property(description: 'Is Writeable', type: 'bool', example: true)]
         private readonly bool $isWriteable = true,
     ) {
@@ -101,21 +91,6 @@ final class ElementTreeWidgetConfig extends WidgetConfig
     public function getPql(): ?string
     {
         return $this->pql;
-    }
-
-    public function getPosition(): string
-    {
-        return $this->position;
-    }
-
-    public function getSort(): int
-    {
-        return $this->sort;
-    }
-
-    public function isExpanded(): bool
-    {
-        return $this->expanded;
     }
 
     public function getContextPermissions(): DPermissions|APermissions|DOPermissions
