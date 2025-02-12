@@ -96,7 +96,6 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         return $gridConfiguration;
     }
 
-
     public function removeAssetConfigurationAsFavoriteForCurrentUser(
         GridConfiguration $gridConfiguration
     ): GridConfiguration {

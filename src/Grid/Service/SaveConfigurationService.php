@@ -112,8 +112,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
     private function setDefaultGridConfigurationData(
         GridConfiguration $gridConfiguration,
         ConfigurationParameter $configuration
-    ): GridConfiguration
-    {
+    ): GridConfiguration {
         $gridConfiguration->setPageSize($configuration->getPageSize());
         $gridConfiguration->setName($configuration->getName());
         $gridConfiguration->setDescription($configuration->getDescription());
@@ -131,7 +130,6 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
 
         return $gridConfiguration;
     }
-
 
     private function dispatchEvent(Configuration $configuration): void
     {
