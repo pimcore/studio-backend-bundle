@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailAddressParameter;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\SendEmailParameters;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;

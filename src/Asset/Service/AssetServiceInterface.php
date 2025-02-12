@@ -37,7 +37,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\Asset as AssetModel;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 /**
  * @internal

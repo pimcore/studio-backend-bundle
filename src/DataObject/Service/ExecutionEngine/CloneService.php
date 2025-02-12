@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationActi
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\CloneParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;

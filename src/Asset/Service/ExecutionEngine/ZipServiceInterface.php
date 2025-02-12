@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetFileParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderFileParameter;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\MaxFileSizeExceededException;

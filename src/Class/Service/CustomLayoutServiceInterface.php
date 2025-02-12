@@ -37,6 +37,7 @@ interface CustomLayoutServiceInterface
 {
     /**
      * @throws ForbiddenException|NotFoundException
+     *
      * @return CustomLayoutCompact[]
      */
     public function getCustomLayoutEditorCollection(

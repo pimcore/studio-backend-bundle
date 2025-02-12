@@ -56,6 +56,7 @@ final readonly class CustomLayoutService implements CustomLayoutServiceInterface
 
     /**
      * @throws ForbiddenException|NotFoundException
+     *
      * @return CustomLayoutCompact[]
      */
     public function getCustomLayoutEditorCollection(

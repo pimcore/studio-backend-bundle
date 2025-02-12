@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Helper\MailResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;

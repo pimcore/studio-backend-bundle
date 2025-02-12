@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailAddressParameter;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\SendEmailParameters;
 use Pimcore\Bundle\StudioBackendBundle\Email\Util\Constant\EmailAddressType;
 use Pimcore\Bundle\StudioBackendBundle\Email\Util\Constant\EmailContentType;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
