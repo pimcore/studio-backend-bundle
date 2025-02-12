@@ -157,11 +157,6 @@ pimcore_studio_backend:
     widget_types:
         - 'element_tree'
 
-    config_location:
-        element_tree_widgets:
-            write_target:
-                type: 'settings-store'
-
 mercure:
     hubs:
         studio_server:
