@@ -76,8 +76,7 @@ final readonly class DataService implements DataServiceInterface
         if ($dataObject instanceof DataObject) {
             $dataObject->setDraftData($this->getDraftData($element, $version));
 
-            if ($dataObject->getAllowInheritance())
-            {
+            if ($dataObject->getAllowInheritance()) {
                 $dataObject->setInheritanceData(
                     $this->inheritanceService->getInheritanceData($element, $fieldDefinitions)
                 );
