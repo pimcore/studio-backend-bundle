@@ -56,7 +56,7 @@ final readonly class DataService implements DataServiceInterface
     public function setObjectDetailData(
         DataObjectFolder|DataObject|DataObjectVersion $dataObject,
         DataObjectModel $element,
-        DataObjectVersionModal $version = null,
+        ?DataObjectVersionModal $version = null,
     ): void {
         $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
         if ($dataObject instanceof DataObjectFolder || !$element instanceof Concrete) {
