@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\MappedParameter\WidgetDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
@@ -38,6 +39,11 @@ interface WidgetServiceInterface
      * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function addWidgetConfig(string $widgetType, WidgetDataParameter $widgetData): string;
+
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|ValidationFailedException
+     */
+    public function updateWidgetConfig(string $widgetType, string $widgetId, WidgetDataParameter $widgetData): void;
 
     /**
      * @throws InvalidArgumentException|NotFoundException|NotWriteableException

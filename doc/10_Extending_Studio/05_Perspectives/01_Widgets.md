@@ -49,6 +49,7 @@ There are a couple of restrictions and requirements for the widget configuration
   - `id` - unique identifier of the widget configuration
   - `name` - name of the widget configuration
   - `icon` - icon of the widget (can be nullable, in this case default Icon will be used)
+- When updating a widget, all configuration properties must be present in the PUT request body.
 
 ### Example Widget Configuration Repository
 
