@@ -73,13 +73,16 @@ final readonly class DataService implements DataServiceInterface
         $dataObject->setHasPreview($classData->getHasPreview());
         $dataObject->setObjectData($this->getNormalizedObjectData($element, $fieldDefinitions));
 
-        if ($dataObject instanceof DataObject && $dataObject->getAllowInheritance()) {
-            $dataObject->setInheritanceData(
-                $this->inheritanceService->getInheritanceData($element, $fieldDefinitions)
-            );
-        }
+        if ($dataObject instanceof DataObject) {
+            $dataObject->setDraftData($this->getDraftData($element, $version));
 
-        $dataObject->setDraftData($this->getDraftData($element, $version));
+            if ($dataObject->getAllowInheritance())
+            {
+                $dataObject->setInheritanceData(
+                    $this->inheritanceService->getInheritanceData($element, $fieldDefinitions)
+                );
+            }
+        }
     }
 
     public function getNormalizedValue(
