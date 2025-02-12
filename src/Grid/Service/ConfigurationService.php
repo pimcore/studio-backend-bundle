@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\DetailedConfigurationEvent;
@@ -120,7 +120,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
         $user = $this->securityService->getCurrentUser();
         if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
-            throw new AccessDeniedException('Access denied to configuration');
+            throw new ForbiddenException('Access denied to configuration');
         }
 
         if ($configuration->getAssetFolderId() !== $folderId) {
@@ -163,7 +163,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     }
 
     /**
-     * @throws NotFoundException|InvalidArgumentException|AccessDeniedException
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException
      */
     public function deleteAssetConfiguration(int $configurationId, int $folderId): void
     {
@@ -174,7 +174,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         }
 
         if ($this->securityService->getCurrentUser()->getId() !== $configuration->getOwner()) {
-            throw new AccessDeniedException(
+            throw new ForbiddenException(
                 'You are not allowed to delete this configuration. Only the owner can delete it.'
             );
         }

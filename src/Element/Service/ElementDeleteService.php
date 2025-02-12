@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterfac
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\DataObjectDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -62,7 +61,6 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementDeletionFailedException
      * @throws EnvironmentException
      * @throws ForbiddenException

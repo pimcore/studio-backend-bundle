@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CloneServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -54,7 +53,6 @@ final class CloneController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementSavingFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -79,6 +77,8 @@ final class CloneController extends AbstractApiController
     #[IdParameter(type: ElementTypes::TYPE_ASSET)]
     #[IdParameter(type: ElementTypes::TYPE_ASSET, name: 'parentId')]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

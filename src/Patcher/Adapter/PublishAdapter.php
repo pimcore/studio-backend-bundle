@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -44,7 +45,7 @@ final readonly class PublishAdapter implements PatchAdapterInterface
     }
 
     /**
-     * @throws ElementSavingFailedException
+     * @throws ElementSavingFailedException|ForbiddenException
      */
     public function patch(ElementInterface $element, array $data, UserInterface $user): void
     {
@@ -83,6 +84,9 @@ final readonly class PublishAdapter implements PatchAdapterInterface
         ];
     }
 
+    /**
+     * @throws ForbiddenException
+     */
     private function publishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
@@ -90,6 +94,9 @@ final readonly class PublishAdapter implements PatchAdapterInterface
         $element->setPublished(true);
     }
 
+    /**
+     * @throws ForbiddenException
+     */
     private function unpublishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission(

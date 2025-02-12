@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller\Asset;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -52,7 +52,7 @@ final class ImageStreamController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException|UserNotFoundException
+     * @throws ForbiddenException|NotFoundException|InvalidElementTypeException|UserNotFoundException
      */
     #[Route('/versions/{id}/image/stream', name: 'pimcore_studio_api_stream_image_version', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
@@ -70,6 +70,8 @@ final class ImageStreamController extends AbstractApiController
         headers: [new ContentDisposition(HttpResponseHeaders::INLINE_TYPE->value)]
     )]
     #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

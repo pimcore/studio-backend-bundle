@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunErrorLogRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -43,7 +43,7 @@ final readonly class EventSubscriberService implements EventSubscriberServiceInt
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws InvalidArgumentException
      * @throws UserNotFoundException
      * @throws NotFoundException

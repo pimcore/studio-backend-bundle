@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 use function sprintf;
 
 /**
@@ -49,7 +48,6 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementSavingFailedException
      * @throws ForbiddenException
      * @throws InvalidElementTypeException

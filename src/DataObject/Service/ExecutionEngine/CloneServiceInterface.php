@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ExecutionEngine;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\CloneParameters;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -28,10 +27,9 @@ use Pimcore\Model\UserInterface;
 
 interface CloneServiceInterface
 {
-    public const OBJECT_TO_CLONE = 'objectToClone';
+    public const string OBJECT_TO_CLONE = 'objectToClone';
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementSavingFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -43,6 +41,9 @@ interface CloneServiceInterface
         CloneParameters $parameters,
     ): ?int;
 
+    /**
+     * @throws ElementSavingFailedException|ForbiddenException
+     */
     public function cloneDataObject(
         DataObject $source,
         DataObject $parent,
@@ -50,7 +51,7 @@ interface CloneServiceInterface
     ): AbstractObject;
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getNewCloneTarget(
         UserInterface $user,

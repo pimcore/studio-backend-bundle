@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutNewPara
 use Pimcore\Bundle\StudioBackendBundle\Class\MappedParameter\CustomLayoutUpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayout;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\CustomLayout\CustomLayoutCompact;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -35,6 +36,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 interface CustomLayoutServiceInterface
 {
     /**
+     * @throws ForbiddenException|NotFoundException
+     *
      * @return CustomLayoutCompact[]
      */
     public function getCustomLayoutEditorCollection(

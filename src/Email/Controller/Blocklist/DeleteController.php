@@ -19,8 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Email\Controller\Blocklist;
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\BlocklistServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -47,8 +45,6 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
-     * @throws EnvironmentException
      * @throws NotFoundException
      */
     #[Route('/emails/blocklist', name: 'pimcore_studio_api_emails_blocklist_delete', methods: ['DELETE'])]

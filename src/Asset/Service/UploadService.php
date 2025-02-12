@@ -28,7 +28,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\AssetUploadMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -65,7 +64,7 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      */
     public function fileExists(
@@ -82,7 +81,6 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws EnvironmentException
      * @throws FilesystemException
@@ -163,7 +161,6 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws DatabaseException
      * @throws EnvironmentException
      * @throws ForbiddenException
@@ -208,7 +205,7 @@ final readonly class UploadService implements UploadServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|EnvironmentException|ForbiddenException|NotFoundException
+     * @throws EnvironmentException|ForbiddenException|NotFoundException
      */
     public function validateParent(UserInterface $user, int $parentId): ElementInterface
     {

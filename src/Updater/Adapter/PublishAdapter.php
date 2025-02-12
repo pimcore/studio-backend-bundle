@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
+namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
@@ -36,7 +36,7 @@ use function sprintf;
 #[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
 final readonly class PublishAdapter implements UpdateAdapterInterface
 {
-    private const INDEX_KEY = 'published';
+    private const string INDEX_KEY = 'published';
 
     public function __construct(
         private SecurityServiceInterface $securityService
@@ -44,7 +44,7 @@ final readonly class PublishAdapter implements UpdateAdapterInterface
     }
 
     /**
-     * @throws ElementSavingFailedException
+     * @throws ElementSavingFailedException|ForbiddenException
      */
     public function update(ElementInterface $element, array $data): void
     {
@@ -84,6 +84,9 @@ final readonly class PublishAdapter implements UpdateAdapterInterface
         ];
     }
 
+    /**
+     * @throws ForbiddenException
+     */
     private function publishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
@@ -91,6 +94,9 @@ final readonly class PublishAdapter implements UpdateAdapterInterface
         $element->setPublished(true);
     }
 
+    /**
+     * @throws ForbiddenException
+     */
     private function unpublishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission(

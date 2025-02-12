@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Attribute\Request\ForwardEmailRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailAddressParameter;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailSendServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -51,7 +50,6 @@ final class ForwardController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws EnvironmentException
      * @throws InvalidElementTypeException
      * @throws NotFoundException
@@ -71,6 +69,8 @@ final class ForwardController extends AbstractApiController
         description: 'email_log_forward_by_id_success_response',
     )]
     #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

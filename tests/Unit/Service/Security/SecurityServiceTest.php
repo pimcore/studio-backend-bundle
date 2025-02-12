@@ -20,7 +20,7 @@ use Codeception\Test\Unit;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Permission\ElementPermissionServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -63,7 +63,7 @@ final class SecurityServiceTest extends Unit
             false
         );
 
-        $this->expectException(AccessDeniedException::class);
+        $this->expectException(ForbiddenException::class);
         $this->expectExceptionMessage('You dont have speak up permission');
         $securityService->hasElementPermission(
             new Asset(),

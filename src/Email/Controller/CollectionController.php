@@ -20,7 +20,6 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntry;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailLogServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
@@ -52,9 +51,6 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws AccessDeniedException
-     */
     #[Route('/emails', name: 'pimcore_studio_api_emails_log_list', methods: ['GET'])]
     #[IsGranted(UserPermissions::EMAILS->value)]
     #[IsGranted(UserPermissions::GDPR->value)]

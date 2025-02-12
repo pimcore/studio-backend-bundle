@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
@@ -46,7 +46,7 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|UserNotFoundException
+     * @throws ForbiddenException|NotFoundException|UserNotFoundException
      */
     #[Route('/notifications/{id}', name: 'pimcore_studio_api_delete_notification', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::NOTIFICATIONS->value)]

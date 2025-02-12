@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\AssetVersion;
@@ -25,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Schema\Dimensions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DocumentVersion;
 use Pimcore\Model\Asset;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 /**
  * @internal
@@ -33,7 +33,7 @@ use Symfony\Component\Finder\Exception\AccessDeniedException;
 interface VersionDetailServiceInterface
 {
     /**
-     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
+     * @throws ForbiddenException|NotFoundException|InvalidElementTypeException
      */
     public function getVersionData(
         int $id,
