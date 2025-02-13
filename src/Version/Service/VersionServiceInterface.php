@@ -57,4 +57,12 @@ interface VersionServiceInterface
         ElementParameters $elementParameters,
         UserInterface $user
     ): array;
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function deleteVersion(
+        int $versionId,
+        UserInterface $user
+    ): void;
 }

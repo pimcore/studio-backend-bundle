@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInter
 use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\Version;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
@@ -150,6 +151,40 @@ final readonly class VersionService implements VersionServiceInterface
         }
 
         return $lastVersion->getId();
+    }
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function deleteVersion(
+        int $versionId,
+        UserInterface $user
+    ): void {
+        $version = $this->repository->getVersionById($versionId);
+        if ($version->isAutoSave()) {
+            $this->handleDraft($version, $user);
+
+            return;
+        }
+
+        $this->repository->getElementFromVersion(
+            $version,
+            $user
+        );
+
+        $version->delete();
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function handleDraft(Version $version, UserInterface $user): void
+    {
+        if ($version->getUserId() !== $user->getId()) {
+            throw new ForbiddenException('You are not allowed to delete this version');
+        }
+
+        $version->delete();
     }
 
     private function getScheduledTasks(ElementInterface $element): array
