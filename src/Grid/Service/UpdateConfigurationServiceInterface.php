@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -30,6 +30,11 @@ interface UpdateConfigurationServiceInterface
      * @throws NotFoundException|InvalidArgumentException|ForbiddenException
      */
     public function updateAssetGridConfigurationById(ConfigurationParameter $configurationParams, int $id): void;
+
+    /**
+     * @throws NotFoundException|InvalidArgumentException|ForbiddenException
+     */
+    public function updateDataObjectGridConfigurationById(ConfigurationParameter $configurationParams, int $id): void;
 
     /**
      * @throws NotFoundException

@@ -48,6 +48,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\UpdateConfigurationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\UpdateConfigurationService
+
   #
   # Repository
   #

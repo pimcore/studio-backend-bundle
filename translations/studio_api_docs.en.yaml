@@ -690,6 +690,10 @@ data_object_save_grid_configuration_description: |
   Save Data Object grid configuration for a specific Class ID <strong>{classId}</strong>
 data_object_save_grid_configuration_success_response: Data Object grid configuration saved successfully
 data_object_save_grid_configuration_summary: Save Data Object grid configuration for a specific folder
+data_object_update_grid_configuration_description: |
+  Update data object grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
+data_object_update_grid_configuration_summary: Update data object grid configuration for a specific folder
+data_object_update_grid_configuration_success_response: Data Object grid configuration updated successfully
 asset_delete_grid_configuration_by_configurationId_description: |
     Delete grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
 asset_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a specific folder and given configuration ID

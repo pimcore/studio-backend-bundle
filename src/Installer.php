@@ -183,7 +183,7 @@ final class Installer extends SettingsStoreAwareInstaller
             'fk_'.GridConfigurationFavorite::TABLE_NAME.'_configurations'
         );
 
-        $table->setPrimaryKey(['user', 'configuration'], 'pk_'.GridConfigurationFavorite::TABLE_NAME);
+        $table->setPrimaryKey(['user', 'configuration', 'folder'], 'pk_'.GridConfigurationFavorite::TABLE_NAME);
     }
 
     /**
