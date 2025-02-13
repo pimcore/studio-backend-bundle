@@ -163,6 +163,7 @@ final readonly class VersionService implements VersionServiceInterface
         $version = $this->repository->getVersionById($versionId);
         if ($version->isAutoSave()) {
             $this->handleDraft($version, $user);
+
             return;
         }
 
