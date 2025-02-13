@@ -47,7 +47,7 @@ final readonly class SavePerspectiveConfig
         private string $name,
         #[Property(description: 'Icon', type: ElementIcon::class)]
         private ElementIcon $icon,
-        #[Property(description: 'Context Permissions', type: 'object', )]
+        #[Property(description: 'Context Permissions', type: 'object')]
         private array $contextPermissions = [],
         #[Property(description: 'Widgets Left', type: 'object', example: ['widget_id'])]
         private array $widgetsLeft = [],
