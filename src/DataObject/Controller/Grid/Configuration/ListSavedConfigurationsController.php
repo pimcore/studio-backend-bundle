@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid\Configuration;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -51,24 +52,25 @@ final class ListSavedConfigurationsController extends AbstractApiController
      * @throws NotFoundException|SearchException
      */
     #[Route(
-        '/assets/grid/configurations/{folderId}',
-        name: 'pimcore_studio_api_get_asset_saved_grid_configurations',
+        '/data-object/grid/configurations/{classId}',
+        name: 'pimcore_studio_api_get_data_objects_saved_grid_configurations',
         methods: ['GET']
     )]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/grid/configurations/{folderId}',
-        operationId: 'asset_get_saved_grid_configurations',
-        description: 'asset_get_saved_grid_configurations_description',
-        summary: 'asset_get_saved_grid_configurations_summary',
-        tags: [Tags::AssetGrid->value]
+        path: self::PREFIX . '/data-object/grid/configurations/{classId}',
+        operationId: 'data_object_list_saved_grid_configurations',
+        description: 'data_object_list_saved_grid_configurations_description',
+        summary: 'data_object_list_saved_grid_configurations_summary',
+        tags: [Tags::DataObjectsGrid->value]
     )]
-    #[IdParameter(
-        type: 'folderId',
-        name: 'folderId'
+    #[StringParameter(
+        name: 'classId',
+        example: 'EV',
+        description: 'Class Id of the data object',
     )]
     #[SuccessResponse(
-        description: 'asset_get_saved_grid_configurations_success_response',
+        description: 'data_object_list_saved_grid_configurations_success_response',
         content: new CollectionJson(new GenericCollection(Configuration::class))
     )]
     #[DefaultResponses([
@@ -76,9 +78,9 @@ final class ListSavedConfigurationsController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAssetSavedGridConfigurations(int $folderId): JsonResponse
+    public function listDataObjectSavedGridConfigurations(string $classId): JsonResponse
     {
-        $configurations = $this->configurationService->getConfigurationsForAssetsByFolder($folderId);
+        $configurations = $this->configurationService->getConfigurationsForDataObjectsByClassId($classId);
 
         return $this->jsonResponse($configurations);
     }

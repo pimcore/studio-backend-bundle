@@ -40,5 +40,10 @@ interface ConfigurationRepositoryInterface
      */
     public function getByAssetFolderId(int $folderId): array;
 
+    /**
+     * @return GridConfiguration[]
+     */
+    public function getByClassId(string $classId): array;
+
     public function delete(GridConfiguration $configuration): void;
 }
