@@ -44,6 +44,10 @@ class Configuration implements ConfigurationInterface
 
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
+    private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
+
+    private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
+
     /**
      * {@inheritdoc}
      */
@@ -393,7 +397,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarPrototype()
                                 ->validate()
                                     ->ifTrue(fn ($value) => !is_string($value))
-                                    ->thenInvalid('Each permission value must be a string.')
+                                    ->thenInvalid(self::WIDGETS_ARRAY_VALUE_ERROR)
                                 ->end()
                             ->end()
                         ->end()
@@ -401,7 +405,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarPrototype()
                                 ->validate()
                                     ->ifTrue(fn ($value) => !is_string($value))
-                                    ->thenInvalid('Each permission value must be a string.')
+                                    ->thenInvalid(self::WIDGETS_ARRAY_VALUE_ERROR)
                                 ->end()
                             ->end()
                         ->end()
@@ -409,7 +413,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarPrototype()
                                 ->validate()
                                     ->ifTrue(fn ($value) => !is_string($value))
-                                    ->thenInvalid('Each permission value must be a string.')
+                                    ->thenInvalid(self::WIDGETS_ARRAY_VALUE_ERROR)
                                 ->end()
                             ->end()
                         ->end()
@@ -422,11 +426,21 @@ class Configuration implements ConfigurationInterface
                             ->defaultNull()
                         ->end()
                         ->arrayNode('contextPermissions')
-                            ->scalarPrototype()
-                                ->validate()
-                                    ->ifNotInArray([true, false])
-                                    ->thenInvalid('Each permission value must be a boolean.')
+                            ->useAttributeAsKey('key')
+                            ->arrayPrototype()
+                                ->performNoDeepMerging()
+                                ->children()
+                                    ->variableNode('permission')
+                                        ->validate()
+                                            ->ifNotInArray([true, false])
+                                            ->thenInvalid(self::PERMISSION_ARRAY_VALUE_ERROR)
+                                        ->end()
+                                    ->end()
                                 ->end()
+                            ->end()
+                            ->validate()
+                                ->ifEmpty()
+                                ->thenInvalid('Each permission array cannot be empty.')
                             ->end()
                         ->end()
                     ->end()
@@ -490,7 +504,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarPrototype()
                                 ->validate()
                                     ->ifNotInArray([true, false])
-                                    ->thenInvalid('Each permission value must be a boolean.')
+                                    ->thenInvalid(self::PERMISSION_ARRAY_VALUE_ERROR)
                                 ->end()
                             ->end()
                         ->end()
