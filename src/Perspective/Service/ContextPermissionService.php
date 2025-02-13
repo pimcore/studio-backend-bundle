@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\ContextPermissionData;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\ContextPermissionGroups;
+use function is_array;
+use function sprintf;
 
 /**
  * @internal
@@ -96,7 +98,8 @@ final class ContextPermissionService implements ContextPermissionsServiceInterfa
 
     private array $contextPermissions = [];
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->contextPermissions[ContextPermissionGroups::EXTRAS->value] = $this->extraPermissions;
         $this->contextPermissions[ContextPermissionGroups::FILE->value] = $this->filePermissions;
         $this->contextPermissions[ContextPermissionGroups::SEARCH->value] = $this->searchPermissions;

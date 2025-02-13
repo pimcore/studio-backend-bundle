@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
+use function strlen;
 
 /**
  * @internal

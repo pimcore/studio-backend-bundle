@@ -28,6 +28,7 @@ use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use function is_array;
+use function is_string;
 use function sprintf;
 
 /**
@@ -75,7 +76,7 @@ class Configuration implements ConfigurationInterface
             $rootNode,
             [
                 self::TREE_WIDGETS_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE,
-                self::PERSPECTIVES_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE
+                self::PERSPECTIVES_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
             ],
             ['read_target']
         );
@@ -391,7 +392,7 @@ class Configuration implements ConfigurationInterface
                         ->arrayNode('widgetsLeft')
                             ->scalarPrototype()
                                 ->validate()
-                                    ->ifTrue(fn($value) => !is_string($value))
+                                    ->ifTrue(fn ($value) => !is_string($value))
                                     ->thenInvalid('Each permission value must be a string.')
                                 ->end()
                             ->end()
@@ -399,7 +400,7 @@ class Configuration implements ConfigurationInterface
                         ->arrayNode('widgetsRight')
                             ->scalarPrototype()
                                 ->validate()
-                                    ->ifTrue(fn($value) => !is_string($value))
+                                    ->ifTrue(fn ($value) => !is_string($value))
                                     ->thenInvalid('Each permission value must be a string.')
                                 ->end()
                             ->end()
@@ -407,7 +408,7 @@ class Configuration implements ConfigurationInterface
                         ->arrayNode('widgetsBottom')
                             ->scalarPrototype()
                                 ->validate()
-                                    ->ifTrue(fn($value) => !is_string($value))
+                                    ->ifTrue(fn ($value) => !is_string($value))
                                     ->thenInvalid('Each permission value must be a string.')
                                 ->end()
                             ->end()
