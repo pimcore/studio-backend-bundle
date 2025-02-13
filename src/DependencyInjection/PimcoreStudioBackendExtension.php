@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
@@ -52,7 +53,7 @@ use function sprintf;
  */
 class PimcoreStudioBackendExtension extends Extension implements PrependExtensionInterface
 {
-    private const FIREWALL_PATTERN = '^{prefix}(/.*)?$';
+    private const string FIREWALL_PATTERN = '^{prefix}(/.*)?$';
 
     /**
      * {@inheritdoc}
@@ -125,6 +126,13 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$widgetConfigurations' => $config[Configuration::TREE_WIDGETS_NODE],
             '$storageConfig' => $config['config_location'][Configuration::TREE_WIDGETS_NODE],
         ]);
+
+        $definition = $container->getDefinition(PerspectiveConfigRepositoryInterface::class);
+
+        $definition->setArguments([
+            '$perspectiveConfigurations' => $config[Configuration::PERSPECTIVES_NODE],
+            '$storageConfig' => $config['config_location'][Configuration::PERSPECTIVES_NODE],
+        ]);
     }
 
     /**
@@ -160,7 +168,8 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             );
         }
 
-        $this->prependTreeWidgetsConfig($container, $containerConfig);
+        $this->prependCustomConfig($container, $containerConfig, Configuration::PERSPECTIVES_NODE);
+        $this->prependCustomConfig($container, $containerConfig, Configuration::TREE_WIDGETS_NODE);
     }
 
     /**
@@ -203,9 +212,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
     /**
      * @throws Exception
      */
-    private function prependTreeWidgetsConfig(ContainerBuilder $container, array $containerConfig): void
+    private function prependCustomConfig(ContainerBuilder $container, array $containerConfig, string $node): void
     {
-        $configLocation = $containerConfig['config_location'][Configuration::TREE_WIDGETS_NODE];
+        $configLocation = $containerConfig['config_location'][$node];
         $configDir = $configLocation['write_target']['options']['directory'];
 
         $configLoader = new YamlFileLoader(

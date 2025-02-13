@@ -14,19 +14,16 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
+namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
-enum HttpResponseErrorKeys: string
+enum ContextPermissionGroups: string
 {
     use EnumToValueArrayTrait;
 
-    case GENERIC_ERROR = 'error_something_generic_went_wrong';
-    case ELEMENT_EXISTS = 'error_element_exists';
-    case FOLDER_EXISTS = 'error_folder_exists';
-    case CONFIG_NAME_INVALID = 'error_config_name_invalid';
-    case WIDGET_NAME_MISSING = 'error_widget_name_missing';
-    case INVALID_ARGUMENT = 'error_invalid_argument';
-    case VALIDATION_FAILED = 'error_validation_failed';
+    case EXTRAS = 'extras';
+    case FILE = 'file';
+    case SEARCH = 'search';
+    case SETTINGS = 'settings';
 }

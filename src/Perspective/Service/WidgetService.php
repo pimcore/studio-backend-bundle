@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigHydratorLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigRepositoryLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Uid\Factory\UuidFactory;
 use function sprintf;
@@ -42,6 +43,8 @@ use function sprintf;
  */
 final readonly class WidgetService implements WidgetServiceInterface
 {
+    use ValidateConfigurationTrait;
+
     public function __construct(
         private ConfigHydratorLoaderInterface $configHydratorLoader,
         private ConfigRepositoryLoaderInterface $configRepositoryLoader,
@@ -77,7 +80,7 @@ final readonly class WidgetService implements WidgetServiceInterface
         $this->widgetValidationService->validateWidgetType($widgetType);
         $configData = $widgetData->getData();
 
-        $configData['name'] = $this->widgetValidationService->getValidWidgetName($configData);
+        $configData['name'] = $this->getValidConfigName($configData);
         $configData['id'] = $this->getConfigurationIdentifier();
 
         return $this->loadRepositoryByType($widgetType)->createConfiguration($configData);
@@ -91,7 +94,7 @@ final readonly class WidgetService implements WidgetServiceInterface
         $this->widgetValidationService->validateWidgetType($widgetType);
         $configData = $widgetData->getData();
 
-        $configData['name'] = $this->widgetValidationService->getValidWidgetName($configData);
+        $configData['name'] = $this->getValidConfigName($configData);
         $configData['id'] = $widgetId;
         $this->loadRepositoryByType($widgetType)->updateConfiguration($configData);
     }

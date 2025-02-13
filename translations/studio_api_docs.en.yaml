@@ -310,7 +310,7 @@ error_element_exists: Element already exists
 error_folder_exists: Folder already exists
 error_invalid_argument: Invalid argument
 error_widget_name_missing: Widget name have to be provided
-error_widget_name_invalid: Widget name is invalid (only alphanumeric characters, underscores and spaces are allowed, must be at least 3 characters long and less than 80 long)
+error_config_name_invalid: Configuration name is invalid (only alphanumeric characters, underscores and spaces are allowed, must be at least 3 characters long and less than 80 long)
 error_validation_failed: Validation failed
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id

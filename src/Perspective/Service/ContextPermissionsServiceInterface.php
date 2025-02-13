@@ -17,21 +17,18 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\ContextPermissionData;
 
-/**
- * @internal
- */
-interface WidgetValidationServiceInterface
+interface ContextPermissionsServiceInterface
 {
+    public function add(ContextPermissionData $contextPermissionData): void;
+
     /**
      * @throws InvalidArgumentException
      */
-    public function validateWidgetType(string $widgetType): void;
+    public function getDefaultValue(string $key, string $group): bool;
 
-    /**
-     * @throws ValidationFailedException
-     */
-    public function validateWidgetConfigData(array $widgetData): SaveElementTreeWidgetConfig;
+    public function list(): array;
+
+    public function remove(string $key, string $group): void;
 }

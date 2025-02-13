@@ -39,6 +39,8 @@ class Configuration implements ConfigurationInterface
 {
     public const string ROOT_NODE = 'pimcore_studio_backend';
 
+    public const string PERSPECTIVES_NODE = 'studio_perspectives';
+
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
 
     /**
@@ -66,11 +68,15 @@ class Configuration implements ConfigurationInterface
         $this->addUserNode($rootNode);
         $this->addServerNode($rootNode);
         $this->addWidgetTypesNode($rootNode);
+        $this->addPerspectivesConfigurationNode($rootNode);
         $this->addElementTreeWidgetConfigurationNode($rootNode);
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
             $rootNode,
-            [self::TREE_WIDGETS_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE],
+            [
+                self::TREE_WIDGETS_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE,
+                self::PERSPECTIVES_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE
+            ],
             ['read_target']
         );
 
@@ -347,6 +353,83 @@ class Configuration implements ConfigurationInterface
         $node->children()
             ->arrayNode('widget_types')
                 ->prototype('scalar')->end()
+            ->end()
+        ->end();
+    }
+
+    private function addPerspectivesConfigurationNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode(self::PERSPECTIVES_NODE)
+                ->defaultValue([])
+                ->useAttributeAsKey('id')
+                ->arrayPrototype()
+                    ->children()
+                        ->scalarNode('name')
+                            ->isRequired()
+                        ->end()
+                        ->arrayNode('icon')
+                            ->isRequired()
+                            ->beforeNormalization()
+                                ->ifNull()
+                                ->then(fn () => [])
+                            ->end()
+                            ->validate()
+                                ->ifTrue(fn ($icon) => is_array($icon) &&
+                                    (isset($icon['type']) xor isset($icon['value']))
+                                )
+                                ->thenInvalid('Both "type" and "value" must be defined together in "icon".')
+                            ->end()
+                            ->children()
+                                ->enumNode('type')
+                                    ->values(ElementIconTypes::values())
+                                ->end()
+                                ->scalarNode('value')
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('widgetsLeft')
+                            ->scalarPrototype()
+                                ->validate()
+                                    ->ifTrue(fn($value) => !is_string($value))
+                                    ->thenInvalid('Each permission value must be a string.')
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('widgetsRight')
+                            ->scalarPrototype()
+                                ->validate()
+                                    ->ifTrue(fn($value) => !is_string($value))
+                                    ->thenInvalid('Each permission value must be a string.')
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('widgetsBottom')
+                            ->scalarPrototype()
+                                ->validate()
+                                    ->ifTrue(fn($value) => !is_string($value))
+                                    ->thenInvalid('Each permission value must be a string.')
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->scalarNode('expandedLeft')
+                            ->info('The id of the widget that should be expanded on the left side.')
+                            ->defaultNull()
+                        ->end()
+                        ->scalarNode('expandedRight')
+                            ->info('The id of the widget that should be expanded on the right side.')
+                            ->defaultNull()
+                        ->end()
+                        ->arrayNode('contextPermissions')
+                            ->scalarPrototype()
+                                ->validate()
+                                    ->ifNotInArray([true, false])
+                                    ->thenInvalid('Each permission value must be a boolean.')
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
             ->end()
         ->end();
     }
