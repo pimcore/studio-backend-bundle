@@ -63,7 +63,7 @@ final class DeleteController extends AbstractApiController
      * @throws UserNotFoundException
      */
     #[Route('/elements/{elementType}/delete/{id}', name: 'pimcore_studio_api_elements_delete', methods: ['DELETE'])]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Delete(
         path: self::PREFIX . '/elements/{elementType}/delete/{id}',
         operationId: 'element_delete',

@@ -46,15 +46,12 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
                 $widgetData['elementType'],
                 $widgetData['contextPermissions']
             ),
-            $this->iconService->getIconForWidget($widgetData['icon']),
+            $this->iconService->getIconForValue($widgetData['icon']),
             $widgetData['elementType'],
             $widgetData['rootFolder'],
             $widgetData['showRoot'],
             $widgetData['classes'],
             $widgetData['pql'],
-            $widgetData['position'],
-            $widgetData['sort'],
-            $widgetData['expanded'],
             $widgetData['isWriteable']
         );
     }

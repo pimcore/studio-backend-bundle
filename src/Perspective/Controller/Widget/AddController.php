@@ -42,7 +42,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class AddController extends AbstractApiController
 {
-    private const string ROUTE = '/perspectives/widgets/{widgetType}/configuration}';
+    private const string ROUTE = '/perspectives/widgets/{widgetType}/configuration';
 
     public function __construct(
         SerializerInterface $serializer,

@@ -35,7 +35,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class TypeController extends AbstractApiController
 {
-    private const string ROUTE = '/perspectives/widgets/types/';
+    private const string ROUTE = '/perspectives/widgets/types';
 
     public function __construct(
         SerializerInterface $serializer,

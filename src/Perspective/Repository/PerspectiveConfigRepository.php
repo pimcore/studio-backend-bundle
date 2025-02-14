@@ -18,17 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Repository;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\Configuration;
-use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\SaveDataObjectContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetConfig;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedIteratorRepository;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveValidationService;
 use Pimcore\Config\LocationAwareConfigRepository;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use function sprintf;
@@ -36,65 +32,58 @@ use function sprintf;
 /**
  * @internal
  */
-#[AutoconfigureTag(TaggedIteratorRepository::REPOSITORY_TAG)]
-final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryInterface
+final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryInterface
 {
     public function __construct(
         private readonly IconServiceInterface $iconService,
         private readonly NormalizerInterface $normalizer,
-        private readonly WidgetValidationServiceInterface $validationService,
-        private readonly array $widgetConfigurations,
+        private readonly PerspectiveValidationService $validationService,
+        private readonly array $perspectiveConfigurations,
         private readonly array $storageConfig,
     ) {
     }
 
     private ?LocationAwareConfigRepository $repository = null;
 
-    public function getSupportedWidgetType(): string
-    {
-        return WidgetTypes::ELEMENT_TREE->value;
-    }
-
     /**
      * @throws ElementSavingFailedException|NotWriteableException
      */
-    public function createConfiguration(array $widgetData): string
+    public function createConfiguration(array $perspectiveData): string
     {
-        $config = new SaveElementTreeWidgetConfig(
-            $widgetData['id'],
-            $widgetData['name'],
-            $this->iconService->getIconForValue(),
-            new SaveDataObjectContextPermissions(),
+        $config = new SavePerspectiveConfig(
+            $perspectiveData['id'],
+            $perspectiveData['name'],
+            $this->iconService->getIconForValue()
         );
 
         $this->saveConfigData($config);
 
-        return $widgetData['id'];
+        return $perspectiveData['id'];
     }
 
     /**
      * @throws ElementSavingFailedException|NotWriteableException
      */
-    public function updateConfiguration(array $widgetData): void
+    public function updateConfiguration(array $perspectiveData): void
     {
-        $configData = $this->validationService->validateWidgetConfigData($widgetData);
+        $configData = $this->validationService->validatePerspectiveConfigData($perspectiveData);
         $this->saveConfigData($configData);
     }
 
     /**
      * @throws NotFoundException|NotWriteableException
      */
-    public function getConfiguration(string $widgetId): array
+    public function getConfiguration(string $perspectiveId): array
     {
         $repository = $this->getRepository();
-        $data = $repository->loadConfigByKey($widgetId);
+        $data = $repository->loadConfigByKey($perspectiveId);
         [$configData, $dataSource] = $data;
         if ($configData === null) {
-            throw new NotFoundException('Element Tree Widget', $widgetId);
+            throw new NotFoundException('Perspective', $perspectiveId);
         }
 
-        $configData['isWriteable'] = $this->isRepositoryWritable($widgetId, $dataSource);
-        $configData['id'] = $widgetId;
+        $configData['isWriteable'] = $this->isRepositoryWritable($perspectiveId, $dataSource);
+        $configData['id'] = $perspectiveId;
 
         return $configData;
     }
@@ -102,21 +91,21 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     /**
      * @throws ElementSavingFailedException|NotWriteableException
      */
-    private function saveConfigData(SaveElementTreeWidgetConfig $widgetConfiguration): void
+    private function saveConfigData(SavePerspectiveConfig $perspectiveConfig): void
     {
         try {
-            $widgetData = $this->normalizer->normalize($widgetConfiguration);
+            $perspective = $this->normalizer->normalize($perspectiveConfig);
         } catch (Exception|ExceptionInterface $exception) {
             throw new ElementSavingFailedException(null, $exception->getMessage());
         }
 
-        $this->isRepositoryWritable(message: 'Could not save the widget configuration: %s');
+        $this->isRepositoryWritable(message: 'Could not save the perspective configuration: %s');
 
         try {
-            $this->getRepository()->saveConfig($widgetConfiguration->getId(), $widgetData, function ($key, $data) {
+            $this->getRepository()->saveConfig($perspectiveConfig->getId(), $perspective, function ($key, $data) {
                 return [
                     Configuration::ROOT_NODE => [
-                        Configuration::TREE_WIDGETS_NODE => [
+                        Configuration::PERSPECTIVES_NODE => [
                             $key => $data,
                         ],
                     ],
@@ -152,9 +141,9 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
             $repository->deleteData($configId, $repository->getWriteTarget());
         } catch (Exception $exception) {
             throw new NotWriteableException(
-                'widget',
+                'perspective',
                 sprintf(
-                    'Widget configuration (%s) could not be deleted: %s',
+                    'Perspective configuration (%s) could not be deleted: %s',
                     $configId,
                     $exception->getMessage()
                 ),
@@ -167,8 +156,8 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     {
         if (!$this->repository) {
             $this->repository = new LocationAwareConfigRepository(
-                $this->widgetConfigurations,
-                Configuration::TREE_WIDGETS_NODE,
+                $this->perspectiveConfigurations,
+                Configuration::PERSPECTIVES_NODE,
                 $this->storageConfig
             );
         }
@@ -180,16 +169,16 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
      * @throws NotWriteableException
      */
     private function isRepositoryWritable(
-        ?string $widgetId = null,
+        ?string $perspectiveId = null,
         ?string $dataSource = null,
-        string $message = 'Could not export the widget configuration: %s'
+        string $message = 'Could not export the perspective configuration: %s'
     ): bool {
         try {
-            return $this->getRepository()->isWriteable($widgetId, $dataSource);
+            return $this->getRepository()->isWriteable($perspectiveId, $dataSource);
         } catch (Exception $exception) {
             $message = sprintf($message, $exception->getMessage());
 
-            throw new NotWriteableException('widget', $message, $exception);
+            throw new NotWriteableException('perspective', $message, $exception);
         }
     }
 }

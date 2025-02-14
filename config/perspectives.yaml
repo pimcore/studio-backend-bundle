@@ -24,8 +24,14 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetService
 
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveValidationServiceInterface:
+      class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveValidationService
+
   Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationService
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionsServiceInterface:
+      class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionService
 
   #
   # Hydrators
@@ -43,6 +49,9 @@ services:
   #
   # Repositories
   #
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepository
 
   Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository:
     tags: [ 'pimcore.studio_backend.widget_repository' ]

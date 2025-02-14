@@ -26,12 +26,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -42,7 +40,7 @@ final class DeleteController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly SecurityServiceInterface $securityService,
-        private readonly VersionRepositoryInterface $repository
+        private readonly VersionServiceInterface $versionService
     ) {
         parent::__construct($serializer);
     }
@@ -51,7 +49,6 @@ final class DeleteController extends AbstractApiController
      * @throws ForbiddenException|NotFoundException|UserNotFoundException
      */
     #[Route('/versions/{id}', name: 'pimcore_studio_api_delete_version', methods: ['DELETE'])]
-    #[IsGranted(ElementPermissions::VERSIONS_PERMISSION)]
     #[Delete(
         path: self::PREFIX . '/versions/{id}',
         operationId: 'version_delete_by_id',
@@ -70,14 +67,7 @@ final class DeleteController extends AbstractApiController
     ])]
     public function deleteVersion(int $id): Response
     {
-        $version = $this->repository->getVersionById($id);
-        $this->securityService->hasElementPermission(
-            $version->getData(),
-            $this->securityService->getCurrentUser(),
-            ElementPermissions::VERSIONS_PERMISSION
-        );
-
-        $version->delete();
+        $this->versionService->deleteVersion($id, $this->securityService->getCurrentUser());
 
         return new Response();
     }

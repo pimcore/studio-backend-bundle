@@ -21,13 +21,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SaveElementTreeWidgetConfig;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetPositions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Throwable;
 use function in_array;
 use function sprintf;
-use function strlen;
 
 /**
  * @internal
@@ -39,36 +36,6 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
         private IconServiceInterface $iconService,
         private array $widgetTypes
     ) {
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     */
-    public function getValidWidgetName(array $configData): string
-    {
-        if (!isset($configData['name'])) {
-            throw new InvalidArgumentException(
-                'Missing widget name',
-                errorKey: HttpResponseErrorKeys::WIDGET_NAME_MISSING->value
-            );
-        }
-        $this->validateWidgetName($configData['name']);
-
-        return htmlspecialchars($configData['name'], ENT_QUOTES, 'UTF-8');
-    }
-
-    public function validateWidgetName(
-        string $configurationName
-    ): void {
-        if (strlen($configurationName) < 3 ||
-            strlen($configurationName) > 80 ||
-            !preg_match('/^\p{L}[\p{L}\p{N}\s]+$/u', $configurationName)
-        ) {
-            throw new InvalidArgumentException(
-                'Invalid widget name',
-                errorKey: HttpResponseErrorKeys::WIDGET_NAME_INVALID->value
-            );
-        }
     }
 
     /**
@@ -90,7 +57,7 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
             $configuration = new SaveElementTreeWidgetConfig(
                 $widgetData['id'],
                 $widgetData['name'],
-                $this->iconService->getIconForWidget($widgetData['icon']),
+                $this->iconService->getIconForValue($widgetData['icon']),
                 $this->contextPermissionService->saveElementContextPermissions(
                     $widgetData['elementType'],
                     $widgetData['contextPermissions']
@@ -100,9 +67,6 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
                 $widgetData['showRoot'],
                 $this->getValidClasses($widgetData),
                 $widgetData['pql'],
-                $widgetData['position'],
-                $widgetData['sort'],
-                $widgetData['expanded'],
             );
         } catch (Throwable $exception) {
             throw new ValidationFailedException(
@@ -110,22 +74,8 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
                 previous: $exception
             );
         }
-        $this->validatePosition($configuration->getPosition());
 
         return $configuration;
-    }
-
-    /**
-     * @throws ValidationFailedException
-     */
-    private function validatePosition(string $position): void
-    {
-        if (!in_array($position, WidgetPositions::values(), true)
-        ) {
-            throw new ValidationFailedException(
-                sprintf('Invalid widget position provided: %s', $position)
-            );
-        }
     }
 
     private function getValidClasses(array $widgetData): array
