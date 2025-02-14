@@ -67,7 +67,6 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
     public function setDataObjectConfigurationAsFavoriteForCurrentUser(
         GridConfiguration $gridConfiguration,
-        string $classId,
         int $folderId
     ): GridConfiguration {
         $currentUser = $this->securityService->getCurrentUser();
@@ -81,7 +80,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
             $this->securityService->getCurrentUser()->getId(),
             $folderId,
-            $classId
+            $gridConfiguration->getClassId()
         );
 
         // If there is no favorite for the current user folder and classId, create a new one
@@ -89,7 +88,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
             $favorite = new GridConfigurationFavorite();
             $favorite->setFolder($folderId);
             $favorite->setUser($this->securityService->getCurrentUser()->getId());
-            $favorite->setClassId($classId);
+            $favorite->setClassId($gridConfiguration->getClassId());
         }
 
         $favorite->setConfiguration($gridConfiguration);
@@ -105,6 +104,23 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndAssetFolder(
             $this->securityService->getCurrentUser()->getId(),
             $gridConfiguration->getAssetFolderId()
+        );
+
+        if ($favorite) {
+            $gridConfiguration->removeFavorite($favorite);
+        }
+
+        return $gridConfiguration;
+    }
+
+    public function removeDataObjectConfigurationAsFavoriteForCurrentUser(
+        GridConfiguration $gridConfiguration,
+        int $folderId
+    ): GridConfiguration {
+        $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
+            $this->securityService->getCurrentUser()->getId(),
+            $folderId,
+            $gridConfiguration->getClassId()
         );
 
         if ($favorite) {

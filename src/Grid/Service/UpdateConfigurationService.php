@@ -14,15 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 
 /**
@@ -78,6 +76,59 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
         if (!$configurationParams->setAsFavorite()) {
             $configuration = $this->favoriteService
                 ->removeAssetConfigurationAsFavoriteForCurrentUser($configuration);
+        }
+
+        if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {
+            $configuration = $this->userRoleShareService->setShareOptions($configuration, $configurationParams);
+        }
+
+        $this->gridConfigurationRepository->update($configuration);
+    }
+
+    /**
+     * @throws NotFoundException|InvalidArgumentException|ForbiddenException
+     */
+    public function updateDataObjectGridConfigurationById(ConfigurationParameter $configurationParams, int $id): void
+    {
+        $configuration = $this->gridConfigurationRepository->getById($id);
+
+        if (!$configuration->getClassId()) {
+            throw new NotFoundException('Configuration', $id);
+        }
+
+        if ($configuration->getOwner() !== $this->securityService->getCurrentUser()->getId()) {
+            throw new ForbiddenException('You are not allowed to update this configuration.');
+        }
+
+        $configuration = $this->gridConfigurationRepository->clearShares($configuration);
+
+        $configuration = $this->gridConfigurationRepository->clearShares($configuration);
+
+        $configuration->setPageSize($configurationParams->getPageSize());
+        $configuration->setName($configurationParams->getName());
+        $configuration->setDescription($configurationParams->getDescription());
+        $configuration->setSaveFilter($configurationParams->saveFilter());
+        $configuration->setColumns($configurationParams->getColumnsAsArray());
+
+        $configuration->setFilter(null);
+        if ($configurationParams->saveFilter()) {
+            $configuration->setFilter($configurationParams->getFilter()->toArray());
+        }
+
+        if ($configurationParams->setAsFavorite()) {
+            $configuration = $this->favoriteService
+                ->setDataObjectConfigurationAsFavoriteForCurrentUser(
+                    $configuration,
+                    $configurationParams->getFolderId()
+                );
+        }
+
+        if (!$configurationParams->setAsFavorite()) {
+            $configuration = $this->favoriteService
+                ->removeDataObjectConfigurationAsFavoriteForCurrentUser(
+                    $configuration,
+                    $configurationParams->getFolderId()
+                );
         }
 
         if ($this->securityService->getCurrentUser()->isAllowed('share_configurations')) {

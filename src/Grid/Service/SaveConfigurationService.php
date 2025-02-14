@@ -85,10 +85,6 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
             throw new NotFoundException('ClassID', $classId);
         }
 
-        if (!$this->assetService->assetFolderExists($configuration->getFolderId())) {
-            throw new NotFoundException('Asset Folder', $configuration->getFolderId());
-        }
-
         $gridConfiguration = new GridConfiguration();
         $gridConfiguration = $this->setDefaultGridConfigurationData($gridConfiguration, $configuration);
         $gridConfiguration->setClassId($classId);
@@ -97,7 +93,6 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
             $gridConfiguration = $this->favoriteService
                 ->setDataObjectConfigurationAsFavoriteForCurrentUser(
                     $gridConfiguration,
-                    $classId,
                     $configuration->getFolderId()
                 );
         }
