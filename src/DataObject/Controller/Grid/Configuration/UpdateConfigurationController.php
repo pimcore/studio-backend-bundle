@@ -75,6 +75,7 @@ final class UpdateConfigurationController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::FORBIDDEN,
     ])]
     public function updateDataObjectGridConfiguration(
         #[MapRequestPayload] ConfigurationParameter $updateConfigurationParameter,
