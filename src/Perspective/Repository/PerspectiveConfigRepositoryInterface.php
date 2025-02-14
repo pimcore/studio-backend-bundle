@@ -16,6 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Repository;
 
+/**
+ * @internal
+ */
 interface PerspectiveConfigRepositoryInterface
 {
     public function createConfiguration(array $perspectiveData): string;
