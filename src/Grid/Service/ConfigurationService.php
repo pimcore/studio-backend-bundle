@@ -70,7 +70,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return new Collection(count($filteredConfigurations), $filteredConfigurations);
     }
 
-
     public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration
     {
         if (!$configurationId) {
@@ -175,6 +174,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
     /**
      * @param GridConfiguration[] $configurations
+     *
      * @return Configuration[]
      */
     private function filterConfigurationsForCurrentUser(array $configurations): array
