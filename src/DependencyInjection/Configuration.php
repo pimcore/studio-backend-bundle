@@ -28,6 +28,7 @@ use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use function is_array;
+use function is_string;
 use function sprintf;
 
 /**
@@ -39,7 +40,13 @@ class Configuration implements ConfigurationInterface
 {
     public const string ROOT_NODE = 'pimcore_studio_backend';
 
+    public const string PERSPECTIVES_NODE = 'studio_perspectives';
+
     public const string TREE_WIDGETS_NODE = WidgetTypes::ELEMENT_TREE->value . '_widgets';
+
+    private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
+
+    private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
 
     /**
      * {@inheritdoc}
@@ -66,11 +73,15 @@ class Configuration implements ConfigurationInterface
         $this->addUserNode($rootNode);
         $this->addServerNode($rootNode);
         $this->addWidgetTypesNode($rootNode);
+        $this->addPerspectivesConfigurationNode($rootNode);
         $this->addElementTreeWidgetConfigurationNode($rootNode);
 
         ConfigurationHelper::addConfigLocationWithWriteTargetNodes(
             $rootNode,
-            [self::TREE_WIDGETS_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE],
+            [
+                self::TREE_WIDGETS_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::TREE_WIDGETS_NODE,
+                self::PERSPECTIVES_NODE => PIMCORE_CONFIGURATION_DIRECTORY . '/' . self::PERSPECTIVES_NODE,
+            ],
             ['read_target']
         );
 
@@ -351,6 +362,93 @@ class Configuration implements ConfigurationInterface
         ->end();
     }
 
+    private function addPerspectivesConfigurationNode(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode(self::PERSPECTIVES_NODE)
+                ->defaultValue([])
+                ->useAttributeAsKey('id')
+                ->arrayPrototype()
+                    ->children()
+                        ->scalarNode('name')
+                            ->isRequired()
+                        ->end()
+                        ->arrayNode('icon')
+                            ->isRequired()
+                            ->beforeNormalization()
+                                ->ifNull()
+                                ->then(fn () => [])
+                            ->end()
+                            ->validate()
+                                ->ifTrue(fn ($icon) => is_array($icon) &&
+                                    (isset($icon['type']) xor isset($icon['value']))
+                                )
+                                ->thenInvalid('Both "type" and "value" must be defined together in "icon".')
+                            ->end()
+                            ->children()
+                                ->enumNode('type')
+                                    ->values(ElementIconTypes::values())
+                                ->end()
+                                ->scalarNode('value')
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('widgetsLeft')
+                            ->scalarPrototype()
+                                ->validate()
+                                    ->ifTrue(fn ($value) => !is_string($value))
+                                    ->thenInvalid(self::WIDGETS_ARRAY_VALUE_ERROR)
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('widgetsRight')
+                            ->scalarPrototype()
+                                ->validate()
+                                    ->ifTrue(fn ($value) => !is_string($value))
+                                    ->thenInvalid(self::WIDGETS_ARRAY_VALUE_ERROR)
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->arrayNode('widgetsBottom')
+                            ->scalarPrototype()
+                                ->validate()
+                                    ->ifTrue(fn ($value) => !is_string($value))
+                                    ->thenInvalid(self::WIDGETS_ARRAY_VALUE_ERROR)
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->scalarNode('expandedLeft')
+                            ->info('The id of the widget that should be expanded on the left side.')
+                            ->defaultNull()
+                        ->end()
+                        ->scalarNode('expandedRight')
+                            ->info('The id of the widget that should be expanded on the right side.')
+                            ->defaultNull()
+                        ->end()
+                        ->arrayNode('contextPermissions')
+                            ->useAttributeAsKey('key')
+                            ->arrayPrototype()
+                                ->performNoDeepMerging()
+                                ->children()
+                                    ->variableNode('permission')
+                                        ->validate()
+                                            ->ifNotInArray([true, false])
+                                            ->thenInvalid(self::PERMISSION_ARRAY_VALUE_ERROR)
+                                        ->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                            ->validate()
+                                ->ifEmpty()
+                                ->thenInvalid('Each permission array cannot be empty.')
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
+    }
+
     private function addElementTreeWidgetConfigurationNode(ArrayNodeDefinition $node): void
     {
         $node->children()
@@ -406,7 +504,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarPrototype()
                                 ->validate()
                                     ->ifNotInArray([true, false])
-                                    ->thenInvalid('Each permission value must be a boolean.')
+                                    ->thenInvalid(self::PERMISSION_ARRAY_VALUE_ERROR)
                                 ->end()
                             ->end()
                         ->end()

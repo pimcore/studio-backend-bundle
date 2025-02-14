@@ -36,7 +36,7 @@ final readonly class WidgetConfigListHydrator implements WidgetConfigListHydrato
             $widgetData['id'],
             $widgetData['name'],
             $widgetData['widgetType'],
-            $this->iconService->getIconForWidget($widgetData['icon']),
+            $this->iconService->getIconForValue($widgetData['icon']),
         );
     }
 }
