@@ -678,6 +678,10 @@ data_object_get_grid_description: |
     </ul>
 data_object_get_grid_success_response: Data object grid data
 data_object_get_grid_summary: Get data object data for grid
+data_object_list_saved_grid_configurations_description: |
+    List all saved grid configurations for data objects for given class ID
+data_object_list_saved_grid_configurations_summary: List all saved grid configurations for data objects
+data_object_list_saved_grid_configurations_success_response: List of saved grid configurations for data objects
 data_object_preview_by_id_description: |
     Preview data object by ID and site. Data Object must be stored in the session first to be able to preview it.
 data_object_preview_by_id_success_response: Redirect to preview URL

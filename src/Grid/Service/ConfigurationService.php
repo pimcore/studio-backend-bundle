@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -26,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterf
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\DetailedConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -50,57 +52,20 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     ) {
     }
 
-    public function getDefaultAssetGridConfiguration(): DetailedConfiguration
-    {
-        $availableColumns = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
-        $defaultColumns = [];
-        foreach ($this->predefinedColumns as $predefinedColumn) {
-            $filteredColumns =
-                array_filter($availableColumns, function (ColumnConfiguration $column) use ($predefinedColumn) {
-                    if ($column->getKey() === $predefinedColumn['key'] &&
-                        $column->getGroup() === $predefinedColumn['group']
-                    ) {
-                        return true;
-                    }
-
-                    return false;
-                });
-
-            if (count($filteredColumns) === 1) {
-                $column = array_pop($filteredColumns);
-                $defaultColumns[] = new ColumnSchema(
-                    key: $column->getKey(),
-                    locale: $column->getLocale(),
-                    group: $column->getGroup(),
-                );
-            }
-        }
-
-        $detailedConfiguration = $this->getDefaultDetailedConfiguration($defaultColumns);
-
-        $this->dispatchEvent($detailedConfiguration);
-
-        return $detailedConfiguration;
-    }
-
-    public function getGridConfigurationsForFolder(int $folderId): Collection
+    public function getConfigurationsForAssetsByFolder(int $folderId): Collection
     {
         $configurations = $this->configurationRepository->getByAssetFolderId($folderId);
 
-        $filteredConfigurations = [];
-        $currentUser = $this->securityService->getCurrentUser();
-        foreach ($configurations as $configuration) {
-            if ($this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
-                $hydratedConfiguration = $this->configurationHydrator->hydrate($configuration);
+        $filteredConfigurations = $this->filterConfigurationsForCurrentUser($configurations);
 
-                $this->eventDispatcher->dispatch(
-                    new GridConfigurationEvent($hydratedConfiguration),
-                    GridConfigurationEvent::EVENT_NAME
-                );
+        return new Collection(count($filteredConfigurations), $filteredConfigurations);
+    }
 
-                $filteredConfigurations[] = $hydratedConfiguration;
-            }
-        }
+    public function getConfigurationsForDataObjectsByClassId(string $classId): Collection
+    {
+        $configurations = $this->configurationRepository->getByClassId($classId);
+
+        $filteredConfigurations = $this->filterConfigurationsForCurrentUser($configurations);
 
         return new Collection(count($filteredConfigurations), $filteredConfigurations);
     }
@@ -134,32 +99,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             $configuration->isUserFavorite($user)
         );
 
-        $this->dispatchEvent($configuration);
+        $this->dispatchDetailedConfigurationEvent($configuration);
 
         return $configuration;
-    }
-
-    public function dispatchEvent(DetailedConfiguration $detailedConfiguration): void
-    {
-        $this->eventDispatcher->dispatch(
-            new DetailedConfigurationEvent($detailedConfiguration),
-            DetailedConfigurationEvent::EVENT_NAME
-        );
-    }
-
-    private function getDefaultDetailedConfiguration(array $columns): DetailedConfiguration
-    {
-        return new DetailedConfiguration(
-            name: 'Predefined',
-            description: 'Default Asset Grid Configuration',
-            shareGlobal: false,
-            saveFilter: false,
-            setAsFavorite: false,
-            sharedUsers: [],
-            sharedRoles: [],
-            columns: $columns,
-            filter: [],
-        );
     }
 
     /**
@@ -180,5 +122,91 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         }
 
         $this->configurationRepository->delete($configuration);
+    }
+
+    private function getDefaultDetailedConfiguration(array $columns): DetailedConfiguration
+    {
+        return new DetailedConfiguration(
+            name: 'Predefined',
+            description: 'Default Asset Grid Configuration',
+            shareGlobal: false,
+            saveFilter: false,
+            setAsFavorite: false,
+            sharedUsers: [],
+            sharedRoles: [],
+            columns: $columns,
+            filter: [],
+        );
+    }
+
+    private function getDefaultAssetGridConfiguration(): DetailedConfiguration
+    {
+        $availableColumns = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
+        $defaultColumns = [];
+        foreach ($this->predefinedColumns as $predefinedColumn) {
+            $filteredColumns =
+                array_filter($availableColumns, function (ColumnConfiguration $column) use ($predefinedColumn) {
+                    if ($column->getKey() === $predefinedColumn['key'] &&
+                        $column->getGroup() === $predefinedColumn['group']
+                    ) {
+                        return true;
+                    }
+
+                    return false;
+                });
+
+            if (count($filteredColumns) === 1) {
+                $column = array_pop($filteredColumns);
+                $defaultColumns[] = new ColumnSchema(
+                    key: $column->getKey(),
+                    locale: $column->getLocale(),
+                    group: $column->getGroup(),
+                );
+            }
+        }
+
+        $detailedConfiguration = $this->getDefaultDetailedConfiguration($defaultColumns);
+
+        $this->dispatchDetailedConfigurationEvent($detailedConfiguration);
+
+        return $detailedConfiguration;
+    }
+
+    /**
+     * @param GridConfiguration[] $configurations
+     *
+     * @return Configuration[]
+     */
+    private function filterConfigurationsForCurrentUser(array $configurations): array
+    {
+        $filteredConfigurations = [];
+        $currentUser = $this->securityService->getCurrentUser();
+        foreach ($configurations as $configuration) {
+            if ($this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
+                $hydratedConfiguration = $this->configurationHydrator->hydrate($configuration);
+
+                $this->dispatchConfigurationEvent($hydratedConfiguration);
+
+                $filteredConfigurations[] = $hydratedConfiguration;
+            }
+        }
+
+        return $filteredConfigurations;
+    }
+
+    public function dispatchDetailedConfigurationEvent(DetailedConfiguration $detailedConfiguration): void
+    {
+        $this->eventDispatcher->dispatch(
+            new DetailedConfigurationEvent($detailedConfiguration),
+            DetailedConfigurationEvent::EVENT_NAME
+        );
+    }
+
+    private function dispatchConfigurationEvent(Configuration $configuration): void
+    {
+        $this->eventDispatcher->dispatch(
+            new GridConfigurationEvent($configuration),
+            GridConfigurationEvent::EVENT_NAME
+        );
     }
 }
