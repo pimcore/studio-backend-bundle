@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;

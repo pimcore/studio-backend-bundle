@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\UpdateConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareServiceInterface;
@@ -39,11 +39,19 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
     }
 
     /**
-     * @throws NotFoundException
+     * @throws NotFoundException|InvalidArgumentException|ForbiddenException
      */
-    public function updateAssetGridConfigurationById(UpdateConfigurationParameter $configurationParams, int $id): void
+    public function updateAssetGridConfigurationById(ConfigurationParameter $configurationParams, int $id): void
     {
         $configuration = $this->gridConfigurationRepository->getById($id);
+
+        if (!$configuration->getAssetFolderId()) {
+            throw new NotFoundException('Configuration', $id);
+        }
+
+        if ($configuration->getAssetFolderId() !== $configurationParams->getFolderId()) {
+            throw new InvalidArgumentException('Configuration does not belong to the given folder.');
+        }
 
         if ($configuration->getOwner() !== $this->securityService->getCurrentUser()->getId()) {
             throw new ForbiddenException('You are not allowed to update this configuration.');

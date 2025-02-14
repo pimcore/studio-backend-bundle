@@ -54,8 +54,42 @@ final readonly class FavoriteService implements FavoriteServiceInterface
         // If there is no favorite for the current user and asset folder, create a new one
         if (!$favorite) {
             $favorite = new GridConfigurationFavorite();
-            $favorite->setAssetFolder($gridConfiguration->getAssetFolderId());
+            $favorite->setFolder($gridConfiguration->getAssetFolderId());
             $favorite->setUser($this->securityService->getCurrentUser()->getId());
+        }
+
+        $favorite->setConfiguration($gridConfiguration);
+
+        $gridConfiguration->addFavorite($favorite);
+
+        return $gridConfiguration;
+    }
+
+    public function setDataObjectConfigurationAsFavoriteForCurrentUser(
+        GridConfiguration $gridConfiguration,
+        string $classId,
+        int $folderId
+    ): GridConfiguration {
+        $currentUser = $this->securityService->getCurrentUser();
+        if (!$this->userRoleShareService->isConfigurationSharedWithUser($gridConfiguration, $currentUser)) {
+            throw new ForbiddenException(
+                'You are not allowed to set this configuration as favorite.
+                You have to be the owner of the configuration or the configuration has to be shared with you.'
+            );
+        }
+
+        $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
+            $this->securityService->getCurrentUser()->getId(),
+            $folderId,
+            $classId
+        );
+
+        // If there is no favorite for the current user folder and classId, create a new one
+        if (!$favorite) {
+            $favorite = new GridConfigurationFavorite();
+            $favorite->setFolder($folderId);
+            $favorite->setUser($this->securityService->getCurrentUser()->getId());
+            $favorite->setClassId($classId);
         }
 
         $favorite->setConfiguration($gridConfiguration);

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid\Configuration;
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\ConfigurationReque
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -52,33 +52,40 @@ final class SaveConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/assets/grid/configuration/save',
-        name: 'pimcore_studio_api_save_asset_grid_configuration',
+        '/data-object/grid/configuration/save/{classId}',
+        name: 'pimcore_studio_api_save_data_object_grid_configuration',
         methods: ['POST'],
     )]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
-        path: self::PREFIX . '/assets/grid/configuration/save',
-        operationId: 'asset_save_grid_configuration',
-        description: 'asset_save_grid_configuration_description',
-        summary: 'asset_save_grid_configuration_description',
-        tags: [Tags::AssetGrid->value]
+        path: self::PREFIX . '/data-object/grid/configuration/save/{classId}',
+        operationId: 'data_object_save_grid_configuration',
+        description: 'data_object_save_grid_configuration_description',
+        summary: 'data_object_save_grid_configuration_summary',
+        tags: [Tags::DataObjectsGrid->value]
     )]
     #[ConfigurationRequestBody]
-    #[IdParameter(type: 'folder', name: 'folderId', required: true)]
+    #[StringParameter(
+        name: 'classId',
+        example: 'EV',
+        description: 'Class Id of the data object',
+    )]
     #[SuccessResponse(
-        description: 'asset_save_grid_configuration_success_response',
+        description: 'data_object_save_grid_configuration_success_response',
         content: new JsonContent(ref: Configuration::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function saveAssetGridConfiguration(
-        #[MapRequestPayload] ConfigurationParameter $saveConfigurationParameter
+    public function saveDataObjectGridConfiguration(
+        #[MapRequestPayload] ConfigurationParameter $saveConfigurationParameter,
+        string $classId
     ): Response {
-        $configuration = $this->gridSaveConfigurationService->saveAssetGridConfiguration(
-            $saveConfigurationParameter
+
+        $configuration = $this->gridSaveConfigurationService->saveDataObjectGridConfiguration(
+            $saveConfigurationParameter,
+            $classId
         );
 
         return $this->jsonResponse($configuration);
