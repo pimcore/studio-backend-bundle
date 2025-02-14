@@ -135,10 +135,8 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
             $configuration = $this->userRoleShareService->setShareOptions($configuration, $configurationParams);
         }
 
-
         $this->gridConfigurationRepository->update($configuration);
     }
-
 
     /**
      * @throws NotFoundException

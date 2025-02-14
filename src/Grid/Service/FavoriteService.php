@@ -116,8 +116,7 @@ final readonly class FavoriteService implements FavoriteServiceInterface
     public function removeDataObjectConfigurationAsFavoriteForCurrentUser(
         GridConfiguration $gridConfiguration,
         int $folderId
-    ): GridConfiguration
-    {
+    ): GridConfiguration {
         $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
             $this->securityService->getCurrentUser()->getId(),
             $folderId,
@@ -130,7 +129,6 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
         return $gridConfiguration;
     }
-
 
     public function getFavoriteConfigurationForAssetFolder(int $folderId): ?GridConfiguration
     {
