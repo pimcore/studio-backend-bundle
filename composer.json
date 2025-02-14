@@ -18,7 +18,7 @@
   "minimum-stability": "dev",
   "require": {
     "php": "~8.3.0 || ~8.4.0",
-    "nesbot/carbon": "^2.65",
+    "nesbot/carbon": "^3.8.4",
     "pimcore/static-resolver-bundle": "2.x-dev",
     "pimcore/generic-data-index-bundle": "2.x-dev",
     "pimcore/pimcore": "^12.x-dev",
