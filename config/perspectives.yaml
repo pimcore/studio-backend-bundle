@@ -21,6 +21,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigHydratorLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedIteratorHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveServiceInterface:
+      class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveService
+
   Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface:
       class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetService
 
@@ -36,6 +39,9 @@ services:
   #
   # Hydrators
   #
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\PerspectiveConfigHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\PerspectiveConfigDetailHydrator
 
   Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetTypeHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetTypeHydrator

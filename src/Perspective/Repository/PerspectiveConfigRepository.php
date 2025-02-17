@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveValidationService;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveValidationServiceInterface;
 use Pimcore\Config\LocationAwareConfigRepository;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -37,7 +37,7 @@ final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryIn
     public function __construct(
         private readonly IconServiceInterface $iconService,
         private readonly NormalizerInterface $normalizer,
-        private readonly PerspectiveValidationService $validationService,
+        private readonly PerspectiveValidationServiceInterface $validationService,
         private readonly array $perspectiveConfigurations,
         private readonly array $storageConfig,
     ) {

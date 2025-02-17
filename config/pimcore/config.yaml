@@ -157,6 +157,23 @@ pimcore_studio_backend:
     widget_types:
         - 'element_tree'
 
+    studio_perspectives:
+        perspective_2:
+            name: "Admin Panel"
+            icon:
+                type: "name"
+                value: "admin.svg"
+            widgetsLeft: { }
+            widgetsRight:
+                admin_widget_1: "user-management"
+            widgetsBottom: { }
+            expandedLeft: null
+            expandedRight: "admin_widget_1"
+            contextPermissions:
+                backend_power_tools:
+                    manage_users: true
+                    edit_settings: false
+
 mercure:
     hubs:
         studio_server:
