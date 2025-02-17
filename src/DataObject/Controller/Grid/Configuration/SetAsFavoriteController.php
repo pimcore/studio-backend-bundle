@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid\Configuration;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -40,7 +40,7 @@ final class SetAsFavoriteController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private UpdateConfigurationServiceInterface $updateConfigurationService
+        private readonly UpdateConfigurationServiceInterface $updateConfigurationService
     ) {
         parent::__construct($serializer);
     }
@@ -49,17 +49,17 @@ final class SetAsFavoriteController extends AbstractApiController
      * @throws NotFoundException|ForbiddenException|InvalidArgumentException
      */
     #[Route(
-        '/assets/grid/configuration/set-as-favorite/{configurationId}/{folderId}',
-        name: 'pimcore_studio_api_asset_set_grid_configuration_as_favorite',
+        '/data-object/grid/configuration/set-as-favorite/{configurationId}/{folderId}',
+        name: 'pimcore_studio_api_data_object_set_grid_configuration_as_favorite',
         methods: ['POST'],
     )]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
-        path: self::PREFIX . '/assets/grid/configuration/set-as-favorite/{configurationId}/{folderId}',
-        operationId: 'asset_set_grid_configuration_as_favorite',
-        description: 'asset_set_grid_configuration_as_favorite_description',
-        summary: 'asset_set_grid_configuration_as_favorite_summary',
-        tags: [Tags::AssetGrid->value]
+        path: self::PREFIX . '/data-object/grid/configuration/set-as-favorite/{configurationId}/{folderId}',
+        operationId: 'data_object_set_grid_configuration_as_favorite',
+        description: 'data_object_set_grid_configuration_as_favorite_description',
+        summary: 'data_object_set_grid_configuration_as_favorite_summary',
+        tags: [Tags::DataObjectsGrid->value]
     )]
     #[IdParameter(
         type: 'configurationId',
@@ -70,18 +70,18 @@ final class SetAsFavoriteController extends AbstractApiController
         name: 'folderId'
     )]
     #[SuccessResponse(
-        description: 'asset_set_grid_configuration_as_favorite_response'
+        description: 'data_object_set_grid_configuration_as_favorite_response'
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function setAssetGridConfigurationAsFavorite(
+    public function setDataObjectGridConfigurationAsFavorite(
         int $configurationId,
         int $folderId
     ): Response {
-        $this->updateConfigurationService->setAssetGridConfigurationAsFavorite($configurationId, $folderId);
+        $this->updateConfigurationService->setDataObjectGridConfigurationAsFavorite($configurationId, $folderId);
 
         return new Response();
     }

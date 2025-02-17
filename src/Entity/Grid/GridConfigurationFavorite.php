@@ -31,12 +31,13 @@ class GridConfigurationFavorite
     #[ORM\Id]
     private int $user;
 
-    #[ORM\ManyToOne(targetEntity: GridConfiguration::class, inversedBy: 'shares')]
+    #[ORM\ManyToOne(targetEntity: GridConfiguration::class, inversedBy: 'favorites')]
     #[ORM\JoinColumn(name: 'configuration', referencedColumnName: 'id')]
     #[ORM\Id]
     private GridConfiguration $configuration;
 
     #[ORM\Column(type: 'integer', nullable: false)]
+    #[ORM\Id]
     private int $folder;
 
     #[ORM\Column(type: 'string', nullable: true)]

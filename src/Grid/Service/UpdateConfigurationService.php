@@ -155,4 +155,23 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
 
         $this->gridConfigurationRepository->update($configuration);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setDataObjectGridConfigurationAsFavorite(int $configurationId, int $folderId): void
+    {
+        $configuration = $this->gridConfigurationRepository->getById($configurationId);
+
+        if (!$configuration->getClassId()) {
+            throw new NotFoundException('Configuration', $configurationId);
+        }
+
+        $configuration = $this->favoriteService->setDataObjectConfigurationAsFavoriteForCurrentUser(
+            $configuration,
+            $folderId
+        );
+
+        $this->gridConfigurationRepository->update($configuration);
+    }
 }
