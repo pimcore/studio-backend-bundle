@@ -124,6 +124,26 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $this->configurationRepository->delete($configuration);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function deleteDataObjectConfiguration(int $configurationId): void
+    {
+        $configuration = $this->configurationRepository->getById($configurationId);
+
+        if (!$configuration->getClassId()) {
+            throw new NotFoundException('Configuration', $configurationId);
+        }
+
+        if ($this->securityService->getCurrentUser()->getId() !== $configuration->getOwner()) {
+            throw new ForbiddenException(
+                'You are not allowed to delete this configuration. Only the owner can delete it.'
+            );
+        }
+
+        $this->configurationRepository->delete($configuration);
+    }
+
     private function getDefaultDetailedConfiguration(array $columns): DetailedConfiguration
     {
         return new DetailedConfiguration(

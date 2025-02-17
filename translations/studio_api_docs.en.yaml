@@ -703,6 +703,9 @@ data_object_set_grid_configuration_as_favorite_description: |
   Set data object grid configuration as favorite for the current user for a specific folder
 data_object_set_grid_configuration_as_favorite_success_response: Data Object grid configuration set as favorite successfully
 data_object_set_grid_configuration_as_favorite_summary: Set data object grid configuration as favorite for a specific folder
+data_object_delete_grid_configuration_by_configurationId_description: |
+  Delete grid configuration for a given configuration ID <strong>{configurationId}</strong>
+data_object_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a given configuration ID
 asset_delete_grid_configuration_by_configurationId_description: |
     Delete grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
 asset_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a specific folder and given configuration ID
