@@ -144,7 +144,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $this->configurationRepository->delete($configuration);
     }
 
-
     private function getDefaultDetailedConfiguration(array $columns): DetailedConfiguration
     {
         return new DetailedConfiguration(
