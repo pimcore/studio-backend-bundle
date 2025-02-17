@@ -37,4 +37,9 @@ interface ConfigurationServiceInterface
      * @throws ForbiddenException|InvalidArgumentException|NotFoundException
      */
     public function deleteAssetConfiguration(int $configurationId, int $folderId): void;
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function deleteDataObjectConfiguration(int $configurationId): void;
 }
