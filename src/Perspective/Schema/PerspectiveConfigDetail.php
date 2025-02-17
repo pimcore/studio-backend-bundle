@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
         'widgetsLeft',
         'widgetsRight',
         'widgetsBottom',
+        'isWriteable',
         'expandedLeft',
         'expandedRight',
     ],
