@@ -17,11 +17,13 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
 
 use OpenApi\Attributes\Put;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\Grid\UpdateConfigurationRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\UpdateConfigurationParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\UpdateConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\ConfigurationRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\UpdateConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -47,7 +49,7 @@ final class UpdateConfigurationController extends AbstractApiController
     }
 
     /**
-     * @throws NotFoundException
+     * @throws NotFoundException|InvalidArgumentException|ForbiddenException
      */
     #[Route(
         '/assets/grid/configuration/update/{configurationId}',
@@ -62,7 +64,7 @@ final class UpdateConfigurationController extends AbstractApiController
         summary: 'asset_update_grid_configuration_summary',
         tags: [Tags::AssetGrid->value]
     )]
-    #[UpdateConfigurationRequestBody]
+    #[ConfigurationRequestBody]
     #[IdParameter(
         type: 'configurationId',
         name: 'configurationId'
@@ -75,7 +77,7 @@ final class UpdateConfigurationController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function updateAssetGridConfiguration(
-        #[MapRequestPayload] UpdateConfigurationParameter $updateConfigurationParameter,
+        #[MapRequestPayload] ConfigurationParameter $updateConfigurationParameter,
         int $configurationId
     ): Response {
         $this->gridSaveConfigurationService->updateAssetGridConfigurationById(

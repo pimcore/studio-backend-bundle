@@ -20,7 +20,7 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\UploadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\BoolJson;
@@ -52,7 +52,7 @@ final class InfoController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
@@ -72,6 +72,7 @@ final class InfoController extends AbstractApiController
         content: new BoolJson(name: 'exists', description: 'True if asset exists, false otherwise')
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

@@ -17,7 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\DetailedConfigurationEvent;
@@ -26,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\ConfigurationHydratorInterf
 use Pimcore\Bundle\StudioBackendBundle\Grid\Hydrator\DetailedConfigurationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -50,7 +52,94 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     ) {
     }
 
-    public function getDefaultAssetGridConfiguration(): DetailedConfiguration
+    public function getConfigurationsForAssetsByFolder(int $folderId): Collection
+    {
+        $configurations = $this->configurationRepository->getByAssetFolderId($folderId);
+
+        $filteredConfigurations = $this->filterConfigurationsForCurrentUser($configurations);
+
+        return new Collection(count($filteredConfigurations), $filteredConfigurations);
+    }
+
+    public function getConfigurationsForDataObjectsByClassId(string $classId): Collection
+    {
+        $configurations = $this->configurationRepository->getByClassId($classId);
+
+        $filteredConfigurations = $this->filterConfigurationsForCurrentUser($configurations);
+
+        return new Collection(count($filteredConfigurations), $filteredConfigurations);
+    }
+
+    public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration
+    {
+        if (!$configurationId) {
+            $configuration = $this->favoriteService->getFavoriteConfigurationForAssetFolder($folderId);
+            $configurationId = $configuration?->getId();
+        }
+
+        if (!$configurationId) {
+            return $this->getDefaultAssetGridConfiguration();
+        }
+
+        $configuration =  $this->configurationRepository->getById($configurationId);
+
+        $user = $this->securityService->getCurrentUser();
+        if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
+            throw new ForbiddenException('Access denied to configuration');
+        }
+
+        if ($configuration->getAssetFolderId() !== $folderId) {
+            throw new InvalidArgumentException('Configuration does not belong to folder');
+        }
+
+        $configuration = $this->detailedConfigurationHydrator->hydrate(
+            $configuration,
+            $this->userRoleShareService->getUserShares($configuration),
+            $this->userRoleShareService->getRoleShares($configuration),
+            $configuration->isUserFavorite($user)
+        );
+
+        $this->dispatchDetailedConfigurationEvent($configuration);
+
+        return $configuration;
+    }
+
+    /**
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException
+     */
+    public function deleteAssetConfiguration(int $configurationId, int $folderId): void
+    {
+        $configuration = $this->configurationRepository->getById($configurationId);
+
+        if ($configuration->getAssetFolderId() !== $folderId) {
+            throw new InvalidArgumentException('Configuration does not belong to folder');
+        }
+
+        if ($this->securityService->getCurrentUser()->getId() !== $configuration->getOwner()) {
+            throw new ForbiddenException(
+                'You are not allowed to delete this configuration. Only the owner can delete it.'
+            );
+        }
+
+        $this->configurationRepository->delete($configuration);
+    }
+
+    private function getDefaultDetailedConfiguration(array $columns): DetailedConfiguration
+    {
+        return new DetailedConfiguration(
+            name: 'Predefined',
+            description: 'Default Asset Grid Configuration',
+            shareGlobal: false,
+            saveFilter: false,
+            setAsFavorite: false,
+            sharedUsers: [],
+            sharedRoles: [],
+            columns: $columns,
+            filter: [],
+        );
+    }
+
+    private function getDefaultAssetGridConfiguration(): DetailedConfiguration
     {
         $availableColumns = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
         $defaultColumns = [];
@@ -78,68 +167,34 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
         $detailedConfiguration = $this->getDefaultDetailedConfiguration($defaultColumns);
 
-        $this->dispatchEvent($detailedConfiguration);
+        $this->dispatchDetailedConfigurationEvent($detailedConfiguration);
 
         return $detailedConfiguration;
     }
 
-    public function getGridConfigurationsForFolder(int $folderId): Collection
+    /**
+     * @param GridConfiguration[] $configurations
+     *
+     * @return Configuration[]
+     */
+    private function filterConfigurationsForCurrentUser(array $configurations): array
     {
-        $configurations = $this->configurationRepository->getByAssetFolderId($folderId);
-
         $filteredConfigurations = [];
         $currentUser = $this->securityService->getCurrentUser();
         foreach ($configurations as $configuration) {
             if ($this->userRoleShareService->isConfigurationSharedWithUser($configuration, $currentUser)) {
                 $hydratedConfiguration = $this->configurationHydrator->hydrate($configuration);
 
-                $this->eventDispatcher->dispatch(
-                    new GridConfigurationEvent($hydratedConfiguration),
-                    GridConfigurationEvent::EVENT_NAME
-                );
+                $this->dispatchConfigurationEvent($hydratedConfiguration);
 
                 $filteredConfigurations[] = $hydratedConfiguration;
             }
         }
 
-        return new Collection(count($filteredConfigurations), $filteredConfigurations);
+        return $filteredConfigurations;
     }
 
-    public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration
-    {
-        if (!$configurationId) {
-            $configuration = $this->favoriteService->getFavoriteConfigurationForAssetFolder($folderId);
-            $configurationId = $configuration?->getId();
-        }
-
-        if (!$configurationId) {
-            return $this->getDefaultAssetGridConfiguration();
-        }
-
-        $configuration =  $this->configurationRepository->getById($configurationId);
-
-        $user = $this->securityService->getCurrentUser();
-        if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
-            throw new AccessDeniedException('Access denied to configuration');
-        }
-
-        if ($configuration->getAssetFolderId() !== $folderId) {
-            throw new InvalidArgumentException('Configuration does not belong to folder');
-        }
-
-        $configuration = $this->detailedConfigurationHydrator->hydrate(
-            $configuration,
-            $this->userRoleShareService->getUserShares($configuration),
-            $this->userRoleShareService->getRoleShares($configuration),
-            $configuration->isUserFavorite($user)
-        );
-
-        $this->dispatchEvent($configuration);
-
-        return $configuration;
-    }
-
-    public function dispatchEvent(DetailedConfiguration $detailedConfiguration): void
+    public function dispatchDetailedConfigurationEvent(DetailedConfiguration $detailedConfiguration): void
     {
         $this->eventDispatcher->dispatch(
             new DetailedConfigurationEvent($detailedConfiguration),
@@ -147,38 +202,11 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         );
     }
 
-    private function getDefaultDetailedConfiguration(array $columns): DetailedConfiguration
+    private function dispatchConfigurationEvent(Configuration $configuration): void
     {
-        return new DetailedConfiguration(
-            name: 'Predefined',
-            description: 'Default Asset Grid Configuration',
-            shareGlobal: false,
-            saveFilter: false,
-            setAsFavorite: false,
-            sharedUsers: [],
-            sharedRoles: [],
-            columns: $columns,
-            filter: [],
+        $this->eventDispatcher->dispatch(
+            new GridConfigurationEvent($configuration),
+            GridConfigurationEvent::EVENT_NAME
         );
-    }
-
-    /**
-     * @throws NotFoundException|InvalidArgumentException|AccessDeniedException
-     */
-    public function deleteAssetConfiguration(int $configurationId, int $folderId): void
-    {
-        $configuration = $this->configurationRepository->getById($configurationId);
-
-        if ($configuration->getAssetFolderId() !== $folderId) {
-            throw new InvalidArgumentException('Configuration does not belong to folder');
-        }
-
-        if ($this->securityService->getCurrentUser()->getId() !== $configuration->getOwner()) {
-            throw new AccessDeniedException(
-                'You are not allowed to delete this configuration. Only the owner can delete it.'
-            );
-        }
-
-        $this->configurationRepository->delete($configuration);
     }
 }

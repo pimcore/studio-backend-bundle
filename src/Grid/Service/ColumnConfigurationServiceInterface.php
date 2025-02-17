@@ -34,5 +34,5 @@ interface ColumnConfigurationServiceInterface
      */
     public function getAvailableDataObjectColumnConfiguration(string $classId, int $folderId): array;
 
-    public function buildColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration;
+    public function buildDataObjectAdapterColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration;
 }

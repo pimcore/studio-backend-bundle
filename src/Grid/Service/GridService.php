@@ -17,19 +17,24 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
 use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface as IndexElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
@@ -65,6 +70,8 @@ final class GridService implements GridServiceInterface
         private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
         private readonly GridSearchInterface $gridSearch,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly ServiceResolverInterface $serviceResolver,
+        private readonly ClassDefinitionResolverInterface $classDefinitionResolver
     ) {
     }
 
@@ -75,14 +82,27 @@ final class GridService implements GridServiceInterface
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
 
-        return $this->getCollectionFromSearchResult($result, $gridParameter);
+        return $this->getCollectionFromSearchResult($result, $gridParameter, ElementTypes::TYPE_ASSET);
     }
 
-    public function getDataObjectGrid(GridParameter $gridParameter): Collection
+    /**
+     * @throws NotFoundException
+     * @throws Exception
+     */
+    public function getDataObjectGrid(GridParameter $gridParameter, string $classId): Collection
     {
+        $filter = $gridParameter->getFilters();
+        $classDefinition = $this->classDefinitionResolver->getById($classId);
+
+        if (!$classDefinition instanceof ClassDefinition) {
+            throw new NotFoundException('Class definition', $classId);
+        }
+
+        $filter->setClassName($classDefinition->getName());
+
         $result = $this->gridSearch->searchDataObjects($gridParameter);
 
-        return $this->getCollectionFromSearchResult($result, $gridParameter);
+        return $this->getCollectionFromSearchResult($result, $gridParameter, ElementTypes::TYPE_OBJECT);
     }
 
     /**
@@ -90,17 +110,39 @@ final class GridService implements GridServiceInterface
      */
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
-        IndexElementInterface $element,
+        StudioElementInterface $element,
         string $elementType
     ): array {
         $data = [];
+
+        $databaseElement = null;
+        if ($elementType === ElementTypes::TYPE_OBJECT) {
+            $databaseElement = $this->getElement(
+                $this->serviceResolver,
+                $elementType,
+                $element->getId()
+            );
+        }
+
         foreach ($columnCollection->getColumns() as $column) {
             // move this to the resolver
             if (!$this->supports($column, $elementType)) {
                 continue;
             }
 
-            $columnData = $this->getColumnResolvers()[$column->getType()]->resolve($column, $element);
+            $resolver = $this->getColumnResolvers()[$column->getType()];
+
+            $columnData = match (true) {
+                $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
+                    $resolver->resolveForCoreElement($column, $databaseElement),
+                $resolver instanceof StudioElementColumnResolverInterface =>
+                    $resolver->resolveForStudioElement($column, $element),
+                default =>
+                    throw new InvalidArgumentException(
+                        'Resolver must implement either StudioElementColumnResolverInterface or
+                        CoreElementColumnResolverInterface'
+                    ),
+            };
 
             $this->eventDispatcher->dispatch(
                 new GridColumnDataEvent($columnData),
@@ -121,7 +163,7 @@ final class GridService implements GridServiceInterface
      */
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
-        IndexElementInterface $element,
+        StudioElementInterface $element,
         string $elementType
     ): array {
         $data = $this->getGridDataForElement($columnCollection, $element, $elementType);
@@ -246,7 +288,8 @@ final class GridService implements GridServiceInterface
 
     private function getCollectionFromSearchResult(
         SearchResultItemInterface $searchResultItem,
-        GridParameter $gridParameter
+        GridParameter $gridParameter,
+        string $elementType
     ): Collection {
         $items = $searchResultItem->getItems();
 
@@ -259,7 +302,7 @@ final class GridService implements GridServiceInterface
             $data[] = $this->getGridDataForElement(
                 $this->getConfigurationFromArray($gridParameter->getColumns()),
                 $item,
-                ElementTypes::TYPE_ASSET
+                $elementType
             );
         }
 

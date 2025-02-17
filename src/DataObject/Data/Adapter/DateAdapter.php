@@ -46,7 +46,8 @@ final readonly class DateAdapter implements SetterDataInterface, SearchPreviewDa
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?Carbon {
         $dateData = $data[$key];
 

@@ -16,13 +16,16 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid;
 
+use Exception;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\GridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -49,11 +52,13 @@ final class GetController extends AbstractApiController
 
     /**
      * @throws InvalidArgumentException
+     * @throws Exception
+     * @throws NotFoundException
      */
-    #[Route('/data-objects/grid', name: 'pimcore_studio_api_get_data_object_grid', methods: ['POST'])]
+    #[Route('/data-objects/grid/{classId}', name: 'pimcore_studio_api_get_data_object_grid', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/data-objects/grid',
+        path: self::PREFIX . '/data-objects/grid/{classId}',
         operationId: 'data_object_get_grid',
         description: 'data_object_get_grid_description',
         summary: 'data_object_get_grid_summary',
@@ -66,13 +71,18 @@ final class GetController extends AbstractApiController
             collection: new GridCollection()
         )
     )]
+    #[StringParameter(
+        name: 'classId',
+        example: 'EV',
+        description: 'Identifies the class name for which the the grid should be build.',
+    )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::BAD_REQUEST,
     ])]
-    public function getDataObjectGrid(#[MapRequestPayload] GridParameter $gridParameter): JsonResponse
+    public function getDataObjectGrid(#[MapRequestPayload] GridParameter $gridParameter, string $classId): JsonResponse
     {
-        return $this->jsonResponse($this->gridService->getDataObjectGrid($gridParameter));
+        return $this->jsonResponse($this->gridService->getDataObjectGrid($gridParameter, $classId));
     }
 }

@@ -20,8 +20,8 @@ use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\BinaryServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -55,7 +55,7 @@ final class StreamController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws ElementStreamResourceNotFoundException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
@@ -82,6 +82,7 @@ final class StreamController extends AbstractApiController
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

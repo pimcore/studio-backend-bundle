@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\CloneRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\CloneParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ExecutionEngine\CloneServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -54,7 +53,6 @@ final class CloneController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementSavingFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -80,6 +78,8 @@ final class CloneController extends AbstractApiController
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'parentId')]
     #[CloneRequestBody]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

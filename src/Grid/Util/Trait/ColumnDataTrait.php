@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 
@@ -24,8 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
  */
 trait ColumnDataTrait
 {
-    private function getColumnData(Column $column, mixed $value): ColumnData
+    private function getColumnData(Column $column, mixed $value, ?InheritanceData $inheritanceData = null): ColumnData
     {
-        return new ColumnData($column->getKey(), $column->getLocale(), $value);
+        return new ColumnData($column->getKey(), $column->getLocale(), $value, $inheritanceData);
     }
 }

@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
@@ -27,14 +27,14 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
  */
 interface ConfigurationServiceInterface
 {
-    public function getDefaultAssetGridConfiguration(): DetailedConfiguration;
-
     public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration;
 
-    public function getGridConfigurationsForFolder(int $folderId): Collection;
+    public function getConfigurationsForAssetsByFolder(int $folderId): Collection;
+
+    public function getConfigurationsForDataObjectsByClassId(string $classId): Collection;
 
     /**
-     * @throws NotFoundException|InvalidArgumentException|AccessDeniedException
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException
      */
     public function deleteAssetConfiguration(int $configurationId, int $folderId): void;
 }

@@ -42,7 +42,7 @@ final class ListSavedConfigurationsController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private ConfigurationServiceInterface $configurationService,
+        private readonly ConfigurationServiceInterface $configurationService,
     ) {
         parent::__construct($serializer);
     }
@@ -78,7 +78,7 @@ final class ListSavedConfigurationsController extends AbstractApiController
     ])]
     public function getAssetSavedGridConfigurations(int $folderId): JsonResponse
     {
-        $configurations = $this->configurationService->getGridConfigurationsForFolder($folderId);
+        $configurations = $this->configurationService->getConfigurationsForAssetsByFolder($folderId);
 
         return $this->jsonResponse($configurations);
     }

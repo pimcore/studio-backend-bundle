@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller;
 
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -51,7 +51,7 @@ final class UpdateController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|UserNotFoundException|ElementSavingFailedException
+     * @throws ForbiddenException|NotFoundException|UserNotFoundException|ElementSavingFailedException
      */
     #[Route('/versions/{id}', name: 'pimcore_studio_api_update_version', methods: ['PUT'])]
     #[Put(
@@ -67,6 +67,8 @@ final class UpdateController extends AbstractApiController
         description: 'version_update_by_id_success_response',
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

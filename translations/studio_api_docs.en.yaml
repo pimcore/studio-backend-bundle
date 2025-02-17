@@ -243,10 +243,18 @@ element_get_id_by_path_description: |
   Get the element ID based on the given <strong>{path}</strong> and <strong>{elementType}</strong>. <br> The <strong>{path}</strong> must be a valid path of an existing element with provided <strong>{elementType}</strong>
 element_get_id_by_path_success_response: ID of the element
 element_get_id_by_path_summary: Get ID of the element by path query parameter and element type path parameter
+element_get_context_permissions_description: |
+    Get the context permission list relevant for the given <strong>{elementType}</strong>.
+element_get_context_permissions_success_response: Context permission list
+element_get_context_permissions_summary: Get context permissions for the element type path parameter
 element_get_subtype_description: |
   Get the subtype of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>.
 element_get_subtype_success_response: Subtype of the element
 element_get_subtype_summary: Get subtype of the element by id and element type path parameter
+element_resolve_by_search_term_description: |
+  Get the element ID based on the given <strong>{searchTerm}</strong>. <br> The <strong>{searchTerm}</strong> must be a valid ID or Path of an existing element. <br> The <strong>{searchTerm}</strong> can be modified via the <strong>ElementResolveEvent</strong>.
+element_resolve_by_search_term_summary: Get ID of the element with given search term
+element_resolve_response_description: ID of the element with given search term
 email_blocklist_add_description: |
   Add an E-mail address to the blocklist. <br> The E-mail address has to be compliant with the PHP validate filter.
 email_blocklist_add_success_response: Successfully added E-mail address to blocklist
@@ -297,6 +305,13 @@ email_send_test_description: |
   Send a test E-Mail based on the provided query parameters. <br> See the full description of request fields with the schema <strong>SendEmailParameters</strong>
 email_send_test_success_response: E-Mail was successfully sent
 email_send_test_summary: Send a test E-Mail
+error_something_generic_went_wrong: Oops, sorry seems like something unexpectedly went wrong.
+error_element_exists: Element already exists
+error_folder_exists: Folder already exists
+error_invalid_argument: Invalid argument
+error_widget_name_missing: Widget name have to be provided
+error_config_name_invalid: Configuration name is invalid (only alphanumeric characters, underscores and spaces are allowed, must be at least 3 characters long and less than 80 long)
+error_validation_failed: Validation failed
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
 login_description: Logs in a user with the provided credentials and returns the user information.
@@ -362,6 +377,34 @@ notification_send_description: |
   Send a notification to the given <strong>{recipientId}</strong>. <br> See the full description of request fields with the schema <strong>SendNotificationParameters</strong>
 notification_send_success_response: Successfully sent notification
 notification_send_summary: Send a notification
+perspective_widget_create_description: |
+    Create a new widget with default values based on the provided <strong>{widgetType}</strong>.
+    <br> The widget type has to be registered via Symfony Configuration.
+    <br> Please note that <strong>{name}</strong> has to be provided.
+perspective_widget_create_success_response: Id of the new widget
+perspective_widget_create_summary: Create a new widget
+perspective_widget_delete_description: |
+    Delete the widget with the given <strong>{widgetId}</strong> and <strong>{widgetType}</strong>. <br>
+    The <strong>{widgetId}</strong> must be an ID of an existing widget. The widget type has to be registered via Symfony Configuration.
+perspective_widget_delete_success_response: Successfully deleted widget
+perspective_widget_delete_summary: Delete widget with given id and type
+perspective_widget_get_config_collection_description: Listing of all available widget configurations
+perspective_widget_get_config_collection_success_response: List of widget configurations
+perspective_widget_get_config_collection_summary: Get all widget configurations
+perspective_widget_get_config_by_id_description: |
+  Get the widget configuration with the given <strong>{widgetId}</strong> and <strong>{widgetType}</strong>. <br> 
+  The <strong>{widgetId}</strong> must be an ID of an existing widget. The widget type has to be registered via Symfony Configuration.
+perspective_widget_get_config_by_id_success_response: Widget configuration data as JSON
+perspective_widget_get_config_by_id_summary: Get widget configuration by id and type
+perspective_widget_get_type_collection_description: Get widget types collection
+perspective_widget_get_type_collection_success_response: List of widget types
+perspective_widget_get_type_collection_summary: Get widget types
+perspective_widget_update_config_by_id_description: |
+  Update the widget configuration with the given <strong>{widgetId}</strong> and <strong>{widgetType}</strong>. <br> 
+  The <strong>{widgetId}</strong> must be an ID of an existing widget. The widget type has to be registered via Symfony Configuration. <br>
+  Please note that <strong>all configuration fields<strong> have to be provided.
+perspective_widget_update_config_by_id_success_response: Successfully updated widget configuration
+perspective_widget_update_config_by_id_summary: Update widget configuration by id and type
 property_create_description: |
   Creating the property with default values. <br>
   <ul>
@@ -498,6 +541,7 @@ tag_mercure_description: Retrieve JWT token for Mercure hub as cookie
 tag_metadata_description: Metadata operations to get/update/create/delete metadata
 tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications
+tag_perspectives_description: Operations to get/update/create/delete properties and widgets
 tag_properties_description: Property operations to get/update/create/delete properties
 tag_role_description: Role Management operations
 tag_search_description: Operations to get search configuration, search elements and get search result previews
@@ -634,10 +678,26 @@ data_object_get_grid_description: |
     </ul>
 data_object_get_grid_success_response: Data object grid data
 data_object_get_grid_summary: Get data object data for grid
+data_object_list_saved_grid_configurations_description: |
+    List all saved grid configurations for data objects for given class ID
+data_object_list_saved_grid_configurations_summary: List all saved grid configurations for data objects
+data_object_list_saved_grid_configurations_success_response: List of saved grid configurations for data objects
 data_object_preview_by_id_description: |
     Preview data object by ID and site. Data Object must be stored in the session first to be able to preview it.
 data_object_preview_by_id_success_response: Redirect to preview URL
-data_object_preview_by_id_summary: Preview data object by ID ans site
+data_object_preview_by_id_summary: Preview data object by ID and site
+data_object_save_grid_configuration_description: |
+  Save Data Object grid configuration for a specific Class ID <strong>{classId}</strong>
+data_object_save_grid_configuration_success_response: Data Object grid configuration saved successfully
+data_object_save_grid_configuration_summary: Save Data Object grid configuration for a specific folder
+data_object_update_grid_configuration_description: |
+  Update data object grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
+data_object_update_grid_configuration_summary: Update data object grid configuration for a specific folder
+data_object_update_grid_configuration_success_response: Data Object grid configuration updated successfully
+data_object_set_grid_configuration_as_favorite_description: |
+  Set data object grid configuration as favorite for the current user for a specific folder
+data_object_set_grid_configuration_as_favorite_success_response: Data Object grid configuration set as favorite successfully
+data_object_set_grid_configuration_as_favorite_summary: Set data object grid configuration as favorite for a specific folder
 asset_delete_grid_configuration_by_configurationId_description: |
     Delete grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
 asset_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a specific folder and given configuration ID
@@ -711,3 +771,52 @@ data_object_format_path_description: |
 data_object_format_path_summary: Format the path of the data
 data_object_format_path_success_response: Formatted path of the objects
 tag_export_description: Export
+class_definition_collection_description: Get collection of all class definitions
+class_definition_collection_summary: Get class definitions collection
+class_definition_collection_success_response: List of class definitions
+class_definition_get: Get class definition
+class_definition_get_description: Get class definition for the given data object class
+class_definition_get_summary: Get class definition for data object class
+class_definition_get_data_object_class: Data object class
+class_definition_get_success_response: Class definition
+class_custom_layout_collection: Get custom layout collection
+class_custom_layout_collection_description: Get custom layout collection for the given data object class.
+class_custom_layout_collection_summary: Get custom layout collection for data object class
+class_custom_layout_collection_data_object_class: Data object class
+class_custom_layout_collection_success_response: |
+  List of custom layouts for the given data object class in a simple and compact format for listings.
+class_custom_layout_editor_collection_description: | 
+  Get custom layout collection based on the <strong>{objectId}</strong> and current user permissions. <br>
+  The <strong>{objectId}</strong> must be an ID of an existing object.
+class_custom_layout_editor_collection_summary: Get custom layout collection for the data object
+class_custom_layout_editor_collection_success_response: List of custom layouts for the given data object id
+pimcore_studio_api_class_custom_layout_get: Get custom layout by given id
+pimcore_studio_api_class_custom_layout_get_description: Get custom layout by given id
+pimcore_studio_api_class_custom_layout_get_summary: Get custom layout by given id
+pimcore_studio_api_class_custom_layout_get_layout_id: Id of custom layout
+pimcore_studio_api_class_custom_layout_get_success_response: Custom layout data
+pimcore_studio_api_class_custom_layout_delete: Delete custom layout by given id
+pimcore_studio_api_class_custom_layout_delete_description: Delete custom layout by given id
+pimcore_studio_api_class_custom_layout_delete_summary: Delete custom layout by given id
+pimcore_studio_api_class_custom_layout_delete_success_response: Custom layout deleted
+pimcore_studio_api_class_custom_layout_delete_layout_id: Id of custom layout
+pimcore_studio_api_class_custom_layout_create: Create custom layout
+pimcore_studio_api_class_custom_layout_create_description: Create custom layout
+pimcore_studio_api_class_custom_layout_create_summary: Create custom layout
+pimcore_studio_api_class_custom_layout_create_success_response: Custom layout created
+pimcore_studio_api_class_custom_layout_create_layout_id: Id of custom layout
+pimcore_studio_api_class_custom_layout_update: Update custom layout by given id
+pimcore_studio_api_class_custom_layout_update_description: Update custom layout by given id
+pimcore_studio_api_class_custom_layout_update_summary: Update custom layout by given id
+pimcore_studio_api_class_custom_layout_update_layout_id: Id of custom layout
+pimcore_studio_api_class_custom_layout_update_success_response: Custom layout updated
+pimcore_studio_api_class_custom_layout_export: Export custom layout by given id
+pimcore_studio_api_class_custom_layout_export_description: Export custom layout by given id as JSON
+pimcore_studio_api_class_custom_layout_export_summary: Export custom layout by given id as JSON
+pimcore_studio_api_class_custom_layout_export_layout_id: Id of custom layout
+pimcore_studio_api_class_custom_layout_export_success_response: Custom layout data as JSON
+pimcore_studio_api_class_custom_layout_import: Import custom layout
+pimcore_studio_api_class_custom_layout_import_description: Import custom layout using a previously exported JSON.
+pimcore_studio_api_class_custom_layout_import_summary: Import custom layout
+pimcore_studio_api_class_custom_layout_import_success_response: Http status code
+pimcore_studio_api_class_custom_layout_import_layout_id: Id of custom layout

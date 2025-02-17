@@ -45,6 +45,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\UserRoleShareService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationService
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\UpdateConfigurationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\UpdateConfigurationService
+
   #
   # Repository
   #
@@ -158,6 +164,9 @@ services:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata\InputResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\AdapterResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   #

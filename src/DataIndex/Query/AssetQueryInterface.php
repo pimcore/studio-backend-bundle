@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
 
 /**
@@ -25,8 +24,6 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterfac
 interface AssetQueryInterface extends QueryInterface
 {
     public function filterMetadata(string $name, string $type, mixed $data): self;
-
-    public function orderByField(string $fieldName, SortDirection $direction): self;
 
     public function wildcardSearch(
         string $fieldName,

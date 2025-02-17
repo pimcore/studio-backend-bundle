@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Controller;
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -56,7 +55,6 @@ final class DeleteController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementDeletionFailedException
      * @throws EnvironmentException
      * @throws ForbiddenException
@@ -65,7 +63,7 @@ final class DeleteController extends AbstractApiController
      * @throws UserNotFoundException
      */
     #[Route('/elements/{elementType}/delete/{id}', name: 'pimcore_studio_api_elements_delete', methods: ['DELETE'])]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
     #[Delete(
         path: self::PREFIX . '/elements/{elementType}/delete/{id}',
         operationId: 'element_delete',
@@ -83,6 +81,9 @@ final class DeleteController extends AbstractApiController
     #[IdParameter]
     #[ElementTypeParameter]
     #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

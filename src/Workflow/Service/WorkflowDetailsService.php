@@ -105,11 +105,9 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
             $elementType,
             $elementId,
         );
+        $version = $this->getLatestVersionForUser($element, $user);
 
-        return $this->getLatestVersionForUser(
-            $element,
-            $user
-        );
+        return $this->getVersionData($element, $version);
     }
 
     private function hydrate(

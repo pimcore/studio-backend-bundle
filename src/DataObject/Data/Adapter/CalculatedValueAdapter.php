@@ -36,7 +36,8 @@ final readonly class CalculatedValueAdapter implements SetterDataInterface
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): null {
         return null;
     }

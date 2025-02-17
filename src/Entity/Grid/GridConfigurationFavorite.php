@@ -31,13 +31,17 @@ class GridConfigurationFavorite
     #[ORM\Id]
     private int $user;
 
-    #[ORM\ManyToOne(targetEntity: GridConfiguration::class, inversedBy: 'shares')]
+    #[ORM\ManyToOne(targetEntity: GridConfiguration::class, inversedBy: 'favorites')]
     #[ORM\JoinColumn(name: 'configuration', referencedColumnName: 'id')]
     #[ORM\Id]
     private GridConfiguration $configuration;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $assetFolder = null;
+    #[ORM\Column(type: 'integer', nullable: false)]
+    #[ORM\Id]
+    private int $folder;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $classId = null;
 
     public function getUser(): int
     {
@@ -49,14 +53,24 @@ class GridConfigurationFavorite
         return $this->configuration;
     }
 
-    public function getAssetFolder(): ?int
+    public function getFolder(): int
     {
-        return $this->assetFolder;
+        return $this->folder;
     }
 
-    public function setAssetFolder(int $assetFolder): void
+    public function setFolder(int $folder): void
     {
-        $this->assetFolder = $assetFolder;
+        $this->folder = $folder;
+    }
+
+    public function getClassId(): ?string
+    {
+        return $this->classId;
+    }
+
+    public function setClassId(?string $classId): void
+    {
+        $this->classId = $classId;
     }
 
     public function setUser(int $user): void

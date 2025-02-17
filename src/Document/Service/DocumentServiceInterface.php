@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -40,7 +40,7 @@ interface DocumentServiceInterface
     public function getDocumentForUser(int $id, UserInterface $user): Document;
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getDocumentElement(UserInterface $user, int $documentId): DocumentModel;
 }

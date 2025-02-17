@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller\Element;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
@@ -31,7 +32,6 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Version\Service\VersionServiceInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -51,7 +51,7 @@ final class CleanupController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|UserNotFoundException
+     * @throws ForbiddenException|NotFoundException|UserNotFoundException
      */
     #[Route('/versions/{elementType}/{id}', name: 'pimcore_studio_api_cleanup_versions', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::ELEMENT_TYPE_PERMISSION->value)]
@@ -69,6 +69,7 @@ final class CleanupController extends AbstractApiController
         content: new IdsJson('IDs of deleted versions')
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

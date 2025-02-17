@@ -16,8 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementPublishingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
@@ -31,7 +31,7 @@ use Pimcore\Model\UserInterface;
 interface VersionServiceInterface
 {
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getVersions(
         ElementParameters $elementParameters,
@@ -40,7 +40,7 @@ interface VersionServiceInterface
     ): Collection;
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
      * @throws ElementPublishingFailedException
@@ -51,10 +51,18 @@ interface VersionServiceInterface
     ): int;
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function cleanupVersions(
         ElementParameters $elementParameters,
         UserInterface $user
     ): array;
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function deleteVersion(
+        int $versionId,
+        UserInterface $user
+    ): void;
 }

@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDraftData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -31,6 +32,7 @@ use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Version as DataObjectVersionModal;
 use Pimcore\Normalizer\NormalizerInterface;
 
 /**
@@ -53,7 +55,8 @@ final readonly class DataService implements DataServiceInterface
      */
     public function setObjectDetailData(
         DataObjectFolder|DataObject|DataObjectVersion $dataObject,
-        DataObjectModel $element
+        DataObjectModel $element,
+        ?DataObjectVersionModal $version = null,
     ): void {
         $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
         if ($dataObject instanceof DataObjectFolder || !$element instanceof Concrete) {
@@ -70,10 +73,14 @@ final readonly class DataService implements DataServiceInterface
         $dataObject->setHasPreview($classData->getHasPreview());
         $dataObject->setObjectData($this->getNormalizedObjectData($element, $fieldDefinitions));
 
-        if ($dataObject instanceof DataObject && $dataObject->getAllowInheritance()) {
-            $dataObject->setInheritanceData(
-                $this->inheritanceService->getInheritanceData($element, $fieldDefinitions)
-            );
+        if ($dataObject instanceof DataObject) {
+            $dataObject->setDraftData($this->getDraftData($element, $version));
+
+            if ($dataObject->getAllowInheritance()) {
+                $dataObject->setInheritanceData(
+                    $this->inheritanceService->getInheritanceData($element, $fieldDefinitions)
+                );
+            }
         }
     }
 
@@ -162,6 +169,21 @@ final readonly class DataService implements DataServiceInterface
             $class->getAllowVariants(),
             $class->getShowVariants(),
             (bool)$class->getLinkGeneratorReference()
+        );
+    }
+
+    private function getDraftData(
+        DataObjectModel $dataObject,
+        ?DataObjectVersionModal $version = null
+    ): ?DataObjectDraftData {
+        if (!$version || $dataObject->getModificationDate() < $version->getDate()) {
+            return null;
+        }
+
+        return new DataObjectDraftData(
+            $version->getId(),
+            $version->getDate(),
+            $version->isAutoSave()
         );
     }
 }

@@ -30,6 +30,10 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterfac
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -49,7 +53,7 @@ use function sprintf;
  */
 class PimcoreStudioBackendExtension extends Extension implements PrependExtensionInterface
 {
-    private const FIREWALL_PATTERN = '^{prefix}(/.*)?$';
+    private const string FIREWALL_PATTERN = '^{prefix}(/.*)?$';
 
     /**
      * {@inheritdoc}
@@ -109,13 +113,36 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(KeyBindingServiceInterface::class);
         $definition->setArgument('$defaultKeyBindings', $config['user']['default_key_bindings']);
+
+        $definition = $container->getDefinition(WidgetServiceInterface::class);
+        $definition->setArgument('$widgetTypes', $config['widget_types']);
+
+        $definition = $container->getDefinition(WidgetValidationServiceInterface::class);
+        $definition->setArgument('$widgetTypes', $config['widget_types']);
+
+        $definition = $container->getDefinition(ElementTreeWidgetConfigRepository::class);
+
+        $definition->setArguments([
+            '$widgetConfigurations' => $config[Configuration::TREE_WIDGETS_NODE],
+            '$storageConfig' => $config['config_location'][Configuration::TREE_WIDGETS_NODE],
+        ]);
+
+        $definition = $container->getDefinition(PerspectiveConfigRepositoryInterface::class);
+
+        $definition->setArguments([
+            '$perspectiveConfigurations' => $config[Configuration::PERSPECTIVES_NODE],
+            '$storageConfig' => $config['config_location'][Configuration::PERSPECTIVES_NODE],
+        ]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function prepend(ContainerBuilder $container): void
     {
         $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
             $container,
-            'pimcore_studio_backend'
+            Configuration::ROOT_NODE
         );
 
         $urlPrefix = rtrim($containerConfig['url_prefix'], '/');
@@ -140,6 +167,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
                 $containerConfig['mercure_settings'][$key]
             );
         }
+
+        $this->prependCustomConfig($container, $containerConfig, Configuration::PERSPECTIVES_NODE);
+        $this->prependCustomConfig($container, $containerConfig, Configuration::TREE_WIDGETS_NODE);
     }
 
     /**
@@ -176,6 +206,25 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             throw new InvalidUrlPrefixException(
                 sprintf('The URL prefix "%s" must only contain valid URL characters.', $urlPrefix)
             );
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function prependCustomConfig(ContainerBuilder $container, array $containerConfig, string $node): void
+    {
+        $configLocation = $containerConfig['config_location'][$node];
+        $configDir = $configLocation['write_target']['options']['directory'];
+
+        $configLoader = new YamlFileLoader(
+            $container,
+            new FileLocator($configDir)
+        );
+
+        $configs = ConfigurationHelper::getSymfonyConfigFiles($configDir);
+        foreach ($configs as $config) {
+            $configLoader->load($config);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Controller\Asset;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -51,7 +51,7 @@ final class DownloadController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException|UserNotFoundException
+     * @throws ForbiddenException|NotFoundException|InvalidElementTypeException|UserNotFoundException
      */
     #[Route('/versions/{id}/asset/download', name: 'pimcore_studio_api_download_asset_version', methods: ['GET'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
@@ -69,6 +69,8 @@ final class DownloadController extends AbstractApiController
         headers: [new ContentDisposition()]
     )]
     #[DefaultResponses([
+        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

@@ -21,7 +21,6 @@ use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Email\Schema\EmailLogEntryDetail;
 use Pimcore\Bundle\StudioBackendBundle\Email\Service\EmailLogServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -51,7 +50,6 @@ final class GetController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws NotFoundException
      */
     #[Route('/emails/{id}', name: 'pimcore_studio_api_emails_log_entry', methods: ['GET'])]

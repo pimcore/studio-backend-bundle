@@ -17,11 +17,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResolve\ElementResolveEvent;
+use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementContextPermissionsEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResponse\ElementSubtypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Request\SearchTermParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
@@ -43,14 +53,16 @@ final readonly class ElementService implements ElementServiceInterface
     use ElementProviderTrait;
 
     public function __construct(
+        private ElementSearchServiceInterface $elementSearchService,
         private EventDispatcherInterface $eventDispatcher,
         private ServiceResolverInterface $serviceResolver,
         private SecurityServiceInterface $securityService,
+
     ) {
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getElementIdByPath(
         string $elementType,
@@ -62,7 +74,7 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getAllowedElementById(
         string $elementType,
@@ -76,7 +88,7 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getAllowedElementByPath(
         string $elementType,
@@ -103,7 +115,7 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws ApiNotFoundException
+     * @throws ApiNotFoundException|ForbiddenException|UserNotFoundException
      */
     public function getElementSubtype(ElementParameters $parameters): Subtype
     {
@@ -114,6 +126,27 @@ final readonly class ElementService implements ElementServiceInterface
         $this->eventDispatcher->dispatch(new ElementSubtypeEvent($subtype), ElementSubtypeEvent::EVENT_NAME);
 
         return $subtype;
+    }
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    public function getElementContextPermissions(
+        string $elementType
+    ): AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions {
+        $permissions = match ($elementType) {
+            ElementTypes::TYPE_ASSET => new AssetContextPermissions(),
+            ElementTypes::TYPE_DATA_OBJECT => new DataObjectContextPermissions(),
+            ElementTypes::TYPE_DOCUMENT => new DocumentContextPermissions(),
+            default => throw new InvalidElementTypeException($elementType),
+        };
+
+        $this->eventDispatcher->dispatch(
+            new ElementContextPermissionsEvent($permissions),
+            ElementContextPermissionsEvent::EVENT_NAME
+        );
+
+        return $permissions;
     }
 
     /**
@@ -133,5 +166,20 @@ final readonly class ElementService implements ElementServiceInterface
         }
 
         return $subtype;
+    }
+
+    /**
+     * @throws InvalidElementTypeException|NotFoundException|SearchException
+     */
+    public function resolveBySearchTerm(string $elementType, SearchTermParameter $searchTerm, UserInterface $user): int
+    {
+        $event = $this->eventDispatcher->dispatch(
+            new ElementResolveEvent($elementType, $searchTerm->getSearchTerm()),
+            ElementResolveEvent::EVENT_NAME
+        );
+
+        $modifiedSearchTerm = $event->getSearchTerm();
+
+        return $this->elementSearchService->getElementBySearchTerm($elementType, $modifiedSearchTerm, $user);
     }
 }

@@ -18,12 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration
 
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\Grid\SaveConfigurationRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\SaveConfigurationParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\Grid\SaveConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\ConfigurationRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -63,7 +64,8 @@ final class SaveConfigurationController extends AbstractApiController
         summary: 'asset_save_grid_configuration_description',
         tags: [Tags::AssetGrid->value]
     )]
-    #[SaveConfigurationRequestBody]
+    #[ConfigurationRequestBody]
+    #[IdParameter(type: 'folder', name: 'folderId', required: true)]
     #[SuccessResponse(
         description: 'asset_save_grid_configuration_success_response',
         content: new JsonContent(ref: Configuration::class)
@@ -73,9 +75,11 @@ final class SaveConfigurationController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function saveAssetGridConfiguration(
-        #[MapRequestPayload] SaveConfigurationParameter $saveConfigurationParameter
+        #[MapRequestPayload] ConfigurationParameter $saveConfigurationParameter
     ): Response {
-        $configuration = $this->gridSaveConfigurationService->saveAssetGridConfiguration($saveConfigurationParameter);
+        $configuration = $this->gridSaveConfigurationService->saveAssetGridConfiguration(
+            $saveConfigurationParameter
+        );
 
         return $this->jsonResponse($configuration);
     }

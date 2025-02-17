@@ -1,0 +1,57 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Controller\:
+    resource: '../src/Perspective/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigRepositoryLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedIteratorRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\ConfigHydratorLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\Loader\Widget\TaggedIteratorHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface:
+      class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetService
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveValidationServiceInterface:
+      class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveValidationService
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface:
+      class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationService
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionsServiceInterface:
+      class: Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionService
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetTypeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetTypeHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetConfigListHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetConfigListHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\ElementTreeWidgetConfigHydrator:
+    tags: [ 'pimcore.studio_backend.widget_hydrator' ]
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepository
+
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository:
+    tags: [ 'pimcore.studio_backend.widget_repository' ]

@@ -37,7 +37,8 @@ final readonly class InputQuantityValueAdapter implements SetterDataInterface
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?InputQuantityValue {
         $value = $data[$key]['value'] ?? null;
         $unit = $data[$key]['unitId'] ?? null;

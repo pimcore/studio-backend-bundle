@@ -44,4 +44,14 @@ interface InheritanceServiceInterface
         string $key,
         ?FieldContextData $contextData = null
     ): array|InheritanceData;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getOriginId(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): int;
 }

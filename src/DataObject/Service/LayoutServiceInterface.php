@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 interface LayoutServiceInterface
 {
     /**
-     * @throws AccessDeniedException|InvalidElementTypeException|NotFoundException|UserNotFoundException
+     * @throws ForbiddenException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
-    public function getDataObjectLayout(int $id): Layout;
+    public function getDataObjectLayout(int $id, ?string $layoutId = null): Layout;
 }

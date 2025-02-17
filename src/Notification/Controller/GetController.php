@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
@@ -47,7 +47,7 @@ final class GetController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws UserNotFoundException
      */
     #[Route('/notifications/{id}', name: 'pimcore_studio_api_notification_get', methods: ['GET'])]
@@ -65,6 +65,7 @@ final class GetController extends AbstractApiController
         content: new JsonContent(ref: Notification::class)
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]

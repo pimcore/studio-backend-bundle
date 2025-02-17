@@ -21,7 +21,7 @@ use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
@@ -50,7 +50,7 @@ final class GetSubtypeController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|UserNotFoundException|NotFoundException
+     * @throws ForbiddenException|UserNotFoundException|NotFoundException
      */
     #[Route(
         '/elements/{elementType}/subtype/{id}',
@@ -72,8 +72,9 @@ final class GetSubtypeController extends AbstractApiController
         content: new JsonContent(ref: Subtype::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getElementSubtype(
         int $id,

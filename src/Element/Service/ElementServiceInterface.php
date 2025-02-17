@@ -17,9 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Request\PathParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Request\SearchTermParameter;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Subtype;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException as ApiNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ElementParameters;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Exception\NotFoundException;
@@ -28,7 +35,7 @@ use Pimcore\Model\UserInterface;
 interface ElementServiceInterface
 {
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getElementIdByPath(
         string $elementType,
@@ -37,7 +44,7 @@ interface ElementServiceInterface
     ): int;
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getAllowedElementById(
         string $elementType,
@@ -46,7 +53,7 @@ interface ElementServiceInterface
     ): ElementInterface;
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getAllowedElementByPath(
         string $elementType,
@@ -59,7 +66,23 @@ interface ElementServiceInterface
     ): bool;
 
     /**
-     * @throws ApiNotFoundException
+     * @throws ApiNotFoundException|ForbiddenException|UserNotFoundException
      */
     public function getElementSubtype(ElementParameters $parameters): Subtype;
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    public function getElementContextPermissions(
+        string $elementType
+    ): AssetContextPermissions|DataObjectContextPermissions|DocumentContextPermissions;
+
+    /**
+     * @throws InvalidElementTypeException|NotFoundException|SearchException
+     */
+    public function resolveBySearchTerm(
+        string $elementType,
+        SearchTermParameter $searchTerm,
+        UserInterface $user
+    ): int;
 }

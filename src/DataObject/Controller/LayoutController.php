@@ -21,11 +21,12 @@ use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Layout;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\LayoutServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -49,32 +50,35 @@ final class LayoutController extends AbstractApiController
     }
 
     /**
-     * @throws AccessDeniedException|InvalidElementTypeException|NotFoundException|UserNotFoundException
+     * @throws ForbiddenException|InvalidElementTypeException|NotFoundException|UserNotFoundException
      */
     #[Route(
-        path: '/data-objects/{id}/layout',
+        path: '/data-objects/{id}/layout/{layoutId}',
         name: 'pimcore_studio_api_get_data_object_layout',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/data-objects/{id}/layout',
+        path: self::PREFIX . '/data-objects/{id}/layout/{layoutId}',
         operationId: 'data_object_get_layout_by_id',
         description: 'data_object_get_layout_by_id_description',
         summary: 'data_object_get_layout_by_id_summary',
         tags: [Tags::DataObjects->value]
     )]
     #[IdParameter(type: 'data-object')]
+    #[StringParameter(name: 'layoutId', example: 'Todo', description: 'ID to get specific layout', required: false)]
     #[SuccessResponse(
         description: 'data_object_get_layout_by_id_success_response',
         content: new JsonContent(ref: Layout::class)
     )]
     #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getDataObjectLayoutById(int $id): JsonResponse
+    public function getDataObjectLayoutById(int $id, ?string $layoutId = null): JsonResponse
     {
-        return $this->jsonResponse($this->layoutService->getDataObjectLayout($id));
+        return $this->jsonResponse($this->layoutService->getDataObjectLayout($id, $layoutId));
     }
 }

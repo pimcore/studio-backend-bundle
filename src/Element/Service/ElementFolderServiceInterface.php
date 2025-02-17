@@ -21,12 +21,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\UserInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 interface ElementFolderServiceInterface
 {
     /**
-     * @throws AccessDeniedException
      * @throws ElementSavingFailedException
      * @throws ForbiddenException
      * @throws InvalidElementTypeException

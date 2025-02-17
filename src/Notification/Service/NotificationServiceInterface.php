@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 interface NotificationServiceInterface
 {
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws UserNotFoundException
      */
     public function getNotificationById(int $id): Notification;
@@ -40,14 +40,14 @@ interface NotificationServiceInterface
     public function listNotifications(FilterParameter $parameters): Collection;
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
     public function markNotificationAsRead(int $id): void;
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws UserNotFoundException
      */

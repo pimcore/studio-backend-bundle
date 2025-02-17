@@ -25,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Me
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -61,7 +60,6 @@ final class CloneService implements CloneServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementSavingFailedException
      * @throws ForbiddenException
      * @throws NotFoundException
@@ -137,7 +135,7 @@ final class CloneService implements CloneServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getNewCloneTarget(
         UserInterface $user,

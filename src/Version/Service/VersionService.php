@@ -17,8 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementPublishingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Version\Repository\VersionRepositoryInter
 use Pimcore\Bundle\StudioBackendBundle\Version\Response\Collection;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
+use Pimcore\Model\Version;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
@@ -53,7 +54,7 @@ final readonly class VersionService implements VersionServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getVersions(
         ElementParameters $elementParameters,
@@ -98,7 +99,7 @@ final readonly class VersionService implements VersionServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException
+     * @throws ForbiddenException
      * @throws NotFoundException
      * @throws InvalidElementTypeException
      * @throws ElementPublishingFailedException
@@ -152,6 +153,40 @@ final readonly class VersionService implements VersionServiceInterface
         return $lastVersion->getId();
     }
 
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function deleteVersion(
+        int $versionId,
+        UserInterface $user
+    ): void {
+        $version = $this->repository->getVersionById($versionId);
+        if ($version->isAutoSave()) {
+            $this->handleDraft($version, $user);
+
+            return;
+        }
+
+        $this->repository->getElementFromVersion(
+            $version,
+            $user
+        );
+
+        $version->delete();
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function handleDraft(Version $version, UserInterface $user): void
+    {
+        if ($version->getUserId() !== $user->getId()) {
+            throw new ForbiddenException('You are not allowed to delete this version');
+        }
+
+        $version->delete();
+    }
+
     private function getScheduledTasks(ElementInterface $element): array
     {
         $scheduledTasks = $element->getScheduledTasks();
@@ -166,7 +201,7 @@ final readonly class VersionService implements VersionServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function cleanupVersions(
         ElementParameters $elementParameters,

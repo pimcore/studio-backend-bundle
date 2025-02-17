@@ -148,18 +148,23 @@ final class Installer extends SettingsStoreAwareInstaller
         $table->addColumn(
             'user',
             'integer',
-            ['notnull' => false, 'unsigned' => true]
+            ['notnull' => true, 'unsigned' => true]
         );
 
         $table->addColumn(
             'configuration',
             'integer',
-            ['notnull' => false, 'unsigned' => true]
+            ['notnull' => true, 'unsigned' => true]
         );
 
-        $table->addColumn('assetFolder', 'integer', [
-            'notnull' => false,
+        $table->addColumn('folder', 'integer', [
+            'notnull' => true,
             'unsigned' => true,
+        ]);
+
+        $table->addColumn('classId', 'string', [
+            'notnull' => false,
+            'length' => 10,
         ]);
 
         $table->addForeignKeyConstraint(
@@ -178,7 +183,7 @@ final class Installer extends SettingsStoreAwareInstaller
             'fk_'.GridConfigurationFavorite::TABLE_NAME.'_configurations'
         );
 
-        $table->setPrimaryKey(['user', 'configuration'], 'pk_'.GridConfigurationFavorite::TABLE_NAME);
+        $table->setPrimaryKey(['user', 'configuration', 'folder'], 'pk_'.GridConfigurationFavorite::TABLE_NAME);
     }
 
     /**
@@ -243,6 +248,8 @@ final class Installer extends SettingsStoreAwareInstaller
             'notnull' => false,
             'unsigned' => true,
         ]);
+
+        $table->addColumn('classId', 'string', ['notnull' => false, 'length' => 10]);
 
         $table->addColumn(
             'owner',

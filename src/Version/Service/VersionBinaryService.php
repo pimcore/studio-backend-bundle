@@ -18,10 +18,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Asset\Image\Thumbnail\ConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DocumentServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementProcessingNotCompletedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UnprocessableContentException;
@@ -55,7 +55,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
+     * @throws ForbiddenException|NotFoundException|InvalidElementTypeException
      */
     public function downloadAsset(
         int $id,
@@ -76,7 +76,7 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
+     * @throws ForbiddenException|NotFoundException|InvalidElementTypeException
      */
     public function streamThumbnailImage(
         int $id,
@@ -101,9 +101,9 @@ final readonly class VersionBinaryService implements VersionBinaryServiceInterfa
     }
 
     /**
-     * @throws AccessDeniedException
      * @throws ElementProcessingNotCompletedException
      * @throws ElementStreamResourceNotFoundException
+     * @throws ForbiddenException
      * @throws EnvironmentException
      * @throws InvalidElementTypeException
      * @throws NotFoundException

@@ -20,7 +20,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -88,7 +88,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException
+     * @throws ForbiddenException|NotFoundException
      */
     public function getDocumentElement(
         UserInterface $user,

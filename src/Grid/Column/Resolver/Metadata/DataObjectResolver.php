@@ -20,17 +20,18 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInter
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\Metadata\LocalizedValueTrait;
-use Pimcore\Bundle\StudioBackendBundle\Response\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
  * @internal
  */
-final class DataObjectResolver implements ColumnResolverInterface
+final class DataObjectResolver implements ColumnResolverInterface, StudioElementColumnResolverInterface
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;
@@ -40,7 +41,7 @@ final class DataObjectResolver implements ColumnResolverInterface
     ) {
     }
 
-    public function resolve(Column $column, ElementInterface $element): ColumnData
+    public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
         $object = $this->getLocalizedValue($column, $element);
 

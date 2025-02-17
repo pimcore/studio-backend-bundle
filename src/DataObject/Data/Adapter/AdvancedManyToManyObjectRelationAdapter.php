@@ -20,8 +20,8 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\RelationMetadataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -38,11 +38,11 @@ use function is_array;
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDataInterface, DataNormalizerInterface
 {
-    use RelationDataTrait;
     use RelationMetadataTrait;
 
     public function __construct(
-        private ConcreteObjectResolverInterface $concreteObjectResolver
+        private ConcreteObjectResolverInterface $concreteObjectResolver,
+        private RelationDataServiceInterface $relationDataService,
     ) {
     }
 
@@ -52,15 +52,23 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
         string $key,
         array $data,
         UserInterface $user,
-        ?FieldContextData $contextData = null
+        ?FieldContextData $contextData = null,
+        bool $isPatch = false
     ): ?array {
-
-        $relationData = $data[$key];
-        if ($relationData === false || !is_array($relationData)) {
+        $relationData = $this->relationDataService->getSetterData(
+            $element,
+            $fieldDefinition,
+            $this,
+            $isPatch,
+            $data[$key],
+            $contextData,
+            true
+        );
+        if ($relationData === null) {
             return null;
         }
 
-        return $this->buildRelationsMetadata($relationData, $fieldDefinition);
+        return $this->buildObjectRelationsMetadata($relationData, $fieldDefinition);
     }
 
     public function normalize(
@@ -77,13 +85,13 @@ final readonly class AdvancedManyToManyObjectRelationAdapter implements SetterDa
                 continue;
             }
 
-            $normalizedData[] = $this->getAdvancedRelationElementData($relation);
+            $normalizedData[] = $this->relationDataService->getAdvancedRelationElementData($relation);
         }
 
         return $normalizedData;
     }
 
-    private function buildRelationsMetadata(array $relationData, Data $fieldDefinition): array
+    private function buildObjectRelationsMetadata(array $relationData, Data $fieldDefinition): array
     {
         if (!$fieldDefinition instanceof AdvancedManyToManyObjectRelation) {
             return [];

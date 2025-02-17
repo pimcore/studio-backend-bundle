@@ -37,7 +37,10 @@ class GridConfiguration
     private ?int $id = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $assetFolderId;
+    private ?int $assetFolderId = null;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $classId = null;
 
     #[ORM\Column(type: 'integer')]
     private int $owner;
@@ -96,7 +99,7 @@ class GridConfiguration
         return $this->id;
     }
 
-    public function getAssetFolderId(): int
+    public function getAssetFolderId(): ?int
     {
         return $this->assetFolderId;
     }
@@ -241,5 +244,15 @@ class GridConfiguration
         }
 
         return false;
+    }
+
+    public function getClassId(): ?string
+    {
+        return $this->classId;
+    }
+
+    public function setClassId(?string $classId): void
+    {
+        $this->classId = $classId;
     }
 }

@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Patcher\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\PatchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;

@@ -16,9 +16,8 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\AccessDeniedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
@@ -39,7 +38,7 @@ final readonly class ChildrenSortByAdapter implements PatchAdapterInterface
     private const INDEX_KEY = 'childrenSortBy';
 
     /**
-     * @throws ElementSavingFailedException
+     * @throws ElementSavingFailedException|ForbiddenException
      */
     public function patch(ElementInterface $element, array $data, UserInterface $user): void
     {
@@ -48,7 +47,7 @@ final readonly class ChildrenSortByAdapter implements PatchAdapterInterface
         }
 
         if (!$user->isAllowed(UserPermissions::OBJECTS_SORT_METHOD->value)) {
-            throw new AccessDeniedException('You are not allowed to change the sort method');
+            throw new ForbiddenException('You are not allowed to change the sort method');
         }
 
         $value = $data[$this->getIndexKey()];

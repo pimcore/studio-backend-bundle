@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\ConfigurationParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Model\UserInterface;

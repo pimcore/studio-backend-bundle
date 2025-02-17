@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Repository\ClassDefinitionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;

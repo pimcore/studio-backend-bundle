@@ -20,6 +20,10 @@ use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
@@ -46,6 +50,11 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 
     /**
      * @throws FilesystemException
+     * @throws ForbiddenException
+     * @throws InvalidArgumentException
+     * @throws UserNotFoundException
+     * @throws NotFoundException
+     * /
      */
     public function onStateChanged(JobRunStateChangedEvent $event): void
     {

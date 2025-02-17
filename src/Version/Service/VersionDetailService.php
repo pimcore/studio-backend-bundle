@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Version\Service;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementStreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
@@ -33,7 +34,6 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Finder\Exception\AccessDeniedException;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 
 /**
@@ -51,7 +51,7 @@ final readonly class VersionDetailService implements VersionDetailServiceInterfa
     }
 
     /**
-     * @throws AccessDeniedException|NotFoundException|InvalidElementTypeException
+     * @throws ForbiddenException|NotFoundException|InvalidElementTypeException
      */
     public function getVersionData(
         int $id,
