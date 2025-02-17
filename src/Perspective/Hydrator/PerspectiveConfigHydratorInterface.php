@@ -14,20 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 
 /**
  * @internal
  */
-interface PerspectiveValidationServiceInterface
+interface PerspectiveConfigHydratorInterface
 {
     /**
-     * @throws ValidationFailedException
+     * @throws InvalidArgumentException
      */
-    public function validatePerspectiveConfigData(array $perspectiveData): SavePerspectiveConfig;
-
-    public function getValidContextPermissions(array $perspectivePermissions): array;
+    public function hydrate(array $widgetData): PerspectiveConfig;
 }

@@ -16,18 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 
 /**
  * @internal
  */
-interface PerspectiveValidationServiceInterface
+interface PerspectiveServiceInterface
 {
     /**
-     * @throws ValidationFailedException
+     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
      */
-    public function validatePerspectiveConfigData(array $perspectiveData): SavePerspectiveConfig;
-
-    public function getValidContextPermissions(array $perspectivePermissions): array;
+    public function getConfigData(string $perspectiveId): PerspectiveConfig;
 }
