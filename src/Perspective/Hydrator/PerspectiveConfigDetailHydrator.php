@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Psr\Log\LoggerInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -34,8 +35,7 @@ final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfi
         private LoggerInterface $pimcoreLogger,
         private PerspectiveValidationServiceInterface $validationService,
         private WidgetServiceInterface $widgetService,
-    )
-    {
+    ) {
     }
 
     public function hydrate(array $widgetData): PerspectiveConfigDetail
