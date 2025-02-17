@@ -50,6 +50,9 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
         return $this->hydrateAndDispatch($configData);
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     private function hydrateAndDispatch(array $configData): PerspectiveConfig
     {
         $perspective = $this->configHydrator->hydrate($configData);

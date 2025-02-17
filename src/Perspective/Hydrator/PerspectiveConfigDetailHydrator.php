@@ -38,6 +38,9 @@ final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfi
     ) {
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function hydrate(array $widgetData): PerspectiveConfigDetail
     {
         return new PerspectiveConfigDetail(
@@ -55,6 +58,8 @@ final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfi
     }
 
     /**
+     * @throws InvalidArgumentException
+     *
      * @return WidgetConfig[]
      */
     private function hydrateWidgets(array $widgets): array

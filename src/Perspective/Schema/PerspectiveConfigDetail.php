@@ -47,9 +47,9 @@ final class PerspectiveConfigDetail extends PerspectiveConfig
         private readonly array $contextPermissions = [],
         #[Property(description: 'Widgets Left', type: 'array', items: new Items(ref: ElementTreeWidgetConfig::class))]
         private readonly array $widgetsLeft = [],
-        #[Property(description: 'Widgets Left', type: 'array', items: new Items(ref: ElementTreeWidgetConfig::class))]
+        #[Property(description: 'Widgets Right', type: 'array', items: new Items(ref: ElementTreeWidgetConfig::class))]
         private readonly array $widgetsRight = [],
-        #[Property(description: 'Widgets Left', type: 'array', items: new Items(ref: ElementTreeWidgetConfig::class))]
+        #[Property(description: 'Widgets Bottom', type: 'array', items: new Items(ref: ElementTreeWidgetConfig::class))]
         private readonly array $widgetsBottom = [],
         #[Property(description: 'Is Writeable', type: 'bool', example: true)]
         private readonly bool $isWriteable = true,
