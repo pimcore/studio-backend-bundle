@@ -694,6 +694,10 @@ data_object_update_grid_configuration_description: |
   Update data object grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
 data_object_update_grid_configuration_summary: Update data object grid configuration for a specific folder
 data_object_update_grid_configuration_success_response: Data Object grid configuration updated successfully
+data_object_set_grid_configuration_as_favorite_description: |
+  Set data object grid configuration as favorite for the current user for a specific folder
+data_object_set_grid_configuration_as_favorite_success_response: Data Object grid configuration set as favorite successfully
+data_object_set_grid_configuration_as_favorite_summary: Set data object grid configuration as favorite for a specific folder
 asset_delete_grid_configuration_by_configurationId_description: |
     Delete grid configuration for a specific folder and given configuration ID <strong>{configurationId}</strong>
 asset_delete_grid_configuration_by_configurationId_summary: Delete grid configuration for a specific folder and given configuration ID

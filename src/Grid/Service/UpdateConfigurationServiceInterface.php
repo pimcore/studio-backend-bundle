@@ -42,4 +42,11 @@ interface UpdateConfigurationServiceInterface
      * @throws ForbiddenException
      */
     public function setAssetGridConfigurationAsFavorite(int $configurationId, int $folderId): void;
+
+    /**
+     * @throws NotFoundException
+     * @throws InvalidArgumentException
+     * @throws ForbiddenException
+     */
+    public function setDataObjectGridConfigurationAsFavorite(int $configurationId, int $folderId): void;
 }
