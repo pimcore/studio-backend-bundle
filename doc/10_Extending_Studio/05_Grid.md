@@ -198,4 +198,10 @@ pimcore_studio_backend:
           group: system
         - key: fullpath
           group: system
+    data_object:
+      predefined_columns:
+        - key: id
+          group: system
+        - key: fullpath
+          group: system
 ```

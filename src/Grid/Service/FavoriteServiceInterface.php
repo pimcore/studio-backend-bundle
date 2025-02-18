@@ -42,4 +42,6 @@ interface FavoriteServiceInterface
     ): GridConfiguration;
 
     public function getFavoriteConfigurationForAssetFolder(int $folderId): ?GridConfiguration;
+
+    public function getFavoriteConfigurationForDataObject(int $folderId, string $classId): ?GridConfiguration;
 }

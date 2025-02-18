@@ -103,7 +103,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
 
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);
-        $definition->setArgument('$predefinedColumns', $config['grid']['asset']['predefined_columns']);
+        $definition->setArgument('$assetPredefinedColumns', $config['grid']['asset']['predefined_columns']);
+
+        $definition = $container->getDefinition(ConfigurationServiceInterface::class);
+        $definition->setArgument('$dataObjectPredefinedColumns', $config['grid']['data_object']['predefined_columns']);
 
         $definition = $container->getDefinition(NoteServiceInterface::class);
         $definition->setArgument('$noteTypes', $config['notes']['types']);

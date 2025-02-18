@@ -52,6 +52,16 @@ pimcore_studio_backend:
                   group: system
                 - key: size
                   group: system
+        data_object:
+            predefined_columns:
+                - key: id
+                  group: system
+                - key: fullpath
+                  group: system
+                - key: creationDate
+                  group: system
+                - key: modificationDate
+                  group: system
     notes:
         types:
             asset: ['content', 'seo', 'warning', 'notice']

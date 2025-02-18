@@ -205,6 +205,18 @@ class Configuration implements ConfigurationInterface
                             ->end()
                         ->end()
                     ->end()
+                    ->arrayNode('data_object')
+                       ->children()
+                           ->arrayNode('predefined_columns')
+                               ->arrayPrototype()
+                                   ->children()
+                                       ->scalarNode('group')->end()
+                                       ->scalarNode('key')->end()
+                                   ->end()
+                               ->end()
+                           ->end()
+                       ->end()
+                    ->end()
                 ->end()
             ->end();
     }
