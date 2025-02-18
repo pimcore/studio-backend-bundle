@@ -85,7 +85,6 @@ final class GetConfigurationController extends AbstractApiController
         string $classId,
         #[MapQueryString] GridConfigurationIdParameter $configurationId = new GridConfigurationIdParameter()
     ): JsonResponse {
-
         $configuration = $this->gridConfigurationService->getDataObjectGridConfiguration(
             $configurationId->getConfigurationId(),
             $folderId,
