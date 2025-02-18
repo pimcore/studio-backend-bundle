@@ -32,5 +32,5 @@ interface ElementSaveServiceInterface
      * @throws DuplicateFullPathException
      * @throws Exception
      */
-    public function save(ElementInterface $element, UserInterface $user, ?string $task): void;
+    public function save(ElementInterface $element, UserInterface $user, ?string $task = null): void;
 }
