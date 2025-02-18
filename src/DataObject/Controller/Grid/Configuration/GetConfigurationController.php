@@ -80,7 +80,7 @@ final class GetConfigurationController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getAssetGridConfiguration(
+    public function getDataObjectGridConfiguration(
         int $folderId,
         string $classId,
         #[MapQueryString] GridConfigurationIdParameter $configurationId = new GridConfigurationIdParameter()
