@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerP
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateObjectProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Attribute\Property\UpdateElementProperties;
+use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 
 /**
@@ -46,12 +47,13 @@ final class UpdateDataObjectRequestBody extends RequestBody
                             new UpdateIntegerProperty('parentId'),
                             new UpdateIntegerProperty('index', 0),
                             new UpdateStringProperty('key'),
+                            new UpdateBooleanProperty(UpdateServiceInterface::USE_DRAFT_DATA_KEY),
                             new Property(property:'task', type: 'string', enum: ElementSaveTasks::values()),
                             new UpdateStringProperty('locked'),
                             new UpdateStringProperty('childrenSortBy'),
                             new UpdateStringProperty('childrenSortOrder'),
                             new UpdateBooleanProperty('published'),
-                            new UpdateObjectProperty('editableData'),
+                            new UpdateObjectProperty(UpdateServiceInterface::EDITABLE_DATA_KEY),
                             new UpdateElementProperties(),
                         ],
                         type: 'object',
