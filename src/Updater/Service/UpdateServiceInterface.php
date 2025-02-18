@@ -26,7 +26,9 @@ use Pimcore\Model\UserInterface;
  */
 interface UpdateServiceInterface
 {
-    public const EDITABLE_DATA_KEY = 'editableData';
+    public const string USE_DRAFT_DATA_KEY = 'useDraftData';
+
+    public const string EDITABLE_DATA_KEY = 'editableData';
 
     /**
      * @throws ElementSavingFailedException|NotFoundException

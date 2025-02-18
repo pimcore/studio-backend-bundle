@@ -18,8 +18,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -30,15 +34,17 @@ use function in_array;
  */
 final readonly class ElementSaveService implements ElementSaveServiceInterface
 {
-    public function __construct(private SynchronousProcessingServiceInterface $synchronousProcessingService)
-    {
+    public function __construct(
+        private SynchronousProcessingServiceInterface $synchronousProcessingService,
+        private SecurityServiceInterface $securityService
+    ) {
     }
 
     /**
      * @throws DuplicateFullPathException
      * @throws Exception
      */
-    public function save(ElementInterface $element, UserInterface $user, ?string $task): void
+    public function save(ElementInterface $element, UserInterface $user, ?string $task = null): void
     {
         $this->synchronousProcessingService->enable();
         $element->setUserModification($user->getId());
@@ -59,6 +65,16 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
      */
     private function processTask(ElementInterface $element, UserInterface $user, string $task): void
     {
+        if ($task === ElementSaveTasks::PUBLISH->value) {
+            $this->processPublishTask($element, $user);
+        }
+
+        if ($task === ElementSaveTasks::SAVE->value || $task === ElementSaveTasks::PUBLISH->value) {
+            $element->save();
+
+            return;
+        }
+
         /**
          * @var Concrete $element
          */
@@ -73,5 +89,19 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
         }
 
         $element->deleteAutoSaveVersions($user->getId());
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function processPublishTask(ElementInterface $element, UserInterface $user): void
+    {
+        if (!$element instanceof Concrete && !$element instanceof Document) {
+            return;
+        }
+
+        $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
+        $element->deleteAutoSaveVersions($user->getId());
+        $element->setPublished(true);
     }
 }

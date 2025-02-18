@@ -26,6 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Document;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use function array_key_exists;
 
@@ -53,6 +55,10 @@ final readonly class UpdateService implements UpdateServiceInterface
     {
         $user = $this->securityService->getCurrentUser();
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
+        if (isset($data[self::USE_DRAFT_DATA_KEY]) && $data[self::USE_DRAFT_DATA_KEY] === true) {
+            $element = $this->getDraftElement($element);
+        }
+
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
             $this->updateEditableData($element, $data[self::EDITABLE_DATA_KEY], $user);
             unset($data[self::EDITABLE_DATA_KEY]);
@@ -102,5 +108,16 @@ final readonly class UpdateService implements UpdateServiceInterface
         } catch (Exception $e) {
             throw new ElementSavingFailedException($element->getId(), $e->getMessage());
         }
+    }
+
+    private function getDraftElement(ElementInterface $element): ElementInterface
+    {
+        if (!$element instanceof Concrete && !$element instanceof Document) {
+            return $element;
+        }
+
+        $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
+
+        return $this->getVersionData($element, $version);
     }
 }
