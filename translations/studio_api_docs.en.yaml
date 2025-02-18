@@ -216,6 +216,10 @@ data_object_replace_content_description: |
   Replace the content of the data object with the given <strong>{targetId}</strong> with the content of the data object matching the <strong>{sourceId}</strong>. <br> The <strong>{targetId}</strong> and <strong>{sourceId}</strong> must be an ID of existing data objects
 data_object_replace_content_success_response: Successfully replaced content of data object
 data_object_replace_content_summary: Replace content of a data object
+data_object_get_grid_configuration_description: |
+  Get data object saved grid configuration by <strong>{folderId}</strong> <strong>{classId}</strong> if a configuration-id is set, otherwise get the default configuration will be returned.
+data_object_get_grid_configuration__success_response: Data Object grid configuration
+data_object_get_grid_configuration_summary: Get data object grid configuration for a specific folder and class-id
 data_object_update_by_id_description: |
   You can create/update/delete list entries like properties or data object editable fields. <br>  If you want to update (add/remove) only some data of a field (e.g data of multi-relation fields), use the PATCH method.
 data_object_update_by_id_success_response: Successfully updated data object

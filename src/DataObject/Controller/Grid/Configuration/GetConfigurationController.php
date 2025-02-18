@@ -14,17 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid\Configuration;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\GridConfigurationIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter as IdParameterPath;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IdParameter as IdParameterQuery;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -53,36 +55,43 @@ final class GetConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/assets/grid/configuration/{folderId}',
-        name: 'pimcore_studio_api_get_asset_grid_configuration',
+        '/data-object/grid/configuration/{folderId}/{classId}',
+        name: 'pimcore_studio_api_get_data_object_grid_configuration',
         methods: ['GET'],
     )]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/grid/configuration/{folderId}',
-        operationId: 'asset_get_grid_configuration_by_folderId',
-        description: 'asset_get_grid_configuration_by_folderId_description',
-        summary: 'asset_get_grid_configuration_by_folderId_summary',
-        tags: [Tags::AssetGrid->value]
+        path: self::PREFIX . '/data-object/grid/configuration/{folderId}/{classId}',
+        operationId: 'data_object_get_grid_configuration',
+        description: 'data_object_get_grid_configuration_description',
+        summary: 'data_object_get_grid_configuration_summary',
+        tags: [Tags::DataObjectsGrid->value]
     )]
     #[IdParameterPath(name: 'folderId')]
+    #[StringParameter(
+        name: 'classId',
+        example: 'EV',
+        description: 'Class Id of the data object',
+    )]
     #[IdParameterQuery(description: 'Configuration ID', namePrefix: 'configuration', required: false)]
     #[SuccessResponse(
-        description: 'asset_get_grid_configuration_by_folderId_success_response',
+        description: 'data_object_get_grid_configuration_success_response',
         content: new JsonContent(ref: DetailedConfiguration::class)
     )]
     #[DefaultResponses([
-        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getAssetGridConfiguration(
         int $folderId,
+        string $classId,
         #[MapQueryString] GridConfigurationIdParameter $configurationId = new GridConfigurationIdParameter()
     ): JsonResponse {
-        $configuration = $this->gridConfigurationService->getAssetGridConfiguration(
+
+        $configuration = $this->gridConfigurationService->getDataObjectGridConfiguration(
             $configurationId->getConfigurationId(),
-            $folderId
+            $folderId,
+            $classId
         );
 
         return $this->jsonResponse($configuration);

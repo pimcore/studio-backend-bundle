@@ -139,4 +139,17 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
         return $favorite?->getConfiguration();
     }
+
+    public function getFavoriteConfigurationForDataObject(int $folderId, string $classId): ?GridConfiguration
+    {
+        $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndDataObject(
+            $this->securityService->getCurrentUser()->getId(),
+            $folderId,
+            $classId
+        );
+
+        return $favorite?->getConfiguration();
+    }
+
+
 }

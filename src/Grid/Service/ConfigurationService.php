@@ -48,7 +48,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private EventDispatcherInterface $eventDispatcher,
         private DetailedConfigurationHydratorInterface $detailedConfigurationHydrator,
         private FavoriteServiceInterface $favoriteService,
-        private array $predefinedColumns
+        private array $assetPredefinedColumns,
+        private array $dataObjectPredefinedColumns
     ) {
     }
 
@@ -70,6 +71,10 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return new Collection(count($filteredConfigurations), $filteredConfigurations);
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration
     {
         if (!$configurationId) {
@@ -84,12 +89,12 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $configuration =  $this->configurationRepository->getById($configurationId);
 
         $user = $this->securityService->getCurrentUser();
-        if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
-            throw new ForbiddenException('Access denied to configuration');
+        if ($configuration->getAssetFolderId() !== $folderId) {
+            return $this->getDefaultAssetGridConfiguration();
         }
 
-        if ($configuration->getAssetFolderId() !== $folderId) {
-            throw new InvalidArgumentException('Configuration does not belong to folder');
+        if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
+            return $this->getDefaultAssetGridConfiguration();
         }
 
         $configuration = $this->detailedConfigurationHydrator->hydrate(
@@ -103,6 +108,44 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
         return $configuration;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDataObjectGridConfiguration(?int $configurationId, int $folderId, string $classId): DetailedConfiguration
+    {
+        if (!$configurationId) {
+            $configuration = $this->favoriteService->getFavoriteConfigurationForDataObject($folderId, $classId);
+            $configurationId = $configuration?->getId();
+        }
+
+        if (!$configurationId) {
+            return $this->getDefaultDataObjectGridConfiguration($folderId, $classId);
+        }
+
+        $configuration =  $this->configurationRepository->getById($configurationId);
+        $user = $this->securityService->getCurrentUser();
+
+        if ($configuration->getClassId() !== $classId) {
+            return $this->getDefaultDataObjectGridConfiguration($folderId, $classId);
+        }
+
+        if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
+            return $this->getDefaultDataObjectGridConfiguration($folderId, $classId);
+        }
+
+        $configuration = $this->detailedConfigurationHydrator->hydrate(
+            $configuration,
+            $this->userRoleShareService->getUserShares($configuration),
+            $this->userRoleShareService->getRoleShares($configuration),
+            $configuration->isUserFavorite($user)
+        );
+
+        $this->dispatchDetailedConfigurationEvent($configuration);
+
+        return $configuration;
+    }
+
 
     /**
      * @throws ForbiddenException|InvalidArgumentException|NotFoundException
@@ -148,7 +191,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     {
         return new DetailedConfiguration(
             name: 'Predefined',
-            description: 'Default Asset Grid Configuration',
+            description: 'Default Grid Configuration',
             shareGlobal: false,
             saveFilter: false,
             setAsFavorite: false,
@@ -162,8 +205,25 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     private function getDefaultAssetGridConfiguration(): DetailedConfiguration
     {
         $availableColumns = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
+
+        return $this->buildDefaultConfiguration($availableColumns, $this->assetPredefinedColumns);
+    }
+
+    private function getDefaultDataObjectGridConfiguration(int $folderId, string $classId): DetailedConfiguration
+    {
+        $availableColumns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, $folderId);
+
+        return $this->buildDefaultConfiguration($availableColumns, $this->dataObjectPredefinedColumns);
+    }
+
+    /**
+     * @param ColumnConfiguration[] $availableColumns
+     *
+     */
+    public function buildDefaultConfiguration(array $availableColumns, array $predefinedColumns): DetailedConfiguration
+    {
         $defaultColumns = [];
-        foreach ($this->predefinedColumns as $predefinedColumn) {
+        foreach ($predefinedColumns as $predefinedColumn) {
             $filteredColumns =
                 array_filter($availableColumns, function (ColumnConfiguration $column) use ($predefinedColumn) {
                     if ($column->getKey() === $predefinedColumn['key'] &&
