@@ -115,8 +115,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         ?int $configurationId,
         int $folderId,
         string $classId
-    ): DetailedConfiguration
-    {
+    ): DetailedConfiguration {
         if (!$configurationId) {
             $configuration = $this->favoriteService->getFavoriteConfigurationForDataObject($folderId, $classId);
             $configurationId = $configuration?->getId();
