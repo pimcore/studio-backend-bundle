@@ -35,7 +35,11 @@ interface ConfigurationServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getDataObjectGridConfiguration(?int $configurationId, int $folderId, string $classId): DetailedConfiguration;
+    public function getDataObjectGridConfiguration(
+        ?int $configurationId,
+        int $folderId,
+        string $classId
+    ): DetailedConfiguration;
 
     public function getConfigurationsForAssetsByFolder(int $folderId): Collection;
 

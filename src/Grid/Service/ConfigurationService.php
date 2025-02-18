@@ -111,7 +111,11 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     /**
      * {@inheritDoc}
      */
-    public function getDataObjectGridConfiguration(?int $configurationId, int $folderId, string $classId): DetailedConfiguration
+    public function getDataObjectGridConfiguration(
+        ?int $configurationId,
+        int $folderId,
+        string $classId
+    ): DetailedConfiguration
     {
         if (!$configurationId) {
             $configuration = $this->favoriteService->getFavoriteConfigurationForDataObject($folderId, $classId);
@@ -209,7 +213,10 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
     private function getDefaultDataObjectGridConfiguration(int $folderId, string $classId): DetailedConfiguration
     {
-        $availableColumns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, $folderId);
+        $availableColumns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
+            $classId,
+            $folderId
+        );
 
         return $this->buildDefaultConfiguration($availableColumns, $this->dataObjectPredefinedColumns);
     }
