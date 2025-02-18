@@ -38,7 +38,7 @@ use Pimcore\Model\UserInterface;
 
 final class DataObjectQuery implements DataObjectQueryInterface
 {
-    public const DATA_OBJECT_QUERY_ID = 'data_object_query';
+    public const string DATA_OBJECT_QUERY_ID = 'data_object_query';
 
     public function __construct(
         private readonly DataObjectSearch $search,
