@@ -117,6 +117,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         }
 
         $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
+
         return $this->getVersionData($element, $version);
     }
 }
