@@ -26,11 +26,7 @@ enum ElementSaveTasks: string
     use EnumToValueArrayTrait;
 
     case AUTOSAVE = 'autoSave';
-
     case PUBLISH = 'publish';
-
     case SAVE = 'save';
-
     case VERSION = 'version';
-
 }

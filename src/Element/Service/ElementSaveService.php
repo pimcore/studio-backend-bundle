@@ -37,8 +37,7 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     public function __construct(
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
         private SecurityServiceInterface $securityService
-    )
-    {
+    ) {
     }
 
     /**
@@ -72,6 +71,7 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
 
         if ($task === ElementSaveTasks::SAVE->value || $task === ElementSaveTasks::PUBLISH->value) {
             $element->save();
+
             return;
         }
 
