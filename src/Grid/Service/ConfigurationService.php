@@ -71,7 +71,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return new Collection(count($filteredConfigurations), $filteredConfigurations);
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -145,7 +144,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
         return $configuration;
     }
-
 
     /**
      * @throws ForbiddenException|InvalidArgumentException|NotFoundException
