@@ -31,7 +31,7 @@ final class ObjectParameter extends QueryParameter
             description: $description,
             in: 'query',
             required: $required,
-            schema: new Schema(type: 'array', items: new Items(type: "string"), example: $example),
+            schema: new Schema(type: 'array', items: new Items(type: 'string'), example: $example),
         );
     }
 }
