@@ -81,14 +81,24 @@ final class TreeController extends AbstractApiController
         example: 1
     )]
     #[IdSearchTermParameter]
+    #[TextFieldParameter(
+        name: 'pqlQuery',
+        description: 'Pql query filter',
+        example: 'series = empty AND color="red"'
+    )]
     #[ExcludeFoldersParameter]
     #[PathParameter]
     #[PathIncludeParentParameter]
     #[PathIncludeDescendantsParameter]
     #[TextFieldParameter(
         name: 'className',
-        description: 'Filter by class.',
+        description: 'When provided, the search is executed on the specific data object class index.',
         example: 'Car'
+    )]
+    #[TextFieldParameter(
+        name: 'classIds',
+        description: 'Filter results based on the provided class IDs.',
+        example: '["Car"]'
     )]
     #[SuccessResponse(
         description: 'data_object_get_tree_success_response',

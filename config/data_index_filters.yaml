@@ -57,6 +57,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassIdsFilter:
+      tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
+
   # Asset Metadata
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\SelectFilter:
     tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]

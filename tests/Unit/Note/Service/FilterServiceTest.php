@@ -57,16 +57,15 @@ final class FilterServiceTest extends Unit
     public function testApplyFieldFiltersDate(): void
     {
         $noteListing = $this->getNoteListing();
-        $noteParameters = new NoteParameters(
-            fieldFilters: [
-                [
-                    'field' => 'date',
-                    'type' => 'date',
-                    'operator' => 'eq',
-                    'value' => '05/04/2024',
-                ],
+        $filters = json_encode([
+            [
+                'field' => 'date',
+                'type' => 'date',
+                'operator' => 'eq',
+                'value' => '05/04/2024',
             ],
-        );
+        ], JSON_THROW_ON_ERROR);
+        $noteParameters = new NoteParameters(fieldFilters: $filters);
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
         $this->assertSame('(`date`  BETWEEN :minTime AND :maxTime) ', $noteListing->getCondition());
@@ -85,16 +84,15 @@ final class FilterServiceTest extends Unit
     public function testApplyFieldFiltersNumeric(): void
     {
         $noteListing = $this->getNoteListing();
-        $noteParameters = new NoteParameters(
-            fieldFilters: [
-                [
-                    'field' => 'numeric',
-                    'type' => 'numeric',
-                    'operator' => 'eq',
-                    'value' => 10,
-                ],
+        $filters = json_encode([
+            [
+                'field' => 'numeric',
+                'type' => 'numeric',
+                'operator' => 'eq',
+                'value' => 10,
             ],
-        );
+        ], JSON_THROW_ON_ERROR);
+        $noteParameters = new NoteParameters(fieldFilters: $filters);
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
         $this->assertSame('(`numeric` = :numeric) ', $noteListing->getCondition());
@@ -112,16 +110,15 @@ final class FilterServiceTest extends Unit
     public function testApplyFieldFiltersBoolean(): void
     {
         $noteListing = $this->getNoteListing();
-        $noteParameters = new NoteParameters(
-            fieldFilters: [
-                [
-                    'field' => 'boolean',
-                    'type' => 'boolean',
-                    'operator' => 'boolean',
-                    'value' => true,
-                ],
+        $filters = json_encode([
+            [
+                'field' => 'boolean',
+                'type' => 'boolean',
+                'operator' => 'boolean',
+                'value' => true,
             ],
-        );
+        ], JSON_THROW_ON_ERROR);
+        $noteParameters = new NoteParameters(fieldFilters: $filters);
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
         $this->assertSame('(`boolean` = :boolean) ', $noteListing->getCondition());
@@ -139,16 +136,15 @@ final class FilterServiceTest extends Unit
     public function testApplyFieldFiltersList(): void
     {
         $noteListing = $this->getNoteListing();
-        $noteParameters = new NoteParameters(
-            fieldFilters: [
-                [
-                    'field' => 'list',
-                    'type' => 'list',
-                    'operator' => 'list',
-                    'value' => 'list',
-                ],
+        $filters = json_encode([
+            [
+                'field' => 'list',
+                'type' => 'list',
+                'operator' => 'list',
+                'value' => 'list',
             ],
-        );
+        ], JSON_THROW_ON_ERROR);
+        $noteParameters = new NoteParameters(fieldFilters: $filters);
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
         $this->assertSame('(`list` = :list) ', $noteListing->getCondition());
@@ -166,16 +162,15 @@ final class FilterServiceTest extends Unit
     public function testApplyFieldFiltersUser(): void
     {
         $noteListing = $this->getNoteListing();
-        $noteParameters = new NoteParameters(
-            fieldFilters: [
-                [
-                    'field' => 'user',
-                    'type' => 'user',
-                    'operator' => 'user',
-                    'value' => 'admin',
-                ],
+        $filters = json_encode([
+            [
+                'field' => 'user',
+                'type' => 'user',
+                'operator' => 'user',
+                'value' => 'admin',
             ],
-        );
+        ], JSON_THROW_ON_ERROR);
+        $noteParameters = new NoteParameters(fieldFilters: $filters);
         $this->filterService->applyFieldFilters($noteListing, $noteParameters);
 
         $this->assertSame(
@@ -196,13 +191,12 @@ final class FilterServiceTest extends Unit
     public function testApplyFieldFiltersInvalidJson(): void
     {
         $noteListing = $this->getNoteListing();
-        $noteParameters = new NoteParameters(
-            fieldFilters: [
-                [
-                    'invalidKey' => 'invalidValue',
-                ],
+        $filters = json_encode([
+            [
+                'invalidKey' => 'invalidValue',
             ],
-        );
+        ], JSON_THROW_ON_ERROR);
+        $noteParameters = new NoteParameters(fieldFilters: $filters);
 
         $this->expectException(InvalidFilterException::class);
         $this->expectExceptionMessage('Invalid filter: fieldFilters');

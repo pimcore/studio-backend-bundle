@@ -22,6 +22,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSear
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ClassIdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\TagFilter;
@@ -102,6 +103,13 @@ final class DataObjectQuery implements DataObjectQueryInterface
             throw new NotFoundException('Class definition', $classDefinitionId);
         }
         $this->search->setClassDefinition($classDefinition);
+
+        return $this;
+    }
+
+    public function setClassDefinitionIds(array $classDefinitionIds): self
+    {
+        $this->search->addModifier(new ClassIdsFilter($classDefinitionIds, true));
 
         return $this;
     }
