@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\ExcludeFoldersParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IdSearchTermParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\ObjectParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\ParentIdParameter;
@@ -48,6 +49,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 final class TreeController extends AbstractApiController
@@ -81,14 +83,24 @@ final class TreeController extends AbstractApiController
         example: 1
     )]
     #[IdSearchTermParameter]
+    #[TextFieldParameter(
+        name: 'pqlQuery',
+        description: 'Pql query filter',
+        example: 'series = empty AND color="red"'
+    )]
     #[ExcludeFoldersParameter]
     #[PathParameter]
     #[PathIncludeParentParameter]
     #[PathIncludeDescendantsParameter]
     #[TextFieldParameter(
         name: 'className',
-        description: 'Filter by class.',
+        description: 'When provided, the search is executed on the specific data object class index.',
         example: 'Car'
+    )]
+    #[TextFieldParameter(
+        name: 'classIds',
+        description: 'Filter results based on the provided class IDs.',
+        example: '["Car"]'
     )]
     #[SuccessResponse(
         description: 'data_object_get_tree_success_response',

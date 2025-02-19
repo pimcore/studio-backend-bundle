@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Note\MappedParameter;
 
+use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 
 /**
@@ -23,14 +24,23 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
  */
 final readonly class NoteParameters extends CollectionParameters
 {
+    private array $fieldFiltersArray;
+
+    /**
+     * @throws JsonException
+     */
     public function __construct(
         int $page = 1,
         int $pageSize = 50,
         private ?string $sortBy = null,
         private ?string $sortOrder = null,
         private ?string $filter = null,
-        private ?array $fieldFilters = null,
+        ?string $fieldFilters = null,
     ) {
+        $this->fieldFiltersArray = $fieldFilters !== null ?
+            json_decode($fieldFilters, true, 512, JSON_THROW_ON_ERROR) :
+            [];
+
         parent::__construct($page, $pageSize);
     }
 
@@ -49,8 +59,8 @@ final readonly class NoteParameters extends CollectionParameters
         return $this->filter;
     }
 
-    public function getFieldFilters(): ?array
+    public function getFieldFiltersArray(): ?array
     {
-        return $this->fieldFilters;
+        return $this->fieldFiltersArray;
     }
 }

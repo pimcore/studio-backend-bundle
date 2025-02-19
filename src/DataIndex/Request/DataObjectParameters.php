@@ -16,22 +16,40 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Request;
 
+use JsonException;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ClassIdsParameterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PqlParameterInterface;
+
 /**
  * @internal
  */
-final readonly class DataObjectParameters extends ElementParameters implements ClassNameParametersInterface
+final readonly class DataObjectParameters extends ElementParameters implements
+    ClassIdsParameterInterface,
+    ClassNameParametersInterface,
+    PqlParameterInterface
 {
+    private array $classIdsArray;
+
+    /**
+     * @throws JsonException
+     */
     public function __construct(
         int $page = 1,
         int $pageSize = 10,
         ?int $parentId = null,
         ?string $idSearchTerm = null,
+        private ?string $pqlQuery = null,
         bool $excludeFolders = false,
         ?string $path = null,
         bool $pathIncludeParent = false,
         bool $pathIncludeDescendants = false,
-        private ?string $className = null
+        private ?string $className = null,
+        ?string $classIds = null
     ) {
+        $this->classIdsArray = $classIds !== null ?
+            json_decode($classIds, true, 512, JSON_THROW_ON_ERROR) :
+            [];
+
         parent::__construct(
             $page,
             $pageSize,
@@ -44,8 +62,21 @@ final readonly class DataObjectParameters extends ElementParameters implements C
         );
     }
 
+    public function getPqlQuery(): ?string
+    {
+        return $this->pqlQuery;
+    }
+
     public function getClassName(): ?string
     {
         return $this->className;
+    }
+
+    /**
+     * @return string[]|null
+     */
+    public function getClassIdsArray(): ?array
+    {
+        return $this->classIdsArray;
     }
 }

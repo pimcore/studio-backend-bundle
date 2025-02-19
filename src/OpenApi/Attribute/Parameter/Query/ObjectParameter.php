@@ -17,24 +17,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query;
 
 use Attribute;
-use OpenApi\Attributes\QueryParameter as OpenApiQueryParameter;
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\QueryParameter;
 use OpenApi\Attributes\Schema;
 
-#[Attribute(Attribute::TARGET_METHOD)]
-final class FieldFilterParameter extends OpenApiQueryParameter
+#[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class ObjectParameter extends QueryParameter
 {
-    public function __construct()
+    public function __construct(string $name, string $description, bool $required = false, ?string $example = null)
     {
         parent::__construct(
-            name: 'fieldFilters',
-            description: 'Filter for specific fields, will be json decoded to an array. e.g.
-            [{"operator":"like","value":"John","field":"name","type":"string"}]',
+            name: $name,
+            description: $description,
             in: 'query',
-            required: false,
-            schema: new Schema(
-                type: 'string',
-                example: '[{"operator":"like","value":"John","field":"name", "type":"string"}]',
-            ),
+            required: $required,
+            schema: new Schema(type: 'array', items: new Items(type: "string"), example: $example),
         );
     }
 }

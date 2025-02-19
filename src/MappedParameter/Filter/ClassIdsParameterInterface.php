@@ -14,19 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
-
-use Exception;
+namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
 
 /**
  * @internal
  */
-interface DataObjectQueryInterface extends QueryInterface
+interface ClassIdsParameterInterface
 {
-    /**
-     * @throws Exception
-     */
-    public function setClassDefinitionName(string $classDefinitionId): self;
-
-    public function setClassDefinitionIds(array $classDefinitionIds): self;
+    public function getClassIdsArray(): ?array;
 }

@@ -43,13 +43,13 @@ final class FilterService implements FilterServiceInterface
     public function applyFieldFilters(NoteListing $list, NoteParameters $parameters): void
     {
         try {
-            if (empty($parameters->getFieldFilters())) {
+            if (empty($parameters->getFieldFiltersArray())) {
                 return;
             }
 
             $propertyKey = 'field';
 
-            foreach ($parameters->getFieldFilters() as $filter) {
+            foreach ($parameters->getFieldFiltersArray() as $filter) {
                 $operator = $this->findOperator($filter['type'], $filter['operator']);
                 $value = $this->prepareValue($filter['type'], $filter['operator'], $filter['value']);
 
