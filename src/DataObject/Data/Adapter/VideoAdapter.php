@@ -67,9 +67,10 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
         }
 
         $type = $adapterData['type'] ?? null;
+        $poster = $adapterData['poster'] ?? null;
         if ($type === ElementTypes::TYPE_ASSET) {
             $adapterData['data'] = $this->resolveAssetIfNeeded($type, $adapterData['data']['fullPath']);
-            $adapterData['poster'] = $this->getAssetByPath($adapterData['poster'] ?? null);
+            $adapterData['poster'] = $this->getAssetByPath($poster ? $poster['fullPath'] : null);
         }
 
         return $this->createVideoObject($adapterData);
