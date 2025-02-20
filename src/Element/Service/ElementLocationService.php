@@ -47,6 +47,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_slice;
+use function count;
+use function sprintf;
 
 /**
  * @internal
@@ -93,7 +96,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
                 'Id and Type'
             );
         }
-        
+
         $widget = $widgetElementData->getWidgetConfig();
         $locationData = new LocationData(
             $widget->getId(),
@@ -117,8 +120,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
         int $elementId,
         SearchIndexFilterInterface $filterService,
         UserInterface $user
-    ): ?WidgetElementData
-    {
+    ): ?WidgetElementData {
         foreach ($allWidgets as $widgetCollection) {
             foreach ($widgetCollection as $widget) {
                 if (!$widget instanceof ElementTreeWidgetConfig ||
@@ -153,8 +155,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
         SearchIndexFilterInterface $filterService,
         ElementSearchResultItemInterface $element,
         UserInterface $user
-    ): array
-    {
+    ): array {
         $treeLevelData = [];
         $parents = $this->getParentElements($widget, $element, $user);
         if (empty($parents)) {
@@ -197,16 +198,17 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
         SearchIndexFilterInterface $filterService,
         CollectionParametersInterface $filterParameters,
         UserInterface $user
-    ): QueryInterface
-    {
+    ): QueryInterface {
         $type = $widget->getElementType();
         $query = $filterService->applyFilters($filterParameters, $type);
         if ($type === ElementTypes::TYPE_DATA_OBJECT) {
             $this->handleTreeSorting($type, $widget->getRootFolder(), $query, $user);
+
             return $query;
         }
 
         $query->orderByPath('asc');
+
         return $query;
     }
 
@@ -216,8 +218,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
     private function getFilterParameters(
         ElementTreeWidgetConfig $widget,
         ?int $parentId = null
-    ): CollectionParametersInterface
-    {
+    ): CollectionParametersInterface {
         $includeAllChildren = true;
         $rootPath = $widget->getRootFolder();
         if ($parentId !== null) {
@@ -258,8 +259,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
         string $rootPath,
         QueryInterface $query,
         UserInterface $user
-    ): void
-    {
+    ): void {
         $parent = $this->elementService->getAllowedElementByPath($type, $rootPath, $user);
 
         if (!$parent instanceof DataObject) {
@@ -281,8 +281,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
         ElementTreeWidgetConfig $widget,
         ElementSearchResultItemInterface $element,
         UserInterface $user
-    ): array
-    {
+    ): array {
         $levels = $this->pathService->getAllParentPaths([$element->getFullPath()]);
         $levels = $this->filterParentPaths($levels, $widget->getRootFolder());
 
@@ -316,7 +315,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
     {
         $page = $this->locateInTreeService->getPageNumber($search, $elementId);
         if ($page === null) {
-            throw new NotFoundException('Element', $elementId,);
+            throw new NotFoundException('Element', $elementId, );
         }
 
         return new TreeLevelData(

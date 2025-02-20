@@ -111,6 +111,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     public function findInTree(QueryInterface $dataObjectQuery): ?ElementSearchResultItemInterface
     {
         $search = $this->validateSearch($dataObjectQuery->getSearch());
+
         try {
             $searchResult = $this->searchService->search($search);
         } catch (DataObjectSearchException) {

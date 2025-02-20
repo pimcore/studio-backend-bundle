@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Request;
 
 use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ClassIdsParameterInterface;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PqlParameterInterface;
 
 /**
  * @internal

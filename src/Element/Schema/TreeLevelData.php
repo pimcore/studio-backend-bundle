@@ -15,6 +15,7 @@ declare(strict_types=1);
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Schema;
+
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 

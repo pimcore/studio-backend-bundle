@@ -38,6 +38,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
+use function get_class;
 use function sprintf;
 
 final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface

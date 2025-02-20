@@ -74,6 +74,7 @@ final readonly class ElementSearchService implements ElementSearchServiceInterfa
     public function findElementInTree(string $type, int $id, QueryInterface $query): ?ElementSearchResultItemInterface
     {
         $query->searchById($id);
+
         return match ($type) {
             ElementTypes::TYPE_ASSET => $this->assetSearchService->findElementInTree($query),
             ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->findElementInTree($query),

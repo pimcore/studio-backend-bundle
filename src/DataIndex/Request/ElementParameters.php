@@ -60,7 +60,7 @@ readonly class ElementParameters extends CollectionParameters implements
     {
         return $this->idSearchTerm;
     }
-    
+
     public function getPqlQuery(): ?string
     {
         return $this->pqlQuery;
