@@ -29,16 +29,23 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\MercureT
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PatchAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\UpdateAdapterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\PimcoreStudioBackendExtension;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
 use Pimcore\Extension\Bundle\Installer\InstallerInterface;
 use Pimcore\HttpKernel\Bundle\DependentBundleInterface;
 use Pimcore\HttpKernel\BundleCollection\BundleCollection;
 use Symfony\Bundle\MercureBundle\MercureBundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use function dirname;
 
 class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements DependentBundleInterface
 {
+    public function getContainerExtension(): ExtensionInterface
+    {
+        return new PimcoreStudioBackendExtension();
+    }
+
     public function getPath(): string
     {
         return dirname(__DIR__);
