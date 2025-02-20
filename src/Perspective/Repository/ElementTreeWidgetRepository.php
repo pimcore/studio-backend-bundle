@@ -98,27 +98,12 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
 
         $parentCount = count($parents);
         for ($index = 0; $index < $parentCount - 1; $index++) {
-            $query = $this->treeQuery->get(
-                $widget,
-                $filterService,
-                $user,
-                $parents[$index],
-            );
-
-            $treeLevelData[] = $this->setTreeLevelData(
-                $parents[$index],
-                $parents[$index + 1],
-                $query->getSearch()
-            );
+            $query = $this->treeQuery->get($widget, $filterService, $user, $parents[$index],);
+            $treeLevelData[] = $this->setTreeLevelData($parents[$index], $parents[$index + 1], $query->getSearch());
         }
 
         $lastParentId = $parents[$parentCount - 1];
-        $query = $this->treeQuery->get(
-            $widget,
-            $filterService,
-            $user,
-            $lastParentId
-        );
+        $query = $this->treeQuery->get($widget, $filterService, $user, $lastParentId);
         $treeLevelData[] = $this->setTreeLevelData($lastParentId, $element->getId(), $query->getSearch());
 
         return $treeLevelData;
