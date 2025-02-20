@@ -16,10 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+
 /**
  * @internal
  */
 interface SettingsServiceInterface
 {
     public function getSettings(): array;
+
+    /**
+     * @throws InvalidElementTypeException
+     */
+    public function getTreePageSize(string $elementType): int;
 }

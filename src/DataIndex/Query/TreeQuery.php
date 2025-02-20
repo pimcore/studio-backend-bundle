@@ -18,16 +18,16 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
 use JsonException;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters as IndexElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfig;
+use Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\UserInterface;
@@ -36,13 +36,14 @@ use function sprintf;
 final readonly class TreeQuery implements TreeQueryInterface
 {
     public function __construct(
+        private SettingsServiceInterface $settingsService,
         private DataObjectServiceInterface $dataObjectService,
         private ElementServiceInterface $elementService,
     ) {
     }
 
     /**
-     * @throws InvalidQueryTypeException|InvalidFilterTypeException|NotFoundException
+     * @inheritdoc
      */
     public function get(
         ElementTreeWidgetConfig $widget,
@@ -64,7 +65,7 @@ final readonly class TreeQuery implements TreeQueryInterface
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws InvalidArgumentException|InvalidElementTypeException
      */
     private function getQueryParameters(
         ElementTreeWidgetConfig $widget,
@@ -72,6 +73,7 @@ final readonly class TreeQuery implements TreeQueryInterface
     ): CollectionParametersInterface {
         $includeAllChildren = true;
         $rootPath = $widget->getRootFolder();
+        $pageSize = $this->settingsService->getTreePageSize($widget->getElementType());
         if ($parentId !== null) {
             $includeAllChildren = false;
             $rootPath = null;
@@ -80,6 +82,7 @@ final readonly class TreeQuery implements TreeQueryInterface
         if ($widget->getElementType() === ElementTypes::TYPE_OBJECT) {
             try {
                 return new DataObjectParameters(
+                    pageSize: $pageSize,
                     parentId: $parentId,
                     pqlQuery: $widget->getPql(),
                     path: $rootPath,
@@ -94,7 +97,8 @@ final readonly class TreeQuery implements TreeQueryInterface
             }
         }
 
-        return new IndexElementParameters(
+        return new ElementParameters(
+            pageSize: $pageSize,
             parentId: $parentId,
             pqlQuery: $widget->getPql(),
             path: $rootPath,

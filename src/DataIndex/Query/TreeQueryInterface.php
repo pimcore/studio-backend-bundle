@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -26,7 +27,7 @@ use Pimcore\Model\UserInterface;
 interface TreeQueryInterface
 {
     /**
-     * @throws InvalidQueryTypeException|InvalidFilterTypeException|NotFoundException
+     * @throws InvalidElementTypeException|InvalidQueryTypeException|InvalidFilterTypeException|NotFoundException
      */
     public function get(
         ElementTreeWidgetConfig $widget,
