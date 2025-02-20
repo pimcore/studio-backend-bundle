@@ -25,8 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PqlParameterInterf
  */
 final readonly class DataObjectParameters extends ElementParameters implements
     ClassIdsParameterInterface,
-    ClassNameParametersInterface,
-    PqlParameterInterface
+    ClassNameParametersInterface
 {
     private array $classIdsArray;
 
@@ -38,7 +37,7 @@ final readonly class DataObjectParameters extends ElementParameters implements
         int $pageSize = 10,
         ?int $parentId = null,
         ?string $idSearchTerm = null,
-        private ?string $pqlQuery = null,
+        ?string $pqlQuery = null,
         bool $excludeFolders = false,
         ?string $path = null,
         bool $pathIncludeParent = false,
@@ -55,16 +54,12 @@ final readonly class DataObjectParameters extends ElementParameters implements
             $pageSize,
             $parentId,
             $idSearchTerm,
+            $pqlQuery,
             $excludeFolders,
             $path,
             $pathIncludeParent,
             $pathIncludeDescendants
         );
-    }
-
-    public function getPqlQuery(): ?string
-    {
-        return $this->pqlQuery;
     }
 
     public function getClassName(): ?string

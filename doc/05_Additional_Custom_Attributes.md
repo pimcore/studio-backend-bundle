@@ -117,6 +117,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.grid_column_data`
 - `pre_response.note`
 - `pre_response.notification`
+- `pre_response.element_locate`
 - `pre_response.element_property`
 - `pre_response.predefined_property`
 - `pre_response.user_detailed_role`

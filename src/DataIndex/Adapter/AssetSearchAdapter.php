@@ -19,6 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\Aggregation\FileSizeAggregationServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\AssetSearchServiceInterface;
@@ -29,8 +32,10 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterfa
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function sprintf;
@@ -111,7 +116,7 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
     }
 
     /**
-     * @throws AssetSearchException
+     * @throws InvalidSearchException
      */
     public function getTotalFileSizeByIds(QueryInterface $assetQuery): int
     {
@@ -121,5 +126,45 @@ final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
         }
 
         return $this->fileSizeAggregationService->getFileSizeSum($search);
+    }
+
+    /**
+     * @throws InvalidSearchException|SearchException
+     */
+    public function findInTree(QueryInterface $dataObjectQuery): ?ElementSearchResultItemInterface
+    {
+        try {
+            $searchResult = $this->searchService->search(
+                $this->validateSearch($dataObjectQuery->getSearch())
+            );
+        } catch (AssetSearchException) {
+            throw new SearchException('Asset');
+        }
+
+        $results = $searchResult->getItems();
+        if (empty($results)) {
+            return null;
+        }
+
+        return reset($results);
+    }
+
+    /**
+     * @throws InvalidSearchException
+     */
+    private function validateSearch(SearchInterface $search): AssetSearchInterface
+    {
+        if (!$search instanceof AssetSearchInterface) {
+            throw new InvalidSearchException(
+                HttpResponseCodes::BAD_REQUEST->value,
+                sprintf(
+                    'Expected search to be an instance of %s, got %s',
+                    AssetSearchInterface::class,
+                    get_class($search)
+                )
+            );
+        }
+
+        return $search;
     }
 }

@@ -16,7 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -61,6 +64,20 @@ final readonly class ElementSearchService implements ElementSearchServiceInterfa
             ElementTypes::TYPE_ASSET => $this->assetSearchService->getBySearchTerm($searchTerm, $user),
             ElementTypes::TYPE_OBJECT => $this->dataObjectSearchService->getSearchTerm($searchTerm, $user),
             ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->getSearchTerm($searchTerm, $user),
+            default => throw new InvalidElementTypeException($type),
+        };
+    }
+
+    /**
+     * @throws InvalidElementTypeException|InvalidSearchException|SearchException
+     */
+    public function findElementInTree(string $type, int $id, QueryInterface $query): ?ElementSearchResultItemInterface
+    {
+        $query->searchById($id);
+        return match ($type) {
+            ElementTypes::TYPE_ASSET => $this->assetSearchService->findElementInTree($query),
+            ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectSearchService->findElementInTree($query),
+            ElementTypes::TYPE_DOCUMENT => $this->documentSearchService->findElementInTree($query),
             default => throw new InvalidElementTypeException($type),
         };
     }

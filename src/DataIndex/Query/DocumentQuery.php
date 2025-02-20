@@ -20,6 +20,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\DocumentSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Asset\AssetMetaDataFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
@@ -96,6 +97,13 @@ final class DocumentQuery implements DocumentQueryInterface
     public function orderByPath(string $direction): self
     {
         $this->search->addModifier(new OrderByFullPath(SortDirection::tryFrom($direction)));
+
+        return $this;
+    }
+
+    public function searchById(int $id): self
+    {
+        $this->search->addModifier(new IdFilter($id));
 
         return $this;
     }

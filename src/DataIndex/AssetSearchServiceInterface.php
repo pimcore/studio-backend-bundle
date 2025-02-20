@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
@@ -27,7 +28,9 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
@@ -82,4 +85,9 @@ interface AssetSearchServiceInterface
      * @throws NotFoundException|SearchException
      */
     public function getBySearchTerm(string $searchTerm, ?UserInterface $user): int;
+
+    /**
+     * @throws InvalidSearchException|SearchException
+     */
+    public function findElementInTree(QueryInterface $query): ?ElementSearchResultItemInterface;
 }

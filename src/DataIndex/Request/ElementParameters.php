@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ExcludeFolderParam
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\IdSearchParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ParentIdParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PathParameterInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\PqlParameterInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\UserParameterInterface;
 use Pimcore\Model\UserInterface;
 
@@ -32,13 +33,15 @@ readonly class ElementParameters extends CollectionParameters implements
     IdSearchParameterInterface,
     ExcludeFolderParameterInterface,
     PathParameterInterface,
-    UserParameterInterface
+    UserParameterInterface,
+    PqlParameterInterface
 {
     public function __construct(
         int $page = 1,
         int $pageSize = 10,
         private ?int $parentId = null,
         private ?string $idSearchTerm = null,
+        private ?string $pqlQuery = null,
         private bool $excludeFolders = false,
         private ?string $path = null,
         private bool $pathIncludeParent = false,
@@ -56,6 +59,11 @@ readonly class ElementParameters extends CollectionParameters implements
     public function getIdSearchTerm(): ?string
     {
         return $this->idSearchTerm;
+    }
+    
+    public function getPqlQuery(): ?string
+    {
+        return $this->pqlQuery;
     }
 
     public function getExcludeFolders(): bool

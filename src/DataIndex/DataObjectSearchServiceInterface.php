@@ -16,9 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
@@ -59,4 +61,9 @@ interface DataObjectSearchServiceInterface
      * @throws NotFoundException|SearchException
      */
     public function getSearchTerm(string $searchTerm, ?UserInterface $user): int;
+
+    /**
+     * @throws InvalidSearchException|SearchException
+     */
+    public function findElementInTree(QueryInterface $query): ?ElementSearchResultItemInterface;
 }

@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
@@ -46,7 +47,7 @@ interface AssetSearchAdapterInterface
     public function fetchAssetIds(QueryInterface $assetQuery): array;
 
     /**
-     * @throws AssetSearchException
+     * @throws InvalidSearchException
      */
     public function getTotalFileSizeByIds(QueryInterface $assetQuery): int;
 }

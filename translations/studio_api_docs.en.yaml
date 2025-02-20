@@ -255,6 +255,11 @@ element_get_subtype_description: |
   Get the subtype of the element based on the given <strong>{elementType}</strong> and <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong>.
 element_get_subtype_success_response: Subtype of the element
 element_get_subtype_summary: Get subtype of the element by id and element type path parameter
+element_get_tree_location_description: |
+  Get the location data of the element based on the given <strong>{elementType}</strong>, <strong>{id}</strong> and <strong>{perspectiveId}</strong>. <br> 
+  The <strong>{ids}</strong> must be an existing ID of an element of the provided <strong>{elementType}</strong> and existing perspective ID.
+element_get_tree_location_success_response: Location data of the element
+element_get_tree_location_summary: Get location data of the element by id, element type and perspective id path parameter
 element_resolve_by_search_term_description: |
   Get the element ID based on the given <strong>{searchTerm}</strong>. <br> The <strong>{searchTerm}</strong> must be a valid ID or Path of an existing element. <br> The <strong>{searchTerm}</strong> can be modified via the <strong>ElementResolveEvent</strong>.
 element_resolve_by_search_term_summary: Get ID of the element with given search term

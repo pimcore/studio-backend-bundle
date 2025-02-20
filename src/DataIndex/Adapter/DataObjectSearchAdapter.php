@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DataObjectSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\DataObject\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
@@ -50,17 +52,7 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
     public function searchDataObjects(QueryInterface $dataObjectQuery): DataObjectSearchResult
     {
 
-        $search = $dataObjectQuery->getSearch();
-        if (!$search instanceof DataObjectSearchInterface) {
-            throw new InvalidSearchException(
-                HttpResponseCodes::BAD_REQUEST->value,
-                sprintf(
-                    'Expected search to be an instance of %s, got %s',
-                    DataObjectSearchInterface::class,
-                    get_class($search)
-                )
-            );
-        }
+        $search = $this->validateSearch($dataObjectQuery->getSearch());
         $searchResult = $this->searchService->search($search);
 
         $result = array_map(function (DataObjectSearchResultItem $item) {
@@ -111,5 +103,44 @@ final readonly class DataObjectSearchAdapter implements DataObjectSearchAdapterI
         } catch (DataObjectSearchException) {
             throw new SearchException('dataObjects');
         }
+    }
+
+    /**
+     * @throws InvalidSearchException|SearchException
+     */
+    public function findInTree(QueryInterface $dataObjectQuery): ?ElementSearchResultItemInterface
+    {
+        $search = $this->validateSearch($dataObjectQuery->getSearch());
+        try {
+            $searchResult = $this->searchService->search($search);
+        } catch (DataObjectSearchException) {
+            throw new SearchException('DataObject');
+        }
+
+        $results = $searchResult->getItems();
+        if (empty($results)) {
+            return null;
+        }
+
+        return reset($results);
+    }
+
+    /**
+     * @throws InvalidSearchException
+     */
+    private function validateSearch(SearchInterface $search): DataObjectSearchInterface
+    {
+        if (!$search instanceof DataObjectSearchInterface) {
+            throw new InvalidSearchException(
+                HttpResponseCodes::BAD_REQUEST->value,
+                sprintf(
+                    'Expected search to be an instance of %s, got %s',
+                    DataObjectSearchInterface::class,
+                    get_class($search)
+                )
+            );
+        }
+
+        return $search;
     }
 }

@@ -38,6 +38,8 @@ interface QueryInterface
 
     public function orderByPath(string $direction): self;
 
+    public function searchById(int $id): self;
+
     public function searchByIds(array $ids): self;
 
     /**

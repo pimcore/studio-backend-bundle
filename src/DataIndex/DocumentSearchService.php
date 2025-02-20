@@ -16,11 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DocumentSearchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Element\Util\Trait\SearchTermTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
@@ -76,5 +79,13 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
         }
 
         return reset($result);
+    }
+
+    /**
+     * @throws InvalidSearchException|SearchException
+     */
+    public function findElementInTree(QueryInterface $query): ?ElementSearchResultItemInterface
+    {
+        return $this->documentSearchAdapter->findInTree($query);
     }
 }
