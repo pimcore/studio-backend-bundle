@@ -35,7 +35,7 @@ interface ElementTreeWidgetRepositoryInterface
      * @throws InvalidArgumentException|InvalidQueryTypeException
      * @throws InvalidFilterTypeException|NotFoundException
      */
-    public function getWidgetAndElement(
+    public function getWidgetByElement(
         array $allWidgets,
         string $elementType,
         int $elementId,

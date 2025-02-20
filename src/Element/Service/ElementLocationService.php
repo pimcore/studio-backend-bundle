@@ -74,7 +74,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
         SearchIndexFilterInterface $filterService,
         UserInterface $user
     ): WidgetElementData {
-        $widgetElementData = $this->treeRepository->getWidgetAndElement(
+        $widgetElementData = $this->treeRepository->getWidgetByElement(
             [$perspective->getWidgetsLeft(), $perspective->getWidgetsRight(), $perspective->getWidgetsBottom()],
             $elementType,
             $elementId,

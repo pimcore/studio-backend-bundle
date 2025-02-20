@@ -50,7 +50,7 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
     /**
      * @inheritdoc
      */
-    public function getWidgetAndElement(
+    public function getWidgetByElement(
         array $allWidgets,
         string $elementType,
         int $elementId,
