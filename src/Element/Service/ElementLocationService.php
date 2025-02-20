@@ -73,8 +73,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
         PerspectiveConfigDetail $perspective,
         SearchIndexFilterInterface $filterService,
         UserInterface $user
-    ): WidgetElementData
-    {
+    ): WidgetElementData {
         $widgetElementData = $this->treeRepository->getWidgetAndElement(
             [$perspective->getWidgetsLeft(), $perspective->getWidgetsRight(), $perspective->getWidgetsBottom()],
             $elementType,
@@ -97,8 +96,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
     private function hydrateAndDispatch(
         WidgetElementData $widgetElementData,
         array $treeLevelData
-    ): LocationData
-    {
+    ): LocationData {
         $widget = $widgetElementData->getWidgetConfig();
 
         $locationData = new LocationData($widget->getId(), $treeLevelData);

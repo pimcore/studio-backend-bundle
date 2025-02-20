@@ -31,14 +31,14 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfi
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\UserInterface;
+use function sprintf;
 
 final readonly class TreeQuery implements TreeQueryInterface
 {
     public function __construct(
         private DataObjectServiceInterface $dataObjectService,
         private ElementServiceInterface $elementService,
-    )
-    {
+    ) {
     }
 
     /**
@@ -123,5 +123,4 @@ final readonly class TreeQuery implements TreeQueryInterface
 
         $this->dataObjectService->setTreeSorting($parent, $query);
     }
-    
 }

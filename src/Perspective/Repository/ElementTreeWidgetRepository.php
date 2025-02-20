@@ -30,6 +30,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Model\WidgetElementData;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfig;
 use Pimcore\Model\UserInterface;
+use function array_slice;
+use function count;
 
 /**
  * @internal
