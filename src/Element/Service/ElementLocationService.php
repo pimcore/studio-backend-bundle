@@ -315,7 +315,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
     {
         $page = $this->locateInTreeService->getPageNumber($search, $elementId);
         if ($page === null) {
-            throw new NotFoundException('Element', $elementId, );
+            throw new NotFoundException('Element', $elementId);
         }
 
         return new TreeLevelData(
