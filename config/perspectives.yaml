@@ -59,5 +59,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepository
 
+  Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetRepository
+
   Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository:
     tags: [ 'pimcore.studio_backend.widget_repository' ]

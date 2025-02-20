@@ -132,7 +132,13 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         );
         $query->setUser($this->securityService->getCurrentUser());
 
-        $this->setTreeSorting($parameters->getParentId() ?? 1, $query);
+        $this->setTreeSorting(
+            $this->getDataObjectElement(
+                $this->securityService->getCurrentUser(),
+                $parameters->getParentId() ?? 1
+            ),
+            $query
+        );
 
         $result = $this->dataObjectSearchService->searchDataObjects($query);
 
@@ -247,6 +253,27 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     }
 
     /**
+     * @throws ForbiddenException|InvalidQueryTypeException|NotFoundException|UserNotFoundException
+     */
+    public function setTreeSorting(DataObjectModel $parent, QueryInterface $dataObjectQuery): void
+    {
+        if (!$dataObjectQuery instanceof DataObjectQuery) {
+            throw new InvalidQueryTypeException(
+                HttpResponseCodes::BAD_REQUEST->value,
+                'Query type has to be instance of ' . DataObjectQuery::class
+            );
+        }
+
+        if ($parent->getChildrenSortBy() === self::INDEX_SORT) {
+            $dataObjectQuery->orderByIndex();
+
+            return;
+        }
+
+        $dataObjectQuery->orderByPath(strtolower($parent->getChildrenSortOrder()));
+    }
+
+    /**
      * @throws ForbiddenException|NotFoundException
      */
     private function getValidParent(UserInterface $user, int $parentId): DataObjectModel
@@ -300,28 +327,6 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         } catch (Exception $exception) {
             throw new ElementSavingFailedException(null, $exception->getMessage());
         }
-    }
-
-    /**
-     * @throws ForbiddenException|InvalidQueryTypeException|NotFoundException|UserNotFoundException
-     */
-    private function setTreeSorting(int $parentId, QueryInterface $dataObjectQuery): void
-    {
-        if (!$dataObjectQuery instanceof DataObjectQuery) {
-            throw new InvalidQueryTypeException(
-                HttpResponseCodes::BAD_REQUEST->value,
-                'Query type has to be instance of ' . DataObjectQuery::class
-            );
-        }
-
-        $parent = $this->getDataObjectElement($this->securityService->getCurrentUser(), $parentId);
-        if ($parent->getChildrenSortBy() === self::INDEX_SORT) {
-            $dataObjectQuery->orderByIndex();
-
-            return;
-        }
-
-        $dataObjectQuery->orderByPath(strtolower($parent->getChildrenSortOrder()));
     }
 
     /**

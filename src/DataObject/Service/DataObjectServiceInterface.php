@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
@@ -93,4 +94,9 @@ interface DataObjectServiceInterface
         UserInterface $user,
         string $path,
     ): DataObjectModel;
+
+    /**
+     * @throws ForbiddenException|InvalidQueryTypeException|NotFoundException|UserNotFoundException
+     */
+    public function setTreeSorting(DataObjectModel $parent, QueryInterface $dataObjectQuery): void;
 }

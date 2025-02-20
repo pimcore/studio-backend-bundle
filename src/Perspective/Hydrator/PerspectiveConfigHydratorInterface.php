@@ -17,7 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
 
 /**
  * @internal
@@ -27,5 +27,5 @@ interface PerspectiveConfigHydratorInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function hydrate(array $widgetData): PerspectiveConfig;
+    public function hydrate(array $widgetData): PerspectiveConfigDetail;
 }

@@ -36,6 +36,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveService
 
+  Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementLocationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementLocationService
+
   Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Element\Service\Permissions\ContextPermissionsService
 

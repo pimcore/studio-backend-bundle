@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
 
 /**
  * @internal
@@ -29,5 +29,5 @@ interface PerspectiveServiceInterface
     /**
      * @throws InvalidArgumentException|NotFoundException|NotWriteableException
      */
-    public function getConfigData(string $perspectiveId): PerspectiveConfig;
+    public function getConfigData(string $perspectiveId): PerspectiveConfigDetail;
 }

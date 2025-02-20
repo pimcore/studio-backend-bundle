@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\PerspectiveConfigEvent;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\PerspectiveConfigHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -43,7 +43,7 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
     /**
      * @throws InvalidArgumentException|NotFoundException|NotWriteableException
      */
-    public function getConfigData(string $perspectiveId): PerspectiveConfig
+    public function getConfigData(string $perspectiveId): PerspectiveConfigDetail
     {
         $configData = $this->configRepository->getConfiguration($perspectiveId);
 
@@ -53,7 +53,7 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    private function hydrateAndDispatch(array $configData): PerspectiveConfig
+    private function hydrateAndDispatch(array $configData): PerspectiveConfigDetail
     {
         $perspective = $this->configHydrator->hydrate($configData);
         $this->eventDispatcher->dispatch(

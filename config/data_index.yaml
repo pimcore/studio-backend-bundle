@@ -37,6 +37,9 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\PermissionsHydrator
 
   # Services
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\TreeQueryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\TreeQuery
+
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorService
     arguments:
