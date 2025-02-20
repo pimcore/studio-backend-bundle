@@ -69,8 +69,8 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
         $type = $adapterData['type'] ?? null;
         $poster = $adapterData['poster'] ?? null;
         if ($type === ElementTypes::TYPE_ASSET) {
-            $adapterData['data'] = $this->resolveAssetIfNeeded($type, $adapterData['data']['fullPath']);
-            $adapterData['poster'] = $this->getAssetByPath($poster ? $poster['fullPath'] : null);
+            $adapterData['data'] = $this->resolveAssetIfNeeded($type, $adapterData['data']['id']);
+            $adapterData['poster'] = $this->getAssetById($poster ? $poster['id'] : null);
         }
 
         return $this->createVideoObject($adapterData);
@@ -91,9 +91,9 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
         return $data;
     }
 
-    private function resolveAssetIfNeeded(?string $type, ?string $path): ?Asset
+    private function resolveAssetIfNeeded(?string $type, ?int $id): ?Asset
     {
-        return ($type === ElementTypes::TYPE_ASSET) ? $this->getAssetByPath($path) : null;
+        return ($type === ElementTypes::TYPE_ASSET) ? $this->getAssetById($id) : null;
     }
 
     private function createVideoObject(array $adapterData): Video
@@ -108,9 +108,9 @@ final readonly class VideoAdapter implements SetterDataInterface, DataNormalizer
         return $video;
     }
 
-    private function getAssetByPath(?string $path): ?Asset
+    private function getAssetById(?int $id): ?Asset
     {
-        return $path ? $this->assetResolver->getByPath($path) : null;
+        return $id ? $this->assetResolver->getById($id) : null;
     }
 
     public function normalize(mixed $value, Data $fieldDefinition): mixed
