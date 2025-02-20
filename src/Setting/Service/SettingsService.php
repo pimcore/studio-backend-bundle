@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use function array_key_exists;
+use function sprintf;
 
 /**
  * @internal
