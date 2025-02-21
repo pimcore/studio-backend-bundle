@@ -39,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
         'showRoot',
         'classes',
         'pql',
+        'pageSize',
     ],
     type: 'object'
 )]
@@ -53,7 +54,12 @@ final readonly class SaveElementTreeWidgetConfig
         private ElementIcon $icon,
         #[Property(
             description: 'Context Permissions',
-            type: [APermissions::class, DOPermissions::class, DPermissions::class]
+            type: 'object',
+            oneOf: [
+                new Schema(APermissions::class),
+                new Schema(DOPermissions::class),
+                new Schema(DPermissions::class),
+            ]
         )]
         private APermissions|DOPermissions|DPermissions $contextPermissions,
         #[Property(description: 'Element Type', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
@@ -65,7 +71,9 @@ final readonly class SaveElementTreeWidgetConfig
         #[Property(description: 'Classes', type: 'object', example: ['CAR'])]
         private array $classes = [],
         #[Property(description: 'PQL', type: 'string', example: null)]
-        private ?string $pql = null
+        private ?string $pql = null,
+        #[Property(description: 'Page size', type: 'int', example: 20)]
+        private ?int $pageSize = null,
     ) {
     }
 
@@ -112,5 +120,10 @@ final readonly class SaveElementTreeWidgetConfig
     public function getPql(): ?string
     {
         return $this->pql;
+    }
+
+    public function getPageSize(): ?int
+    {
+        return $this->pageSize;
     }
 }
