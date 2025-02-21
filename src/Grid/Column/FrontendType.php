@@ -31,4 +31,5 @@ enum FrontendType: string
     case IMAGE = 'image';
     case ASSET_LINK = 'asset-link';
     case ASSET_PREVIEW = 'asset-preview';
+    case BOOLEAN = 'boolean';
 }
