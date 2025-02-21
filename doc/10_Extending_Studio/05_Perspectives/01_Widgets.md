@@ -155,14 +155,15 @@ pimcore_studio_backend:
         1efe7ac9_a03a_6334_9e48_13f662882599:
             id: 1efe7ac9_a03a_6334_9e48_13f662882599
             name: 'My Object Tree Widget'
-            elementType: 'data-object'
+            elementType: 'data-object' # data-object, asset or document types are supported
             icon:
                 type: path
                 value: 'path/to/config-icon.svg'
             rootFolder: '/path/to/root/folder'
             showRoot: true
             classes: ['CAR']
-            pql: null
+            pql: null # PQL query to filter the tree items
+            pageSize: 50 # define custom page size for your tree
             contextPermissions:
                 add: true
                 addFolder: true
@@ -181,8 +182,5 @@ pimcore_studio_backend:
                 unlock: true
                 unlockAndPropagate: true
                 unpublish: true
-            position: left
-            sort: 3
-            expanded: true
 
 ```

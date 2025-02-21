@@ -73,7 +73,7 @@ final readonly class TreeQuery implements TreeQueryInterface
     ): CollectionParametersInterface {
         $includeAllChildren = true;
         $rootPath = $widget->getRootFolder();
-        $pageSize = $this->settingsService->getTreePageSize($widget->getElementType());
+        $pageSize = $widget->getPageSize() ?? $this->settingsService->getTreePageSize($widget->getElementType());
         if ($parentId !== null) {
             $includeAllChildren = false;
             $rootPath = null;

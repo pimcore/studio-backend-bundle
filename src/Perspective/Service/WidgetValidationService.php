@@ -67,6 +67,7 @@ final readonly class WidgetValidationService implements WidgetValidationServiceI
                 $widgetData['showRoot'],
                 $this->getValidClasses($widgetData),
                 $widgetData['pql'],
+                $widgetData['pageSize']
             );
         } catch (Throwable $exception) {
             throw new ValidationFailedException(
