@@ -142,6 +142,21 @@ final readonly class WidgetService implements WidgetServiceInterface
 
     /**
      * @throws InvalidArgumentException
+     */
+    public function loadHydratorByType(string $widgetType): WidgetConfigHydratorInterface
+    {
+        try {
+            return $this->configHydratorLoader->loadHydrator($widgetType);
+        } catch (MustImplementInterfaceException $exception) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid widget config hydrator implementation: %s', $exception->getMessage()),
+                $exception
+            );
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
      *
      * @return WidgetConfigRepositoryInterface[]
      */
@@ -152,21 +167,6 @@ final readonly class WidgetService implements WidgetServiceInterface
         } catch (MustImplementInterfaceException $exception) {
             throw new InvalidArgumentException(
                 sprintf('Invalid widget config implementation: %s', $exception->getMessage()),
-                $exception
-            );
-        }
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     */
-    private function loadHydratorByType(string $widgetType): WidgetConfigHydratorInterface
-    {
-        try {
-            return $this->configHydratorLoader->loadHydrator($widgetType);
-        } catch (MustImplementInterfaceException $exception) {
-            throw new InvalidArgumentException(
-                sprintf('Invalid widget config hydrator implementation: %s', $exception->getMessage()),
                 $exception
             );
         }

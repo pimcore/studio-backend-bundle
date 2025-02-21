@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveValidationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Pimcore\Config\LocationAwareConfigRepository;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -40,6 +41,7 @@ final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryIn
         private readonly PerspectiveValidationServiceInterface $validationService,
         private readonly array $perspectiveConfigurations,
         private readonly array $storageConfig,
+        private readonly array $defaultPerspective
     ) {
     }
 
@@ -75,6 +77,10 @@ final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryIn
      */
     public function getConfiguration(string $perspectiveId): array
     {
+        if ($perspectiveId === Perspectives::DEFAULT_ID->value) {
+            return $this->defaultPerspective[Perspectives::DEFAULT_ID->value];
+        }
+
         $repository = $this->getRepository();
         $data = $repository->loadConfigByKey($perspectiveId);
         [$configData, $dataSource] = $data;

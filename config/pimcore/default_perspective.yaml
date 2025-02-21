@@ -1,0 +1,49 @@
+studio_default_perspective:
+  id: "studio_default_perspective"
+  name: "Studio Default Perspective"
+  icon: null # fallback to default icon
+  widgetsLeft:
+    studio_document_tree_widget:
+      id: "studio_document_tree_widget"
+      name: "Document Tree"
+      widget_type: "element_tree"
+      elementType: "document"
+      icon: null # fallback to default icon
+      rootFolder: "/"
+      showRoot: true
+      pql: null
+      pageSize: null # use default page size
+      classes: []
+      contextPermissions: [] # use all default context permissions
+      isWriteable: false
+    studio_asset_tree_widget:
+      id: "studio_asset_tree_widget"
+      name: "Asset Tree"
+      widget_type: "element_tree"
+      elementType: "asset"
+      icon: null # fallback to default icon
+      rootFolder: "/"
+      showRoot: true
+      pql: null
+      pageSize: null # use default page size
+      classes: []
+      contextPermissions: [] # use all default context permissions
+      isWriteable: false
+    studio_data_object_tree_widget:
+      id: "studio_data_object_tree_widget"
+      name: "Data Object Tree"
+      widget_type: "element_tree"
+      elementType: "data-object"
+      icon: null # fallback to default icon
+      rootFolder: "/"
+      showRoot: true
+      pql: null
+      pageSize: null # use default page size
+      classes: []
+      contextPermissions: [] # use all default context permissions
+      isWriteable: false
+  widgetsRight: []
+  widgetsBottom: []
+  expandedLeft: "studio_document_tree_widget"
+  expandedRight: null
+  contextPermissions: []

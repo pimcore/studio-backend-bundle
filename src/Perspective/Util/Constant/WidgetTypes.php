@@ -18,6 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
+/**
+ * @internal
+ */
 enum WidgetTypes: string
 {
     use EnumToValueArrayTrait;
