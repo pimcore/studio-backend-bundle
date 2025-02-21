@@ -14,18 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
-
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
+namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant;
 
 /**
  * @internal
  */
-interface PerspectiveConfigHydratorInterface
+enum Perspectives: string
 {
-    /**
-     * @throws InvalidArgumentException
-     */
-    public function hydrate(array $perspectiveData): PerspectiveConfigDetail;
+    case DEFAULT_ID = 'studio_default_perspective';
 }

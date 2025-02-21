@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetai
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Psr\Log\LoggerInterface;
 use function sprintf;
 
@@ -41,19 +42,21 @@ final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfi
     /**
      * @throws InvalidArgumentException
      */
-    public function hydrate(array $widgetData): PerspectiveConfigDetail
+    public function hydrate(array $perspectiveData): PerspectiveConfigDetail
     {
+        $isDefault = $perspectiveData['id'] === Perspectives::DEFAULT_ID->value;
+
         return new PerspectiveConfigDetail(
-            $widgetData['id'],
-            $widgetData['name'],
-            $this->iconService->getIconForValue($widgetData['icon']),
-            $this->validationService->getValidContextPermissions($widgetData['contextPermissions']),
-            $this->hydrateWidgets($widgetData['widgetsLeft']),
-            $this->hydrateWidgets($widgetData['widgetsRight']),
-            $this->hydrateWidgets($widgetData['widgetsBottom']),
-            $widgetData['isWriteable'],
-            $widgetData['expandedLeft'],
-            $widgetData['expandedRight'],
+            $perspectiveData['id'],
+            $perspectiveData['name'],
+            $this->iconService->getIconForValue($perspectiveData['icon']),
+            $this->validationService->getValidContextPermissions($perspectiveData['contextPermissions']),
+            $this->hydrateWidgets($perspectiveData['widgetsLeft'], $isDefault),
+            $this->hydrateWidgets($perspectiveData['widgetsRight'], $isDefault),
+            $this->hydrateWidgets($perspectiveData['widgetsBottom'], $isDefault),
+            $isDefault ? false : $perspectiveData['isWriteable'],
+            $perspectiveData['expandedLeft'],
+            $perspectiveData['expandedRight'],
         );
     }
 
@@ -62,8 +65,12 @@ final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfi
      *
      * @return WidgetConfig[]
      */
-    private function hydrateWidgets(array $widgets): array
+    private function hydrateWidgets(array $widgets, bool $isDefault): array
     {
+        if ($isDefault) {
+            return $this->hydrateDefaultWidgets($widgets);
+        }
+
         $widgetData = [];
         foreach ($widgets as $widgetId => $widgetType) {
             try {
@@ -73,6 +80,16 @@ final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfi
                     'Failed to retrieve widget (%s): %s', $widgetId, $e->getMessage())
                 );
             }
+        }
+
+        return $widgetData;
+    }
+
+    private function hydrateDefaultWidgets(array $widgets): array
+    {
+        $widgetData = [];
+        foreach ($widgets as $widget) {
+            $widgetData[] = $this->widgetService->loadHydratorByType($widget['widget_type'])->hydrate($widget);
         }
 
         return $widgetData;

@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -66,7 +67,7 @@ final class GetConfigurationController extends AbstractApiController
         summary: 'perspective_get_config_by_id_summary',
         tags: [Tags::Perspectives->value]
     )]
-    #[StringParameter('perspectiveId', 'd061699e_da42_4075_b504_c2c93c687819', 'Get perspective by matching Id')]
+    #[StringParameter('perspectiveId', Perspectives::DEFAULT_ID->value, 'Get perspective by matching Id')]
     #[SuccessResponse(
         description: 'perspective_get_config_by_id_success_response',
         content: new JsonContent(ref: PerspectiveConfigDetail::class)

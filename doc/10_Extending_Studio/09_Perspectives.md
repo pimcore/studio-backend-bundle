@@ -82,3 +82,29 @@ final readonly class StudioContextPermissionsSubscriber implements EventSubscrib
     }
 }
 ```
+
+## Example perspective configuration
+
+```yaml
+pimcore_studio_backend:
+    studio_perspectives:
+        7d540112_1cf5_49ba_ac34_d5a36ea3401f:
+            name: "My Custom Perspective"
+            icon: # Use null to use the default icon
+                type: "path"
+                value: "/path/to/custom/icon.svg"
+            widgetsLeft:
+                1efe7ac9_a03a_6334_9e48_13f662882599: "my_widget_type" # Array of widget ID => widget type
+                d061699e_da42_4075_b504_c2c93c687819: "my_widget_type" # Array of widget ID => widget type
+            widgetsRight: []
+            widgetsBottom: []
+            expandedLeft: "d061699e_da42_4075_b504_c2c93c687819" # ID of widget which should be expanded
+            expandedRight: null
+            contextPermissions: [] # When empty all registered permissions will be used with default values
+```
+
+:::info
+
+You can see all default permissions and their values in `Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionService` class.
+
+:::

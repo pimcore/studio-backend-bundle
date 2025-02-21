@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
 
 use Exception;
+use InvalidArgumentException;
 use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
@@ -40,6 +41,8 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 use function sprintf;
 
 /**
@@ -130,9 +133,13 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$storageConfig' => $config['config_location'][Configuration::TREE_WIDGETS_NODE],
         ]);
 
-        $definition = $container->getDefinition(PerspectiveConfigRepositoryInterface::class);
+        $defaultPerspective = $this->getParsedConfig(
+            __DIR__ . '/../../config/pimcore/default_perspective.yaml'
+        );
 
+        $definition = $container->getDefinition(PerspectiveConfigRepositoryInterface::class);
         $definition->setArguments([
+            '$defaultPerspective' => $defaultPerspective,
             '$perspectiveConfigurations' => $config[Configuration::PERSPECTIVES_NODE],
             '$storageConfig' => $config['config_location'][Configuration::PERSPECTIVES_NODE],
         ]);
@@ -228,6 +235,22 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $configs = ConfigurationHelper::getSymfonyConfigFiles($configDir);
         foreach ($configs as $config) {
             $configLoader->load($config);
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getParsedConfig(string $fileLocation): array
+    {
+        try {
+            return Yaml::parseFile($fileLocation);
+        } catch (ParseException $e) {
+            throw new InvalidArgumentException(
+                sprintf('The file "%s" does not contain valid YAML.', $fileLocation),
+                0,
+                $e
+            );
         }
     }
 }
