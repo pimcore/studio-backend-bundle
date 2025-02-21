@@ -58,7 +58,7 @@ final readonly class SaveElementTreeWidgetConfig
             oneOf: [
                 new Schema(APermissions::class),
                 new Schema(DOPermissions::class),
-                new Schema(DPermissions::class)
+                new Schema(DPermissions::class),
             ]
         )]
         private APermissions|DOPermissions|DPermissions $contextPermissions,

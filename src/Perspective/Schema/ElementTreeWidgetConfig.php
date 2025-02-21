@@ -53,7 +53,7 @@ final class ElementTreeWidgetConfig extends WidgetConfig
             oneOf: [
                 new Schema(APermissions::class),
                 new Schema(DOPermissions::class),
-                new Schema(DPermissions::class)
+                new Schema(DPermissions::class),
             ]
         )]
         private readonly APermissions|DOPermissions|DPermissions $contextPermissions,

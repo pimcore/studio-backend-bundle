@@ -28,6 +28,8 @@ use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use function is_array;
+use function is_int;
+use function is_null;
 use function is_string;
 use function sprintf;
 
@@ -476,7 +478,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('pageSize')
                             ->defaultNull()
                             ->validate()
-                                ->ifTrue(fn($v) => !is_null($v) && !is_int($v))
+                                ->ifTrue(fn ($v) => !is_null($v) && !is_int($v))
                                 ->thenInvalid('The "pageSize" must be an integer or null.')
                             ->end()
                         ->end()
