@@ -96,6 +96,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\FileSizeDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\System\BooleanDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\Metadata\SelectDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
@@ -140,6 +143,9 @@ services:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\AssetPreviewResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\System\BooleanResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata\SelectResolver:
