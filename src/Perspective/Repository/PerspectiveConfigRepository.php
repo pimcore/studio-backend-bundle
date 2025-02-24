@@ -48,13 +48,7 @@ final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryIn
             return $this->defaultPerspective[Perspectives::DEFAULT_ID->value];
         }
 
-        $repository = $this->getRepository();
-        $data = $repository->loadConfigByKey($perspectiveId);
-        [$configData, $dataSource] = $data;
-        if ($configData === null) {
-            throw new NotFoundException('Perspective', $perspectiveId);
-        }
-
+        [$configData, $dataSource] = $this->loadConfig($perspectiveId);
         $configData['isWriteable'] = $this->isRepositoryWritable($perspectiveId, $dataSource);
         $configData['id'] = $perspectiveId;
 
@@ -97,21 +91,21 @@ final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryIn
     }
 
     /**
-     * @throws NotWriteableException
+     * @throws NotFoundException|NotWriteableException
      */
     public function deleteConfiguration(
-        string $configId
+        string $perspectiveId
     ): void {
-        $repository = $this->getRepository();
-
+        $this->loadConfig($perspectiveId);
         try {
-            $repository->deleteData($configId, $repository->getWriteTarget());
+            $repository = $this->getRepository();
+            $repository->deleteData($perspectiveId, $repository->getWriteTarget());
         } catch (Exception $exception) {
             throw new NotWriteableException(
                 'perspective',
                 sprintf(
                     'Perspective configuration (%s) could not be deleted: %s',
-                    $configId,
+                    $perspectiveId,
                     $exception->getMessage()
                 ),
                 $exception
@@ -130,6 +124,19 @@ final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryIn
         }
 
         return $this->repository;
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function loadConfig(string $perspectiveId): array
+    {
+        $data = $this->getRepository()->loadConfigByKey($perspectiveId);
+        if ($data[0] === null) {
+            throw new NotFoundException('Perspective', $perspectiveId);
+        }
+
+        return $data;
     }
 
     /**

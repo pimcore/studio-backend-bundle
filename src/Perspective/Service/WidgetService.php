@@ -132,7 +132,7 @@ final readonly class WidgetService implements WidgetServiceInterface
     }
 
     /**
-     * @throws InvalidArgumentException|NotWriteableException
+     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function deleteWidgetConfig(string $widgetType, string $widgetId): void
     {
