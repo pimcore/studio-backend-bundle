@@ -22,7 +22,7 @@
     "pimcore/static-resolver-bundle": "2.x-dev",
     "pimcore/generic-data-index-bundle": "2.x-dev",
     "pimcore/pimcore": "^12.x-dev",
-    "zircote/swagger-php": "^4.8",
+    "zircote/swagger-php": "^4.8 || ^5.0",
     "ext-zip": "*",
     "symfony/mercure": "^0.6.5",
     "symfony/mercure-bundle": "^0.3.9",
