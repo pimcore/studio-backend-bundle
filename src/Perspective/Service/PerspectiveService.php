@@ -20,8 +20,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\PerspectiveConfigEvent;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\PerspectiveConfigDetailHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\PerspectiveConfigHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -36,6 +38,7 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private PerspectiveConfigHydratorInterface $configHydrator,
+        private PerspectiveConfigDetailHydratorInterface $configDetailHydrator,
         private PerspectiveConfigRepositoryInterface $configRepository
     ) {
     }
@@ -46,21 +49,38 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
     public function getConfigData(string $perspectiveId): PerspectiveConfigDetail
     {
         $configData = $this->configRepository->getConfiguration($perspectiveId);
+        $hydrated = $this->configDetailHydrator->hydrate($configData);
+        $this->dispatchEvent($hydrated);
 
-        return $this->hydrateAndDispatch($configData);
+        return $hydrated;
+    }
+
+    /**
+     * @throws NotFoundException|NotWriteableException
+     *
+     * @return PerspectiveConfig[]
+     */
+    public function listConfigurations(): array
+    {
+        $perspectives = [];
+        foreach ($this->configRepository->listConfigurations() as $configData) {
+            $hydrated = $this->configHydrator->hydrate($configData);
+            $this->dispatchEvent($hydrated);
+
+            $perspectives[] = $hydrated;
+        }
+
+        return $perspectives;
     }
 
     /**
      * @throws InvalidArgumentException
      */
-    private function hydrateAndDispatch(array $configData): PerspectiveConfigDetail
+    private function dispatchEvent(PerspectiveConfig $config): void
     {
-        $perspective = $this->configHydrator->hydrate($configData);
         $this->eventDispatcher->dispatch(
-            new PerspectiveConfigEvent($perspective),
+            new PerspectiveConfigEvent($config),
             PerspectiveConfigEvent::EVENT_NAME
         );
-
-        return $perspective;
     }
 }

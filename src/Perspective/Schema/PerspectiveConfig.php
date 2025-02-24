@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'id',
         'name',
         'icon',
+        'isWriteable',
     ],
     type: 'object'
 )]
@@ -42,6 +43,8 @@ class PerspectiveConfig implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'Icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
+        #[Property(description: 'Is Writeable', type: 'bool', example: true)]
+        private readonly bool $isWriteable = true,
     ) {
     }
 
@@ -58,5 +61,10 @@ class PerspectiveConfig implements AdditionalAttributesInterface
     public function getIcon(): ElementIcon
     {
         return $this->icon;
+    }
+
+    public function isWriteable(): bool
+    {
+        return $this->isWriteable;
     }
 }

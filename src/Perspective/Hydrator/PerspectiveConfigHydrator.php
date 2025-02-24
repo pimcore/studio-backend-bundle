@@ -17,15 +17,30 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 
 /**
  * @internal
  */
-interface PerspectiveConfigHydratorInterface
+final readonly class PerspectiveConfigHydrator implements PerspectiveConfigHydratorInterface
 {
+    public function __construct(
+        private IconServiceInterface $iconService
+    ) {
+    }
+
     /**
      * @throws InvalidArgumentException
      */
-    public function hydrate(array $perspectiveData): PerspectiveConfig;
+    public function hydrate(array $perspectiveData): PerspectiveConfig
+    {
+
+        return new PerspectiveConfig(
+            $perspectiveData['id'],
+            $perspectiveData['name'],
+            $this->iconService->getIconForValue($perspectiveData['icon']),
+            $perspectiveData['isWriteable'],
+        );
+    }
 }

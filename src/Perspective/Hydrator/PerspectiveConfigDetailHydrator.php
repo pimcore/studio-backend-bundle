@@ -29,7 +29,7 @@ use function sprintf;
 /**
  * @internal
  */
-final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfigHydratorInterface
+final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfigDetailHydratorInterface
 {
     public function __construct(
         private IconServiceInterface $iconService,
@@ -50,11 +50,11 @@ final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfi
             $perspectiveData['id'],
             $perspectiveData['name'],
             $this->iconService->getIconForValue($perspectiveData['icon']),
+            $isDefault ? false : $perspectiveData['isWriteable'],
             $this->validationService->getValidContextPermissions($perspectiveData['contextPermissions']),
             $this->hydrateWidgets($perspectiveData['widgetsLeft'], $isDefault),
             $this->hydrateWidgets($perspectiveData['widgetsRight'], $isDefault),
             $this->hydrateWidgets($perspectiveData['widgetsBottom'], $isDefault),
-            $isDefault ? false : $perspectiveData['isWriteable'],
             $perspectiveData['expandedLeft'],
             $perspectiveData['expandedRight'],
         );
