@@ -97,6 +97,7 @@ final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryIn
         string $perspectiveId
     ): void {
         $this->loadConfig($perspectiveId);
+
         try {
             $repository = $this->getRepository();
             $repository->deleteData($perspectiveId, $repository->getWriteTarget());

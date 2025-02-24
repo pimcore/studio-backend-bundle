@@ -142,6 +142,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
     ): void {
         $repository = $this->getRepository();
         $this->loadConfig($widgetId);
+
         try {
             $repository->deleteData($widgetId, $repository->getWriteTarget());
         } catch (Exception $exception) {
