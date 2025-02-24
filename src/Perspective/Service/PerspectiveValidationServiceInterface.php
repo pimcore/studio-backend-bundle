@@ -16,14 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
-
 /**
  * @internal
  */
 interface PerspectiveValidationServiceInterface
 {
-
     public function getValidContextPermissions(array $perspectivePermissions): array;
 }

@@ -25,7 +25,7 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'Add Perspective Config',
     required: [
-        'name'
+        'name',
     ],
     type: 'object'
 )]

@@ -39,7 +39,6 @@ final class PerspectiveConfigRepository implements PerspectiveConfigRepositoryIn
 
     private ?LocationAwareConfigRepository $repository = null;
 
-
     /**
      * @throws NotFoundException|NotWriteableException
      */
