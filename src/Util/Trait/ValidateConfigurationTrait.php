@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
+use Symfony\Component\Uid\Factory\UuidFactory;
 use function strlen;
 
 /**
@@ -25,6 +26,11 @@ use function strlen;
  */
 trait ValidateConfigurationTrait
 {
+    private function getValidConfigId(UuidFactory $uuidFactory): string
+    {
+        return str_replace('-', '_', (string)$uuidFactory->create());
+    }
+
     /**
      * @throws InvalidArgumentException
      */

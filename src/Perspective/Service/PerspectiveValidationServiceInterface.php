@@ -24,10 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
  */
 interface PerspectiveValidationServiceInterface
 {
-    /**
-     * @throws ValidationFailedException
-     */
-    public function validatePerspectiveConfigData(array $perspectiveData): SavePerspectiveConfig;
 
     public function getValidContextPermissions(array $perspectivePermissions): array;
 }

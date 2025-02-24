@@ -81,7 +81,7 @@ final readonly class WidgetService implements WidgetServiceInterface
         $configData = $widgetData->getData();
 
         $configData['name'] = $this->getValidConfigName($configData);
-        $configData['id'] = $this->getConfigurationIdentifier();
+        $configData['id'] = $this->getValidConfigId($this->uuidFactory);
 
         return $this->loadRepositoryByType($widgetType)->createConfiguration($configData);
     }
@@ -201,10 +201,5 @@ final readonly class WidgetService implements WidgetServiceInterface
     private function dispatchConfigEvent(WidgetConfig $config): void
     {
         $this->eventDispatcher->dispatch(new WidgetConfigEvent($config), WidgetConfigEvent::EVENT_NAME);
-    }
-
-    private function getConfigurationIdentifier(): string
-    {
-        return str_replace('-', '_', (string)$this->uuidFactory->create());
     }
 }

@@ -16,17 +16,25 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
+use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Event\PerspectiveConfigEvent;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\PerspectiveConfigDetailHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\PerspectiveConfigHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\AddPerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ValidateConfigurationTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Uid\Factory\UuidFactory;
 
 /**
  * @internal
@@ -37,10 +45,27 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
 
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
+        private IconServiceInterface $iconService,
+        private NormalizerInterface $normalizer,
         private PerspectiveConfigHydratorInterface $configHydrator,
         private PerspectiveConfigDetailHydratorInterface $configDetailHydrator,
-        private PerspectiveConfigRepositoryInterface $configRepository
+        private PerspectiveConfigRepositoryInterface $configRepository,
+        private UuidFactory $uuidFactory
     ) {
+    }
+
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException
+     */
+    public function addConfig(AddPerspectiveConfig $config): string
+    {
+        $perspectiveId = $this->getValidConfigId($this->uuidFactory);
+        $perspectiveData = $this->createPerspectiveData(
+            new SavePerspectiveConfig($config->getName(), $this->iconService->getIconForValue())
+        );
+        $this->configRepository->saveConfiguration($perspectiveId, $perspectiveData);
+
+        return $perspectiveId;
     }
 
     /**
@@ -71,6 +96,21 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
         }
 
         return $perspectives;
+    }
+
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException
+     */
+    private function createPerspectiveData(SavePerspectiveConfig $perspectiveConfig): array
+    {
+        try {
+            $perspective = $this->normalizer->normalize($perspectiveConfig);
+        } catch (Exception|ExceptionInterface $exception) {
+            throw new ElementSavingFailedException(null, $exception->getMessage());
+        }
+        $perspective['name'] = $this->getValidConfigName($perspective);
+
+        return $perspective;
     }
 
     /**
