@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 
@@ -26,14 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 interface PerspectiveConfigRepositoryInterface
 {
     /**
-     * @throws ElementSavingFailedException|NotWriteableException
+     * @throws NotWriteableException
      */
-    public function createConfiguration(array $perspectiveData): string;
-
-    /**
-     * @throws ElementSavingFailedException|NotWriteableException
-     */
-    public function updateConfiguration(array $perspectiveData): void;
+    public function saveConfiguration(string $perspectiveId, array $perspectiveData): void;
 
     /**
      * @throws NotFoundException|NotWriteableException

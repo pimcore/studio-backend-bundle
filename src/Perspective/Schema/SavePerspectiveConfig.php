@@ -26,8 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 #[Schema(
     title: 'Create Perspective Config',
     required: [
-        'id',
-        'name',
         'icon',
         'contextPermissions',
         'widgetsLeft',
@@ -38,38 +36,26 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     ],
     type: 'object'
 )]
-final readonly class SavePerspectiveConfig
+final readonly class SavePerspectiveConfig extends AddPerspectiveConfig
 {
     public function __construct(
-        #[Property(description: 'Perspective ID', type: 'string', example: '5026c239_eb75_499a_8576_841bca283350')]
-        private string $id,
-        #[Property(description: 'Name', type: 'string', example: 'Cars')]
-        private string $name,
+        string $name,
         #[Property(description: 'Icon', type: ElementIcon::class)]
         private ElementIcon $icon,
         #[Property(description: 'Context Permissions', type: 'object')]
         private array $contextPermissions = [],
-        #[Property(description: 'Widgets Left', type: 'object', example: ['widget_id'])]
+        #[Property(description: 'Widgets Left', type: 'object', example: ['widget_id' => 'widget_type'])]
         private array $widgetsLeft = [],
-        #[Property(description: 'Widgets Right', type: 'object', example: ['widget_id'])]
+        #[Property(description: 'Widgets Right', type: 'object', example: ['widget_id' => 'widget_type'])]
         private array $widgetsRight = [],
-        #[Property(description: 'Widgets Bottom', type: 'object', example: ['widget_id'])]
+        #[Property(description: 'Widgets Bottom', type: 'object', example: ['widget_id' => 'widget_type'])]
         private array $widgetsBottom = [],
         #[Property(description: 'Left Expanded Widget', type: 'string', example: 'widget_id')]
         private ?string $expandedLeft = null,
         #[Property(description: 'Right Expanded Widget', type: 'string', example: 'widget_id')]
         private ?string $expandedRight = null
     ) {
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
+        parent::__construct($name);
     }
 
     public function getIcon(): ElementIcon

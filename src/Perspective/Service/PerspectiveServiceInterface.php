@@ -16,9 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\AddPerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
 
@@ -27,6 +29,11 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetai
  */
 interface PerspectiveServiceInterface
 {
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException
+     */
+    public function addConfig(AddPerspectiveConfig $config): string;
+
     /**
      * @throws InvalidArgumentException|NotFoundException|NotWriteableException
      */

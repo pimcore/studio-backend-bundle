@@ -386,6 +386,10 @@ notification_send_description: |
   Send a notification to the given <strong>{recipientId}</strong>. <br> See the full description of request fields with the schema <strong>SendNotificationParameters</strong>
 notification_send_success_response: Successfully sent notification
 notification_send_summary: Send a notification
+perspective_create_description: |
+  Create a new perspective with default values.
+perspective_create_success_response: Id of the new perspective
+perspective_create_summary: Create a new perspective
 perspective_get_config_by_id_description: |
   Get the perspective configuration with the given <strong>{perspectiveId}</strong>. <br> 
   The <strong>{perspectiveId}</strong> must be an ID of an existing perspective.
