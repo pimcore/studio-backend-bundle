@@ -386,6 +386,14 @@ notification_send_description: |
   Send a notification to the given <strong>{recipientId}</strong>. <br> See the full description of request fields with the schema <strong>SendNotificationParameters</strong>
 notification_send_success_response: Successfully sent notification
 notification_send_summary: Send a notification
+perspective_get_config_by_id_description: |
+  Get the perspective configuration with the given <strong>{perspectiveId}</strong>. <br> 
+  The <strong>{perspectiveId}</strong> must be an ID of an existing perspective.
+perspective_get_config_by_id_success_response: Perspective configuration data as JSON
+perspective_get_config_by_id_summary: Get perspective configuration by ID
+perspective_get_config_collection_description: Listing of all available perspectives
+perspective_get_config_collection_success_response: List of perspective configurations
+perspective_get_config_collection_summary: Get all perspective configurations
 perspective_widget_create_description: |
     Create a new widget with default values based on the provided <strong>{widgetType}</strong>.
     <br> The widget type has to be registered via Symfony Configuration.
@@ -400,11 +408,6 @@ perspective_widget_delete_summary: Delete widget with given id and type
 perspective_widget_get_config_collection_description: Listing of all available widget configurations
 perspective_widget_get_config_collection_success_response: List of widget configurations
 perspective_widget_get_config_collection_summary: Get all widget configurations
-perspective_get_config_by_id_description: |
-  Get the perspective configuration with the given <strong>{perspectiveId}</strong>. <br> 
-  The <strong>{perspectiveId}</strong> must be an ID of an existing perspective.
-perspective_get_config_by_id_success_response: Perspective configuration data as JSON
-perspective_get_config_by_id_summary: Get perspective configuration by ID
 perspective_widget_get_config_by_id_description: |
   Get the widget configuration with the given <strong>{widgetId}</strong> and <strong>{widgetType}</strong>. <br> 
   The <strong>{widgetId}</strong> must be an ID of an existing widget. The widget type has to be registered via Symfony Configuration.

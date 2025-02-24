@@ -28,7 +28,6 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
         'widgetsLeft',
         'widgetsRight',
         'widgetsBottom',
-        'isWriteable',
         'expandedLeft',
         'expandedRight',
     ],
@@ -45,6 +44,7 @@ final class PerspectiveConfigDetail extends PerspectiveConfig
             type: 'object',
             example: ['permission_group' => ['permission1' => true, 'permission2' => false]])
         ]
+        bool $isWriteable = true,
         private readonly array $contextPermissions = [],
         #[Property(description: 'Widgets Left', type: 'array', items: new Items(ref: ElementTreeWidgetConfig::class))]
         private readonly array $widgetsLeft = [],
@@ -52,14 +52,12 @@ final class PerspectiveConfigDetail extends PerspectiveConfig
         private readonly array $widgetsRight = [],
         #[Property(description: 'Widgets Bottom', type: 'array', items: new Items(ref: ElementTreeWidgetConfig::class))]
         private readonly array $widgetsBottom = [],
-        #[Property(description: 'Is Writeable', type: 'bool', example: true)]
-        private readonly bool $isWriteable = true,
         #[Property(description: 'Left Expanded Widget', type: 'string', example: 'widget_id')]
         private readonly ?string $expandedLeft = null,
         #[Property(description: 'Right Expanded Widget', type: 'string', example: 'widget_id')]
         private readonly ?string $expandedRight = null,
     ) {
-        parent::__construct($id, $name, $icon);
+        parent::__construct($id, $name, $icon, $isWriteable);
     }
 
     public function getContextPermissions(): array
@@ -89,11 +87,6 @@ final class PerspectiveConfigDetail extends PerspectiveConfig
     public function getWidgetsBottom(): array
     {
         return $this->widgetsBottom;
-    }
-
-    public function isWriteable(): bool
-    {
-        return $this->isWriteable;
     }
 
     public function getExpandedLeft(): ?string

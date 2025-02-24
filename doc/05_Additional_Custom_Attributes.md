@@ -139,5 +139,8 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.custom_report_report`
 - `pre_response.custom_report_tree_config_node`
 - `pre_response.custom_report_tree_node`
-- `pre_response.simple_search.result`
-- `pre_response.simple_search.preview`
+- `pre_response.perspective.config.get`
+- `pre_response.perspective.config.get`
+- `pre_response.perspective.config.get`
+- `pre_response.perspective.widget.config.get`
+- `pre_response.perspective.widget.type`

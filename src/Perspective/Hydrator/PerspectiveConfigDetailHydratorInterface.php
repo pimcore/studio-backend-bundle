@@ -14,28 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
 
 /**
  * @internal
  */
-interface PerspectiveServiceInterface
+interface PerspectiveConfigDetailHydratorInterface
 {
     /**
-     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
+     * @throws InvalidArgumentException
      */
-    public function getConfigData(string $perspectiveId): PerspectiveConfigDetail;
-
-    /**
-     * @throws NotFoundException|NotWriteableException
-     *
-     * @return PerspectiveConfig[]
-     */
-    public function listConfigurations(): array;
+    public function hydrate(array $perspectiveData): PerspectiveConfigDetail;
 }
