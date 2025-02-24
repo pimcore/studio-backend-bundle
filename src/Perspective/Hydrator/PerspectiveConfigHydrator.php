@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
+
 /**
  * @internal
  */
