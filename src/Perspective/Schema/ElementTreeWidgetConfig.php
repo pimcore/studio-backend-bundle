@@ -23,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectCont
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions as DPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
@@ -62,9 +64,9 @@ final class ElementTreeWidgetConfig extends WidgetConfig
         #[Property(description: 'Element Type', type: 'string', example: ElementTypes::TYPE_DATA_OBJECT)]
         private readonly string $elementType = ElementTypes::TYPE_DATA_OBJECT,
         #[Property(description: 'Root Folder', type: 'string', example: '/Product Data/Cars')]
-        private readonly string $rootFolder = '/',
+        private readonly string $rootFolder = ElementFolderPaths::ROOT->value,
         #[Property(description: 'Root Folder ID', type: 'int', example: 2)]
-        private readonly int $rootFolderId = 1,
+        private readonly int $rootFolderId = ElementFolderIds::ROOT->value,
         #[Property(description: 'Show Root', type: 'bool', example: false)]
         private readonly bool $showRoot = false,
         #[Property(description: 'Classes', type: 'object', example: ['CAR'])]

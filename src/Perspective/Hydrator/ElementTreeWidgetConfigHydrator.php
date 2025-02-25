@@ -24,6 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\ElementTreeWidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\WidgetTypes;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -68,8 +70,8 @@ final readonly class ElementTreeWidgetConfigHydrator implements WidgetConfigHydr
 
     private function getRootFolderId(array $widgetData): int
     {
-        $folderId = 1;
-        if ($widgetData['rootFolder'] === '' || $widgetData['rootFolder'] === '/') {
+        $folderId = ElementFolderIds::ROOT->value;
+        if ($widgetData['rootFolder'] === '' || $widgetData['rootFolder'] === ElementFolderPaths::ROOT->value) {
             return $folderId;
         }
 
