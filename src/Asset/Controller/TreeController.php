@@ -83,7 +83,7 @@ final class TreeController extends AbstractApiController
     #[TextFieldParameter(
         name: 'pqlQuery',
         description: 'Pql query filter',
-        example: 'id = 150'
+        example: 'id = 69'
     )]
     #[ExcludeFoldersParameter]
     #[PathParameter]
