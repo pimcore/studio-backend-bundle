@@ -92,11 +92,13 @@ final readonly class WidgetService implements WidgetServiceInterface
     public function updateWidgetConfig(string $widgetType, string $widgetId, WidgetDataParameter $widgetData): void
     {
         $this->widgetValidationService->validateWidgetType($widgetType);
-        $configData = $widgetData->getData();
+        $repository = $this->loadRepositoryByType($widgetType);
+        $repository->getConfiguration($widgetId);
 
+        $configData = $widgetData->getData();
         $configData['name'] = $this->getValidConfigName($configData);
         $configData['id'] = $widgetId;
-        $this->loadRepositoryByType($widgetType)->updateConfiguration($configData);
+        $repository->updateConfiguration($configData);
     }
 
     /**
@@ -157,6 +159,21 @@ final readonly class WidgetService implements WidgetServiceInterface
 
     /**
      * @throws InvalidArgumentException
+     */
+    public function loadRepositoryByType(string $widgetType): WidgetConfigRepositoryInterface
+    {
+        try {
+            return $this->configRepositoryLoader->loadRepository($widgetType);
+        } catch (MustImplementInterfaceException $exception) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid widget config repository implementation: %s', $exception->getMessage()),
+                $exception
+            );
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
      *
      * @return WidgetConfigRepositoryInterface[]
      */
@@ -167,21 +184,6 @@ final readonly class WidgetService implements WidgetServiceInterface
         } catch (MustImplementInterfaceException $exception) {
             throw new InvalidArgumentException(
                 sprintf('Invalid widget config implementation: %s', $exception->getMessage()),
-                $exception
-            );
-        }
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     */
-    private function loadRepositoryByType(string $widgetType): WidgetConfigRepositoryInterface
-    {
-        try {
-            return $this->configRepositoryLoader->loadRepository($widgetType);
-        } catch (MustImplementInterfaceException $exception) {
-            throw new InvalidArgumentException(
-                sprintf('Invalid widget config repository implementation: %s', $exception->getMessage()),
                 $exception
             );
         }

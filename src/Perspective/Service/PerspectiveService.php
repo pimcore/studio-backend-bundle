@@ -50,6 +50,7 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
         private PerspectiveConfigHydratorInterface $configHydrator,
         private PerspectiveConfigDetailHydratorInterface $configDetailHydrator,
         private PerspectiveConfigRepositoryInterface $configRepository,
+        private PerspectiveValidationServiceInterface $validationService,
         private UuidFactory $uuidFactory
     ) {
     }
@@ -66,6 +67,23 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
         $this->configRepository->saveConfiguration($perspectiveId, $perspectiveData);
 
         return $perspectiveId;
+    }
+
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException
+     */
+    public function updateConfig(string $perspectiveId, SavePerspectiveConfig $config): void
+    {
+        $this->configRepository->getConfiguration($perspectiveId);
+        $this->validationService->validateWidgets($config);
+        $this->validationService->validateExpandedWidgets($config);
+
+        $perspectiveData = $this->createPerspectiveData($config);
+        $perspectiveData['contextPermissions'] = $this->validationService->getValidContextPermissions(
+            $config->getContextPermissions()
+        );
+
+        $this->configRepository->saveConfiguration($perspectiveId, $perspectiveData);
     }
 
     /**

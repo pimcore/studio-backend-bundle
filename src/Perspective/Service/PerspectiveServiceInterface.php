@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\AddPerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
 
 /**
  * @internal
@@ -33,6 +34,11 @@ interface PerspectiveServiceInterface
      * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function addConfig(AddPerspectiveConfig $config): string;
+
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException
+     */
+    public function updateConfig(string $perspectiveId, SavePerspectiveConfig $config): void;
 
     /**
      * @throws InvalidArgumentException|NotFoundException|NotWriteableException
