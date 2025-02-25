@@ -77,7 +77,7 @@ final class UpdateController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function updateWidgetConfig(
+    public function updatePerspectiveConfig(
         string $perspectiveId,
         #[MapRequestPayload] SavePerspectiveConfig $perspectiveConfig
     ): Response {
