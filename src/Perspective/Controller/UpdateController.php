@@ -22,16 +22,13 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Attribute\Request\SavePerspectiveRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Attribute\Request\WidgetRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;

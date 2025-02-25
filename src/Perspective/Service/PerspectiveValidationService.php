@@ -20,6 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
+use function array_key_exists;
+use function sprintf;
 
 /**
  * @internal
@@ -41,7 +43,7 @@ final readonly class PerspectiveValidationService implements PerspectiveValidati
         $widgetGroups = [
             $perspectiveConfig->getWidgetsLeft(),
             $perspectiveConfig->getWidgetsRight(),
-            $perspectiveConfig->getWidgetsBottom()
+            $perspectiveConfig->getWidgetsBottom(),
         ];
 
         foreach ($widgetGroups as $widgets) {
