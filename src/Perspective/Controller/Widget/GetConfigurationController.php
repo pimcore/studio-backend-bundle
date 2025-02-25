@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Controller\Widget;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -49,7 +50,7 @@ final class GetConfigurationController extends AbstractApiController
     }
 
     /**
-     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
     #[Route(
         path: self::ROUTE,
@@ -72,7 +73,7 @@ final class GetConfigurationController extends AbstractApiController
         content: new DataJson('Data of the widget configuration')
     )]
     #[DefaultResponses([
-        HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,

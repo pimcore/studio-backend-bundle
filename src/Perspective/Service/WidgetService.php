@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -100,7 +101,7 @@ final readonly class WidgetService implements WidgetServiceInterface
     }
 
     /**
-     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfig
     {

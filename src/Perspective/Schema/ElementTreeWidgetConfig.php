@@ -34,6 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
         'contextPermissions',
         'elementType',
         'rootFolder',
+        'rootFolderId',
         'showRoot',
         'classes',
         'pql',
@@ -62,6 +63,8 @@ final class ElementTreeWidgetConfig extends WidgetConfig
         private readonly string $elementType = ElementTypes::TYPE_DATA_OBJECT,
         #[Property(description: 'Root Folder', type: 'string', example: '/Product Data/Cars')]
         private readonly string $rootFolder = '/',
+        #[Property(description: 'Root Folder ID', type: 'int', example: 2)]
+        private readonly int $rootFolderId = 1,
         #[Property(description: 'Show Root', type: 'bool', example: false)]
         private readonly bool $showRoot = false,
         #[Property(description: 'Classes', type: 'object', example: ['CAR'])]
@@ -84,6 +87,11 @@ final class ElementTreeWidgetConfig extends WidgetConfig
     public function getRootFolder(): string
     {
         return $this->rootFolder;
+    }
+
+    public function getRootFolderId(): int
+    {
+        return $this->rootFolderId;
     }
 
     public function isShowRoot(): bool
