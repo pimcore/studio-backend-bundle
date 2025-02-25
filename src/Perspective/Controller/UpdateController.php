@@ -14,23 +14,25 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Controller\Widget;
+namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Controller;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\DataJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Attribute\Request\SavePerspectiveRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -38,48 +40,49 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetConfigurationController extends AbstractApiController
+final class UpdateController extends AbstractApiController
 {
-    private const string ROUTE = '/perspectives/widgets/{widgetType}/configuration/{widgetId}';
+    private const string ROUTE = '/perspectives/configuration/{perspectiveId}';
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly WidgetServiceInterface $widgetService,
+        private readonly PerspectiveServiceInterface $perspectiveService,
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws ForbiddenException|InvalidArgumentException|NotFoundException|NotWriteableException
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
     #[Route(
-        path: self::ROUTE,
-        name: 'pimcore_studio_api_get_perspectives_widgets_config',
-        requirements: ['id' => '\d+'],
-        methods: ['GET']
+        self::ROUTE,
+        name: 'pimcore_studio_api_update_perspectives_config',
+        methods: ['PUT']
     )]
-    #[IsGranted(UserPermissions::WIDGET_EDIT->value)]
-    #[Get(
+    #[IsGranted(UserPermissions::PERSPECTIVE_EDITOR->value)]
+    #[Put(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'perspective_widget_get_config_by_id',
-        description: 'perspective_widget_get_config_by_id_description',
-        summary: 'perspective_widget_get_config_by_id_summary',
-        tags: [Tags::Perspectives->value]
+        operationId: 'perspective_update_config_by_id',
+        description: 'perspective_update_config_by_id_description',
+        summary: 'perspective_update_config_by_id_summary',
+        tags: [Tags::Perspectives->name]
     )]
-    #[StringParameter('widgetId', 'd061699e_da42_4075_b504_c2c93c687819', 'Filter widgets by matching widget Id')]
-    #[StringParameter('widgetType', 'element_tree', 'Filter widgets by matching widget type')]
+    #[StringParameter('perspectiveId', 'd061699e_da42_4075_b504_c2c93c687819', 'Update perspective by matching Id')]
+    #[SavePerspectiveRequestBody]
     #[SuccessResponse(
-        description: 'perspective_widget_get_config_by_id_success_response',
-        content: new DataJson('Data of the widget configuration')
+        description: 'perspective_update_config_by_id_success_response'
     )]
     #[DefaultResponses([
-        HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getWidgetConfig(string $widgetType, string $widgetId): JsonResponse
-    {
-        return $this->jsonResponse(['data' => $this->widgetService->getWidgetConfigData($widgetType, $widgetId)]);
+    public function updatePerspectiveConfig(
+        string $perspectiveId,
+        #[MapRequestPayload] SavePerspectiveConfig $perspectiveConfig
+    ): Response {
+        $this->perspectiveService->updateConfig($perspectiveId, $perspectiveConfig);
+
+        return new Response();
     }
 }

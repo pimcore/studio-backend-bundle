@@ -39,12 +39,12 @@ final class PerspectiveConfigDetail extends PerspectiveConfig
         string $id,
         string $name,
         ElementIcon $icon,
+        bool $isWriteable = true,
         #[Property(
             description: 'Context Permissions',
             type: 'object',
             example: ['permission_group' => ['permission1' => true, 'permission2' => false]])
         ]
-        bool $isWriteable = true,
         private readonly array $contextPermissions = [],
         #[Property(description: 'Widgets Left', type: 'array', items: new Items(ref: ElementTreeWidgetConfig::class))]
         private readonly array $widgetsLeft = [],

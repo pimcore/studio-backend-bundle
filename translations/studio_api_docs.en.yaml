@@ -403,6 +403,12 @@ perspective_get_config_by_id_summary: Get perspective configuration by ID
 perspective_get_config_collection_description: Listing of all available perspectives
 perspective_get_config_collection_success_response: List of perspective configurations
 perspective_get_config_collection_summary: Get all perspective configurations
+perspective_update_config_by_id_description: |
+  Update the perspective configuration with the given <strong>{perspectiveId}</strong>. <br> 
+  The <strong>{perspectiveId}</strong> must be an ID of an existing perspective. <br>
+  Please note that <strong>all configuration fields<strong> have to be provided.
+perspective_update_config_by_id_success_response: Successfully updated perspective configuration
+perspective_update_config_by_id_summary: Update widget configuration by id and type
 perspective_widget_create_description: |
     Create a new widget with default values based on the provided <strong>{widgetType}</strong>.
     <br> The widget type has to be registered via Symfony Configuration.

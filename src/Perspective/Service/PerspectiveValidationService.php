@@ -16,14 +16,60 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\SavePerspectiveConfig;
+use function array_key_exists;
+use function sprintf;
+
 /**
  * @internal
  */
 final readonly class PerspectiveValidationService implements PerspectiveValidationServiceInterface
 {
     public function __construct(
-        private ContextPermissionsServiceInterface $contextPermissionsService
+        private ContextPermissionsServiceInterface $contextPermissionsService,
+        private WidgetServiceInterface $widgetService,
+        private WidgetValidationServiceInterface $widgetValidationService,
     ) {
+    }
+
+    /**
+     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
+     */
+    public function validateWidgets(SavePerspectiveConfig $perspectiveConfig): void
+    {
+        $widgetGroups = [
+            $perspectiveConfig->getWidgetsLeft(),
+            $perspectiveConfig->getWidgetsRight(),
+            $perspectiveConfig->getWidgetsBottom(),
+        ];
+
+        foreach ($widgetGroups as $widgets) {
+            foreach ($widgets as $widgetId => $widgetType) {
+                $this->widgetValidationService->validateWidgetType($widgetType);
+                $this->widgetService->loadRepositoryByType($widgetType)->getConfiguration($widgetId);
+            }
+        }
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function validateExpandedWidgets(SavePerspectiveConfig $perspectiveConfig): void
+    {
+        $this->validateExpandedWidget(
+            $perspectiveConfig->getExpandedLeft(),
+            $perspectiveConfig->getWidgetsLeft(),
+            'left'
+        );
+
+        $this->validateExpandedWidget(
+            $perspectiveConfig->getExpandedRight(),
+            $perspectiveConfig->getWidgetsRight(),
+            'right'
+        );
     }
 
     public function getValidContextPermissions(array $perspectivePermissions): array
@@ -42,6 +88,20 @@ final readonly class PerspectiveValidationService implements PerspectiveValidati
         $perspectivePermissions = $this->filterValidPermissions($perspectivePermissions, $contextPermissions);
 
         return $this->addMissingPermissions($perspectivePermissions, $contextPermissions);
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function validateExpandedWidget(?string $expandedWidget, array $widgets, string $position): void
+    {
+        if ($expandedWidget === null) {
+            return;
+        }
+
+        if (!array_key_exists($expandedWidget, $widgets)) {
+            throw new NotFoundException(sprintf('widget in %s widgets', $position), $expandedWidget);
+        }
     }
 
     private function filterValidPermissions(array $perspectivePermissions, array $contextPermissions): array

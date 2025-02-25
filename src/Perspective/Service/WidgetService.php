@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
@@ -92,15 +93,17 @@ final readonly class WidgetService implements WidgetServiceInterface
     public function updateWidgetConfig(string $widgetType, string $widgetId, WidgetDataParameter $widgetData): void
     {
         $this->widgetValidationService->validateWidgetType($widgetType);
-        $configData = $widgetData->getData();
+        $repository = $this->loadRepositoryByType($widgetType);
+        $repository->getConfiguration($widgetId);
 
+        $configData = $widgetData->getData();
         $configData['name'] = $this->getValidConfigName($configData);
         $configData['id'] = $widgetId;
-        $this->loadRepositoryByType($widgetType)->updateConfiguration($configData);
+        $repository->updateConfiguration($configData);
     }
 
     /**
-     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfig
     {
@@ -157,6 +160,21 @@ final readonly class WidgetService implements WidgetServiceInterface
 
     /**
      * @throws InvalidArgumentException
+     */
+    public function loadRepositoryByType(string $widgetType): WidgetConfigRepositoryInterface
+    {
+        try {
+            return $this->configRepositoryLoader->loadRepository($widgetType);
+        } catch (MustImplementInterfaceException $exception) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid widget config repository implementation: %s', $exception->getMessage()),
+                $exception
+            );
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
      *
      * @return WidgetConfigRepositoryInterface[]
      */
@@ -167,21 +185,6 @@ final readonly class WidgetService implements WidgetServiceInterface
         } catch (MustImplementInterfaceException $exception) {
             throw new InvalidArgumentException(
                 sprintf('Invalid widget config implementation: %s', $exception->getMessage()),
-                $exception
-            );
-        }
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     */
-    private function loadRepositoryByType(string $widgetType): WidgetConfigRepositoryInterface
-    {
-        try {
-            return $this->configRepositoryLoader->loadRepository($widgetType);
-        } catch (MustImplementInterfaceException $exception) {
-            throw new InvalidArgumentException(
-                sprintf('Invalid widget config repository implementation: %s', $exception->getMessage()),
                 $exception
             );
         }
