@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\ParentI
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PathIncludeDescendantsParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PathIncludeParentParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PathParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -79,6 +80,11 @@ final class TreeController extends AbstractApiController
         example: 1,
     )]
     #[IdSearchTermParameter]
+    #[TextFieldParameter(
+        name: 'pqlQuery',
+        description: 'Pql query filter',
+        example: 'id = 150'
+    )]
     #[ExcludeFoldersParameter]
     #[PathParameter]
     #[PathIncludeParentParameter]

@@ -8,7 +8,9 @@ studio_default_perspective:
       name: "Document Tree"
       widget_type: "element_tree"
       elementType: "document"
-      icon: null # fallback to default icon
+      icon:
+        type: "name"
+        value: "document"
       rootFolder: "/"
       showRoot: true
       pql: null
@@ -21,7 +23,9 @@ studio_default_perspective:
       name: "Asset Tree"
       widget_type: "element_tree"
       elementType: "asset"
-      icon: null # fallback to default icon
+      icon:
+        type: "name"
+        value: "asset"
       rootFolder: "/"
       showRoot: true
       pql: null
@@ -34,7 +38,9 @@ studio_default_perspective:
       name: "Data Object Tree"
       widget_type: "element_tree"
       elementType: "data-object"
-      icon: null # fallback to default icon
+      icon:
+        type: "name"
+        value: "data-object"
       rootFolder: "/"
       showRoot: true
       pql: null
