@@ -30,7 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetai
 interface PerspectiveServiceInterface
 {
     /**
-     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function addConfig(AddPerspectiveConfig $config): string;
 
@@ -45,4 +45,9 @@ interface PerspectiveServiceInterface
      * @return PerspectiveConfig[]
      */
     public function listConfigurations(): array;
+
+    /**
+     * @throws NotWriteableException
+     */
+    public function deleteConfig(string $perspectiveId): void;
 }

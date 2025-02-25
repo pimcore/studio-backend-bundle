@@ -86,13 +86,7 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
      */
     public function getConfiguration(string $widgetId): array
     {
-        $repository = $this->getRepository();
-        $data = $repository->loadConfigByKey($widgetId);
-        [$configData, $dataSource] = $data;
-        if ($configData === null) {
-            throw new NotFoundException('Element Tree Widget', $widgetId);
-        }
-
+        [$configData, $dataSource] = $this->loadConfig($widgetId);
         $configData['isWriteable'] = $this->isRepositoryWritable($widgetId, $dataSource);
         $configData['id'] = $widgetId;
 
@@ -144,18 +138,19 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
      * @throws NotWriteableException
      */
     public function deleteConfiguration(
-        string $configId
+        string $widgetId
     ): void {
         $repository = $this->getRepository();
+        $this->loadConfig($widgetId);
 
         try {
-            $repository->deleteData($configId, $repository->getWriteTarget());
+            $repository->deleteData($widgetId, $repository->getWriteTarget());
         } catch (Exception $exception) {
             throw new NotWriteableException(
                 'widget',
                 sprintf(
                     'Widget configuration (%s) could not be deleted: %s',
-                    $configId,
+                    $widgetId,
                     $exception->getMessage()
                 ),
                 $exception
@@ -174,6 +169,23 @@ final class ElementTreeWidgetConfigRepository implements WidgetConfigRepositoryI
         }
 
         return $this->repository;
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    private function loadConfig(string $widgetId): array
+    {
+        $data = $this->getRepository()->loadConfigByKey($widgetId);
+        if ($data[0] === null) {
+            throw new NotFoundException(
+                'widget',
+                sprintf('[ID: %s, Type: %s]', $widgetId, $this->getSupportedWidgetType()),
+                'ID and Type'
+            );
+        }
+
+        return $data;
     }
 
     /**

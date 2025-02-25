@@ -55,7 +55,7 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function addConfig(AddPerspectiveConfig $config): string
     {
@@ -96,6 +96,14 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
         }
 
         return $perspectives;
+    }
+
+    /**
+     * @throws NotWriteableException
+     */
+    public function deleteConfig(string $perspectiveId): void
+    {
+        $this->configRepository->deleteConfiguration($perspectiveId);
     }
 
     /**

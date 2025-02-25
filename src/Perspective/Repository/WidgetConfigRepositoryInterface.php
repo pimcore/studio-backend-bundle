@@ -29,6 +29,6 @@ interface WidgetConfigRepositoryInterface
     public function listConfigurations(): array;
 
     public function deleteConfiguration(
-        string $configId
+        string $widgetId
     ): void;
 }

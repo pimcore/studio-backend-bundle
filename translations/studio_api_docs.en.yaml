@@ -390,6 +390,11 @@ perspective_create_description: |
   Create a new perspective with default values.
 perspective_create_success_response: Id of the new perspective
 perspective_create_summary: Create a new perspective
+perspective_delete_description: |
+  Delete the perspective with the given <strong>{perspectiveId}</strong>. <br>
+  The <strong>{perspectiveId}</strong> must be an ID of an existing perspective.
+perspective_delete_success_response: Successfully deleted perspective
+perspective_delete_summary: Delete perspective by given id
 perspective_get_config_by_id_description: |
   Get the perspective configuration with the given <strong>{perspectiveId}</strong>. <br> 
   The <strong>{perspectiveId}</strong> must be an ID of an existing perspective.

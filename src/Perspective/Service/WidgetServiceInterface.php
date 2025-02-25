@@ -59,7 +59,7 @@ interface WidgetServiceInterface
     public function listWidgetConfigurations(): array;
 
     /**
-     * @throws InvalidArgumentException|NotWriteableException
+     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function deleteWidgetConfig(string $widgetType, string $widgetId): void;
 

@@ -43,6 +43,6 @@ interface PerspectiveConfigRepositoryInterface
      * @throws NotWriteableException
      */
     public function deleteConfiguration(
-        string $configId
+        string $perspectiveId
     ): void;
 }
