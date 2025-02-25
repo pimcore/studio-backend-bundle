@@ -59,7 +59,7 @@ final class UpdateController extends AbstractApiController
         name: 'pimcore_studio_api_update_perspectives_config',
         methods: ['PUT']
     )]
-    #[IsGranted(UserPermissions::WIDGET_EDIT->value)]
+    #[IsGranted(UserPermissions::PERSPECTIVE_EDITOR->value)]
     #[Put(
         path: self::PREFIX . self::ROUTE,
         operationId: 'perspective_update_config_by_id',
