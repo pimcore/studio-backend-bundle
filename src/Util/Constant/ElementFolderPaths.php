@@ -16,6 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
 
+/**
+ * @internal
+ */
 enum ElementFolderPaths: string
 {
     case ROOT = '/';
