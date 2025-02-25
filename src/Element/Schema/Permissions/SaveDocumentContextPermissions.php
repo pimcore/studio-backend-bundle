@@ -45,7 +45,7 @@ use OpenApi\Attributes\Schema;
         'paste',
         'pasteCut',
         'publish',
-        'reload',
+        'refresh',
         'removeSite',
         'rename',
         'searchAndMove',
@@ -99,8 +99,8 @@ class SaveDocumentContextPermissions
         private readonly bool $pasteCut = true,
         #[Property(description: 'Publish', type: 'bool', example: true)]
         private readonly bool $publish = true,
-        #[Property(description: 'Reload', type: 'bool', example: true)]
-        private readonly bool $reload = true,
+        #[Property(description: 'Refresh', type: 'bool', example: true)]
+        private readonly bool $refresh = true,
         #[Property(description: 'Remove Site', type: 'bool', example: true)]
         private readonly bool $removeSite = true,
         #[Property(description: 'Rename', type: 'bool', example: true)]
@@ -218,9 +218,9 @@ class SaveDocumentContextPermissions
         return $this->publish;
     }
 
-    public function isReload(): bool
+    public function isRefresh(): bool
     {
-        return $this->reload;
+        return $this->refresh;
     }
 
     public function isRemoveSite(): bool
