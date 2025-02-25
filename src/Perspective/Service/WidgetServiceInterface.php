@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetConfigHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\MappedParameter\WidgetDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\WidgetConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
 
@@ -67,4 +68,9 @@ interface WidgetServiceInterface
      * @throws InvalidArgumentException
      */
     public function loadHydratorByType(string $widgetType): WidgetConfigHydratorInterface;
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function loadRepositoryByType(string $widgetType): WidgetConfigRepositoryInterface;
 }
