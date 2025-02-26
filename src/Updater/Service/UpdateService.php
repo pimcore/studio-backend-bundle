@@ -18,7 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
@@ -40,7 +39,6 @@ final readonly class UpdateService implements UpdateServiceInterface
 
     public function __construct(
         private AdapterLoaderInterface $adapterLoader,
-        private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $objectDataService,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
