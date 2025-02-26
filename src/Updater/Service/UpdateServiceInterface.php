@@ -18,8 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\UserInterface;
 
 /**
  * @internal

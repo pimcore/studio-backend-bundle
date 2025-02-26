@@ -63,7 +63,6 @@ interface DataServiceInterface
 
     public function getPreviewFieldName(Data $fieldDefinition): string;
 
-
     /**
      * @throws ElementSavingFailedException
      */

@@ -39,6 +39,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version as DataObjectVersionModal;
 use Pimcore\Normalizer\NormalizerInterface;
+use function array_key_exists;
 
 /**
  * @internal
@@ -149,7 +150,6 @@ final readonly class DataService implements DataServiceInterface
     {
         return !empty($fieldDefinition->getTitle()) ? $fieldDefinition->getTitle() : $fieldDefinition->getName();
     }
-
 
     /**
      * @inheritdoc

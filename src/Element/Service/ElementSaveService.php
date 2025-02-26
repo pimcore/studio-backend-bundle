@@ -111,6 +111,7 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     {
         if ($task === ElementSaveTasks::PUBLISH->value) {
             $this->publishElement($element, $user);
+
             return;
         }
 
