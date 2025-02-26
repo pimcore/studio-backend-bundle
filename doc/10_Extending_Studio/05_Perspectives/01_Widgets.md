@@ -171,7 +171,6 @@ pimcore_studio_backend:
                 copy: true
                 cut: true
                 delete: true
-                importCSV: true
                 lock: true
                 lockAndPropagate: true
                 paste: true

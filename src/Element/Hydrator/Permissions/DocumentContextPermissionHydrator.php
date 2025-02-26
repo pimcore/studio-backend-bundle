@@ -57,7 +57,7 @@ final readonly class DocumentContextPermissionHydrator implements DocumentContex
             $data['paste'] ?? true,
             $data['pasteCut'] ?? true,
             $data['publish'] ?? true,
-            $data['reload'] ?? true,
+            $data['refresh'] ?? true,
             $data['removeSite'] ?? true,
             $data['rename'] ?? true,
             $data['searchAndMove'] ?? true,

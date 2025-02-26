@@ -31,12 +31,11 @@ use OpenApi\Attributes\Schema;
         'copy',
         'cut',
         'delete',
-        'importCSV',
         'lock',
         'lockAndPropagate',
         'paste',
         'publish',
-        'reload',
+        'refresh',
         'rename',
         'searchAndMove',
         'unlock',
@@ -60,8 +59,6 @@ class SaveDataObjectContextPermissions
         private readonly bool $cut = true,
         #[Property(description: 'Delete', type: 'bool', example: true)]
         private readonly bool $delete = true,
-        #[Property(description: 'Import CSV', type: 'bool', example: true)]
-        private readonly bool $importCSV = true,
         #[Property(description: 'Lock', type: 'bool', example: true)]
         private readonly bool $lock = true,
         #[Property(description: 'Lock and Propagate', type: 'bool', example: true)]
@@ -70,8 +67,8 @@ class SaveDataObjectContextPermissions
         private readonly bool $paste = true,
         #[Property(description: 'Publish', type: 'bool', example: true)]
         private readonly bool $publish = true,
-        #[Property(description: 'Reload', type: 'bool', example: true)]
-        private readonly bool $reload = true,
+        #[Property(description: 'Refresh', type: 'bool', example: true)]
+        private readonly bool $refresh = true,
         #[Property(description: 'Rename', type: 'bool', example: true)]
         private readonly bool $rename = true,
         #[Property(description: 'Search and Move', type: 'bool', example: true)]
@@ -115,11 +112,6 @@ class SaveDataObjectContextPermissions
         return $this->delete;
     }
 
-    public function isImportCSV(): bool
-    {
-        return $this->importCSV;
-    }
-
     public function isLock(): bool
     {
         return $this->lock;
@@ -140,9 +132,9 @@ class SaveDataObjectContextPermissions
         return $this->publish;
     }
 
-    public function isReload(): bool
+    public function isRefresh(): bool
     {
-        return $this->reload;
+        return $this->refresh;
     }
 
     public function isRename(): bool
