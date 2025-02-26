@@ -157,7 +157,7 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setDataObjectGridConfigurationAsFavorite(int $configurationId, int $folderId): void
     {

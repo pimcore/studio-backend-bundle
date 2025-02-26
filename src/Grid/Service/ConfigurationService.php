@@ -72,7 +72,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration
     {
@@ -109,7 +109,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDataObjectGridConfiguration(
         ?int $configurationId,
@@ -169,7 +169,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function deleteDataObjectConfiguration(int $configurationId): void
     {
