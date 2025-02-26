@@ -146,6 +146,10 @@ final readonly class PreviewGenerator implements PreviewGeneratorInterface
 
         $preSelectedSite = null;
         foreach ($sites as $site) {
+            if ($site->getId() === null) {
+                continue;
+            }
+
             $label = $site->getRootDocument()?->getKey();
             $sitesOptions[$label] = $site->getId();
 
@@ -164,7 +168,7 @@ final readonly class PreviewGenerator implements PreviewGeneratorInterface
             'name' => PreviewGeneratorInterface::PARAMETER_SITE,
             'label' => $this->translator->trans('preview_generator_site', [], Translation::DOMAIN_ADMIN),
             'values' => $sitesOptions,
-            'defaultValue' => $preSelectedSite ?? reset($sitesOptions),
+            'defaultValue' => $preSelectedSite ?: reset($sitesOptions),
         ];
     }
 }
