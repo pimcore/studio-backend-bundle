@@ -315,6 +315,7 @@ final readonly class LocalizedFieldsAdapter implements
         foreach ($children as $child) {
             if (!$child instanceof Layout) {
                 $fields[] = $child;
+
                 continue;
             }
 
