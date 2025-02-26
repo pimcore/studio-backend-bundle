@@ -27,7 +27,6 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
-use function in_array;
 
 /**
  * @internal
@@ -53,10 +52,6 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
             $element->save();
         }
 
-        if (!in_array($task, ElementSaveTasks::values(), true)) {
-            return;
-        }
-
         $this->processTask($element, $user, $task);
     }
 
@@ -65,21 +60,26 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
      */
     private function processTask(ElementInterface $element, UserInterface $user, string $task): void
     {
-        if ($task === ElementSaveTasks::PUBLISH->value) {
-            $this->processPublishTask($element, $user);
-        }
+        match ($task) {
+            ElementSaveTasks::SAVE->value => $element->save(),
+            ElementSaveTasks::AUTOSAVE->value, ElementSaveTasks::VERSION->value =>
+                $this->processVersionTasks($element, $user, $task),
+            ElementSaveTasks::PUBLISH->value, ElementSaveTasks::UNPUBLISH->value =>
+                $this->processPublishTasks($element, $user, $task),
+            default => null
+        };
+    }
 
-        if ($task === ElementSaveTasks::SAVE->value || $task === ElementSaveTasks::PUBLISH->value) {
-            $element->save();
-
+    /**
+     * @throws Exception
+     */
+    private function processVersionTasks(ElementInterface $element, UserInterface $user, string $task): void
+    {
+        if (!$element instanceof Concrete && !$element instanceof Document) {
             return;
         }
 
-        /**
-         * @var Concrete $element
-         */
         $element->setOmitMandatoryCheck(true);
-
         $autoSave = $task === ElementSaveTasks::AUTOSAVE->value;
 
         $element->saveVersion(true, true, null, $autoSave);
@@ -92,16 +92,48 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     }
 
     /**
-     * @throws ForbiddenException
+     * @throws Exception
      */
-    private function processPublishTask(ElementInterface $element, UserInterface $user): void
+    private function processPublishTasks(ElementInterface $element, UserInterface $user, string $task): void
     {
         if (!$element instanceof Concrete && !$element instanceof Document) {
             return;
         }
 
+        $this->handlePublishTasks($element, $user, $task);
+        $element->save();
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function handlePublishTasks(Concrete|Document $element, UserInterface $user, string $task): void
+    {
+        if ($task === ElementSaveTasks::PUBLISH->value) {
+            $this->publishElement($element, $user);
+            return;
+        }
+
+        $this->unpublishElement($element, $user);
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function publishElement(Concrete|Document $element, UserInterface $user): void
+    {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
         $element->deleteAutoSaveVersions($user->getId());
         $element->setPublished(true);
+    }
+
+    /**
+     * @throws ForbiddenException
+     */
+    private function unpublishElement(Concrete|Document $element, UserInterface $user): void
+    {
+        $this->securityService->hasElementPermission($element, $user, ElementPermissions::UNPUBLISH_PERMISSION);
+        $element->setOmitMandatoryCheck(true);
+        $element->setPublished(false);
     }
 }

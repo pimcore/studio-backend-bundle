@@ -34,9 +34,4 @@ interface UpdateServiceInterface
      * @throws ElementSavingFailedException|NotFoundException
      */
     public function update(string $elementType, int $id, array $data): void;
-
-    /**
-     * @throws ElementSavingFailedException
-     */
-    public function updateEditableData(Concrete $element, array $editableData, UserInterface $user): void;
 }
