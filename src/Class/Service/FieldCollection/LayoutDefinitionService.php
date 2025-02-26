@@ -45,7 +45,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
     private array $fieldCollectionTypes = [];
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getLayoutDefinitionsForObject(int $dataObjectId): array
     {

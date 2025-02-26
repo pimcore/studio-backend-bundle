@@ -39,7 +39,7 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function save(ElementInterface $element, UserInterface $user, ?string $task = null): void
     {
