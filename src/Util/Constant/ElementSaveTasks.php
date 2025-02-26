@@ -28,5 +28,6 @@ enum ElementSaveTasks: string
     case AUTOSAVE = 'autoSave';
     case PUBLISH = 'publish';
     case SAVE = 'save';
+    case UNPUBLISH = 'unpublish';
     case VERSION = 'version';
 }

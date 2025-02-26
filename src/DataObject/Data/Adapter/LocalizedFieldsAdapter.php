@@ -55,7 +55,7 @@ final readonly class LocalizedFieldsAdapter implements
 {
     use ValidateObjectDataTrait;
 
-    private const string LOCALIZED_FIELDS_KEY = 'localizedfields';
+    public const string LOCALIZED_FIELDS_KEY = 'localizedfields';
 
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
