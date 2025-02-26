@@ -91,7 +91,10 @@ final readonly class PreviewGenerator implements PreviewGeneratorInterface
         $filteredParameters = [];
         foreach ($previewConfig as $config) {
             $name = $config['name'];
-            $selectedValue = $parameters[$name] ?? $config['defaultValue'];
+            $selectedValue = $config['defaultValue'] ?? '';
+            if (array_key_exists($name, $parameters)) {
+                $selectedValue = $parameters[$name];
+            }
 
             if (!empty($selectedValue)) {
                 $filteredParameters[$name] = $selectedValue;
