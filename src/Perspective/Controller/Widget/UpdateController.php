@@ -79,7 +79,6 @@ final class UpdateController extends AbstractApiController
         description: 'perspective_widget_update_config_by_id_success_response'
     )]
     #[DefaultResponses([
-        HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,

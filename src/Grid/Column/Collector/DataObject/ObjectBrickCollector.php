@@ -59,7 +59,7 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getColumnConfigurations(array $availableColumnDefinitions): array
     {

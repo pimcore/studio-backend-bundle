@@ -48,7 +48,7 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getWidgetByElement(
         array $allWidgets,
@@ -81,7 +81,7 @@ final readonly class ElementTreeWidgetRepository implements ElementTreeWidgetRep
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getTreeLevelData(
         WidgetElementData $widgetElementData,

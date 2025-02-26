@@ -48,7 +48,7 @@ final class ElementTypePermissionVoter extends Voter
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
