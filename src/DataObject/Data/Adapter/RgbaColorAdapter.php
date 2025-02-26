@@ -41,7 +41,9 @@ final readonly class RgbaColorAdapter implements SetterDataInterface, DataNormal
         ?FieldContextData $contextData = null,
         bool $isPatch = false
     ): ?RgbaColor {
-
+        if (!is_string($data[$key])) {
+            return null;
+        }
         $colorData = trim($data[$key], '# ');
         [$r, $g, $b, $a] = sscanf($colorData, '%02x%02x%02x%02x');
 

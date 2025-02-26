@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
+use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Localizedfield;
 use Pimcore\Model\UserInterface;
@@ -129,7 +130,7 @@ final readonly class LocalizedFieldsAdapter implements
 
         $value->loadLazyData();
         $originalValue = $fieldDefinition->normalize($value);
-        if ($originalValue === null) {
+        if (empty($originalValue)) {
             return null;
         }
         $languages = $this->languageService->getUserAllowedLanguages(
@@ -177,7 +178,7 @@ final readonly class LocalizedFieldsAdapter implements
 
         $inheritedData = [];
         $contextObject = $contextData?->getContextObject();
-        $fields = $fieldDefinition->getChildren();
+        $fields = $this->processFieldChildren($fieldDefinition->getChildren());
 
         foreach ($fields as $field) {
             foreach ($this->toolResolver->getValidLanguages() as $language) {
@@ -305,5 +306,23 @@ final readonly class LocalizedFieldsAdapter implements
         }
 
         throw new InvalidArgumentException('Invalid context provided.');
+    }
+
+    private function processFieldChildren(array $children): array
+    {
+        $fields = [];
+
+        foreach ($children as $child) {
+            if (!$child instanceof Layout) {
+                $fields[] = $child;
+                continue;
+            }
+
+            foreach ($this->processFieldChildren($child->getChildren()) as $nestedChild) {
+                $fields[] = $nestedChild;
+            }
+        }
+
+        return $fields;
     }
 }
