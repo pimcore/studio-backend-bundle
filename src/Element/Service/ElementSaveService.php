@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
-use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
@@ -40,8 +39,7 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     }
 
     /**
-     * @throws DuplicateFullPathException
-     * @throws Exception
+     * @inheritdoc
      */
     public function save(ElementInterface $element, UserInterface $user, ?string $task = null): void
     {

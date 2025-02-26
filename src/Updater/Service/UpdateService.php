@@ -22,12 +22,14 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Element\ValidationException;
 
 /**
  * @internal
@@ -47,7 +49,7 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws ElementSavingFailedException|FieldValidationFailedException|NotFoundException
      */
     public function update(string $elementType, int $id, array $data): void
     {
@@ -77,6 +79,8 @@ final readonly class UpdateService implements UpdateServiceInterface
 
         try {
             $this->elementSaveService->save($element, $user, $task);
+        } catch (ValidationException $e) {
+            throw new FieldValidationFailedException($e->getMessage(), previous: $e);
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
         }

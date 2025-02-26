@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\UpdateAssetParamete
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -52,7 +53,7 @@ final class UpdateController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws ElementSavingFailedException|FieldValidationFailedException|NotFoundException
      */
     #[Route('/assets/{id}', name: 'pimcore_studio_api_update_asset', methods: ['PUT'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
@@ -72,7 +73,7 @@ final class UpdateController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::UNAUTHORIZED
     ])]
     public function assetUpdateById(int $id, #[MapRequestPayload] UpdateAssetParameter $updateAsset): JsonResponse
     {
