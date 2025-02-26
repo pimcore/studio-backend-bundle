@@ -29,8 +29,7 @@ final class FieldValidationFailedException extends AbstractApiException
         string $message,
         string $errorKey = HttpResponseErrorKeys::ELEMENT_VALIDATION_FAILED->value,
         ?Throwable $previous = null
-    )
-    {
+    ) {
         parent::__construct(
             HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
             $message,
