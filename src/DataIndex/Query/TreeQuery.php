@@ -43,7 +43,7 @@ final readonly class TreeQuery implements TreeQueryInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function get(
         ElementTreeWidgetConfig $widget,

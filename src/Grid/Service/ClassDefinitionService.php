@@ -35,7 +35,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getFilteredLayoutDefinitions(string $classId, int $folderId): ?Layout
     {
@@ -77,7 +77,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getClassDefinition(string $classId): ClassDefinition
     {

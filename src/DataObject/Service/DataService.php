@@ -57,7 +57,7 @@ final readonly class DataService implements DataServiceInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setObjectDetailData(
         DataObjectFolder|DataObject|DataObjectVersion $dataObject,
@@ -107,7 +107,7 @@ final readonly class DataService implements DataServiceInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getPreviewObjectData(DataObjectModel $dataObject): array
     {
@@ -129,7 +129,7 @@ final readonly class DataService implements DataServiceInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getPreviewFieldData(
         mixed $value,
@@ -152,7 +152,7 @@ final readonly class DataService implements DataServiceInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function updateEditableData(Concrete $element, array $editableData, UserInterface $user): void
     {
@@ -183,7 +183,7 @@ final readonly class DataService implements DataServiceInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function handleDraftData(Concrete $draftElement, Concrete $element, ?string $task = null): void
     {

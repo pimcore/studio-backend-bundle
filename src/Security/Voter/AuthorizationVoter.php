@@ -29,7 +29,7 @@ final class AuthorizationVoter extends Voter
     private const SUPPORTED_ATTRIBUTE = 'STUDIO_API';
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function supports(string $attribute, mixed $subject): bool
     {
