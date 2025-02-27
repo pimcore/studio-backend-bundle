@@ -10,7 +10,7 @@ You can define:
 
 ## How to add a custom context menu permissions
 
-To add a custom context menu permission to the Pimcore Studio Backend, you need to implement your custom event subscriber and inject the `Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextMenuPermissionService` service.:
+To add a custom context menu permission to the Pimcore Studio Backend, you need to implement your custom event subscriber and inject the `Pimcore\Bundle\StudioBackendBundle\Perspective\Service\ContextPermissionsServiceInterface` service.:
 
 ### 1. Define your subscriber service
 
