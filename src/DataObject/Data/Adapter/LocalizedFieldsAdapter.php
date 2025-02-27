@@ -112,8 +112,8 @@ final readonly class LocalizedFieldsAdapter implements
                 if (!$this->validateEncryptedField($childFieldDefinition, $value)) {
                     continue;
                 }
-
                 $localizedField->setLocalizedValue($name, $value, $language);
+                $localizedField->markLanguageAsDirty($language);
             }
         }
 
