@@ -5,7 +5,7 @@ studio_default_perspective:
   widgetsLeft:
     studio_document_tree_widget:
       id: "studio_document_tree_widget"
-      name: "asset.asset-tree.title"
+      name: "document.document-tree.title"
       widget_type: "element_tree"
       elementType: "document"
       icon:
