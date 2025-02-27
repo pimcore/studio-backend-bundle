@@ -20,7 +20,7 @@ studio_default_perspective:
       isWriteable: false
     studio_asset_tree_widget:
       id: "studio_asset_tree_widget"
-      name: "Asset Tree"
+      name: "asset.asset-tree.title"
       widget_type: "element_tree"
       elementType: "asset"
       icon:
