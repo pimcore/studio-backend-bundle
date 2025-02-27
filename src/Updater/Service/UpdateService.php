@@ -56,19 +56,17 @@ final readonly class UpdateService implements UpdateServiceInterface
         $user = $this->securityService->getCurrentUser();
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
         $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
-        $draftElement = null;
-        $considerDraftData = false;
         if (isset($data[self::USE_DRAFT_DATA_KEY]) && $data[self::USE_DRAFT_DATA_KEY] === true) {
             $draftElement = $this->getDraftElement($element);
             $considerDraftData = $element !== $draftElement;
-        }
 
-        if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
-            if ($considerDraftData && $draftElement instanceof Concrete) {
+            if ($considerDraftData && $draftElement instanceof Concrete && $element instanceof Concrete) {
                 $this->objectDataService->handleDraftData($draftElement, $element, $task);
                 $element = $draftElement;
             }
+        }
 
+        if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
             $this->objectDataService->updateEditableData($element, $data[self::EDITABLE_DATA_KEY], $user);
             unset($data[self::EDITABLE_DATA_KEY]);
         }

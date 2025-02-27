@@ -187,13 +187,13 @@ final readonly class DataService implements DataServiceInterface
      */
     public function handleDraftData(Concrete $draftElement, Concrete $element, ?string $task = null): void
     {
+        if ($task === ElementSaveTasks::AUTOSAVE->value || $task === ElementSaveTasks::UNPUBLISH->value) {
+            return;
+        }
+
         $getter = 'get' . ucfirst(LocalizedFieldsAdapter::LOCALIZED_FIELDS_KEY);
         if (method_exists($draftElement, $getter)) {
             $draftElement->$getter()->setLoadedAllLazyData();
-        }
-
-        if ($task === ElementSaveTasks::AUTOSAVE->value || $task === ElementSaveTasks::UNPUBLISH->value) {
-            return;
         }
 
         $class = $this->getValidClass($this->classDefinitionResolver, $element->getClassId());
