@@ -42,6 +42,7 @@ final readonly class AssetContextPermissionHydrator implements AssetContextPermi
             $data['uploadNewVersion'] ?? true,
             $data['addUploadZip'] ?? true,
             $data['download'] ?? true,
+            $data['downloadZip'] ?? true,
             $data['addFolder'] ?? true,
             $data['copy'] ?? true,
             $data['cut'] ?? true,

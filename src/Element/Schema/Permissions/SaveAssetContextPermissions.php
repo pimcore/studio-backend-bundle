@@ -30,6 +30,7 @@ use OpenApi\Attributes\Schema;
         'uploadNewVersion',
         'addUploadZip',
         'download',
+        'downloadZip',
         'addFolder',
         'copy',
         'cut',
@@ -59,6 +60,8 @@ class SaveAssetContextPermissions
         private readonly bool $addUploadZip = true,
         #[Property(description: 'Download', type: 'bool', example: true)]
         private readonly bool $download = true,
+        #[Property(description: 'Download Zip', type: 'bool', example: true)]
+        private readonly bool $downloadZip = true,
         #[Property(description: 'Add Folder', type: 'bool', example: true)]
         private readonly bool $addFolder = true,
         #[Property(description: 'Copy', type: 'bool', example: true)]
@@ -111,6 +114,11 @@ class SaveAssetContextPermissions
     public function isDownload(): bool
     {
         return $this->download;
+    }
+
+    public function isDownloadZip(): bool
+    {
+        return $this->downloadZip;
     }
 
     public function isAddFolder(): bool
