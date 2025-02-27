@@ -48,6 +48,7 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
 
         if ($task === null) {
             $element->save();
+
             return;
         }
 
