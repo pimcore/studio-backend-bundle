@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request\UpdateDataOb
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Response\Content\OneOfDataObjectsJson;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\DataParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
@@ -52,7 +53,7 @@ final class UpdateController extends AbstractApiController
     }
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws ElementSavingFailedException|FieldValidationFailedException|NotFoundException
      */
     #[Route('/data-objects/{id}', name: 'pimcore_studio_api_update_data_object', methods: ['PUT'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]

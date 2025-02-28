@@ -38,11 +38,11 @@ final readonly class AssetContextPermissionHydrator implements AssetContextPermi
     {
         return [
             $data['hideAdd'] ?? false,
-            $data['addImportFromServer'] ?? true,
             $data['addUpload'] ?? true,
-            $data['addUploadCompatibility'] ?? true,
-            $data['addUploadFromURL'] ?? true,
+            $data['uploadNewVersion'] ?? true,
             $data['addUploadZip'] ?? true,
+            $data['download'] ?? true,
+            $data['downloadZip'] ?? true,
             $data['addFolder'] ?? true,
             $data['copy'] ?? true,
             $data['cut'] ?? true,
@@ -51,7 +51,7 @@ final readonly class AssetContextPermissionHydrator implements AssetContextPermi
             $data['lockAndPropagate'] ?? true,
             $data['paste'] ?? true,
             $data['pasteCut'] ?? true,
-            $data['reload'] ?? true,
+            $data['refresh'] ?? true,
             $data['rename'] ?? true,
             $data['searchAndMove'] ?? true,
             $data['unlock'] ?? true,

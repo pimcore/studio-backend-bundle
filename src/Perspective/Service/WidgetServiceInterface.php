@@ -17,12 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator\WidgetConfigHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\MappedParameter\WidgetDataParameter;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\WidgetConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetType;
 
@@ -47,7 +49,7 @@ interface WidgetServiceInterface
     public function updateWidgetConfig(string $widgetType, string $widgetId, WidgetDataParameter $widgetData): void;
 
     /**
-     * @throws InvalidArgumentException|NotFoundException|NotWriteableException
+     * @throws ForbiddenException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
     public function getWidgetConfigData(string $widgetType, string $widgetId): WidgetConfig;
 
@@ -67,4 +69,9 @@ interface WidgetServiceInterface
      * @throws InvalidArgumentException
      */
     public function loadHydratorByType(string $widgetType): WidgetConfigHydratorInterface;
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function loadRepositoryByType(string $widgetType): WidgetConfigRepositoryInterface;
 }

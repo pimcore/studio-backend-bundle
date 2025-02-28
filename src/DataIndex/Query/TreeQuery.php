@@ -43,7 +43,7 @@ final readonly class TreeQuery implements TreeQueryInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function get(
         ElementTreeWidgetConfig $widget,
@@ -79,7 +79,7 @@ final readonly class TreeQuery implements TreeQueryInterface
             $rootPath = null;
         }
 
-        if ($widget->getElementType() === ElementTypes::TYPE_OBJECT) {
+        if ($widget->getElementType() === ElementTypes::TYPE_DATA_OBJECT) {
             try {
                 return new DataObjectParameters(
                     pageSize: $pageSize,

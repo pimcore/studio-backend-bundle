@@ -25,6 +25,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\RgbaColor;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_string;
 
 /**
  * @internal
@@ -41,7 +42,9 @@ final readonly class RgbaColorAdapter implements SetterDataInterface, DataNormal
         ?FieldContextData $contextData = null,
         bool $isPatch = false
     ): ?RgbaColor {
-
+        if (!is_string($data[$key])) {
+            return null;
+        }
         $colorData = trim($data[$key], '# ');
         [$r, $g, $b, $a] = sscanf($colorData, '%02x%02x%02x%02x');
 

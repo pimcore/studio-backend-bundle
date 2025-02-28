@@ -18,18 +18,18 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
-use Pimcore\Model\UserInterface;
-use function array_key_exists;
+use Pimcore\Model\Element\ValidationException;
 
 /**
  * @internal
@@ -41,7 +41,7 @@ final readonly class UpdateService implements UpdateServiceInterface
 
     public function __construct(
         private AdapterLoaderInterface $adapterLoader,
-        private DataAdapterServiceInterface $dataAdapterService,
+        private DataServiceInterface $objectDataService,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private ElementSaveServiceInterface $elementSaveService,
@@ -49,18 +49,25 @@ final readonly class UpdateService implements UpdateServiceInterface
     }
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws ElementSavingFailedException|FieldValidationFailedException|NotFoundException
      */
     public function update(string $elementType, int $id, array $data): void
     {
         $user = $this->securityService->getCurrentUser();
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
+        $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
         if (isset($data[self::USE_DRAFT_DATA_KEY]) && $data[self::USE_DRAFT_DATA_KEY] === true) {
-            $element = $this->getDraftElement($element);
+            $draftElement = $this->getDraftElement($element);
+            $considerDraftData = $element !== $draftElement;
+
+            if ($considerDraftData && $draftElement instanceof Concrete && $element instanceof Concrete) {
+                $this->objectDataService->handleDraftData($draftElement, $element, $task);
+                $element = $draftElement;
+            }
         }
 
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
-            $this->updateEditableData($element, $data[self::EDITABLE_DATA_KEY], $user);
+            $this->objectDataService->updateEditableData($element, $data[self::EDITABLE_DATA_KEY], $user);
             unset($data[self::EDITABLE_DATA_KEY]);
         }
 
@@ -69,44 +76,11 @@ final readonly class UpdateService implements UpdateServiceInterface
         }
 
         try {
-            $this->elementSaveService->save(
-                $element,
-                $user,
-                $data[ElementSaveServiceInterface::INDEX_TASK] ?? null
-            );
+            $this->elementSaveService->save($element, $user, $task);
+        } catch (ValidationException $e) {
+            throw new FieldValidationFailedException($e->getMessage(), previous: $e);
         } catch (Exception $e) {
             throw new ElementSavingFailedException($id, $e->getMessage());
-        }
-    }
-
-    /**
-     * @throws ElementSavingFailedException
-     */
-    public function updateEditableData(Concrete $element, array $editableData, UserInterface $user): void
-    {
-        try {
-            $class = $element->getClass();
-            foreach ($editableData as $key => $value) {
-                $fieldDefinition = $class->getFieldDefinition($key);
-                if ($fieldDefinition === null || !array_key_exists($key, $editableData)) {
-                    continue;
-                }
-
-                $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldtype());
-                if ($adapter === null) {
-                    continue;
-                }
-
-                $value = $adapter->getDataForSetter($element, $fieldDefinition, $key, $editableData, $user);
-                if (!$this->validateEncryptedField($fieldDefinition, $value)) {
-                    continue;
-                }
-
-                $element->setValue($key, $value);
-            }
-
-        } catch (Exception $e) {
-            throw new ElementSavingFailedException($element->getId(), $e->getMessage());
         }
     }
 

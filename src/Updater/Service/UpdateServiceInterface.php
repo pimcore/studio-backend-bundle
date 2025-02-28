@@ -17,9 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\DataObject\Concrete;
-use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -31,12 +30,7 @@ interface UpdateServiceInterface
     public const string EDITABLE_DATA_KEY = 'editableData';
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws ElementSavingFailedException|FieldValidationFailedException|NotFoundException
      */
     public function update(string $elementType, int $id, array $data): void;
-
-    /**
-     * @throws ElementSavingFailedException
-     */
-    public function updateEditableData(Concrete $element, array $editableData, UserInterface $user): void;
 }

@@ -49,7 +49,7 @@ final readonly class ElementLocationService implements ElementLocationServiceInt
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getElementLocation(string $elementType, int $elementId, string $perspectiveId): LocationData
     {

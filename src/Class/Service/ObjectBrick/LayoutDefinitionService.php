@@ -45,7 +45,7 @@ final class LayoutDefinitionService implements LayoutDefinitionServiceInterface
     private array $objectBrickTypes = [];
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function getLayoutDefinitionsForObject(int $dataObjectId): array
     {

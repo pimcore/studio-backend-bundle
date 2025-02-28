@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 use Exception;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Model\Element\ValidationException;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -29,8 +30,7 @@ interface ElementSaveServiceInterface
     public const string INDEX_TASK = 'task';
 
     /**
-     * @throws DuplicateFullPathException
-     * @throws Exception
+     * @throws Exception|DuplicateFullPathException|ValidationException
      */
     public function save(ElementInterface $element, UserInterface $user, ?string $task = null): void;
 }

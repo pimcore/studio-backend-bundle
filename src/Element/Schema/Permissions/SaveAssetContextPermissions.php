@@ -26,11 +26,11 @@ use OpenApi\Attributes\Schema;
     title: 'Save Asset Context Permissions',
     required: [
         'hideAdd',
-        'addImportFromServer',
         'addUpload',
-        'addUploadCompatibility',
-        'addUploadFromURL',
+        'uploadNewVersion',
         'addUploadZip',
+        'download',
+        'downloadZip',
         'addFolder',
         'copy',
         'cut',
@@ -39,7 +39,7 @@ use OpenApi\Attributes\Schema;
         'lockAndPropagate',
         'paste',
         'pasteCut',
-        'reload',
+        'refresh',
         'rename',
         'searchAndMove',
         'unlock',
@@ -52,16 +52,16 @@ class SaveAssetContextPermissions
     public function __construct(
         #[Property(description: 'Hide Add Menu', type: 'bool', example: true)]
         private readonly bool $hideAdd = false,
-        #[Property(description: 'Add Import From Server', type: 'bool', example: true)]
-        private readonly bool $addImportFromServer = true,
         #[Property(description: 'Add Upload', type: 'bool', example: true)]
         private readonly bool $addUpload = true,
-        #[Property(description: 'Add Upload Compatibility', type: 'bool', example: true)]
-        private readonly bool $addUploadCompatibility = true,
-        #[Property(description: 'Add Upload From URL', type: 'bool', example: true)]
-        private readonly bool $addUploadFromURL = true,
+        #[Property(description: 'Upload New Version', type: 'bool', example: true)]
+        private readonly bool $uploadNewVersion = true,
         #[Property(description: 'Add Upload Zip', type: 'bool', example: true)]
         private readonly bool $addUploadZip = true,
+        #[Property(description: 'Download', type: 'bool', example: true)]
+        private readonly bool $download = true,
+        #[Property(description: 'Download Zip', type: 'bool', example: true)]
+        private readonly bool $downloadZip = true,
         #[Property(description: 'Add Folder', type: 'bool', example: true)]
         private readonly bool $addFolder = true,
         #[Property(description: 'Copy', type: 'bool', example: true)]
@@ -78,8 +78,8 @@ class SaveAssetContextPermissions
         private readonly bool $paste = true,
         #[Property(description: 'Paste Cut', type: 'bool', example: true)]
         private readonly bool $pasteCut = true,
-        #[Property(description: 'Reload', type: 'bool', example: true)]
-        private readonly bool $reload = true,
+        #[Property(description: 'Refresh', type: 'bool', example: true)]
+        private readonly bool $refresh = true,
         #[Property(description: 'Rename', type: 'bool', example: true)]
         private readonly bool $rename = true,
         #[Property(description: 'SearchAndMove', type: 'bool', example: true)]
@@ -96,29 +96,29 @@ class SaveAssetContextPermissions
         return $this->hideAdd;
     }
 
-    public function isAddImportFromServer(): bool
-    {
-        return $this->addImportFromServer;
-    }
-
     public function isAddUpload(): bool
     {
         return $this->addUpload;
     }
 
-    public function isAddUploadCompatibility(): bool
+    public function isUploadNewVersion(): bool
     {
-        return $this->addUploadCompatibility;
-    }
-
-    public function isAddUploadFromURL(): bool
-    {
-        return $this->addUploadFromURL;
+        return $this->uploadNewVersion;
     }
 
     public function isAddUploadZip(): bool
     {
         return $this->addUploadZip;
+    }
+
+    public function isDownload(): bool
+    {
+        return $this->download;
+    }
+
+    public function isDownloadZip(): bool
+    {
+        return $this->downloadZip;
     }
 
     public function isAddFolder(): bool
@@ -161,9 +161,9 @@ class SaveAssetContextPermissions
         return $this->pasteCut;
     }
 
-    public function isReload(): bool
+    public function isRefresh(): bool
     {
-        return $this->reload;
+        return $this->refresh;
     }
 
     public function isRename(): bool

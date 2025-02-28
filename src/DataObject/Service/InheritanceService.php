@@ -50,6 +50,10 @@ final readonly class InheritanceService implements InheritanceServiceInterface
             false,
             function () use ($object, $fieldDefinitions) {
                 $inheritanceData = [];
+                if (!$object->getParent() instanceof Concrete) {
+                    return $inheritanceData;
+                }
+
                 foreach ($fieldDefinitions as $key => $fieldDefinition) {
                     $inheritanceData['metaData'][$key] = $this->processFieldDefinition(
                         $object,

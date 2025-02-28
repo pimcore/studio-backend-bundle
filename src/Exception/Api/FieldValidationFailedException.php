@@ -23,18 +23,18 @@ use Throwable;
 /**
  * @internal
  */
-final class ValidationFailedException extends AbstractApiException
+final class FieldValidationFailedException extends AbstractApiException
 {
     public function __construct(
         string $message,
-        ?Throwable $previous = null,
-        string $errorKey = HttpResponseErrorKeys::VALIDATION_FAILED->value
+        string $errorKey = HttpResponseErrorKeys::ELEMENT_VALIDATION_FAILED->value,
+        ?Throwable $previous = null
     ) {
         parent::__construct(
             HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
             $message,
             previous: $previous,
-            errorKey: $errorKey
+            errorKey: $errorKey,
         );
     }
 }

@@ -21,6 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\SiteHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\ExcludeMainSiteParameter;
 use Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Site;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -61,6 +63,6 @@ final readonly class SiteService implements SiteServiceInterface
 
     private function getMainSite(): Site
     {
-        return new Site(0, [], 'main_site', 1, '/');
+        return new Site(0, [], 'main_site', ElementFolderIds::ROOT->value, ElementFolderPaths::ROOT->value);
     }
 }

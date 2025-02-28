@@ -16,18 +16,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
 
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
-
 /**
  * @internal
  */
-enum ElementSaveTasks: string
+enum ElementFolderIds: int
 {
-    use EnumToValueArrayTrait;
-
-    case AUTOSAVE = 'autoSave';
-    case PUBLISH = 'publish';
-    case SAVE = 'save';
-    case UNPUBLISH = 'unpublish';
-    case VERSION = 'version';
+    case ROOT = 1;
 }

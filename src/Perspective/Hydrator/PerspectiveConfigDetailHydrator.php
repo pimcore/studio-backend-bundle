@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Perspective\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetail;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\WidgetConfig;
@@ -75,7 +76,7 @@ final readonly class PerspectiveConfigDetailHydrator implements PerspectiveConfi
         foreach ($widgets as $widgetId => $widgetType) {
             try {
                 $widgetData[] = $this->widgetService->getWidgetConfigData($widgetType, $widgetId);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException|NotFoundException $e) {
                 $this->pimcoreLogger->error(sprintf(
                     'Failed to retrieve widget (%s): %s', $widgetId, $e->getMessage())
                 );

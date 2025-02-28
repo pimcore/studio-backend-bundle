@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use function array_key_exists;
 use function sprintf;
 
@@ -25,6 +26,8 @@ use function sprintf;
  */
 final readonly class SettingsService implements SettingsServiceInterface
 {
+    use ElementProviderTrait;
+
     public function __construct(
         private SettingProviderLoaderInterface $settingProviderLoader
     ) {
@@ -49,6 +52,7 @@ final readonly class SettingsService implements SettingsServiceInterface
     public function getTreePageSize(string $elementType): int
     {
         $settings = $this->getSettings();
+        $elementType = $this->getCoreElementType($elementType);
         $settingKey = $elementType . '_tree_paging_limit';
         if (!array_key_exists($settingKey, $settings)) {
             throw new InvalidElementTypeException(
