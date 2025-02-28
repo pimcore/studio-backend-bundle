@@ -195,7 +195,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
             }
 
             $fields = [
-                ...$this->buildFieldForClassName($class['classes'], $definition),
+                ...$this->buildFieldForClassName($class['classes']),
                 ...$fields,
             ];
         }
@@ -218,14 +218,14 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
         return new RelationField(
             name: $definition->getTitle(),
             key: $definition->getName(),
-            fields: $this->buildFieldForClassName($className, $definition)
+            fields: $this->buildFieldForClassName($className)
         );
     }
 
     /**
      * @return SimpleField[]
      */
-    private function buildFieldForClassName(string $className, AbstractRelations $definition): array
+    private function buildFieldForClassName(string $className): array
     {
         try {
             $definitionOfTheRelation = $this->classDefinitionResolver->getByName($className);
