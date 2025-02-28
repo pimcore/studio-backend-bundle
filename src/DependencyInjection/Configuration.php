@@ -215,7 +215,7 @@ class Configuration implements ConfigurationInterface
                                         ->ifTrue(fn ($v) => !is_string($v))
                                         ->thenInvalid(
                                             'advanced_column_supported_data_types must be an array of strings.'
-                                            )
+                                        )
                                     ->end()
                                ->end()
                            ->end()

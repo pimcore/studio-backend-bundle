@@ -35,6 +35,8 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelati
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Relations\AbstractRelations;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use function array_key_exists;
+use function in_array;
 
 /**
  * @internal
@@ -91,7 +93,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
             if ($definition instanceof Layout) {
                 $groupedDefinitions = [
                     ...$this->collectSupportedDefinitions($definition->getChildren()),
-                    ...$groupedDefinitions
+                    ...$groupedDefinitions,
                 ];
 
                 continue;
@@ -100,9 +102,8 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
             if ($definition instanceof Localizedfields) {
                 $groupedDefinitions = [
                     ...$this->collectSupportedDefinitions($definition->getChildren()),
-                    ...$groupedDefinitions
+                    ...$groupedDefinitions,
                 ];
-
 
                 continue;
             }
@@ -138,8 +139,8 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
             config: [
                 [
                     'simpleField' => $simpleFields,
-                    'relationField' => $relationFields
-                ]
+                    'relationField' => $relationFields,
+                ],
             ],
         );
     }
@@ -169,7 +170,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
     {
         $relations = [];
         foreach ($groupedDefinitions as $definition) {
-            if ($definition instanceof AdvancedManyToManyObjectRelation){
+            if ($definition instanceof AdvancedManyToManyObjectRelation) {
                 $relations[] = $this->buildAdvancedManyToManyObjectRelationFields($definition);
 
                 continue;
@@ -195,7 +196,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
 
             $fields = [
                 ...$this->buildFieldForClassName($class['classes'], $definition),
-                ...$fields
+                ...$fields,
             ];
         }
 
@@ -212,7 +213,6 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
         if ($className === null) {
             throw new InvalidArgumentException('Class name is required');
         }
-
 
         return new RelationField(
             name: $definition->getTitle(),
