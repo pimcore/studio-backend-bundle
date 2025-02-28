@@ -217,5 +217,13 @@ pimcore_studio_backend:
   grid:
     data_object:
       advanced_column_supported_data_types:
-        - string
+        - "email"
+        - "firstname"
+        - "input"
+        - "lastname"
+        - "password"
+        - "textarea"
+        - "time"
+        - "wysiwyg"
+        - "numeric"
 ```
