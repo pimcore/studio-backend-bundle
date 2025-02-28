@@ -193,3 +193,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\Asset\MetadataCollector:
     tags: [ 'pimcore.studio_backend.grid_column_collector' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\AdvancedColumnCollector:
+    tags: [ 'pimcore.studio_backend.grid_column_collector' ]
