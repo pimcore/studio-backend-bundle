@@ -209,8 +209,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
 
     private function buildAdvancedManyToManyObjectRelationFields(
         AdvancedManyToManyObjectRelation $definition
-    ): RelationField
-    {
+    ): RelationField {
         $className = $definition->getAllowedClassId();
         if ($className === null) {
             throw new InvalidArgumentException('Class name is required');
