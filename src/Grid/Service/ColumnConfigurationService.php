@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 use function in_array;
@@ -94,11 +93,10 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
 
     public function buildDataObjectAdapterColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration
     {
-        $options = null;
+        $config = [];
         $fieldDefinition = $definition->getFieldDefinition();
-        if ($fieldDefinition instanceof Select) {
-            $options = $fieldDefinition->getOptions();
-        }
+
+        $config['fieldDefinition'] = $fieldDefinition;
 
         return new ColumnConfiguration(
             key: $fieldDefinition->getName(),
@@ -110,7 +108,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
             locale: null,
             type: 'dataobject.adapter',
             frontendType: $fieldDefinition->getFieldType(),
-            config: $options ? ['options' => $options] : [],
+            config: $config
         );
     }
 
