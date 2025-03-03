@@ -94,12 +94,10 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
 
     public function buildDataObjectAdapterColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration
     {
-        $options = null;
+        $config = [];
         $fieldDefinition = $definition->getFieldDefinition();
-        if ($fieldDefinition instanceof Select) {
-            $options = $fieldDefinition->getOptions();
-        }
 
+        $config['fieldDefinition'] = $fieldDefinition;
         return new ColumnConfiguration(
             key: $fieldDefinition->getName(),
             group: $definition->getGroup(),
@@ -110,7 +108,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
             locale: null,
             type: 'dataobject.adapter',
             frontendType: $fieldDefinition->getFieldType(),
-            config: $options ? ['options' => $options] : [],
+            config: $config
         );
     }
 
