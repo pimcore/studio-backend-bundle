@@ -86,6 +86,7 @@ final readonly class TreeQuery implements TreeQueryInterface
                     parentId: $parentId,
                     pqlQuery: $widget->getPql(),
                     path: $rootPath,
+                    pathIncludeParent: true,
                     pathIncludeDescendants: $includeAllChildren,
                     classIds: json_encode($widget->getClasses(), JSON_THROW_ON_ERROR),
                 );
