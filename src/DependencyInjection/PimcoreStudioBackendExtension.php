@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\AdvancedColumnCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
@@ -110,6 +111,12 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);
         $definition->setArgument('$dataObjectPredefinedColumns', $config['grid']['data_object']['predefined_columns']);
+
+        $definition = $container->getDefinition(AdvancedColumnCollector::class);
+        $definition->setArgument(
+            '$supportedDataTypes',
+            $config['grid']['data_object']['advanced_column_supported_data_types']
+        );
 
         $definition = $container->getDefinition(NoteServiceInterface::class);
         $definition->setArgument('$noteTypes', $config['notes']['types']);
