@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Select;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 use function in_array;
@@ -98,6 +97,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
         $fieldDefinition = $definition->getFieldDefinition();
 
         $config['fieldDefinition'] = $fieldDefinition;
+
         return new ColumnConfiguration(
             key: $fieldDefinition->getName(),
             group: $definition->getGroup(),
