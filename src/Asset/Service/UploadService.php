@@ -43,7 +43,6 @@ use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Mime\MimeTypes;
 use function dirname;
 use function sprintf;
 
