@@ -107,7 +107,7 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
             $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
                 new ColumnFieldDefinition($dataField, $groupName, false),
                 'dataobject.objectbrick',
-                 $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getName(),
+                $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getName(),
                 ['field' => $fieldname, 'objectBrick' => $objectBrick->getKey()]
             );
         }

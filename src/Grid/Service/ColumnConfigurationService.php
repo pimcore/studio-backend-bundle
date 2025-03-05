@@ -96,8 +96,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
         ?string $type = null,
         ?string $key = null,
         ?array $additionalConfig = null
-    ): ColumnConfiguration
-    {
+    ): ColumnConfiguration {
         $config = [];
         $fieldDefinition = $definition->getFieldDefinition();
 

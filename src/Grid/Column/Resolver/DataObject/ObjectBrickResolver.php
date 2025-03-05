@@ -36,6 +36,7 @@ use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
+use function count;
 
 /**
  * @internal
@@ -89,7 +90,6 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
                 null,
             );
         }
-
 
         $inheritanceData = null;
         if ($classDefinition->getAllowInherit() && $fieldDefinition->supportsInheritance()) {
@@ -154,8 +154,6 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
             }
         );
 
-
-
         try {
             $inheritanceData = $inheritanceDataCollection[$key->getBrickName()][$key->getAttribute()];
 
@@ -178,8 +176,8 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
         $split = explode('.', $key);
         if (count($split) !== 3) {
             throw new InvalidArgumentException(
-                "invalid key structure for object brick.
-                          Is has to be in the format of <field>.<brickname>.<attributeofbrick>"
+                'invalid key structure for object brick.
+                          Is has to be in the format of <field>.<brickname>.<attributeofbrick>'
             );
         }
 
