@@ -91,22 +91,35 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
 
     }
 
-    public function buildDataObjectAdapterColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration
+    public function buildDataObjectAdapterColumnConfiguration(
+        ColumnFieldDefinition $definition,
+        ?string $type = null,
+        ?string $key = null,
+        ?array $additionalConfig = null
+    ): ColumnConfiguration
     {
         $config = [];
         $fieldDefinition = $definition->getFieldDefinition();
 
         $config['fieldDefinition'] = $fieldDefinition;
 
+        if ($key === null) {
+            $key = $fieldDefinition->getName();
+        }
+
+        if ($additionalConfig) {
+            $config = array_merge($config, $additionalConfig);
+        }
+
         return new ColumnConfiguration(
-            key: $fieldDefinition->getName(),
+            key: $key,
             group: $definition->getGroup(),
             sortable: true,
             editable: !$fieldDefinition->getNoteditable(),
             exportable: true,
             localizable: $definition->isLocalized(),
             locale: null,
-            type: 'dataobject.adapter',
+            type: $type,
             frontendType: $fieldDefinition->getFieldType(),
             config: $config
         );
