@@ -28,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceIn
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\ClassDefinition;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
@@ -89,14 +90,14 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
                 continue;
             }
 
-            $this->buildColumnConfigurations($objectBrick);
+            $this->buildColumnConfigurations($objectBrick, $fieldName);
 
         }
 
         return $this->configurations;
     }
 
-    private function buildColumnConfigurations(ObjectBrickDefinition $objectBrick): void
+    private function buildColumnConfigurations(ObjectBrickDefinition $objectBrick, string $fieldname): void
     {
         $dataFields = $this->getDataFields($objectBrick->getLayoutDefinitions());
 
@@ -104,11 +105,21 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
             $groupName = $objectBrick->getTitle() !== '' ? $objectBrick->getTitle() : $objectBrick->getKey();
 
             $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
-                new ColumnFieldDefinition($dataField, $groupName, false)
+                new ColumnFieldDefinition($dataField, $groupName, false),
+                'dataobject.objectbrick',
+                $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getName(),
+                [
+                    'field' => $fieldname,
+                    'objectBrick' => $objectBrick->getKey(),
+                    'attribute' => $dataField->getName(),
+                ]
             );
         }
     }
 
+    /**
+     * @return Data[]
+     */
     public function getDataFields(Layout $layout): array
     {
         $dataFields = [];

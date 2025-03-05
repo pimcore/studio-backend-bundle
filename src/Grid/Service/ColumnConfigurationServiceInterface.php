@@ -34,5 +34,14 @@ interface ColumnConfigurationServiceInterface
      */
     public function getAvailableDataObjectColumnConfiguration(string $classId, int $folderId): array;
 
-    public function buildDataObjectAdapterColumnConfiguration(ColumnFieldDefinition $definition): ColumnConfiguration;
+    /**
+     * Builds a column configuration for a data object adapter column.
+     * key type and is optional and can be used to build a column configuration for a specific key type.
+     */
+    public function buildDataObjectAdapterColumnConfiguration(
+        ColumnFieldDefinition $definition,
+        ?string $type = null,
+        ?string $key = null,
+        ?array $additionalConfig = null
+    ): ColumnConfiguration;
 }
