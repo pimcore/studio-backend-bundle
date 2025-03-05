@@ -104,7 +104,8 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
             $value = $value[$objectBrickKey->getBrickName()][$objectBrickKey->getAttribute()];
         } catch (Exception) {
             throw new NotFoundException(
-                'Object brick value', $objectBrickKey->getBrickName() . '.' . $objectBrickKey->getAttribute()
+                'Object brick value',
+                $objectBrickKey->getBrickName() . '.' . $objectBrickKey->getAttribute()
             );
         }
 
