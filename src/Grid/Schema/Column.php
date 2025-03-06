@@ -41,7 +41,15 @@ final readonly class Column
         private string $type,
         #[Property(description: 'Group', type: 'string', example: 'system')]
         private ?string $group,
-        #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
+        #[Property(
+            description: 'Config',
+            type: 'array',
+            items: new Items(
+                anyOf: [
+                    new Schema(type: 'string'),
+                ]
+            ),
+            example: ['key' => 'value'])]
         private array $config,
     ) {
     }
