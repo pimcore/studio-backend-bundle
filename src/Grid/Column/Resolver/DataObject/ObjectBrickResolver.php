@@ -71,7 +71,6 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
         $classDefinition = $this->classDefinitionResolver->getById($element->getClassId());
         $fieldDefinition = $this->getFieldDefinition($objectBrickKey->getField(), $classDefinition);
 
-
         $column = new Column(
             key: $objectBrickKey->getField(),
             locale: $column->getLocale(),
