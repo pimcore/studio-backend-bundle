@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CacheKeys;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 use function in_array;
@@ -32,8 +33,6 @@ use function sprintf;
  */
 final class UserPermissionVoter extends Voter
 {
-    private const USER_PERMISSIONS_CACHE_KEY = 'studio_backend_user_permissions';
-
     private array $userPermissions;
 
     public function __construct(
@@ -70,7 +69,7 @@ final class UserPermissionVoter extends Voter
      */
     private function getUserPermissions(): void
     {
-        $userPermissions = $this->cacheResolver->load(self::USER_PERMISSIONS_CACHE_KEY);
+        $userPermissions = $this->cacheResolver->load(CacheKeys::USER_PERMISSIONS->value);
 
         if ($userPermissions !== false && is_array($userPermissions)) {
             $this->userPermissions = $userPermissions;
@@ -82,7 +81,7 @@ final class UserPermissionVoter extends Voter
 
         $this->cacheResolver->save(
             $userPermissions,
-            self::USER_PERMISSIONS_CACHE_KEY
+            CacheKeys::USER_PERMISSIONS->value
         );
 
         $this->userPermissions = $userPermissions;

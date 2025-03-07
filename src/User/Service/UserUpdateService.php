@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use JsonException;
+use Pimcore\Bundle\StaticResolverBundle\Lib\CacheResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\Authentication\AuthenticationResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -28,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParame
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CacheKeys;
 use function sprintf;
 use function strlen;
 
@@ -40,7 +42,8 @@ final class UserUpdateService implements UserUpdateServiceInterface
         private readonly UserRepositoryInterface $userRepository,
         private readonly SecurityServiceInterface $securityService,
         private readonly UpdateServiceInterface $updateService,
-        private readonly AuthenticationResolverInterface $authenticationResolver
+        private readonly AuthenticationResolverInterface $authenticationResolver,
+        private readonly CacheResolverInterface $cacheResolver,
     ) {
     }
 
@@ -88,6 +91,9 @@ final class UserUpdateService implements UserUpdateServiceInterface
         $user = $this->updateService->updateDocumentWorkspaces($updateUserParameter->getDocumentWorkspaces(), $user);
 
         $this->userRepository->updateUser($user);
+
+        $this->cacheResolver->remove(CacheKeys::USER_PERMISSIONS->value);
+
     }
 
     /**
