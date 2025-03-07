@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Throwable;
 use function sprintf;
 
@@ -31,6 +32,7 @@ final class NotFoundException extends AbstractApiException
             HttpResponseCodes::NOT_FOUND->value,
             sprintf('%s with %s: %s not found', ucfirst($type), $parameter, $id),
             previous: $previous,
+            errorKey: HttpResponseErrorKeys::ELEMENT_NOT_FOUND->value
         );
     }
 }
