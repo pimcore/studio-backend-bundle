@@ -69,7 +69,7 @@ final readonly class Column
         return $this->type;
     }
 
-    public function getGroup(): string
+    public function getGroup(): ?string
     {
         return $this->group;
     }

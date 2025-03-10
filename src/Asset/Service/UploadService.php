@@ -37,12 +37,12 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\EnvironmentVariables
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Helper\MimeTypeHelper;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Mime\MimeTypes;
 use function dirname;
 use function sprintf;
 
@@ -356,7 +356,7 @@ final readonly class UploadService implements UploadServiceInterface
         string $fileName,
         string $assetType
     ): void {
-        $mimeTypes = new MimeTypes();
+        $mimeTypes = new MimeTypeHelper();
         $mimeType = $mimeTypes->guessMimeType($file->getRealPath());
         $newType = $this->assetResolver->getTypeFromMimeMapping($mimeType, $fileName);
 
