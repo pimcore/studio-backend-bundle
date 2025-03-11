@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PerspectivePermissions;
@@ -24,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use function in_array;
 
 /**
@@ -36,7 +38,6 @@ final class UserPerspectiveVoter extends Voter
     public function __construct(
         private readonly RequestStack $requestStack,
         private readonly SecurityServiceInterface $securityService
-
     ) {
     }
 
@@ -49,7 +50,7 @@ final class UserPerspectiveVoter extends Voter
     }
 
     /**
-     * @throws ForbiddenException
+     * @throws ForbiddenException|UserNotFoundException|NoRequestException
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
@@ -62,6 +63,9 @@ final class UserPerspectiveVoter extends Voter
         return in_array($perspectiveId, $user->getPerspectives(), true);
     }
 
+    /**
+     * @throws NoRequestException
+     */
     private function getPerspectiveFromRequest(): string
     {
         $request = $this->getCurrentRequest($this->requestStack);
