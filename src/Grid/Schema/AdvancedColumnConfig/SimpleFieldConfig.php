@@ -32,8 +32,7 @@ final readonly class SimpleFieldConfig
     public function __construct(
         #[Property(description: 'Field getter', type: 'string', example: 'name')]
         private string $field,
-    )
-    {
+    ) {
     }
 
     public function getField(): string

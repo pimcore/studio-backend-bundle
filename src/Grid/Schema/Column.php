@@ -51,7 +51,7 @@ final readonly class Column
             items: new Items(
                 anyOf: [
                     new Schema(type: 'string'),
-                    new Schema(ref: AdvancedColumnConfig::class)
+                    new Schema(ref: AdvancedColumnConfig::class),
                 ]
             ),
             example: ['key' => 'value'])]
@@ -97,6 +97,7 @@ final readonly class Column
                     relation: $advancedColumn['relation'],
                     field: $advancedColumn['field'],
                 );
+
                 continue;
             }
 

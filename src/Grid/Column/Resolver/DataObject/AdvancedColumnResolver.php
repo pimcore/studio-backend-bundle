@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
@@ -32,6 +31,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
+use function is_array;
+use function sprintf;
+use function strval;
 
 /**
  * @internal
@@ -49,8 +51,7 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
     public function __construct(
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DataServiceInterface $dataService,
-    )
-    {
+    ) {
     }
 
     /**
@@ -73,11 +74,10 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
             }
         }
 
-
         return new ColumnData(
             key: $column->getKey(),
             locale: $column->getLocale(),
-            value: implode( ' - ', $this->values) // TODO: Will be replaced later by transformers
+            value: implode(' - ', $this->values) // TODO: Will be replaced later by transformers
         );
     }
 
@@ -88,8 +88,7 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
         SimpleFieldConfig|RelationFieldConfig $fieldConfig,
         Column $column,
         Concrete $element
-    ): void
-    {
+    ): void {
         $classDefinition = $this->classDefinitionResolver->getById($element->getClassId());
         $fieldDefinition = $this->getFieldDefinition($fieldConfig->getField(), $classDefinition);
         $value = $this->dataService->getNormalizedValue(
@@ -115,8 +114,7 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
         RelationFieldConfig $relationFieldConfig,
         Column $column,
         Concrete $element
-    ): void
-    {
+    ): void {
         $relation = $this->getLocalizedValueFromKey(
             $relationFieldConfig->getRelation(),
             $column->getLocale(),
@@ -132,6 +130,7 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
                 $this->resolveField($relationFieldConfig, $column, $relationElement);
 
             }
+
             return;
         }
 
@@ -141,8 +140,6 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
 
         $this->resolveField($relationFieldConfig, $column, $relation);
     }
-
-
 
     public function getType(): string
     {

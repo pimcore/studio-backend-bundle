@@ -4,13 +4,15 @@ declare(strict_types=1);
 /**
  * Pimcore
  *
- * This source file is available under following license:
+ * This source file is available under two different licenses:
+ * - GNU General Public License version 3 (GPLv3)
  * - Pimcore Commercial License (PCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
+ *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
-
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Grid\Schema;
 
@@ -25,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
  */
 final class ColumnTest extends Unit
 {
-    public function testGetAdvancedColumnConfigException() : void
+    public function testGetAdvancedColumnConfigException(): void
     {
         $column = new Column(
             key: 'name',
@@ -51,7 +53,7 @@ final class ColumnTest extends Unit
             config: [
                 'advancedColumns' => [
                     ['field' => 'name'],
-                ]
+                ],
             ],
         );
 
@@ -72,7 +74,7 @@ final class ColumnTest extends Unit
             config: [
                 'advancedColumns' => [
                     ['field' => 'name', 'relation' => 'manufacturer'],
-                ]
+                ],
             ],
         );
 
@@ -83,5 +85,4 @@ final class ColumnTest extends Unit
         $this->assertSame('manufacturer', $configs->getColumns()[0]->getRelation());
         $this->assertInstanceOf(RelationFieldConfig::class, $configs->getColumns()[0]);
     }
-
 }

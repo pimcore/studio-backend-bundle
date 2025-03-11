@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig;
 
 use OpenApi\Attributes\Items;
@@ -38,10 +37,10 @@ final readonly class AdvancedColumnConfig
             items: new Items(
                 anyOf: [
                     new Schema(ref: RelationFieldConfig::class),
-                    new Schema(ref: SimpleFieldConfig::class)
+                    new Schema(ref: SimpleFieldConfig::class),
                 ]
             ),
-            example: [["field" => "name", "relation" => "manufacturer"], ["field" => "name"]])]
+            example: [['field' => 'name', 'relation' => 'manufacturer'], ['field' => 'name']])]
         private array $advancedColumn,
     ) {
     }

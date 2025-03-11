@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig;
 
 use OpenApi\Attributes\Property;
@@ -35,8 +34,7 @@ final readonly class RelationFieldConfig
         private string $relation,
         #[Property(description: 'Field getter', type: 'string', example: 'name')]
         private string $field,
-    )
-    {
+    ) {
     }
 
     public function getRelation(): string
