@@ -30,7 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfigDetai
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\PerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PerspectivePermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -59,7 +59,7 @@ final class GetConfigurationController extends AbstractApiController
         requirements: ['id' => '\d+'],
         methods: ['GET']
     )]
-    #[IsGranted(UserPermissions::PERSPECTIVE_EDITOR->value)]
+    #[IsGranted(PerspectivePermissions::VIEW_PERMISSION)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'perspective_get_config_by_id',
