@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
+use function in_array;
 
 /**
  * @internal
@@ -64,6 +65,7 @@ final class UserPerspectiveVoter extends Voter
     private function getPerspectiveFromRequest(): string
     {
         $request = $this->getCurrentRequest($this->requestStack);
+
         return $request->attributes->getString('perspectiveId');
     }
 }
