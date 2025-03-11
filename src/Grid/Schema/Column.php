@@ -19,6 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\AdvancedColumnConfig;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
 
 /**
  * Contains all data that is needed to get all the data for the column.
@@ -41,7 +45,16 @@ final readonly class Column
         private string $type,
         #[Property(description: 'Group', type: 'string', example: 'system')]
         private ?string $group,
-        #[Property(description: 'Config', type: 'array', items: new Items(type: 'string'), example: ['key' => 'value'])]
+        #[Property(
+            description: 'Config',
+            type: 'array',
+            items: new Items(
+                anyOf: [
+                    new Schema(type: 'string'),
+                    new Schema(ref: AdvancedColumnConfig::class),
+                ]
+            ),
+            example: ['key' => 'value'])]
         private array $config,
     ) {
     }
@@ -69,5 +82,32 @@ final readonly class Column
     public function getConfig(): array
     {
         return $this->config;
+    }
+
+    public function getAdvancedColumnConfig(): AdvancedColumnConfig
+    {
+        $configs = [];
+        if (!isset($this->config['advancedColumns'])) {
+            throw new InvalidArgumentException('Advanced column config is not set');
+        }
+
+        foreach ($this->config['advancedColumns'] as $advancedColumn) {
+            if (isset($advancedColumn['field']) && isset($advancedColumn['relation'])) {
+                $configs[] = new RelationFieldConfig(
+                    relation: $advancedColumn['relation'],
+                    field: $advancedColumn['field'],
+                );
+
+                continue;
+            }
+
+            if (isset($advancedColumn['field'])) {
+                $configs[] = new SimpleFieldConfig(
+                    field: $advancedColumn['field'],
+                );
+            }
+        }
+
+        return new AdvancedColumnConfig($configs);
     }
 }

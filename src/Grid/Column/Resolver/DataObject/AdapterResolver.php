@@ -29,9 +29,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInte
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\FieldDefinitionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
@@ -43,6 +43,7 @@ final class AdapterResolver implements ColumnResolverInterface, CoreElementColum
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;
+    use FieldDefinitionTrait;
 
     public function __construct(
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
@@ -94,21 +95,6 @@ final class AdapterResolver implements ColumnResolverInterface, CoreElementColum
         return [
             ElementTypes::TYPE_OBJECT,
         ];
-    }
-
-    /**
-     * @throws Exception
-     * @throws NotFoundException
-     */
-    private function getFieldDefinition(string $field, ClassDefinition $classDefinition): Data
-    {
-        $fieldDefinition = $classDefinition->getFieldDefinition($field);
-
-        if (!$fieldDefinition instanceof Data) {
-            throw new NotFoundException('Field definition', $field);
-        }
-
-        return $fieldDefinition;
     }
 
     private function getInheritanceData(Concrete $element, Data $fieldDefinition, string $field): InheritanceData

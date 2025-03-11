@@ -178,6 +178,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\ObjectBrickResolver:
     tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject\AdvancedColumnResolver:
+    tags: [ 'pimcore.studio_backend.grid_column_resolver' ]
+
   #
   # Column Collector
   #
