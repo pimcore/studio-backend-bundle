@@ -26,7 +26,7 @@ trait LocalizedValueTrait
 {
     private function getLocalizedValue(Column $column, ElementInterface $element): mixed
     {
-        $getter = $this->getGetter($column);
+        $getter = $this->getGetter($column->getKey());
         if ($column->getLocale()) {
             return $element->$getter($column->getLocale());
         }
@@ -34,8 +34,18 @@ trait LocalizedValueTrait
         return $element->$getter();
     }
 
-    private function getGetter(Column $column): string
+    private function getLocalizedValueFromKey(string $key, string $locale, ElementInterface $element): mixed
     {
-        return 'get' . ucfirst($column->getKey());
+        $getter = $this->getGetter($key);
+        if ($locale) {
+            return $element->$getter($locale);
+        }
+
+        return $element->$getter();
+    }
+
+    private function getGetter(string $key): string
+    {
+        return 'get' . ucfirst($key);
     }
 }
