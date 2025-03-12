@@ -73,6 +73,8 @@ pimcore_studio_backend:
                   group: system
                 - key: modificationDate
                   group: system
+                - key: published
+                  group: system
     notes:
         types:
             asset: ['content', 'seo', 'warning', 'notice']

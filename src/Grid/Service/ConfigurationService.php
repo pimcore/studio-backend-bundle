@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
@@ -217,14 +218,24 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             $folderId
         );
 
-        return $this->buildDefaultConfiguration($availableColumns, $this->dataObjectPredefinedColumns);
+        return $this->buildDefaultConfiguration(
+            $availableColumns,
+            $this->dataObjectPredefinedColumns,
+            false,
+            true
+        );
     }
 
     /**
      * @param ColumnConfiguration[] $availableColumns
      *
      */
-    public function buildDefaultConfiguration(array $availableColumns, array $predefinedColumns): DetailedConfiguration
+    public function buildDefaultConfiguration(
+        array $availableColumns,
+        array $predefinedColumns,
+        bool $search,
+        bool $grid
+    ): DetailedConfiguration
     {
         $defaultColumns = [];
         foreach ($predefinedColumns as $predefinedColumn) {
@@ -241,6 +252,35 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
             if (count($filteredColumns) === 1) {
                 $column = array_pop($filteredColumns);
+                $defaultColumns[] = new ColumnSchema(
+                    key: $column->getKey(),
+                    locale: $column->getLocale(),
+                    group: $column->getGroup(),
+                );
+            }
+        }
+
+        // Add all columns that are not predefined and set to visible for grid or search
+        foreach ($availableColumns as $column) {
+            if (
+                !isset($column->getConfig()['fieldDefinition']) ||
+                !$column->getConfig()['fieldDefinition'] instanceof Data)
+            {
+                continue;
+            }
+
+            /** @var Data $fieldDefinition */
+            $fieldDefinition = $column->getConfig()['fieldDefinition'];
+            if ($search && !$fieldDefinition->getVisibleSearch()) {
+                $defaultColumns[] = new ColumnSchema(
+                    key: $column->getKey(),
+                    locale: $column->getLocale(),
+                    group: $column->getGroup(),
+                );
+                continue;
+            }
+
+            if ($grid && $fieldDefinition->getVisibleGridView()) {
                 $defaultColumns[] = new ColumnSchema(
                     key: $column->getKey(),
                     locale: $column->getLocale(),
