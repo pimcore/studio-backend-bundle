@@ -58,7 +58,6 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
     /**
      * @throws Exception
      * @throws InvalidArgumentException
-     * @throws NotFoundException
      */
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
     {
@@ -103,10 +102,7 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
         try {
             $value = $value[$objectBrickKey->getBrickName()][$objectBrickKey->getAttribute()];
         } catch (Exception) {
-            throw new NotFoundException(
-                'Object brick value',
-                $objectBrickKey->getBrickName() . '.' . $objectBrickKey->getAttribute()
-            );
+            $value = null;
         }
 
         return $this->getColumnData(
