@@ -58,7 +58,6 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
     /**
      * @throws Exception
      * @throws InvalidArgumentException
-     * @throws NotFoundException
      */
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
     {
