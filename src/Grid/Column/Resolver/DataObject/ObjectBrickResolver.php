@@ -103,10 +103,7 @@ final class ObjectBrickResolver implements ColumnResolverInterface, CoreElementC
         try {
             $value = $value[$objectBrickKey->getBrickName()][$objectBrickKey->getAttribute()];
         } catch (Exception) {
-            throw new NotFoundException(
-                'Object brick value',
-                $objectBrickKey->getBrickName() . '.' . $objectBrickKey->getAttribute()
-            );
+            $value = null;
         }
 
         return $this->getColumnData(
