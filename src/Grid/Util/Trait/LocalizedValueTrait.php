@@ -34,7 +34,7 @@ trait LocalizedValueTrait
         return $element->$getter();
     }
 
-    private function getLocalizedValueFromKey(string $key, string $locale, ElementInterface $element): mixed
+    private function getLocalizedValueFromKey(string $key, ?string $locale, ElementInterface $element): mixed
     {
         $getter = $this->getGetter($key);
         if ($locale) {
