@@ -235,7 +235,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         array $predefinedColumns,
         bool $search,
         bool $grid
-    ): DetailedConfiguration {
+    ): DetailedConfiguration
+    {
         $defaultColumns = [];
         foreach ($predefinedColumns as $predefinedColumn) {
             $filteredColumns =
@@ -259,11 +260,31 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             }
         }
 
-        // Add all columns that are not predefined and set to visible for grid or search
+        $defaultColumns = [
+            ...$defaultColumns,
+            ...$this->getDefaultColumnsForSearchAndGrid($availableColumns, $search, $grid),
+        ];
+
+
+        $detailedConfiguration = $this->getDefaultDetailedConfiguration($defaultColumns);
+
+        $this->dispatchDetailedConfigurationEvent($detailedConfiguration);
+
+        return $detailedConfiguration;
+    }
+
+    /**
+     * @param ColumnConfiguration[] $availableColumns
+     * @return ColumnSchema[]
+     */
+    private function getDefaultColumnsForSearchAndGrid(array $availableColumns, bool $search, bool $grid): array
+    {
+        $defaultColumns = [];
         foreach ($availableColumns as $column) {
             if (
                 !isset($column->getConfig()['fieldDefinition']) ||
-                !$column->getConfig()['fieldDefinition'] instanceof Data) {
+                !$column->getConfig()['fieldDefinition'] instanceof Data)
+            {
                 continue;
             }
 
@@ -275,7 +296,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
                     locale: $column->getLocale(),
                     group: $column->getGroup(),
                 );
-
                 continue;
             }
 
@@ -288,11 +308,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             }
         }
 
-        $detailedConfiguration = $this->getDefaultDetailedConfiguration($defaultColumns);
-
-        $this->dispatchDetailedConfigurationEvent($detailedConfiguration);
-
-        return $detailedConfiguration;
+        return $defaultColumns;
     }
 
     /**
