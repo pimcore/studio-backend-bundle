@@ -235,8 +235,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         array $predefinedColumns,
         bool $search,
         bool $grid
-    ): DetailedConfiguration
-    {
+    ): DetailedConfiguration {
         $defaultColumns = [];
         foreach ($predefinedColumns as $predefinedColumn) {
             $filteredColumns =
@@ -265,7 +264,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             ...$this->getDefaultColumnsForSearchAndGrid($availableColumns, $search, $grid),
         ];
 
-
         $detailedConfiguration = $this->getDefaultDetailedConfiguration($defaultColumns);
 
         $this->dispatchDetailedConfigurationEvent($detailedConfiguration);
@@ -275,6 +273,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
     /**
      * @param ColumnConfiguration[] $availableColumns
+     *
      * @return ColumnSchema[]
      */
     private function getDefaultColumnsForSearchAndGrid(array $availableColumns, bool $search, bool $grid): array
@@ -283,8 +282,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         foreach ($availableColumns as $column) {
             if (
                 !isset($column->getConfig()['fieldDefinition']) ||
-                !$column->getConfig()['fieldDefinition'] instanceof Data)
-            {
+                !$column->getConfig()['fieldDefinition'] instanceof Data) {
                 continue;
             }
 
@@ -296,6 +294,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
                     locale: $column->getLocale(),
                     group: $column->getGroup(),
                 );
+
                 continue;
             }
 
