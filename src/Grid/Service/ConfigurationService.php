@@ -233,8 +233,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     public function buildDefaultConfiguration(
         array $availableColumns,
         array $predefinedColumns,
-        bool $search,
-        bool $grid
+        bool $search = false,
+        bool $grid = false
     ): DetailedConfiguration {
         $defaultColumns = [];
         foreach ($predefinedColumns as $predefinedColumn) {
