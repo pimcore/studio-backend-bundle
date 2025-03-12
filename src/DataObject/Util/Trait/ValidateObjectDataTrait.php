@@ -38,9 +38,6 @@ trait ValidateObjectDataTrait
         return !($fieldDefinition instanceof EncryptedFieldDefinition && (!$value instanceof EncryptedField));
     }
 
-    /**
-     * @throws NotFoundException
-     */
     private function getValidFieldValue(
         Concrete $object,
         string $key,
@@ -53,7 +50,12 @@ trait ValidateObjectDataTrait
 
             return $object->get($key, $contextData?->getLanguage());
         } catch (Exception) {
-            throw new NotFoundException(type: 'field', id: $key);
+            /*
+                do not throw exception, in case only the child element has e.g. an object brick and the parent does not
+                this might lead to an unwanted side effect that you cannot load the child element anymore
+                See ticket https://github.com/pimcore/studio-backend-bundle/issues/879
+            */
+            return null;
         }
     }
 
