@@ -90,6 +90,9 @@ asset_get_grid_description: |
   </ul>
 asset_get_grid_success_response: Asset grid data
 asset_get_grid_summary: Get asset data for grid
+asset_get_search_description: Asset grid for search
+asset_get_search_summary: Get asset data for search
+asset_get_search_success_response: Assets for search grid
 asset_get_text_data_by_id_description: |
   Retrieves the text data in UTF8 representation of the asset based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset.
 asset_get_text_data_by_id_success_response: Successfully retrieved UTF8 encoded text data of asset

@@ -76,7 +76,7 @@ final class GridService implements GridServiceInterface
     }
 
     /**
-     * @throws InvalidArgumentException
+     * {@inheritDoc}
      */
     public function getAssetGrid(GridParameter $gridParameter): Collection
     {
