@@ -32,6 +32,8 @@ interface ConfigurationServiceInterface
      */
     public function getAssetGridConfiguration(?int $configurationId, int $folderId): DetailedConfiguration;
 
+    public function getAssetSearchConfiguration(): DetailedConfiguration;
+
     /**
      * @throws NotFoundException
      */

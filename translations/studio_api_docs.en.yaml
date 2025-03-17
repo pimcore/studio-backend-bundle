@@ -178,6 +178,10 @@ asset_video_stream_by_thumbnail_description: |
   List of <b>thumbnail names</b> can be obtained via the thumbnail video collection endpoint
 asset_video_stream_by_thumbnail_success_response: Video stream based on thumbnail name
 asset_video_stream_by_thumbnail_summary: Stream video asset by ID and thumbnail name
+asset_get_search_configuration: Get asset search configuration
+asset_get_search_configuration_description: Get asset configuration
+asset_get_search_configuration_summary: Get asset search configuration
+asset_get_search_configuration_success_response: Asset search configuration
 data_object_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DataObjectAdd</strong>
 data_object_add_success_response: ID of added data object
@@ -526,6 +530,7 @@ simple_search_preview_get_success_response: Simple search results preview for el
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
 tag_asset_grid_description: Asset Grid operations
+tag_asset_search_description: Asset Search operations
 tag_assign_to_element_description: |
   Assign a specific tag based on the given <strong>{tagId}</strong> to an element based on <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.

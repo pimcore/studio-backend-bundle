@@ -184,7 +184,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
 }
 ```
 
-### Predefined Columns
+### Predefined Columns for Grids
 You can define what columns should be visible by default in the grid by modifying the `pimcore_studio_backend.grid.asset.predefined_columns` parameter in your `config.yaml` file.
 
 Example:
@@ -199,6 +199,23 @@ pimcore_studio_backend:
         - key: fullpath
           group: system
     data_object:
+      predefined_columns:
+        - key: id
+          group: system
+        - key: fullpath
+          group: system
+```
+
+### Predefined Columns for Search Grids
+
+You can define what columns should be visible by default in the search grid by modifying the `pimcore_studio_backend.search_grid.asset.predefined_columns` parameter in your `config.yaml` file.
+
+Example:
+```yaml
+
+pimcore_studio_backend:
+  search_grid:
+    asset:
       predefined_columns:
         - key: id
           group: system
