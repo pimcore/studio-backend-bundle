@@ -41,7 +41,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class GetSearchResultController extends AbstractApiController
 {
     public function __construct(
-        SerializerInterface                         $serializer,
+        SerializerInterface $serializer,
         private readonly GridSearchServiceInterface $searchService,
     ) {
         parent::__construct($serializer);
