@@ -111,7 +111,8 @@ final readonly class IconService implements IconServiceInterface
     public function getIconForClassDefinition(?string $iconPath): ElementIcon
     {
         $type = ElementIconTypes::PATH->value;
-        if ($iconPath === null) {
+        // $iconPath can be null and empty string
+        if (empty($iconPath)) {
             $type = ElementIconTypes::NAME->value;
             $iconPath = 'class';
         }
