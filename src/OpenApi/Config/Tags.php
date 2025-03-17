@@ -153,7 +153,6 @@ enum Tags: string
 {
     case Assets = 'Assets';
     case AssetGrid = 'Asset Grid';
-
     case AssetSearch = 'Asset Search';
     case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';

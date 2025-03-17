@@ -68,7 +68,8 @@ final class GetConfigurationController extends AbstractApiController
         HttpResponseCodes::BAD_REQUEST,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getAssetGridConfiguration(): JsonResponse {
+    public function getAssetGridConfiguration(): JsonResponse
+    {
         $configuration = $this->configurationService->getAssetSearchConfiguration();
 
         return $this->jsonResponse($configuration);

@@ -117,7 +117,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         return $this->buildDefaultConfiguration($availableColumns, $this->assetSearchPredefinedColumns);
     }
 
-
     /**
      * {@inheritdoc}
      */
