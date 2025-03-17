@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -84,6 +85,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
+        private ElementSaveServiceInterface $elementSaveService
     ) {
     }
 
@@ -319,9 +321,9 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             $object->setType($parameters->getType());
             $object->setCreationDate(time());
             $object->setUserOwner($user->getId());
-            $object->setUserModification($user->getId());
             $object->setPublished(false);
-            $object->save();
+
+            $this->elementSaveService->save($object, $user, null);
 
             return $object->getId();
         } catch (Exception $exception) {
