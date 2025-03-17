@@ -295,6 +295,8 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             throw new InvalidElementTypeException($objectType);
         }
 
+        // class needs to be upper case for factory
+        $className = ucfirst($className);
         $object = $this->factory->build('Pimcore\\Model\\DataObject\\' . $className);
         if (!$object instanceof Concrete) {
             throw new DatabaseException(sprintf('Class %s is not a valid data object class', $className));
