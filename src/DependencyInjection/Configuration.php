@@ -70,6 +70,7 @@ class Configuration implements ConfigurationInterface
         $this->addAssetDownloadLimits($rootNode);
         $this->addCsvSettings($rootNode);
         $this->addGridConfiguration($rootNode);
+        $this->addSearchGridConfiguration($rootNode);
         $this->addNoteTypes($rootNode);
         $this->addDataObjectAdapterMapping($rootNode);
         $this->addUserNode($rootNode);
@@ -228,6 +229,27 @@ class Configuration implements ConfigurationInterface
                                ->end()
                            ->end()
                        ->end()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addSearchGridConfiguration(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('search_grid')
+                ->children()
+                    ->arrayNode('asset')
+                        ->children()
+                            ->arrayNode('predefined_columns')
+                                ->arrayPrototype()
+                                    ->children()
+                                        ->scalarNode('group')->end()
+                                        ->scalarNode('key')->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
                     ->end()
                 ->end()
             ->end();

@@ -33,6 +33,15 @@ pimcore_studio_backend:
             format: "JPEG"
             quality: 90
     element_recycle_bin_threshold: 100
+    search_grid:
+        asset:
+            predefined_columns:
+                - key: type
+                  group: system
+                - key: fullpath
+                  group: system
+                - key: preview
+                  group: system
     grid:
         asset:
             predefined_columns:

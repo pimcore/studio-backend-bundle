@@ -50,7 +50,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private DetailedConfigurationHydratorInterface $detailedConfigurationHydrator,
         private FavoriteServiceInterface $favoriteService,
         private array $assetPredefinedColumns,
-        private array $dataObjectPredefinedColumns
+        private array $dataObjectPredefinedColumns,
+        private array $assetSearchPredefinedColumns,
     ) {
     }
 
@@ -108,6 +109,14 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
         return $configuration;
     }
+
+    public function getAssetSearchConfiguration(): DetailedConfiguration
+    {
+        $availableColumns = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
+
+        return $this->buildDefaultConfiguration($availableColumns, $this->assetSearchPredefinedColumns);
+    }
+
 
     /**
      * {@inheritdoc}
