@@ -39,7 +39,7 @@ final readonly class Translation
         #[Property(description: 'Keys', type: 'array', items: new Items(
             type: 'string', example: 'not_your_typical_key'
         ))]
-        private array $keys = [PublicTranslations::PUBLIC_KEYS]
+        private array $keys = PublicTranslations::PUBLIC_KEYS
     ) {
     }
 
