@@ -74,7 +74,7 @@ final readonly class ManyToOneRelationAdapter implements SetterDataInterface, Da
         $data = $fieldDefinition->normalize($value);
         $published = null;
 
-        if($value instanceof Concrete) {
+        if ($value instanceof Concrete) {
             $published = $value->isPublished();
         }
 
