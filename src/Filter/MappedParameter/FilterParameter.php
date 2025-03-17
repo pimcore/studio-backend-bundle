@@ -45,6 +45,8 @@ final class FilterParameter implements
 
     private ?string $className = null;
 
+    private bool $excludeFolders = true;
+
     public function __construct(
         private readonly int $page = 1,
         private readonly int $pageSize = 50,
@@ -66,7 +68,12 @@ final class FilterParameter implements
 
     public function getExcludeFolders(): bool
     {
-        return true;
+        return $this->excludeFolders;
+    }
+
+    public function setExcludeFolders(bool $excludeFolders): void
+    {
+        $this->excludeFolders = $excludeFolders;
     }
 
     public function getPath(): ?string

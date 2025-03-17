@@ -57,6 +57,9 @@ interface GridServiceInterface
 
     public function getConfigurationFromArray(array $config, bool $isExport = false): ColumnCollection;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function getAssetGrid(GridParameter $gridParameter): Collection;
 
     /**
