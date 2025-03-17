@@ -110,7 +110,10 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition->setArgument('$assetPredefinedColumns', $config['grid']['asset']['predefined_columns']);
 
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);
-        $definition->setArgument('$assetSearchPredefinedColumns', $config['search_grid']['asset']['predefined_columns']);
+        $definition->setArgument(
+            '$assetSearchPredefinedColumns',
+            $config['search_grid']['asset']['predefined_columns']
+        );
 
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);
         $definition->setArgument('$dataObjectPredefinedColumns', $config['grid']['data_object']['predefined_columns']);
