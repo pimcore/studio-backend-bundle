@@ -48,6 +48,18 @@ final class UserInformation implements AdditionalAttributesInterface
         private readonly array $permissions,
         #[Property(description: 'If user is an admin user', type: 'boolean', example: false)]
         private readonly bool $isAdmin,
+        #[Property(
+            description: 'Allowed classes to create',
+            type: 'array',
+            items: new Items(type: 'string')
+        )]
+        private readonly array $classes,
+        #[Property(
+            description: 'Allowed doc types to create',
+            type: 'array',
+            items: new Items(type: 'string')
+        )]
+        private readonly array $docTypes,
     ) {
     }
 
@@ -69,5 +81,15 @@ final class UserInformation implements AdditionalAttributesInterface
     public function getIsAdmin(): bool
     {
         return $this->isAdmin;
+    }
+
+    public function getClasses(): array
+    {
+        return $this->classes;
+    }
+
+    public function getDocTypes(): array
+    {
+        return $this->docTypes;
     }
 }
