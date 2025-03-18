@@ -51,6 +51,9 @@ final readonly class SystemColumnService implements SystemColumnServiceInterface
             $columns[$column] = $this->columnMapper->getType($column);
         }
 
+        // Add missing columns
+        $columns['type'] = 'string';
+
         return $columns;
     }
 

@@ -37,6 +37,11 @@ interface ConfigurationServiceInterface
     /**
      * @throws NotFoundException
      */
+    public function getDataObjectSearchConfiguration(?string $classId): DetailedConfiguration;
+
+    /**
+     * @throws NotFoundException
+     */
     public function getDataObjectGridConfiguration(
         ?int $configurationId,
         int $folderId,

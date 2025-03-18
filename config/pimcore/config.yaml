@@ -42,6 +42,15 @@ pimcore_studio_backend:
                   group: system
                 - key: preview
                   group: system
+        data_object:
+            predefined_columns:
+                - key: type
+                  group: system
+                - key: fullpath
+                  group: system
+                - key: classname
+                  group: system
+
     grid:
         asset:
             predefined_columns:
