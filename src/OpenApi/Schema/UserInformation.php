@@ -28,7 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'User Information',
     description: 'Information about the user',
-    required: ['id', 'username', 'permissions', 'isAdmin'],
+    required: ['id', 'username', 'permissions', 'isAdmin', 'classes', 'docTypes'],
     type: 'object'
 )]
 final class UserInformation implements AdditionalAttributesInterface
