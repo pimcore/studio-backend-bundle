@@ -58,6 +58,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_dataobject_grid_description'
 )]
 #[Tag(
+    name: Tags::DataObjectsSearch->value,
+    description: 'tag_dataobject_search_description'
+)]
+#[Tag(
     name: Tags::Dependencies->value,
     description: 'tag_dependencies_description'
 )]
@@ -160,6 +164,7 @@ enum Tags: string
     case CustomReports = 'Custom Reports';
     case DataObjects = 'Data Objects';
     case DataObjectsGrid = 'Data Object Grid';
+    case DataObjectsSearch = 'Data Object Search';
     case Dependencies = 'Dependencies';
     case Documents = 'Documents';
     case Elements = 'Elements';

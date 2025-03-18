@@ -58,6 +58,7 @@ final class SystemColumnServiceTest extends Unit
             'filename' => 'string',
             'classname' => 'string',
             'index' => 'integer',
+            'type' => 'string',
         ], $systemColumnService->getSystemColumnsForDataObjects());
     }
 }

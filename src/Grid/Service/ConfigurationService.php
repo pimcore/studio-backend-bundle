@@ -52,6 +52,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         private array $assetPredefinedColumns,
         private array $dataObjectPredefinedColumns,
         private array $assetSearchPredefinedColumns,
+        private array $dataObjectSearchPredefinedColumns,
     ) {
     }
 
@@ -115,6 +116,26 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         $availableColumns = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
 
         return $this->buildDefaultConfiguration($availableColumns, $this->assetSearchPredefinedColumns);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDataObjectSearchConfiguration(?string $classId): DetailedConfiguration
+    {
+        if (!$classId) {
+            return $this->buildDefaultConfiguration(
+                $this->columnConfigurationService->getSystemDataObjectColumnConfiguration(),
+                $this->dataObjectSearchPredefinedColumns,
+                true
+            );
+        }
+
+        return $this->buildDefaultConfiguration(
+            $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, 1),
+            $this->dataObjectPredefinedColumns,
+            true
+        );
     }
 
     /**
@@ -296,7 +317,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
             /** @var Data $fieldDefinition */
             $fieldDefinition = $column->getConfig()['fieldDefinition'];
-            if ($search && !$fieldDefinition->getVisibleSearch()) {
+            if ($search && $fieldDefinition->getVisibleSearch()) {
                 $defaultColumns[] = new ColumnSchema(
                     key: $column->getKey(),
                     locale: $column->getLocale(),

@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
@@ -89,6 +90,22 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
 
         return $columns;
 
+    }
+
+    /**
+     * @return ColumnConfiguration[]
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getSystemDataObjectColumnConfiguration(): array
+    {
+        $systemCollector = $this->gridService->getColumnCollectors()['system.dataobject'];
+
+        if (!in_array(ElementTypes::TYPE_DATA_OBJECT, $systemCollector->supportedElementTypes(), true)) {
+            throw new InvalidArgumentException('collector does not support data objects');
+        }
+
+        return $systemCollector->getColumnConfigurations($this->gridService->getColumnDefinitions());
     }
 
     public function buildDataObjectAdapterColumnConfiguration(

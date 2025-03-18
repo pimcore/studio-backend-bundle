@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Search;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Search;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -39,7 +40,7 @@ final class GetConfigurationController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ConfigurationServiceInterface $configurationService,
+        private readonly ConfigurationServiceInterface $gridConfigurationService,
     ) {
         parent::__construct($serializer);
     }
@@ -48,29 +49,37 @@ final class GetConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/assets/search/configuration/',
-        name: 'pimcore_studio_api_get_asset_search_configuration',
+        '/data-object/search/configuration/{classId?}',
+        name: 'pimcore_studio_api_get_data_object_search_configuration',
         methods: ['GET'],
+
     )]
-    #[IsGranted(UserPermissions::ASSETS->value)]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/search/configuration/',
-        operationId: 'asset_get_search_configuration',
-        description: 'asset_get_search_configuration_description',
-        summary: 'asset_get_search_configuration_summary',
-        tags: [Tags::AssetSearch->value]
+        path: self::PREFIX . '/data-object/search/configuration/{classId}',
+        operationId: 'data_object_get_search_configuration',
+        description: 'data_object_get_search_configuration_description',
+        summary: 'data_object_get_search_configuration_summary',
+        tags: [Tags::DataObjectsSearch->value]
+    )]
+    #[StringParameter(
+        name: 'classId',
+        example: 'EV',
+        description: 'Class Id of the data object',
+        required: false,
     )]
     #[SuccessResponse(
-        description: 'asset_get_search_configuration_success_response',
+        description: 'data_object_get_search_configuration_success_response',
         content: new JsonContent(ref: DetailedConfiguration::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,
+        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getAssetSearchConfiguration(): JsonResponse
+    public function getDataObjectSearchConfiguration(?string $classId): JsonResponse
     {
-        $configuration = $this->configurationService->getAssetSearchConfiguration();
+        $configuration = $this->gridConfigurationService->getDataObjectSearchConfiguration($classId);
 
         return $this->jsonResponse($configuration);
     }

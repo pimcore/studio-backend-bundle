@@ -227,6 +227,9 @@ data_object_get_grid_configuration_description: |
   Get data object saved grid configuration by <strong>{folderId}</strong> <strong>{classId}</strong> if a configuration-id is set, otherwise get the default configuration will be returned.
 data_object_get_grid_configuration__success_response: Data Object grid configuration
 data_object_get_grid_configuration_summary: Get data object grid configuration for a specific folder and class-id
+data_object_get_search_configuration_description: Get data object search configuration
+data_object_get_search_configuration_summary: Get data object search configuration
+data_object_get_search_configuration_success_response: Data object search configuration
 data_object_update_by_id_description: |
   You can create/update/delete list entries like properties or data object editable fields. <br>  If you want to update (add/remove) only some data of a field (e.g data of multi-relation fields), use the PATCH method.
 data_object_update_by_id_success_response: Successfully updated data object
@@ -554,6 +557,7 @@ tag_create_summary: Create a new tag
 tag_dataobjects_description: DataObject operations to get/update/create/delete data
   objects
 tag_dataobject_grid_description: DataObject Grid operations
+tag_dataobject_search_description: DataObject Search operations
 tag_delete_by_id_description: |
   Delete a specific tag based on the given <strong>{id}</strong>
 tag_delete_by_id_success_response: ID of successfully deleted tag
