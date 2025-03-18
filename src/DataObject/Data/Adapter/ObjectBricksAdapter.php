@@ -272,10 +272,11 @@ final readonly class ObjectBricksAdapter implements
         bool $isPatch
     ): array {
         $collectionData = [];
+
         foreach ($collectionDef->getFieldDefinitions() as $fd) {
             $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());
             $fieldName = $fd->getName();
-            if (!$adapter) {
+            if (!$adapter || !isset($brickValue[$fieldName])) {
                 continue;
             }
 
