@@ -160,7 +160,6 @@ pimcore_studio_backend:
             - "gender"
             - "language"
             - "select"
-            - "user"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\SliderAdapter:
             - "slider"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\StringAdapter:
@@ -178,6 +177,8 @@ pimcore_studio_backend:
             - "table"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
             - "urlSlug"
+        Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UserAdapter:
+            - "user"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\QuantityValueAdapter:
             - "quantityValue"
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\InputQuantityValueAdapter:

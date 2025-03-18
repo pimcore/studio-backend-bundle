@@ -177,6 +177,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UrlSlugAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\UserAdapter:
+    tags: [ 'pimcore.studio_backend.data_adapter' ]
+
   Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\VideoAdapter:
     tags: [ 'pimcore.studio_backend.data_adapter' ]
 
