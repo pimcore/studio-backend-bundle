@@ -53,13 +53,13 @@ final class UserInformation implements AdditionalAttributesInterface
             type: 'array',
             items: new Items(type: 'string')
         )]
-        private readonly array $allowedClassesToCreate,
+        private readonly array $classes,
         #[Property(
-            description: 'Allowed doctypes to create',
+            description: 'Allowed doc types to create',
             type: 'array',
             items: new Items(type: 'string')
         )]
-        private readonly array $allowedDocTypesToCreate,
+        private readonly array $docTypes,
     ) {
     }
 
@@ -85,11 +85,11 @@ final class UserInformation implements AdditionalAttributesInterface
 
     public function getClasses(): array
     {
-        return $this->allowedClassesToCreate;
+        return $this->classes;
     }
 
-    public function getAllowedDocTypesToCreate(): array
+    public function getDocTypes(): array
     {
-        return $this->allowedDocTypesToCreate;
+        return $this->docTypes;
     }
 }
