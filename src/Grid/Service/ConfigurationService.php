@@ -131,14 +131,12 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             );
         }
 
-
         return $this->buildDefaultConfiguration(
             $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, 1),
             $this->dataObjectPredefinedColumns,
             true
         );
     }
-
 
     /**
      * {@inheritdoc}
@@ -289,7 +287,6 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
                 );
             }
         }
-
 
         $defaultColumns = [
             ...$defaultColumns,

@@ -94,6 +94,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
 
     /**
      * @return ColumnConfiguration[]
+     *
      * @throws InvalidArgumentException
      */
     public function getSystemDataObjectColumnConfiguration(): array
