@@ -56,7 +56,7 @@ final class GetConfigurationController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/data-object/grid/configuration/{classId}',
+        path: self::PREFIX . '/data-object/search/configuration/{classId}',
         operationId: 'data_object_get_search_configuration',
         description: 'data_object_get_search_configuration_description',
         summary: 'data_object_get_search_configuration_summary',
