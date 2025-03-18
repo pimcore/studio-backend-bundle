@@ -30,7 +30,9 @@ final class UserInformationHydrator implements UserInformationHydratorInterface
             $user->getId(),
             $user->getUsername(),
             $user->getPermissions(),
-            $user->isAdmin()
+            $user->isAdmin(),
+            $user->getClasses(),
+            $user->getDocTypes()
         );
     }
 }
