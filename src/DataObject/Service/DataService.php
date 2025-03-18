@@ -109,12 +109,8 @@ final readonly class DataService implements DataServiceInterface
     /**
      * {@inheritdoc}
      */
-    public function getPreviewObjectData(DataObjectModel $dataObject): array
+    public function getPreviewObjectData(Concrete $dataObject): array
     {
-        if (!$dataObject instanceof Concrete) {
-            return [];
-        }
-
         $class = $this->getValidClass($this->classDefinitionResolver, $dataObject->getClassId());
         $data = [];
         foreach ($class->getFieldDefinitions() as $key => $fieldDefinition) {
