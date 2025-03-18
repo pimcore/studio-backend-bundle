@@ -100,22 +100,22 @@ final readonly class ObjectBricksAdapter implements
         }
 
         $resultItems = [];
-        $items = $value->getObjectVars();
-        foreach ($items as $item) {
+        $allowedTypes = $value->getAllowedBrickTypes();
+        foreach ($allowedTypes as $type) {
+            $resultItems[$type] = null;
+            $item = $value->get($type);
+
             if (!$item instanceof AbstractData) {
                 continue;
             }
 
-            $type = $item->getType();
-            $resultItems[$type] = [];
             $definition = $this->definitionResolver->getByKey($type);
             if ($definition === null) {
                 continue;
             }
 
             foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
-                $getter = 'get' . ucfirst($brickFieldDefinition->getName());
-                $value = $item->$getter();
+                $value = $item->get($brickFieldDefinition->getName());
                 $resultItems[$type][$brickFieldDefinition->getName()] = $this->dataService->getNormalizedValue(
                     $value,
                     $brickFieldDefinition,
@@ -139,8 +139,7 @@ final readonly class ObjectBricksAdapter implements
 
         $inheritanceData = [];
         foreach ($value->getAllowedBrickTypes() as $type) {
-            $brickGetter = 'get' . $type;
-            $brick = $value->$brickGetter();
+            $brick = $value->get($type);
             if (!$brick) {
                 continue;
             }
@@ -175,24 +174,28 @@ final readonly class ObjectBricksAdapter implements
             return $data;
         }
 
-        $items = $value->getObjectVars();
-        foreach ($items as $item) {
+        $allowedTypes = $value->getAllowedBrickTypes();
+        foreach ($allowedTypes as $type) {
+            $item = $value->get($type);
             if (!$item instanceof AbstractData) {
+                $data[$type] = null;
                 continue;
             }
 
-            $type = $item->getType();
-            $brickName = ucfirst($type);
             $definition = $this->definitionResolver->getByKey($type);
             if ($definition === null) {
+                $data[$type] = null;
                 continue;
             }
 
             foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
-                $getter = 'get' . ucfirst($brickFieldDefinition->getName());
-                $fieldValues = $this->dataService->getPreviewFieldData($item->$getter(), $brickFieldDefinition, []);
+                $fieldValues = $this->dataService->getPreviewFieldData(
+                    $item->get($brickFieldDefinition->getName()),
+                    $brickFieldDefinition,
+                    []
+                );
                 foreach ($fieldValues as $fieldKey => $fieldValue) {
-                    $data[$brickName . ' - ' . $fieldKey] = $fieldValue;
+                    $data[ucfirst($type) . ' - ' . $fieldKey] = $fieldValue;
                 }
 
             }

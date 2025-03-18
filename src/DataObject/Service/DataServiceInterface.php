@@ -50,7 +50,7 @@ interface DataServiceInterface
     /**
      * @throws DatabaseException|NotFoundException
      */
-    public function getPreviewObjectData(DataObjectModel $dataObject): array;
+    public function getPreviewObjectData(Concrete $dataObject): array;
 
     /**
      * @throws DatabaseException|NotFoundException

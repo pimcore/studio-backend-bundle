@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Search\Hydrator\Preview;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Search\Schema\DataObjectSearchPreview;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject;
@@ -33,7 +35,8 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
 
     public function __construct(
         private DataServiceInterface $dataService,
-        private UserServiceInterface $userService
+        private SecurityServiceInterface $securityService,
+        private UserServiceInterface $userService,
     ) {
     }
 
@@ -54,8 +57,20 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
             $dataObject->getCreationDate(),
             $dataObject->getModificationDate(),
             $this->getClassData($dataObject),
-            $this->dataService->getPreviewObjectData($dataObject),
+            $this->hydratePreviewDetailData($dataObject),
         );
+    }
+
+    private function hydratePreviewDetailData(DataObject $dataObject): array
+    {
+        $version = $this->getLatestVersionForUser($dataObject, $this->securityService->getCurrentUser());
+        $versionData = $this->getVersionData($dataObject, $version);
+
+        if (!$versionData instanceof Concrete) {
+            return [];
+        }
+
+        return $this->dataService->getPreviewObjectData($versionData);
     }
 
     private function getClassData(DataObject $dataObject): ?string
