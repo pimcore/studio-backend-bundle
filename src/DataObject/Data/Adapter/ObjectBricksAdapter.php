@@ -179,12 +179,14 @@ final readonly class ObjectBricksAdapter implements
             $item = $value->get($type);
             if (!$item instanceof AbstractData) {
                 $data[$type] = null;
+
                 continue;
             }
 
             $definition = $this->definitionResolver->getByKey($type);
             if ($definition === null) {
                 $data[$type] = null;
+
                 continue;
             }
 
