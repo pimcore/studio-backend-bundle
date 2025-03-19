@@ -94,8 +94,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     public function getDataObjectFullPath(
         string $parentFullPath,
         string $key
-    ): string
-    {
+    ): string {
         return str_ends_with($parentFullPath, '/') === true ? $parentFullPath . $key : $parentFullPath . '/' . $key;
     }
 
