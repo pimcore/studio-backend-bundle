@@ -295,8 +295,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
 
     public function getClassListForFolder(
         int $folderId
-    ): array
-    {
+    ): array {
         $hydratedClassDefinitions = [];
         $folder = $this->getDataObjectElement(
             $this->securityService->getCurrentUser(),
@@ -305,7 +304,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
 
         foreach ($folder->getDao()->getClasses() as $classDefinition) {
             $class = $this->folderClassListHydrator->hydrate($classDefinition);
-          //  $this->dispatchDataObjectEvent($class);
+            //  $this->dispatchDataObjectEvent($class);
             $hydratedClassDefinitions[] = $class;
         }
 
