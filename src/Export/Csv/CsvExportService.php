@@ -16,10 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Csv;
 
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
+use League\Csv\Writer;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
@@ -43,7 +46,7 @@ final readonly class CsvExportService implements ExportServiceInterface
     }
 
     /**
-     * @throws FilesystemException
+     * @throws EnvironmentException|FilesystemException
      */
     public function createExportFile(
         int $id,
@@ -53,24 +56,32 @@ final readonly class CsvExportService implements ExportServiceInterface
         bool $withGroup = false,
         ?string $delimiter = null,
     ): void {
-        $headers = [];
+
         $storage = $this->storageService->getTempStorage();
-        if ($withHeaders) {
-            $headers = $this->getHeaders($columns, $withGroup);
-        }
+
         if ($delimiter === null) {
             $delimiter = $this->defaultDelimiter;
         }
 
-        $data[] = implode($delimiter, $headers) . StepConfig::NEW_LINE->value;
-        foreach ($csvData as $row) {
-            $data[] = implode($delimiter, array_map([$this, 'encodeFunc'], $row)) . StepConfig::NEW_LINE->value;
+        $data = [];
+        if ($withHeaders) {
+            $data[]  = $this->getHeaders($columns, $withGroup);
         }
 
-        $storage->write(
-            $this->getCsvFilePath($id, $storage),
-            implode($data)
-        );
+        $data = array_merge($data, $csvData);
+
+        try {
+            $csv = Writer::createFromString();
+            $csv->setDelimiter($delimiter);
+            $csv->insertAll($data);
+
+            $storage->write(
+                $this->getCsvFilePath($id, $storage),
+                $csv->toString()
+            );
+        } catch (CannotInsertRecord | Exception $e) {
+            throw new EnvironmentException($e->getMessage());
+        }
     }
 
     /**
