@@ -32,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -47,6 +48,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\DataObject\AbstractObject;
@@ -89,6 +91,14 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     ) {
     }
 
+    public function getDataObjectFullPath(
+        string $parentFullPath,
+        string $key
+    ): string
+    {
+        return str_ends_with($parentFullPath, '/') === true ? $parentFullPath . $key : $parentFullPath . '/' . $key;
+    }
+
     /**
      * @throws DatabaseException
      * @throws ElementSavingFailedException
@@ -103,8 +113,15 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     ): int {
         $user = $this->securityService->getCurrentUser();
         $parent = $this->getValidParent($user, $parentId);
-        if ($this->dataObjectServiceResolver->pathExists($parent->getFullPath() . '/' . $parameters->getKey())) {
-            throw new ElementSavingFailedException(null, 'Element with the same key and path already exists');
+        $fullPath = $this->getDataObjectFullPath(
+            $parent->getFullPath(),
+            $parameters->getKey()
+        );
+        if ($this->dataObjectServiceResolver->pathExists($fullPath)) {
+            throw new ElementExistsException(
+                $fullPath,
+                HttpResponseErrorKeys::ELEMENT_EXISTS->value
+            );
         }
 
         $class = $this->getValidClass($this->classDefinitionResolver, $parameters->getClassId());
