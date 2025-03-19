@@ -53,6 +53,8 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataService
 
+  Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\FolderClassListHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\FolderClassListHydrator
 
   #
   # Legacy Services
