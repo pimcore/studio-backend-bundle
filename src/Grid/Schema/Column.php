@@ -41,7 +41,7 @@ final readonly class Column
         private string $key,
         #[Property(description: 'Locale', type: 'string', example: 'en')]
         private ?string $locale,
-        #[Property(description: 'Type', type: 'string', example: 'system.integer')]
+        #[Property(description: 'Type', type: 'string', example: 'system.id')]
         private string $type,
         #[Property(description: 'Group', type: 'string', example: 'system')]
         private ?string $group,
