@@ -89,16 +89,19 @@ final class GridService implements GridServiceInterface
      * @throws NotFoundException
      * @throws Exception
      */
-    public function getDataObjectGrid(GridParameter $gridParameter, string $classId): Collection
+    public function getDataObjectGrid(GridParameter $gridParameter, ?string $classId): Collection
     {
         $filter = $gridParameter->getFilters();
-        $classDefinition = $this->classDefinitionResolver->getById($classId);
 
-        if (!$classDefinition instanceof ClassDefinition) {
-            throw new NotFoundException('Class definition', $classId);
+        if ($classId) {
+            $classDefinition = $this->classDefinitionResolver->getById($classId);
+
+            if (!$classDefinition instanceof ClassDefinition) {
+                throw new NotFoundException('Class definition', $classId);
+            }
+
+            $filter->setClassName($classDefinition->getName());
         }
-
-        $filter->setClassName($classDefinition->getName());
 
         $result = $this->gridSearch->searchDataObjects($gridParameter);
 

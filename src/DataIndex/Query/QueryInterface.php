@@ -56,4 +56,10 @@ interface QueryInterface
     public function filterFullText(string $value): self;
 
     public function orderByField(string $fieldName, SortDirection $direction): self;
+
+    public function wildcardSearch(
+        string $fieldName,
+        string $searchTerm,
+        bool $enablePqlFieldNameResolution = true
+    ): self;
 }

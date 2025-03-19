@@ -71,7 +71,7 @@ final class GetSearchResultController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::BAD_REQUEST,
     ])]
-    public function getAssetGrid(#[MapRequestPayload] SearchGridParameter $searchGridParameter): JsonResponse
+    public function getAssetSearchGrid(#[MapRequestPayload] SearchGridParameter $searchGridParameter): JsonResponse
     {
         return $this->jsonResponse($this->searchService->getAssetSearchGrid($searchGridParameter));
     }

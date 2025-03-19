@@ -709,6 +709,9 @@ asset_get_saved_grid_configurations_summary: Get all saved grid configurations f
 user_get_collection_summary: Get all users
 user_get_collection_description: Get all users with basic information
 user_get_collection_success_response: List of users
+data_object_get_search_description: Get data object search results
+data_object_get_search_summary: Get data object search results
+data_object_get_search_success_response:  Data object search results
 data_object_get_available_grid_columns_description: |
     Get all available grid columns for data objects
 data_object_get_available_grid_columns_summary: Get all available grid columns for data objects

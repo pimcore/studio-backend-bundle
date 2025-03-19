@@ -16,19 +16,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Search;
 
-use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
+use Exception;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\DetailedConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\SearchGridRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\SearchGridParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -36,29 +41,27 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetConfigurationController extends AbstractApiController
+final class GetSearchResultController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ConfigurationServiceInterface $gridConfigurationService,
+        private readonly GridSearchServiceInterface $searchService,
     ) {
         parent::__construct($serializer);
     }
 
     /**
+     * @throws InvalidArgumentException
+     * @throws Exception
      * @throws NotFoundException
      */
-    #[Route(
-        '/data-objects/search/configuration/{classId?}',
-        name: 'pimcore_studio_api_get_data_object_search_configuration',
-        methods: ['GET'],
-    )]
+    #[Route('/data-objects/search/{classId?}', name: 'pimcore_studio_api_get_data_object_search', methods: ['POST'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
-    #[Get(
-        path: self::PREFIX . '/data-objects/search/configuration/{classId}',
-        operationId: 'data_object_get_search_configuration',
-        description: 'data_object_get_search_configuration_description',
-        summary: 'data_object_get_search_configuration_summary',
+    #[Post(
+        path: self::PREFIX . '/data-objects/search{classId}',
+        operationId: 'data_object_get_search',
+        description: 'data_object_get_search_description',
+        summary: 'data_object_get_search_summary',
         tags: [Tags::DataObjectsSearch->value]
     )]
     #[StringParameter(
@@ -67,19 +70,28 @@ final class GetConfigurationController extends AbstractApiController
         description: 'Class Id of the data object',
         required: false,
     )]
+    #[SearchGridRequestBody]
     #[SuccessResponse(
-        description: 'data_object_get_search_configuration_success_response',
-        content: new JsonContent(ref: DetailedConfiguration::class)
+        description: 'data_object_get_search_success_response',
+        content: new CollectionJson(
+            collection: new GridCollection()
+        )
     )]
     #[DefaultResponses([
-        HttpResponseCodes::BAD_REQUEST,
-        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::BAD_REQUEST,
     ])]
-    public function getDataObjectSearchConfiguration(?string $classId): JsonResponse
+    public function getDataObjectSearchGrid(
+        ?string $classId,
+        #[MapRequestPayload] SearchGridParameter $searchGridParameter
+    ): JsonResponse
     {
-        $configuration = $this->gridConfigurationService->getDataObjectSearchConfiguration($classId);
-
-        return $this->jsonResponse($configuration);
+        return $this->jsonResponse(
+            $this->searchService->getDataObjectSearchGrid(
+                $searchGridParameter,
+                $classId
+            )
+        );
     }
 }

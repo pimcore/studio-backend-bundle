@@ -14,11 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
@@ -35,20 +33,19 @@ final class StringFilter implements FilterInterface
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         $parameters = $this->validateParameterType($parameters);
-        $assetQuery = $this->validateQueryType($query);
 
-        if (!$parameters || !$assetQuery) {
+        if (!$parameters) {
             return $query;
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_STRING->value) as $column) {
-            $assetQuery = $this->applyStringFilter($column, $assetQuery);
+            $query = $this->applyStringFilter($column, $query);
         }
 
-        return $assetQuery;
+        return $query;
     }
 
-    private function applyStringFilter(ColumnFilter $column, AssetQueryInterface $query): AssetQueryInterface
+    private function applyStringFilter(ColumnFilter $column, QueryInterface $query): QueryInterface
     {
         if (!is_string($column->getFilterValue())) {
             throw new InvalidArgumentException('Filter value for this filter must be a string');

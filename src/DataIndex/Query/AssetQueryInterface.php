@@ -25,12 +25,6 @@ interface AssetQueryInterface extends QueryInterface
 {
     public function filterMetadata(string $name, string $type, mixed $data): self;
 
-    public function wildcardSearch(
-        string $fieldName,
-        string $searchTerm,
-        bool $enablePqlFieldNameResolution = true
-    ): self;
-
     public function filterDatetime(
         string $field,
         int|null $startDate = null,

@@ -44,7 +44,6 @@ final readonly class SearchIndexFilter implements SearchIndexFilterInterface
         $query = $this->queryFactory->create($type);
         // apply default filters
         $filters = $this->filterLoader->loadFilters();
-
         foreach ($filters->getFilters() as $filter) {
             $query = $filter->apply($parameters, $query);
         }

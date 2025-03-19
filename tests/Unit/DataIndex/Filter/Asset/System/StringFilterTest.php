@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset\S
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System\StringFilter;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\StringFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
