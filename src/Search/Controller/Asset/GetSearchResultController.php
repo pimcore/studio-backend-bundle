@@ -50,10 +50,10 @@ final class GetSearchResultController extends AbstractApiController
     /**
      * @throws InvalidArgumentException
      */
-    #[Route('/assets/search', name: 'pimcore_studio_api_get_asset_search', methods: ['POST'])]
+    #[Route('/search/assets', name: 'pimcore_studio_api_get_asset_search', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/assets/search',
+        path: self::PREFIX . '/search/assets',
         operationId: 'asset_get_search',
         description: 'asset_get_search_description',
         summary: 'asset_get_search_summary',

@@ -49,13 +49,13 @@ final class GetConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/data-objects/search/configuration/{classId?}',
+        '/search/configuration/data-objects/{classId?}',
         name: 'pimcore_studio_api_get_data_object_search_configuration',
         methods: ['GET'],
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/data-objects/search/configuration/{classId}',
+        path: self::PREFIX . '/search/configuration/data-objects/{classId}',
         operationId: 'data_object_get_search_configuration',
         description: 'data_object_get_search_configuration_description',
         summary: 'data_object_get_search_configuration_summary',

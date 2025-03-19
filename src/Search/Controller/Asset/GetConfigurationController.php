@@ -48,13 +48,13 @@ final class GetConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/assets/search/configuration/',
+        '/search/configuration/assets',
         name: 'pimcore_studio_api_get_asset_search_configuration',
         methods: ['GET'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/search/configuration/',
+        path: self::PREFIX . '/search/configuration/assets',
         operationId: 'asset_get_search_configuration',
         description: 'asset_get_search_configuration_description',
         summary: 'asset_get_search_configuration_summary',

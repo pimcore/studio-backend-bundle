@@ -45,7 +45,7 @@ final class PreviewController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
-    private const string ROUTE = '/search/{elementType}/{id}';
+    private const string ROUTE = '/search/preview/{elementType}/{id}';
 
     public function __construct(
         SerializerInterface $serializer,

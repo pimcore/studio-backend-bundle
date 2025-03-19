@@ -55,10 +55,10 @@ final class GetSearchResultController extends AbstractApiController
      * @throws Exception
      * @throws NotFoundException
      */
-    #[Route('/data-objects/search/{classId?}', name: 'pimcore_studio_api_get_data_object_search', methods: ['POST'])]
+    #[Route('/search/data-objects/{classId?}', name: 'pimcore_studio_api_get_data_object_search', methods: ['POST'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
-        path: self::PREFIX . '/data-objects/search{classId}',
+        path: self::PREFIX . '/search/data-objects/{classId}',
         operationId: 'data_object_get_search',
         description: 'data_object_get_search_description',
         summary: 'data_object_get_search_summary',
