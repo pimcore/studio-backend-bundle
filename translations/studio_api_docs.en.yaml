@@ -536,7 +536,6 @@ simple_search_preview_get_success_response: Simple search results preview for el
 tag_asset_thumbnail_description: List thumbnails for assets like videos and images
 tag_assets_description: Asset operations to get/update/create/delete assets
 tag_asset_grid_description: Asset Grid operations
-tag_asset_search_description: Asset Search operations
 tag_assign_to_element_description: |
   Assign a specific tag based on the given <strong>{tagId}</strong> to an element based on <strong>{elementType}</strong> and <strong>{id}</strong>. <br>
   The <strong>{id}</strong> must be an ID of an existing element of the provided <strong>{elementType}</strong>.
@@ -557,7 +556,6 @@ tag_create_summary: Create a new tag
 tag_dataobjects_description: DataObject operations to get/update/create/delete data
   objects
 tag_dataobject_grid_description: DataObject Grid operations
-tag_dataobject_search_description: DataObject Search operations
 tag_delete_by_id_description: |
   Delete a specific tag based on the given <strong>{id}</strong>
 tag_delete_by_id_success_response: ID of successfully deleted tag

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Search;
+namespace Pimcore\Bundle\StudioBackendBundle\Search\Controller\Asset;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
@@ -58,7 +58,7 @@ final class GetConfigurationController extends AbstractApiController
         operationId: 'asset_get_search_configuration',
         description: 'asset_get_search_configuration_description',
         summary: 'asset_get_search_configuration_summary',
-        tags: [Tags::AssetSearch->value]
+        tags: [Tags::Search->value]
     )]
     #[SuccessResponse(
         description: 'asset_get_search_configuration_success_response',

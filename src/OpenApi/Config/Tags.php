@@ -30,10 +30,6 @@ use OpenApi\Attributes\Tag;
     description: 'tag_asset_grid_description'
 )]
 #[Tag(
-    name: Tags::AssetSearch->value,
-    description: 'tag_asset_search_description'
-)]
-#[Tag(
     name: Tags::AssetThumbnails->value,
     description: 'tag_asset_thumbnail_description'
 )]
@@ -56,10 +52,6 @@ use OpenApi\Attributes\Tag;
 #[Tag(
     name: Tags::DataObjectsGrid->value,
     description: 'tag_dataobject_grid_description'
-)]
-#[Tag(
-    name: Tags::DataObjectsSearch->value,
-    description: 'tag_dataobject_search_description'
 )]
 #[Tag(
     name: Tags::Dependencies->value,
@@ -157,14 +149,12 @@ enum Tags: string
 {
     case Assets = 'Assets';
     case AssetGrid = 'Asset Grid';
-    case AssetSearch = 'Asset Search';
     case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';
     case ClassDefinition = 'Class Definition';
     case CustomReports = 'Custom Reports';
     case DataObjects = 'Data Objects';
     case DataObjectsGrid = 'Data Object Grid';
-    case DataObjectsSearch = 'Data Object Search';
     case Dependencies = 'Dependencies';
     case Documents = 'Documents';
     case Elements = 'Elements';

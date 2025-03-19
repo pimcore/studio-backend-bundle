@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Search;
+namespace Pimcore\Bundle\StudioBackendBundle\Search\Controller\DataObject;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
@@ -59,7 +59,7 @@ final class GetConfigurationController extends AbstractApiController
         operationId: 'data_object_get_search_configuration',
         description: 'data_object_get_search_configuration_description',
         summary: 'data_object_get_search_configuration_summary',
-        tags: [Tags::DataObjectsSearch->value]
+        tags: [Tags::Search->value]
     )]
     #[StringParameter(
         name: 'classId',
