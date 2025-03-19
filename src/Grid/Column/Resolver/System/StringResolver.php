@@ -39,22 +39,27 @@ final class StringResolver implements
     use SimpleGetterTrait;
     use ColumnDataTrait;
 
-    /**
-     * @throws InvalidArgumentException
-     */
     public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
-        return $this->getColumnData(
-            $column,
-            $this->getValue($column, $element)
-        );
+        return $this->resolve($column, $element);
     }
 
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
     {
+        return $this->resolve($column, $element);
+    }
+
+    private function resolve(Column $column, ElementInterface|StudioElementInterface $element): ColumnData
+    {
+        try {
+            $value = $this->getValue($column, $element);
+        } catch (InvalidArgumentException) {
+            $value = null;
+        }
+
         return $this->getColumnData(
             $column,
-            $this->getValue($column, $element)
+            $value
         );
     }
 

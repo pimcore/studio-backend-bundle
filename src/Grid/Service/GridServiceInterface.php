@@ -66,7 +66,7 @@ interface GridServiceInterface
      * @throws NotFoundException
      * @throws Exception
      */
-    public function getDataObjectGrid(GridParameter $gridParameter, string $classId): Collection;
+    public function getDataObjectGrid(GridParameter $gridParameter, ?string $classId): Collection;
 
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array;
 

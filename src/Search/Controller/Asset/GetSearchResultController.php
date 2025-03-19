@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Search;
+namespace Pimcore\Bundle\StudioBackendBundle\Search\Controller\Asset;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -50,14 +50,14 @@ final class GetSearchResultController extends AbstractApiController
     /**
      * @throws InvalidArgumentException
      */
-    #[Route('/assets/search', name: 'pimcore_studio_api_get_asset_search', methods: ['POST'])]
+    #[Route('/search/assets', name: 'pimcore_studio_api_get_asset_search', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/assets/search',
+        path: self::PREFIX . '/search/assets',
         operationId: 'asset_get_search',
         description: 'asset_get_search_description',
         summary: 'asset_get_search_summary',
-        tags: [Tags::AssetSearch->value]
+        tags: [Tags::Search->value]
     )]
     #[SearchGridRequestBody]
     #[SuccessResponse(
@@ -71,7 +71,7 @@ final class GetSearchResultController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::BAD_REQUEST,
     ])]
-    public function getAssetGrid(#[MapRequestPayload] SearchGridParameter $searchGridParameter): JsonResponse
+    public function getAssetSearchGrid(#[MapRequestPayload] SearchGridParameter $searchGridParameter): JsonResponse
     {
         return $this->jsonResponse($this->searchService->getAssetSearchGrid($searchGridParameter));
     }

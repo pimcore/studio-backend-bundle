@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Search;
+namespace Pimcore\Bundle\StudioBackendBundle\Search\Controller\DataObject;
 
 use OpenApi\Attributes\Get;
 use OpenApi\Attributes\JsonContent;
@@ -49,18 +49,17 @@ final class GetConfigurationController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/data-object/search/configuration/{classId?}',
+        '/search/configuration/data-objects/{classId?}',
         name: 'pimcore_studio_api_get_data_object_search_configuration',
         methods: ['GET'],
-
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/data-object/search/configuration/{classId}',
+        path: self::PREFIX . '/search/configuration/data-objects/{classId}',
         operationId: 'data_object_get_search_configuration',
         description: 'data_object_get_search_configuration_description',
         summary: 'data_object_get_search_configuration_summary',
-        tags: [Tags::DataObjectsSearch->value]
+        tags: [Tags::Search->value]
     )]
     #[StringParameter(
         name: 'classId',

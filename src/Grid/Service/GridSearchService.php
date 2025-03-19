@@ -45,4 +45,21 @@ final readonly class GridSearchService implements GridSearchServiceInterface
 
         return $this->gridService->getAssetGrid($parameter);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDataObjectSearchGrid(SearchGridParameter $searchParameter, ?string $classId): Collection
+    {
+        $filter = $searchParameter->getFilters();
+        $filter->setExcludeFolders(false);
+
+        $gridParameter  = new GridParameter(
+            folderId: 1,
+            columns: $searchParameter->getColumns(),
+            filters: $filter
+        );
+
+        return $this->gridService->getDataObjectGrid($gridParameter, $classId);
+    }
 }

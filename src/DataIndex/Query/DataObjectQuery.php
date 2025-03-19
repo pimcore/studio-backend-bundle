@@ -29,6 +29,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\Path
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\TagFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\ElementKeySearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\FullTextSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\WildcardSearch;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\PqlFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByField;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
@@ -190,6 +191,16 @@ final class DataObjectQuery implements DataObjectQueryInterface
     public function orderByField(string $fieldName, SortDirection $direction): self
     {
         $this->search->addModifier(new OrderByField($fieldName, $direction));
+
+        return $this;
+    }
+
+    public function wildcardSearch(
+        string $fieldName,
+        string $searchTerm,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new WildcardSearch($fieldName, $searchTerm, $enablePqlFieldNameResolution));
 
         return $this;
     }
