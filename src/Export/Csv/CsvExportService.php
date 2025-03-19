@@ -64,6 +64,7 @@ final readonly class CsvExportService implements ExportServiceInterface
         }
 
         $data = [];
+
         if ($withHeaders) {
             $data[]  = $this->getHeaders($columns, $withGroup);
         }
@@ -99,14 +100,6 @@ final readonly class CsvExportService implements ExportServiceInterface
         $this->storageService->cleanUpFolder(
             $this->getTempFilePath($jobRunId, self::CSV_FOLDER_NAME)
         );
-    }
-
-    private function encodeFunc(?string $value): string
-    {
-        $value = str_replace('"', '""', $value ?? '');
-
-        //force wrap value in quotes and return
-        return '"' . $value . '"';
     }
 
     private function getHeaders(array $columns, bool $withGroup): array
