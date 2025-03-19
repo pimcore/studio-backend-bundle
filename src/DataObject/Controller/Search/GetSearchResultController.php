@@ -85,8 +85,7 @@ final class GetSearchResultController extends AbstractApiController
     public function getDataObjectSearchGrid(
         ?string $classId,
         #[MapRequestPayload] SearchGridParameter $searchGridParameter
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return $this->jsonResponse(
             $this->searchService->getDataObjectSearchGrid(
                 $searchGridParameter,

@@ -39,7 +39,6 @@ final class StringResolver implements
     use SimpleGetterTrait;
     use ColumnDataTrait;
 
-
     public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
     {
         try {
@@ -61,7 +60,6 @@ final class StringResolver implements
         } catch (InvalidArgumentException) {
             $value = null;
         }
-
 
         return $this->getColumnData(
             $column,
