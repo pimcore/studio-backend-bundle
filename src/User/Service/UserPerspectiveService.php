@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PerspectiveRepositoryInterface;
 use Pimcore\Model\User\UserRoleInterface;
 use Pimcore\Model\UserInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -154,12 +155,14 @@ final readonly class UserPerspectiveService implements UserPerspectiveServiceInt
 
         return array_values(array_unique($userPerspectives));
     }
+
     private function getAllPerspectiveIds(): array
     {
-        return array_map(static fn($perspective) => $perspective->getId(), $this->getAllPerspectives());
+        return array_map(static fn ($perspective) => $perspective->getId(), $this->getAllPerspectives());
     }
 
-    private function getAllPerspectives(): array {
+    private function getAllPerspectives(): array
+    {
         $defaultPerspective = $this->configRepository->getConfiguration(Perspectives::DEFAULT_ID->value);
         $allowedPerspectives[] = $this->perspectiveService->hydrateListEntry($defaultPerspective);
 

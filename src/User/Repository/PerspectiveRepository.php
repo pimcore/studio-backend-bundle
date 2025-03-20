@@ -43,12 +43,14 @@ final readonly class PerspectiveRepository implements PerspectiveRepositoryInter
             ->findOneBy(['user' => $user]);
     }
 
-    public function getUserActivePerspective(int $user): ?string {
+    public function getUserActivePerspective(int $user): ?string
+    {
 
         return $this->getByUser($user)?->getActivePerspective();
     }
 
-    public function listUserPerspectives(int $user): array {
+    public function listUserPerspectives(int $user): array
+    {
         $perspectives = $this->getByUser($user)?->getPerspectives();
 
         return $perspectives ? explode(',', $perspectives) : [];

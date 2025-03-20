@@ -315,7 +315,7 @@ final class Installer extends SettingsStoreAwareInstaller
         );
 
         $table->addColumn('perspectives', 'text', [
-            'notnull' => false
+            'notnull' => false,
         ]);
 
         $table->addColumn('activePerspective', 'string', [

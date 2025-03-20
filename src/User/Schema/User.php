@@ -20,7 +20,6 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
@@ -32,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'keyBindings', 'language', 'memorizeTabs', 'parentId', 'permissions', 'roles',
         'twoFactorAuthenticationEnabled', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
         'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'objectDependencies',
-        'perspectives'
+        'perspectives',
     ],
     type: 'object'
 )]

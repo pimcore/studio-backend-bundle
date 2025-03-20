@@ -25,7 +25,8 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class UserInformationHydrator implements UserInformationHydratorInterface
 {
-    public function __construct(private UserPerspectiveServiceInterface $userPerspectiveService) {
+    public function __construct(private UserPerspectiveServiceInterface $userPerspectiveService)
+    {
     }
 
     public function hydrate(UserInterface $user): UserInformation

@@ -36,7 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
         'assetWorkspaces',
         'dataObjectWorkspaces',
         'documentWorkspaces',
-        'perspectives'
+        'perspectives',
     ],
     type: 'object'
 )]

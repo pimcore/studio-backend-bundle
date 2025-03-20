@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 
 /**
@@ -32,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
         'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'keyBindings',
         'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationEnabled',
         'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
-        'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'perspectives'
+        'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'perspectives',
     ],
     type: 'object'
 )]

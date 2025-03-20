@@ -39,7 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'assetWorkspaces',
         'dataObjectWorkspaces',
         'documentWorkspaces',
-        'perspectives'
+        'perspectives',
     ],
     type: 'object'
 )]
