@@ -26,7 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: [
         'id',
         'name',
-        'inheritance'
+        'inheritance',
     ],
     type: 'object'
 )]
