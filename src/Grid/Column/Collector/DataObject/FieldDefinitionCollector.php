@@ -132,6 +132,7 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
                 );
             } catch (InvalidArgumentException $exception) {
                 $this->logger->info($exception->getMessage());
+
                 continue;
             }
 

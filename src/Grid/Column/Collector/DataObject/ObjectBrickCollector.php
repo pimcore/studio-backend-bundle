@@ -117,8 +117,9 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
                         'attribute' => $dataField->getName(),
                     ]
                 );
-            }  catch (InvalidArgumentException $exception) {
+            } catch (InvalidArgumentException $exception) {
                 $this->logger->info($exception->getMessage());
+
                 continue;
             }
         }
