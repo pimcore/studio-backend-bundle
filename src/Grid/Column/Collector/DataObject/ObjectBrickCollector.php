@@ -104,16 +104,20 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
         foreach ($dataFields as $dataField) {
             $groupName = $objectBrick->getTitle() !== '' ? $objectBrick->getTitle() : $objectBrick->getKey();
 
-            $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
-                new ColumnFieldDefinition($dataField, $groupName, false),
-                'dataobject.objectbrick',
-                $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getName(),
-                [
-                    'field' => $fieldname,
-                    'objectBrick' => $objectBrick->getKey(),
-                    'attribute' => $dataField->getName(),
-                ]
-            );
+            try {
+                $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
+                    new ColumnFieldDefinition($dataField, $groupName, false),
+                    'dataobject.objectbrick',
+                    $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getName(),
+                    [
+                        'field' => $fieldname,
+                        'objectBrick' => $objectBrick->getKey(),
+                        'attribute' => $dataField->getName(),
+                    ]
+                );
+            }  catch (InvalidArgumentException) {
+                continue;
+            }
         }
     }
 

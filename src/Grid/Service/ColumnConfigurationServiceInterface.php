@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 
@@ -42,6 +43,8 @@ interface ColumnConfigurationServiceInterface
     /**
      * Builds a column configuration for a data object adapter column.
      * key type and is optional and can be used to build a column configuration for a specific key type.
+     *
+     * @throws InvalidArgumentException
      */
     public function buildDataObjectAdapterColumnConfiguration(
         ColumnFieldDefinition $definition,
