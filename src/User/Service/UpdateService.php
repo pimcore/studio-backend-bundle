@@ -18,10 +18,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Role\Repository\RoleRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Repository\PerspectiveRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\User\UserRoleInterface;
@@ -42,6 +45,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private RoleRepositoryInterface $roleRepository,
         private ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private ServiceResolverInterface $elementServiceResolver,
+        private UserPerspectiveServiceInterface $userPerspectiveService,
     ) {
     }
 
@@ -217,6 +221,22 @@ final readonly class UpdateService implements UpdateServiceInterface
 
         /** @var DocumentWorkspace[] $workspaces */
         $user->setWorkspacesDocument($workspaces);
+
+        return $user;
+    }
+
+    /**
+     * @template T of UserInterface|UserRoleInterface
+     *
+     * @param T $user
+     *
+     * @return T
+     */
+    public function updatePerspectives(
+        array $perspectivesToSet,
+        UserInterface|UserRoleInterface $user
+    ): UserInterface|UserRoleInterface {
+        $this->userPerspectiveService->updatePerspectives($perspectivesToSet, $user);
 
         return $user;
     }

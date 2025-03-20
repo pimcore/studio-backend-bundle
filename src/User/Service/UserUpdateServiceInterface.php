@@ -19,7 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 
@@ -37,4 +39,9 @@ interface UserUpdateServiceInterface
      * @throws NotFoundException|DatabaseException|ForbiddenException
      */
     public function updatePasswordById(UpdatePasswordParameter $updateParameter, int $userId): void;
+
+    /**
+     * @throws ForbiddenException|NotFoundException|NotWriteableException|UserNotFoundException
+     */
+    public function updateActivePerspective(string $perspectiveId): void;
 }

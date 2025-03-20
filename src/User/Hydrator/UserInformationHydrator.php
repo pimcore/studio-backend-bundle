@@ -17,13 +17,17 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-final class UserInformationHydrator implements UserInformationHydratorInterface
+final readonly class UserInformationHydrator implements UserInformationHydratorInterface
 {
+    public function __construct(private UserPerspectiveServiceInterface $userPerspectiveService) {
+    }
+
     public function hydrate(UserInterface $user): UserInformation
     {
         return new UserInformation(
@@ -32,7 +36,9 @@ final class UserInformationHydrator implements UserInformationHydratorInterface
             $user->getPermissions(),
             $user->isAdmin(),
             $user->getClasses(),
-            $user->getDocTypes()
+            $user->getDocTypes(),
+            $this->userPerspectiveService->getActivePerspective($user),
+            $this->userPerspectiveService->getAllowedPerspectives($user),
         );
     }
 }

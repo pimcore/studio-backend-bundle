@@ -85,7 +85,7 @@ final class GetIdByPathController extends AbstractApiController
 
         return $this->jsonResponse(
             [
-                'id' => $this->elementService->getElementIdByPath(
+                'id' => $this->elementService->getAllowedElementIdByPath(
                     (new MappedElementTypeParameter($elementType))->getType(),
                     $pathParameter,
                     $this->securityService->getCurrentUser()

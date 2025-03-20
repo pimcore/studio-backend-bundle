@@ -20,7 +20,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PerspectivePermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -37,7 +39,8 @@ final class UserPerspectiveVoter extends Voter
 
     public function __construct(
         private readonly RequestStack $requestStack,
-        private readonly SecurityServiceInterface $securityService
+        private readonly SecurityServiceInterface $securityService,
+        private readonly UserPerspectiveServiceInterface $userPerspectiveService
     ) {
     }
 
@@ -54,13 +57,14 @@ final class UserPerspectiveVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        $perspectiveId = $this->getPerspectiveFromRequest();
-        if ($perspectiveId === Perspectives::DEFAULT_ID->value) {
+        $user = $this->securityService->getCurrentUser();
+        if ($user->isAllowed(UserPermissions::PERSPECTIVE_EDITOR->value)) {
             return true;
         }
-        $user = $this->securityService->getCurrentUser();
 
-        return in_array($perspectiveId, $user->getPerspectives(), true);
+        $this->userPerspectiveService->validatePerspectiveAccess($user, $this->getPerspectiveFromRequest());
+
+        return true;
     }
 
     /**

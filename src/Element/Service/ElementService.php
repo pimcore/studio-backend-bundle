@@ -62,9 +62,21 @@ final readonly class ElementService implements ElementServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * @throws NotFoundException
      */
     public function getElementIdByPath(
+        string $elementType,
+        PathParameter $pathParameter,
+        UserInterface $user
+    ): int {
+
+        return $this->getElementByPath($this->serviceResolver, $elementType, $pathParameter->getPath())->getId();
+    }
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function getAllowedElementIdByPath(
         string $elementType,
         PathParameter $pathParameter,
         UserInterface $user

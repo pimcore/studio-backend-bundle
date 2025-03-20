@@ -35,6 +35,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserPermissionService
 
+  Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveService
+
   Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\WorkspaceCloneService
 
@@ -49,8 +52,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Service\ImageServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\ImageService
-
-
 
   Pimcore\Bundle\StudioBackendBundle\User\Service\MailServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Service\MailService
@@ -95,3 +96,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Repository\PermissionRepository
+
+  Pimcore\Bundle\StudioBackendBundle\User\Repository\PerspectiveRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Repository\PerspectiveRepository
+    arguments:
+      - "@doctrine.orm.studio_backend_entity_manager"

@@ -25,6 +25,7 @@ use Doctrine\DBAL\Schema\SchemaException;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
+use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Extension\Bundle\Installer\Exception\InstallationException;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
@@ -53,6 +54,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createGridConfigurationTable($schema);
         $this->createGridConfigurationSharesTable($schema);
         $this->createGridConfigurationFavoritesTable($schema);
+        $this->createUserPerspectivesTable($schema);
         $this->executeDiffSql($schema);
 
         parent::install();
@@ -76,6 +78,10 @@ final class Installer extends SettingsStoreAwareInstaller
 
         if ($schema->hasTable(GridConfigurationFavorite::TABLE_NAME)) {
             $schema->dropTable(GridConfigurationFavorite::TABLE_NAME);
+        }
+
+        if ($schema->hasTable(UserPerspectiveData::TABLE_NAME)) {
+            $schema->dropTable(UserPerspectiveData::TABLE_NAME);
         }
 
         $this->executeDiffSql($schema);
@@ -289,6 +295,43 @@ final class Installer extends SettingsStoreAwareInstaller
             ['onDelete' => 'CASCADE'],
             'fk_'.GridConfiguration::TABLE_NAME.'_assetFolderId_id'
         );
+    }
+
+    /**
+     * @throws SchemaException
+     */
+    public function createUserPerspectivesTable(Schema $schema): void
+    {
+        if ($schema->hasTable(UserPerspectiveData::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(UserPerspectiveData::TABLE_NAME);
+
+        $table->addColumn(
+            'user',
+            'integer',
+            ['notnull' => true, 'unsigned' => true]
+        );
+
+        $table->addColumn('perspectives', 'text', [
+            'notnull' => false
+        ]);
+
+        $table->addColumn('activePerspective', 'string', [
+            'notnull' => false,
+            'length' => 255,
+        ]);
+
+        $table->addForeignKeyConstraint(
+            'users',
+            ['user'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_' . UserPerspectiveData::TABLE_NAME.'_users'
+        );
+
+        $table->setPrimaryKey(['user'], 'pk_' . UserPerspectiveData::TABLE_NAME);
     }
 
     /**
