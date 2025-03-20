@@ -186,6 +186,7 @@ final readonly class RoleService implements RoleServiceInterface
             $role
         );
         $role = $this->updateService->updateDocumentWorkspaces($updateRoleParameter->getDocumentWorkspaces(), $role);
+        $role = $this->updateService->updatePerspectives($updateRoleParameter->getPerspectives(), $role);
 
         $this->roleRepository->updateRole($role);
     }

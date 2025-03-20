@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Role\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UserWorkspace;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
@@ -38,6 +39,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'assetWorkspaces',
         'dataObjectWorkspaces',
         'documentWorkspaces',
+        'perspectives',
     ],
     type: 'object'
 )]
@@ -68,6 +70,12 @@ final class DetailedRole implements AdditionalAttributesInterface
         private readonly array $dataObjectWorkspaces,
         #[Property(description: 'Document Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
         private readonly array $documentWorkspaces,
+        #[Property(
+            description: 'Allowed studio perspectives',
+            type: 'array',
+            items: new Items(ref: PerspectiveConfig::class))
+        ]
+        private readonly array $perspectives = [],
     ) {
     }
 
@@ -133,5 +141,13 @@ final class DetailedRole implements AdditionalAttributesInterface
     public function getDocTypes(): array
     {
         return $this->docTypes;
+    }
+
+    /**
+     * @return PerspectiveConfig[]
+     */
+    public function getPerspectives(): array
+    {
+        return $this->perspectives;
     }
 }

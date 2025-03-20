@@ -19,6 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
@@ -28,7 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'User Information',
     description: 'Information about the user',
-    required: ['id', 'username', 'permissions', 'isAdmin', 'classes', 'docTypes'],
+    required: ['id', 'username', 'permissions', 'isAdmin', 'classes', 'docTypes', 'activePerspective', 'perspectives'],
     type: 'object'
 )]
 final class UserInformation implements AdditionalAttributesInterface
@@ -60,6 +62,18 @@ final class UserInformation implements AdditionalAttributesInterface
             items: new Items(type: 'string')
         )]
         private readonly array $docTypes,
+        #[Property(
+            description: 'Active studio perspective ID',
+            type: 'string',
+            example: Perspectives::DEFAULT_ID->value)
+        ]
+        private readonly ?string $activePerspective = null,
+        #[Property(
+            description: 'Allowed studio perspectives',
+            type: 'array',
+            items: new Items(ref: PerspectiveConfig::class))
+        ]
+        private readonly array $perspectives = [],
     ) {
     }
 
@@ -91,5 +105,18 @@ final class UserInformation implements AdditionalAttributesInterface
     public function getDocTypes(): array
     {
         return $this->docTypes;
+    }
+
+    public function getActivePerspective(): ?string
+    {
+        return $this->activePerspective;
+    }
+
+    /**
+     * @return PerspectiveConfig[]
+     */
+    public function getPerspectives(): array
+    {
+        return $this->perspectives;
     }
 }
