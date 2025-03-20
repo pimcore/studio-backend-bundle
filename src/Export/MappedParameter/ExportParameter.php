@@ -14,22 +14,29 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\Util\Trait\CsvConfigValidationTrait;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\CsvConfigValidationTrait;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\Element\ElementDescriptor;
 
 /**
  * @internal
  */
-readonly class ExportParameter
+final class ExportParameter
 {
     use CsvConfigValidationTrait;
 
+    /**
+     * @param array<int> $elements
+     */
     public function __construct(
-        private array $columns,
-        private ?FilterParameter $filters,
-        private array $config,
+        private readonly array $columns,
+        private readonly ?FilterParameter $filters,
+        private readonly array $config,
+        private readonly array $elements,
+        private readonly string $elementType
     ) {
         $this->validate();
     }
@@ -47,6 +54,25 @@ readonly class ExportParameter
     public function getConfig(): array
     {
         return $this->config;
+    }
+
+    /**
+     * @return array<int, ElementDescriptor>
+     */
+    public function getElements(): array
+    {
+        return array_map(
+            fn (int $id) => new ElementDescriptor($this->getElementType(), $id),
+            $this->elements
+        );
+    }
+
+    public function getElementType(): string
+    {
+        if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
+            return ElementTypes::TYPE_OBJECT;
+        }
+        return $this->elementType;
     }
 
     private function validate(): void

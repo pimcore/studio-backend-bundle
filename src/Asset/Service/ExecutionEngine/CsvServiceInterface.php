@@ -16,15 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
 
 /**
  * @internal
  */
 interface CsvServiceInterface
 {
-    public function generateCsvFileForAssets(ExportAssetParameter $exportAssetParameter): int;
+    public function generateCsvFileForElements(ExportParameter $exportParameter): int;
 
-    public function generateCsvFileForFolders(ExportFolderParameter $exportFolderParameter): int;
+    public function generateCsvFileForFolders(ExportParameter $exportParameter): int;
 }

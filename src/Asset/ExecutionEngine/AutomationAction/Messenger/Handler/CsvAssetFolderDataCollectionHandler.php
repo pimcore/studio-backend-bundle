@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAct
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvFolderCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -36,7 +36,7 @@ use function count;
  * @internal
  */
 #[AsMessageHandler]
-final class CsvFolderDataCollectionHandler extends AbstractHandler
+final class CsvAssetFolderDataCollectionHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
@@ -53,7 +53,7 @@ final class CsvFolderDataCollectionHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(CsvFolderCollectionMessage $message): void
+    public function __invoke(CsvAssetFolderCollectionMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         if (!$this->shouldBeExecuted($jobRun)) {

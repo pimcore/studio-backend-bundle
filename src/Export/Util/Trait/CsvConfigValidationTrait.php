@@ -14,11 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Util\Trait;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
+/**
+ * @internal
+ */
 trait CsvConfigValidationTrait
 {
     private function validateConfig(): void
@@ -34,6 +38,14 @@ trait CsvConfigValidationTrait
 
         if (!isset($this->getConfig()[StepConfig::SETTINGS_DELIMITER->value])) {
             throw new InvalidArgumentException('No delimiter provided');
+        }
+
+        if (empty($this->getElements())) {
+            throw new InvalidArgumentException('No elements provided');
+        }
+
+        if (!in_array($this->getElementType(), ElementTypes::ALLOWED_TYPES)) {
+            throw new InvalidArgumentException('Invalid type provided');
         }
     }
 }

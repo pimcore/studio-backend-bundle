@@ -14,13 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Export;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Csv;
 
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\CsvExportAssetRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportAssetParameter;
+use Pimcore\Bundle\StudioBackendBundle\Export\Attribute\Request\CsvExportFolderRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -36,7 +36,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CsvAssetController extends AbstractApiController
+final class FolderController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -45,29 +45,29 @@ final class CsvAssetController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/export/csv/asset', name: 'pimcore_studio_api_asset_export_csv_asset', methods: ['POST'])]
+    #[Route('/export/csv/folder', name: 'pimcore_studio_api_export_csv_folder', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/assets/export/csv/asset',
-        operationId: 'asset_export_csv_asset',
-        description: 'asset_export_csv_asset_description',
-        summary: 'asset_export_csv_asset_summary',
-        tags: [Tags::Assets->name]
+        path: self::PREFIX . '/export/csv/folder',
+        operationId: 'export_csv_folder',
+        description: 'export_csv_folder_description',
+        summary: 'export_csv_folder_summary',
+        tags: [Tags::Export->name]
     )]
-    #[CsvExportAssetRequestBody]
+    #[CsvExportFolderRequestBody]
     #[CreatedResponse(
-        description: 'asset_export_csv_created_response',
+        description: 'export_csv_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function assetExportCsvAsset(
-        #[MapRequestPayload] ExportAssetParameter $exportAssetParameter
+    public function exportCsvFolder(
+        #[MapRequestPayload] ExportParameter $exportParameter
     ): Response {
         return $this->jsonResponse(
-            ['jobRunId' => $this->csvService->generateCsvFileForAssets($exportAssetParameter)],
+            ['jobRunId' => $this->csvService->generateCsvFileForFolders($exportParameter)],
             HttpResponseCodes::CREATED->value
         );
     }

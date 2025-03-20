@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\Items;
@@ -23,29 +23,24 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class CsvExportFolderRequestBody extends RequestBody
+final class CsvExportRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
             content: new JsonContent(
                 properties: [
-                    new Property(property: 'folders', type: 'array', items: new Items(type: 'integer'), example: [83]),
+                    new Property(property: 'elements', type: 'array', items: new Items(type: 'integer'), example: [83]),
                     new Property(
                         property: 'columns',
                         type: 'array',
                         items: new Items(ref: Column::class)
-                    ),
-                    new Property(
-                        property: 'filters',
-                        ref: Filter::class,
-                        type: 'object'
                     ),
                     new Property(property: 'config', properties: [
                         new Property(property: StepConfig::SETTINGS_DELIMITER->value, type: 'string', example: ';'),
@@ -56,6 +51,12 @@ final class CsvExportFolderRequestBody extends RequestBody
                             example: StepConfig::SETTINGS_HEADER_TITLE->value
                         ),
                     ], type: 'object'),
+                    new Property(
+                        property: 'elementType',
+                        type: 'string',
+                        enum: ElementTypes::ALLOWED_TYPES,
+                        example: ElementTypes::TYPE_ASSET
+                    ),
                 ],
                 type: 'object'
             )

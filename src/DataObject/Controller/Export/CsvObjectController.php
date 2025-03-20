@@ -14,17 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Export;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Export;
 
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Attribute\Request\CsvExportFolderRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ExportFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Export\Attribute\Request\CsvExportRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,7 +38,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class CsvFolderController extends AbstractApiController
+final class CsvObjectController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -45,29 +47,37 @@ final class CsvFolderController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/assets/export/csv/folder', name: 'pimcore_studio_api_asset_export_csv_folder', methods: ['POST'])]
-    #[IsGranted(UserPermissions::ASSETS->value)]
-    #[Post(
-        path: self::PREFIX . '/assets/export/csv/folder',
-        operationId: 'asset_export_csv_folder',
-        description: 'asset_export_csv_folder_description',
-        summary: 'asset_export_csv_folder_summary',
-        tags: [Tags::Assets->name]
+    #[Route(
+        path: '/data-objects/export/csv/dataobject',
+        name: 'pimcore_studio_api_data_object_export_csv_data_object',
+        methods: ['POST']
     )]
-    #[CsvExportFolderRequestBody]
+    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[Post(
+        path: self::PREFIX . '/data-objects/export/csv/dataobject',
+        operationId: 'data_object_export_csv_data_object',
+        description: 'data_object_export_csv_data_object_description',
+        summary: 'data_object_export_csv_data_object_summary',
+        tags: [Tags::DataObjects->name]
+    )]
+    #[CsvExportRequestBody]
     #[CreatedResponse(
-        description: 'asset_export_csv_created_response',
+        description: 'data_object_export_csv_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function assetExportCsvFolder(
-        #[MapRequestPayload] ExportFolderParameter $exportFolderParameter
+    public function dataObjectExportCsvDataObject(
+        #[MapRequestPayload] ExportParameter $exportParameter
     ): Response {
+        $exportParameter->setType(ElementTypes::TYPE_DATA_OBJECT);
         return $this->jsonResponse(
-            ['jobRunId' => $this->csvService->generateCsvFileForFolders($exportFolderParameter)],
+            ['jobRunId' => $this->csvService->generateCsvFileForElements(
+                $exportParameter,
+                CsvAssetCollectionMessage::class
+            )],
             HttpResponseCodes::CREATED->value
         );
     }
