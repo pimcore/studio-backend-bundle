@@ -41,5 +41,4 @@ enum StepConfig: string
     case CONFIG_TYPE_INT = 'int';
     case CONFIG_TYPE_STRING = 'string';
     case CONFIG_TYPE_BOOL = 'bool';
-
 }

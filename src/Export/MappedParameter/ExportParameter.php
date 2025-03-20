@@ -24,7 +24,7 @@ use Pimcore\Model\Element\ElementDescriptor;
 /**
  * @internal
  */
-final class ExportParameter
+final readonly class ExportParameter
 {
     use CsvConfigValidationTrait;
 
@@ -32,11 +32,11 @@ final class ExportParameter
      * @param array<int> $elements
      */
     public function __construct(
-        private readonly array $columns,
-        private readonly ?FilterParameter $filters,
-        private readonly array $config,
-        private readonly array $elements,
-        private readonly string $elementType
+        private array $columns,
+        private ?FilterParameter $filters,
+        private array $config,
+        private array $elements,
+        private string $elementType
     ) {
         $this->validate();
     }
