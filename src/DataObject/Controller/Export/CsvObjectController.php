@@ -73,6 +73,7 @@ final class CsvObjectController extends AbstractApiController
         #[MapRequestPayload] ExportParameter $exportParameter
     ): Response {
         $exportParameter->setType(ElementTypes::TYPE_DATA_OBJECT);
+
         return $this->jsonResponse(
             ['jobRunId' => $this->csvService->generateCsvFileForElements(
                 $exportParameter,

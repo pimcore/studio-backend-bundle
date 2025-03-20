@@ -72,6 +72,7 @@ final readonly class ExportParameter
         if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
             return ElementTypes::TYPE_OBJECT;
         }
+
         return $this->elementType;
     }
 
