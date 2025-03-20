@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Folder\Class;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Controller\Folder;
 
 use OpenApi\Attributes\Get;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\Folder\ClassDefinitionFolderItem;
+use Pimcore\Bundle\StudioBackendBundle\Class\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\FolderClassListItem;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
@@ -43,13 +43,14 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ListController extends AbstractApiController
+final class CollectionController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly DataObjectServiceInterface $dataObjectService
+        private readonly ClassDefinitionServiceInterface $classDefinitionService,
+
     ) {
         parent::__construct($serializer);
     }
@@ -62,22 +63,22 @@ final class ListController extends AbstractApiController
      * @throws NotFoundException
      */
     #[Route(
-        '/data-objects/folder/class/{folderId}]',
-        name: 'pimcore_studio_api_data_objects_folder_class_list',
+        '/class/folder/{folderId}',
+        name: 'pimcore_studio_api_classes_folder_collection',
         requirements: ['folderId' => '\d+'],
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/data-objects/folder/class/{folderId}]',
-        operationId: 'data_object_folder_class_list',
-        description: 'data_object_folder_class_list_description',
-        summary: 'data_object_folder_class_list_summary',
-        tags: [Tags::DataObjects->value]
+        path: self::PREFIX . '/class/folder/{folderId}',
+        operationId: 'class_definition_folder_collection',
+        description: 'class_definition_folder_collection_description',
+        summary: 'class_definition_folder_collection_summary',
+        tags: [Tags::ClassDefinition->value],
     )]
     #[SuccessResponse(
-        description: 'data_object_folder_class_list_success_response',
-        content: new CollectionJson(new GenericCollection(FolderClassListItem::class))
+        description: 'class_definition_folder_collection_success_response',
+        content: new CollectionJson(new GenericCollection(ClassDefinitionFolderItem::class))
     )]
     #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'folderId')]
     #[DefaultResponses([
@@ -89,7 +90,7 @@ final class ListController extends AbstractApiController
     public function getFolderClassList(
         int $folderId
     ): JsonResponse {
-        $collection = $this->dataObjectService->getClassListForFolder($folderId);
+        $collection = $this->classDefinitionService->getClassDefinitionIdsInsideFolder($folderId);
 
         return $this->getPaginatedCollection(
             $this->serializer,

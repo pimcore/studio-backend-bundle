@@ -14,15 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder;
 
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\FolderClassListItem;
+use Pimcore\Bundle\StudioBackendBundle\Class\Schema\Folder\ClassDefinitionFolderItem;
 use Pimcore\Model\DataObject\ClassDefinition;
 
 /**
  * @internal
  */
-interface FolderClassListHydratorInterface
+interface ClassDefinitionFolderItemHydratorInterface
 {
-    public function hydrate(ClassDefinition $cd): FolderClassListItem;
+    public function hydrate(ClassDefinition $cd): ClassDefinitionFolderItem;
 }

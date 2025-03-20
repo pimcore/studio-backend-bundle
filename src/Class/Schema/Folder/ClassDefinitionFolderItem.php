@@ -14,22 +14,23 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\Class\Schema\Folder;
 
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
-    title: 'Classes in folder',
+    title: 'Class in data object folder',
     required: [
-        'classesInFolder'
+        'id',
+        'name',
+        'inheritance'
     ],
     type: 'object'
 )]
-class FolderClassListItem implements AdditionalAttributesInterface
+class ClassDefinitionFolderItem implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 

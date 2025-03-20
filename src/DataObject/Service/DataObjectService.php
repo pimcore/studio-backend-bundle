@@ -20,13 +20,13 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassCollectionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQuery;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\DataObjectParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\DataObjectEvent;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\FolderClassListHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
@@ -52,8 +52,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
-use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject as DataObjectModel;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\FactoryInterface;
@@ -88,8 +88,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private ElementSaveServiceInterface $elementSaveService,
-        private FolderClassListHydratorInterface $folderClassListHydrator
+        private ElementSaveServiceInterface $elementSaveService
     ) {
     }
 
@@ -291,25 +290,6 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         }
 
         $dataObjectQuery->orderByPath(strtolower($parent->getChildrenSortOrder()));
-    }
-
-    public function getClassListForFolder(
-        int $folderId
-    ): array
-    {
-        $hydratedClassDefinitions = [];
-        $folder = $this->getDataObjectElement(
-            $this->securityService->getCurrentUser(),
-            $folderId
-        );
-
-        foreach ($folder->getDao()->getClasses() as $classDefinition) {
-            $class = $this->folderClassListHydrator->hydrate($classDefinition);
-          //  $this->dispatchDataObjectEvent($class);
-            $hydratedClassDefinitions[] = $class;
-        }
-
-        return $hydratedClassDefinitions;
     }
 
     /**

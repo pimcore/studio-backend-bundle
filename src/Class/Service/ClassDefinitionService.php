@@ -17,12 +17,16 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Class\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionEvent;
+use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionFolderListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionListHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFolderItemHydratorInterface;
 
 /**
  * @internal
@@ -34,6 +38,9 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         private ClassDefinitionHydratorInterface $classDefinitionHydrator,
         private ClassDefinitionListHydratorInterface $classDefinitionListHydrator,
         private EventDispatcherInterface $eventDispatcher,
+        private SecurityServiceInterface $securityService,
+        private DataObjectServiceInterface $dataObjectService,
+        private ClassDefinitionFolderItemHydratorInterface $classDefinitionFolderListHydrator
     ) {
     }
 
@@ -66,5 +73,27 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         );
 
         return $cd;
+    }
+
+    public function getClassDefinitionIdsInsideFolder(
+        int $folderId
+    ): array
+    {
+        $hydratedClassDefinitions = [];
+        $folder = $this->dataObjectService->getDataObjectElement(
+            $this->securityService->getCurrentUser(),
+            $folderId
+        );
+
+        foreach ($folder->getDao()->getClasses() as $classDefinition) {
+            $class = $this->classDefinitionFolderListHydrator->hydrate($classDefinition);
+            $this->eventDispatcher->dispatch(
+                new ClassDefinitionFolderListEvent($class),
+                ClassDefinitionEvent::EVENT_NAME
+            );
+            $hydratedClassDefinitions[] = $class;
+        }
+
+        return $hydratedClassDefinitions;
     }
 }

@@ -869,8 +869,8 @@ pimcore_studio_api_class_custom_layout_import_description: Import custom layout 
 pimcore_studio_api_class_custom_layout_import_summary: Import custom layout
 pimcore_studio_api_class_custom_layout_import_success_response: Http status code
 pimcore_studio_api_class_custom_layout_import_layout_id: Id of custom layout
-pimcore_studio_api_data_objects_folder_class_list: Get list of all data object classes in a folder
-data_object_folder_class_list: Get list of all data object classes in a folder
-data_object_folder_class_list_description: Get list of all data object classes in a folder
-data_object_folder_class_list_summary: Get list of all data object classes in a folder
-data_object_folder_class_list_success_response: List of all data object classes in a folder
+pimcore_studio_api_classes_folder_collection: Get list of all data object classes in a folder
+class_definition_folder_collection: Get list of all data object classes in a folder
+class_definition_folder_collection_description: Get list of all data object classes in a folder
+class_definition_folder_collection_summary: Get list of all data object classes in a folder
+class_definition_folder_collection_success_response: List of all data object classes in a folder

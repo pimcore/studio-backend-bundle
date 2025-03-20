@@ -80,13 +80,6 @@ interface DataObjectServiceInterface
     public function getDataObjectFolderForUser(int $id, UserInterface $user): DataObjectFolder;
 
     /**
-     * @throws SearchException|NotFoundException
-     */
-    public function getClassListForFolder(
-        int $folderId
-    ): array;
-
-    /**
      * @throws ForbiddenException|NotFoundException
      */
     public function getDataObjectElement(
