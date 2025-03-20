@@ -33,6 +33,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
+use Psr\Log\LoggerInterface;
 use function array_key_exists;
 
 /**
@@ -50,7 +51,8 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
 
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
-        private readonly ColumnConfigurationServiceInterface $columnConfigurationService
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -115,7 +117,8 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
                         'attribute' => $dataField->getName(),
                     ]
                 );
-            } catch (InvalidArgumentException) {
+            }  catch (InvalidArgumentException $exception) {
+                $this->logger->info($exception->getMessage());
                 continue;
             }
         }

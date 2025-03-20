@@ -31,6 +31,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use Psr\Log\LoggerInterface;
 
 /**
  * @internal
@@ -47,7 +48,8 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
 
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
-        private readonly ColumnConfigurationServiceInterface $columnConfigurationService
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -128,7 +130,8 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
                     $definition,
                     'dataobject.adapter'
                 );
-            } catch (InvalidArgumentException) {
+            } catch (InvalidArgumentException $exception) {
+                $this->logger->info($exception->getMessage());
                 continue;
             }
 
