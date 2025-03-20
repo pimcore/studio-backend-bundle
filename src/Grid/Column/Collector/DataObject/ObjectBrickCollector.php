@@ -115,7 +115,7 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
                         'attribute' => $dataField->getName(),
                     ]
                 );
-            }  catch (InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
                 continue;
             }
         }

@@ -25,7 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+use function array_key_exists;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal

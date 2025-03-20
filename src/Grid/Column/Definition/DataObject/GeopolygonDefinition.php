@@ -16,9 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
+use Override;
 
 /**
  * @internal
@@ -35,13 +33,13 @@ final readonly class GeopolygonDefinition extends AbstractDefinition
         return 'geopolygon';
     }
 
-    #[\Override]
+    #[Override]
     public function isSortable(): bool
     {
         return false;
     }
 
-    #[\Override]
+    #[Override]
     public function isFilterable(): bool
     {
         return false;

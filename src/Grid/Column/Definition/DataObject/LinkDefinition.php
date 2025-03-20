@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject;
 
+use Override;
 
 /**
  * @internal
@@ -32,13 +33,13 @@ final readonly class LinkDefinition extends AbstractDefinition
         return 'link';
     }
 
-    #[\Override]
+    #[Override]
     public function isSortable(): bool
     {
         return false;
     }
 
-    #[\Override]
+    #[Override]
     public function isExportable(): bool
     {
         return false;
