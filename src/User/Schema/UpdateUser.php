@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
 
 /**
  * @internal
@@ -30,7 +31,7 @@ use OpenApi\Attributes\Schema;
         'active', 'classes', 'closeWarning', 'allowDirtyClose', 'contentLanguages', 'keyBindings',
         'language', 'memorizeTabs', 'parentId', 'permissions', 'roles', 'twoFactorAuthenticationEnabled',
         'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView', 'welcomeScreen',
-        'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces',
+        'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'perspectives',
     ],
     type: 'object'
 )]
@@ -85,6 +86,12 @@ final readonly class UpdateUser
         private array $dataObjectWorkspaces,
         #[Property(description: 'Document Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
         private array $documentWorkspaces,
+        #[Property(
+            description: 'Allowed studio perspectives',
+            type: 'object',
+            example: [Perspectives::DEFAULT_ID->value, 'some_otherPerspective_Id']
+        )]
+        private array $perspectives = [],
     ) {
     }
 
@@ -208,5 +215,13 @@ final readonly class UpdateUser
     public function getDocumentWorkspaces(): array
     {
         return $this->documentWorkspaces;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getPerspectives(): array
+    {
+        return $this->perspectives;
     }
 }

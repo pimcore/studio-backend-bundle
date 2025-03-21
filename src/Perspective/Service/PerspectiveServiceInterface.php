@@ -52,6 +52,8 @@ interface PerspectiveServiceInterface
      */
     public function listConfigurations(): array;
 
+    public function hydrateListEntry(array $configData): PerspectiveConfig;
+
     /**
      * @throws NotWriteableException
      */

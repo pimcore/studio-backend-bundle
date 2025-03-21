@@ -42,6 +42,7 @@ final readonly class UpdateService implements UpdateServiceInterface
         private RoleRepositoryInterface $roleRepository,
         private ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private ServiceResolverInterface $elementServiceResolver,
+        private UserPerspectiveServiceInterface $userPerspectiveService,
     ) {
     }
 
@@ -217,6 +218,22 @@ final readonly class UpdateService implements UpdateServiceInterface
 
         /** @var DocumentWorkspace[] $workspaces */
         $user->setWorkspacesDocument($workspaces);
+
+        return $user;
+    }
+
+    /**
+     * @template T of UserInterface|UserRoleInterface
+     *
+     * @param T $user
+     *
+     * @return T
+     */
+    public function updatePerspectives(
+        array $perspectivesToSet,
+        UserInterface|UserRoleInterface $user
+    ): UserInterface|UserRoleInterface {
+        $this->userPerspectiveService->updatePerspectives($perspectivesToSet, $user);
 
         return $user;
     }
