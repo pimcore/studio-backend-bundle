@@ -21,6 +21,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PermissionSanitationTrait;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
@@ -40,6 +41,7 @@ final readonly class UserHydrator implements UserHydratorInterface
         private WorkspaceHydratorInterface $workspaceHydrator,
         private ObjectDependenciesServiceInterface $objectDependenciesService,
         private KeyBindingHydratorInterface $keyBindingHydrator,
+        private UserPerspectiveServiceInterface $userPerspectiveService
     ) {
     }
 
@@ -74,6 +76,7 @@ final readonly class UserHydrator implements UserHydratorInterface
             dataObjectWorkspaces: $this->workspaceHydrator->hydrateDataObjectWorkspace($user),
             documentWorkspaces: $this->workspaceHydrator->hydrateDocumentWorkspace($user),
             objectDependencies: $this->objectDependenciesService->getDependenciesForUser($user),
+            perspectives: $this->userPerspectiveService->getConfigPerspectives($user),
         );
     }
 

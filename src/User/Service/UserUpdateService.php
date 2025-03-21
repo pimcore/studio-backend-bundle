@@ -23,7 +23,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
@@ -36,14 +38,15 @@ use function strlen;
 /**
  * @internal
  */
-final class UserUpdateService implements UserUpdateServiceInterface
+final readonly class UserUpdateService implements UserUpdateServiceInterface
 {
     public function __construct(
-        private readonly UserRepositoryInterface $userRepository,
-        private readonly SecurityServiceInterface $securityService,
-        private readonly UpdateServiceInterface $updateService,
-        private readonly AuthenticationResolverInterface $authenticationResolver,
-        private readonly CacheResolverInterface $cacheResolver,
+        private AuthenticationResolverInterface $authenticationResolver,
+        private CacheResolverInterface $cacheResolver,
+        private SecurityServiceInterface $securityService,
+        private UserRepositoryInterface $userRepository,
+        private UpdateServiceInterface $updateService,
+        private UserPerspectiveServiceInterface $userPerspectiveService,
     ) {
     }
 
@@ -89,6 +92,7 @@ final class UserUpdateService implements UserUpdateServiceInterface
             $user
         );
         $user = $this->updateService->updateDocumentWorkspaces($updateUserParameter->getDocumentWorkspaces(), $user);
+        $user = $this->updateService->updatePerspectives($updateUserParameter->getPerspectives(), $user);
 
         $this->userRepository->updateUser($user);
 
@@ -126,6 +130,15 @@ final class UserUpdateService implements UserUpdateServiceInterface
 
         $user->setPassword($passwordHash);
         $this->userRepository->updateUser($user);
+    }
+
+    /**
+     * @throws ForbiddenException|NotFoundException|NotWriteableException|UserNotFoundException
+     */
+    public function updateActivePerspective(string $perspectiveId): void
+    {
+        $user = $this->securityService->getCurrentUser();
+        $this->userPerspectiveService->updateActivePerspective($perspectiveId, $user);
     }
 
     /**
