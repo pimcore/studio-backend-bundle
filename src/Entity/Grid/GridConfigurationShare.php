@@ -25,7 +25,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: GridConfigurationShare::TABLE_NAME)]
 class GridConfigurationShare
 {
-    public const TABLE_NAME = 'bundle_studio_grid_configuration_shares';
+    public const string TABLE_NAME = 'bundle_studio_grid_configuration_shares';
 
     #[ORM\Column(type: 'integer')]
     #[ORM\Id]
