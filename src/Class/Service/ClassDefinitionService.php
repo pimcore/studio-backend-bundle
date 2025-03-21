@@ -21,12 +21,12 @@ use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionFolderListEven
 use Pimcore\Bundle\StudioBackendBundle\Class\Event\ClassDefinitionListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\ClassDefinitionListHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFolderItemHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Class\Schema\ClassDefinition;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Pimcore\Bundle\StudioBackendBundle\Class\Hydrator\Folder\ClassDefinitionFolderItemHydratorInterface;
 
 /**
  * @internal
@@ -77,8 +77,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
 
     public function getClassDefinitionIdsInsideFolder(
         int $folderId
-    ): array
-    {
+    ): array {
         $hydratedClassDefinitions = [];
         $folder = $this->dataObjectService->getDataObjectElement(
             $this->securityService->getCurrentUser(),
