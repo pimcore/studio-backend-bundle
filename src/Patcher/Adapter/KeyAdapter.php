@@ -29,7 +29,7 @@ use function array_key_exists;
 #[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
 final readonly class KeyAdapter implements PatchAdapterInterface
 {
-    private const INDEX_KEY = 'key';
+    private const string INDEX_KEY = 'key';
 
     public function patch(ElementInterface $element, array $data, UserInterface $user): void
     {

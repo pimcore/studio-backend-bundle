@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -36,9 +37,11 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\PatchFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
@@ -143,6 +146,8 @@ final readonly class PatchService implements PatchServiceInterface
                 $user,
                 $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
             );
+        } catch (DuplicateFullPathException) {
+            throw new ElementExistsException($element->getRealFullPath(), HttpResponseErrorKeys::ELEMENT_EXISTS->value);
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }

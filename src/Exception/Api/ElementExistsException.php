@@ -28,7 +28,7 @@ final class ElementExistsException extends AbstractApiException
     public function __construct(?string $error = null, string $errorKey = HttpResponseErrorKeys::ELEMENT_EXISTS->value)
     {
         $message = sprintf(
-            'Failed to create new element: %s',
+            'Failed to create/update element: %s',
             $error ?? 'Unknown error'
         );
 

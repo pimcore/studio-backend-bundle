@@ -91,13 +91,6 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     ) {
     }
 
-    public function getDataObjectFullPath(
-        string $parentFullPath,
-        string $key
-    ): string {
-        return str_ends_with($parentFullPath, '/') === true ? $parentFullPath . $key : $parentFullPath . '/' . $key;
-    }
-
     /**
      * @throws DatabaseException
      * @throws ElementSavingFailedException
@@ -112,15 +105,9 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     ): int {
         $user = $this->securityService->getCurrentUser();
         $parent = $this->getValidParent($user, $parentId);
-        $fullPath = $this->getDataObjectFullPath(
-            $parent->getFullPath(),
-            $parameters->getKey()
-        );
+        $fullPath = $this->getElementFullPath($parent->getFullPath(), $parameters->getKey());
         if ($this->dataObjectServiceResolver->pathExists($fullPath)) {
-            throw new ElementExistsException(
-                $fullPath,
-                HttpResponseErrorKeys::ELEMENT_EXISTS->value
-            );
+            throw new ElementExistsException($fullPath, HttpResponseErrorKeys::ELEMENT_EXISTS->value);
         }
 
         $class = $this->getValidClass($this->classDefinitionResolver, $parameters->getClassId());
