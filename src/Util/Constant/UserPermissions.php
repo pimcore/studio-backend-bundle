@@ -33,7 +33,7 @@ enum UserPermissions: string
     case NOTIFICATIONS = 'notifications';
     case NOTIFICATIONS_SEND = 'notifications_send';
     case OBJECTS_SORT_METHOD = 'objects_sort_method';
-    case PERSPECTIVE_EDITOR = 'perspective_editor';
+    case PERSPECTIVE_EDITOR = 'studio_perspective_editor';
     case PIMCORE_ADMIN = 'ROLE_PIMCORE_ADMIN';
     case PIMCORE_USER = 'ROLE_PIMCORE_USER';
     case PREDEFINED_PROPERTIES = 'predefined_properties';
@@ -42,5 +42,5 @@ enum UserPermissions: string
     case TAGS_SEARCH = 'tags_search';
     case THUMBNAILS = 'thumbnails';
     case USER_MANAGEMENT = 'users';
-    case WIDGET_EDITOR = 'perspective_widget_editor';
+    case WIDGET_EDITOR = 'studio_perspective_widget_editor';
 }
