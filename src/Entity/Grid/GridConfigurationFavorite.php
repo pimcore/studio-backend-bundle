@@ -25,7 +25,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: GridConfigurationFavorite::TABLE_NAME)]
 class GridConfigurationFavorite
 {
-    public const TABLE_NAME = 'bundle_studio_grid_configuration_favorites';
+    public const string TABLE_NAME = 'bundle_studio_grid_configuration_favorites';
 
     #[ORM\Column(type: 'integer')]
     #[ORM\Id]
