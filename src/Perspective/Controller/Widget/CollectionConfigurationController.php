@@ -56,7 +56,7 @@ final class CollectionConfigurationController extends AbstractApiController
      * @throws InvalidArgumentException|NotFoundException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_get_perspectives_widgets_configurations_list', methods: ['GET'])]
-    #[IsGranted(UserPermissions::WIDGET_EDIT->value)]
+    #[IsGranted(UserPermissions::WIDGET_EDITOR->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'perspective_widget_get_config_collection',
