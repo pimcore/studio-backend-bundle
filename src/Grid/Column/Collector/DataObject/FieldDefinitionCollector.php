@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
@@ -30,6 +31,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use Psr\Log\LoggerInterface;
 
 /**
  * @internal
@@ -46,7 +48,8 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
 
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
-        private readonly ColumnConfigurationServiceInterface $columnConfigurationService
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -122,10 +125,17 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
     {
         $columns = [];
         foreach ($this->groupedDefinitions as $definition) {
-            $columns[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
-                $definition,
-                'dataobject.adapter'
-            );
+            try {
+                $columns[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
+                    $definition,
+                    'dataobject.adapter'
+                );
+            } catch (InvalidArgumentException $exception) {
+                $this->logger->info($exception->getMessage());
+
+                continue;
+            }
+
         }
 
         return $columns;

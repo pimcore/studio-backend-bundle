@@ -25,7 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+use function array_key_exists;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -108,6 +110,9 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
         return $systemCollector->getColumnConfigurations($this->gridService->getColumnDefinitions());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function buildDataObjectAdapterColumnConfiguration(
         ColumnFieldDefinition $definition,
         ?string $type = null,
@@ -127,16 +132,27 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
             $config = array_merge($config, $additionalConfig);
         }
 
+        $availableColumnDefinitions = $this->gridService->getColumnDefinitions();
+
+        $columnDefinitionType = 'data-object.' . $definition->getFieldDefinition()->getFieldType();
+
+        if (!array_key_exists($columnDefinitionType, $availableColumnDefinitions)) {
+            throw new InvalidArgumentException(
+                sprintf('Column definition type %s not found', $columnDefinitionType)
+            );
+        }
+
         return new ColumnConfiguration(
             key: $key,
             group: $definition->getGroup(),
-            sortable: true,
+            sortable: $availableColumnDefinitions[$columnDefinitionType]->isSortable(),
             editable: !$fieldDefinition->getNoteditable(),
-            exportable: true,
+            exportable: $availableColumnDefinitions[$columnDefinitionType]->isExportable(),
+            filterable: $availableColumnDefinitions[$columnDefinitionType]->isFilterable(),
             localizable: $definition->isLocalized(),
             locale: null,
             type: $type,
-            frontendType: $fieldDefinition->getFieldType(),
+            frontendType: $availableColumnDefinitions[$columnDefinitionType]->getFrontendType(),
             config: $config
         );
     }
