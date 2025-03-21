@@ -104,4 +104,16 @@ interface UpdateServiceInterface
         array $documentWorkspacesToSet,
         UserInterface|UserRoleInterface $user
     ): UserInterface|UserRoleInterface;
+
+    /**
+     * @template T of UserInterface|UserRoleInterface
+     *
+     * @param T $user
+     *
+     * @return T
+     */
+    public function updatePerspectives(
+        array $perspectivesToSet,
+        UserInterface|UserRoleInterface $user
+    ): UserInterface|UserRoleInterface;
 }

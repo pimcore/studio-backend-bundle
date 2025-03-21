@@ -33,6 +33,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
+use Psr\Log\LoggerInterface;
 use function array_key_exists;
 
 /**
@@ -50,7 +51,8 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
 
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
-        private readonly ColumnConfigurationServiceInterface $columnConfigurationService
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -104,16 +106,22 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
         foreach ($dataFields as $dataField) {
             $groupName = $objectBrick->getTitle() !== '' ? $objectBrick->getTitle() : $objectBrick->getKey();
 
-            $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
-                new ColumnFieldDefinition($dataField, $groupName, false),
-                'dataobject.objectbrick',
-                $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getName(),
-                [
-                    'field' => $fieldname,
-                    'objectBrick' => $objectBrick->getKey(),
-                    'attribute' => $dataField->getName(),
-                ]
-            );
+            try {
+                $this->configurations[] = $this->columnConfigurationService->buildDataObjectAdapterColumnConfiguration(
+                    new ColumnFieldDefinition($dataField, $groupName, false),
+                    'dataobject.objectbrick',
+                    $fieldname . '.'. $objectBrick->getKey() . '.'. $dataField->getName(),
+                    [
+                        'field' => $fieldname,
+                        'objectBrick' => $objectBrick->getKey(),
+                        'attribute' => $dataField->getName(),
+                    ]
+                );
+            } catch (InvalidArgumentException $exception) {
+                $this->logger->info($exception->getMessage());
+
+                continue;
+            }
         }
     }
 

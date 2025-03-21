@@ -107,13 +107,18 @@ final readonly class PerspectiveService implements PerspectiveServiceInterface
     {
         $perspectives = [];
         foreach ($this->configRepository->listConfigurations() as $configData) {
-            $hydrated = $this->configHydrator->hydrate($configData);
-            $this->dispatchEvent($hydrated);
-
-            $perspectives[] = $hydrated;
+            $perspectives[] = $this->hydrateListEntry($configData);
         }
 
         return $perspectives;
+    }
+
+    public function hydrateListEntry(array $configData): PerspectiveConfig
+    {
+        $hydrated = $this->configHydrator->hydrate($configData);
+        $this->dispatchEvent($hydrated);
+
+        return $hydrated;
     }
 
     /**

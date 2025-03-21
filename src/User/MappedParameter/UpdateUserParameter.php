@@ -52,6 +52,7 @@ final readonly class UpdateUserParameter
         private array $assetWorkspaces,
         private array $dataObjectWorkspaces,
         private array $documentWorkspaces,
+        private array $perspectives = [],
     ) {
     }
 
@@ -175,5 +176,13 @@ final readonly class UpdateUserParameter
     public function getDocumentWorkspaces(): array
     {
         return $this->documentWorkspaces;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getPerspectives(): array
+    {
+        return $this->perspectives;
     }
 }

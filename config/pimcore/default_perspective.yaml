@@ -53,3 +53,4 @@ studio_default_perspective:
   expandedLeft: "studio_document_tree_widget"
   expandedRight: null
   contextPermissions: []
+  isWriteable: false

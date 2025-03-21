@@ -48,4 +48,9 @@ final readonly class AssetPreviewDefinition implements ColumnDefinitionInterface
     {
         return false;
     }
+
+    public function isFilterable(): bool
+    {
+        return false;
+    }
 }
