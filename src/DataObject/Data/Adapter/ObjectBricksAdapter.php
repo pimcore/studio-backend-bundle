@@ -115,9 +115,9 @@ final readonly class ObjectBricksAdapter implements
             }
 
             foreach ($definition->getFieldDefinitions() as $brickFieldDefinition) {
-                $value = $item->get($brickFieldDefinition->getName());
-                $resultItems[$type][$brickFieldDefinition->getName()] = $this->dataService->getNormalizedValue(
-                    $value,
+                $fieldName = $brickFieldDefinition->getName();
+                $resultItems[$type][$fieldName] = $this->dataService->getNormalizedValue(
+                    $item->get($fieldName),
                     $brickFieldDefinition,
                 );
             }
