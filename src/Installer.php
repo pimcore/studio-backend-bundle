@@ -39,7 +39,7 @@ final class Installer extends SettingsStoreAwareInstaller
 {
     private const array PERSPECTIVE_PERMISSIONS = [
         UserPermissions::PERSPECTIVE_EDITOR->value,
-        UserPermissions::WIDGET_EDITOR->value
+        UserPermissions::WIDGET_EDITOR->value,
     ];
 
     public function __construct(
