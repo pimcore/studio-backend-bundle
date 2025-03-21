@@ -21,6 +21,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
  */
 enum UserPermissions: string
 {
+    case PERMISSIONS_CATEGORY = 'Pimcore Studio Backend Bundle';
+    case DEFINITIONS_TABLE = 'users_permission_definitions';
     case ASSETS = 'assets';
     case DATA_OBJECTS = 'objects';
     case DOCUMENTS = 'documents';
@@ -40,5 +42,5 @@ enum UserPermissions: string
     case TAGS_SEARCH = 'tags_search';
     case THUMBNAILS = 'thumbnails';
     case USER_MANAGEMENT = 'users';
-    case WIDGET_EDIT = 'perspective_editor_view_edit';
+    case WIDGET_EDITOR = 'perspective_widget_editor';
 }

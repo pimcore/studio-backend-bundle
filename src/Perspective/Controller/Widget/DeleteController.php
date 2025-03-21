@@ -51,7 +51,7 @@ final class DeleteController extends AbstractApiController
      * @throws InvalidArgumentException|NotFoundException|NotWriteableException
      */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_delete_perspectives_widgets_config', methods: ['DELETE'])]
-    #[IsGranted(UserPermissions::WIDGET_EDIT->value)]
+    #[IsGranted(UserPermissions::WIDGET_EDITOR->value)]
     #[Delete(
         path: self::PREFIX . self::ROUTE,
         operationId: 'perspective_widget_delete',
