@@ -25,12 +25,18 @@ use function sprintf;
  */
 final class ElementExistsException extends AbstractApiException
 {
-    public function __construct(?string $error = null, string $errorKey = HttpResponseErrorKeys::ELEMENT_EXISTS->value)
+    public function __construct(
+        ?string $message = null,
+        ?string $error = null,
+        string $errorKey = HttpResponseErrorKeys::ELEMENT_EXISTS->value,
+    )
     {
-        $message = sprintf(
-            'Failed to create/update element: %s',
-            $error ?? 'Unknown error'
-        );
+        if ($message === null) {
+            $message = sprintf(
+                'Failed to create new element: %s',
+                $error ?? 'Unknown error'
+            );
+        }
 
         parent::__construct(
             HttpResponseCodes::CONFLICT->value,

@@ -107,7 +107,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         $parent = $this->getValidParent($user, $parentId);
         $fullPath = $this->getElementFullPath($parent->getFullPath(), $parameters->getKey());
         if ($this->dataObjectServiceResolver->pathExists($fullPath)) {
-            throw new ElementExistsException($fullPath, HttpResponseErrorKeys::ELEMENT_EXISTS->value);
+            throw new ElementExistsException(error: $fullPath);
         }
 
         $class = $this->getValidClass($this->classDefinitionResolver, $parameters->getClassId());

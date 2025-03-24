@@ -147,7 +147,9 @@ final readonly class PatchService implements PatchServiceInterface
                 $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
             );
         } catch (DuplicateFullPathException) {
-            throw new ElementExistsException($element->getRealFullPath(), HttpResponseErrorKeys::ELEMENT_EXISTS->value);
+            throw new ElementExistsException(
+                message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
+            );
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
         }

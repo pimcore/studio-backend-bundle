@@ -81,7 +81,9 @@ final readonly class UpdateService implements UpdateServiceInterface
         try {
             $this->elementSaveService->save($element, $user, $task);
         } catch (DuplicateFullPathException) {
-            throw new ElementExistsException($element->getRealFullPath(), HttpResponseErrorKeys::ELEMENT_EXISTS->value);
+            throw new ElementExistsException(
+                message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
+            );
         } catch (ValidationException $e) {
             throw new FieldValidationFailedException($e->getMessage(), previous: $e);
         } catch (Exception $e) {
