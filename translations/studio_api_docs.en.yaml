@@ -13,7 +13,7 @@ export_csv_created_response: Successfully created <strong>jobRun</strong> for
   csv export
 export_csv_description: |
   Creating the CSV file for assets. <br> Parameters are: <ul>
-    <li><strong>assets</strong>: Array of element ids</li>
+    <li><strong>elements</strong>: Array of element ids</li>
     <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
     <li><strong>config</strong>: Delimiter and header options</li>
     <li><strong>elementType</strong>: Type of element that should be exported</li>

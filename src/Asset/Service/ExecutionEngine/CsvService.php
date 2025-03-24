@@ -89,7 +89,7 @@ final readonly class CsvService implements CsvServiceInterface
         array $collectionSettings,
         array $creationSettings,
         string $messageFQCN,
-        StepConfig $export = StepConfig::ASSET_TO_EXPORT
+        StepConfig $export = StepConfig::ELEMENT_TO_EXPORT
     ): int {
 
         $jobSteps = [
