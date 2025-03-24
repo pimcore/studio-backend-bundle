@@ -19,8 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetFolderCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -144,7 +144,7 @@ final readonly class CsvService implements CsvServiceInterface
     private function getMessageClass(string $elementType): string
     {
         return match($elementType) {
-            ElementTypes::TYPE_ASSET => CsvAssetCollectionMessage::class,
+            ElementTypes::TYPE_ASSET => CsvDataObjectCollectionMessage::class,
             default => throw new InvalidElementTypeException($elementType)
         };
     }
@@ -152,7 +152,7 @@ final readonly class CsvService implements CsvServiceInterface
     private function getMessageClassForFolder(string $elementType): string
     {
         return match($elementType) {
-            ElementTypes::TYPE_ASSET => CsvAssetFolderCollectionMessage::class,
+            ElementTypes::TYPE_ASSET => CsvDataObjectFolderCollectionMessage::class,
             default => throw new InvalidElementTypeException($elementType)
         };
     }
