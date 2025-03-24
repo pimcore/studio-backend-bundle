@@ -271,7 +271,7 @@ final class Installer extends SettingsStoreAwareInstaller
             ['notnull' => false, 'unsigned' => true]
         );
 
-        $table->addColumn('name', 'string', ['notnull' => true]);
+        $table->addColumn('name', 'string', ['notnull' => true, 'length' => 255]);
         $table->addColumn('description', 'text', ['notnull' => true]);
 
         $table->addColumn('pageSize', 'integer', [
