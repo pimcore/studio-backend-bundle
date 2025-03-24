@@ -32,7 +32,6 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Hotspotimage as HotspotImageData;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Hotspotimage;
@@ -114,25 +113,25 @@ final readonly class HotspotImageAdapter implements
 
     public function normalize(mixed $value, Data $fieldDefinition): mixed
     {
-        if(!($fieldDefinition instanceof HotspotImageData)) {
+        if (!($fieldDefinition instanceof HotspotImageData)) {
             throw new InvalidDataTypeException(HotspotImageData::class, get_class($fieldDefinition));
         }
 
         $value = $fieldDefinition->normalize($value);
-        if(!is_array($value)) {
+        if (!is_array($value)) {
             return null;
         }
 
         $id = $value['image']['id'] ?? null;
         $type = $value['image']['type'] ?? null;
 
-        if($id === null || $type === null) {
+        if ($id === null || $type === null) {
             return $value;
         }
 
         $value['image'] = [
             ... $value['image'],
-            ...$this->normalizeElementData($id, $type)
+            ...$this->normalizeElementData($id, $type),
         ];
         $value['hotspots'] = $this->normalizeHotSpotData($value['hotspots']);
 
@@ -142,7 +141,7 @@ final readonly class HotspotImageAdapter implements
     private function normalizeElementData(int $id, string $type): array
     {
         $element = $this->getElementData($id, $type);
-        if($element instanceof AbstractObject || $element instanceof Document) {
+        if ($element instanceof AbstractObject || $element instanceof Document) {
             $elementData['published'] = $element->isPublished();
         }
         $elementData['subtype'] = $element->getType();
@@ -158,13 +157,13 @@ final readonly class HotspotImageAdapter implements
             if (!is_array($data)) {
                 continue;
             }
-            foreach($data as $item) {
-                if($item instanceof MarkerHotspotItem &&
+            foreach ($data as $item) {
+                if ($item instanceof MarkerHotspotItem &&
                     $this->isValidItem($item)
                 ) {
                     $hotSpot['data'] = [
                         ... $this->normalizeImageData($item),
-                        ... $this->normalizeElementData($item->getValue(), $item->getType())
+                        ... $this->normalizeElementData($item->getValue(), $item->getType()),
                         ];
                 }
             }
@@ -179,6 +178,7 @@ final readonly class HotspotImageAdapter implements
         if ($element === null) {
             throw new NotFoundException($type, $id);
         }
+
         return $element;
     }
 
