@@ -29,8 +29,7 @@ final class ElementExistsException extends AbstractApiException
         ?string $message = null,
         ?string $error = null,
         string $errorKey = HttpResponseErrorKeys::ELEMENT_EXISTS->value,
-    )
-    {
+    ) {
         if ($message === null) {
             $message = sprintf(
                 'Failed to create new element: %s',
