@@ -39,6 +39,7 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Element\Data\MarkerHotspotItem;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function get_class;
 use function in_array;
 use function is_array;
 
