@@ -13,12 +13,13 @@ export_csv_created_response: Successfully created <strong>jobRun</strong> for
   csv export
 export_csv_description: |
   Creating the CSV file for assets. <br> Parameters are: <ul>
-    <li><strong>assets</strong>: Array of asset ids</li>
+    <li><strong>assets</strong>: Array of element ids</li>
     <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
     <li><strong>config</strong>: Delimiter and header options</li>
+    <li><strong>elementType</strong>: Type of element that should be exported</li>
   </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
-export_csv_summary: Creating CSV file for assets
+export_csv_summary: Creating CSV file for elements
 export_csv_folder_description: |
   Creating the CSV file for assets based on the folder. <br> Parameters are: <ul>
     <li><strong>folders</strong>: Array of folder ids</li>
