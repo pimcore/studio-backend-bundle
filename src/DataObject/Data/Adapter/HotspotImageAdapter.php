@@ -17,20 +17,26 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\AssetPreviewDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidDataTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
+use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Hotspotimage as HotspotImageData;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\Hotspotimage;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\Data\MarkerHotspotItem;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
@@ -41,7 +47,9 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class HotspotImageAdapter implements SetterDataInterface, SearchPreviewDataInterface
+final readonly class HotspotImageAdapter implements SetterDataInterface,
+    SearchPreviewDataInterface,
+    DataNormalizerInterface
 {
     use AssetPreviewDataTrait;
     use ElementProviderTrait;
@@ -102,6 +110,76 @@ final readonly class HotspotImageAdapter implements SetterDataInterface, SearchP
         ];
     }
 
+    public function normalize(mixed $value, Data $fieldDefinition): mixed
+    {
+        if(!($fieldDefinition instanceof HotspotImageData)) {
+            throw new InvalidDataTypeException(HotspotImageData::class, get_class($fieldDefinition));
+        }
+
+        $value = $fieldDefinition->normalize($value);
+        if(!is_array($value)) {
+            return null;
+        }
+
+        $id = $value['image']['id'] ?? null;
+        $type = $value['image']['type'] ?? null;
+
+        if($id === null || $type === null) {
+            return $value;
+        }
+
+        $value['image'] = [
+            ... $value['image'],
+            ...$this->normalizeElementData($id, $type)
+        ];
+        $value['hotspots'] = $this->normalizeHotSpotData($value['hotspots']);
+
+        return $value;
+    }
+
+    private function normalizeElementData(int $id, string $type): array
+    {
+        $element = $this->getElementData($id, $type);
+        if($element instanceof AbstractObject || $element instanceof Document) {
+            $elementData['published'] = $element->isPublished();
+        }
+        $elementData['subtype'] = $element->getType();
+        $elementData['fullPath']  = $element->getFullPath();
+
+        return $elementData;
+    }
+
+    private function normalizeHotSpotData(array $hotSpotData): array
+    {
+        foreach ($hotSpotData as &$hotSpot) {
+            $data = $hotSpot['data'] ?? null;
+            if (!is_array($data)) {
+                continue;
+            }
+            foreach($data as $item) {
+                if($item instanceof MarkerHotspotItem &&
+                    $this->isValidItem($item)
+                ) {
+                    $hotSpot['data'] = [
+                        ... $this->normalizeImageData($item),
+                        ... $this->normalizeElementData($item->getValue(), $item->getType())
+                        ];
+                }
+            }
+        }
+
+        return $hotSpotData;
+    }
+
+    private function getElementData(int $id, string $type): Asset|Document|AbstractObject
+    {
+        $element = $this->serviceResolver->getElementById($type, $id);
+        if ($element === null) {
+            throw new NotFoundException($type, $id);
+        }
+        return $element;
+    }
+
     private function processData(array $data): array
     {
         if (empty($data)) {
@@ -121,15 +199,6 @@ final readonly class HotspotImageAdapter implements SetterDataInterface, SearchP
     {
         foreach ($metaData as &$item) {
             $item = new MarkerHotspotItem($item);
-            if ($this->isValidItem($item)) {
-                try {
-                    $element = $this->getElement($this->serviceResolver, $item['type'], $item->getValue());
-                } catch (NotFoundException) {
-                    continue;
-                }
-
-                $item['value'] = $element;
-            }
         }
 
         return $metaData;
