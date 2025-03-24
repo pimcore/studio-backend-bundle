@@ -74,9 +74,9 @@ final class ClassDefinition implements AdditionalAttributesInterface
         #[Property(description: 'Description', type: 'string')]
         private readonly string $description,
         #[Property(description: 'Creation date timestamp', type: 'integer')]
-        private readonly int $creationDate,
+        private readonly ?int $creationDate,
         #[Property(description: 'Modification date timestamp', type: 'integer')]
-        private readonly int $modificationDate,
+        private readonly ?int $modificationDate,
         #[Property(description: 'User id of owner', type: 'integer')]
         private readonly int $userOwner,
         #[Property(description: 'Namespace of parent class', type: 'string')]
@@ -143,12 +143,12 @@ final class ClassDefinition implements AdditionalAttributesInterface
         return $this->title;
     }
 
-    public function getCreationDate(): int
+    public function getCreationDate(): ?int
     {
         return $this->creationDate;
     }
 
-    public function getModificationDate(): int
+    public function getModificationDate(): ?int
     {
         return $this->modificationDate;
     }
