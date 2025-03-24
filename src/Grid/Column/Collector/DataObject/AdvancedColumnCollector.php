@@ -132,6 +132,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
             sortable: false,
             editable: false,
             exportable: true,
+            filterable: false,
             localizable: true,
             locale: null,
             type: 'dataobject.advanced',
@@ -230,6 +231,10 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
         try {
             $definitionOfTheRelation = $this->classDefinitionResolver->getByName($className);
         } catch (Exception $e) {
+            throw new NotFoundException('Class definition', $className);
+        }
+
+        if ($definitionOfTheRelation === null) {
             throw new NotFoundException('Class definition', $className);
         }
 

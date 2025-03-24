@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\User\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
@@ -30,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'keyBindings', 'language', 'memorizeTabs', 'parentId', 'permissions', 'roles',
         'twoFactorAuthenticationEnabled', 'websiteTranslationLanguagesEdit', 'websiteTranslationLanguagesView',
         'welcomeScreen', 'assetWorkspaces', 'dataObjectWorkspaces', 'documentWorkspaces', 'objectDependencies',
+        'perspectives',
     ],
     type: 'object'
 )]
@@ -96,6 +98,12 @@ final class User implements AdditionalAttributesInterface
         private readonly array $documentWorkspaces,
         #[Property(ref: ObjectDependencies::class, description: 'Object Dependencies', type: 'object')]
         private readonly ObjectDependencies $objectDependencies,
+        #[Property(
+            description: 'Allowed studio perspectives',
+            type: 'array',
+            items: new Items(ref: PerspectiveConfig::class))
+        ]
+        private readonly array $perspectives = [],
     ) {
     }
 
@@ -244,5 +252,13 @@ final class User implements AdditionalAttributesInterface
     public function getObjectDependencies(): ObjectDependencies
     {
         return $this->objectDependencies;
+    }
+
+    /**
+     * @return PerspectiveConfig[]
+     */
+    public function getPerspectives(): array
+    {
+        return $this->perspectives;
     }
 }

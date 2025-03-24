@@ -29,7 +29,7 @@ use Pimcore\Model\UserInterface;
 #[ORM\Table(name: GridConfiguration::TABLE_NAME)]
 class GridConfiguration
 {
-    public const TABLE_NAME = 'bundle_studio_grid_configurations';
+    public const string TABLE_NAME = 'bundle_studio_grid_configurations';
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
@@ -73,17 +73,17 @@ class GridConfiguration
     private DateTime $modificationDate;
 
     #[ORM\OneToMany(
-        mappedBy: 'configuration',
         targetEntity: GridConfigurationShare::class,
-        cascade: ['merge', 'persist'],
+        mappedBy: 'configuration',
+        cascade: ['persist'],
         orphanRemoval: true
     )]
     private Collection $shares;
 
     #[ORM\OneToMany(
-        mappedBy: 'configuration',
         targetEntity: GridConfigurationFavorite::class,
-        cascade: ['merge', 'persist'],
+        mappedBy: 'configuration',
+        cascade: ['persist'],
         orphanRemoval: true
     )]
     private Collection $favorites;

@@ -45,7 +45,7 @@ final class TypeController extends AbstractApiController
     }
 
     #[Route(self::ROUTE, name: 'pimcore_studio_api_get_perspectives_widgets_types', methods: ['GET'])]
-    #[IsGranted(UserPermissions::WIDGET_EDIT->value)]
+    #[IsGranted(UserPermissions::WIDGET_EDITOR->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'perspective_widget_get_type_collection',

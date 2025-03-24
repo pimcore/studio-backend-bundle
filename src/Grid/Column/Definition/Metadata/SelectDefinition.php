@@ -51,4 +51,9 @@ final readonly class SelectDefinition implements ColumnDefinitionInterface
     {
         return true;
     }
+
+    public function isFilterable(): bool
+    {
+        return true;
+    }
 }

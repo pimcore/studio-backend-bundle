@@ -46,6 +46,8 @@ final class ColumnConfiguration implements AdditionalAttributesInterface
         private readonly bool $editable,
         #[Property(description: 'Exportable', type: 'boolean', example: false)]
         private readonly bool $exportable,
+        #[Property(description: 'Filterable', type: 'boolean', example: false)]
+        private readonly bool $filterable,
         #[Property(description: 'Localizable', type: 'boolean', example: false)]
         private readonly bool $localizable,
         #[Property(description: 'Locale', type: 'string', example: 'en')]
@@ -107,5 +109,10 @@ final class ColumnConfiguration implements AdditionalAttributesInterface
     public function getFrontendType(): string
     {
         return $this->frontendType;
+    }
+
+    public function isFilterable(): bool
+    {
+        return $this->filterable;
     }
 }

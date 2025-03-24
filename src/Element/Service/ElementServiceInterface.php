@@ -35,9 +35,18 @@ use Pimcore\Model\UserInterface;
 interface ElementServiceInterface
 {
     /**
-     * @throws ForbiddenException|NotFoundException
+     * @throws NotFoundException
      */
     public function getElementIdByPath(
+        string $elementType,
+        PathParameter $pathParameter,
+        UserInterface $user
+    ): int;
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function getAllowedElementIdByPath(
         string $elementType,
         PathParameter $pathParameter,
         UserInterface $user

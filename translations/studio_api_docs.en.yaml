@@ -638,6 +638,8 @@ user_get_current_information_summary: Retrieve information's about the current l
 user_get_tree_success_response: Collection of users including folders for the given parent id.
 user_get_tree_summary: Get collection of users for tree view.
 user_reset_password_summary: Sending username to reset password.
+user_update_active_perspective_summary: Update the active perspective for the current user.
+user_update_active_perspective_success_response: Updated active perspective for the current user.
 user_update_by_id_success_response: Updated data.
 user_update_by_id_summary: Update user by id.
 user_update_password_by_id_summary: Update password for a User by the User id.
@@ -869,3 +871,8 @@ pimcore_studio_api_class_custom_layout_import_description: Import custom layout 
 pimcore_studio_api_class_custom_layout_import_summary: Import custom layout
 pimcore_studio_api_class_custom_layout_import_success_response: Http status code
 pimcore_studio_api_class_custom_layout_import_layout_id: Id of custom layout
+pimcore_studio_api_classes_folder_collection: Get list of all data object classes in a folder
+class_definition_folder_collection: Get list of all data object classes in a folder
+class_definition_folder_collection_description: Get list of all data object classes in a folder
+class_definition_folder_collection_summary: Get list of all data object classes in a folder
+class_definition_folder_collection_success_response: List of all data object classes in a folder

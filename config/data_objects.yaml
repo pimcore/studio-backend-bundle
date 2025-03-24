@@ -53,7 +53,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Service\Data\RelationDataService
 
-
   #
   # Legacy Services
   #

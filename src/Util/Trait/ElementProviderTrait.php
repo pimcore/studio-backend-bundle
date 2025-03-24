@@ -125,4 +125,11 @@ trait ElementProviderTrait
 
         return $type;
     }
+
+    private function getElementFullPath(
+        string $parentFullPath,
+        string $key
+    ): string {
+        return str_ends_with($parentFullPath, '/') === true ? $parentFullPath . $key : $parentFullPath . '/' . $key;
+    }
 }
