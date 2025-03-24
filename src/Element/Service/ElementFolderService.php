@@ -68,8 +68,8 @@ final readonly class ElementFolderService implements ElementFolderServiceInterfa
 
         if ($existingElement) {
             throw new ElementExistsException(
-                'Folder already exists',
-                HttpResponseErrorKeys::FOLDER_EXISTS->value
+                error: 'Folder already exists',
+                errorKey: HttpResponseErrorKeys::FOLDER_EXISTS->value
             );
         }
 
