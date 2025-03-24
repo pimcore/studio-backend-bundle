@@ -67,7 +67,7 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
             ));
         }
 
-        $jobAsset = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ASSET_TO_EXPORT->value);
+        $jobAsset = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TO_EXPORT->value);
 
         $asset = $this->assetService->getAssetForUser($jobAsset['id'], $user);
 
@@ -114,9 +114,9 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(StepConfig::ASSET_TO_EXPORT->value);
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_TO_EXPORT->value);
         $this->stepConfiguration->setAllowedTypes(
-            StepConfig::ASSET_TO_EXPORT->value,
+            StepConfig::ELEMENT_TO_EXPORT->value,
             StepConfig::CONFIG_TYPE_ARRAY->value
         );
         $this->stepConfiguration->setRequired(StepConfig::CONFIG_COLUMNS->value);

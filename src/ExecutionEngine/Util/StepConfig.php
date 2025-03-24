@@ -25,7 +25,7 @@ enum StepConfig: string
     case ID = 'id';
     case CUSTOM_REPORT_CONFIG = 'custom_report_config';
     case CUSTOM_REPORT_TO_EXPORT = 'custom_report_to_export';
-    case ASSET_TO_EXPORT = 'asset_to_export';
+    case ELEMENT_TO_EXPORT = 'element_to_export';
     case FOLDER_TO_EXPORT = 'folder_to_export';
     case CSV_EXPORT_DATA = 'csv_export_data';
     case CONFIG_CONFIGURATION = 'config';
