@@ -34,7 +34,6 @@ use Pimcore\Model\DataObject\Data\Hotspotimage;
 use Pimcore\Model\Element\Data\MarkerHotspotItem;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-use function get_class;
 use function in_array;
 use function is_array;
 
@@ -43,7 +42,8 @@ use function is_array;
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
 final readonly class HotspotImageAdapter implements
-    SetterDataInterface, SearchPreviewDataInterface
+    SetterDataInterface,
+    SearchPreviewDataInterface
 {
     use AssetPreviewDataTrait;
     use ElementProviderTrait;
