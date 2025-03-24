@@ -51,6 +51,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\UpdateConfigurationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\UpdateConfigurationService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridSearchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridSearchService
+
   #
   # Repository
   #
@@ -123,8 +126,156 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\Metadata\DataObjectDefinition:
     tags: [ 'pimcore.studio_backend.grid_column_definition' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridSearchServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridSearchService
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\InputDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\TextareaDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\WysiwygDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\PasswordDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\InputQuantityValueDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\NumericDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\NumericRangeDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\SliderDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\QuantityValueDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\QuantityValueRangeDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\BooleanSelectDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\SelectDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\UserDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\CountryDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\LanguageDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\MultiselectDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\CountryMultiselectDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\LanguageMultiselectDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\DateDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\DateTimeDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\DateRangeDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\TimeDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ImageDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\HotSpotImageDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ImageGalleryDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ExternalImageDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\VideoDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ManyToOneRelationDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ManyToManyRelationDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ManyToManyObjectRelationDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\AdvancedManyToManyRelationDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\AdvancedManyToManyObjectRelationDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ReverseObjectRelationDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\GeopointDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\GeoboundsDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\GeopolygonDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\GeopolylineDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\ConsentDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\FirstnameDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\LastnameDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\EmailDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\GenderDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\TableDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\StructuredTableDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\RgbaColorDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\EncryptedFieldDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\UrlSlugDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\CheckboxDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\LinkDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject\CalculatedValueDefinition:
+    tags: [ 'pimcore.studio_backend.grid_column_definition' ]
+
 
   #
   # Column Resolver

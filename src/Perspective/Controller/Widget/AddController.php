@@ -59,7 +59,7 @@ final class AddController extends AbstractApiController
         name: 'pimcore_studio_api_create_perspectives_widgets_config',
         methods: ['POST']
     )]
-    #[IsGranted(UserPermissions::WIDGET_EDIT->value)]
+    #[IsGranted(UserPermissions::WIDGET_EDITOR->value)]
     #[Post(
         path: self::PREFIX . self::ROUTE,
         operationId: 'perspective_widget_create',

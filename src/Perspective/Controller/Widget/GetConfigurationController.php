@@ -58,7 +58,7 @@ final class GetConfigurationController extends AbstractApiController
         requirements: ['id' => '\d+'],
         methods: ['GET']
     )]
-    #[IsGranted(UserPermissions::WIDGET_EDIT->value)]
+    #[IsGranted(UserPermissions::WIDGET_EDITOR->value)]
     #[Get(
         path: self::PREFIX . self::ROUTE,
         operationId: 'perspective_widget_get_config_by_id',

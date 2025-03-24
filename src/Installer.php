@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Extension\Bundle\Installer\Exception\InstallationException;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
@@ -36,6 +37,11 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
  */
 final class Installer extends SettingsStoreAwareInstaller
 {
+    private const array PERSPECTIVE_PERMISSIONS = [
+        UserPermissions::PERSPECTIVE_EDITOR->value,
+        UserPermissions::WIDGET_EDITOR->value,
+    ];
+
     public function __construct(
         private readonly Connection $db,
         BundleInterface $bundle,
@@ -55,6 +61,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createGridConfigurationSharesTable($schema);
         $this->createGridConfigurationFavoritesTable($schema);
         $this->createUserPerspectivesTable($schema);
+        $this->addUserPermission($schema);
         $this->executeDiffSql($schema);
 
         parent::install();
@@ -83,6 +90,7 @@ final class Installer extends SettingsStoreAwareInstaller
         if ($schema->hasTable(UserPerspectiveData::TABLE_NAME)) {
             $schema->dropTable(UserPerspectiveData::TABLE_NAME);
         }
+        $this->removeUserPermission($schema);
 
         $this->executeDiffSql($schema);
 
@@ -263,7 +271,7 @@ final class Installer extends SettingsStoreAwareInstaller
             ['notnull' => false, 'unsigned' => true]
         );
 
-        $table->addColumn('name', 'string', ['notnull' => true]);
+        $table->addColumn('name', 'string', ['notnull' => true, 'length' => 255]);
         $table->addColumn('description', 'text', ['notnull' => true]);
 
         $table->addColumn('pageSize', 'integer', [
@@ -332,6 +340,48 @@ final class Installer extends SettingsStoreAwareInstaller
         );
 
         $table->setPrimaryKey(['user'], 'pk_' . UserPerspectiveData::TABLE_NAME);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function addUserPermission(Schema $schema): void
+    {
+        if ($schema->hasTable(UserPermissions::DEFINITIONS_TABLE->value)) {
+            foreach (self::PERSPECTIVE_PERMISSIONS as $permission) {
+                $queryBuilder = $this->db->createQueryBuilder();
+                $queryBuilder
+                    ->insert(UserPermissions::DEFINITIONS_TABLE->value)
+                    ->values([
+                        $this->db->quoteIdentifier('key') => ':key',
+                        $this->db->quoteIdentifier('category') => ':category',
+                    ])
+                    ->setParameters([
+                        'key' => $permission,
+                        'category' => UserPermissions::PERMISSIONS_CATEGORY->value,
+                    ]);
+
+                $queryBuilder->executeStatement();
+            }
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function removeUserPermission(Schema $schema): void
+    {
+        if ($schema->hasTable(UserPermissions::DEFINITIONS_TABLE->value)) {
+            foreach (self::PERSPECTIVE_PERMISSIONS as $permission) {
+                $queryBuilder = $this->db->createQueryBuilder();
+                $queryBuilder
+                    ->delete(UserPermissions::DEFINITIONS_TABLE->value)
+                    ->where($this->db->quoteIdentifier('key') . ' = :key')
+                    ->setParameter('key', $permission);
+
+                $queryBuilder->executeStatement();
+            }
+        }
     }
 
     /**

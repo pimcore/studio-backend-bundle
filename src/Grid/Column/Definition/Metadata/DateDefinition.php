@@ -49,4 +49,9 @@ final readonly class DateDefinition implements ColumnDefinitionInterface
     {
         return true;
     }
+
+    public function isFilterable(): bool
+    {
+        return true;
+    }
 }

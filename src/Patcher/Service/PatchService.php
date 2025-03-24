@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\AutomationAction\
 use Pimcore\Bundle\StudioBackendBundle\Element\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -39,11 +40,13 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\DataObject\FieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatchDataKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PatcherActions;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use function array_key_exists;
 use function count;
+use function sprintf;
 
 /**
  * @internal
@@ -142,6 +145,10 @@ final readonly class PatchService implements PatchServiceInterface
                 $element,
                 $user,
                 $elementPatchData[ElementSaveServiceInterface::INDEX_TASK] ?? null
+            );
+        } catch (DuplicateFullPathException) {
+            throw new ElementExistsException(
+                message: sprintf('Element with full path [%s] already exists', $element->getRealFullPath())
             );
         } catch (Exception $exception) {
             throw new ElementSavingFailedException($element->getId(), $exception->getMessage());
