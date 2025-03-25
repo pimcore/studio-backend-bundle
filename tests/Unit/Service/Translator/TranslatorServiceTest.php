@@ -18,6 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Translator;
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepository;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
@@ -62,7 +64,8 @@ final class TranslatorServiceTest extends Unit
     private function mockTranslatorService(): TranslatorServiceInterface
     {
         $translator = $this->makeEmpty(Translator::class);
+        $repository = $this->makeEmpty(TranslationRepositoryInterface::class);
 
-        return new TranslatorService($translator);
+        return new TranslatorService($translator, $repository);
     }
 }
