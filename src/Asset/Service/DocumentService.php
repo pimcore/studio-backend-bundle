@@ -31,7 +31,6 @@ use Pimcore\Document\Adapter;
 use Pimcore\Messenger\AssetUpdateTasksMessage;
 use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Enum\PdfScanStatus;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Messenger\MessageBusInterface;
 use function sprintf;
