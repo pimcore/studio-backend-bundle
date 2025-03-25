@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Perspective\UserPerspectiveData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Extension\Bundle\Installer\Exception\InstallationException;
 use Pimcore\Extension\Bundle\Installer\SettingsStoreAwareInstaller;
@@ -102,7 +103,7 @@ final class Installer extends SettingsStoreAwareInstaller
      */
     private function createTranslationTable(Schema $schema): void
     {
-        $translationsDomainTableName = 'translations_' . TranslatorService::DOMAIN;
+        $translationsDomainTableName = 'translations_' . TranslatorServiceInterface::DOMAIN;
         if (!$schema->hasTable($translationsDomainTableName)) {
             $translationDomainTable = $schema->createTable($translationsDomainTableName);
 

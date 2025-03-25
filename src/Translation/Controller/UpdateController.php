@@ -16,18 +16,18 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Controller;
 
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Request\TranslationRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -36,7 +36,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class TranslationController extends AbstractApiController
+final class UpdateController extends AbstractApiController
 {
     private const string ROUTE = '/translations';
 
@@ -50,36 +50,28 @@ final class TranslationController extends AbstractApiController
     /**
      * @throws InvalidLocaleException
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_translations', methods: ['POST'])]
-    #[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
-    #[POST(
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_translations_update', methods: ['PUT'])]
+    #[IsGranted(UserPermissions::TRANSLATIONS->value)]
+    #[Put(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'translation_get_collection',
-        description: 'translation_get_collection_description',
-        summary: 'translation_get_collection_summary',
+        operationId: 'translation_update',
+        description: 'translation_update_description',
+        summary: 'translation_update_summary',
         tags: [Tags::Translation->name]
     )]
-    #[TranslationRequestBody]
+    #[TranslationRequestBody(UpdateTranslation::class)]
     #[SuccessResponse(
-        description: 'translation_get_collection_success_response',
-        content: new JsonContent(ref: Translation::class)
+        description: 'translation_update_success_response'
     )]
     #[DefaultResponses([
+        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getTranslations(
-        #[MapRequestPayload] Translation $translation,
-    ): JsonResponse {
+    public function updateTranslations(
+        #[MapRequestPayload] UpdateTranslation $translation
+    ): Response {
+        $this->translatorService->updateTranslations($translation);
 
-        if (empty($translation->getKeys())) {
-            return $this->jsonResponse($this->translatorService->getAllTranslations($translation->getLocale()));
-        }
-
-        return $this->jsonResponse(
-            $this->translatorService->getTranslationsForKeys(
-                $translation->getLocale(),
-                $translation->getKeys()
-            )
-        );
+        return new Response();
     }
 }

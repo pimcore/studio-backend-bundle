@@ -16,19 +16,17 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Controller;
 
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Attribute\Request\TranslationRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -36,9 +34,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class TranslationController extends AbstractApiController
+final class DeleteController extends AbstractApiController
 {
-    private const string ROUTE = '/translations';
+    private const string ROUTE = '/translations/{key}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -48,38 +46,29 @@ final class TranslationController extends AbstractApiController
     }
 
     /**
-     * @throws InvalidLocaleException
+     * @throws NotFoundException
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_translations', methods: ['POST'])]
-    #[IsGranted(self::VOTER_PUBLIC_STUDIO_API, 'translation')]
-    #[POST(
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_delete_translation', methods: ['DELETE'])]
+    #[IsGranted(UserPermissions::TRANSLATIONS->value)]
+    #[Delete(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'translation_get_collection',
-        description: 'translation_get_collection_description',
-        summary: 'translation_get_collection_summary',
+        operationId: 'translation_delete_by_key',
+        description: 'translation_delete_by_key_description',
+        summary: 'translation_delete_by_key_summary',
         tags: [Tags::Translation->name]
     )]
-    #[TranslationRequestBody]
+    #[StringParameter('key', 'some_key', description: 'Delete translations by matching key')]
     #[SuccessResponse(
-        description: 'translation_get_collection_success_response',
-        content: new JsonContent(ref: Translation::class)
+        description: 'translation_delete_by_key_success_description',
     )]
     #[DefaultResponses([
+        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getTranslations(
-        #[MapRequestPayload] Translation $translation,
-    ): JsonResponse {
+    public function deleteNote(string $key): Response
+    {
+        $this->translatorService->deleteTranslationByKey($key);
 
-        if (empty($translation->getKeys())) {
-            return $this->jsonResponse($this->translatorService->getAllTranslations($translation->getLocale()));
-        }
-
-        return $this->jsonResponse(
-            $this->translatorService->getTranslationsForKeys(
-                $translation->getLocale(),
-                $translation->getKeys()
-            )
-        );
+        return new Response();
     }
 }
