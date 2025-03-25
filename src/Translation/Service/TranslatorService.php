@@ -21,9 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
-use Pimcore\Model\Translation as TranslationModel;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function in_array;
 
 /**
  * @internal
@@ -117,7 +117,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     {
         $databaseCatalogue = [];
         foreach ($this->translationRepository->getAllTranslations($locale) as $translation) {
-            if(!empty($keys) && !in_array($translation->getKey(), $keys, true)) {
+            if (!empty($keys) && !in_array($translation->getKey(), $keys, true)) {
                 continue;
             }
             $databaseCatalogue[$translation->getKey()] = $translation->getTranslation($locale);

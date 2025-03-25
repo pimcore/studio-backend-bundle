@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\TranslationData;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Model\Translation;
 use Pimcore\Model\Translation\Listing;
+use function in_array;
 
 /**
  * @internal
@@ -31,8 +32,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
 {
     public function __construct(
         private AdminResolverInterface $adminResolver,
-    )
-    {
+    ) {
     }
 
     /**

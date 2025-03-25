@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 
 /**
  * @internal
