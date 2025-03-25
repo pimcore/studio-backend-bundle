@@ -18,8 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Automati
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -69,15 +67,15 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
             ));
         }
 
-        $jobAsset = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ASSET_TO_EXPORT->value);
+        $jobDataObject = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TO_EXPORT->value);
 
-        $asset = $this->assetService->getAssetForUser($jobAsset['id'], $user);
+        $dataObject = $this->dataObjectService->getDataObjectForUser($jobDataObject['id'], $user);
 
-        if ($asset->getType() === ElementTypes::TYPE_FOLDER) {
+        if ($dataObject->getType() === ElementTypes::TYPE_FOLDER) {
             $this->abort($this->getAbortData(
                 Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
                 [
-                    'folderId' => $asset->getId(),
+                    'folderId' => $dataObject->getId(),
                 ]
             ));
 
@@ -92,20 +90,20 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
         );
 
         try {
-            $assetData = [
-                $asset->getId() => $this->gridService->getGridValuesForElement(
+            $dataObjectData = [
+                $dataObject->getId() => $this->gridService->getGridValuesForElement(
                     $columnCollection,
-                    $asset,
-                    ElementTypes::TYPE_ASSET
+                    $dataObject,
+                    ElementTypes::TYPE_OBJECT
                 ),
             ];
 
-            $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $assetData);
+            $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $dataObjectData);
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                 [
-                    'id' => $asset->getId(),
+                    'id' => $dataObject->getId(),
                     'message' => $e->getMessage(),
                 ]
             ));
@@ -116,9 +114,9 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(StepConfig::ASSET_TO_EXPORT->value);
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_TO_EXPORT->value);
         $this->stepConfiguration->setAllowedTypes(
-            StepConfig::ASSET_TO_EXPORT->value,
+            StepConfig::ELEMENT_TO_EXPORT->value,
             StepConfig::CONFIG_TYPE_ARRAY->value
         );
         $this->stepConfiguration->setRequired(StepConfig::CONFIG_COLUMNS->value);
