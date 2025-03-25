@@ -41,7 +41,9 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class HotspotImageAdapter implements SetterDataInterface, SearchPreviewDataInterface
+final readonly class HotspotImageAdapter implements
+    SetterDataInterface,
+    SearchPreviewDataInterface
 {
     use AssetPreviewDataTrait;
     use ElementProviderTrait;
