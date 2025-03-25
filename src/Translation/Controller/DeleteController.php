@@ -65,7 +65,7 @@ final class DeleteController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function deleteNote(string $key): Response
+    public function deleteTranslation(string $key): Response
     {
         $this->translatorService->deleteTranslationByKey($key);
 
