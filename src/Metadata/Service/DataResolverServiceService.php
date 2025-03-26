@@ -24,7 +24,8 @@ use Pimcore\Normalizer\NormalizerInterface;
  */
 final readonly class DataResolverServiceService implements DataResolverServiceInterface
 {
-    public function __construct(private DataAdapterServiceInterface $dataAdapterService) {
+    public function __construct(private DataAdapterServiceInterface $dataAdapterService)
+    {
     }
 
     /**
@@ -57,7 +58,6 @@ final readonly class DataResolverServiceService implements DataResolverServiceIn
         if ($adapter instanceof NormalizerInterface) {
             return $adapter->denormalize($customMetadata['data']);
         }
-
 
         return $adapter->denormalize($customMetadata['data'], $customMetadata['type'], $user);
     }

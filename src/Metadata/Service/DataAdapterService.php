@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Metadata\Data\MetaDataAdapterInterface;
 use Pimcore\Loader\ImplementationLoader\Exception\UnsupportedException;
 use Pimcore\Model\Asset\Metadata\Loader\DataLoader;
 use Pimcore\Normalizer\NormalizerInterface;
+use function in_array;
 
 /**
  * @internal
@@ -42,7 +43,7 @@ final readonly class DataAdapterService implements DataAdapterServiceInterface
 
     /**
      * {@inheritdoc}
-    */
+     */
     public function getMetadataAdapter(string $type): ?MetadataAdapterInterface
     {
         $studioAdapters = $this->getStudioAdaptersMapping();

@@ -29,6 +29,7 @@ use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -46,8 +47,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
     public function __construct(
         private readonly DataResolverServiceInterface $dataResolverService,
         private readonly MetadataRepositoryInterface $metadataRepository
-    )
-    {
+    ) {
     }
 
     /**

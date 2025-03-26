@@ -76,6 +76,7 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
 
         return array_map(function ($metadataItem) use ($user) {
             $metadataItem['data'] = $this->dataResolverService->denormalizeData($metadataItem, $user);
+
             return $metadataItem;
         }, $customMetadata);
     }

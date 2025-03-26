@@ -30,8 +30,7 @@ final readonly class MetadataHydrator implements MetadataHydratorInterface
     public function __construct(
         private DataResolverServiceInterface $dataResolverService,
         private ReferenceResolverInterface $referenceResolver
-    )
-    {
+    ) {
     }
 
     public function hydrate(array $customMetadata): CustomMetadata
