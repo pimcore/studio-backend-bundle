@@ -69,8 +69,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
         string $classId,
         int $folderId,
         UserInterface $user = null
-    ): array
-    {
+    ): array {
         $columns = [];
         foreach ($this->gridService->getColumnCollectors() as $collector) {
             // Only collect supported data object collectors

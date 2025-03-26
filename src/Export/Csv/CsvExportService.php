@@ -71,7 +71,6 @@ final readonly class CsvExportService implements ExportServiceInterface
 
         $data = [];
 
-
         if ($withHeaders) {
             $columnsDefinitions = $this->getColumnConfigurations($csvExportDataInfo, $user);
             $data[]  = $this->getHeaders($columns, $columnsDefinitions, $withGroup);

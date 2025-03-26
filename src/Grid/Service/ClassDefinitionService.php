@@ -67,8 +67,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         string $classId,
         int $folderId,
         UserInterface $user = null
-    ): array
-    {
+    ): array {
         $classDefinition = $this->getClassDefinition($classId);
 
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
