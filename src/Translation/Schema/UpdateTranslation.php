@@ -27,7 +27,7 @@ use OpenApi\Attributes\Schema;
     schema: 'UpdateTranslation',
     title: 'Translation Update',
     description: 'Translation Update Scheme for API',
-    required: ['locale', 'keys'],
+    required: ['locale', 'translationData'],
     type: 'object'
 )]
 final readonly class UpdateTranslation
