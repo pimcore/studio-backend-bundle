@@ -41,6 +41,7 @@ enum UserPermissions: string
     case TAGS_ASSIGNMENT = 'tags_assignment';
     case TAGS_SEARCH = 'tags_search';
     case THUMBNAILS = 'thumbnails';
+    case TRANSLATIONS = 'translations';
     case USER_MANAGEMENT = 'users';
     case WIDGET_EDITOR = 'studio_perspective_widget_editor';
 }

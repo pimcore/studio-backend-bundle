@@ -24,11 +24,11 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class TranslationRequestBody extends RequestBody
 {
-    public function __construct()
+    public function __construct(string $content = Translation::class)
     {
         parent::__construct(
             required: true,
-            content: new JsonContent(ref: Translation::class)
+            content: new JsonContent(ref: $content)
         );
     }
 }

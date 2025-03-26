@@ -18,25 +18,32 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function in_array;
 
 /**
  * @internal
  */
 final readonly class TranslatorService implements TranslatorServiceInterface
 {
-    public const DOMAIN = 'studio';
-
-    private const API_DOCS_DOMAIN = 'studio_api_docs';
+    private const string API_DOCS_DOMAIN = 'studio_api_docs';
 
     private TranslatorBagInterface $translatorBag;
 
     public function __construct(
-        private TranslatorInterface $translator
+        private TranslatorInterface $translator,
+        private TranslationRepositoryInterface $translationRepository,
     ) {
         $this->translatorBag = $this->getTranslatorBag();
+    }
+
+    public function updateTranslations(UpdateTranslation $translation): void
+    {
+        $this->translationRepository->createTranslations($translation->getTranslationData(), $translation->getLocale());
     }
 
     /**
@@ -49,6 +56,8 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         } catch (InvalidArgumentException) {
             throw new InvalidLocaleException($locale);
         }
+
+        $catalogue = $this->addDatabaseTranslations($catalogue, $locale);
 
         return new Translation(
             $locale,
@@ -73,7 +82,16 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             $translations[$key] = $catalogue->get($key, self::DOMAIN);
         }
 
+        if (!empty($keys)) {
+            $translations = $this->addDatabaseTranslations($translations, $locale, $keys);
+        }
+
         return new Translation($locale, $translations);
+    }
+
+    public function deleteTranslationByKey(string $key): void
+    {
+        $this->translationRepository->deleteTranslation($key);
     }
 
     public function translate(string $message, array $params = []): string
@@ -93,5 +111,29 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         }
 
         return $this->translator;
+    }
+
+    private function addDatabaseTranslations(array $catalogue, string $locale, array $keys = []): array
+    {
+        $databaseCatalogue = [];
+        foreach ($this->translationRepository->getAllTranslations($locale) as $translation) {
+            if (!empty($keys) && !in_array($translation->getKey(), $keys, true)) {
+                continue;
+            }
+            $databaseCatalogue[$translation->getKey()] = $translation->getTranslation($locale);
+        }
+
+        foreach ($catalogue as $key => $translation) {
+            if (!empty($databaseCatalogue[$key])) {
+                $catalogue[$key] = $databaseCatalogue[$key];
+            }
+
+            unset($databaseCatalogue[$key]);
+        }
+
+        $catalogue = array_replace($databaseCatalogue, $catalogue);
+        ksort($catalogue);
+
+        return $catalogue;
     }
 }
