@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Mapper\FilterParameterMapperInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -41,6 +42,7 @@ final class CsvAssetFolderDataCollectionHandler extends AbstractHandler
     use HandlerProgressTrait;
 
     public function __construct(
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly FilterParameterMapperInterface $filterParameterMapper,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
@@ -71,7 +73,7 @@ final class CsvAssetFolderDataCollectionHandler extends AbstractHandler
             ));
         }
 
-        $jobFolder = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::FOLDER_TO_EXPORT->value);
+        $jobFolder = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TO_EXPORT->value);
 
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
 
@@ -92,8 +94,11 @@ final class CsvAssetFolderDataCollectionHandler extends AbstractHandler
             return;
         }
 
+        $columnsDefinitions = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
+
         $columnCollection = $this->gridService->getConfigurationFromArray(
             $columns,
+            $columnsDefinitions,
             true
         );
 
@@ -119,14 +124,26 @@ final class CsvAssetFolderDataCollectionHandler extends AbstractHandler
             }
         }
 
+        $csvExportDataInfo = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA_INFO->value] ?? null;
+
+        if ($csvExportDataInfo === null) {
+            $this->updateContextArrayValues(
+                $jobRun,
+                StepConfig::CSV_EXPORT_DATA_INFO->value,
+                [
+                    'type' => ElementTypes::TYPE_ASSET,
+                ]
+            );
+        }
+
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
     }
 
     protected function configureStep(): void
     {
-        $this->stepConfiguration->setRequired(StepConfig::FOLDER_TO_EXPORT->value);
+        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_TO_EXPORT->value);
         $this->stepConfiguration->setAllowedTypes(
-            StepConfig::FOLDER_TO_EXPORT->value,
+            StepConfig::ELEMENT_TO_EXPORT->value,
             StepConfig::CONFIG_TYPE_ARRAY->value
         );
         $this->stepConfiguration->setRequired(StepConfig::CONFIG_COLUMNS->value);

@@ -52,10 +52,11 @@ interface GridServiceInterface
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array;
 
-    public function getConfigurationFromArray(array $config, bool $isExport = false): ColumnCollection;
+    public function getConfigurationFromArray(array $config, array $columnsDefinitions, bool $isExport = false): ColumnCollection;
 
     /**
      * @throws InvalidArgumentException

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Export;
 
 use League\Flysystem\FilesystemException;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -27,9 +28,11 @@ interface ExportServiceInterface
         int $id,
         array $columns,
         array $csvData,
+        array $csvExportDataInfo,
         bool $withHeaders = false,
         bool $withGroup = false,
         ?string $delimiter = null,
+        ?UserInterface $user = null,
     ): void;
 
     /**

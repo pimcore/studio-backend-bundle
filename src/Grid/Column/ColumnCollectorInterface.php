@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Model\UserInterface;
 
 interface ColumnCollectorInterface
 {
@@ -27,7 +28,7 @@ interface ColumnCollectorInterface
      *
      * @return ColumnConfiguration[]
      */
-    public function getColumnConfigurations(array $availableColumnDefinitions): array;
+    public function getColumnConfigurations(array $availableColumnDefinitions, UserInterface $user = null): array;
 
     public function supportedElementTypes(): array;
 }

@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -33,7 +34,11 @@ interface ColumnConfigurationServiceInterface
     /**
      * @return ColumnConfiguration[]
      */
-    public function getAvailableDataObjectColumnConfiguration(string $classId, int $folderId): array;
+    public function getAvailableDataObjectColumnConfiguration(
+        string $classId,
+        int $folderId,
+        UserInterface $user = null
+    ): array;
 
     /**
      * @return ColumnConfiguration[]

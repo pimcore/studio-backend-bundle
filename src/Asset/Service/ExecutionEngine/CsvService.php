@@ -50,6 +50,7 @@ final readonly class CsvService implements CsvServiceInterface
     {
         $collectionSettings = [
             StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
+            StepConfig::ELEMENT_TYPE->value => $exportParameter->getElementType(),
         ];
 
         $creationSettings = [
@@ -81,8 +82,7 @@ final readonly class CsvService implements CsvServiceInterface
             $exportParameter->getElements(),
             $collectionSettings,
             $creationSettings,
-            $this->getMessageClassForFolder($exportParameter->getElementType()),
-            StepConfig::FOLDER_TO_EXPORT
+            $this->getMessageClassForFolder($exportParameter->getElementType())
         );
     }
 

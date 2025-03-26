@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAc
 
 use Exception;
 use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -37,7 +38,9 @@ final class CsvCreationHandler extends AbstractHandler
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
-        private readonly ExportServiceInterface $csvService
+        private readonly UserResolverInterface $userResolver,
+        private readonly ExportServiceInterface $csvService,
+
     ) {
         parent::__construct();
     }
@@ -52,6 +55,8 @@ final class CsvCreationHandler extends AbstractHandler
             return;
         }
 
+        $user = $this->userResolver->getById($jobRun->getOwnerId());
+
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
         $settings = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_CONFIGURATION->value);
         $headers = $settings[StepConfig::SETTINGS_HEADER->value] ?? StepConfig::SETTINGS_HEADER_NO_HEADER->value;
@@ -65,14 +70,18 @@ final class CsvCreationHandler extends AbstractHandler
         }
         $csvData = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA->value];
 
+        $csvExportDataInfo = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA_INFO->value] ?? [];
+
         try {
             $this->csvService->createExportFile(
                 $jobRun->getId(),
                 $columns,
                 $csvData,
+                $csvExportDataInfo,
                 $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
                 $headers === StepConfig::SETTINGS_HEADER_NAME,
-                $delimiter
+                $delimiter,
+                $user
             );
         } catch (Exception|FilesystemException $e) {
             $this->abort($this->getAbortData(

@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 use function array_key_exists;
@@ -64,7 +65,11 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
         return $columns;
     }
 
-    public function getAvailableDataObjectColumnConfiguration(string $classId, int $folderId): array
+    public function getAvailableDataObjectColumnConfiguration(
+        string $classId,
+        int $folderId,
+        UserInterface $user = null
+    ): array
     {
         $columns = [];
         foreach ($this->gridService->getColumnCollectors() as $collector) {
@@ -80,11 +85,10 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
             if ($collector instanceof FolderIdInterface) {
                 $collector->setFolderId($folderId);
             }
-
             // rather use the spread operator instead of array_merge in a loop
             $columns = [
                 ...$columns,
-                ...$collector->getColumnConfigurations($this->gridService->getColumnDefinitions()),
+                ...$collector->getColumnConfigurations($this->gridService->getColumnDefinitions(), $user),
             ];
         }
 

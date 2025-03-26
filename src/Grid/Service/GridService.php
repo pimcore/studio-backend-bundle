@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverIn
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -167,7 +168,8 @@ final class GridService implements GridServiceInterface
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array {
         $data = $this->getGridDataForElement($columnCollection, $element, $elementType);
 
@@ -190,12 +192,17 @@ final class GridService implements GridServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function getConfigurationFromArray(array $config, bool $isExport = false): ColumnCollection
+    public function getConfigurationFromArray(array $config, array $columnsDefinitions, bool $isExport = false): ColumnCollection
     {
+
         $columns = [];
         foreach ($config as $column) {
-            if ($isExport && !$this->isExportable($column['type'])) {
-                continue;
+
+            if ($isExport) {
+                $columnConfig = $this->findColumnConfiguration($column['key'], $columnsDefinitions);
+                if (!$columnConfig || !$columnConfig->isExportable()) {
+                    continue;
+                }
             }
 
             try {
@@ -317,5 +324,15 @@ final class GridService implements GridServiceInterface
             totalItems: $searchResultItem->getTotalItems(),
             items: $data
         );
+    }
+
+    private function findColumnConfiguration(string $key, array $columnConfigurations): ?ColumnConfiguration
+    {
+        $configs = array_filter(
+            $columnConfigurations,
+            static fn (ColumnConfiguration $columnConfiguration) => $columnConfiguration->getKey() === $key
+        );
+
+        return reset($configs) ?: null;
     }
 }

@@ -24,9 +24,12 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\CsvExportHandlerSetupTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -36,12 +39,14 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class CsvDataObjectDataCollectionHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
+    use CsvExportHandlerSetupTrait;
 
     public function __construct(
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly DataObjectServiceInterface $dataObjectService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
-        private readonly GridServiceInterface $gridService,
-        private readonly DataObjectServiceInterface $dataObjectService
+        private readonly GridServiceInterface $gridService
     ) {
         parent::__construct();
     }
@@ -71,6 +76,10 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
 
         $dataObject = $this->dataObjectService->getDataObjectForUser($jobDataObject['id'], $user);
 
+        $className = $dataObject->getClassName();
+
+
+
         if ($dataObject->getType() === ElementTypes::TYPE_FOLDER) {
             $this->abort($this->getAbortData(
                 Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
@@ -78,27 +87,48 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
                     'folderId' => $dataObject->getId(),
                 ]
             ));
-
             return;
         }
 
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
 
+        $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
+            $className, 1, $user
+        );
+
         $columnCollection = $this->gridService->getConfigurationFromArray(
             $columns,
+            $columnsDefinitions,
             true
         );
 
         try {
+            $data =  $this->gridService->getGridValuesForElement(
+                $columnCollection,
+                $dataObject,
+                ElementTypes::TYPE_OBJECT,
+            );
+
             $dataObjectData = [
-                $dataObject->getId() => $this->gridService->getGridValuesForElement(
-                    $columnCollection,
-                    $dataObject,
-                    ElementTypes::TYPE_OBJECT
-                ),
+                $dataObject->getId() => $data
             ];
 
             $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $dataObjectData);
+
+            $csvExportDataInfo = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA_INFO->value] ?? null;
+
+            if ($csvExportDataInfo === null) {
+                $this->updateContextArrayValues(
+                    $jobRun,
+                    StepConfig::CSV_EXPORT_DATA_INFO->value,
+                    [
+                        'type' => ElementTypes::TYPE_OBJECT,
+                        'className' => $className,
+                    ]
+                );
+            }
+
+
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
@@ -110,19 +140,5 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
         }
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
-    }
-
-    protected function configureStep(): void
-    {
-        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_TO_EXPORT->value);
-        $this->stepConfiguration->setAllowedTypes(
-            StepConfig::ELEMENT_TO_EXPORT->value,
-            StepConfig::CONFIG_TYPE_ARRAY->value
-        );
-        $this->stepConfiguration->setRequired(StepConfig::CONFIG_COLUMNS->value);
-        $this->stepConfiguration->setAllowedTypes(
-            StepConfig::CONFIG_COLUMNS->value,
-            StepConfig::CONFIG_TYPE_ARRAY->value
-        );
     }
 }

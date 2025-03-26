@@ -24,8 +24,11 @@ use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -39,6 +42,7 @@ final readonly class CsvExportService implements ExportServiceInterface
     use TempFilePathTrait;
 
     public function __construct(
+        private ColumnConfigurationServiceInterface $columnConfigurationService,
         private StorageServiceInterface $storageService,
         private GridServiceInterface $gridService,
         private string $defaultDelimiter,
@@ -52,9 +56,11 @@ final readonly class CsvExportService implements ExportServiceInterface
         int $id,
         array $columns,
         array $csvData,
+        array $csvExportDataInfo,
         bool $withHeaders = false,
         bool $withGroup = false,
         ?string $delimiter = null,
+        ?UserInterface $user = null,
     ): void {
 
         $storage = $this->storageService->getTempStorage();
@@ -65,8 +71,10 @@ final readonly class CsvExportService implements ExportServiceInterface
 
         $data = [];
 
+
         if ($withHeaders) {
-            $data[]  = $this->getHeaders($columns, $withGroup);
+            $columnsDefinitions = $this->getColumnConfigurations($csvExportDataInfo, $user);
+            $data[]  = $this->getHeaders($columns, $columnsDefinitions, $withGroup);
         }
 
         $data = array_merge($data, $csvData);
@@ -102,7 +110,7 @@ final readonly class CsvExportService implements ExportServiceInterface
         );
     }
 
-    private function getHeaders(array $columns, bool $withGroup): array
+    private function getHeaders(array $columns, array $columnsDefinitions, bool $withGroup): array
     {
         if (empty($columns)) {
             return [];
@@ -110,6 +118,7 @@ final readonly class CsvExportService implements ExportServiceInterface
 
         $columnCollection = $this->gridService->getConfigurationFromArray(
             $columns,
+            $columnsDefinitions,
             true
         );
 
@@ -129,5 +138,28 @@ final readonly class CsvExportService implements ExportServiceInterface
         $storage->createDirectory($folderName);
 
         return $folderName . '/' . $file;
+    }
+
+    private function getColumnConfigurations(array $csvExportDataInfo, ?UserInterface $user): array
+    {
+        return match($csvExportDataInfo['type']) {
+            ElementTypes::TYPE_OBJECT => $this->getDataObjectColumnConfigurations($csvExportDataInfo['className'], $user),
+            ElementTypes::TYPE_ASSET => $this->getAssetColumnConfigurations(),
+            default => throw new EnvironmentException('Invalid type'),
+        };
+    }
+
+    private function getDataObjectColumnConfigurations(string $className, ?UserInterface $user): array
+    {
+        return $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
+            $className,
+            1,
+            $user
+        );
+    }
+
+    private function getAssetColumnConfigurations(): array
+    {
+        return $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
     }
 }

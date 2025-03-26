@@ -24,6 +24,8 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\CsvExportHandlerSetupTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -36,8 +38,10 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 final class CsvAssetDataCollectionHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
+    use CsvExportHandlerSetupTrait;
 
     public function __construct(
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
         private readonly GridServiceInterface $gridService,
@@ -84,8 +88,11 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
 
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
 
+        $columnsDefinitions = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
+
         $columnCollection = $this->gridService->getConfigurationFromArray(
             $columns,
+            $columnsDefinitions,
             true
         );
 
@@ -99,6 +106,19 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
             ];
 
             $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $assetData);
+
+            $csvExportDataInfo = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA_INFO->value] ?? null;
+
+            if ($csvExportDataInfo === null) {
+                $this->updateContextArrayValues(
+                    $jobRun,
+                    StepConfig::CSV_EXPORT_DATA_INFO->value,
+                    [
+                        'type' => ElementTypes::TYPE_ASSET,
+                    ]
+                );
+            }
+
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
@@ -110,19 +130,5 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
         }
 
         $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
-    }
-
-    protected function configureStep(): void
-    {
-        $this->stepConfiguration->setRequired(StepConfig::ELEMENT_TO_EXPORT->value);
-        $this->stepConfiguration->setAllowedTypes(
-            StepConfig::ELEMENT_TO_EXPORT->value,
-            StepConfig::CONFIG_TYPE_ARRAY->value
-        );
-        $this->stepConfiguration->setRequired(StepConfig::CONFIG_COLUMNS->value);
-        $this->stepConfiguration->setAllowedTypes(
-            StepConfig::CONFIG_COLUMNS->value,
-            StepConfig::CONFIG_TYPE_ARRAY->value
-        );
     }
 }
