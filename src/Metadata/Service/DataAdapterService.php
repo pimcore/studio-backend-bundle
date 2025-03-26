@@ -90,6 +90,7 @@ final readonly class DataAdapterService implements DataAdapterServiceInterface
                 return $coreAdapter;
             }
         } catch (UnsupportedException) {
+            return null;
         }
 
         return null;
