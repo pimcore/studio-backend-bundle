@@ -14,20 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Data\MetaDataAdapterInterface;
 
 /**
  * @internal
  */
 interface DataAdapterLoaderInterface
 {
-    public const string ADAPTER_TAG = 'pimcore.studio_backend.data_adapter';
+    public const string ADAPTER_TAG = 'pimcore.studio_backend.metadata_adapter';
 
     /**
      * @throws InvalidArgumentException
      */
-    public function loadAdapter(string $adapterClass): SetterDataInterface;
+    public function loadAdapter(string $adapterClass): MetaDataAdapterInterface;
 }

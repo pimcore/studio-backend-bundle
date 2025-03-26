@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Updater\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Event\PreSet\CustomMetadataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataResolverServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Adapter\UpdateAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Asset;
@@ -31,10 +33,12 @@ use function array_key_exists;
 #[AutoconfigureTag('pimcore.studio_backend.update_adapter')]
 final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
 {
-    private const INDEX_KEY = 'metadata';
+    private const string INDEX_KEY = 'metadata';
 
     public function __construct(
-        private EventDispatcherInterface $eventDispatcher
+        private DataResolverServiceInterface $dataResolverService,
+        private EventDispatcherInterface $eventDispatcher,
+        private SecurityServiceInterface $securityService,
     ) {
     }
 
@@ -44,7 +48,10 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
             return;
         }
 
-        $metadataEvent = new CustomMetadataEvent($element->getId(), $data[$this->getIndexKey()]);
+        $metadataEvent = new CustomMetadataEvent(
+            $element->getId(),
+            $this->denormalizeMetadata($data[$this->getIndexKey()])
+        );
 
         $this->eventDispatcher->dispatch($metadataEvent, CustomMetadataEvent::EVENT_NAME);
 
@@ -61,5 +68,15 @@ final readonly class CustomMetadataAdapter implements UpdateAdapterInterface
         return [
             ElementTypes::TYPE_ASSET,
         ];
+    }
+
+    private function denormalizeMetadata(array $customMetadata): array
+    {
+        $user = $this->securityService->getCurrentUser();
+
+        return array_map(function ($metadataItem) use ($user) {
+            $metadataItem['data'] = $this->dataResolverService->denormalizeData($metadataItem, $user);
+            return $metadataItem;
+        }, $customMetadata);
     }
 }

@@ -16,6 +16,16 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataService
 
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Metadata\Service\Loader\TaggedIteratorMetadataAdapter
+
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataResolverServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataResolverServiceService
+
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterService
+    arguments:
+      $loader: '@pimcore.implementation_loader.asset.metadata.data'
 
   # Hydrator
   Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydratorInterface:
