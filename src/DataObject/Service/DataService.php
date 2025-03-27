@@ -132,12 +132,21 @@ final readonly class DataService implements DataServiceInterface
         Data $fieldDefinition,
         array $data
     ): array {
+        $previewFieldValue = null;
+        $previewFieldName = $this->getPreviewFieldName($fieldDefinition);
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+
         if ($adapter instanceof SearchPreviewDataInterface) {
-            return $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
+            $previewFieldValue = $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
         }
 
-        $data[$this->getPreviewFieldName($fieldDefinition)] = $fieldDefinition->getVersionPreview($value);
+        if($previewFieldValue === null) {
+            $previewFieldValue = $fieldDefinition->getVersionPreview($value);
+        }
+
+        if(!empty($previewFieldValue)) {
+            $data[$previewFieldName] = $previewFieldValue;
+        }
 
         return $data;
     }

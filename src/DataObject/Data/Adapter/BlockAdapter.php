@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -38,7 +39,10 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class BlockAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class BlockAdapter implements
+    SetterDataInterface,
+    DataNormalizerInterface,
+    SearchPreviewDataInterface
 {
     use ValidateObjectDataTrait;
 
@@ -218,5 +222,10 @@ final readonly class BlockAdapter implements SetterDataInterface, DataNormalizer
             $elementType,
             $data
         );
+    }
+
+    public function getPreviewFieldData(mixed $value, Data $fieldDefinition, array $data): array
+    {
+        return [];
     }
 }
