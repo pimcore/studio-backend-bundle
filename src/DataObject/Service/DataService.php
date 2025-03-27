@@ -140,11 +140,11 @@ final readonly class DataService implements DataServiceInterface
             $previewFieldValue = $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
         }
 
-        if($previewFieldValue === null) {
+        if ($previewFieldValue === null) {
             $previewFieldValue = $fieldDefinition->getVersionPreview($value);
         }
 
-        if(!empty($previewFieldValue)) {
+        if (!empty($previewFieldValue)) {
             $data[$previewFieldName] = $previewFieldValue;
         }
 
