@@ -48,17 +48,23 @@ final readonly class DataResolverServiceService implements DataResolverServiceIn
     /**
      * {@inheritdoc}
      */
-    public function denormalizeData(array $customMetadata, UserInterface $user): mixed
+    public function denormalizeData(
+        array $customMetadata,
+        UserInterface $user,
+        array $existingMetadata = [],
+        bool $isPatch = false
+    ): mixed
     {
         $adapter = $this->dataAdapterService->getDenormalizerAdapter($customMetadata['type']);
+        $data = $customMetadata['data'];
         if ($adapter === null) {
-            return $customMetadata['data'];
+            return $data;
         }
 
         if ($adapter instanceof NormalizerInterface) {
-            return $adapter->denormalize($customMetadata['data']);
+            return $adapter->denormalize($data);
         }
 
-        return $adapter->denormalize($customMetadata['data'], $customMetadata['type'], $user);
+        return $adapter->denormalize($customMetadata, $user, $existingMetadata, $isPatch);
     }
 }

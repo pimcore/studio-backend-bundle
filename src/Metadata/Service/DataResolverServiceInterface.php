@@ -32,5 +32,10 @@ interface DataResolverServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function denormalizeData(array $customMetadata, UserInterface $user): mixed;
+    public function denormalizeData(
+        array $customMetadata,
+        UserInterface $user,
+        array $existingMetadata = [],
+        bool $isPatch = false
+    ): mixed;
 }

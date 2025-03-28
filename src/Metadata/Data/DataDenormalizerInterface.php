@@ -21,8 +21,9 @@ use Pimcore\Model\UserInterface;
 interface DataDenormalizerInterface
 {
     public function denormalize(
-        mixed $value,
-        string $type,
-        UserInterface $user
+        array $customMetadata,
+        UserInterface $user,
+        array $existingMetadata = [],
+        bool $isPatch = false
     ): mixed;
 }
