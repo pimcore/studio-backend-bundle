@@ -288,6 +288,7 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('jwt_key')
                         ->info('The key used to sign the JWT token. Must be longer than 256 bits.')
                         ->isRequired()
+                        ->defaultValue('some-secret-default')
                     ->end()
                      ->integerNode('cookie_lifetime')
                         ->info('Lifetime of the mercure cookie in seconds. Default is one hour.')
