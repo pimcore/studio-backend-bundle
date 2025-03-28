@@ -53,8 +53,7 @@ final readonly class DataResolverServiceService implements DataResolverServiceIn
         UserInterface $user,
         array $existingMetadata = [],
         bool $isPatch = false
-    ): mixed
-    {
+    ): mixed {
         $adapter = $this->dataAdapterService->getDenormalizerAdapter($customMetadata['type']);
         $data = $customMetadata['data'];
         if ($adapter === null) {

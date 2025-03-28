@@ -28,6 +28,7 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_array;
 
 /**
  * @internal
@@ -67,8 +68,7 @@ final readonly class ManyToOneRelationAdapter implements
         UserInterface $user,
         array $existingMetadata = [],
         bool $isPatch = false
-    ): ?ElementInterface
-    {
+    ): ?ElementInterface {
         $value = $customMetadata['data'] ?? null;
         if (!is_array($value) || empty($value['id'])) {
             return null;

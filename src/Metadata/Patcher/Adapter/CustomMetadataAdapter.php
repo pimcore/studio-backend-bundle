@@ -117,8 +117,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         array $existingMetadata,
         string $key,
         UserInterface $user
-    ): mixed
-    {
+    ): mixed {
         if ($key !== 'data') {
             return $metadata[$key];
         }
