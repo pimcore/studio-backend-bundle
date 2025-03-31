@@ -11,5 +11,16 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
+  #
+  # Services
+  #
+
   Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepository

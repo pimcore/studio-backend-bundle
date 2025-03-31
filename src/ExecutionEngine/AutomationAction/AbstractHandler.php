@@ -30,7 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\AbortActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\ExecuteActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Model\FullExecuteActionData;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
-use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\Element\ElementDescriptor;
 use Pimcore\Model\Element\ElementInterface;
@@ -117,7 +117,7 @@ class AbstractHandler extends AbstractAutomationActionHandler
         $this->abortAction(
             $abortActionData->getTranslationKey(),
             $abortActionData->getTranslationParameters(),
-            TranslatorService::DOMAIN,
+            TranslatorServiceInterface::DOMAIN,
             $abortActionData->getExceptionClassName()
         );
     }

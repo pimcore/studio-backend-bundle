@@ -18,12 +18,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 
 /**
  * @internal
  */
 interface TranslatorServiceInterface
 {
+    public const string DOMAIN = 'studio';
+
+    public function updateTranslations(UpdateTranslation $translation): void;
+
     /**
      * @throws InvalidLocaleException
      */
@@ -33,6 +38,8 @@ interface TranslatorServiceInterface
      * @throws InvalidLocaleException
      */
     public function getTranslationsForKeys(string $locale, array $keys): Translation;
+
+    public function deleteTranslationByKey(string $key): void;
 
     public function translate(string $message, array $params = []): string;
 
