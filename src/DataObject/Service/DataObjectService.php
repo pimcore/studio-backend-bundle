@@ -136,16 +136,14 @@ final readonly class DataObjectService implements DataObjectServiceInterface
         );
         $query->setUser($this->securityService->getCurrentUser());
 
-        $this->setTreeSorting(
-            $this->getDataObjectElement(
-                $this->securityService->getCurrentUser(),
-                $parameters->getParentId() ?? 1
-            ),
-            $query
-        );
+        $parentId = $parameters->getParentId() ?? 1;
+        $parent = $this->getElement($this->serviceResolver, ElementTypes::TYPE_OBJECT, $parentId);
+        if (!$parent instanceof DataObjectModel) {
+            throw new NotFoundException(ElementTypes::TYPE_OBJECT, $parentId);
+        }
 
+        $this->setTreeSorting($parent, $query);
         $result = $this->dataObjectSearchService->searchDataObjects($query);
-
         $items = $result->getItems();
 
         foreach ($items as $item) {
