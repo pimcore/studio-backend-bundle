@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
@@ -27,6 +26,7 @@ interface CollectionConfigRepositoryInterface
     /**
      * @param CollectionParametersInterface $collectionParameters
      * @param array<int, int>|null $collectionIds
+     *
      * @return array
      */
     public function getPaginatedCollectionsByStore(
@@ -35,6 +35,5 @@ interface CollectionConfigRepositoryInterface
         array $collectionIds = null
     ): array;
 
-    public function getCountByStoreId(int $storeId,): int;
-
+    public function getCountByStoreId(int $storeId): int;
 }

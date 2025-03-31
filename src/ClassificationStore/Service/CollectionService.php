@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
@@ -26,24 +25,23 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Collection
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionRelationsRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
 
 /**
  * @internal
  */
 final readonly class CollectionService implements CollectionServiceInterface
 {
-
     public function __construct(
         private CollectionRelationsRepositoryInterface $collectionRelationsRepository,
         private ConcreteObjectResolver $concreteObjectResolver,
         private CollectionConfigRepositoryInterface $collectionConfigRepository,
         private CollectionHydratorInterface $collectionHydrator,
         private EventDispatcherInterface $eventDispatcher,
-    )
-    {
+    ) {
     }
 
     public function getCollections(ListClassificationStoreParameter $parameter): Collection
@@ -60,7 +58,6 @@ final readonly class CollectionService implements CollectionServiceInterface
             $allowedCollectionIds
         );
 
-
         $hydratedCollections = [];
         foreach ($collections as $collection) {
             $hydratedCollection = $this->collectionHydrator->hydrate($collection);
@@ -73,8 +70,6 @@ final readonly class CollectionService implements CollectionServiceInterface
             $hydratedCollections[] = $hydratedCollection;
         }
 
-
-
         return new Collection(
             totalItems: $this->collectionConfigRepository->getCountByStoreId($parameter->getStoreId()),
             items: $hydratedCollections
@@ -83,6 +78,7 @@ final readonly class CollectionService implements CollectionServiceInterface
 
     /**
      * @return array<int, int>
+     *
      * @throws Exception
      * @throws NotFoundException
      * @throws DatabaseException
@@ -99,16 +95,14 @@ final readonly class CollectionService implements CollectionServiceInterface
             throw new NotFoundException('object', $parameter->getObjectId());
         }
 
-
         $class = $object->getClass();
         $fieldDefinition = $class->getFieldDefinition($parameter->getFieldName());
 
-        if (!$fieldDefinition instanceof Classificationstore){
+        if (!$fieldDefinition instanceof Classificationstore) {
             throw new NotFoundException('field', $parameter->getFieldName());
         }
 
         $allowedGroupIds = $fieldDefinition->getAllowedGroupIds();
-
 
         return $this->collectionRelationsRepository->getCollectionIdsWith($allowedGroupIds);
     }

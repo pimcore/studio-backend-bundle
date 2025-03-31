@@ -43,16 +43,16 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class GetCollectionController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
     private CollectionServiceInterface $collectionService;
 
     public function __construct(
-        SerializerInterface        $serializer,
+        SerializerInterface $serializer,
         CollectionServiceInterface $collectionService,
     ) {
         parent::__construct($serializer);
         $this->collectionService = $collectionService;
     }
-
 
     #[Route('/classification-store/collections', name: 'pimcore_studio_api_classification_store_get_collections', methods: ['GET'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]

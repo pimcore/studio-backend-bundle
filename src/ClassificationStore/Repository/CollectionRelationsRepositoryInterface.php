@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
@@ -26,6 +25,7 @@ interface CollectionRelationsRepositoryInterface
 {
     /**
      * @param array<int> $groupIds
+     *
      * @return array<int>
      *
      * @throws DatabaseException

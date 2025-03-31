@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Doctrine\DBAL\ArrayParameterType;
@@ -29,8 +28,7 @@ final class CollectionRelationsRepository implements CollectionRelationsReposito
 {
     public function __construct(
         private DbResolverInterface $dbResolver,
-    )
-    {
+    ) {
     }
 
     /**

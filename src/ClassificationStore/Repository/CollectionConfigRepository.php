@@ -14,18 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig\Listing;
+use function count;
 
 /**
  * @internal
  */
 final class CollectionConfigRepository implements CollectionConfigRepositoryInterface
 {
-
     /**
      * {@inheritDoc}
      */
@@ -33,8 +32,7 @@ final class CollectionConfigRepository implements CollectionConfigRepositoryInte
         int $storeId,
         CollectionParametersInterface $collectionParameters,
         array $collectionIds = null
-    ): array
-    {
+    ): array {
         $list = new Listing();
 
         $list->setLimit($collectionParameters->getPageSize());
@@ -54,9 +52,9 @@ final class CollectionConfigRepository implements CollectionConfigRepositoryInte
     {
         $list = new Listing();
         $list->setCondition('storeId = ?', $storeId);
+
         return $list->count();
     }
-
 
     private function applyCollectionIdsFilter(Listing $list, array $collectionIds): void
     {
