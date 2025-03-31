@@ -54,7 +54,11 @@ final class GetCollectionController extends AbstractApiController
         $this->collectionService = $collectionService;
     }
 
-    #[Route('/classification-store/collections', name: 'pimcore_studio_api_classification_store_get_collections', methods: ['GET'])]
+    #[Route(
+        path: '/classification-store/collections',
+        name: 'pimcore_studio_api_classification_store_get_collections',
+        methods: ['GET']
+    )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
         path: self::PREFIX . '/classification-store/collections',
