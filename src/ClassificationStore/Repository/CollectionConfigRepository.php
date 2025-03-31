@@ -31,7 +31,7 @@ final class CollectionConfigRepository implements CollectionConfigRepositoryInte
     public function getPaginatedCollectionsByStore(
         int $storeId,
         CollectionParametersInterface $collectionParameters,
-        array $collectionIds = null
+        ?array $collectionIds = null
     ): array {
         $list = new Listing();
 

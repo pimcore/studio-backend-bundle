@@ -32,7 +32,7 @@ interface CollectionConfigRepositoryInterface
     public function getPaginatedCollectionsByStore(
         int $storeId,
         CollectionParametersInterface $collectionParameters,
-        array $collectionIds = null
+        ?array $collectionIds = null
     ): array;
 
     public function getCountByStoreId(int $storeId): int;
