@@ -14,18 +14,9 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
 
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Metadata\Data\MetaDataAdapterInterface;
-
-/**
- * @internal
- */
-interface DataAdapterLoaderInterface
+enum AdapterLoader: string
 {
-    /**
-     * @throws InvalidArgumentException
-     */
-    public function loadAdapter(string $adapterClass): MetaDataAdapterInterface;
+    case METADATA_ADAPTER_TAG = 'pimcore.studio_backend.metadata_adapter';
 }

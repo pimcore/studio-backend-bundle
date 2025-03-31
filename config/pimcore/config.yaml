@@ -99,7 +99,13 @@ pimcore_studio_backend:
             document: ['content', 'seo', 'warning', 'notice']
             data-object: ['content', 'seo', 'warning', 'notice']
 
-    asset_metadata_adapter_mapping: []
+    asset_metadata_adapter_mapping:
+        Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\BooleanAdapter:
+            - "checkbox"
+        Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\ManyToOneRelationAdapter:
+            - "asset"
+            - "document"
+            - "object"
 
     data_object_data_adapter_mapping:
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyRelationAdapter:

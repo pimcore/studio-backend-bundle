@@ -73,7 +73,12 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
 
             foreach (self::PATCHABLE_KEYS as $patchKey) {
                 if (array_key_exists($patchKey, $metadataForPatch[$index])) {
-                    $metadata[$patchKey] = $this->getExistingEntryValue($metadataForPatch[$index], $patchKey, $user);
+                    $metadata[$patchKey] = $this->getExistingEntryValue(
+                        $metadataForPatch[$index],
+                        $metadata,
+                        $patchKey,
+                        $user
+                    );
                 }
             }
             $patchedMetadata[] = $metadata;
@@ -107,13 +112,17 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         ];
     }
 
-    private function getExistingEntryValue(array $metadata, string $key, UserInterface $user): mixed
-    {
+    private function getExistingEntryValue(
+        array $metadata,
+        array $existingMetadata,
+        string $key,
+        UserInterface $user
+    ): mixed {
         if ($key !== 'data') {
             return $metadata[$key];
         }
 
-        return $this->dataResolverService->denormalizeData($metadata, $user);
+        return $this->dataResolverService->denormalizeData($metadata, $user, $existingMetadata, true);
     }
 
     /**
@@ -139,7 +148,9 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
             'name' => $predefined->getName(),
             'language' => $metadata['language'] ?? '',
             'type' => $predefined->getType(),
-            'data' => $metadata['data'] ? $this->dataResolverService->denormalizeData($metadata, $user) : null,
+            'data' => $metadata['data'] ?
+                $this->dataResolverService->denormalizeData($metadata, $user, [], true) :
+                null,
         ];
     }
 

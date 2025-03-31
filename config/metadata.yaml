@@ -12,7 +12,10 @@ services:
     public: true
     tags: [ 'controller.service_arguments' ]
 
+  #
   # Service
+  #
+
   Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataService
 
@@ -27,17 +30,34 @@ services:
     arguments:
       $loader: '@pimcore.implementation_loader.asset.metadata.data'
 
+  #
   # Hydrator
+  #
+
   Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator\MetadataHydrator
 
+  #
   # Repository
+  #
+
   Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepository
 
   Pimcore\Bundle\StudioBackendBundle\Metadata\Updater\Adapter\CustomMetadataAdapter:
     tags: [ 'pimcore.studio_backend.update_adapter' ]
 
+  #
   # Patcher
+  #
+
   Pimcore\Bundle\StudioBackendBundle\Metadata\Patcher\Adapter\CustomMetadataAdapter:
     tags: [ 'pimcore.studio_backend.patch_adapter' ]
+
+  #
+  # Data Adapters
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\BooleanAdapter: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\ManyToOneRelationAdapter: ~
