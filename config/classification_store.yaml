@@ -1,0 +1,38 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller\:
+    resource: '../src/ClassificationStore/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionService
+
+
+  #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionRelationsRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionRelationsRepository
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionConfigRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionConfigRepository
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\CollectionHydratorInterface:
+      class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\CollectionHydrator

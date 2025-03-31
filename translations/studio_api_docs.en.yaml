@@ -882,3 +882,7 @@ class_definition_folder_collection: Get list of all data object classes in a fol
 class_definition_folder_collection_description: Get list of all data object classes in a folder
 class_definition_folder_collection_summary: Get list of all data object classes in a folder
 class_definition_folder_collection_success_response: List of all data object classes in a folder
+tag_classification_store: Classification store operations
+classification_store_get_collections_description: Get all classification store collections for given fieldName
+classification_store_get_collections_summary: Get all classification store collections for given fieldName
+classification_store_get_collections_response: List of classification store collections
