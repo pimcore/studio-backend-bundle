@@ -36,8 +36,7 @@ final readonly class GridSearchService implements GridSearchServiceInterface
     public function getAssetSearchGrid(
         SearchGridParameter $gridParameter,
         array $columnDefinitions
-    ): Collection
-    {
+    ): Collection {
         $filter = $gridParameter->getFilters();
         $filter->setExcludeFolders(false);
         $parameter = new GridParameter(
@@ -56,8 +55,7 @@ final readonly class GridSearchService implements GridSearchServiceInterface
         SearchGridParameter $searchParameter,
         array $columnDefinitions,
         ?string $classId
-    ): Collection
-    {
+    ): Collection {
         $filter = $searchParameter->getFilters();
         $filter->setExcludeFolders(false);
 
