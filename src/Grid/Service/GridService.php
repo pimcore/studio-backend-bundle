@@ -66,7 +66,6 @@ final class GridService implements GridServiceInterface
     private array $columnCollectors = [];
 
     public function __construct(
-        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly ColumnDefinitionLoaderInterface $columnDefinitionLoader,
         private readonly ColumnResolverLoaderInterface $columnResolverLoader,
         private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
@@ -80,16 +79,14 @@ final class GridService implements GridServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function getAssetGrid(GridParameter $gridParameter): Collection
+    public function getAssetGrid(GridParameter $gridParameter, array $columnDefinitions): Collection
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
-
-        $columnsDefinitions = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
 
         return $this->getCollectionFromSearchResult(
             $result,
             $gridParameter,
-            $columnsDefinitions,
+            $columnDefinitions,
             ElementTypes::TYPE_ASSET
         );
     }
@@ -98,7 +95,7 @@ final class GridService implements GridServiceInterface
      * @throws NotFoundException
      * @throws Exception
      */
-    public function getDataObjectGrid(GridParameter $gridParameter, ?string $classId): Collection
+    public function getDataObjectGrid(GridParameter $gridParameter, array $columnDefinitions, ?string $classId): Collection
     {
         $filter = $gridParameter->getFilters();
 
@@ -113,11 +110,6 @@ final class GridService implements GridServiceInterface
         }
 
         $result = $this->gridSearch->searchDataObjects($gridParameter);
-
-        $columnDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
-            $classId,
-            1
-        );
 
         return $this->getCollectionFromSearchResult(
             $result,

@@ -33,7 +33,10 @@ final readonly class GridSearchService implements GridSearchServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function getAssetSearchGrid(SearchGridParameter $gridParameter): Collection
+    public function getAssetSearchGrid(
+        SearchGridParameter $gridParameter,
+        array $columnDefinitions
+    ): Collection
     {
         $filter = $gridParameter->getFilters();
         $filter->setExcludeFolders(false);
@@ -43,13 +46,17 @@ final readonly class GridSearchService implements GridSearchServiceInterface
             filters: $filter
         );
 
-        return $this->gridService->getAssetGrid($parameter);
+        return $this->gridService->getAssetGrid($parameter, $columnDefinitions);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function getDataObjectSearchGrid(SearchGridParameter $searchParameter, ?string $classId): Collection
+    public function getDataObjectSearchGrid(
+        SearchGridParameter $searchParameter,
+        array $columnDefinitions,
+        ?string $classId
+    ): Collection
     {
         $filter = $searchParameter->getFilters();
         $filter->setExcludeFolders(false);
@@ -60,6 +67,6 @@ final readonly class GridSearchService implements GridSearchServiceInterface
             filters: $filter
         );
 
-        return $this->gridService->getDataObjectGrid($gridParameter, $classId);
+        return $this->gridService->getDataObjectGrid($gridParameter, $columnDefinitions, $classId);
     }
 }

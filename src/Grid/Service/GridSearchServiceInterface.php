@@ -30,12 +30,19 @@ interface GridSearchServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function getAssetSearchGrid(SearchGridParameter $gridParameter): Collection;
+    public function getAssetSearchGrid(
+        SearchGridParameter $gridParameter,
+        array $columnDefinitions
+    ): Collection;
 
     /**
      * @throws InvalidArgumentException
      * @throws NotFoundException
      * @throws Exception
      */
-    public function getDataObjectSearchGrid(SearchGridParameter $searchParameter, ?string $classId): Collection;
+    public function getDataObjectSearchGrid(
+        SearchGridParameter $searchParameter,
+        array $columnDefinitions,
+        ?string $classId
+    ): Collection;
 }

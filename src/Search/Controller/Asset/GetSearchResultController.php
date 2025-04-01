@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\SearchGridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\SearchGridParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -43,6 +44,7 @@ final class GetSearchResultController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly GridSearchServiceInterface $searchService,
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService
     ) {
         parent::__construct($serializer);
     }
@@ -73,6 +75,11 @@ final class GetSearchResultController extends AbstractApiController
     ])]
     public function getAssetSearchGrid(#[MapRequestPayload] SearchGridParameter $searchGridParameter): JsonResponse
     {
-        return $this->jsonResponse($this->searchService->getAssetSearchGrid($searchGridParameter));
+        return $this->jsonResponse(
+            $this->searchService->getAssetSearchGrid(
+                $searchGridParameter,
+                $this->columnConfigurationService->getAvailableAssetColumnConfiguration()
+            )
+        );
     }
 }

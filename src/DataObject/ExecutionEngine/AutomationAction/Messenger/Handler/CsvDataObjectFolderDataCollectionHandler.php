@@ -110,22 +110,22 @@ final class CsvDataObjectFolderDataCollectionHandler extends AbstractHandler
             true
         );
 
-        foreach ($dataObjects->getItems() as $asset) {
+        foreach ($dataObjects->getItems() as $dataObject) {
             try {
-                $assetData = [
-                    $asset->getId() => $this->gridService->getGridValuesForElement(
+                $dataObjectData = [
+                    $dataObject->getId() => $this->gridService->getGridValuesForElement(
                         $columnCollection,
-                        $asset,
-                        ElementTypes::TYPE_ASSET
+                        $dataObject,
+                        ElementTypes::TYPE_OBJECT
                     ),
                 ];
 
-                $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $assetData);
+                $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $dataObjectData);
             } catch (Exception $e) {
                 $this->abort($this->getAbortData(
                     Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                     [
-                        'id' => $asset->getId(),
+                        'id' => $dataObject->getId(),
                         'message' => $e->getMessage(),
                     ]
                 ));
