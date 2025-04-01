@@ -38,7 +38,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     /**
      * {@inheritdoc}
      */
-    public function getFilteredLayoutDefinitions(string $classId, int $folderId, UserInterface $user = null): ?Layout
+    public function getFilteredLayoutDefinitions(string $classId, int $folderId, ?UserInterface $user = null): ?Layout
     {
         $classDefinition = $this->getClassDefinition($classId);
 
@@ -66,7 +66,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     public function getFilteredFieldDefinitions(
         string $classId,
         int $folderId,
-        UserInterface $user = null
+        ?UserInterface $user = null
     ): array {
         $classDefinition = $this->getClassDefinition($classId);
 
@@ -76,11 +76,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
             $user
         );
 
-        if (!isset($filteredDefinitions['fieldDefinition'])) {
-            return [];
-        }
-
-        return $filteredDefinitions['fieldDefinition'];
+        return $filteredDefinitions['fieldDefinition'] ?? [];
     }
 
     /**

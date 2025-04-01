@@ -29,12 +29,12 @@ interface ClassDefinitionServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getFilteredLayoutDefinitions(string $classId, int $folderId, UserInterface $user = null): ?Layout;
+    public function getFilteredLayoutDefinitions(string $classId, int $folderId, ?UserInterface $user = null): ?Layout;
 
     /**
      * @throws NotFoundException
      */
-    public function getFilteredFieldDefinitions(string $classId, int $folderId): array;
+    public function getFilteredFieldDefinitions(string $classId, int $folderId, ?UserInterface $user = null): array;
 
     /**
      * @throws NotFoundException
