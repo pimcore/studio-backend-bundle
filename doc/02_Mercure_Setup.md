@@ -95,6 +95,12 @@ you configured in configuration). This request should return the text
 Missing "topic" parameter.
 ```
 
+or
+
+```
+Unauthorized
+```
+
 > Also execute ``curl https://your-app-domain.com/hub`` (or `server_side_url` you configured in
 > configuration) from the command line of the server to ensure that the URL is also accessible by the
 > server itself.
