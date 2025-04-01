@@ -22,6 +22,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -42,6 +43,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     {
         $classDefinition = $this->getClassDefinition($classId);
 
+        /* @var User $user */
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
             $classDefinition,
             $folderId,
@@ -70,6 +72,7 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     ): array {
         $classDefinition = $this->getClassDefinition($classId);
 
+        /* @var User $user */
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
             $classDefinition,
             $folderId,

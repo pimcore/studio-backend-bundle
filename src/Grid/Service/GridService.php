@@ -66,6 +66,7 @@ final class GridService implements GridServiceInterface
     private array $columnCollectors = [];
 
     public function __construct(
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly ColumnDefinitionLoaderInterface $columnDefinitionLoader,
         private readonly ColumnResolverLoaderInterface $columnResolverLoader,
         private readonly ColumnCollectorLoaderInterface $columnCollectorLoader,
@@ -83,7 +84,9 @@ final class GridService implements GridServiceInterface
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
 
-        return $this->getCollectionFromSearchResult($result, $gridParameter, ElementTypes::TYPE_ASSET);
+        $columnsDefinitions = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
+
+        return $this->getCollectionFromSearchResult($result, $gridParameter, $columnsDefinitions, ElementTypes::TYPE_ASSET);
     }
 
     /**
@@ -106,7 +109,12 @@ final class GridService implements GridServiceInterface
 
         $result = $this->gridSearch->searchDataObjects($gridParameter);
 
-        return $this->getCollectionFromSearchResult($result, $gridParameter, ElementTypes::TYPE_OBJECT);
+        $columnDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
+            $classId,
+            1
+        );
+
+        return $this->getCollectionFromSearchResult($result, $gridParameter, $columnDefinitions,  ElementTypes::TYPE_OBJECT);
     }
 
     /**
@@ -294,18 +302,10 @@ final class GridService implements GridServiceInterface
         return $this->columnResolvers;
     }
 
-    private function isExportable(string $type): bool
-    {
-        if (!array_key_exists($type, $this->getColumnDefinitions())) {
-            return false;
-        }
-
-        return $this->getColumnDefinitions()[$type]->isExportable();
-    }
-
     private function getCollectionFromSearchResult(
         SearchResultItemInterface $searchResultItem,
         GridParameter $gridParameter,
+        array $columnDefinitions,
         string $elementType
     ): Collection {
         $items = $searchResultItem->getItems();
@@ -317,7 +317,7 @@ final class GridService implements GridServiceInterface
         $data = [];
         foreach ($items as $item) {
             $data[] = $this->getGridDataForElement(
-                $this->getConfigurationFromArray($gridParameter->getColumns()),
+                $this->getConfigurationFromArray($gridParameter->getColumns(), $columnDefinitions),
                 $item,
                 $elementType
             );
