@@ -48,7 +48,7 @@ final readonly class ManyToOneRelationAdapter implements
 
     public function normalize(mixed $value, string $type): ?array
     {
-        if ($value === null) {
+        if (!$value instanceof ElementInterface) {
             return null;
         }
 
