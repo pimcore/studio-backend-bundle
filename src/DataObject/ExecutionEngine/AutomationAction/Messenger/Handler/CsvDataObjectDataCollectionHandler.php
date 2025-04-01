@@ -91,7 +91,9 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
 
         $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
-            $className, 1, $user
+            $className,
+            1,
+            $user
         );
 
         $columnCollection = $this->gridService->getConfigurationFromArray(

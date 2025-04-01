@@ -99,7 +99,9 @@ final class CsvDataObjectFolderDataCollectionHandler extends AbstractHandler
 
         $className = $dataObject->getClassName();
         $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
-            $className, 1, $user
+            $className,
+            1,
+            $user
         );
 
         $columnCollection = $this->gridService->getConfigurationFromArray(
