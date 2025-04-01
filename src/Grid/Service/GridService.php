@@ -99,8 +99,7 @@ final class GridService implements GridServiceInterface
         GridParameter $gridParameter,
         array $columnDefinitions,
         ?string $classId
-    ): Collection
-    {
+    ): Collection {
         $filter = $gridParameter->getFilters();
 
         if ($classId) {
