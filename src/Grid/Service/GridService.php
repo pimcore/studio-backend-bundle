@@ -114,7 +114,7 @@ final class GridService implements GridServiceInterface
             1
         );
 
-        return $this->getCollectionFromSearchResult($result, $gridParameter, $columnDefinitions,  ElementTypes::TYPE_OBJECT);
+        return $this->getCollectionFromSearchResult($result, $gridParameter, $columnDefinitions, ElementTypes::TYPE_OBJECT);
     }
 
     /**
