@@ -37,10 +37,10 @@ final readonly class CollectionService implements CollectionServiceInterface
 {
     public function __construct(
         private CollectionRelationsRepositoryInterface $collectionRelationsRepository,
-        private ConcreteObjectResolver $concreteObjectResolver,
         private CollectionConfigRepositoryInterface $collectionConfigRepository,
         private CollectionHydratorInterface $collectionHydrator,
         private EventDispatcherInterface $eventDispatcher,
+        private GroupServiceInterface $groupService,
     ) {
     }
 
@@ -85,24 +85,7 @@ final readonly class CollectionService implements CollectionServiceInterface
      */
     private function getAllowedCollectionIds(ListClassificationStoreParameter $parameter): array
     {
-        if (!$parameter->getObjectId()) {
-            return [];
-        }
-
-        $object = $this->concreteObjectResolver->getById($parameter->getObjectId());
-
-        if (!$object) {
-            throw new NotFoundException('object', $parameter->getObjectId());
-        }
-
-        $class = $object->getClass();
-        $fieldDefinition = $class->getFieldDefinition($parameter->getFieldName());
-
-        if (!$fieldDefinition instanceof Classificationstore) {
-            throw new NotFoundException('field', $parameter->getFieldName());
-        }
-
-        $allowedGroupIds = $fieldDefinition->getAllowedGroupIds();
+        $allowedGroupIds = $this->groupService->getAllowedGroupIds($parameter);
 
         return $this->collectionRelationsRepository->getCollectionIdsWith($allowedGroupIds);
     }

@@ -19,7 +19,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Collection;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Group;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
@@ -40,43 +42,40 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetCollectionController extends AbstractApiController
+final class GetGroupsController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
-    private CollectionServiceInterface $collectionService;
-
     public function __construct(
         SerializerInterface $serializer,
-        CollectionServiceInterface $collectionService,
+        private readonly GroupServiceInterface $groupService,
     ) {
         parent::__construct($serializer);
-        $this->collectionService = $collectionService;
     }
 
     #[Route(
-        path: '/classification-store/collections',
-        name: 'pimcore_studio_api_classification_store_get_collections',
+        path: '/classification-store/groups',
+        name: 'pimcore_studio_api_classification_store_get_groups',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/classification-store/collections',
-        operationId: 'classification_store_get_collections',
-        description: 'classification_store_get_collections_description',
-        summary: 'classification_store_get_collections_summary',
+        path: self::PREFIX . '/classification-store/groups',
+        operationId: 'classification_store_get_groups',
+        description: 'classification_store_get_groups_description',
+        summary: 'classification_store_get_groups_summary',
         tags: [Tags::ClassificationStore->value]
     )]
     #[SuccessResponse(
-        description: 'classification_store_get_collections_response',
-        content: new CollectionJson(new GenericCollection(Collection::class))
+        description: 'classification_store_get_groups_response',
+        content: new CollectionJson(new GenericCollection(Group::class))
     )]
     #[IdParameter(
-        description: 'Classification Store',
+        description: 'Classification Store ID',
         namePrefix: 'store',
     )]
     #[IdParameter(
-        description: 'object',
+        description: 'object ID',
         namePrefix: 'object',
         required: false
     )]
@@ -91,7 +90,7 @@ final class GetCollectionController extends AbstractApiController
     public function getCollections(
         #[MapQueryString] ListClassificationStoreParameter $parameters
     ): JsonResponse {
-        $collection = $this->collectionService->getCollections($parameters);
+        $collection = $this->groupService->getGroups($parameters);
 
         return $this->getPaginatedCollection(
             $this->serializer,
