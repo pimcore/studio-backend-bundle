@@ -54,7 +54,7 @@ final readonly class ManyToOneRelationAdapter implements
 
         return [
             'id' => $value->getId(),
-            'type' => $value->getType(),
+            'type' => $this->getElementType($value, true),
             'fullPath' => $value->getRealFullPath(),
             'subtype' => $value->getType(),
             'isPublished' => ($value instanceof Concrete || $value instanceof Document) ?
