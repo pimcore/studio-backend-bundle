@@ -60,4 +60,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\BooleanAdapter: ~
 
+  Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\DateAdapter: ~
+
   Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\ManyToOneRelationAdapter: ~

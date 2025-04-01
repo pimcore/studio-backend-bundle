@@ -106,6 +106,8 @@ pimcore_studio_backend:
             - "asset"
             - "document"
             - "object"
+        Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\DateAdapter:
+            - "date"
 
     data_object_data_adapter_mapping:
         Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\AdvancedManyToManyRelationAdapter:

@@ -37,7 +37,7 @@ final readonly class ConfigSettingsProvider implements SettingsProviderInterface
             'asset_tree_paging_limit' => $this->config['assets']['tree_paging_limit'],
             'document_tree_paging_limit' => $this->config['documents']['tree_paging_limit'],
             'object_tree_paging_limit' => $this->config['objects']['tree_paging_limit'],
-            'timezone' => $this->config['general']['timezone'],
+            'timezone' => $this->config['general']['timezone'] ?: date_default_timezone_get(),
             'maps' => $this->config['maps'],
         ];
 

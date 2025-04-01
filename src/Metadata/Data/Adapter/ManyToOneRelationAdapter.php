@@ -48,13 +48,13 @@ final readonly class ManyToOneRelationAdapter implements
 
     public function normalize(mixed $value, string $type): ?array
     {
-        if ($value === null) {
+        if (!$value instanceof ElementInterface) {
             return null;
         }
 
         return [
             'id' => $value->getId(),
-            'type' => $value->getType(),
+            'type' => $this->getElementType($value, true),
             'fullPath' => $value->getRealFullPath(),
             'subtype' => $value->getType(),
             'isPublished' => ($value instanceof Concrete || $value instanceof Document) ?
