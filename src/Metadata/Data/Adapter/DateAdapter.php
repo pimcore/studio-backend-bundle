@@ -43,9 +43,9 @@ final readonly class DateAdapter implements MetaDataAdapterInterface, DataNormal
         UserInterface $user,
         array $existingMetadata = [],
         bool $isPatch = false
-    ): ?float
-    {
+    ): ?float {
         $value = $customMetadata['data'] ?? null;
+
         return $value ?? null;
     }
 }
