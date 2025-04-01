@@ -114,10 +114,12 @@ final readonly class DataService implements DataServiceInterface
         $class = $this->getValidClass($this->classDefinitionResolver, $dataObject->getClassId());
         $data = [];
         foreach ($class->getFieldDefinitions() as $key => $fieldDefinition) {
-            $data = $this->getPreviewFieldData(
-                $this->getValidFieldValue($dataObject, $key),
-                $fieldDefinition,
-                $data
+            $data = $this->removeEmptyValues(
+                $this->getPreviewFieldData(
+                    $this->getValidFieldValue($dataObject, $key),
+                    $fieldDefinition,
+                    $data
+                )
             );
         }
 
@@ -132,21 +134,12 @@ final readonly class DataService implements DataServiceInterface
         Data $fieldDefinition,
         array $data
     ): array {
-        $previewFieldValue = null;
-        $previewFieldName = $this->getPreviewFieldName($fieldDefinition);
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
-
         if ($adapter instanceof SearchPreviewDataInterface) {
-            $previewFieldValue = $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
+            return $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
         }
 
-        if ($previewFieldValue === null) {
-            $previewFieldValue = $fieldDefinition->getVersionPreview($value);
-        }
-
-        if (!empty($previewFieldValue)) {
-            $data[$previewFieldName] = $previewFieldValue;
-        }
+        $data[$this->getPreviewFieldName($fieldDefinition)] = $fieldDefinition->getVersionPreview($value);
 
         return $data;
     }
@@ -214,6 +207,17 @@ final readonly class DataService implements DataServiceInterface
                 $draftElement->markFieldDirty($fieldName);
             }
         }
+    }
+
+    private function removeEmptyValues(array $previewFields): array
+    {
+        foreach ($previewFields as $previewFieldName => $previewField) {
+            if (empty($previewField)) {
+                unset($previewFields[$previewFieldName]);
+            }
+        }
+
+        return $previewFields;
     }
 
     /**
