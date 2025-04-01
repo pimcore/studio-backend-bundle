@@ -100,7 +100,7 @@ final class CsvDataObjectFolderDataCollectionHandler extends AbstractHandler
         $className = $dataObject->getClassName();
         $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
             $className,
-            1,
+            $jobFolder['id'],
             $user
         );
 

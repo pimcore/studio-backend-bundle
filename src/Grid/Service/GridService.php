@@ -95,7 +95,11 @@ final class GridService implements GridServiceInterface
      * @throws NotFoundException
      * @throws Exception
      */
-    public function getDataObjectGrid(GridParameter $gridParameter, array $columnDefinitions, ?string $classId): Collection
+    public function getDataObjectGrid(
+        GridParameter $gridParameter,
+        array $columnDefinitions,
+        ?string $classId
+    ): Collection
     {
         $filter = $gridParameter->getFilters();
 
