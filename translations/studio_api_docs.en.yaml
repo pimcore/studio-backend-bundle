@@ -886,3 +886,6 @@ tag_classification_store: Classification store operations
 classification_store_get_collections_description: Get all classification store collections for given fieldName
 classification_store_get_collections_summary: Get all classification store collections for given fieldName
 classification_store_get_collections_response: List of classification store collections
+classification_store_get_groups_description: Get all classification store groups for given fieldName
+classification_store_get_groups_summary: Get all classification store groups for given fieldName
+classification_store_get_groups_response: List of classification store groups

@@ -17,22 +17,22 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
-use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 
 /**
  * @internal
  */
-interface CollectionConfigRepositoryInterface
+interface GroupConfigRepositoryInterface
 {
     /**
-     * @param array<int, int>|null $collectionIds
+     * @param array<int, int>|null $groupIds
      *
-     * @return CollectionConfig[]
+     * @return GroupConfig[]
      */
-    public function getPaginatedCollectionsByStore(
+    public function getPaginatedGroupsByStore(
         int $storeId,
         CollectionParametersInterface $collectionParameters,
-        ?array $collectionIds = null
+        ?array $groupIds = null
     ): array;
 
     public function getCountByStoreId(int $storeId): int;

@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\CollectionEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\CollectionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
@@ -26,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\Collection
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
-use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
@@ -37,10 +35,10 @@ final readonly class CollectionService implements CollectionServiceInterface
 {
     public function __construct(
         private CollectionRelationsRepositoryInterface $collectionRelationsRepository,
-        private ConcreteObjectResolver $concreteObjectResolver,
         private CollectionConfigRepositoryInterface $collectionConfigRepository,
         private CollectionHydratorInterface $collectionHydrator,
         private EventDispatcherInterface $eventDispatcher,
+        private GroupServiceInterface $groupService,
     ) {
     }
 
@@ -85,24 +83,7 @@ final readonly class CollectionService implements CollectionServiceInterface
      */
     private function getAllowedCollectionIds(ListClassificationStoreParameter $parameter): array
     {
-        if (!$parameter->getObjectId()) {
-            return [];
-        }
-
-        $object = $this->concreteObjectResolver->getById($parameter->getObjectId());
-
-        if (!$object) {
-            throw new NotFoundException('object', $parameter->getObjectId());
-        }
-
-        $class = $object->getClass();
-        $fieldDefinition = $class->getFieldDefinition($parameter->getFieldName());
-
-        if (!$fieldDefinition instanceof Classificationstore) {
-            throw new NotFoundException('field', $parameter->getFieldName());
-        }
-
-        $allowedGroupIds = $fieldDefinition->getAllowedGroupIds();
+        $allowedGroupIds = $this->groupService->getAllowedGroupIds($parameter);
 
         return $this->collectionRelationsRepository->getCollectionIdsWith($allowedGroupIds);
     }

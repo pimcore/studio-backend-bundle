@@ -19,6 +19,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionService
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupService
+
 
   #
   # Repositories
@@ -30,9 +33,16 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionConfigRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionConfigRepository
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\GroupConfigRepository
+
+
   #
   # Hydrators
   #
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\CollectionHydratorInterface:
       class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\CollectionHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupHydrator
