@@ -18,9 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Collection;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Group;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\CollectionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IdParameter;

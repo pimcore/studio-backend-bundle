@@ -14,18 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing;
+use function count;
 
 /**
  * @internal
  */
 final class GroupConfigRepository implements GroupConfigRepositoryInterface
 {
-
     /**
      * {@inheritDoc}
      */
@@ -50,16 +49,15 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
     {
         $listing = new Listing();
         $listing->setCondition('storeId = ?', $storeId);
+
         return $listing->count();
     }
-
 
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void
     {
         $placeholders = implode(',', array_fill(0, count($groupIds), '?'));
         $list->addConditionParam('id IN ('. $placeholders .')', $groupIds);
     }
-
 
     private function getOffset(CollectionParametersInterface $collectionParameters): int
     {
