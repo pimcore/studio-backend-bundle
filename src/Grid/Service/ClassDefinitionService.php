@@ -43,7 +43,9 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     {
         $classDefinition = $this->getClassDefinition($classId);
 
-        // @var User $user
+        /** @var User $user
+         *  Because Core needs a User
+         * */
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
             $classDefinition,
             $folderId,
@@ -72,7 +74,9 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     ): array {
         $classDefinition = $this->getClassDefinition($classId);
 
-        // @var User $user
+        /** @var User $user
+         *  Because Core needs a User
+         * */
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
             $classDefinition,
             $folderId,

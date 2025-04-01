@@ -86,7 +86,12 @@ final class GridService implements GridServiceInterface
 
         $columnsDefinitions = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
 
-        return $this->getCollectionFromSearchResult($result, $gridParameter, $columnsDefinitions, ElementTypes::TYPE_ASSET);
+        return $this->getCollectionFromSearchResult(
+            $result,
+            $gridParameter,
+            $columnsDefinitions,
+            ElementTypes::TYPE_ASSET
+        );
     }
 
     /**
@@ -114,7 +119,12 @@ final class GridService implements GridServiceInterface
             1
         );
 
-        return $this->getCollectionFromSearchResult($result, $gridParameter, $columnDefinitions, ElementTypes::TYPE_OBJECT);
+        return $this->getCollectionFromSearchResult(
+            $result,
+            $gridParameter,
+            $columnDefinitions,
+            ElementTypes::TYPE_OBJECT
+        );
     }
 
     /**
