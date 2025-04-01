@@ -196,8 +196,7 @@ final class GridService implements GridServiceInterface
         array $config,
         array $columnsDefinitions,
         bool $isExport = false
-    ): ColumnCollection
-    {
+    ): ColumnCollection {
 
         $columns = [];
         foreach ($config as $column) {
