@@ -65,7 +65,7 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
     /**
      * {@inheritdoc}
      */
-    public function getColumnConfigurations(array $availableColumnDefinitions, UserInterface $user = null): array
+    public function getColumnConfigurations(array $availableColumnDefinitions, ?UserInterface $user = null): array
     {
         $objectBrickList = new ObjectBrickListing();
         $objectBrickList = $objectBrickList->load();

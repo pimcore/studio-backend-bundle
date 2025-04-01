@@ -59,7 +59,7 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
         return 'data-object-field-definition';
     }
 
-    public function getColumnConfigurations(array $availableColumnDefinitions, UserInterface $user = null): array
+    public function getColumnConfigurations(array $availableColumnDefinitions, ?UserInterface $user = null): array
     {
         $layoutDefinitions = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $this->getClassId(),

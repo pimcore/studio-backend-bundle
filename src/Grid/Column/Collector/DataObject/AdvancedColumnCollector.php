@@ -62,7 +62,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
         return 'data-object-advanced-column';
     }
 
-    public function getColumnConfigurations(array $availableColumnDefinitions, UserInterface $user = null): array
+    public function getColumnConfigurations(array $availableColumnDefinitions, ?UserInterface $user = null): array
     {
         $test = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $this->getClassId(),
