@@ -171,7 +171,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
      */
     private function getRelationFields(
         array $groupedDefinitions,
-        UserInterface $user = null
+        ?UserInterface $user = null
     ): array {
         $relations = [];
         foreach ($groupedDefinitions as $definition) {
@@ -192,7 +192,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
 
     private function buildAbstractRelationsFields(
         AbstractRelations $definition,
-        UserInterface $user = null
+        ?UserInterface $user = null
     ): RelationField {
         $classes  = $definition->getClasses();
         $fields = [];
@@ -216,7 +216,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
 
     private function buildAdvancedManyToManyObjectRelationFields(
         AdvancedManyToManyObjectRelation $definition,
-        UserInterface $user = null
+        ?UserInterface $user = null
     ): RelationField {
         $className = $definition->getAllowedClassId();
         if ($className === null) {
@@ -233,7 +233,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
     /**
      * @return SimpleField[]
      */
-    private function buildFieldForClassName(string $className, UserInterface $user = null): array
+    private function buildFieldForClassName(string $className, ?UserInterface $user = null): array
     {
         try {
             $definitionOfTheRelation = $this->classDefinitionResolver->getByName($className);
