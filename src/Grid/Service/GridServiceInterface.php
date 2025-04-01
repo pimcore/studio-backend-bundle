@@ -56,7 +56,11 @@ interface GridServiceInterface
         bool $isExport = false
     ): array;
 
-    public function getConfigurationFromArray(array $config, array $columnsDefinitions, bool $isExport = false): ColumnCollection;
+    public function getConfigurationFromArray(
+        array $config,
+        array $columnsDefinitions,
+        bool $isExport = false
+    ): ColumnCollection;
 
     /**
      * @throws InvalidArgumentException

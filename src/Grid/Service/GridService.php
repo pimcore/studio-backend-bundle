@@ -192,7 +192,11 @@ final class GridService implements GridServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function getConfigurationFromArray(array $config, array $columnsDefinitions, bool $isExport = false): ColumnCollection
+    public function getConfigurationFromArray(
+        array $config,
+        array $columnsDefinitions,
+        bool $isExport = false
+    ): ColumnCollection
     {
 
         $columns = [];

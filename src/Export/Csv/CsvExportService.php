@@ -142,7 +142,10 @@ final readonly class CsvExportService implements ExportServiceInterface
     private function getColumnConfigurations(array $csvExportDataInfo, ?UserInterface $user): array
     {
         return match($csvExportDataInfo['type']) {
-            ElementTypes::TYPE_OBJECT => $this->getDataObjectColumnConfigurations($csvExportDataInfo['className'], $user),
+            ElementTypes::TYPE_OBJECT => $this->getDataObjectColumnConfigurations(
+                $csvExportDataInfo['className'],
+                $user
+            ),
             ElementTypes::TYPE_ASSET => $this->getAssetColumnConfigurations(),
             default => throw new EnvironmentException('Invalid type'),
         };
