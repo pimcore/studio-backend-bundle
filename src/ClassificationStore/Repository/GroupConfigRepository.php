@@ -14,7 +14,6 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
@@ -33,8 +32,7 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
         int $storeId,
         CollectionParametersInterface $collectionParameters,
         ?array $groupIds = null
-    ): array
-    {
+    ): array {
         $listing = new Listing();
 
         $listing->setLimit($collectionParameters->getPageSize());
