@@ -228,19 +228,18 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         $previewThumbnail->setFormat(MimeTypes::PJPEG->value);
         $previewThumbnail->setQuality(60);
         $previewThumbnail->addItem(
-            'setBackgroundImage',
-            [
-                //ToDo: Replace with the path to the actual image once its present in Studio UI
-                'path' => '/bundles/pimcoreadmin/img/tree-preview-transparent-background.png',
-                'mode' => 'asTexture',
-            ]
-        );
-        $previewThumbnail->addItem(
             'contain',
             [
                 'width' => 1920,
                 'height' => 1920,
                 'forceResize' => false,
+            ]
+        );
+        $previewThumbnail->addItem(
+            'setBackgroundImage',
+            [
+                'path' => '/bundles/pimcorestudiobackend/img/tree-preview-transparent-background.png',
+                'mode' => 'asTexture',
             ]
         );
 
