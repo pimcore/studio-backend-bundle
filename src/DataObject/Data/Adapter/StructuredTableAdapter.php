@@ -26,6 +26,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\StructuredTable;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_bool;
 
 /**
  * @internal
@@ -55,7 +56,7 @@ final readonly class StructuredTableAdapter implements SetterDataInterface, Data
 
         return $table;
     }
-    
+
     public function normalize(mixed $value, Data $fieldDefinition): ?array
     {
         if ($value === null) {
@@ -73,7 +74,7 @@ final readonly class StructuredTableAdapter implements SetterDataInterface, Data
             foreach ($columns as $colKey => $colValue) {
                 if ($colKey !== '' && $rowKey !== '') {
                     $colType = $this->getColumnType($fieldDefinition, $colKey);
-                    $returnValue[$rowKey][$colKey] = $colType === 'bool' ? (bool)$colValue: $colValue;
+                    $returnValue[$rowKey][$colKey] = $colType === 'bool' ? (bool)$colValue : $colValue;
                 }
             }
         }
