@@ -131,9 +131,10 @@ final readonly class HotspotImageAdapter implements
 
         $value['image'] = [
             ... $value['image'],
-            ...$this->normalizeElementData($id, $type),
+            ... $this->normalizeElementData($id, $type),
         ];
-        $value['hotspots'] = $this->normalizeHotSpotData($value['hotspots']);
+        $value['hotspots'] = $this->normalizeLocationData($value['hotspots']);
+        $value['marker'] = $this->normalizeLocationData($value['marker']);
 
         return $value;
     }
@@ -150,10 +151,10 @@ final readonly class HotspotImageAdapter implements
         return $elementData;
     }
 
-    private function normalizeHotSpotData(array $hotSpotData): array
+    private function normalizeLocationData(array $locationData): array
     {
-        foreach ($hotSpotData as &$hotSpot) {
-            $data = $hotSpot['data'] ?? null;
+        foreach ($locationData as &$location) {
+            $data = $location['data'] ?? null;
             if (!is_array($data)) {
                 continue;
             }
@@ -161,7 +162,7 @@ final readonly class HotspotImageAdapter implements
                 if ($item instanceof MarkerHotspotItem &&
                     $this->isValidItem($item)
                 ) {
-                    $hotSpot['data'] = [
+                    $location['data'] = [
                         ... $this->normalizeImageData($item),
                         ... $this->normalizeElementData($item->getValue(), $item->getType()),
                         ];
@@ -169,7 +170,7 @@ final readonly class HotspotImageAdapter implements
             }
         }
 
-        return $hotSpotData;
+        return $locationData;
     }
 
     private function getElementData(int $id, string $type): Asset|Document|AbstractObject
@@ -192,6 +193,8 @@ final readonly class HotspotImageAdapter implements
             if (isset($element['data']) && is_array($element['data']) && $element['data'] !== []) {
                 $element['data'] = $this->processMetaData($element['data']);
             }
+
+            $element['data'] = $element['data'] ?? [];
         }
 
         return $data;
