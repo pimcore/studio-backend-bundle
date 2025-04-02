@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -32,7 +33,10 @@ use function is_bool;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class StructuredTableAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class StructuredTableAdapter implements
+    SetterDataInterface,
+    DataNormalizerInterface,
+    SearchPreviewDataInterface
 {
     public function getDataForSetter(
         Concrete $element,
@@ -80,6 +84,11 @@ final readonly class StructuredTableAdapter implements SetterDataInterface, Data
         }
 
         return $returnValue;
+    }
+
+    public function getPreviewFieldData(mixed $value, Data $fieldDefinition, array $data): array
+    {
+        return [];
     }
 
     private function getColumnType(StructuredTableDefinition $definition, string $colKey): ?string
