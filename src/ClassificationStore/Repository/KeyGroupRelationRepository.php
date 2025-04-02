@@ -14,22 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
+use function count;
 
 /**
  * @internal
  */
 final class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInterface
 {
-
     public function __construct(
         private GroupConfigRepositoryInterface $groupConfigRepository
-    )
-    {
+    ) {
     }
 
     /**
@@ -42,7 +40,7 @@ final class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInte
     ): array {
 
         $groupIds = array_map(
-            fn($group) => $group->getId(),
+            fn ($group) => $group->getId(),
             $this->groupConfigRepository->getAllGroupsByStore($storeId, $groupIds)
         );
 
@@ -58,7 +56,7 @@ final class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInte
     public function getCountByStoreId(int $storeId, ?array $groupIds = null): int
     {
         $groupIds = array_map(
-            fn($group) => $group->getId(),
+            fn ($group) => $group->getId(),
             $this->groupConfigRepository->getAllGroupsByStore($storeId, $groupIds)
         );
 
@@ -67,7 +65,6 @@ final class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInte
 
         return $listing->count();
     }
-
 
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void
     {

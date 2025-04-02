@@ -61,7 +61,6 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
         return $listing->load();
     }
 
-
     public function getCountByStoreId(int $storeId): int
     {
         $listing = new Listing();

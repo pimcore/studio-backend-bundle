@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelation;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
-use \Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation as CoreKeyGroupRelation;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation as CoreKeyGroupRelation;
 
 /**
  * @internal
@@ -26,5 +26,4 @@ use \Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation as CoreKeyGro
 interface KeyGroupRelationHydratorInterface
 {
     public function hydrate(CoreKeyGroupRelation $keyGroupRelation, GroupConfig $groupConfig): KeyGroupRelation;
-
 }

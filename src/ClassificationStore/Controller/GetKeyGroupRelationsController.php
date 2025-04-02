@@ -55,7 +55,6 @@ final class GetKeyGroupRelationsController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-
     /**
      * @throws Exception
      * @throws NotFoundException

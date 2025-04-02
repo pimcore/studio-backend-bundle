@@ -59,7 +59,6 @@ final class GetGroupsController extends AbstractApiController
      * @throws Exception
      * @throws NotFoundException
      */
-
     #[Route(
         path: '/classification-store/groups',
         name: 'pimcore_studio_api_classification_store_get_groups',

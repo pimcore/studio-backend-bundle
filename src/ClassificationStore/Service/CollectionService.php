@@ -42,7 +42,6 @@ final readonly class CollectionService implements CollectionServiceInterface
     ) {
     }
 
-
     /**
      * {@inheritDoc}
      */

@@ -81,5 +81,4 @@ final class KeyGroupRelation implements AdditionalAttributesInterface
     {
         return $this->groupDescription;
     }
-
 }
