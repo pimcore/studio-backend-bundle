@@ -27,8 +27,10 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'Classification Store KeyGroupRelation',
     required: [
-        'id',
-        'name',
+        'keyId',
+        'groupId',
+        'keyName',
+        'groupName',
     ],
     type: 'object'
 )]
