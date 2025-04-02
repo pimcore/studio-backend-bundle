@@ -889,3 +889,6 @@ classification_store_get_collections_response: List of classification store coll
 classification_store_get_groups_description: Get all classification store groups for given fieldName
 classification_store_get_groups_summary: Get all classification store groups for given fieldName
 classification_store_get_groups_response: List of classification store groups
+classification_store_get_key_group_relations_description: Get all classification store key group relations for given fieldName
+classification_store_get_key_group_relations_summary: Get all classification store key group relations for given fieldName
+classification_store_get_key_group_relations_response: List of classification store key group relations

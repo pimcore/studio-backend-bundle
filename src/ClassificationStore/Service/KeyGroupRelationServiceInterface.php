@@ -24,11 +24,11 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 /**
  * @internal
  */
-interface CollectionServiceInterface
+interface KeyGroupRelationServiceInterface
 {
     /**
      * @throws Exception
      * @throws NotFoundException
      */
-    public function getCollections(ListClassificationStoreParameter $parameter): Collection;
+    public function getKeyGroupRelations(ListClassificationStoreParameter $parameter): Collection;
 }
