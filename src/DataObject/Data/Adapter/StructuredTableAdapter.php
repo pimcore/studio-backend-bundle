@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
@@ -30,7 +31,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class StructuredTableAdapter implements SetterDataInterface
+final readonly class StructuredTableAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     public function getDataForSetter(
         Concrete $element,
@@ -47,11 +48,57 @@ final readonly class StructuredTableAdapter implements SetterDataInterface
             /** @var StructuredTableDefinition $fieldDefinition */
             $cols = $fieldDefinition->getCols();
             foreach ($cols as $col) {
-                $tableData[$id][$col['key']] = $dataLine[$col['key']];
+                $tableData[$id][$col['key']] = $this->transformBoolValues($dataLine[$col['key']]);
             }
         }
         $table->setData($tableData);
 
         return $table;
+    }
+    
+    public function normalize(mixed $value, Data $fieldDefinition): ?array
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (!$fieldDefinition instanceof StructuredTableDefinition) {
+            return null;
+        }
+
+        $rows = $fieldDefinition->normalize($value);
+
+        $returnValue = [];
+        foreach ($rows as $rowKey => $columns) {
+            foreach ($columns as $colKey => $colValue) {
+                if ($colKey !== '' && $rowKey !== '') {
+                    $colType = $this->getColumnType($fieldDefinition, $colKey);
+                    $returnValue[$rowKey][$colKey] = $colType === 'bool' ? (bool)$colValue: $colValue;
+                }
+            }
+        }
+
+        return $returnValue;
+    }
+
+    private function getColumnType(StructuredTableDefinition $definition, string $colKey): ?string
+    {
+        $cols = $definition->getCols();
+        foreach ($cols as $col) {
+            if ($col['key'] === $colKey) {
+                return $col['type'];
+            }
+        }
+
+        return null;
+    }
+
+    private function transformBoolValues(mixed $value): mixed
+    {
+        if (is_bool($value)) {
+            return $value ? 1 : 0;
+        }
+
+        return $value;
     }
 }
