@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInte
 use Pimcore\Model\Translation;
 use Pimcore\Model\Translation\Listing;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
