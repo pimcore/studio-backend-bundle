@@ -16,7 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 
@@ -27,6 +29,14 @@ interface TranslatorServiceInterface
 {
     public const string DOMAIN = 'studio';
 
+    /**
+     * @throws ElementExistsException
+     */
+    public function createTranslations(CreateTranslation $translation): void;
+
+    /**
+     * @throws InvalidLocaleException
+     */
     public function updateTranslations(UpdateTranslation $translation): void;
 
     /**

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\TranslationData;
@@ -53,13 +54,41 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
     /**
      * {@inheritdoc}
      */
-    public function createTranslations(array $translationData, string $locale): void
+    public function createTranslations(string $key, string $type): void
+    {
+        $languages = $this->adminResolver->getLanguages();
+
+        if ($this->getTranslationByKey($key) !== null) {
+            throw new ElementExistsException(
+                sprintf("Translation with key '%s' already exists", $key),
+            );
+        }
+
+        $t = new Translation();
+        $t->setDomain(TranslatorServiceInterface::DOMAIN);
+        $t->setKey($key);
+        $t->setType($type);
+        $t->setCreationDate(time());
+        $t->setModificationDate(time());
+        $this->setNewValues($t, $languages);
+        $t->save();
+
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateTranslations(array $translationData, string $locale): void
     {
         $languages = $this->adminResolver->getLanguages();
         $this->validateLocale($locale, $languages);
 
         /** @var TranslationData $translation */
         foreach ($translationData as $translation) {
+            if ($this->getTranslationByKey($translation->getKey()) === null) {
+                throw new NotFoundException('translation', $translation->getKey(), 'key');
+            }
+
             $t = new Translation();
             $t->setDomain(TranslatorServiceInterface::DOMAIN);
             $t->setKey($translation->getKey());
@@ -67,9 +96,6 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
             $t->addTranslation($locale, $translation->getTranslation());
             $t->setCreationDate(time());
             $t->setModificationDate(time());
-            if ($this->getTranslationByKey($translation->getKey()) === null) {
-                $this->setNewValues($t, $languages, $locale);
-            }
             $t->save();
         }
     }
@@ -94,14 +120,10 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         return $list;
     }
 
-    private function setNewValues(Translation $translation, array $languages, string $locale): void
+    private function setNewValues(Translation $translation, array $languages): void
     {
-        $translation->setCreationDate(time());
-
         foreach ($languages as $language) {
-            if ($language !== $locale) {
-                $translation->addTranslation($language, '');
-            }
+            $translation->addTranslation($language, '');
         }
     }
 

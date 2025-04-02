@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 use InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Symfony\Component\Translation\TranslatorBagInterface;
@@ -41,9 +42,14 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         $this->translatorBag = $this->getTranslatorBag();
     }
 
+    public function createTranslations(CreateTranslation $translation): void
+    {
+        $this->translationRepository->createTranslations($translation->getKey(), $translation->getType());
+    }
+
     public function updateTranslations(UpdateTranslation $translation): void
     {
-        $this->translationRepository->createTranslations($translation->getTranslationData(), $translation->getLocale());
+        $this->translationRepository->updateTranslations($translation->getTranslationData(), $translation->getLocale());
     }
 
     /**
