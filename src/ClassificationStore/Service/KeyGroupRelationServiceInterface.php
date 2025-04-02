@@ -14,21 +14,22 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
+
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
-use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Exception;
 
 /**
  * @internal
  */
-interface CollectionServiceInterface
+interface KeyGroupRelationServiceInterface
 {
     /**
      * @throws Exception
      * @throws NotFoundException
      */
-    public function getCollections(ListClassificationStoreParameter $parameter): Collection;
+    public function getKeyGroupRelations(ListClassificationStoreParameter $parameter): Collection;
 }

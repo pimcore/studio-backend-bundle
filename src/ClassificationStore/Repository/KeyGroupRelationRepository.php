@@ -14,66 +14,65 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
+
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
-use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing;
-use function count;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 
 /**
  * @internal
  */
-final class GroupConfigRepository implements GroupConfigRepositoryInterface
+final class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInterface
 {
+
+    public function __construct(
+        private GroupConfigRepositoryInterface $groupConfigRepository
+    )
+    {
+    }
+
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
-    public function getPaginatedGroupsByStore(
+    public function getPaginatedKeyGroupRelationByStore(
         int $storeId,
         CollectionParametersInterface $collectionParameters,
         ?array $groupIds = null
     ): array {
-        $listing = new Listing();
 
-        $listing->setLimit($collectionParameters->getPageSize());
+        $groupIds = array_map(
+            fn($group) => $group->getId(),
+            $this->groupConfigRepository->getAllGroupsByStore($storeId, $groupIds)
+        );
+
+        $listing = new Listing();
         $listing->setOffset($this->getOffset($collectionParameters));
         $listing->setOrder('ASC');
-        $listing->setOrderKey('id');
-        $listing->setCondition('storeId = ?', $storeId);
-
-        if ($groupIds !== null) {
-            $this->applyGroupIdsFilter($listing, $groupIds);
-        }
+        $listing->setOrderKey('sorter');
+        $this->applyGroupIdsFilter($listing, $groupIds);
 
         return $listing->load();
     }
 
-    public function getAllGroupsByStore(int $storeId, ?array $groupIds = null): array
+    public function getCountByStoreId(int $storeId, ?array $groupIds = null): int
     {
+        $groupIds = array_map(
+            fn($group) => $group->getId(),
+            $this->groupConfigRepository->getAllGroupsByStore($storeId, $groupIds)
+        );
+
         $listing = new Listing();
-
-        $listing->setCondition('storeId = ?', $storeId);
-
-        if ($groupIds !== null) {
-            $this->applyGroupIdsFilter($listing, $groupIds);
-        }
-
-        return $listing->load();
-    }
-
-
-    public function getCountByStoreId(int $storeId): int
-    {
-        $listing = new Listing();
-        $listing->setCondition('storeId = ?', $storeId);
+        $this->applyGroupIdsFilter($listing, $groupIds);
 
         return $listing->count();
     }
 
+
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void
     {
         $placeholders = implode(',', array_fill(0, count($groupIds), '?'));
-        $list->addConditionParam('id IN ('. $placeholders .')', $groupIds);
+        $list->addConditionParam('groupID IN ('. $placeholders .')', $groupIds);
     }
 
     private function getOffset(CollectionParametersInterface $collectionParameters): int

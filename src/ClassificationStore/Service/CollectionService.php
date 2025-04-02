@@ -42,6 +42,10 @@ final readonly class CollectionService implements CollectionServiceInterface
     ) {
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     public function getCollections(ListClassificationStoreParameter $parameter): Collection
     {
         $allowedCollectionIds = $this->getAllowedCollectionIds($parameter);

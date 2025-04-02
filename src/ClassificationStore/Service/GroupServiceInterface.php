@@ -26,6 +26,10 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
  */
 interface GroupServiceInterface
 {
+    /**
+     * @throws Exception
+     * @throws NotFoundException
+     */
     public function getGroups(ListClassificationStoreParameter $parameter): Collection;
 
     /**

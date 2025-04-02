@@ -19,8 +19,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller;
 use Exception;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Group;
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelation;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupRelationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IdParameter;
@@ -44,38 +44,38 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetGroupsController extends AbstractApiController
+final class GetKeyGroupRelationsController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
     public function __construct(
         SerializerInterface $serializer,
-        private readonly GroupServiceInterface $groupService,
+        private readonly KeyGroupRelationServiceInterface $keyGroupRelationService,
     ) {
         parent::__construct($serializer);
     }
+
 
     /**
      * @throws Exception
      * @throws NotFoundException
      */
-
     #[Route(
-        path: '/classification-store/groups',
-        name: 'pimcore_studio_api_classification_store_get_groups',
+        path: '/classification-store/key-group-relations',
+        name: 'pimcore_studio_api_classification_store_get_key_group_relations',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/classification-store/groups',
-        operationId: 'classification_store_get_groups',
-        description: 'classification_store_get_groups_description',
-        summary: 'classification_store_get_groups_summary',
+        path: self::PREFIX . '/classification-store/key-group-relations',
+        operationId: 'classification_store_get_key_group_relations',
+        description: 'classification_store_get_key_group_relations_description',
+        summary: 'classification_store_get_key_group_relations_summary',
         tags: [Tags::ClassificationStore->value]
     )]
     #[SuccessResponse(
-        description: 'classification_store_get_groups_response',
-        content: new CollectionJson(new GenericCollection(Group::class))
+        description: 'classification_store_get_key_group_relations_response',
+        content: new CollectionJson(new GenericCollection(KeyGroupRelation::class))
     )]
     #[IdParameter(
         description: 'Classification Store ID',
@@ -99,15 +99,15 @@ final class GetGroupsController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getGroups(
+    public function getKeyGroupRelations(
         #[MapQueryString] ListClassificationStoreParameter $parameters
     ): JsonResponse {
-        $collection = $this->groupService->getGroups($parameters);
+        $keyGroupRelations = $this->keyGroupRelationService->getKeyGroupRelations($parameters);
 
         return $this->getPaginatedCollection(
             $this->serializer,
-            $collection->getItems(),
-            $collection->getTotalItems()
+            $keyGroupRelations->getItems(),
+            $keyGroupRelations->getTotalItems()
         );
     }
 }

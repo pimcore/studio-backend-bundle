@@ -40,6 +40,9 @@ final readonly class GroupService implements GroupServiceInterface
     ) {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function getGroups(ListClassificationStoreParameter $parameter): Collection
     {
         $allowedGroupIds = $this->getAllowedGroupIds($parameter);
