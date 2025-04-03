@@ -36,7 +36,7 @@ interface TranslationRepositoryInterface
     /**
      * @throws ElementExistsException
      */
-    public function createTranslations(string $key, string $type): void;
+    public function createTranslations(array $translationData): void;
 
     /**
      * @param array<TranslationData> $translationData
