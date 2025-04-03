@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
+use InvalidArgumentException;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
@@ -291,7 +292,7 @@ final readonly class LocalizedFieldsAdapter implements
      */
     private function getLocalizedField(?FieldContextData $contextData, Concrete $element): Localizedfield
     {
-        if ($contextData === null || $contextData->getContextObject() === null) {
+        if ($contextData === null) {
             $localizedField = $this->getValidFieldValue($element, self::LOCALIZED_FIELDS_KEY);
             if (!$localizedField instanceof Localizedfield) {
                 return new Localizedfield();
@@ -300,8 +301,11 @@ final readonly class LocalizedFieldsAdapter implements
             return $localizedField;
         }
 
-        return $contextData->getFieldValueFromContextObject(self::LOCALIZED_FIELDS_KEY);
+        if ($contextData->getContextObject() !== null) {
+            return $contextData->getFieldValueFromContextObject(self::LOCALIZED_FIELDS_KEY);
+        }
 
+        throw new InvalidArgumentException('Invalid context provided.');
     }
 
     private function processFieldChildren(array $children): array

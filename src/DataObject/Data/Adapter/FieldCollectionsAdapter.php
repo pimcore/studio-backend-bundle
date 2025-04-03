@@ -76,27 +76,31 @@ final readonly class FieldCollectionsAdapter implements
 
         $fcData = $data[$key];
         $values = [];
-        $count = 0;
 
         foreach ($fcData as $index => $collectionRaw) {
+            $contextData = $this->createFieldContextData(
+                $element,
+                $fieldDefinition,
+                $index,
+                $collectionRaw[self::TYPE_KEY],
+                $contextData
+            );
+
             $collectionData = $this->processCollectionRaw(
                 $element,
                 $user,
                 $fieldDefinition,
                 $collectionRaw,
                 $isPatch,
-                $this->createFieldContextData($element, $fieldDefinition, $index, $contextData),
+                $contextData,
             );
 
-            $collection = $this->createCollection(
-                $element,
-                $fieldDefinition,
-                $collectionRaw[self::TYPE_KEY],
-                $collectionData,
-                $count
-            );
-            $values[] = $collection;
-            $count++;
+            $contextObject = $contextData->getContextObject();
+            if (!$contextObject instanceof AbstractData) {
+                continue;
+            }
+            $contextObject->setValues($collectionData);
+            $values[] = $contextObject;
         }
 
         return new Fieldcollection($values, $fieldDefinition->getName());
@@ -141,14 +145,17 @@ final readonly class FieldCollectionsAdapter implements
         Concrete $element,
         Data $fieldDefinition,
         int $index,
+        string $type,
         ?FieldContextData $contextData = null,
     ): FieldContextData {
         $object = $contextData?->getContextObject() ?? $element;
 
-        return new FieldContextData(
-            $object->get($fieldDefinition->getName())?->get($index),
-            $contextData?->getLanguage()
-        );
+        $fieldCollectionData = $object->get($fieldDefinition->getName())?->get($index);
+        if (!$fieldCollectionData instanceof AbstractData) {
+            $fieldCollectionData = $this->createCollection($element, $fieldDefinition, $type, [], $index);
+        }
+
+        return new FieldContextData($fieldCollectionData, $contextData?->getLanguage());
     }
 
     /**
