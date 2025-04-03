@@ -17,28 +17,21 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
-use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 
 /**
  * @internal
  */
-interface GroupConfigRepositoryInterface
+interface KeyGroupRelationRepositoryInterface
 {
     /**
-     * @param array<int, int>|null $groupIds
-     *
-     * @return GroupConfig[]
+     * @return KeyGroupRelation[]
      */
-    public function getPaginatedGroupsByStore(
+    public function getPaginatedKeyGroupRelationByStore(
         int $storeId,
         CollectionParametersInterface $collectionParameters,
         ?array $groupIds = null
     ): array;
 
-    public function getAllGroupsByStore(
-        int $storeId,
-        ?array $groupIds = null
-    ): array;
-
-    public function getCountByStoreId(int $storeId): int;
+    public function getCountByStoreId(int $storeId, ?array $groupIds = null): int;
 }

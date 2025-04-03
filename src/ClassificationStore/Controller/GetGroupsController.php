@@ -16,19 +16,23 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Controller;
 
+use Exception;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Group;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\GroupServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -51,6 +55,10 @@ final class GetGroupsController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws Exception
+     * @throws NotFoundException
+     */
     #[Route(
         path: '/classification-store/groups',
         name: 'pimcore_studio_api_classification_store_get_groups',
@@ -85,7 +93,12 @@ final class GetGroupsController extends AbstractApiController
         required: true,
         example: 'technicalAttributes'
     )]
-    public function getCollections(
+    #[DefaultResponses([
+        HttpResponseCodes::FORBIDDEN,
+        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
+    ])]
+    public function getGroups(
         #[MapQueryString] ListClassificationStoreParameter $parameters
     ): JsonResponse {
         $collection = $this->groupService->getGroups($parameters);

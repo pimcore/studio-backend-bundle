@@ -618,13 +618,19 @@ thumbnail_video_get_collection_description: |
   Get collection of all thumbnails for videos.
 thumbnail_video_get_collection_success_response: All video thumbnails
 thumbnail_video_get_collection_summary: Get collection of thumbnails for videos
+translation_create_description: | 
+  Add new translation entries for given translation key
+translation_create_success_response: Successfully created translations
+translation_create_summary: Create translations
 translation_get_collection_description: Get translations for given keys and locale
 translation_get_collection_success_response: Key value pairs for given keys and locale
 translation_get_collection_summary: Get translations
 translation_delete_by_key_description: Delete translations for given translation key
 translation_delete_by_key_success_response: Successfully deleted translations
 translation_delete_by_key_summary: Delete translations
-translation_update_description: Update translations for given translation data and locale
+translation_update_description: |
+  Update translations for given translation data and locale.The <strong>{key}</strong> must be an existing translation key. <br> 
+  See the full description of updatable translation data fields with the schema <strong>TranslationData</strong>
 translation_update_success_response: Successfully updated translations
 translation_update_summary: Update translations
 user_clone_by_id_success_response: Node of the cloned user.
@@ -889,3 +895,6 @@ classification_store_get_collections_response: List of classification store coll
 classification_store_get_groups_description: Get all classification store groups for given fieldName
 classification_store_get_groups_summary: Get all classification store groups for given fieldName
 classification_store_get_groups_response: List of classification store groups
+classification_store_get_key_group_relations_description: Get all classification store key group relations for given fieldName
+classification_store_get_key_group_relations_summary: Get all classification store key group relations for given fieldName
+classification_store_get_key_group_relations_response: List of classification store key group relations

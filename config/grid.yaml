@@ -60,12 +60,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationRepository
     arguments:
-      - "@doctrine.orm.studio_backend_entity_manager"
+      - "@doctrine.orm.default_entity_manager"
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Repository\ConfigurationFavoriteRepository
     arguments:
-      - "@doctrine.orm.studio_backend_entity_manager"
+      - "@doctrine.orm.default_entity_manager"
 
 
   #
