@@ -114,16 +114,14 @@ final readonly class DataService implements DataServiceInterface
         $class = $this->getValidClass($this->classDefinitionResolver, $dataObject->getClassId());
         $data = [];
         foreach ($class->getFieldDefinitions() as $key => $fieldDefinition) {
-            $data = $this->removeEmptyValues(
-                $this->getPreviewFieldData(
-                    $this->getValidFieldValue($dataObject, $key),
-                    $fieldDefinition,
-                    $data
-                )
+            $data = $this->getPreviewFieldData(
+                $this->getValidFieldValue($dataObject, $key),
+                $fieldDefinition,
+                $data
             );
         }
 
-        return $data;
+        return $this->removeEmptyValues($data);
     }
 
     /**
@@ -136,7 +134,12 @@ final readonly class DataService implements DataServiceInterface
     ): array {
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof SearchPreviewDataInterface) {
-            return $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
+            $adapterData = $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
+            if (empty($adapterData)) {
+                return $data;
+            }
+
+            return $adapterData;
         }
 
         $data[$this->getPreviewFieldName($fieldDefinition)] = $fieldDefinition->getVersionPreview($value);
