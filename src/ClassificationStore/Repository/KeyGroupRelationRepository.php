@@ -75,7 +75,7 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         return $listing->count();
     }
 
-    public function applySearchTermFilter(Listing $list, string $searchTerm): void
+    private function applySearchTermFilter(Listing $list, string $searchTerm): void
     {
         $searchTerms = $this->searchHelperService->getTranslatedSearchFilterTerms($searchTerm);
         $searchFilterConditions = [];
