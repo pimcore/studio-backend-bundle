@@ -42,9 +42,6 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         $this->translatorBag = $this->getTranslatorBag();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createTranslations(CreateTranslation $translation): void
     {
         $this->translationRepository->createTranslations($translation->getTranslationData());

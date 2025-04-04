@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Repository;
 
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslationData;
@@ -26,7 +25,6 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInte
 use Pimcore\Model\Translation;
 use Pimcore\Model\Translation\Listing;
 use function in_array;
-use function sprintf;
 
 /**
  * @internal
@@ -53,9 +51,6 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         return $list->getTranslations();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createTranslations(array $translationData): void
     {
         $languages = $this->adminResolver->getLanguages();
@@ -63,9 +58,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         /** @var CreateTranslationData $translation */
         foreach ($translationData as $translation) {
             if ($this->getTranslationByKey($translation->getKey()) !== null) {
-                throw new ElementExistsException(
-                    sprintf("Translation with key '%s' already exists", $translation->getKey()),
-                );
+                continue;
             }
 
             $this->createTranslationEntry($translation->getKey(), $translation->getType(), $languages);
