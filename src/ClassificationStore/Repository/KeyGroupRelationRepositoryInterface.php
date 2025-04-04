@@ -30,7 +30,8 @@ interface KeyGroupRelationRepositoryInterface
     public function getPaginatedKeyGroupRelationByStore(
         int $storeId,
         CollectionParametersInterface $collectionParameters,
-        ?array $groupIds = null
+        ?array $groupIds = null,
+        ?string $searchTerm = null
     ): array;
 
     public function getCountByStoreId(int $storeId, ?array $groupIds = null): int;

@@ -54,7 +54,8 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
         $keyGroupRelations = $this->keyGroupRelationRepository->getPaginatedKeyGroupRelationByStore(
             $parameter->getStoreId(),
             $parameter,
-            $allowedGroupIds
+            $allowedGroupIds,
+            $parameter->getSearchTerm()
         );
 
         foreach ($keyGroupRelations as $keyGroupRelation) {

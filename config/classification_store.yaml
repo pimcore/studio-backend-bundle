@@ -25,6 +25,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupRelationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupRelationService
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService
+
 
   #
   # Repositories

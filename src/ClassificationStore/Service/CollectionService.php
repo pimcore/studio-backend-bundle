@@ -56,7 +56,8 @@ final readonly class CollectionService implements CollectionServiceInterface
         $collections = $this->collectionConfigRepository->getPaginatedCollectionsByStore(
             $parameter->getStoreId(),
             $parameter,
-            $allowedCollectionIds
+            $allowedCollectionIds,
+            $parameter->getSearchTerm()
         );
 
         $hydratedCollections = [];

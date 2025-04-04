@@ -32,7 +32,8 @@ interface GroupConfigRepositoryInterface
     public function getPaginatedGroupsByStore(
         int $storeId,
         CollectionParametersInterface $collectionParameters,
-        ?array $groupIds = null
+        ?array $groupIds = null,
+        ?string $searchTerm = null
     ): array;
 
     public function getAllGroupsByStore(

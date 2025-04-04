@@ -84,14 +84,32 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         $translation->delete();
     }
 
-    private function getTranslationList(): Listing
+    private function getTranslationList(string $domain = TranslatorServiceInterface::DOMAIN): Listing
     {
         $list = new Translation\Listing();
-        $list->setDomain(TranslatorServiceInterface::DOMAIN);
+        $list->setDomain($domain);
         $list->setOrder('asc');
-        $list->setOrderKey('translations_' . TranslatorServiceInterface::DOMAIN . '.key', false);
+        $list->setOrderKey('translations_' . $domain . '.key', false);
 
         return $list;
+    }
+
+    public function getTranslationKeysWithTextFilter(
+        string $filterTerm,
+        string $language,
+        string $domain = TranslatorServiceInterface::DOMAIN,
+    ): array
+    {
+        $list = $this->getTranslationList($domain);
+        $list->addConditionParam('language=? AND text LIKE ?', [$language, '%'.$filterTerm.'%']);
+
+        $keys = [];
+
+        foreach ($list->getTranslations() as $translation) {
+            $keys[] = $translation->getKey();
+        }
+
+        return $keys;
     }
 
     private function setNewValues(Translation $translation, array $languages, string $locale): void

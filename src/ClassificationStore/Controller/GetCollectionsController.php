@@ -93,6 +93,12 @@ final class GetCollectionsController extends AbstractApiController
         required: true,
         example: 'technicalAttributes'
     )]
+    #[TextFieldParameter(
+        name: 'searchTerm',
+        description: 'Search Term',
+        required: false,
+        example: 'search term'
+    )]
     #[DefaultResponses([
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
