@@ -63,9 +63,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         /** @var CreateTranslationData $translation */
         foreach ($translationData as $translation) {
             if ($this->getTranslationByKey($translation->getKey()) !== null) {
-                throw new ElementExistsException(
-                    sprintf("Translation with key '%s' already exists", $translation->getKey()),
-                );
+                continue;
             }
 
             $this->createTranslationEntry($translation->getKey(), $translation->getType(), $languages);
