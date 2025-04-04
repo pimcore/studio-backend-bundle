@@ -53,9 +53,6 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         return $list->getTranslations();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function createTranslations(array $translationData): void
     {
         $languages = $this->adminResolver->getLanguages();
