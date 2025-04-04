@@ -29,9 +29,6 @@ interface TranslatorServiceInterface
 {
     public const string DOMAIN = 'studio';
 
-    /**
-     * @throws ElementExistsException
-     */
     public function createTranslations(CreateTranslation $translation): void;
 
     /**
