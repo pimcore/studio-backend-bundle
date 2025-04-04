@@ -33,9 +33,6 @@ interface TranslationRepositoryInterface
      */
     public function getAllTranslations(string $locale): array;
 
-    /**
-     * @throws ElementExistsException
-     */
     public function createTranslations(array $translationData): void;
 
     /**
