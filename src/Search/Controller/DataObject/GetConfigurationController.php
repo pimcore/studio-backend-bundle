@@ -80,8 +80,7 @@ final class GetConfigurationController extends AbstractApiController
     ])]
     public function getDataObjectSearchConfiguration(
         #[MapQueryString] ?ClassIdParameter $classIdParameter
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $configuration = $this->gridConfigurationService->getDataObjectSearchConfiguration(
             $classIdParameter?->getClassId()
         );
