@@ -78,7 +78,9 @@ final class GetConfigurationController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function getDataObjectSearchConfiguration(#[MapQueryString] ?ClassIdParameter $classIdParameter): JsonResponse
+    public function getDataObjectSearchConfiguration(
+        #[MapQueryString] ?ClassIdParameter $classIdParameter
+    ): JsonResponse
     {
         $configuration = $this->gridConfigurationService->getDataObjectSearchConfiguration(
             $classIdParameter?->getClassId()
