@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig\Listing;
@@ -27,11 +26,9 @@ use function count;
  */
 final class CollectionConfigRepository implements CollectionConfigRepositoryInterface
 {
-
     public function __construct(
         private SearchHelperServiceInterface $searchHelperService
-    )
-    {
+    ) {
     }
 
     /**

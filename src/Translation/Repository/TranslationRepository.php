@@ -137,8 +137,7 @@ final readonly class TranslationRepository implements TranslationRepositoryInter
         string $filterTerm,
         string $language,
         string $domain = TranslatorServiceInterface::DOMAIN,
-    ): array
-    {
+    ): array {
         $list = $this->getTranslationList($domain);
         $list->addConditionParam('language=? AND text LIKE ?', [$language, '%'.$filterTerm.'%']);
 

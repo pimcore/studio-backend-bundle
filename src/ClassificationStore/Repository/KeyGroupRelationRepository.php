@@ -18,9 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
-use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 use function count;
 
 /**
@@ -74,8 +74,6 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
 
         return $listing->count();
     }
-
-
 
     public function applySearchTermFilter(Listing $list, string $searchTerm): void
     {

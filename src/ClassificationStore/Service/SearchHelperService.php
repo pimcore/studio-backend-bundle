@@ -14,15 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
-use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupConfigListing;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig\Listing as CollectionConfigListing;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing as GroupConfigListing;
 use Pimcore\Model\Translation;
 
 /**
@@ -33,10 +31,8 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
     public function __construct(
         private TranslationRepositoryInterface $translationRepository,
         private SecurityServiceInterface $securityService
-    )
-    {
+    ) {
     }
-
 
     public function applySearchTermFilter(GroupConfigListing|CollectionConfigListing $list, string $searchTerm): void
     {
@@ -65,7 +61,7 @@ final readonly class SearchHelperService implements SearchHelperServiceInterface
             );
 
             $searchTerms = array_merge([$searchTerm], $translatedSearchKeys);
-        }catch (UserNotFoundException) {
+        } catch (UserNotFoundException) {
             $searchTerms = [$searchTerm];
         }
 
