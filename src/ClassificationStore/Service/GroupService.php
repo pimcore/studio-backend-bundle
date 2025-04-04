@@ -54,7 +54,8 @@ final readonly class GroupService implements GroupServiceInterface
         $groups = $this->groupConfigRepository->getPaginatedGroupsByStore(
             $parameter->getStoreId(),
             $parameter,
-            $allowedGroupIds
+            $allowedGroupIds,
+            $parameter->getSearchTerm()
         );
 
         $hydratedGroups = [];

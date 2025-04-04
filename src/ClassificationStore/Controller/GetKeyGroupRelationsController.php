@@ -85,6 +85,12 @@ final class GetKeyGroupRelationsController extends AbstractApiController
         namePrefix: 'object',
         required: false
     )]
+    #[TextFieldParameter(
+        name: 'searchTerm',
+        description: 'Search Term',
+        required: false,
+        example: 'search term'
+    )]
     #[PageParameter]
     #[PageSizeParameter]
     #[TextFieldParameter(

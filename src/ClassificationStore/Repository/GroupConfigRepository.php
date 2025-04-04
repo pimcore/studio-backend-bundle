@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing;
 use function count;
@@ -25,13 +26,19 @@ use function count;
  */
 final class GroupConfigRepository implements GroupConfigRepositoryInterface
 {
+    public function __construct(
+        private SearchHelperServiceInterface $searchHelperService
+    ) {
+    }
+
     /**
      * {@inheritDoc}
      */
     public function getPaginatedGroupsByStore(
         int $storeId,
         CollectionParametersInterface $collectionParameters,
-        ?array $groupIds = null
+        ?array $groupIds = null,
+        ?string $searchTerm = null
     ): array {
         $listing = new Listing();
 
@@ -40,6 +47,10 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
         $listing->setOrder('ASC');
         $listing->setOrderKey('id');
         $listing->setCondition('storeId = ?', $storeId);
+
+        if ($searchTerm !== null) {
+            $this->searchHelperService->applySearchTermFilter($listing, $searchTerm);
+        }
 
         if ($groupIds !== null) {
             $this->applyGroupIdsFilter($listing, $groupIds);
