@@ -1,23 +1,22 @@
 # Installation of the Studio Backend Bundle
 
-:::info
-
- This bundle is only supported on Pimcore Core Framework 11.
-
-:::
-
 ## Bundle Installation
 
 To install the Studio Backend Bundle, follow the four steps below:
 
+1) Make sure prerequisites are met:
 
-1) Install the required dependencies:
+- [GenericExecutionEngineBundle](https://docs.pimcore.com/platform/Pimcore/Development_Tools_and_Details/Generic_Execution_Engine/) installed and activated
+- [GenericDataIndexBundle](https://docs.pimcore.com/platform/Generic_Data_Index/Installation/) installed and activated
+
+
+2) Install the required dependencies:
 
 ```bash
 composer require pimcore/studio-backend-bundle
 ```
 
-2) Enable Firewall settings
+3) Enable Firewall settings
 
 To enable the firewall settings in your project, add the following configuration to your `config/packages/security.yaml` file:
 Keep in mind that the prefix part pimcore-studio/api can be changed to any other value in the config.
@@ -31,7 +30,7 @@ security:
       - { path: ^/pimcore-studio/api, roles: ROLE_PIMCORE_USER }
 ```
 
-3) Make sure the bundle is enabled in the `config/bundles.php` file. The following lines should be added:
+4) Make sure the bundle is enabled in the `config/bundles.php` file. The following lines should be added:
 
 ```php
 use Pimcore\Bundle\StudioBackendBundle\PimcoreStudioBackendBundle;
@@ -43,7 +42,7 @@ return [
 ];  
 ```
 
-4) Install the bundle:
+5) Install the bundle:
 
 ```bash
 bin/console pimcore:bundle:install PimcoreStudioBackendBundle

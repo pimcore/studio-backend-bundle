@@ -30,11 +30,12 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\ResizeModes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Thumbnails;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ConsoleExecutableTrait;
 use Pimcore\Model\Asset\Document;
+use Pimcore\Model\Asset\Document\ImageThumbnailInterface as DocumentThumbnail;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Image\Thumbnail\Config as ImageThumbnailConfig;
 use Pimcore\Model\Asset\Image\ThumbnailInterface;
 use Pimcore\Model\Asset\Video;
-use Pimcore\Model\Asset\Video\ImageThumbnailInterface;
+use Pimcore\Model\Asset\Video\ImageThumbnailInterface as VideoImageThumbnail;
 use Pimcore\Model\Asset\Video\Thumbnail\Config as VideoThumbnailConfig;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -109,7 +110,7 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
     /**
      * @throws InvalidThumbnailException
      */
-    public function getAssetImagePreviewThumbnail(Video|Document $asset): ImageThumbnailInterface
+    public function getAssetImagePreviewThumbnail(Video|Document $asset): DocumentThumbnail|VideoImageThumbnail
     {
         $thumbnailConfig = $this->getSystemImageThumbnailConfig();
         if ($thumbnailConfig === null) {
@@ -227,19 +228,18 @@ final readonly class ThumbnailService implements ThumbnailServiceInterface
         $previewThumbnail->setFormat(MimeTypes::PJPEG->value);
         $previewThumbnail->setQuality(60);
         $previewThumbnail->addItem(
-            'setBackgroundImage',
-            [
-                //ToDo: Replace with the path to the actual image once its present in Studio UI
-                'path' => '/bundles/pimcoreadmin/img/tree-preview-transparent-background.png',
-                'mode' => 'asTexture',
-            ]
-        );
-        $previewThumbnail->addItem(
             'contain',
             [
                 'width' => 1920,
                 'height' => 1920,
                 'forceResize' => false,
+            ]
+        );
+        $previewThumbnail->addItem(
+            'setBackgroundImage',
+            [
+                'path' => '/bundles/pimcorestudiobackend/img/tree-preview-transparent-background.png',
+                'mode' => 'asTexture',
             ]
         );
 

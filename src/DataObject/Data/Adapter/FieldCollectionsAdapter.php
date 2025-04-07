@@ -20,6 +20,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
@@ -38,7 +39,10 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class FieldCollectionsAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class FieldCollectionsAdapter implements
+    SetterDataInterface,
+    DataNormalizerInterface,
+    SearchPreviewDataInterface
 {
     use ValidateObjectDataTrait;
 
@@ -204,5 +208,10 @@ final readonly class FieldCollectionsAdapter implements SetterDataInterface, Dat
         $collection->setValues($collectionData);
 
         return $collection;
+    }
+
+    public function getPreviewFieldData(mixed $value, Data $fieldDefinition, array $data): array
+    {
+        return [];
     }
 }

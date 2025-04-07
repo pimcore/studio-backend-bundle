@@ -42,6 +42,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_class_description'
 )]
 #[Tag(
+    name: Tags::ClassificationStore->value,
+    description: 'tag_classification_store'
+)]
+#[Tag(
     name: Tags::CustomReports->value,
     description: 'tag_custom_reports_description'
 )]
@@ -152,6 +156,7 @@ enum Tags: string
     case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';
     case ClassDefinition = 'Class Definition';
+    case ClassificationStore = 'Classification Store';
     case CustomReports = 'Custom Reports';
     case DataObjects = 'Data Objects';
     case DataObjectsGrid = 'Data Object Grid';

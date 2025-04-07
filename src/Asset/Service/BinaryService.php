@@ -32,8 +32,8 @@ use Pimcore\Messenger\AssetPreviewImageMessage;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Image;
 use Pimcore\Model\Asset\Video;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * @internal
@@ -43,9 +43,9 @@ final readonly class BinaryService implements BinaryServiceInterface
     use StreamedResponseTrait;
 
     public function __construct(
-        private EventDispatcherInterface $eventDispatcher,
         private ThumbnailServiceInterface $thumbnailService,
-        private StorageServiceInterface $storageService
+        private StorageServiceInterface $storageService,
+        private MessageBusInterface $messageBus
     ) {
     }
 
@@ -159,7 +159,7 @@ final readonly class BinaryService implements BinaryServiceInterface
         $image = $video->getImageThumbnail($imageParameters);
 
         if ($imageConfig->getAsync() && !$image->exists()) {
-            $this->eventDispatcher->dispatch(
+            $this->messageBus->dispatch(
                 new AssetPreviewImageMessage($video->getId())
             );
 

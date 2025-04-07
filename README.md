@@ -17,7 +17,7 @@ Every description is translatable and can be found in the `studio_api_docs.en.ya
 ## Requirements
 This bundle requires the following dependencies:
 
-* Pimcore Core Framework 11
+* Pimcore Core Framework 12
 * Generic Execution Engine as part of the Pimcore Core Framework
 * Generic Data Index
 * Mercure (https://mercure.rocks)

@@ -100,4 +100,4 @@ services:
   Pimcore\Bundle\StudioBackendBundle\User\Repository\PerspectiveRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Repository\PerspectiveRepository
     arguments:
-      - "@doctrine.orm.studio_backend_entity_manager"
+      - "@doctrine.orm.default_entity_manager"

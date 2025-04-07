@@ -25,14 +25,16 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\SearchGridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\SearchGridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\ClassIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -55,10 +57,10 @@ final class GetSearchResultController extends AbstractApiController
      * @throws Exception
      * @throws NotFoundException
      */
-    #[Route('/search/data-objects/{classId?}', name: 'pimcore_studio_api_get_data_object_search', methods: ['POST'])]
+    #[Route('/search/data-objects', name: 'pimcore_studio_api_get_data_object_search', methods: ['POST'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
-        path: self::PREFIX . '/search/data-objects/{classId}',
+        path: self::PREFIX . '/search/data-objects',
         operationId: 'data_object_get_search',
         description: 'data_object_get_search_description',
         summary: 'data_object_get_search_summary',
@@ -83,13 +85,13 @@ final class GetSearchResultController extends AbstractApiController
         HttpResponseCodes::BAD_REQUEST,
     ])]
     public function getDataObjectSearchGrid(
-        ?string $classId,
-        #[MapRequestPayload] SearchGridParameter $searchGridParameter
+        #[MapRequestPayload] SearchGridParameter $searchGridParameter,
+        #[MapQueryString] ?ClassIdParameter $classIdParameter,
     ): JsonResponse {
         return $this->jsonResponse(
             $this->searchService->getDataObjectSearchGrid(
                 $searchGridParameter,
-                $classId
+                $classIdParameter?->getClassId()
             )
         );
     }

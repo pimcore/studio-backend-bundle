@@ -21,7 +21,7 @@ use OpenApi\Attributes\Schema;
 
 #[Schema(
     title: 'PatchCustomMetadata',
-    required: ['name'],
+    required: ['name', 'language', 'type', 'data'],
     type: 'object'
 )]
 final readonly class PatchCustomMetadata
@@ -31,6 +31,8 @@ final readonly class PatchCustomMetadata
         private string $name,
         #[Property(description: 'Language', type: 'string', example: 'en', nullable: true)]
         private ?string $language,
+        #[Property(description: 'Type', type: 'string', example: 'input')]
+        private string $type,
         #[Property(description: 'Data', type: 'string', example: 'data', nullable: true)]
         private mixed $data
     ) {
@@ -44,6 +46,11 @@ final readonly class PatchCustomMetadata
     public function getLanguage(): ?string
     {
         return $this->language;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
     }
 
     public function getData(): mixed

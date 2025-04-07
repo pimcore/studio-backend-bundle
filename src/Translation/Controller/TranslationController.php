@@ -38,7 +38,7 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class TranslationController extends AbstractApiController
 {
-    private const ROUTE = '/translations';
+    private const string ROUTE = '/translations';
 
     public function __construct(
         SerializerInterface $serializer,

@@ -121,7 +121,7 @@ final readonly class DataService implements DataServiceInterface
             );
         }
 
-        return $data;
+        return $this->removeEmptyValues($data);
     }
 
     /**
@@ -134,7 +134,12 @@ final readonly class DataService implements DataServiceInterface
     ): array {
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof SearchPreviewDataInterface) {
-            return $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
+            $adapterData = $adapter->getPreviewFieldData($value, $fieldDefinition, $data);
+            if (empty($adapterData)) {
+                return $data;
+            }
+
+            return $adapterData;
         }
 
         $data[$this->getPreviewFieldName($fieldDefinition)] = $fieldDefinition->getVersionPreview($value);
@@ -205,6 +210,17 @@ final readonly class DataService implements DataServiceInterface
                 $draftElement->markFieldDirty($fieldName);
             }
         }
+    }
+
+    private function removeEmptyValues(array $previewFields): array
+    {
+        foreach ($previewFields as $previewFieldName => $previewField) {
+            if (empty($previewField)) {
+                unset($previewFields[$previewFieldName]);
+            }
+        }
+
+        return $previewFields;
     }
 
     /**

@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -30,7 +31,9 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class TableAdapter implements SetterDataInterface
+final readonly class TableAdapter implements
+    SetterDataInterface,
+    SearchPreviewDataInterface
 {
     /**
      * @throws Exception
@@ -68,5 +71,10 @@ final readonly class TableAdapter implements SetterDataInterface
         }
 
         return $tableData;
+    }
+
+    public function getPreviewFieldData(mixed $value, Data $fieldDefinition, array $data): array
+    {
+        return [];
     }
 }

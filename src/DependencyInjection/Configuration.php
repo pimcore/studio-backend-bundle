@@ -72,6 +72,7 @@ class Configuration implements ConfigurationInterface
         $this->addGridConfiguration($rootNode);
         $this->addSearchGridConfiguration($rootNode);
         $this->addNoteTypes($rootNode);
+        $this->addAssetMetadataAdapterMapping($rootNode);
         $this->addDataObjectAdapterMapping($rootNode);
         $this->addUserNode($rootNode);
         $this->addServerNode($rootNode);
@@ -287,6 +288,7 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('jwt_key')
                         ->info('The key used to sign the JWT token. Must be longer than 256 bits.')
                         ->isRequired()
+                        ->defaultValue('some-secret-default')
                     ->end()
                      ->integerNode('cookie_lifetime')
                         ->info('Lifetime of the mercure cookie in seconds. Default is one hour.')
@@ -362,6 +364,18 @@ class Configuration implements ConfigurationInterface
     {
         $node->children()
             ->arrayNode('data_object_data_adapter_mapping')
+                ->useAttributeAsKey('class')
+                ->arrayPrototype()
+                    ->scalarPrototype()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    private function addAssetMetadataAdapterMapping(ArrayNodeDefinition $node): void
+    {
+        $node->children()
+            ->arrayNode('asset_metadata_adapter_mapping')
                 ->useAttributeAsKey('class')
                 ->arrayPrototype()
                     ->scalarPrototype()

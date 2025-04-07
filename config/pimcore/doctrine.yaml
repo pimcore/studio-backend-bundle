@@ -1,7 +1,7 @@
 doctrine:
   orm:
     entity_managers:
-      studio_backend:
+      default:
         connection: default
         mappings:
           PimcoreStudioBackendBundle:

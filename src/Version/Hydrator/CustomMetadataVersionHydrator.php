@@ -16,16 +16,15 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Version\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataResolverServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\CustomMetadataVersion;
-use Pimcore\Model\Element\ElementInterface;
 
 /**
  * @internal
  */
 final readonly class CustomMetadataVersionHydrator implements CustomMetadataVersionHydratorInterface
 {
-    public function __construct(private ReferenceResolverInterface $referenceResolver)
+    public function __construct(private DataResolverServiceInterface $dataResolverService)
     {
     }
 
@@ -44,23 +43,7 @@ final readonly class CustomMetadataVersionHydrator implements CustomMetadataVers
             $customMetadata['name'],
             $customMetadata['language'],
             $customMetadata['type'],
-            $this->resolveData(
-                $customMetadata['data'],
-                $customMetadata['type']
-            )
+            $this->dataResolverService->normalizeData($customMetadata)
         );
-    }
-
-    private function resolveData(mixed $data, string $type): mixed
-    {
-        return match (true) {
-            $data instanceof ElementInterface => $this->referenceResolver->resolve($data),
-            $type === 'manyToManyRelation' => array_map(
-                fn (ElementInterface $element): array => $this->referenceResolver->resolve($element),
-                $data
-            ),
-            $type === 'checkbox' => (bool)$data,
-            default => $data,
-        };
     }
 }
