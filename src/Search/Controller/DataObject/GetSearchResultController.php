@@ -30,9 +30,11 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\Collec
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Search\MappedParameter\ClassIdParameter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -83,13 +85,13 @@ final class GetSearchResultController extends AbstractApiController
         HttpResponseCodes::BAD_REQUEST,
     ])]
     public function getDataObjectSearchGrid(
-        ?string $classId,
-        #[MapRequestPayload] SearchGridParameter $searchGridParameter
+        #[MapRequestPayload] SearchGridParameter $searchGridParameter,
+        #[MapQueryString] ?ClassIdParameter $classIdParameter,
     ): JsonResponse {
         return $this->jsonResponse(
             $this->searchService->getDataObjectSearchGrid(
                 $searchGridParameter,
-                $classId
+                $classIdParameter?->getClassId()
             )
         );
     }
