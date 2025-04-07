@@ -90,10 +90,9 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
 
         $columnsDefinitions = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
 
-        $columnCollection = $this->gridService->getConfigurationFromArray(
+        $columnCollection = $this->gridService->getConfigurationForExport(
             $columns,
-            $columnsDefinitions,
-            true
+            $columnsDefinitions
         );
 
         try {

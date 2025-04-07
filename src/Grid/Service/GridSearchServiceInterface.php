@@ -42,7 +42,6 @@ interface GridSearchServiceInterface
      */
     public function getDataObjectSearchGrid(
         SearchGridParameter $searchParameter,
-        array $columnDefinitions,
         ?string $classId
     ): Collection;
 }

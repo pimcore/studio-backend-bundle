@@ -104,10 +104,9 @@ final class CsvDataObjectFolderDataCollectionHandler extends AbstractHandler
             $user
         );
 
-        $columnCollection = $this->gridService->getConfigurationFromArray(
+        $columnCollection = $this->gridService->getConfigurationForExport(
             $columns,
-            $columnsDefinitions,
-            true
+            $columnsDefinitions
         );
 
         foreach ($dataObjects->getItems() as $dataObject) {

@@ -52,14 +52,15 @@ interface GridServiceInterface
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType,
-        bool $isExport = false
+        string $elementType
     ): array;
 
-    public function getConfigurationFromArray(
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function getConfigurationForExport(
         array $config,
-        array $columnsDefinitions,
-        bool $isExport = false
+        array $columnsDefinitions
     ): ColumnCollection;
 
     /**
@@ -73,7 +74,6 @@ interface GridServiceInterface
      */
     public function getDataObjectGrid(
         GridParameter $gridParameter,
-        array $columnDefinitions,
         ?string $classId
     ): Collection;
 

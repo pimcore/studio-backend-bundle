@@ -96,14 +96,13 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
             $user
         );
 
-        $columnCollection = $this->gridService->getConfigurationFromArray(
+        $columnCollection = $this->gridService->getConfigurationForExport(
             $columns,
-            $columnsDefinitions,
-            true
+            $columnsDefinitions
         );
 
         try {
-            $data =  $this->gridService->getGridValuesForElement(
+            $data = $this->gridService->getGridValuesForElement(
                 $columnCollection,
                 $dataObject,
                 ElementTypes::TYPE_OBJECT,

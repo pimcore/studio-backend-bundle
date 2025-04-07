@@ -115,10 +115,9 @@ final readonly class CsvExportService implements ExportServiceInterface
             return [];
         }
 
-        $columnCollection = $this->gridService->getConfigurationFromArray(
+        $columnCollection = $this->gridService->getConfigurationForExport(
             $columns,
-            $columnsDefinitions,
-            true
+            $columnsDefinitions
         );
 
         return $this->gridService->getColumnKeys(
