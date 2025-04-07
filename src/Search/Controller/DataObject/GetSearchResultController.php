@@ -91,7 +91,7 @@ final class GetSearchResultController extends AbstractApiController
         #[MapQueryString] ?ClassIdParameter $classIdParameter,
     ): JsonResponse {
         return $this->jsonResponse(
-                $this->searchService->getDataObjectSearchGrid(
+            $this->searchService->getDataObjectSearchGrid(
                 $searchGridParameter,
                 $classIdParameter?->getClassId()
             )
