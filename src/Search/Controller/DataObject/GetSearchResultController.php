@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\SearchGridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\SearchGridParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
@@ -48,7 +47,6 @@ final class GetSearchResultController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly GridSearchServiceInterface $searchService,
     ) {
         parent::__construct($serializer);
