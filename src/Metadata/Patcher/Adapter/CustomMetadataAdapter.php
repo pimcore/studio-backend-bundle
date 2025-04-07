@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Patcher\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataResolverServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter\PatchAdapterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
@@ -28,6 +29,7 @@ use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
 use function in_array;
+use function sprintf;
 
 /**
  * @internal
@@ -35,15 +37,17 @@ use function in_array;
 #[AutoconfigureTag(TaggedIteratorAdapter::ADAPTER_TAG)]
 final class CustomMetadataAdapter implements PatchAdapterInterface
 {
-    private const INDEX_KEY = 'metadata';
+    private const string INDEX_KEY = 'metadata';
 
-    private const PATCHABLE_KEYS = [
+    private const array PATCHABLE_KEYS = [
         'language',
         'data',
     ];
 
-    public function __construct(private readonly MetadataRepositoryInterface $metadataRepository)
-    {
+    public function __construct(
+        private readonly DataResolverServiceInterface $dataResolverService,
+        private readonly MetadataRepositoryInterface $metadataRepository
+    ) {
     }
 
     /**
@@ -67,9 +71,14 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
                 continue;
             }
 
-            foreach (self::PATCHABLE_KEYS as $patchKeys) {
-                if (array_key_exists($patchKeys, $metadataForPatch[$index])) {
-                    $metadata[$patchKeys] = $metadataForPatch[$index][$patchKeys];
+            foreach (self::PATCHABLE_KEYS as $patchKey) {
+                if (array_key_exists($patchKey, $metadataForPatch[$index])) {
+                    $metadata[$patchKey] = $this->getExistingEntryValue(
+                        $metadataForPatch[$index],
+                        $metadata,
+                        $patchKey,
+                        $user
+                    );
                 }
             }
             $patchedMetadata[] = $metadata;
@@ -81,7 +90,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         $patchedMetadata = [
             ...$patchedMetadata,
             ...array_map(
-                fn (array $metaData) => $this->processNewMetadataEntry($metaData),
+                fn (array $metaData) => $this->processNewMetadataEntry($metaData, $user),
                 $metadataForPatch
             ),
         ];
@@ -103,10 +112,23 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         ];
     }
 
+    private function getExistingEntryValue(
+        array $metadata,
+        array $existingMetadata,
+        string $key,
+        UserInterface $user
+    ): mixed {
+        if ($key !== 'data') {
+            return $metadata[$key];
+        }
+
+        return $this->dataResolverService->denormalizeData($metadata, $user, $existingMetadata, true);
+    }
+
     /**
      * @throws InvalidArgumentException
      */
-    private function processNewMetadataEntry(array $metadata): array
+    private function processNewMetadataEntry(array $metadata, UserInterface $user): array
     {
         if (!isset($metadata['name'])) {
             throw new InvalidArgumentException('Metadata name is required');
@@ -119,14 +141,16 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         $predefined = $this->metadataRepository->getPredefinedMetadataByName($metadata['name']);
 
         if (!$predefined) {
-            throw new InvalidArgumentException('Predefined metadata not found');
+            throw new InvalidArgumentException(sprintf('Predefined metadata %s not found', $metadata['name']));
         }
 
         return [
             'name' => $predefined->getName(),
             'language' => $metadata['language'] ?? '',
             'type' => $predefined->getType(),
-            'data' => $metadata['data'] ?? null,
+            'data' => $metadata['data'] ?
+                $this->dataResolverService->denormalizeData($metadata, $user, [], true) :
+                null,
         ];
     }
 

@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
  */
 interface DataAdapterLoaderInterface
 {
-    public const ADAPTER_TAG = 'pimcore.studio_backend.data_adapter';
+    public const string ADAPTER_TAG = 'pimcore.studio_backend.data_adapter';
 
     /**
      * @throws InvalidArgumentException

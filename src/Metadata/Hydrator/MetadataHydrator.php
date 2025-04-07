@@ -18,8 +18,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\CustomMetadata;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Schema\PredefinedMetadata;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataResolverServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Resolver\Element\ReferenceResolverInterface;
-use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Metadata\Predefined;
 
 /**
@@ -27,8 +27,10 @@ use Pimcore\Model\Metadata\Predefined;
  */
 final readonly class MetadataHydrator implements MetadataHydratorInterface
 {
-    public function __construct(private ReferenceResolverInterface $referenceResolver)
-    {
+    public function __construct(
+        private DataResolverServiceInterface $dataResolverService,
+        private ReferenceResolverInterface $referenceResolver
+    ) {
     }
 
     public function hydrate(array $customMetadata): CustomMetadata
@@ -37,10 +39,7 @@ final readonly class MetadataHydrator implements MetadataHydratorInterface
             $customMetadata['name'],
             $customMetadata['language'],
             $customMetadata['type'],
-            $this->resolveData(
-                $customMetadata['data'],
-                $customMetadata['type']
-            )
+            $this->dataResolverService->normalizeData($customMetadata),
         );
     }
 
@@ -63,19 +62,6 @@ final readonly class MetadataHydrator implements MetadataHydratorInterface
             $predefined->getModificationDate(),
             $predefined->isWriteable()
         );
-    }
-
-    private function resolveData(mixed $data, string $type): mixed
-    {
-        return match (true) {
-            $data instanceof ElementInterface => $this->referenceResolver->resolve($data),
-            $type === 'manyToManyRelation' => array_map(
-                fn (ElementInterface $element): array => $this->referenceResolver->resolve($element),
-                $data
-            ),
-            $type === 'checkbox' => (bool)$data,
-            default => $data,
-        };
     }
 
     private function resolveDefinitionData(mixed $data, string $type): mixed

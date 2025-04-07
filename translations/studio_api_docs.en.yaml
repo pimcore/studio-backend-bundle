@@ -619,9 +619,21 @@ thumbnail_video_get_collection_description: |
   Get collection of all thumbnails for videos.
 thumbnail_video_get_collection_success_response: All video thumbnails
 thumbnail_video_get_collection_summary: Get collection of thumbnails for videos
+translation_create_description: | 
+  Add new translation entries for given translation key
+translation_create_success_response: Successfully created translations
+translation_create_summary: Create translations
 translation_get_collection_description: Get translations for given keys and locale
 translation_get_collection_success_response: Key value pairs for given keys and locale
 translation_get_collection_summary: Get translations
+translation_delete_by_key_description: Delete translations for given translation key
+translation_delete_by_key_success_response: Successfully deleted translations
+translation_delete_by_key_summary: Delete translations
+translation_update_description: |
+  Update translations for given translation data and locale.The <strong>{key}</strong> must be an existing translation key. <br> 
+  See the full description of updatable translation data fields with the schema <strong>TranslationData</strong>
+translation_update_success_response: Successfully updated translations
+translation_update_summary: Update translations
 user_clone_by_id_success_response: Node of the cloned user.
 user_clone_by_id_summary: Clone a specific user.
 user_create_success_response: Node of the new created User.
@@ -877,3 +889,13 @@ class_definition_folder_collection: Get list of all data object classes in a fol
 class_definition_folder_collection_description: Get list of all data object classes in a folder
 class_definition_folder_collection_summary: Get list of all data object classes in a folder
 class_definition_folder_collection_success_response: List of all data object classes in a folder
+tag_classification_store: Classification store operations
+classification_store_get_collections_description: Get all classification store collections for given fieldName
+classification_store_get_collections_summary: Get all classification store collections for given fieldName
+classification_store_get_collections_response: List of classification store collections
+classification_store_get_groups_description: Get all classification store groups for given fieldName
+classification_store_get_groups_summary: Get all classification store groups for given fieldName
+classification_store_get_groups_response: List of classification store groups
+classification_store_get_key_group_relations_description: Get all classification store key group relations for given fieldName
+classification_store_get_key_group_relations_summary: Get all classification store key group relations for given fieldName
+classification_store_get_key_group_relations_response: List of classification store key group relations

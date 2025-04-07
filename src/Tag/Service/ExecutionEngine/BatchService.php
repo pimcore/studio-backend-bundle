@@ -71,12 +71,6 @@ final readonly class BatchService implements BatchServiceInterface
         $tagIds = $this->tagService->getTagIdsForElement(
             new ElementParameters($parameters->getType(), $parameters->getId())
         );
-        if (empty($tagIds)) {
-            throw new NotFoundException(
-                sprintf('Tags for %s', $parameters->getType()),
-                $parameters->getId()
-            );
-        }
 
         $job = new Job(
             name: $this->getJobName($parameters->getOperation()),

@@ -31,8 +31,8 @@ use Pimcore\Document\Adapter;
 use Pimcore\Messenger\AssetUpdateTasksMessage;
 use Pimcore\Model\Asset\Document;
 use Pimcore\Model\Asset\Enum\PdfScanStatus;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\Messenger\MessageBusInterface;
 use function sprintf;
 
 /**
@@ -45,7 +45,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     public function __construct(
         private ConfigResolverInterface $configResolver,
         private DocumentResolverInterface $documentResolver,
-        private EventDispatcherInterface $eventDispatcher,
+        private MessageBusInterface $messageBus,
     ) {
     }
 
@@ -64,7 +64,7 @@ final readonly class DocumentService implements DocumentServiceInterface
         if ($this->isScanningEnabled()) {
             $this->validatePdfScanStatus($asset);
             if ($asset->getScanStatus() === null) {
-                $this->eventDispatcher->dispatch(
+                $this->messageBus->dispatch(
                     new AssetUpdateTasksMessage($asset->getId())
                 );
 

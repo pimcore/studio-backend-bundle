@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\AdvancedColumnCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\ElementTreeWidgetConfigRepository;
@@ -162,6 +163,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$perspectiveConfigurations' => $config[Configuration::PERSPECTIVES_NODE],
             '$storageConfig' => $config['config_location'][Configuration::PERSPECTIVES_NODE],
         ]);
+
+        $definition = $container->getDefinition(MetadataAdapterServiceInterface::class);
+        $definition->setArgument('$studioAdapters', $config['asset_metadata_adapter_mapping']);
     }
 
     /**
