@@ -302,20 +302,20 @@ final readonly class LocalizedFieldsAdapter implements
         if ($contextObject !== null) {
             $localizedField = $contextData->getFieldValueFromContextObject(self::LOCALIZED_FIELDS_KEY);
             if ($contextObject instanceof BlockData) {
-                if(!$localizedField) {
+                if (!$localizedField) {
                     $localizedField = new Localizedfield();
                     $localizedField->setContext(
                         $contextObject->getContextData()
                     );
-                }
-                else {
+                } else {
                     $localizedField = clone $localizedField;
                 }
             }
         }
 
-        if($localizedField) {
+        if ($localizedField) {
             $localizedField->setObject($element);
+
             return $localizedField;
         }
 

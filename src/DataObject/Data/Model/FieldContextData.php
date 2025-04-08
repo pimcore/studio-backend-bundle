@@ -24,7 +24,6 @@ use Pimcore\Model\DataObject\Data\BlockElement;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
 use Pimcore\Model\DataObject\Objectbrick;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
-use function is_array;
 
 /**
  * @internal
