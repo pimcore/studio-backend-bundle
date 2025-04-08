@@ -87,7 +87,8 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
      */
     public function getLayoutDefinition(
         KeyGroupRelation $keyGroupRelation,
-        Concrete $object, string $fieldName
+        Concrete $object,
+        string $fieldName
     ): EncryptedField|Data {
         $definition = json_decode($keyGroupRelation->getDefinition(), true);
         $definition = \Pimcore\Model\DataObject\Classificationstore\Service::getFieldDefinitionFromJson(
