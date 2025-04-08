@@ -73,6 +73,6 @@ final readonly class ExportFolderParameter
 
     public function getElementType(): string
     {
-        return $this->getValidElementType();
+        return $this->getValidElementType($this->elementType);
     }
 }

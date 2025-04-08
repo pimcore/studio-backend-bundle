@@ -241,13 +241,18 @@ final readonly class DataService implements DataServiceInterface
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
-    ): mixed {
+    ): string {
         $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
         if ($adapter instanceof DataExportInterface) {
             return $adapter->getExportData($dataObject, $fieldDefinition, $key, $contextData);
         }
 
-        return $fieldDefinition->getForCsvExport($dataObject);
+        $params = [];
+        if ($contextData && is_array($contextData->getContextObject())) {
+            $params = $contextData->getContextObject();
+        }
+
+        return $fieldDefinition->getForCsvExport($dataObject, $params);
     }
 
     private function removeEmptyValues(array $previewFields): array

@@ -85,5 +85,5 @@ interface DataServiceInterface
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
-    );
+    ): string;
 }

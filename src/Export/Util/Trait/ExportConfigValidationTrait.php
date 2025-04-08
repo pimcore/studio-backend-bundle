@@ -46,12 +46,12 @@ trait ExportConfigValidationTrait
         }
     }
 
-    private function getValidElementType(): string
+    private function getValidElementType(string $elementType): string
     {
-        if ($this->elementType === ElementTypes::TYPE_DATA_OBJECT) {
+        if ($elementType === ElementTypes::TYPE_DATA_OBJECT) {
             return ElementTypes::TYPE_OBJECT;
         }
 
-        return $this->elementType;
+        return $elementType;
     }
 }

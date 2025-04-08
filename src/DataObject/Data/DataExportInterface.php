@@ -27,5 +27,5 @@ interface DataExportInterface
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
-    ): array;
+    ): string;
 }

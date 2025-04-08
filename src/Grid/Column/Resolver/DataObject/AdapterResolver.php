@@ -39,7 +39,10 @@ use Pimcore\Model\Element\ElementInterface;
 /**
  * @internal
  */
-final class AdapterResolver implements ColumnResolverInterface, CoreElementColumnResolverInterface, ExportResolverInterface
+final class AdapterResolver implements
+    ColumnResolverInterface,
+    CoreElementColumnResolverInterface,
+    ExportResolverInterface
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;

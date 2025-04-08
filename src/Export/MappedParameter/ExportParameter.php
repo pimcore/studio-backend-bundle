@@ -74,6 +74,6 @@ final readonly class ExportParameter
 
     public function getElementType(): string
     {
-        return $this->getValidElementType();
+        return $this->getValidElementType($this->elementType);
     }
 }

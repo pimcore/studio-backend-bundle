@@ -83,7 +83,7 @@ final class CsvCreationHandler extends AbstractHandler
                 $delimiter,
                 $user
             );
-        } catch (Exception|FilesystemException $e) {
+        } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,
                 ['message' => $e->getMessage()]
