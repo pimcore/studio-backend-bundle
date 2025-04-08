@@ -21,6 +21,7 @@ use InvalidArgumentException;
 use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataInheritanceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\BlockData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
@@ -86,7 +87,6 @@ final readonly class LocalizedFieldsAdapter implements
 
         $languageData = $this->getAllowedLanguages($element, $user, $data[$key]);
         $localizedField = $this->getLocalizedField($contextData, $element);
-        $localizedField->setObject($element);
 
         foreach ($languageData as $name => $localizedData) {
             foreach ($localizedData as $language => $fieldData) {
@@ -292,17 +292,31 @@ final readonly class LocalizedFieldsAdapter implements
      */
     private function getLocalizedField(?FieldContextData $contextData, Concrete $element): Localizedfield
     {
+        $contextObject = $contextData?->getContextObject();
+        $localizedField = null;
+
         if ($contextData === null) {
             $localizedField = $this->getValidFieldValue($element, self::LOCALIZED_FIELDS_KEY);
-            if (!$localizedField instanceof Localizedfield) {
-                return new Localizedfield();
-            }
-
-            return $localizedField;
         }
 
-        if ($contextData->getContextObject() !== null) {
-            return $contextData->getFieldValueFromContextObject(self::LOCALIZED_FIELDS_KEY);
+        if ($contextObject !== null) {
+            $localizedField = $contextData->getFieldValueFromContextObject(self::LOCALIZED_FIELDS_KEY);
+            if ($contextObject instanceof BlockData) {
+                if(!$localizedField) {
+                    $localizedField = new Localizedfield();
+                    $localizedField->setContext(
+                        $contextObject->getContextData()
+                    );
+                }
+                else {
+                    $localizedField = clone $localizedField;
+                }
+            }
+        }
+
+        if($localizedField) {
+            $localizedField->setObject($element);
+            return $localizedField;
         }
 
         throw new InvalidArgumentException('Invalid context provided.');

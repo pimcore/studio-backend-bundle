@@ -32,7 +32,7 @@ use function is_array;
 final readonly class FieldContextData
 {
     public function __construct(
-        private AbstractData|array|FieldCollectionData|Classificationstore|null $contextObject = null,
+        private AbstractData|BlockData|FieldCollectionData|Classificationstore|null $contextObject = null,
         private ?string $language = null,
         private ?int $classificationStoreGroupId = null,
         private ?int $classificationStoreKeyId = null,
@@ -44,7 +44,7 @@ final readonly class FieldContextData
         return $this->language;
     }
 
-    public function getContextObject(): FieldCollectionData|array|AbstractData|Classificationstore|null
+    public function getContextObject(): FieldCollectionData|BlockData|AbstractData|Classificationstore|null
     {
         return $this->contextObject;
     }
@@ -70,7 +70,7 @@ final readonly class FieldContextData
             $contextObject instanceof AbstractData, $contextObject instanceof FieldCollectionData =>
                 $contextObject->get($fieldName, $this->language),
             $contextObject instanceof Classificationstore => $this->getDataFromClassificationStore($contextObject),
-            is_array($contextObject) => $this->getDataFromBlock($fieldName, $contextObject),
+            $contextObject instanceof BlockData => $this->getDataFromBlock($fieldName, $contextObject->getBlockData()),
             default => null,
         };
     }

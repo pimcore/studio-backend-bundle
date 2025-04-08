@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\BlockData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
@@ -115,7 +116,14 @@ final readonly class BlockAdapter implements
         $object = $contextData?->getContextObject() ?? $element;
 
         return new FieldContextData(
-            $object->get($fieldDefinition->getName()),
+            new BlockData(
+                $object->get($fieldDefinition->getName()),
+                [
+                    'containerType' => 'block',
+                    'classId' => $element->getClassId(),
+                    'fieldname' => $fieldDefinition->getName(),
+                ]
+            ),
             $contextData?->getLanguage()
         );
     }
