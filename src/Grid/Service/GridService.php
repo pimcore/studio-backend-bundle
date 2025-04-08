@@ -27,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
@@ -125,17 +126,14 @@ final class GridService implements GridServiceInterface
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array {
         $data = [];
 
         $databaseElement = null;
         if ($elementType === ElementTypes::TYPE_OBJECT) {
-            $databaseElement = $this->getElement(
-                $this->serviceResolver,
-                $elementType,
-                $element->getId()
-            );
+            $databaseElement = $this->getElement($this->serviceResolver, $elementType, $element->getId());
         }
 
         foreach ($columnCollection->getColumns() as $column) {
@@ -147,6 +145,8 @@ final class GridService implements GridServiceInterface
             $resolver = $this->getColumnResolvers()[$column->getType()];
 
             $columnData = match (true) {
+                $databaseElement && $isExport && $resolver instanceof ExportResolverInterface =>
+                    $resolver->resolveForExport($column, $databaseElement),
                 $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
                     $resolver->resolveForCoreElement($column, $databaseElement),
                 $resolver instanceof StudioElementColumnResolverInterface =>
@@ -178,9 +178,10 @@ final class GridService implements GridServiceInterface
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array {
-        $data = $this->getGridDataForElement($columnCollection, $element, $elementType);
+        $data = $this->getGridDataForElement($columnCollection, $element, $elementType, $isExport);
 
         return array_map(
             static fn (ColumnData $columnData) => $columnData->getValue(),

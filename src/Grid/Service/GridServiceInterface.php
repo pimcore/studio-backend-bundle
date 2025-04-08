@@ -43,7 +43,8 @@ interface GridServiceInterface
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array;
 
     /**
@@ -52,7 +53,8 @@ interface GridServiceInterface
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array;
 
     /**

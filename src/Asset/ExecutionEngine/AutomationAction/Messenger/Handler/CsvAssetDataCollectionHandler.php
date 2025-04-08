@@ -100,7 +100,8 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
                 $asset->getId() => $this->gridService->getGridValuesForElement(
                     $columnCollection,
                     $asset,
-                    ElementTypes::TYPE_ASSET
+                    ElementTypes::TYPE_ASSET,
+                    true
                 ),
             ];
 

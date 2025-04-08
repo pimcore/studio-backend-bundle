@@ -20,6 +20,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -29,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceIn
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -42,6 +44,7 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
 
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly DataServiceInterface $dataService,
         private readonly DataObjectServiceInterface $dataObjectService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
@@ -89,27 +92,21 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
         }
 
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
-
         $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
             $className,
             1,
             $user
         );
-
-        $columnCollection = $this->gridService->getConfigurationForExport(
-            $columns,
-            $columnsDefinitions
-        );
+        $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
 
         try {
-            $data = $this->gridService->getGridValuesForElement(
-                $columnCollection,
-                $dataObject,
-                ElementTypes::TYPE_OBJECT,
-            );
-
             $dataObjectData = [
-                $dataObject->getId() => $data,
+                $dataObject->getId() => $this->gridService->getGridValuesForElement(
+                    $columnCollection,
+                    $dataObject,
+                    ElementTypes::TYPE_OBJECT,
+                    true
+                )
             ];
 
             $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $dataObjectData);

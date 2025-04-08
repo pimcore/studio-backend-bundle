@@ -14,28 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject;
+namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
-use Override;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
+use Pimcore\Model\Element\ElementInterface;
 
-/**
- * @internal
- */
-final readonly class LinkDefinition extends AbstractDefinition
+interface ExportResolverInterface
 {
-    public function getType(): string
-    {
-        return 'data-object.link';
-    }
-
-    public function getFrontendType(): string
-    {
-        return 'link';
-    }
-
-    #[Override]
-    public function isSortable(): bool
-    {
-        return false;
-    }
+    public function resolveForExport(Column $column, ElementInterface $element): ColumnData;
 }

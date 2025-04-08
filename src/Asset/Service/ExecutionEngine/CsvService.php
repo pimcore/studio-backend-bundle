@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\Util\JobSteps as ExportJobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -66,7 +67,7 @@ final readonly class CsvService implements CsvServiceInterface
         );
     }
 
-    public function generateCsvFileForFolders(ExportParameter $exportParameter): int
+    public function generateCsvFileForFolders(ExportFolderParameter $exportParameter): int
     {
         $collectionSettings = [
             StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
@@ -79,7 +80,7 @@ final readonly class CsvService implements CsvServiceInterface
         ];
 
         return $this->generateCsvFileJob(
-            $exportParameter->getElements(),
+            $exportParameter->getFolders(),
             $collectionSettings,
             $creationSettings,
             $this->getMessageClassForFolder($exportParameter->getElementType())
@@ -90,12 +91,11 @@ final readonly class CsvService implements CsvServiceInterface
         array $elements,
         array $collectionSettings,
         array $creationSettings,
-        string $messageFQCN,
-        StepConfig $export = StepConfig::ELEMENT_TO_EXPORT
+        string $messageFQCN
     ): int {
 
         $jobSteps = [
-            ...$this->mapJobSteps($elements, $collectionSettings, $messageFQCN, $export),
+            ...$this->mapJobSteps($elements, $collectionSettings, $messageFQCN, StepConfig::ELEMENT_TO_EXPORT),
             ...[$this->getCsvCreationStep($creationSettings)],
         ];
 

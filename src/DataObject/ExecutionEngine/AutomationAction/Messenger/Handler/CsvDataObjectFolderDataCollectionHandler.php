@@ -115,7 +115,8 @@ final class CsvDataObjectFolderDataCollectionHandler extends AbstractHandler
                     $dataObject->getId() => $this->gridService->getGridValuesForElement(
                         $columnCollection,
                         $dataObject,
-                        ElementTypes::TYPE_OBJECT
+                        ElementTypes::TYPE_OBJECT,
+                        true
                     ),
                 ];
 

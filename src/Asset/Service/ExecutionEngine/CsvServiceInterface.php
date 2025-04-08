@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
 
+use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
 
 /**
@@ -25,5 +26,5 @@ interface CsvServiceInterface
 {
     public function generateCsvFileForElements(ExportParameter $exportParameter): int;
 
-    public function generateCsvFileForFolders(ExportParameter $exportParameter): int;
+    public function generateCsvFileForFolders(ExportFolderParameter $exportParameter): int;
 }

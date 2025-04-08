@@ -44,10 +44,4 @@ final readonly class AdvancedManyToManyRelationDefinition extends AbstractDefini
     {
         return false;
     }
-
-    #[Override]
-    public function isExportable(): bool
-    {
-        return false;
-    }
 }

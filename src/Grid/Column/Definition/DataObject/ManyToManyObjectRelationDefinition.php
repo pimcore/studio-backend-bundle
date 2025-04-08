@@ -44,10 +44,4 @@ final readonly class ManyToManyObjectRelationDefinition extends AbstractDefiniti
     {
         return false;
     }
-
-    #[Override]
-    public function isExportable(): bool
-    {
-        return false;
-    }
 }
