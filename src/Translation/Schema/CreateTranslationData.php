@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Schema;
 
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
@@ -24,25 +23,29 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    schema: 'CreateTranslation',
-    title: 'Translation Create',
-    description: 'Translation Crete Scheme for API',
-    required: ['translationData'],
+    schema: 'CreateTranslationData',
+    title: 'Translation Data for create',
+    description: 'Translation Data Scheme for create endpoint of the API',
+    required: ['key', 'type'],
     type: 'object'
 )]
-final readonly class CreateTranslation
+final readonly class CreateTranslationData
 {
     public function __construct(
-        #[Property(description: 'Translation Data', type: 'array', items: new Items(ref: CreateTranslationData::class))]
-        private array $translationData = []
+        #[Property(description: 'Key', type: 'string', example: 'my_translation_key')]
+        private string $key,
+        #[Property(description: 'Type', type: 'string', example: 'simple')]
+        private string $type = 'simple',
     ) {
     }
 
-    /**
-     * @return array<CreateTranslationData>
-     */
-    public function getTranslationData(): array
+    public function getKey(): string
     {
-        return $this->translationData;
+        return $this->key;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
     }
 }

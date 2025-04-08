@@ -16,17 +16,21 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Dao as GroupConfigDao;
+use Pimcore\Model\DataObject\Classificationstore\KeyConfig\Dao as KeyConfigDao;
 use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation\Listing;
 use function count;
 
 /**
  * @internal
  */
-final class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInterface
+final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInterface
 {
     public function __construct(
-        private GroupConfigRepositoryInterface $groupConfigRepository
+        private GroupConfigRepositoryInterface $groupConfigRepository,
+        private SearchHelperServiceInterface $searchHelperService
     ) {
     }
 
@@ -36,7 +40,8 @@ final class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInte
     public function getPaginatedKeyGroupRelationByStore(
         int $storeId,
         CollectionParametersInterface $collectionParameters,
-        ?array $groupIds = null
+        ?array $groupIds = null,
+        ?string $searchTerm = null
     ): array {
 
         $groupIds = array_map(
@@ -50,7 +55,11 @@ final class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInte
         $listing->setOrderKey('sorter');
         $this->applyGroupIdsFilter($listing, $groupIds);
 
-        return $listing->load();
+        if ($searchTerm !== null) {
+            $this->applySearchTermFilter($listing, $searchTerm);
+        }
+
+        return $listing->getList();
     }
 
     public function getCountByStoreId(int $storeId, ?array $groupIds = null): int
@@ -64,6 +73,22 @@ final class KeyGroupRelationRepository implements KeyGroupRelationRepositoryInte
         $this->applyGroupIdsFilter($listing, $groupIds);
 
         return $listing->count();
+    }
+
+    private function applySearchTermFilter(Listing $list, string $searchTerm): void
+    {
+        $searchTerms = $this->searchHelperService->getTranslatedSearchFilterTerms($searchTerm);
+        $searchFilterConditions = [];
+
+        foreach ($searchTerms as $term) {
+            $searchFilterConditions[] =
+                KeyConfigDao::TABLE_NAME_KEYS.'.name LIKE '.$list->quote('%'.$term.'%')
+                .' OR '.GroupConfigDao::TABLE_NAME_GROUPS.'.name LIKE '.$list->quote('%'.$term.'%')
+                .' OR '.KeyConfigDao::TABLE_NAME_KEYS.'.description LIKE '.$list->quote('%'.$term.'%');
+        }
+        $list->setResolveGroupName(true);
+
+        $list->addConditionParam(implode(' OR ', $searchFilterConditions));
     }
 
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void

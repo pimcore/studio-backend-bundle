@@ -64,7 +64,6 @@ final class CreateController extends AbstractApiController
         description: 'translation_create_success_response'
     )]
     #[DefaultResponses([
-        HttpResponseCodes::CONFLICT,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
