@@ -24,23 +24,22 @@ use Pimcore\Model\Element\ElementDescriptor;
 /**
  * @internal
  */
-final readonly class ExportParameter
+final readonly class ExportFolderParameter
 {
     use ExportConfigValidationTrait;
 
     /**
-     * @param array<int> $elements
+     * @param array<int> $folders
      */
     public function __construct(
         private array $columns,
         private ?FilterParameter $filters,
         private array $config,
-        private array $elements,
+        private array $folders,
         private string $elementType
     ) {
-
-        if (empty($this->getElements())) {
-            throw new InvalidArgumentException('No elements provided');
+        if (empty($this->getFolders())) {
+            throw new InvalidArgumentException('No folders provided');
         }
 
         $this->validateConfig();
@@ -64,11 +63,11 @@ final readonly class ExportParameter
     /**
      * @return array<int, ElementDescriptor>
      */
-    public function getElements(): array
+    public function getFolders(): array
     {
         return array_map(
             fn (int $id) => new ElementDescriptor($this->getElementType(), $id),
-            $this->elements
+            $this->folders
         );
     }
 

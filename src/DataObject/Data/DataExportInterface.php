@@ -14,28 +14,18 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data;
 
-use Override;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\Concrete;
 
-/**
- * @internal
- */
-final readonly class LinkDefinition extends AbstractDefinition
+interface DataExportInterface
 {
-    public function getType(): string
-    {
-        return 'data-object.link';
-    }
-
-    public function getFrontendType(): string
-    {
-        return 'link';
-    }
-
-    #[Override]
-    public function isSortable(): bool
-    {
-        return false;
-    }
+    public function getExportData(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): string;
 }

@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -35,17 +35,17 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class CsvAssetDataCollectionHandler extends AbstractHandler
+final class CsvDataObjectDataCollectionHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
     use CsvExportHandlerSetupTrait;
 
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly DataObjectServiceInterface $dataObjectService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
-        private readonly GridServiceInterface $gridService,
-        private readonly AssetServiceInterface $assetService
+        private readonly GridServiceInterface $gridService
     ) {
         parent::__construct();
     }
@@ -53,7 +53,7 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(CsvAssetCollectionMessage $message): void
+    public function __invoke(CsvDataObjectCollectionMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         if (!$this->shouldBeExecuted($jobRun)) {
@@ -71,15 +71,17 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
             ));
         }
 
-        $jobAsset = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TO_EXPORT->value);
+        $jobDataObject = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TO_EXPORT->value);
 
-        $asset = $this->assetService->getAssetForUser($jobAsset['id'], $user);
+        $dataObject = $this->dataObjectService->getDataObjectForUser($jobDataObject['id'], $user);
 
-        if ($asset->getType() === ElementTypes::TYPE_FOLDER) {
+        $className = $dataObject->getClassName();
+
+        if ($dataObject->getType() === ElementTypes::TYPE_FOLDER) {
             $this->abort($this->getAbortData(
                 Config::ELEMENT_FOLDER_COLLECTION_NOT_SUPPORTED->value,
                 [
-                    'folderId' => $asset->getId(),
+                    'folderId' => $dataObject->getId(),
                 ]
             ));
 
@@ -87,25 +89,24 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
         }
 
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
-
-        $columnsDefinitions = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
-
-        $columnCollection = $this->gridService->getConfigurationForExport(
-            $columns,
-            $columnsDefinitions
+        $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
+            $className,
+            1,
+            $user
         );
+        $columnCollection = $this->gridService->getConfigurationForExport($columns, $columnsDefinitions);
 
         try {
-            $assetData = [
-                $asset->getId() => $this->gridService->getGridValuesForElement(
+            $dataObjectData = [
+                $dataObject->getId() => $this->gridService->getGridValuesForElement(
                     $columnCollection,
-                    $asset,
-                    ElementTypes::TYPE_ASSET,
+                    $dataObject,
+                    ElementTypes::TYPE_OBJECT,
                     true
                 ),
             ];
 
-            $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $assetData);
+            $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $dataObjectData);
 
             $csvExportDataInfo = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA_INFO->value] ?? null;
 
@@ -114,7 +115,8 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
                     $jobRun,
                     StepConfig::CSV_EXPORT_DATA_INFO->value,
                     [
-                        'type' => ElementTypes::TYPE_ASSET,
+                        'type' => ElementTypes::TYPE_OBJECT,
+                        'className' => $className,
                     ]
                 );
             }
@@ -123,7 +125,7 @@ final class CsvAssetDataCollectionHandler extends AbstractHandler
             $this->abort($this->getAbortData(
                 Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                 [
-                    'id' => $asset->getId(),
+                    'id' => $dataObject->getId(),
                     'message' => $e->getMessage(),
                 ]
             ));

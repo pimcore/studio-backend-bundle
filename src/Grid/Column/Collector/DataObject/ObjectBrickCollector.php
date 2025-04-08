@@ -33,6 +33,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
 use Pimcore\Model\DataObject\Objectbrick\Definition as ObjectBrickDefinition;
 use Pimcore\Model\DataObject\Objectbrick\Definition\Listing as ObjectBrickListing;
+use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 use function array_key_exists;
 
@@ -64,7 +65,7 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
     /**
      * {@inheritdoc}
      */
-    public function getColumnConfigurations(array $availableColumnDefinitions): array
+    public function getColumnConfigurations(array $availableColumnDefinitions, ?UserInterface $user = null): array
     {
         $objectBrickList = new ObjectBrickListing();
         $objectBrickList = $objectBrickList->load();
@@ -73,7 +74,8 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
 
         $filteredFieldDefinitions = $this->classDefinitionService->getFilteredFieldDefinitions(
             $this->getClassId(),
-            $this->getFolderId()
+            $this->getFolderId(),
+            $user
         );
 
         foreach ($objectBrickList as $objectBrick) {

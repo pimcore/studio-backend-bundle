@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -28,12 +29,12 @@ interface ClassDefinitionServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getFilteredLayoutDefinitions(string $classId, int $folderId): ?Layout;
+    public function getFilteredLayoutDefinitions(string $classId, int $folderId, ?UserInterface $user = null): ?Layout;
 
     /**
      * @throws NotFoundException
      */
-    public function getFilteredFieldDefinitions(string $classId, int $folderId): array;
+    public function getFilteredFieldDefinitions(string $classId, int $folderId, ?UserInterface $user = null): array;
 
     /**
      * @throws NotFoundException

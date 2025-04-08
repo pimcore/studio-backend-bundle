@@ -29,13 +29,13 @@ export_csv_folder_description: |
   </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
   Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
 export_csv_folder_summary: Creating CSV file for assets based on folder
-export_zip_created_response: Successfully created <strong>jobRun</strong> for zip export
-export_zip_description: |
+asset_export_zip_created_response: Successfully created <strong>jobRun</strong> for zip export
+asset_export_zip_asset_description: |
   Creating a ZIP file for assets based on the provided asset IDs in <strong>{assets}</strong> parameter. <br>
   Download has to be triggered separately via the zip download route with the <strong>{jobRunId}</strong> returned in the response
-export_zip_summary: Creating ZIP file for assets
-export_zip_folder_summary: Creating ZIP file assets based on folder
-export_zip_folder_description: |
+asset_export_zip_asset_summary: Creating ZIP file for assets
+asset_export_zip_folder_summary: Creating ZIP file assets based on folder
+asset_export_zip_folder_description: |
   Creating a ZIP file for assets based on the provided folder IDs in <strong>{folders}</strong> parameter. <br>
   Filter assets from folder based on the grid filter schema. <br>
   Download has to be triggered separately via the zip download route with the <strong>{jobRunId}</strong> returned in the response

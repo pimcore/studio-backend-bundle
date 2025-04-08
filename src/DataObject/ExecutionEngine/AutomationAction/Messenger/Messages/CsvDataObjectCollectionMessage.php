@@ -14,28 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages;
 
-use Override;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
 
 /**
  * @internal
  */
-final readonly class LinkDefinition extends AbstractDefinition
+final class CsvDataObjectCollectionMessage extends AbstractExecutionEngineMessage
 {
-    public function getType(): string
-    {
-        return 'data-object.link';
-    }
-
-    public function getFrontendType(): string
-    {
-        return 'link';
-    }
-
-    #[Override]
-    public function isSortable(): bool
-    {
-        return false;
-    }
 }

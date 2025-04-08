@@ -20,7 +20,7 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Export\Attribute\Request\CsvExportFolderRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
+use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -64,7 +64,7 @@ final class FolderController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function exportCsvFolder(
-        #[MapRequestPayload] ExportParameter $exportParameter
+        #[MapRequestPayload] ExportFolderParameter $exportParameter
     ): Response {
         return $this->jsonResponse(
             ['jobRunId' => $this->csvService->generateCsvFileForFolders($exportParameter)],

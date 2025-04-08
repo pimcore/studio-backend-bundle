@@ -42,7 +42,7 @@ final class GetController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly GridServiceInterface $gridService,
+        private readonly GridServiceInterface $gridService
     ) {
         parent::__construct($serializer);
     }
@@ -73,6 +73,8 @@ final class GetController extends AbstractApiController
     ])]
     public function getAssetGrid(#[MapRequestPayload] GridParameter $gridParameter): JsonResponse
     {
-        return $this->jsonResponse($this->gridService->getAssetGrid($gridParameter));
+        return $this->jsonResponse(
+            $this->gridService->getAssetGrid($gridParameter)
+        );
     }
 }

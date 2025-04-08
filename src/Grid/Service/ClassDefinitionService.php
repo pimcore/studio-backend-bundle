@@ -22,6 +22,8 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -37,13 +39,18 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     /**
      * {@inheritdoc}
      */
-    public function getFilteredLayoutDefinitions(string $classId, int $folderId): ?Layout
+    public function getFilteredLayoutDefinitions(string $classId, int $folderId, ?UserInterface $user = null): ?Layout
     {
         $classDefinition = $this->getClassDefinition($classId);
 
+        /**
+         *  @var User $user
+         *  Because Core needs a User
+         * */
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
             $classDefinition,
-            $folderId
+            $folderId,
+            $user
         );
 
         if (!isset($filteredDefinitions['layoutDefinition'])) {
@@ -54,26 +61,31 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         $layoutDefinitions = $filteredDefinitions['layoutDefinition'];
 
         $this->dataObjectServiceResolver->enrichLayoutDefinition(
-            $layoutDefinitions
+            $layoutDefinitions,
+            user: $user
         );
 
         return $layoutDefinitions;
     }
 
-    public function getFilteredFieldDefinitions(string $classId, int $folderId): array
-    {
+    public function getFilteredFieldDefinitions(
+        string $classId,
+        int $folderId,
+        ?UserInterface $user = null
+    ): array {
         $classDefinition = $this->getClassDefinition($classId);
 
+        /**
+         *  @var User $user
+         *  Because Core needs a User
+         * */
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
             $classDefinition,
-            $folderId
+            $folderId,
+            $user
         );
 
-        if (!isset($filteredDefinitions['fieldDefinition'])) {
-            return [];
-        }
-
-        return $filteredDefinitions['fieldDefinition'];
+        return $filteredDefinitions['fieldDefinition'] ?? [];
     }
 
     /**

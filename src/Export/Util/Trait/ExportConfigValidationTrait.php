@@ -24,7 +24,7 @@ use function in_array;
 /**
  * @internal
  */
-trait CsvConfigValidationTrait
+trait ExportConfigValidationTrait
 {
     private function validateConfig(): void
     {
@@ -41,12 +41,17 @@ trait CsvConfigValidationTrait
             throw new InvalidArgumentException('No delimiter provided');
         }
 
-        if (empty($this->getElements())) {
-            throw new InvalidArgumentException('No elements provided');
-        }
-
-        if (!in_array($this->getElementType(), ElementTypes::ALLOWED_TYPES)) {
+        if (!in_array($this->getElementType(), ElementTypes::ALLOWED_TYPES, true)) {
             throw new InvalidArgumentException('Invalid type provided');
         }
+    }
+
+    private function getValidElementType(string $elementType): string
+    {
+        if ($elementType === ElementTypes::TYPE_DATA_OBJECT) {
+            return ElementTypes::TYPE_OBJECT;
+        }
+
+        return $elementType;
     }
 }

@@ -22,12 +22,15 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\Util\JobSteps as ExportJobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -48,6 +51,7 @@ final readonly class CsvService implements CsvServiceInterface
     {
         $collectionSettings = [
             StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
+            StepConfig::ELEMENT_TYPE->value => $exportParameter->getElementType(),
         ];
 
         $creationSettings = [
@@ -63,7 +67,7 @@ final readonly class CsvService implements CsvServiceInterface
         );
     }
 
-    public function generateCsvFileForFolders(ExportParameter $exportParameter): int
+    public function generateCsvFileForFolders(ExportFolderParameter $exportParameter): int
     {
         $collectionSettings = [
             StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
@@ -76,11 +80,10 @@ final readonly class CsvService implements CsvServiceInterface
         ];
 
         return $this->generateCsvFileJob(
-            $exportParameter->getElements(),
+            $exportParameter->getFolders(),
             $collectionSettings,
             $creationSettings,
-            $this->getMessageClassForFolder($exportParameter->getElementType()),
-            StepConfig::FOLDER_TO_EXPORT
+            $this->getMessageClassForFolder($exportParameter->getElementType())
         );
     }
 
@@ -88,12 +91,11 @@ final readonly class CsvService implements CsvServiceInterface
         array $elements,
         array $collectionSettings,
         array $creationSettings,
-        string $messageFQCN,
-        StepConfig $export = StepConfig::ELEMENT_TO_EXPORT
+        string $messageFQCN
     ): int {
 
         $jobSteps = [
-            ...$this->mapJobSteps($elements, $collectionSettings, $messageFQCN, $export),
+            ...$this->mapJobSteps($elements, $collectionSettings, $messageFQCN, StepConfig::ELEMENT_TO_EXPORT),
             ...[$this->getCsvCreationStep($creationSettings)],
         ];
 
@@ -145,6 +147,7 @@ final readonly class CsvService implements CsvServiceInterface
     {
         return match($elementType) {
             ElementTypes::TYPE_ASSET => CsvAssetCollectionMessage::class,
+            ElementTypes::TYPE_OBJECT => CsvDataObjectCollectionMessage::class,
             default => throw new InvalidElementTypeException($elementType)
         };
     }
@@ -153,6 +156,7 @@ final readonly class CsvService implements CsvServiceInterface
     {
         return match($elementType) {
             ElementTypes::TYPE_ASSET => CsvAssetFolderCollectionMessage::class,
+            ElementTypes::TYPE_OBJECT => CsvDataObjectFolderCollectionMessage::class,
             default => throw new InvalidElementTypeException($elementType)
         };
     }

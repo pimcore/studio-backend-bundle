@@ -14,12 +14,12 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Handler;
+namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -37,7 +37,7 @@ use function count;
  * @internal
  */
 #[AsMessageHandler]
-final class CsvAssetFolderDataCollectionHandler extends AbstractHandler
+final class CsvDataObjectFolderDataCollectionHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
@@ -55,7 +55,7 @@ final class CsvAssetFolderDataCollectionHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(CsvAssetFolderCollectionMessage $message): void
+    public function __invoke(CsvDataObjectFolderCollectionMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         if (!$this->shouldBeExecuted($jobRun)) {
@@ -79,7 +79,8 @@ final class CsvAssetFolderDataCollectionHandler extends AbstractHandler
 
         $filters = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_FILTERS->value);
 
-        $assets = $this->gridSearch->searchAssetsForUser(
+        $dataObjects = $this->gridSearch->searchElementsForUser(
+            'object',
             new GridParameter(
                 $jobFolder['id'],
                 $columns,
@@ -88,36 +89,43 @@ final class CsvAssetFolderDataCollectionHandler extends AbstractHandler
             $user
         );
 
-        if (count($assets->getItems()) === 0) {
+        if (count($dataObjects->getItems()) === 0) {
             $this->updateProgress($this->publishService, $jobRun, $this->getJobStep($message)->getName());
 
             return;
         }
 
-        $columnsDefinitions = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
+        $dataObject = $dataObjects->getItems()[0];
+
+        $className = $dataObject->getClassName();
+        $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
+            $className,
+            $jobFolder['id'],
+            $user
+        );
 
         $columnCollection = $this->gridService->getConfigurationForExport(
             $columns,
             $columnsDefinitions
         );
 
-        foreach ($assets->getItems() as $asset) {
+        foreach ($dataObjects->getItems() as $dataObject) {
             try {
-                $assetData = [
-                    $asset->getId() => $this->gridService->getGridValuesForElement(
+                $dataObjectData = [
+                    $dataObject->getId() => $this->gridService->getGridValuesForElement(
                         $columnCollection,
-                        $asset,
-                        ElementTypes::TYPE_ASSET,
+                        $dataObject,
+                        ElementTypes::TYPE_OBJECT,
                         true
                     ),
                 ];
 
-                $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $assetData);
+                $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $dataObjectData);
             } catch (Exception $e) {
                 $this->abort($this->getAbortData(
                     Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
                     [
-                        'id' => $asset->getId(),
+                        'id' => $dataObject->getId(),
                         'message' => $e->getMessage(),
                     ]
                 ));
@@ -131,7 +139,8 @@ final class CsvAssetFolderDataCollectionHandler extends AbstractHandler
                 $jobRun,
                 StepConfig::CSV_EXPORT_DATA_INFO->value,
                 [
-                    'type' => ElementTypes::TYPE_ASSET,
+                    'type' => ElementTypes::TYPE_OBJECT,
+                    'className' => $className,
                 ]
             );
         }

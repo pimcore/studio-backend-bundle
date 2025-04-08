@@ -16,12 +16,14 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField as EncryptedFieldDefinition;
 use Pimcore\Model\DataObject\Concrete;
@@ -33,8 +35,10 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataNormalizerInterface, DataExportInterface
 {
+    use ValidateObjectDataTrait;
+
     public function __construct(
         private DataAdapterServiceInterface $dataAdapterService,
         private DataServiceInterface $dataService
@@ -107,5 +111,25 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
         }
 
         return null;
+    }
+
+    public function getExportData(
+        Concrete $object,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): string {
+        $data = $this->getValidFieldValue($object, $key, $contextData);
+
+        if (!$data instanceof EncryptedField || !$fieldDefinition instanceof EncryptedFieldDefinition) {
+            return '';
+        }
+
+        return $this->dataService->getExportFieldValue(
+            $object,
+            $fieldDefinition->getDelegate(),
+            $data->getPlain(),
+            new FieldContextData(['injectedData' => $data])
+        );
     }
 }

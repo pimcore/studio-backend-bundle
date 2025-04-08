@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\DataObject;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
@@ -26,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\ColumnDataTrait;
@@ -39,19 +39,39 @@ use Pimcore\Model\Element\ElementInterface;
 /**
  * @internal
  */
-final class AdapterResolver implements ColumnResolverInterface, CoreElementColumnResolverInterface
+final class AdapterResolver implements
+    ColumnResolverInterface,
+    CoreElementColumnResolverInterface,
+    ExportResolverInterface
 {
     use ColumnDataTrait;
     use LocalizedValueTrait;
     use FieldDefinitionTrait;
 
     public function __construct(
-        private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DataServiceInterface $dataService,
         private readonly InheritanceServiceInterface $inheritanceService,
         private readonly DataObjectServiceResolverInterface $dataObjectServiceResolver
 
     ) {
+    }
+
+    /**
+     * @throws Exception
+     * @throws InvalidArgumentException
+     * @throws NotFoundException
+     */
+    public function resolveForExport(Column $column, ElementInterface $element): ColumnData
+    {
+        if (!$element instanceof Concrete) {
+            throw new InvalidArgumentException('Element must be a concrete object');
+        }
+
+        $classDefinition = $element->getClass();
+        $fieldDefinition = $this->getFieldDefinition($column->getKey(), $classDefinition);
+        $value = $this->dataService->getExportFieldValue($element, $fieldDefinition, $column->getKey());
+
+        return $this->getColumnData($column, $value);
     }
 
     /**
@@ -65,7 +85,7 @@ final class AdapterResolver implements ColumnResolverInterface, CoreElementColum
             throw new InvalidArgumentException('Element must be a concrete object');
         }
 
-        $classDefinition = $this->classDefinitionResolver->getById($element->getClassId());
+        $classDefinition = $element->getClass();
         $fieldDefinition = $this->getFieldDefinition($column->getKey(), $classDefinition);
 
         $value = $this->dataService->getNormalizedValue(
