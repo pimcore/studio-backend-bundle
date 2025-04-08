@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
-use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\GroupConfigResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\KeyGroupRelationEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydratorInterface;
@@ -89,8 +88,7 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
     public function getLayoutDefinition(
         KeyGroupRelation $keyGroupRelation,
         Concrete $object, string $fieldName
-    ): EncryptedField|Data
-    {
+    ): EncryptedField|Data {
         $definition = json_decode($keyGroupRelation->getDefinition(), true);
         $definition = \Pimcore\Model\DataObject\Classificationstore\Service::getFieldDefinitionFromJson(
             $definition,
@@ -101,7 +99,6 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $definition->__wakeup();
         }
 
-
         if ($definition instanceof LayoutDefinitionEnrichmentInterface) {
             $context['object'] = $object;
             $context['class'] = $object->getClass();
@@ -111,10 +108,8 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $context['groupId'] = $keyGroupRelation->getGroupId();
             $context['keyDefinition'] = $definition;
 
-
             $definition = $definition->enrichLayoutDefinition($object, $context);
         }
-
 
         return $definition;
     }

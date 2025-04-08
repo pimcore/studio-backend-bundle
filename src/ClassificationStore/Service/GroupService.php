@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
-use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
@@ -136,7 +135,6 @@ final readonly class GroupService implements GroupServiceInterface
                 definition: $definition,
             );
         }
-
 
         $group = $this->groupConfigRepository->getById($groupId);
         $groupLayout = $this->groupLayoutHydrator->hydrate($keyLayouts, $group);

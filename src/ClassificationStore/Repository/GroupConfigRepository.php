@@ -96,7 +96,6 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
         return $group;
     }
 
-
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void
     {
         $placeholders = implode(',', array_fill(0, count($groupIds), '?'));

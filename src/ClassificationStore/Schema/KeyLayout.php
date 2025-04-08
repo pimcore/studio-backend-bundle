@@ -36,7 +36,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 )]
 final readonly class KeyLayout
 {
-
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 42)]
         private int $id,

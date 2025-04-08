@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
-use phpDocumentor\Reflection\FqsenResolver;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\CollectionEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\CollectionHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
@@ -97,7 +96,6 @@ final readonly class CollectionService implements CollectionServiceInterface
             groups: $layouts
         );
     }
-
 
     /**
      * @return array<int, int>

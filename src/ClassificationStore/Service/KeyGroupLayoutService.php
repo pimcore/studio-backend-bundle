@@ -16,7 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
-
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassificationStore\ServiceResolverInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
@@ -31,8 +30,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
 {
     public function __construct(
         private ServiceResolverInterface $serviceResolver
-    )
-    {
+    ) {
     }
 
     /**
@@ -41,8 +39,7 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
     public function getLayoutDefinition(
         KeyGroupRelation $keyGroupRelation,
         Concrete $object, string $fieldName
-    ): EncryptedField|Data
-    {
+    ): EncryptedField|Data {
         $definition = json_decode($keyGroupRelation->getDefinition(), true);
         $definition = $this->serviceResolver->getFieldDefinitionFromJson(
             $definition,
@@ -53,7 +50,6 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             $definition->__wakeup();
         }
 
-
         if ($definition instanceof LayoutDefinitionEnrichmentInterface) {
             $context['object'] = $object;
             $context['class'] = $object->getClass();
@@ -63,10 +59,8 @@ final readonly class KeyGroupLayoutService implements KeyGroupLayoutServiceInter
             $context['groupId'] = $keyGroupRelation->getGroupId();
             $context['keyDefinition'] = $definition;
 
-
             $definition = $definition->enrichLayoutDefinition($object, $context);
         }
-
 
         return $definition;
     }
