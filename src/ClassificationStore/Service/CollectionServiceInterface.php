@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\CollectionLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
@@ -31,4 +33,10 @@ interface CollectionServiceInterface
      * @throws NotFoundException
      */
     public function getCollections(ListClassificationStoreParameter $parameter): Collection;
+
+    /**
+     * @throws Exception
+     * @throws NotFoundException
+     */
+    public function getLayoutDefinition(int $collectionId, LayoutParameter $layoutParameter): CollectionLayout;
 }

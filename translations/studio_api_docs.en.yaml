@@ -901,3 +901,6 @@ classification_store_get_key_group_relations_response: List of classification st
 classification_store_get_layout_by_group_description: Get Layout definition for given group
 classification_store_get_layout_by_group_summary: Get Layout definition for given group
 classification_store_get_layout_by_group_response: Layout definition
+classification_store_get_layout_by_collection_description: Get Layout definition for given collection
+classification_store_get_layout_by_collection_summary: Get Layout definition for given collection
+classification_store_get_layout_by_collection_response: Layout definition
