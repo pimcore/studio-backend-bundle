@@ -19,9 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
-/**
- * @internal
- */
+
 final class GroupLayoutEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.classification_store.group_layout';
