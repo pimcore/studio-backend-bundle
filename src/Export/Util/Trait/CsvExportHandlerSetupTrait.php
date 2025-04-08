@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * Pimcore
@@ -17,6 +18,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 
+/**
+ * @internal
+ */
 trait CsvExportHandlerSetupTrait
 {
     protected function configureStep(): void
