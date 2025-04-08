@@ -118,9 +118,8 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
         Data $fieldDefinition,
         string $key,
         ?FieldContextData $contextData = null
-    ): string
-    {
-       $data = $this->getValidFieldValue($object, $key, $contextData);
+    ): string {
+        $data = $this->getValidFieldValue($object, $key, $contextData);
 
         if (!$data instanceof EncryptedField || !$fieldDefinition instanceof EncryptedFieldDefinition) {
             return '';
