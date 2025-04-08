@@ -149,6 +149,7 @@ final readonly class FieldCollectionsAdapter implements
         ?FieldContextData $contextData = null,
     ): FieldContextData {
         $fieldCollectionData = $this->createCollection($element, $fieldDefinition, $type, [], $index);
+
         return new FieldContextData($fieldCollectionData, $contextData?->getLanguage());
     }
 
