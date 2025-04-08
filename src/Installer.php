@@ -110,8 +110,8 @@ final class Installer extends SettingsStoreAwareInstaller
                 'notnull' => true,
                 'length' => 190,
                 'platformOptions' => [
-                    'collation' => 'utf8mb4_bin'
-                ]
+                    'collation' => 'utf8mb4_bin',
+                ],
             ]);
 
             $translationDomainTable->addColumn('type', 'string', [
