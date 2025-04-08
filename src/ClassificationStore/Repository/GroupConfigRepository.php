@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
+use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig\Listing;
 use function count;
 
@@ -79,6 +81,21 @@ final class GroupConfigRepository implements GroupConfigRepositoryInterface
 
         return $listing->count();
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getById(int $id): GroupConfig
+    {
+        $group = GroupConfig::getById($id);
+
+        if (!$group) {
+            throw new NotFoundException('group', $id);
+        }
+
+        return $group;
+    }
+
 
     private function applyGroupIdsFilter(Listing $list, array $groupIds): void
     {

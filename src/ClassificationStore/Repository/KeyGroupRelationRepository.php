@@ -75,6 +75,20 @@ final readonly class KeyGroupRelationRepository implements KeyGroupRelationRepos
         return $listing->count();
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getByGroupId(int $groupId): array
+    {
+        $listing = new Listing();
+        $listing->setOrder('ASC');
+        $listing->setOrderKey('id');
+        $listing->setCondition('groupID = ?', [$groupId]);
+
+        return $listing->load();
+    }
+
+
     private function applySearchTermFilter(Listing $list, string $searchTerm): void
     {
         $searchTerms = $this->searchHelperService->getTranslatedSearchFilterTerms($searchTerm);

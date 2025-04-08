@@ -17,7 +17,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
@@ -39,4 +41,10 @@ interface GroupServiceInterface
      * @throws NotFoundException
      */
     public function getAllowedGroupIds(ListClassificationStoreParameter $parameter): array;
+
+    /**
+     * @throws Exception
+     * @throws NotFoundException
+     */
+    public function getLayoutDefinition(int $groupId, LayoutParameter $layoutParameter): GroupLayout;
 }

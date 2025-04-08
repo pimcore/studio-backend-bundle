@@ -898,3 +898,6 @@ classification_store_get_groups_response: List of classification store groups
 classification_store_get_key_group_relations_description: Get all classification store key group relations for given fieldName
 classification_store_get_key_group_relations_summary: Get all classification store key group relations for given fieldName
 classification_store_get_key_group_relations_response: List of classification store key group relations
+classification_store_get_layout_by_group_description: Get Layout definition for given group
+classification_store_get_layout_by_group_summary: Get Layout definition for given group
+classification_store_get_layout_by_group_response: Layout definition
