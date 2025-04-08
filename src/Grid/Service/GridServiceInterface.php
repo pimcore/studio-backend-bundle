@@ -68,7 +68,7 @@ interface GridServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function getAssetGrid(GridParameter $gridParameter, array $columnDefinitions): Collection;
+    public function getAssetGrid(GridParameter $gridParameter): Collection;
 
     /**
      * @throws NotFoundException

@@ -22,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\GridRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -43,8 +42,7 @@ final class GetController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly GridServiceInterface $gridService,
-        private readonly ColumnConfigurationServiceInterface $columnConfigurationService
+        private readonly GridServiceInterface $gridService
     ) {
         parent::__construct($serializer);
     }
@@ -76,10 +74,7 @@ final class GetController extends AbstractApiController
     public function getAssetGrid(#[MapRequestPayload] GridParameter $gridParameter): JsonResponse
     {
         return $this->jsonResponse(
-            $this->gridService->getAssetGrid(
-                $gridParameter,
-                $this->columnConfigurationService->getAvailableAssetColumnConfiguration()
-            )
+            $this->gridService->getAssetGrid($gridParameter)
         );
     }
 }

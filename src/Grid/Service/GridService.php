@@ -80,7 +80,7 @@ final class GridService implements GridServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function getAssetGrid(GridParameter $gridParameter, array $columnDefinitions): Collection
+    public function getAssetGrid(GridParameter $gridParameter): Collection
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
 
