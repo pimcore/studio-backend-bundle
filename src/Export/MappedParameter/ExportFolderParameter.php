@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait\ExportConfigValidationTrait;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
 
 /**

@@ -30,7 +30,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceIn
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 /**
@@ -106,7 +105,7 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
                     $dataObject,
                     ElementTypes::TYPE_OBJECT,
                     true
-                )
+                ),
             ];
 
             $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $dataObjectData);

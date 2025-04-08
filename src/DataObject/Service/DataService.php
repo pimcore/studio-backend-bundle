@@ -233,7 +233,6 @@ final readonly class DataService implements DataServiceInterface
             );
         }
 
-
         return $exportData;
     }
 
