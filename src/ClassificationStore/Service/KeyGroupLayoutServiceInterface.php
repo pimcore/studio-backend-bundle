@@ -32,6 +32,7 @@ interface KeyGroupLayoutServiceInterface
      */
     public function getLayoutDefinition(
         KeyGroupRelation $keyGroupRelation,
-        Concrete $object, string $fieldName
+        Concrete $object,
+        string $fieldName
     ): EncryptedField|Data;
 }
