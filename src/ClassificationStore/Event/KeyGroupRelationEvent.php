@@ -19,7 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\KeyGroupRelation;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
-
 final class KeyGroupRelationEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.classification_store.key_group_relation';
