@@ -115,9 +115,8 @@ final readonly class FieldContextData
     private function getDataFromBlock(string $fieldName, array $blockData): mixed
     {
         foreach ($blockData as $value) {
-            $fieldValue = $value[$fieldName] ?? null;
-            if ($fieldValue instanceof BlockElement) {
-                return $fieldValue->getData();
+            if ($value instanceof BlockElement && $value->getName() === $fieldName) {
+                return $value->getData();
             }
         }
 
