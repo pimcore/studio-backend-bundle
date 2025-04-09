@@ -43,7 +43,6 @@ use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version as DataObjectVersionModal;
 use Pimcore\Normalizer\NormalizerInterface;
 use function array_key_exists;
-use function is_array;
 
 /**
  * @internal
