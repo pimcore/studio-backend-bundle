@@ -286,8 +286,8 @@ final class Installer extends SettingsStoreAwareInstaller
         $table->addColumn('saveFilter', 'boolean', ['notnull' => true]);
         $table->addColumn('columns', 'json', ['notnull' => true]);
         $table->addColumn('filter', 'json', ['notnull' => false]);
-        $table->addColumn('creationDate', 'datetime', ['notnull' => false]);
-        $table->addColumn('modificationDate', 'datetime', ['notnull' => false]);
+        $table->addColumn('creationDate', 'datetime', ['notnull' => true]);
+        $table->addColumn('modificationDate', 'datetime', ['notnull' => true]);
 
         $table->setPrimaryKey(['id'], 'pk_'.GridConfiguration::TABLE_NAME);
 
