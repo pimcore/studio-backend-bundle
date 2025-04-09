@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\BlockData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
@@ -110,12 +111,21 @@ final readonly class BlockAdapter implements
     private function createFieldContextData(
         Concrete $element,
         Data $fieldDefinition,
+        int $index,
         ?FieldContextData $contextData = null
     ): FieldContextData {
         $object = $contextData?->getContextObject() ?? $element;
+        $data = $object->get($fieldDefinition->getName())[$index] ?? [];
 
         return new FieldContextData(
-            $object->get($fieldDefinition->getName()),
+            new BlockData(
+                $data,
+                [
+                    'containerType' => 'block',
+                    'classId' => $element->getClassId(),
+                    'fieldname' => $fieldDefinition->getName(),
+                ]
+            ),
             $contextData?->getLanguage()
         );
     }
@@ -132,13 +142,14 @@ final readonly class BlockAdapter implements
         ?FieldContextData $contextData = null,
     ): array {
         $resultBlockData = [];
-        foreach ($blockData as $rawBlockElement) {
+        foreach ($blockData as $index => $rawBlockElement) {
             $resultElement = $this->processBlockElement(
                 $element,
                 $user,
                 $fieldDefinition,
                 $rawBlockElement,
                 $isPatch,
+                $index,
                 $contextData,
             );
             $resultBlockData[] = $resultElement;
@@ -156,11 +167,12 @@ final readonly class BlockAdapter implements
         Block $fieldDefinition,
         array $rawBlockElement,
         bool $isPatch,
+        int $index,
         ?FieldContextData $contextData = null
     ): array {
         $resultElement = [];
         $fieldDefinitions = $fieldDefinition->getFieldDefinitions();
-        $fieldContextData = $this->createFieldContextData($element, $fieldDefinition, $contextData);
+        $fieldContextData = $this->createFieldContextData($element, $fieldDefinition, $index, $contextData);
 
         foreach ($fieldDefinitions as $elementName => $fd) {
             $adapter = $this->dataAdapterService->tryDataAdapter($fd->getFieldType());

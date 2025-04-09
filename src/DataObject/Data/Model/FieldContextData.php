@@ -24,7 +24,6 @@ use Pimcore\Model\DataObject\Data\BlockElement;
 use Pimcore\Model\DataObject\Fieldcollection\Data\AbstractData as FieldCollectionData;
 use Pimcore\Model\DataObject\Objectbrick;
 use Pimcore\Model\DataObject\Objectbrick\Data\AbstractData;
-use function is_array;
 
 /**
  * @internal
@@ -32,7 +31,7 @@ use function is_array;
 final readonly class FieldContextData
 {
     public function __construct(
-        private AbstractData|array|FieldCollectionData|Classificationstore|null $contextObject = null,
+        private AbstractData|BlockData|FieldCollectionData|Classificationstore|null $contextObject = null,
         private ?string $language = null,
         private ?int $classificationStoreGroupId = null,
         private ?int $classificationStoreKeyId = null,
@@ -45,7 +44,7 @@ final readonly class FieldContextData
         return $this->language;
     }
 
-    public function getContextObject(): FieldCollectionData|array|AbstractData|Classificationstore|null
+    public function getContextObject(): FieldCollectionData|BlockData|AbstractData|Classificationstore|null
     {
         return $this->contextObject;
     }
@@ -79,7 +78,7 @@ final readonly class FieldContextData
             $contextObject instanceof AbstractData, $contextObject instanceof FieldCollectionData =>
                 $contextObject->get($fieldName, $this->language),
             $contextObject instanceof Classificationstore => $this->getDataFromClassificationStore($contextObject),
-            is_array($contextObject) => $this->getDataFromBlock($fieldName, $contextObject),
+            $contextObject instanceof BlockData => $this->getDataFromBlock($fieldName, $contextObject->getBlockData()),
             default => null,
         };
     }
@@ -125,9 +124,8 @@ final readonly class FieldContextData
     private function getDataFromBlock(string $fieldName, array $blockData): mixed
     {
         foreach ($blockData as $value) {
-            $fieldValue = $value[$fieldName] ?? null;
-            if ($fieldValue instanceof BlockElement) {
-                return $fieldValue->getData();
+            if ($value instanceof BlockElement && $value->getName() === $fieldName) {
+                return $value->getData();
             }
         }
 
