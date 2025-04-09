@@ -20,6 +20,7 @@ use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Exception;
 use Pimcore\Bundle\StaticResolverBundle\Db\DbResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 
 /**
  * @internal
@@ -57,5 +58,16 @@ final class CollectionRelationsRepository implements CollectionRelationsReposito
         } catch (Exception $e) {
             throw new DatabaseException($e->getMessage());
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getFromCollection(int $collectionId): array
+    {
+        $listing = new CollectionGroupRelation\Listing();
+        $listing->setCondition('colId = ?', $collectionId);
+
+        return $listing->load();
     }
 }

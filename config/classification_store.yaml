@@ -25,6 +25,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupRelationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupRelationService
 
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\KeyGroupLayoutService
+
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service\SearchHelperService
 
@@ -58,3 +61,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRelationHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupLayoutHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\GroupLayoutHydrator

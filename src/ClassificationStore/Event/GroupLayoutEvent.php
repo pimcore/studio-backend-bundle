@@ -16,24 +16,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event;
 
-use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Group;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\GroupLayout;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
-final class GroupEvent extends AbstractPreResponseEvent
+final class GroupLayoutEvent extends AbstractPreResponseEvent
 {
-    public const EVENT_NAME = 'pre_response.classification_store.group';
+    public const EVENT_NAME = 'pre_response.classification_store.group_layout';
 
     public function __construct(
-        private readonly Group $group
+        private readonly GroupLayout $groupLayout
     ) {
-        parent::__construct($group);
+        parent::__construct($groupLayout);
     }
 
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getGroup(): Group
+    public function getGroupLayout(): GroupLayout
     {
-        return $this->group;
+        return $this->groupLayout;
     }
 }

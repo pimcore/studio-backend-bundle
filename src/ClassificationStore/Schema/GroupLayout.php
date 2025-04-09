@@ -16,20 +16,22 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema;
 
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
-    title: 'Classification Store Group',
+    title: 'Classification Store Group Layout',
     required: [
         'id',
         'name',
+        'keys',
     ],
     type: 'object'
 )]
-final class Group implements AdditionalAttributesInterface
+final class GroupLayout implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
 
@@ -40,6 +42,8 @@ final class Group implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'Description', type: 'string', example: 'value')]
         private readonly ?string $description,
+        #[Property(description: 'Description', type: 'array', items: new Items(ref: KeyLayout::class))]
+        private readonly array $keys = [],
     ) {
     }
 
@@ -53,8 +57,16 @@ final class Group implements AdditionalAttributesInterface
         return $this->name;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
+    }
+
+    /**
+     * @return KeyLayout[]
+     */
+    public function getKeys(): array
+    {
+        return $this->keys;
     }
 }

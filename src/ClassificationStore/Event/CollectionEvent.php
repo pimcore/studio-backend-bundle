@@ -19,9 +19,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
-/**
- * @internal
- */
 final class CollectionEvent extends AbstractPreResponseEvent
 {
     public const EVENT_NAME = 'pre_response.classification_store.collection';

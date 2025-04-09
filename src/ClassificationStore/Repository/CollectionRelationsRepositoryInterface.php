@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
+use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 
 /**
  * @internal
@@ -31,4 +32,10 @@ interface CollectionRelationsRepositoryInterface
      * @throws DatabaseException
      */
     public function getCollectionIdsWith(array $groupIds): array;
+
+    /**
+     * @return array<int, CollectionGroupRelation>
+     *
+     */
+    public function getFromCollection(int $collectionId): array;
 }
