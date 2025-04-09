@@ -248,12 +248,10 @@ final readonly class DataService implements DataServiceInterface
             return $adapter->getExportData($dataObject, $fieldDefinition, $key, $contextData);
         }
 
-        $params = [];
-        if ($contextData && is_array($contextData->getContextObject())) {
-            $params = $contextData->getContextObject();
-        }
-
-        return $fieldDefinition->getForCsvExport($dataObject, $params);
+        return $fieldDefinition->getForCsvExport(
+            $dataObject,
+            $contextData ? $contextData->getLegacyParameters() : []
+        );
     }
 
     private function removeEmptyValues(array $previewFields): array

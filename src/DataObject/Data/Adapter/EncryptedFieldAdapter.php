@@ -129,7 +129,7 @@ final readonly class EncryptedFieldAdapter implements SetterDataInterface, DataN
             $object,
             $fieldDefinition->getDelegate(),
             $data->getPlain(),
-            new FieldContextData(['injectedData' => $data])
+            new FieldContextData(legacyParameters: ['injectedData' => $data])
         );
     }
 }
