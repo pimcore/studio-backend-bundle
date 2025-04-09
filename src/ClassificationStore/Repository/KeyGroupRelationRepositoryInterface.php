@@ -35,4 +35,9 @@ interface KeyGroupRelationRepositoryInterface
     ): array;
 
     public function getCountByStoreId(int $storeId, ?array $groupIds = null): int;
+
+    /**
+     * @return KeyGroupRelation[]
+     */
+    public function getByGroupId(int $groupId): array;
 }

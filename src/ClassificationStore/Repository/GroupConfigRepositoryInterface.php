@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 use Pimcore\Model\DataObject\Classificationstore\GroupConfig;
 
@@ -42,4 +43,9 @@ interface GroupConfigRepositoryInterface
     ): array;
 
     public function getCountByStoreId(int $storeId): int;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getById(int $id): GroupConfig;
 }

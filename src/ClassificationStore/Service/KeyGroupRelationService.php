@@ -22,6 +22,11 @@ use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\KeyGroupRela
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\KeyGroupRelationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
+use Pimcore\Model\DataObject\ClassDefinition\Data\LayoutDefinitionEnrichmentInterface;
+use Pimcore\Model\DataObject\Classificationstore\KeyGroupRelation;
+use Pimcore\Model\DataObject\Concrete;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function count;
 
@@ -75,5 +80,38 @@ final readonly class KeyGroupRelationService implements KeyGroupRelationServiceI
             $this->keyGroupRelationRepository->getCountByStoreId($parameter->getStoreId(), $allowedGroupIds),
             $hydratedKeyGroupRelations
         );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getLayoutDefinition(
+        KeyGroupRelation $keyGroupRelation,
+        Concrete $object,
+        string $fieldName
+    ): EncryptedField|Data {
+        $definition = json_decode($keyGroupRelation->getDefinition(), true);
+        $definition = \Pimcore\Model\DataObject\Classificationstore\Service::getFieldDefinitionFromJson(
+            $definition,
+            $keyGroupRelation->getType()
+        );
+
+        if (method_exists($definition, '__wakeup')) {
+            $definition->__wakeup();
+        }
+
+        if ($definition instanceof LayoutDefinitionEnrichmentInterface) {
+            $context['object'] = $object;
+            $context['class'] = $object->getClass();
+            $context['ownerType'] = 'classificationstore';
+            $context['ownerName'] = $fieldName;
+            $context['keyId'] = $keyGroupRelation->getKeyId();
+            $context['groupId'] = $keyGroupRelation->getGroupId();
+            $context['keyDefinition'] = $definition;
+
+            $definition = $definition->enrichLayoutDefinition($object, $context);
+        }
+
+        return $definition;
     }
 }

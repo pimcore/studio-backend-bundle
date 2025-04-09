@@ -19,9 +19,11 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Service;
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Event\CollectionEvent;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator\CollectionHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\LayoutParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\MappedParameter\ListClassificationStoreParameter;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionConfigRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Repository\CollectionRelationsRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\CollectionLayout;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -75,6 +77,23 @@ final readonly class CollectionService implements CollectionServiceInterface
         return new Collection(
             totalItems: $this->collectionConfigRepository->getCountByStoreId($parameter->getStoreId()),
             items: $hydratedCollections
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getLayoutDefinition(int $collectionId, LayoutParameter $layoutParameter): CollectionLayout
+    {
+        $groups = $this->collectionRelationsRepository->getFromCollection($collectionId);
+
+        $layouts = [];
+        foreach ($groups as $group) {
+            $layouts[] = $this->groupService->getLayoutDefinition($group->getGroupId(), $layoutParameter);
+        }
+
+        return new CollectionLayout(
+            groups: $layouts
         );
     }
 

@@ -18,28 +18,33 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
+use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\EncryptedField;
 
+/**
+ * @internal
+ */
 #[Schema(
-    title: 'Classification Store Group',
+    title: 'Classification Store Collection',
     required: [
         'id',
         'name',
+        'description',
+        'definition',
     ],
     type: 'object'
 )]
-final class Group implements AdditionalAttributesInterface
+final readonly class KeyLayout
 {
-    use AdditionalAttributesTrait;
-
     public function __construct(
         #[Property(description: 'ID', type: 'integer', example: 42)]
-        private readonly int $id,
+        private int $id,
         #[Property(description: 'Name', type: 'string', example: 'value')]
-        private readonly string $name,
+        private string $name,
         #[Property(description: 'Description', type: 'string', example: 'value')]
-        private readonly ?string $description,
+        private string $description,
+        #[Property(description: 'Layout Definition', type: 'object')]
+        private EncryptedField|Data $definition,
     ) {
     }
 
@@ -53,8 +58,13 @@ final class Group implements AdditionalAttributesInterface
         return $this->name;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
+    }
+
+    public function getDefinition(): EncryptedField|Data
+    {
+        return $this->definition;
     }
 }
