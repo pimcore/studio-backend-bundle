@@ -69,7 +69,7 @@ final class ElementController extends AbstractApiController
                 'jobRunId' => $this->exportService->generateExportFileForElements(
                     $exportParameter,
                     ExportFormat::XLSX->value
-                )
+                ),
             ],
             HttpResponseCodes::CREATED->value
         );

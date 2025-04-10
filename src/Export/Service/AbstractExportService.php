@@ -21,7 +21,6 @@ use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
-use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -104,8 +103,7 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
         FilesystemOperator $storage,
         string $fileName,
         string $folderName
-    ): string
-    {
+    ): string {
         $folderName = $this->getTempFileName($id, $folderName);
         $file = $this->getTempFileName($id, $fileName);
         $storage->createDirectory($folderName);

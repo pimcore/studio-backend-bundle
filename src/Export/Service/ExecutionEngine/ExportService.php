@@ -135,7 +135,7 @@ final readonly class ExportService implements ExportServiceInterface
             return $this->getXlsxCreationStep($settings);
         }
 
-       return $this->getCsvCreationStep($settings);
+        return $this->getCsvCreationStep($settings);
     }
 
     private function getCsvCreationStep(array $settings): JobStep

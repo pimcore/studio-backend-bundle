@@ -72,7 +72,7 @@ final class FolderController extends AbstractApiController
                 'jobRunId' => $this->exportService->generateExportFileForFolders(
                     $exportParameter,
                     ExportFormat::XLSX->value
-                )
+                ),
             ],
             HttpResponseCodes::CREATED->value
         );

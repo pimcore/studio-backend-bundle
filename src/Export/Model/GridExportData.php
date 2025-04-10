@@ -29,7 +29,7 @@ final readonly class GridExportData
         private bool $withGroup = false,
     ) {
     }
-    
+
     public function getColumns(): array
     {
         return $this->columns;

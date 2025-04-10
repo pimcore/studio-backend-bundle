@@ -78,5 +78,4 @@ final readonly class XlsxExportService extends AbstractExportService
         //force wrap value in quotes and return
         return '"' . $value . '"';
     }
-
 }
