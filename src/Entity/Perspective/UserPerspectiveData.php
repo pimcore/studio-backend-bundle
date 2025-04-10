@@ -27,14 +27,14 @@ class UserPerspectiveData
 {
     public const string TABLE_NAME = 'bundle_studio_perspectives_user_perspectives';
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: false, options: ['unsigned' => true])]
     #[ORM\Id]
     private int $user;
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $perspectives = null;
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(type: 'string', nullable: true, length: 255)]
     private ?string $activePerspective = null;
 
     public function getUser(): int

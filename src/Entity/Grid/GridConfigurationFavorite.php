@@ -27,7 +27,7 @@ class GridConfigurationFavorite
 {
     public const string TABLE_NAME = 'bundle_studio_grid_configuration_favorites';
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: false, options: ['unsigned' => true])]
     #[ORM\Id]
     private int $user;
 
@@ -36,11 +36,11 @@ class GridConfigurationFavorite
     #[ORM\Id]
     private GridConfiguration $configuration;
 
-    #[ORM\Column(type: 'integer', nullable: false)]
+    #[ORM\Column(type: 'integer', nullable: false, options: ['unsigned' => true])]
     #[ORM\Id]
     private int $folder;
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(type: 'string', nullable: true, length: 10)]
     private ?string $classId = null;
 
     public function getUser(): int

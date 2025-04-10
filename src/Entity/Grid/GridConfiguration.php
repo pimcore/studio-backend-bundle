@@ -33,25 +33,25 @@ class GridConfiguration
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', options: ['unsigned' => true])]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
+    #[ORM\Column(type: 'integer', nullable: true, options: ['unsigned' => true])]
     private ?int $assetFolderId = null;
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(type: 'string', nullable: true, length: 10)]
     private ?string $classId = null;
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true, options: ['unsigned' => true])]
     private int $owner;
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: false, options: ['unsigned' => true])]
     private int $pageSize;
 
-    #[ORM\Column(type: 'string')]
+    #[ORM\Column(type: 'string', length: 255)]
     private string $name;
 
-    #[ORM\Column(type: 'string')]
+    #[ORM\Column(type: 'text', nullable: false)]
     private string $description;
 
     #[ORM\Column(type: 'boolean')]
@@ -66,10 +66,10 @@ class GridConfiguration
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $filter;
 
-    #[ORM\Column(type: 'datetime')]
+    #[ORM\Column(type: 'datetime', nullable: false)]
     private DateTime $creationDate;
 
-    #[ORM\Column(type: 'datetime')]
+    #[ORM\Column(type: 'datetime', nullable: false)]
     private DateTime $modificationDate;
 
     #[ORM\OneToMany(

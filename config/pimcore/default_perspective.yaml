@@ -1,7 +1,9 @@
 studio_default_perspective:
   id: "studio_default_perspective"
-  name: "Studio Default Perspective"
-  icon: null # fallback to default icon
+  name: "perspective.default"
+  icon: 
+    type: "name"
+    value: "pimcore"
   widgetsLeft:
     studio_document_tree_widget:
       id: "studio_document_tree_widget"

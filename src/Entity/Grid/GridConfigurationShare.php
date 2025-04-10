@@ -27,7 +27,7 @@ class GridConfigurationShare
 {
     public const string TABLE_NAME = 'bundle_studio_grid_configuration_shares';
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: false, options: ['unsigned' => true])]
     #[ORM\Id]
     private int $user;
 
