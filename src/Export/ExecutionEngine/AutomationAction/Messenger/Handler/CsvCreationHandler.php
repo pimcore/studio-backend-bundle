@@ -17,13 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
-use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -37,7 +38,9 @@ final class CsvCreationHandler extends AbstractHandler
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
-        private readonly ExportServiceInterface $csvService
+        private readonly UserResolverInterface $userResolver,
+        private readonly ExportServiceInterface $csvExportService,
+
     ) {
         parent::__construct();
     }
@@ -52,29 +55,37 @@ final class CsvCreationHandler extends AbstractHandler
             return;
         }
 
+        $user = $this->userResolver->getById($jobRun->getOwnerId());
+
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
         $settings = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_CONFIGURATION->value);
         $headers = $settings[StepConfig::SETTINGS_HEADER->value] ?? StepConfig::SETTINGS_HEADER_NO_HEADER->value;
         $delimiter = $settings[StepConfig::SETTINGS_DELIMITER->value] ?? null;
 
-        if (!isset($jobRun->getContext()[StepConfig::CSV_EXPORT_DATA->value])) {
+        if (!isset($jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value])) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,
                 ['message' => 'Csv export data not found in job run context']
             ));
         }
-        $csvData = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA->value];
+        $csvData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value];
+
+        $csvExportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? [];
 
         try {
-            $this->csvService->createExportFile(
+            $this->csvExportService->createExportFile(
                 $jobRun->getId(),
-                $columns,
-                $csvData,
-                $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
-                $headers === StepConfig::SETTINGS_HEADER_NAME,
-                $delimiter
+                new GridExportData(
+                    $columns,
+                    $csvData,
+                    $csvExportDataInfo,
+                    $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
+                    $headers === StepConfig::SETTINGS_HEADER_NAME,
+                ),
+                $delimiter,
+                $user
             );
-        } catch (Exception|FilesystemException $e) {
+        } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,
                 ['message' => $e->getMessage()]

@@ -208,6 +208,8 @@ services:
   #
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler\CloneHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler\ExportDataCollectionHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Handler\ExportFolderDataCollectionHandler: ~
 
   #
   # Event Subscriber

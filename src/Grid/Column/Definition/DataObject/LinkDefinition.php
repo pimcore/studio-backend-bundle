@@ -38,10 +38,4 @@ final readonly class LinkDefinition extends AbstractDefinition
     {
         return false;
     }
-
-    #[Override]
-    public function isExportable(): bool
-    {
-        return false;
-    }
 }

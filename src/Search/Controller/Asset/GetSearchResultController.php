@@ -42,7 +42,7 @@ final class GetSearchResultController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly GridSearchServiceInterface $searchService,
+        private readonly GridSearchServiceInterface $searchService
     ) {
         parent::__construct($serializer);
     }

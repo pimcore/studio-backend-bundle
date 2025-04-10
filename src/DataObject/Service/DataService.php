@@ -19,8 +19,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDraftData;
@@ -28,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
@@ -210,6 +213,44 @@ final readonly class DataService implements DataServiceInterface
                 $draftElement->markFieldDirty($fieldName);
             }
         }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getExportObjectData(Concrete $dataObject, ColumnCollection $columnCollection): array
+    {
+        $class = $this->getValidClass($this->classDefinitionResolver, $dataObject->getClassId());
+        $exportData = [];
+
+        foreach ($columnCollection->getColumns() as $column) {
+            $fieldDefinition = $class->getFieldDefinition($column->getKey());
+            if ($fieldDefinition === null) {
+                continue;
+            }
+
+            $exportData[] = $this->getExportFieldValue($dataObject, $fieldDefinition, $column->getKey()
+            );
+        }
+
+        return $exportData;
+    }
+
+    public function getExportFieldValue(
+        Concrete $dataObject,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): string {
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+        if ($adapter instanceof DataExportInterface) {
+            return $adapter->getExportData($dataObject, $fieldDefinition, $key, $contextData);
+        }
+
+        return $fieldDefinition->getForCsvExport(
+            $dataObject,
+            $contextData ? $contextData->getLegacyParameters() : []
+        );
     }
 
     private function removeEmptyValues(array $previewFields): array

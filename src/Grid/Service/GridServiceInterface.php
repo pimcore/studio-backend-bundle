@@ -43,7 +43,8 @@ interface GridServiceInterface
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array;
 
     /**
@@ -52,10 +53,17 @@ interface GridServiceInterface
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array;
 
-    public function getConfigurationFromArray(array $config, bool $isExport = false): ColumnCollection;
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function getConfigurationForExport(
+        array $config,
+        array $columnsDefinitions
+    ): ColumnCollection;
 
     /**
      * @throws InvalidArgumentException
@@ -66,7 +74,10 @@ interface GridServiceInterface
      * @throws NotFoundException
      * @throws Exception
      */
-    public function getDataObjectGrid(GridParameter $gridParameter, ?string $classId): Collection;
+    public function getDataObjectGrid(
+        GridParameter $gridParameter,
+        ?string $classId
+    ): Collection;
 
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array;
 

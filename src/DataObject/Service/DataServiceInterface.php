@@ -16,11 +16,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Model\DataObject as DataObjectModel;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
@@ -72,4 +74,16 @@ interface DataServiceInterface
      * @throws DatabaseException|NotFoundException
      */
     public function handleDraftData(Concrete $draftElement, Concrete $element, ?string $task = null): void;
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function getExportObjectData(Concrete $dataObject, ColumnCollection $columnCollection): array;
+
+    public function getExportFieldValue(
+        Concrete $dataObject,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): string;
 }

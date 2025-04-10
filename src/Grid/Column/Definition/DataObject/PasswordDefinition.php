@@ -44,10 +44,4 @@ final readonly class PasswordDefinition extends AbstractDefinition
     {
         return false;
     }
-
-    #[Override]
-    public function isExportable(): bool
-    {
-        return false;
-    }
 }

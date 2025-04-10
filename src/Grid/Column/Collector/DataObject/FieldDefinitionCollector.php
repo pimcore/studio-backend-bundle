@@ -31,6 +31,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Objectbricks;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use Pimcore\Model\UserInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -58,11 +59,12 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
         return 'data-object-field-definition';
     }
 
-    public function getColumnConfigurations(array $availableColumnDefinitions): array
+    public function getColumnConfigurations(array $availableColumnDefinitions, ?UserInterface $user = null): array
     {
         $layoutDefinitions = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $this->getClassId(),
-            $this->getFolderId()
+            $this->getFolderId(),
+            $user
         );
 
         $classDefinition = $this->classDefinitionService->getClassDefinition($this->getClassId());

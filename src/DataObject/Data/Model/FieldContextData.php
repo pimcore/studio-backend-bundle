@@ -35,6 +35,7 @@ final readonly class FieldContextData
         private ?string $language = null,
         private ?int $classificationStoreGroupId = null,
         private ?int $classificationStoreKeyId = null,
+        private array $legacyParameters = []
     ) {
     }
 
@@ -56,6 +57,14 @@ final readonly class FieldContextData
     public function getClassificationStoreKeyId(): ?int
     {
         return $this->contextObject instanceof Classificationstore ? $this->classificationStoreKeyId : null;
+    }
+
+    /**
+     * Use to pass legacy parameters used in core adapters
+     */
+    public function getLegacyParameters(): array
+    {
+        return $this->legacyParameters;
     }
 
     /**

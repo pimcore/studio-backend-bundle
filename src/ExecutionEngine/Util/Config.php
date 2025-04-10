@@ -41,4 +41,6 @@ enum Config: string
     case NO_ELEMENT_DATA_FOUND = 'studio_ee_no_element_data_found';
     case ELEMENT_REWRITE_REFERENCES_FAILED_MESSAGE = 'studio_ee_element_rewrite_references_failed';
     case ELEMENT_TAG_OPERATION_FAILED_MESSAGE = 'studio_ee_element_tag_operation_failed';
+    case INVALID_ELEMENT_TYPE_PROVIDED = 'studio_ee_invalid_element_type_provided';
+    case XLSX_CREATION_FAILED_MESSAGE = 'studio_ee_xlsx_creation_failed';
 }

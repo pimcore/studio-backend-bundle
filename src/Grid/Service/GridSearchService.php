@@ -54,7 +54,7 @@ final readonly class GridSearchService implements GridSearchServiceInterface
         $filter = $searchParameter->getFilters();
         $filter->setExcludeFolders(false);
 
-        $gridParameter  = new GridParameter(
+        $gridParameter = new GridParameter(
             folderId: 1,
             columns: $searchParameter->getColumns(),
             filters: $filter

@@ -27,7 +27,6 @@ enum Events: string
 
     case ZIP_DOWNLOAD_READY = 'zip-download-ready';
     case ZIP_UPLOAD_FINISHED = 'zip-upload-finished';
-    case CSV_DOWNLOAD_READY = 'csv-download-ready';
     case DELETION_FINISHED = 'deletion-finished';
     case ASSET_UPLOAD_FINISHED = 'asset-upload-finished';
 }

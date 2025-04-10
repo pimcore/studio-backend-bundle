@@ -74,7 +74,7 @@ final class CsvCollectionHandler extends AbstractHandler
 
             $this->updateContextArrayValues(
                 $this->getJobRun($message),
-                StepConfig::CSV_EXPORT_DATA->value,
+                StepConfig::GRID_EXPORT_DATA->value,
                 $csvData
             );
         } catch (Exception $e) {
