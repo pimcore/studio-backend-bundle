@@ -22,8 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -74,8 +74,8 @@ final class DownloadCsvController extends AbstractApiController
     {
         return $this->downloadService->downloadResourceByJobRunId(
             $jobRunId,
-            CsvExportService::CSV_FILE_NAME,
-            CsvExportService::CSV_FOLDER_NAME,
+            ExportFile::CSV_FILE_NAME->value,
+            ExportFile::CSV_FOLDER_NAME->value,
             MimeTypes::CSV->value,
             'export.csv'
         );

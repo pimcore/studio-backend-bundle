@@ -21,8 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -66,8 +66,8 @@ final class DeleteCsvController extends AbstractApiController
     {
         $this->downloadService->cleanupDataByJobRunId(
             $jobRunId,
-            CsvExportService::CSV_FOLDER_NAME,
-            CsvExportService::CSV_FILE_NAME
+            ExportFile::CSV_FOLDER_NAME->value,
+            ExportFile::CSV_FILE_NAME->value,
         );
 
         return new Response();

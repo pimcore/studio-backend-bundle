@@ -14,19 +14,20 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber\Csv;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber;
 
 use League\Flysystem\FilesystemException;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Event\JobRunStateChangedEvent;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\EventSubscriberServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
-use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Mercure\Events;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -36,7 +37,7 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private EventSubscriberServiceInterface $eventSubscriberService,
-        private ExportServiceInterface $csvService
+        private ExportServiceInterface $csvExportService
     ) {
 
     }
@@ -77,6 +78,10 @@ final readonly class CsvCreationSubscriber implements EventSubscriberInterface
      */
     private function cleanupOnFail(int $jobRunId): void
     {
-        $this->csvService->cleanupFileSystem($jobRunId);
+        $this->csvExportService->cleanupFileSystem(
+            $jobRunId,
+            ExportFile::CSV_FOLDER_NAME->value,
+            ExportFile::CSV_FILE_NAME->value
+        );
     }
 }

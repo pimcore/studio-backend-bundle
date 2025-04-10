@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Csv;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Xlsx;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -44,31 +44,31 @@ final class ElementController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/export/csv', name: 'pimcore_studio_api_export_csv', methods: ['POST'])]
+    #[Route('/export/xlsx', name: 'pimcore_studio_api_export_xlsx', methods: ['POST'])]
     #[Post(
-        path: self::PREFIX . '/export/csv',
-        operationId: 'export_csv',
-        description: 'export_csv_description',
-        summary: 'export_csv_summary',
+        path: self::PREFIX . '/export/xlsx',
+        operationId: 'export_xlsx',
+        description: 'export_xlsx_description',
+        summary: 'export_xlsx_summary',
         tags: [Tags::Export->name]
     )]
     #[ExportDataRequestBody]
     #[CreatedResponse(
-        description: 'export_csv_created_response',
+        description: 'export_xlsx_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function exportCsvElements(
+    public function exportXlsxElements(
         #[MapRequestPayload] ExportParameter $exportParameter
     ): Response {
         return $this->jsonResponse(
             [
                 'jobRunId' => $this->exportService->generateExportFileForElements(
                     $exportParameter,
-                    ExportFormat::CSV->value
+                    ExportFormat::XLSX->value
                 )
             ],
             HttpResponseCodes::CREATED->value

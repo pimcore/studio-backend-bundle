@@ -17,5 +17,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\Util;
 
 enum JobSteps: string
 {
+    case DATA_COLLECTION = 'studio_ee_job_step_export_data_collection';
     case CSV_CREATION = 'studio_ee_job_step_csv_creation';
+    case XLSX_CREATION = 'studio_ee_job_step_xlsx_creation';
 }

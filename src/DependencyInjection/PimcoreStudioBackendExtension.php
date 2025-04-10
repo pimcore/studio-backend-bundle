@@ -26,7 +26,9 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInter
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
-use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\AdvancedColumnCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
@@ -105,6 +107,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition->setArgument('$downloadLimits', $config['asset_download_settings']);
 
         $definition = $container->getDefinition(CsvExportService::class);
+        $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
+
+        $definition = $container->getDefinition(XlsxExportService::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
 
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);

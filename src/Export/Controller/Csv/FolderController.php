@@ -17,10 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Csv;
 
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Export\Attribute\Request\CsvExportFolderRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Export\Attribute\Request\ExportFolderDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine\ExportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFormat;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -40,7 +41,7 @@ final class FolderController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CsvServiceInterface $csvService
+        private readonly ExportServiceInterface $exportService
     ) {
         parent::__construct($serializer);
     }
@@ -54,7 +55,7 @@ final class FolderController extends AbstractApiController
         summary: 'export_csv_folder_summary',
         tags: [Tags::Export->name]
     )]
-    #[CsvExportFolderRequestBody]
+    #[ExportFolderDataRequestBody]
     #[CreatedResponse(
         description: 'export_csv_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
@@ -67,7 +68,12 @@ final class FolderController extends AbstractApiController
         #[MapRequestPayload] ExportFolderParameter $exportParameter
     ): Response {
         return $this->jsonResponse(
-            ['jobRunId' => $this->csvService->generateCsvFileForFolders($exportParameter)],
+            [
+                'jobRunId' => $this->exportService->generateExportFileForFolders(
+                    $exportParameter,
+                    ExportFormat::CSV->value
+                )
+            ],
             HttpResponseCodes::CREATED->value
         );
     }

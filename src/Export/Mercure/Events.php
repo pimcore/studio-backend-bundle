@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Mercure;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Mercure;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
@@ -25,8 +25,6 @@ enum Events: string
 {
     use EnumToValueArrayTrait;
 
-    case ZIP_DOWNLOAD_READY = 'zip-download-ready';
-    case ZIP_UPLOAD_FINISHED = 'zip-upload-finished';
-    case DELETION_FINISHED = 'deletion-finished';
-    case ASSET_UPLOAD_FINISHED = 'asset-upload-finished';
+    case CSV_DOWNLOAD_READY = 'csv-download-ready';
+    case XLSX_DOWNLOAD_READY = 'xlsx-download-ready';
 }
