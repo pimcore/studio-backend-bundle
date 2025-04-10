@@ -23,7 +23,9 @@ use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Override;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -35,11 +37,21 @@ final readonly class CsvExportService extends AbstractExportService
      */
     #[Override]
     protected function generateExportFile(
-        array $data,
         int $id,
         FilesystemOperator $storage,
-        ?string $delimiter = null
+        array $headers,
+        array $exportData,
+        string $delimiter
     ): void {
+
+        $data = [];
+
+        if (!empty($headers)) {
+            $data[]  = $headers;
+        }
+
+        $data = array_merge($data, $exportData);
+
         try {
             $csv = Writer::createFromString();
             $csv->setDelimiter($delimiter);

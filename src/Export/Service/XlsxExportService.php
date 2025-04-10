@@ -21,6 +21,7 @@ use League\Flysystem\FilesystemOperator;
 use Override;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
 
 /**
@@ -33,16 +34,17 @@ final readonly class XlsxExportService extends AbstractExportService
      */
     #[Override]
     protected function generateExportFile(
-        array $data,
         int $id,
         FilesystemOperator $storage,
-        $delimiter
+        array $headers,
+        array $exportData,
+        string $delimiter
     ): void {
         $csvReader = new Csv();
         $csvReader->setDelimiter($delimiter);
         $csvReader->setSheetIndex(0);
 
-        $spreadsheet = $csvReader->loadSpreadsheetFromString(implode("\n", ['id', 83]));
+        $spreadsheet = $csvReader->loadSpreadsheetFromString($this->processData($delimiter, $headers, $exportData));
         $writer = new Xlsx($spreadsheet);
         $stream = fopen('php://temp', 'rb+');
         $writer->save($stream);
@@ -58,4 +60,23 @@ final readonly class XlsxExportService extends AbstractExportService
             $stream
         );
     }
+
+    private function processData(string $delimiter, array $headers, array $exportData): string
+    {
+        $data[] = implode($delimiter, $headers) . StepConfig::NEW_LINE->value;
+        foreach ($exportData as $row) {
+            $data[] = implode($delimiter, array_map([$this, 'encodeFunc'], $row)) . StepConfig::NEW_LINE->value;
+        }
+
+        return implode($data);
+    }
+
+    private function encodeFunc(?string $value): string
+    {
+        $value = str_replace('"', '""', $value ?? '');
+
+        //force wrap value in quotes and return
+        return '"' . $value . '"';
+    }
+
 }

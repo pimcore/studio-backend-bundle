@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Download;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Xlsx;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -39,7 +39,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class DownloadCsvController extends AbstractApiController
+final class DownloadController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -51,18 +51,18 @@ final class DownloadCsvController extends AbstractApiController
     /**
      * @throws EnvironmentException|ForbiddenException|NotFoundException|StreamResourceNotFoundException
      */
-    #[Route('/export/download/csv/{jobRunId}', name: 'pimcore_studio_api_export_download_csv', methods: ['GET'])]
+    #[Route('/export/download/xlsx/{jobRunId}', name: 'pimcore_studio_api_export_download_xlsx', methods: ['GET'])]
     #[Get(
-        path: self::PREFIX . '/export/download/csv/{jobRunId}',
-        operationId: 'export_download_csv',
-        description: 'export_download_csv_description',
-        summary: 'export_download_csv_summary',
+        path: self::PREFIX . '/export/download/xlsx/{jobRunId}',
+        operationId: 'export_download_xlsx',
+        description: 'export_download_xlsx_description',
+        summary: 'export_download_xlsx_summary',
         tags: [Tags::Export->value]
     )]
     #[IdParameter(type: 'JobRun', name: 'jobRunId')]
     #[SuccessResponse(
-        description: 'export_download_csv_success_response',
-        content: [new MediaType('application/csv')],
+        description: 'export_download_xlsx_success_response',
+        content: [new MediaType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')],
         headers: [new ContentDisposition()]
     )]
     #[DefaultResponses([
@@ -70,14 +70,14 @@ final class DownloadCsvController extends AbstractApiController
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function downloadCsv(int $jobRunId): StreamedResponse
+    public function downloadXlsx(int $jobRunId): StreamedResponse
     {
         return $this->downloadService->downloadResourceByJobRunId(
             $jobRunId,
-            ExportFile::CSV_FILE_NAME->value,
-            ExportFile::CSV_FOLDER_NAME->value,
-            MimeTypes::CSV->value,
-            'export.csv'
+            ExportFile::XLSX_FILE_NAME->value,
+            ExportFile::XLSX_FOLDER_NAME->value,
+            MimeTypes::XLSX->value,
+            'export.xlsx'
         );
     }
 }

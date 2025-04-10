@@ -48,7 +48,7 @@ final class TaggedIteratorAdapter implements TopicLoaderInterface
                 $collection->addClientSubscribableTopic($topicProvider->getClientSubscribableTopic());
             }
         }
-        dd($collection);
+
         return $collection;
     }
 }

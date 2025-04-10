@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Service;
 
 use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -26,11 +27,7 @@ interface ExportServiceInterface
 {
     public function createExportFile(
         int $id,
-        array $columns,
-        array $exportData,
-        array $exportDataInfo,
-        bool $withHeaders = false,
-        bool $withGroup = false,
+        GridExportData $gridExportData,
         ?string $delimiter = null,
         ?UserInterface $user = null,
     ): void;

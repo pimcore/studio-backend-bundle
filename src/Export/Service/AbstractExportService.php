@@ -20,6 +20,7 @@ use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
 use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
@@ -47,11 +48,7 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
      */
     public function createExportFile(
         int $id,
-        array $columns,
-        array $exportData,
-        array $exportDataInfo,
-        bool $withHeaders = false,
-        bool $withGroup = false,
+        GridExportData $gridExportData,
         ?string $delimiter = null,
         ?UserInterface $user = null,
     ): void {
@@ -61,16 +58,17 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
             $delimiter = $this->defaultDelimiter;
         }
 
-        $data = [];
-
-        if ($withHeaders) {
-            $columnsDefinitions = $this->getColumnConfigurations($exportDataInfo, $user);
-            $data[] = $this->getHeaders($columns, $columnsDefinitions, $withGroup);
+        $headers = [];
+        if ($gridExportData->isWithHeaders()) {
+            $columnsDefinitions = $this->getColumnConfigurations($gridExportData->getExportDataInfo(), $user);
+            $headers = $this->getHeaders(
+                $gridExportData->getColumns(),
+                $columnsDefinitions,
+                $gridExportData->isWithGroup()
+            );
         }
 
-        $data = array_merge($data, $exportData);
-
-        $this->generateExportFile($data, $id, $storage, $delimiter);
+        $this->generateExportFile($id, $storage, $headers, $gridExportData->getExportData(), $delimiter);
     }
 
     /**
@@ -91,9 +89,10 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
     }
 
     abstract protected function generateExportFile(
-        array $data,
         int $id,
         FilesystemOperator $storage,
+        array $headers,
+        array $exportData,
         string $delimiter
     ): void;
 
@@ -114,7 +113,7 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
         return $folderName . '/' . $file;
     }
 
-    private function getHeaders(array $columns, array $columnsDefinitions, bool $withGroup): array
+    protected function getHeaders(array $columns, array $columnsDefinitions, bool $withGroup): array
     {
         if (empty($columns)) {
             return [];
@@ -131,7 +130,7 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
         );
     }
 
-    private function getColumnConfigurations(array $csvExportDataInfo, ?UserInterface $user): array
+    protected function getColumnConfigurations(array $csvExportDataInfo, ?UserInterface $user): array
     {
         return match($csvExportDataInfo['type']) {
             ElementTypes::TYPE_OBJECT => $this->getDataObjectColumnConfigurations(

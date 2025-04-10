@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Download;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Csv;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -35,7 +35,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class DeleteCsvController extends AbstractApiController
+final class DeleteController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,

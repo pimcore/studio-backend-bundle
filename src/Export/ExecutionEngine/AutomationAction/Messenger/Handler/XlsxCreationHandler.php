@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\XlsxCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -74,11 +75,13 @@ final class XlsxCreationHandler extends AbstractHandler
         try {
             $this->xlsxExportService->createExportFile(
                 $jobRun->getId(),
-                $columns,
-                $exportData,
-                $exportDataInfo,
-                $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
-                $headers === StepConfig::SETTINGS_HEADER_NAME,
+                new GridExportData(
+                    $columns,
+                    $exportData,
+                    $exportDataInfo,
+                    $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
+                    $headers === StepConfig::SETTINGS_HEADER_NAME
+                ),
                 $delimiter,
                 $user
             );

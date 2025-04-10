@@ -9,46 +9,6 @@ asset_clone_description: |
   Clones a specific asset with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder
 asset_clone_success_response: Successfully copied asset
 asset_clone_summary: Clone a specific asset
-export_csv_created_response: Successfully created <strong>jobRun</strong> for
-  csv export
-export_csv_description: |
-  Creating the CSV file for elements. <br> Parameters are: <ul>
-    <li><strong>elements</strong>: Array of element ids</li>
-    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
-    <li><strong>config</strong>: Delimiter and header options</li>
-    <li><strong>elementType</strong>: Type of element that should be exported</li>
-  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
-  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
-export_csv_summary: Creating CSV file for elements
-export_csv_folder_description: |
-  Creating the CSV file for elements based on the folder. <br> Parameters are: <ul>
-    <li><strong>folders</strong>: Array of folder ids</li>
-    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
-    <li><strong>filters</strong>: Filter elements from folder based on the grid filter schema</li>
-    <li><strong>config</strong>: Delimiter and header options</li>
-  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
-  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
-export_csv_folder_summary: Creating CSV file for elements based on folder
-export_xlsx_created_response: Successfully created <strong>jobRun</strong> for
-  XLSX export
-export_xlsx_description: |
-  Creating the XLSX file for elements. <br> Parameters are: <ul>
-    <li><strong>elements</strong>: Array of element ids</li>
-    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
-    <li><strong>config</strong>: Delimiter and header options</li>
-    <li><strong>elementType</strong>: Type of element that should be exported</li>
-  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
-  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
-export_xlsx_summary: Creating XLSX file export for elements
-export_xlsx_folder_description: |
-  Creating the XLSX file for elements based on the folder. <br> Parameters are: <ul>
-    <li><strong>folders</strong>: Array of folder ids</li>
-    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
-    <li><strong>filters</strong>: Filter elements from folder based on the grid filter schema</li>
-    <li><strong>config</strong>: Delimiter and header options</li>
-  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
-  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
-export_xlsx_folder_summary: Creating XLSX file for elements based on folder
 asset_export_zip_created_response: Successfully created <strong>jobRun</strong> for zip export
 asset_export_zip_asset_description: |
   Creating a ZIP file for assets based on the provided asset IDs in <strong>{assets}</strong> parameter. <br>
@@ -67,9 +27,6 @@ asset_custom_settings_get_by_id_description: |
   Retrieves custom settings based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing asset
 asset_custom_settings_get_by_id_success_response: Successfully retrieved custom settings as JSON
 asset_custom_settings_get_by_id_summary: Get custom settings of an asset by ID
-export_delete_csv_description: |
-  Delete the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
-export_delete_csv_summary: Delete asset CSV file based on jobRunId
 asset_delete_zip_description: |
   Delete the ZIP file with given <strong>{jobRunId}</strong> returned in the response of the create zip endpoint
 asset_delete_zip_summary: Delete asset ZIP file based on jobRunId
@@ -81,10 +38,6 @@ asset_download_by_id_description: |
   Download the original asset stream based on the provided <strong>{id}</strong>
 asset_download_by_id_success_response: Original asset binary file
 asset_download_by_id_summary: Download asset by ID
-export_download_csv_description: |
-  Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
-export_download_csv_success_response: CSV File as attachment
-export_download_csv_summary: Download CSV file for job run id
 asset_download_zip_description: |
   Download the ZIP archive with assets based on the given <strong>{jobRunId}</strong> returned in the response of the create zip endpoint
 asset_download_zip_success_response: ZIP archive as attachment
@@ -355,6 +308,60 @@ error_config_name_invalid: Configuration name is invalid (only alphanumeric char
 error_validation_failed: Validation failed
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
+export_csv_created_response: Successfully created <strong>jobRun</strong> for
+  csv export
+export_csv_description: |
+  Creating the CSV file for elements. <br> Parameters are: <ul>
+    <li><strong>elements</strong>: Array of element ids</li>
+    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
+    <li><strong>config</strong>: Delimiter and header options</li>
+    <li><strong>elementType</strong>: Type of element that should be exported</li>
+  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
+  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
+export_csv_summary: Creating CSV file for elements
+export_csv_folder_description: |
+  Creating the CSV file for elements based on the folder. <br> Parameters are: <ul>
+    <li><strong>folders</strong>: Array of folder ids</li>
+    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
+    <li><strong>filters</strong>: Filter elements from folder based on the grid filter schema</li>
+    <li><strong>config</strong>: Delimiter and header options</li>
+  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
+  Download has to be triggered separately via the csv download route with the <strong>{jobRunId}</strong> returned in the response
+export_csv_folder_summary: Creating CSV file for elements based on folder
+export_delete_csv_description: |
+  Delete the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
+export_delete_csv_summary: Delete CSV export file based on jobRunId
+export_download_csv_description: |
+  Download the CSV file with given <strong>{jobRunId}</strong> returned in the response of the create csv endpoint
+export_download_csv_success_response: CSV File as attachment
+export_download_csv_summary: Download CSV file for job run id
+export_delete_xlsx_description: |
+  Delete the XLSX file with given <strong>{jobRunId}</strong> returned in the response of the create export endpoint
+export_delete_xlsx_summary: Delete XLSX export file based on jobRunId
+export_download_xlsx_description: |
+  Download the XLSX file with given <strong>{jobRunId}</strong> returned in the response of the create export endpoint
+export_download_xlsx_success_response: XLSX File as attachment
+export_download_xlsx_summary: Download XLSX file for job run id
+export_xlsx_created_response: Successfully created <strong>jobRun</strong> for
+  XLSX export
+export_xlsx_description: |
+  Creating the XLSX file for elements. <br> Parameters are: <ul>
+    <li><strong>elements</strong>: Array of element ids</li>
+    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint</li>
+    <li><strong>config</strong>: Delimiter and header options</li>
+    <li><strong>elementType</strong>: Type of element that should be exported</li>
+  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
+  Download has to be triggered separately via the xlsx download route with the <strong>{jobRunId}</strong> returned in the response
+export_xlsx_summary: Creating XLSX file export for elements
+export_xlsx_folder_description: |
+  Creating the XLSX file for elements based on the folder. <br> Parameters are: <ul>
+    <li><strong>folders</strong>: Array of folder ids</li>
+    <li><strong>columns</strong>: Describes the columns that should be exported. Can be obtained via the grid endpoint. For folders you can also use filters and sorting</li>
+    <li><strong>filters</strong>: Filter elements from folder based on the grid filter schema</li>
+    <li><strong>config</strong>: Delimiter and header options</li>
+  </ul> Delimiter can be set to anything, but the default is a <strong>semicolon</strong> <br> Header options are: <strong>no_header</strong>, <strong>title</strong> and <strong>name</strong><br>
+  Download has to be triggered separately via the xlsx download route with the <strong>{jobRunId}</strong> returned in the response
+export_xlsx_folder_summary: Creating XLSX file for elements based on folder
 login_description: Logs in a user with the provided credentials and returns the user information.
 login_success_response: Login successful.
 login_summary: Session-based login with user credentials.
