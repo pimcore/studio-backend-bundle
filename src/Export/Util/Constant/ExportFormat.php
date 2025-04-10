@@ -14,13 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant;
 
-use Pimcore\Bundle\GenericExecutionEngineBundle\Messenger\Messages\AbstractExecutionEngineMessage;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
 /**
  * @internal
  */
-final class CsvDataObjectFolderCollectionMessage extends AbstractExecutionEngineMessage
+enum ExportFormat: string
 {
+    use EnumToValueArrayTrait;
+
+    case CSV = 'csv';
+    case XLSX = 'xlsx';
 }

@@ -14,7 +14,7 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Csv;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Xlsx;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -46,32 +46,32 @@ final class FolderController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/export/csv/folder', name: 'pimcore_studio_api_export_csv_folder', methods: ['POST'])]
+    #[Route('/export/xlsx/folder', name: 'pimcore_studio_api_export_xlsx_folder', methods: ['POST'])]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Post(
-        path: self::PREFIX . '/export/csv/folder',
-        operationId: 'export_csv_folder',
-        description: 'export_csv_folder_description',
-        summary: 'export_csv_folder_summary',
+        path: self::PREFIX . '/export/xlsx/folder',
+        operationId: 'export_xlsx_folder',
+        description: 'export_xlsx_folder_description',
+        summary: 'export_xlsx_folder_summary',
         tags: [Tags::Export->name]
     )]
     #[ExportFolderDataRequestBody]
     #[CreatedResponse(
-        description: 'export_csv_created_response',
+        description: 'export_xlsx_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function exportCsvFolder(
+    public function exportXlsxFolder(
         #[MapRequestPayload] ExportFolderParameter $exportParameter
     ): Response {
         return $this->jsonResponse(
             [
                 'jobRunId' => $this->exportService->generateExportFileForFolders(
                     $exportParameter,
-                    ExportFormat::CSV->value
+                    ExportFormat::XLSX->value
                 ),
             ],
             HttpResponseCodes::CREATED->value

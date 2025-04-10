@@ -19,7 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Automati
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectFolderCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportFolderDataCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
@@ -37,7 +37,7 @@ use function count;
  * @internal
  */
 #[AsMessageHandler]
-final class CsvDataObjectFolderDataCollectionHandler extends AbstractHandler
+final class ExportFolderDataCollectionHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
@@ -55,7 +55,7 @@ final class CsvDataObjectFolderDataCollectionHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(CsvDataObjectFolderCollectionMessage $message): void
+    public function __invoke(ExportFolderDataCollectionMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         if (!$this->shouldBeExecuted($jobRun)) {
@@ -120,7 +120,7 @@ final class CsvDataObjectFolderDataCollectionHandler extends AbstractHandler
                     ),
                 ];
 
-                $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $dataObjectData);
+                $this->updateContextArrayValues($jobRun, StepConfig::GRID_EXPORT_DATA->value, $dataObjectData);
             } catch (Exception $e) {
                 $this->abort($this->getAbortData(
                     Config::CSV_DATA_COLLECTION_FAILED_MESSAGE->value,
@@ -132,12 +132,12 @@ final class CsvDataObjectFolderDataCollectionHandler extends AbstractHandler
             }
         }
 
-        $csvExportDataInfo = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA_INFO->value] ?? null;
+        $csvExportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? null;
 
         if ($csvExportDataInfo === null) {
             $this->updateContextArrayValues(
                 $jobRun,
-                StepConfig::CSV_EXPORT_DATA_INFO->value,
+                StepConfig::GRID_EXPORT_DATA_INFO->value,
                 [
                     'type' => ElementTypes::TYPE_OBJECT,
                     'className' => $className,

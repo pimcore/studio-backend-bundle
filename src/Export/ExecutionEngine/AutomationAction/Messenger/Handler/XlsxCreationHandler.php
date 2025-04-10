@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\Abstract
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
-use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\XlsxCreationMessage;
 use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
@@ -32,14 +32,14 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class CsvCreationHandler extends AbstractHandler
+final class XlsxCreationHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
-        private readonly ExportServiceInterface $csvExportService,
+        private readonly ExportServiceInterface $xlsxExportService,
 
     ) {
         parent::__construct();
@@ -48,7 +48,7 @@ final class CsvCreationHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(CsvCreationMessage $message): void
+    public function __invoke(XlsxCreationMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         if (!$this->shouldBeExecuted($jobRun)) {
@@ -64,30 +64,30 @@ final class CsvCreationHandler extends AbstractHandler
 
         if (!isset($jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value])) {
             $this->abort($this->getAbortData(
-                Config::CSV_CREATION_FAILED_MESSAGE->value,
-                ['message' => 'Csv export data not found in job run context']
+                Config::XLSX_CREATION_FAILED_MESSAGE->value,
+                ['message' => 'Xlsx export data not found in job run context']
             ));
         }
-        $csvData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value];
+        $exportData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value];
 
-        $csvExportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? [];
+        $exportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? [];
 
         try {
-            $this->csvExportService->createExportFile(
+            $this->xlsxExportService->createExportFile(
                 $jobRun->getId(),
                 new GridExportData(
                     $columns,
-                    $csvData,
-                    $csvExportDataInfo,
+                    $exportData,
+                    $exportDataInfo,
                     $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
-                    $headers === StepConfig::SETTINGS_HEADER_NAME,
+                    $headers === StepConfig::SETTINGS_HEADER_NAME
                 ),
                 $delimiter,
                 $user
             );
         } catch (Exception $e) {
             $this->abort($this->getAbortData(
-                Config::CSV_CREATION_FAILED_MESSAGE->value,
+                Config::XLSX_CREATION_FAILED_MESSAGE->value,
                 ['message' => $e->getMessage()]
             ));
         }

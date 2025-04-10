@@ -18,7 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Automati
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
@@ -35,7 +35,7 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
  * @internal
  */
 #[AsMessageHandler]
-final class CsvDataObjectDataCollectionHandler extends AbstractHandler
+final class ExportDataCollectionHandler extends AbstractHandler
 {
     use HandlerProgressTrait;
     use CsvExportHandlerSetupTrait;
@@ -53,7 +53,7 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
     /**
      * @throws Exception
      */
-    public function __invoke(CsvDataObjectCollectionMessage $message): void
+    public function __invoke(ExportDataCollectionMessage $message): void
     {
         $jobRun = $this->getJobRun($message);
         if (!$this->shouldBeExecuted($jobRun)) {
@@ -106,14 +106,14 @@ final class CsvDataObjectDataCollectionHandler extends AbstractHandler
                 ),
             ];
 
-            $this->updateContextArrayValues($jobRun, StepConfig::CSV_EXPORT_DATA->value, $dataObjectData);
+            $this->updateContextArrayValues($jobRun, StepConfig::GRID_EXPORT_DATA->value, $dataObjectData);
 
-            $csvExportDataInfo = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA_INFO->value] ?? null;
+            $csvExportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? null;
 
             if ($csvExportDataInfo === null) {
                 $this->updateContextArrayValues(
                     $jobRun,
-                    StepConfig::CSV_EXPORT_DATA_INFO->value,
+                    StepConfig::GRID_EXPORT_DATA_INFO->value,
                     [
                         'type' => ElementTypes::TYPE_OBJECT,
                         'className' => $className,

@@ -15,19 +15,42 @@ services:
   # Handler
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCreationHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler\CsvCreationHandler:
+    arguments:
+        $csvExportService: '@Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService'
+
+  Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler\XlsxCreationHandler:
+    arguments:
+        $xlsxExportService: '@Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService'
 
   #
   # Services
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService: ~
-  Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface: '@Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService'
+  Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService: ~
+  Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService: ~
+
   Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadService
+
+  Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine\ExportServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine\ExportService
 
   #
   # Event Subscriber
   #
 
-  Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber\Csv\CsvCreationSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber\CsvCreationSubscriber:
+    arguments:
+      $csvExportService: '@Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService'
+
+  Pimcore\Bundle\StudioBackendBundle\Export\EventSubscriber\XlsxCreationSubscriber:
+    arguments:
+      $xlsxExportService: '@Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService'
+
+  #
+  # Mercure SSE
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Export\Mercure\Provider\ExportTopicProvider:
+    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]

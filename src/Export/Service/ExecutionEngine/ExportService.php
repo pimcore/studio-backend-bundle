@@ -14,24 +14,25 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine;
 
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\Job;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobStep;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\CsvAssetFolderCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\Util\JobSteps;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectCollectionMessage;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\CsvDataObjectFolderCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage as AssetCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\Asset\ExecutionEngine\AutomationAction\Messenger\Messages\ExportFolderDataCollectionMessage as AssetFolderCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage as DataObjectCollectionMessage;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportFolderDataCollectionMessage as DataObjectFolderCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
-use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\Util\JobSteps as ExportJobSteps;
+use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\XlsxCreationMessage;
+use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFormat;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Element\ElementDescriptor;
@@ -39,7 +40,7 @@ use Pimcore\Model\Element\ElementDescriptor;
 /**
  * @internal
  */
-final readonly class CsvService implements CsvServiceInterface
+final readonly class ExportService implements ExportServiceInterface
 {
     public function __construct(
         private JobExecutionAgentInterface $jobExecutionAgent,
@@ -47,7 +48,7 @@ final readonly class CsvService implements CsvServiceInterface
     ) {
     }
 
-    public function generateCsvFileForElements(ExportParameter $exportParameter): int
+    public function generateExportFileForElements(ExportParameter $exportParameter, string $exportFormat): int
     {
         $collectionSettings = [
             StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
@@ -59,15 +60,16 @@ final readonly class CsvService implements CsvServiceInterface
             StepConfig::CONFIG_CONFIGURATION->value => $exportParameter->getConfig(),
         ];
 
-        return $this->generateCsvFileJob(
+        return $this->generateExportFileJob(
             $exportParameter->getElements(),
             $collectionSettings,
             $creationSettings,
-            $this->getMessageClass($exportParameter->getElementType())
+            $this->getMessageClass($exportParameter->getElementType()),
+            $exportFormat
         );
     }
 
-    public function generateCsvFileForFolders(ExportFolderParameter $exportParameter): int
+    public function generateExportFileForFolders(ExportFolderParameter $exportParameter, string $exportFormat): int
     {
         $collectionSettings = [
             StepConfig::CONFIG_COLUMNS->value => $exportParameter->getColumns(),
@@ -79,28 +81,30 @@ final readonly class CsvService implements CsvServiceInterface
             StepConfig::CONFIG_CONFIGURATION->value => $exportParameter->getConfig(),
         ];
 
-        return $this->generateCsvFileJob(
+        return $this->generateExportFileJob(
             $exportParameter->getFolders(),
             $collectionSettings,
             $creationSettings,
-            $this->getMessageClassForFolder($exportParameter->getElementType())
+            $this->getMessageClassForFolder($exportParameter->getElementType()),
+            $exportFormat
         );
     }
 
-    private function generateCsvFileJob(
+    private function generateExportFileJob(
         array $elements,
         array $collectionSettings,
         array $creationSettings,
-        string $messageFQCN
+        string $messageFQCN,
+        string $exportFormat
     ): int {
 
         $jobSteps = [
             ...$this->mapJobSteps($elements, $collectionSettings, $messageFQCN, StepConfig::ELEMENT_TO_EXPORT),
-            ...[$this->getCsvCreationStep($creationSettings)],
+            ...[$this->getExportFileStep($creationSettings, $exportFormat)],
         ];
 
         $jobRun = $this->jobExecutionAgent->startJobExecution(
-            $this->createJob($jobSteps),
+            $this->createJobByFormat($jobSteps, $exportFormat),
             $this->securityService->getCurrentUser()->getId(),
             Config::CONTEXT_STOP_ON_ERROR->value
         );
@@ -115,30 +119,54 @@ final readonly class CsvService implements CsvServiceInterface
         StepConfig $export
     ): array {
         return array_map(
-            static fn (ElementDescriptor $asset) => new JobStep(
-                JobSteps::CSV_COLLECTION->value,
+            static fn (ElementDescriptor $element) => new JobStep(
+                JobSteps::DATA_COLLECTION->value,
                 $messageFQCN,
                 '',
-                array_merge([$export->value => $asset], $collectionSettings)
+                array_merge([$export->value => $element], $collectionSettings)
             ),
             $elements,
         );
     }
 
+    private function getExportFileStep(array $settings, string $exportFormat): JobStep
+    {
+        if ($exportFormat === ExportFormat::XLSX->value) {
+            return $this->getXlsxCreationStep($settings);
+        }
+
+        return $this->getCsvCreationStep($settings);
+    }
+
     private function getCsvCreationStep(array $settings): JobStep
     {
         return new JobStep(
-            ExportJobSteps::CSV_CREATION->value,
+            JobSteps::CSV_CREATION->value,
             CsvCreationMessage::class,
             '',
             $settings
         );
     }
 
-    private function createJob(array $jobSteps): Job
+    private function getXlsxCreationStep(array $settings): JobStep
     {
+        return new JobStep(
+            JobSteps::XLSX_CREATION->value,
+            XlsxCreationMessage::class,
+            '',
+            $settings
+        );
+    }
+
+    private function createJobByFormat(array $jobSteps, string $exportFormat): Job
+    {
+        $name = Jobs::CREATE_CSV->value;
+        if ($exportFormat === ExportFormat::XLSX->value) {
+            $name = Jobs::CREATE_XLSX->value;
+        }
+
         return new Job(
-            name: Jobs::CREATE_CSV->value,
+            name: $name,
             steps: $jobSteps
         );
     }
@@ -146,8 +174,8 @@ final readonly class CsvService implements CsvServiceInterface
     private function getMessageClass(string $elementType): string
     {
         return match($elementType) {
-            ElementTypes::TYPE_ASSET => CsvAssetCollectionMessage::class,
-            ElementTypes::TYPE_OBJECT => CsvDataObjectCollectionMessage::class,
+            ElementTypes::TYPE_ASSET => AssetCollectionMessage::class,
+            ElementTypes::TYPE_OBJECT => DataObjectCollectionMessage::class,
             default => throw new InvalidElementTypeException($elementType)
         };
     }
@@ -155,8 +183,8 @@ final readonly class CsvService implements CsvServiceInterface
     private function getMessageClassForFolder(string $elementType): string
     {
         return match($elementType) {
-            ElementTypes::TYPE_ASSET => CsvAssetFolderCollectionMessage::class,
-            ElementTypes::TYPE_OBJECT => CsvDataObjectFolderCollectionMessage::class,
+            ElementTypes::TYPE_ASSET => AssetFolderCollectionMessage::class,
+            ElementTypes::TYPE_OBJECT => DataObjectFolderCollectionMessage::class,
             default => throw new InvalidElementTypeException($elementType)
         };
     }

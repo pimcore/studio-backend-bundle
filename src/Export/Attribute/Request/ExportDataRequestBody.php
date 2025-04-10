@@ -23,30 +23,24 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
  * @internal
  */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class CsvExportFolderRequestBody extends RequestBody
+final class ExportDataRequestBody extends RequestBody
 {
     public function __construct()
     {
         parent::__construct(
             content: new JsonContent(
                 properties: [
-                    new Property(property: 'folders', type: 'array', items: new Items(type: 'integer'), example: [1]),
+                    new Property(property: 'elements', type: 'array', items: new Items(type: 'integer'), example: [83]),
                     new Property(
                         property: 'columns',
                         type: 'array',
                         items: new Items(ref: Column::class)
-                    ),
-                    new Property(
-                        property: 'filters',
-                        ref: Filter::class,
-                        type: 'object'
                     ),
                     new Property(property: 'config', properties: [
                         new Property(property: StepConfig::SETTINGS_DELIMITER->value, type: 'string', example: ';'),

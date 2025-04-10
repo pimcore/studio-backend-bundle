@@ -14,17 +14,19 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant;
 
-use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportFolderParameter;
-use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
 /**
  * @internal
  */
-interface CsvServiceInterface
+enum ExportFile: string
 {
-    public function generateCsvFileForElements(ExportParameter $exportParameter): int;
+    use EnumToValueArrayTrait;
 
-    public function generateCsvFileForFolders(ExportFolderParameter $exportParameter): int;
+    case CSV_FILE_NAME = 'download-csv-{id}.csv';
+    case CSV_FOLDER_NAME = 'download-csv-{id}';
+    case XLSX_FILE_NAME = 'download-xlsx-{id}.xlsx';
+    case XLSX_FOLDER_NAME = 'download-xlsx-{id}';
 }

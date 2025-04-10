@@ -14,16 +14,13 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Export\Csv;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Service;
 
-use League\Csv\CannotInsertRecord;
-use League\Csv\Exception;
-use League\Csv\Writer;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\StorageServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
-use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -33,12 +30,8 @@ use Pimcore\Model\UserInterface;
 /**
  * @internal
  */
-final readonly class CsvExportService implements ExportServiceInterface
+abstract readonly class AbstractExportService implements ExportServiceInterface
 {
-    public const string CSV_FILE_NAME = 'download-csv-{id}.csv';
-
-    public const string CSV_FOLDER_NAME = 'download-csv-{id}';
-
     use TempFilePathTrait;
 
     public function __construct(
@@ -54,62 +47,71 @@ final readonly class CsvExportService implements ExportServiceInterface
      */
     public function createExportFile(
         int $id,
-        array $columns,
-        array $csvData,
-        array $csvExportDataInfo,
-        bool $withHeaders = false,
-        bool $withGroup = false,
+        GridExportData $gridExportData,
         ?string $delimiter = null,
         ?UserInterface $user = null,
     ): void {
-
         $storage = $this->storageService->getTempStorage();
 
         if ($delimiter === null) {
             $delimiter = $this->defaultDelimiter;
         }
 
-        $data = [];
-
-        if ($withHeaders) {
-            $columnsDefinitions = $this->getColumnConfigurations($csvExportDataInfo, $user);
-            $data[]  = $this->getHeaders($columns, $columnsDefinitions, $withGroup);
-        }
-
-        $data = array_merge($data, $csvData);
-
-        try {
-            $csv = Writer::createFromString();
-            $csv->setDelimiter($delimiter);
-            $csv->insertAll($data);
-
-            $storage->write(
-                $this->getCsvFilePath($id, $storage),
-                $csv->toString()
+        $headers = [];
+        if ($gridExportData->isWithHeaders()) {
+            $columnsDefinitions = $this->getColumnConfigurations($gridExportData->getExportDataInfo(), $user);
+            $headers = $this->getHeaders(
+                $gridExportData->getColumns(),
+                $columnsDefinitions,
+                $gridExportData->isWithGroup()
             );
-        } catch (CannotInsertRecord | Exception $e) {
-            throw new EnvironmentException($e->getMessage());
         }
+
+        $this->generateExportFile($id, $storage, $headers, $gridExportData->getExportData(), $delimiter);
     }
 
     /**
      * @throws FilesystemException
      */
-    public function cleanUpFileSystem(int $jobRunId): void
+    public function cleanUpFileSystem(int $jobRunId, string $folderName, string $fileName): void
     {
         $this->storageService->cleanUpFlysystemFile(
             $this->getTempFilePath(
                 $jobRunId,
-                self::CSV_FOLDER_NAME . '/' . self::CSV_FILE_NAME
+                $folderName . '/' . $fileName
             )
         );
 
         $this->storageService->cleanUpFolder(
-            $this->getTempFilePath($jobRunId, self::CSV_FOLDER_NAME)
+            $this->getTempFilePath($jobRunId, $folderName)
         );
     }
 
-    private function getHeaders(array $columns, array $columnsDefinitions, bool $withGroup): array
+    abstract protected function generateExportFile(
+        int $id,
+        FilesystemOperator $storage,
+        array $headers,
+        array $exportData,
+        string $delimiter
+    ): void;
+
+    /**
+     * @throws FilesystemException
+     */
+    protected function getExportFilePath(
+        int $id,
+        FilesystemOperator $storage,
+        string $fileName,
+        string $folderName
+    ): string {
+        $folderName = $this->getTempFileName($id, $folderName);
+        $file = $this->getTempFileName($id, $fileName);
+        $storage->createDirectory($folderName);
+
+        return $folderName . '/' . $file;
+    }
+
+    protected function getHeaders(array $columns, array $columnsDefinitions, bool $withGroup): array
     {
         if (empty($columns)) {
             return [];
@@ -126,19 +128,7 @@ final readonly class CsvExportService implements ExportServiceInterface
         );
     }
 
-    /**
-     * @throws FilesystemException
-     */
-    private function getCsvFilePath(int $id, FilesystemOperator $storage): string
-    {
-        $folderName = $this->getTempFileName($id, self::CSV_FOLDER_NAME);
-        $file = $this->getTempFileName($id, self::CSV_FILE_NAME);
-        $storage->createDirectory($folderName);
-
-        return $folderName . '/' . $file;
-    }
-
-    private function getColumnConfigurations(array $csvExportDataInfo, ?UserInterface $user): array
+    protected function getColumnConfigurations(array $csvExportDataInfo, ?UserInterface $user): array
     {
         return match($csvExportDataInfo['type']) {
             ElementTypes::TYPE_OBJECT => $this->getDataObjectColumnConfigurations(

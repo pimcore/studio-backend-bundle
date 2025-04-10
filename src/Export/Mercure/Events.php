@@ -14,25 +14,17 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Mercure;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\EnumToValueArrayTrait;
 
 /**
  * @internal
  */
-enum MimeTypes: string
+enum Events: string
 {
     use EnumToValueArrayTrait;
 
-    case CSV = 'text/csv';
-    case JPEG = 'JPEG';
-    case ORIGINAL = 'original';
-    case PJPEG = 'PJPEG';
-    case PNG = 'PNG';
-    case PDF = 'application/pdf';
-    case SOURCE = 'source';
-    case ZIP = 'application/zip';
-    case JSON = 'application/json';
-    case XLSX = 'application/xlsx';
+    case CSV_DOWNLOAD_READY = 'csv-download-ready';
+    case XLSX_DOWNLOAD_READY = 'xlsx-download-ready';
 }

@@ -14,15 +14,15 @@ declare(strict_types=1);
  *  @license    http://www.pimcore.org/license     GPLv3 and PCL
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Download;
+namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Csv;
 
 use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\DownloadServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFile;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -35,7 +35,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class DeleteCsvController extends AbstractApiController
+final class DeleteController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -66,8 +66,8 @@ final class DeleteCsvController extends AbstractApiController
     {
         $this->downloadService->cleanupDataByJobRunId(
             $jobRunId,
-            CsvExportService::CSV_FOLDER_NAME,
-            CsvExportService::CSV_FILE_NAME
+            ExportFile::CSV_FOLDER_NAME->value,
+            ExportFile::CSV_FILE_NAME->value,
         );
 
         return new Response();

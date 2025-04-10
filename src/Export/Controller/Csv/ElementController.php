@@ -17,10 +17,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Controller\Csv;
 
 use OpenApi\Attributes\Post;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\CsvServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Export\Attribute\Request\CsvExportRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Export\Attribute\Request\ExportDataRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Export\MappedParameter\ExportParameter;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExecutionEngine\ExportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Util\Constant\ExportFormat;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\IdJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\CreatedResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -38,7 +39,7 @@ final class ElementController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
-        private readonly CsvServiceInterface $csvService
+        private readonly ExportServiceInterface $exportService
     ) {
         parent::__construct($serializer);
     }
@@ -51,7 +52,7 @@ final class ElementController extends AbstractApiController
         summary: 'export_csv_summary',
         tags: [Tags::Export->name]
     )]
-    #[CsvExportRequestBody]
+    #[ExportDataRequestBody]
     #[CreatedResponse(
         description: 'export_csv_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
@@ -64,7 +65,12 @@ final class ElementController extends AbstractApiController
         #[MapRequestPayload] ExportParameter $exportParameter
     ): Response {
         return $this->jsonResponse(
-            ['jobRunId' => $this->csvService->generateCsvFileForElements($exportParameter)],
+            [
+                'jobRunId' => $this->exportService->generateExportFileForElements(
+                    $exportParameter,
+                    ExportFormat::CSV->value
+                ),
+            ],
             HttpResponseCodes::CREATED->value
         );
     }
