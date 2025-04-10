@@ -33,7 +33,7 @@ interface ColumnConfigurationServiceInterface
     /**
      * @return ColumnConfiguration[]
      */
-    public function getAvailableDataObjectColumnConfiguration(string $classId, int $folderId): array;
+    public function getAvailableDataObjectColumnConfiguration(?string $classId, ?int $folderId): array;
 
     /**
      * @return ColumnConfiguration[]

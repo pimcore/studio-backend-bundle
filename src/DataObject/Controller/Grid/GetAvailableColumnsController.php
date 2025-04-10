@@ -21,18 +21,21 @@ use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\AvailableGridColumnParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -53,13 +56,13 @@ final class GetAvailableColumnsController extends AbstractApiController
      * @throws NotFoundException|SearchException
      */
     #[Route(
-        '/data-object/grid/available-columns/{classId}/{folderId}',
+        '/data-object/grid/available-columns',
         name: 'pimcore_studio_api_get_data_objects_grid_available_columns',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Get(
-        path: self::PREFIX . '/data-object/grid/available-columns/{classId}/{folderId}',
+        path: self::PREFIX . '/data-object/grid/available-columns',
         operationId: 'data_object_get_available_grid_columns',
         description: 'data_object_get_available_grid_columns_description',
         summary: 'data_object_get_available_grid_columns_summary',
@@ -80,17 +83,25 @@ final class GetAvailableColumnsController extends AbstractApiController
         name: 'classId',
         example: 'EV',
         description: 'Identifies the class name for which the columns should be retrieved.',
+        required: false
     )]
     #[IdParameter(
-        name: 'folderId',
+        description: 'folderId',
+        namePrefix: 'folder',
+        required: false,
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getDataObjectAvailableGridColumns(string $classId, int $folderId): JsonResponse
+    public function getDataObjectAvailableGridColumns(
+        #[MapQueryString] AvailableGridColumnParameter $parameter = new AvailableGridColumnParameter(),
+    ): JsonResponse
     {
-        $columns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, $folderId);
+        $columns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
+            $parameter->getClassId(),
+            $parameter->getFolderId()
+        );
 
         return $this->jsonResponse([
             'columns' => $columns,
