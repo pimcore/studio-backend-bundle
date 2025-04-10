@@ -16,10 +16,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Mercure\Provider;
 
-use Pimcore\Bundle\StudioBackendBundle\Export\Mercure\Events as ExportEvents;
+use Pimcore\Bundle\StudioBackendBundle\Export\Mercure\Events;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Provider\AbstractServerToClientProvider;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\Loader\TaggedIteratorAdapter;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Events;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
@@ -40,6 +39,6 @@ final class ExportTopicProvider extends AbstractServerToClientProvider
 
     private function getEvents(): array
     {
-        return array_merge(Events::values(), ExportEvents::values());
+        return Events::values();
     }
 }
