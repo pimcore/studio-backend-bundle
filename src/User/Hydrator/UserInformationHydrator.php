@@ -38,8 +38,9 @@ final readonly class UserInformationHydrator implements UserInformationHydratorI
             $user->isAdmin(),
             $user->getClasses(),
             $user->getDocTypes(),
+            $user->getLanguage(),
             $this->userPerspectiveService->getActivePerspective($user),
-            $this->userPerspectiveService->getAllowedPerspectives($user),
+            $this->userPerspectiveService->getAllowedPerspectives($user)
         );
     }
 }
