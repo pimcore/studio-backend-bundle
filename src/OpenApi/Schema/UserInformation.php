@@ -30,7 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'User Information',
     description: 'Information about the user',
-    required: ['id', 'username', 'permissions', 'isAdmin', 'classes', 'docTypes', 'activePerspective', 'perspectives'],
+    required: ['id', 'username', 'permissions', 'isAdmin', 'classes', 'docTypes', 'activePerspective', 'perspectives', 'language'],
     type: 'object'
 )]
 final class UserInformation implements AdditionalAttributesInterface
@@ -74,6 +74,12 @@ final class UserInformation implements AdditionalAttributesInterface
             items: new Items(ref: PerspectiveConfig::class))
         ]
         private readonly array $perspectives = [],
+        #[Property(
+            description: 'User Language',
+            type: 'string',
+            example: 'en')
+        ]
+        private readonly string $language,
     ) {
     }
 
@@ -118,5 +124,10 @@ final class UserInformation implements AdditionalAttributesInterface
     public function getPerspectives(): array
     {
         return $this->perspectives;
+    }
+
+    public function getLanguage(): string
+    {
+        return $this->language;
     }
 }
