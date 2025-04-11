@@ -63,6 +63,12 @@ final class UserInformation implements AdditionalAttributesInterface
         )]
         private readonly array $docTypes,
         #[Property(
+            description: 'User Language',
+            type: 'string',
+            example: 'en')
+        ]
+        private readonly string $language,
+        #[Property(
             description: 'Active studio perspective ID',
             type: 'string',
             example: Perspectives::DEFAULT_ID->value)
@@ -74,12 +80,6 @@ final class UserInformation implements AdditionalAttributesInterface
             items: new Items(ref: PerspectiveConfig::class))
         ]
         private readonly array $perspectives = [],
-        #[Property(
-            description: 'User Language',
-            type: 'string',
-            example: 'en')
-        ]
-        private readonly string $language,
     ) {
     }
 
@@ -113,6 +113,11 @@ final class UserInformation implements AdditionalAttributesInterface
         return $this->docTypes;
     }
 
+    public function getLanguage(): string
+    {
+        return $this->language;
+    }
+
     public function getActivePerspective(): ?string
     {
         return $this->activePerspective;
@@ -124,10 +129,5 @@ final class UserInformation implements AdditionalAttributesInterface
     public function getPerspectives(): array
     {
         return $this->perspectives;
-    }
-
-    public function getLanguage(): string
-    {
-        return $this->language;
     }
 }
