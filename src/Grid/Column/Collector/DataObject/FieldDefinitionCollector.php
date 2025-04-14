@@ -38,7 +38,11 @@ use Psr\Log\LoggerInterface;
 /**
  * @internal
  */
-final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassIdInterface, FolderIdInterface, UseUserInterface
+final class FieldDefinitionCollector implements
+    ColumnCollectorInterface,
+    ClassIdInterface,
+    FolderIdInterface,
+    UseUserInterface
 {
     use UseClassIdTrait;
     use UseFolderIdTrait;

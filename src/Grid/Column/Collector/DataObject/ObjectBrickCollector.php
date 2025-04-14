@@ -41,7 +41,11 @@ use function array_key_exists;
 /**
  * @internal
  */
-final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInterface, FolderIdInterface, UseUserInterface
+final class ObjectBrickCollector implements
+    ColumnCollectorInterface,
+    ClassIdInterface,
+    FolderIdInterface,
+    UseUserInterface
 {
     use UseClassIdTrait;
     use UseFolderIdTrait;

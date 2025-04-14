@@ -44,7 +44,11 @@ use function in_array;
 /**
  * @internal
  */
-final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassIdInterface, FolderIdInterface, UseUserInterface
+final class AdvancedColumnCollector implements
+    ColumnCollectorInterface,
+    ClassIdInterface,
+    FolderIdInterface,
+    UseUserInterface
 {
     use UseClassIdTrait;
     use UseFolderIdTrait;
