@@ -56,6 +56,12 @@ final class XlsxCreationHandler extends AbstractHandler
         }
 
         $user = $this->userResolver->getById($jobRun->getOwnerId());
+        if ($user === null) {
+            $this->abort($this->getAbortData(
+                Config::XLSX_CREATION_FAILED_MESSAGE->value,
+                ['message' => 'User not found']
+            ));
+        }
 
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
         $settings = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_CONFIGURATION->value);
@@ -82,8 +88,8 @@ final class XlsxCreationHandler extends AbstractHandler
                     $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
                     $headers === StepConfig::SETTINGS_HEADER_NAME
                 ),
-                $delimiter,
-                $user
+                $user,
+                $delimiter
             );
         } catch (Exception $e) {
             $this->abort($this->getAbortData(

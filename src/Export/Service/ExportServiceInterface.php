@@ -28,8 +28,8 @@ interface ExportServiceInterface
     public function createExportFile(
         int $id,
         GridExportData $gridExportData,
+        UserInterface $user,
         ?string $delimiter = null,
-        ?UserInterface $user = null,
     ): void;
 
     /**

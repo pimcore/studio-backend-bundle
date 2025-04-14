@@ -18,6 +18,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\Automati
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Class\Repository\ClassDefinitionRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\ExecutionEngine\AutomationAction\Messenger\Messages\ExportDataCollectionMessage;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataObjectServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
@@ -42,6 +43,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
 
     public function __construct(
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly ClassDefinitionRepositoryInterface $classDefinitionRepository,
         private readonly DataObjectServiceInterface $dataObjectService,
         private readonly PublishServiceInterface $publishService,
         private readonly UserResolverInterface $userResolver,
@@ -74,8 +76,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
         $jobDataObject = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::ELEMENT_TO_EXPORT->value);
 
         $dataObject = $this->dataObjectService->getDataObjectForUser($jobDataObject['id'], $user);
-
-        $className = $dataObject->getClassName();
+        $classId = $this->classDefinitionRepository->getClassDefinition($dataObject->getClassName())->getId();
 
         if ($dataObject->getType() === ElementTypes::TYPE_FOLDER) {
             $this->abort($this->getAbortData(
@@ -90,7 +91,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
 
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
         $columnsDefinitions = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
-            $className,
+            $classId,
             1,
             $user
         );
@@ -116,7 +117,7 @@ final class ExportDataCollectionHandler extends AbstractHandler
                     StepConfig::GRID_EXPORT_DATA_INFO->value,
                     [
                         'type' => ElementTypes::TYPE_OBJECT,
-                        'className' => $className,
+                        'classId' => $classId,
                     ]
                 );
             }
