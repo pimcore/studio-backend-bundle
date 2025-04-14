@@ -132,6 +132,7 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
         }
 
         $user = $this->securityService->getCurrentUser();
+
         return $this->buildDefaultConfiguration(
             $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, 1, $user),
             $this->dataObjectPredefinedColumns,
