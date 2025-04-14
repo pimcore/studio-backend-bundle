@@ -102,15 +102,6 @@ final readonly class HotspotImageAdapter implements
         return $data;
     }
 
-    public function normalizeImageData(MarkerHotspotItem $hotspotItem): array
-    {
-        return [
-            'name' => $hotspotItem->getName(),
-            'type' => $hotspotItem->getType(),
-            'value' => $hotspotItem->getValue(),
-        ];
-    }
-
     public function normalize(mixed $value, Data $fieldDefinition): mixed
     {
         if (!($fieldDefinition instanceof HotspotImageData)) {
@@ -129,26 +120,32 @@ final readonly class HotspotImageAdapter implements
             return $value;
         }
 
-        $value['image'] = [
-            ... $value['image'],
-            ... $this->normalizeElementData($id, $type),
-        ];
+        $value['image'] = $this->normalizeElementData($id, $type, $value['image']);
         $value['hotspots'] = $this->normalizeLocationData($value['hotspots']);
         $value['marker'] = $this->normalizeLocationData($value['marker']);
 
         return $value;
     }
 
-    private function normalizeElementData(int $id, string $type): array
+    public function normalizeImageData(MarkerHotspotItem $hotspotItem): array
+    {
+        return [
+            'name' => $hotspotItem->getName(),
+            'type' => $hotspotItem->getType(),
+            'value' => $hotspotItem->getValue(),
+        ];
+    }
+
+    private function normalizeElementData(int $id, string $type, array $imageData): array
     {
         $element = $this->getElementData($id, $type);
         if ($element instanceof AbstractObject || $element instanceof Document) {
-            $elementData['published'] = $element->isPublished();
+            $imageData['published'] = $element->isPublished();
         }
-        $elementData['subtype'] = $element->getType();
-        $elementData['fullPath']  = $element->getFullPath();
+        $imageData['subtype'] = $element->getType();
+        $imageData['fullPath']  = $element->getFullPath();
 
-        return $elementData;
+        return $imageData;
     }
 
     private function normalizeLocationData(array $locationData): array
@@ -158,14 +155,21 @@ final readonly class HotspotImageAdapter implements
             if (!is_array($data)) {
                 continue;
             }
-            foreach ($data as $item) {
-                if ($item instanceof MarkerHotspotItem &&
-                    $this->isValidItem($item)
-                ) {
-                    $location['data'] = [
-                        ... $this->normalizeImageData($item),
-                        ... $this->normalizeElementData($item->getValue(), $item->getType()),
-                        ];
+
+            foreach ($data as $key => $item) {
+                if (!($item instanceof MarkerHotspotItem)) {
+                    continue;
+                }
+
+                $imageData = $this->normalizeImageData($item);
+                $location['data'][$key] = $imageData;
+                if ($this->isValidItem($item))
+                {
+                    $location['data'][$key] = $this->normalizeElementData(
+                        $item->getValue(),
+                        $item->getType(),
+                        $imageData
+                    );
                 }
             }
         }
