@@ -163,8 +163,7 @@ final readonly class HotspotImageAdapter implements
 
                 $imageData = $this->normalizeImageData($item);
                 $location['data'][$key] = $imageData;
-                if ($this->isValidItem($item))
-                {
+                if ($this->isValidItem($item)) {
                     $location['data'][$key] = $this->normalizeElementData(
                         $item->getValue(),
                         $item->getType(),
