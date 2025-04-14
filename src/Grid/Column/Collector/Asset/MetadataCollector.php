@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\UserInterface;
 use function array_key_exists;
 
 /**
@@ -46,7 +45,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
      *
      * @return ColumnConfiguration[]
      */
-    public function getColumnConfigurations(array $availableColumnDefinitions, ?UserInterface $user = null): array
+    public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
         return array_merge(
             $this->getDefaultMetadata(),

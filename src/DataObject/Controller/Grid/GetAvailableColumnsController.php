@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringPa
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -45,6 +46,7 @@ final class GetAvailableColumnsController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly SecurityServiceInterface $securityService,
     ) {
         parent::__construct($serializer);
     }
@@ -90,7 +92,11 @@ final class GetAvailableColumnsController extends AbstractApiController
     ])]
     public function getDataObjectAvailableGridColumns(string $classId, int $folderId): JsonResponse
     {
-        $columns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, $folderId);
+        $columns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
+            $classId,
+            $folderId,
+            $this->securityService->getCurrentUser()
+        );
 
         return $this->jsonResponse([
             'columns' => $columns,

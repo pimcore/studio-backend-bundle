@@ -37,7 +37,7 @@ interface ColumnConfigurationServiceInterface
     public function getAvailableDataObjectColumnConfiguration(
         string $classId,
         int $folderId,
-        ?UserInterface $user = null
+        UserInterface $user
     ): array;
 
     /**

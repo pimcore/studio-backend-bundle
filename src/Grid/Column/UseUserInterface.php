@@ -16,18 +16,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
+use Pimcore\Model\UserInterface;
 
-interface ColumnCollectorInterface
+interface UseUserInterface
 {
-    public function getCollectorName(): string;
+    public function setUser(UserInterface $user): void;
 
-    /**
-     * @param ColumnDefinitionInterface[] $availableColumnDefinitions
-     *
-     * @return ColumnConfiguration[]
-     */
-    public function getColumnConfigurations(array $availableColumnDefinitions): array;
-
-    public function supportedElementTypes(): array;
+    public function getUser(): UserInterface;
 }
