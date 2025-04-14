@@ -36,6 +36,10 @@ final readonly class DataAdapter implements UpdateAdapterInterface
             return;
         }
 
+        if (!isset($data[$this->getIndexKey()])) {
+            return;
+        }
+
         $element->setData($data[$this->getIndexKey()]);
 
     }
