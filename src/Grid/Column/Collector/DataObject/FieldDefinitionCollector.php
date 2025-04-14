@@ -22,6 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseClassIdTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseFolderIdTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
@@ -37,10 +39,11 @@ use Psr\Log\LoggerInterface;
 /**
  * @internal
  */
-final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassIdInterface, FolderIdInterface
+final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassIdInterface, FolderIdInterface, UseUserInterface
 {
     use UseClassIdTrait;
     use UseFolderIdTrait;
+    use UseUserTrait;
 
     /**
      * @var ColumnFieldDefinition[]
@@ -59,12 +62,12 @@ final class FieldDefinitionCollector implements ColumnCollectorInterface, ClassI
         return 'data-object-field-definition';
     }
 
-    public function getColumnConfigurations(array $availableColumnDefinitions, ?UserInterface $user = null): array
+    public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
         $layoutDefinitions = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $this->getClassId(),
             $this->getFolderId(),
-            $user
+            $this->getUser()
         );
 
         $classDefinition = $this->classDefinitionService->getClassDefinition($this->getClassId());

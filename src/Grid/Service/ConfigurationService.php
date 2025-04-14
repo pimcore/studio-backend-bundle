@@ -131,8 +131,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             );
         }
 
+        $user = $this->securityService->getCurrentUser();
         return $this->buildDefaultConfiguration(
-            $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, 1),
+            $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, 1, $user),
             $this->dataObjectPredefinedColumns,
             true
         );
@@ -244,7 +245,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     {
         $availableColumns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
             $classId,
-            $folderId
+            $folderId,
+            $this->securityService->getCurrentUser()
         );
 
         return $this->buildDefaultConfiguration(

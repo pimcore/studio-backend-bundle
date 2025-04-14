@@ -26,6 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseClassIdTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseFolderIdTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\RelationField;
@@ -42,10 +44,11 @@ use function in_array;
 /**
  * @internal
  */
-final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassIdInterface, FolderIdInterface
+final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassIdInterface, FolderIdInterface, UseUserInterface
 {
     use UseClassIdTrait;
     use UseFolderIdTrait;
+    use UseUserTrait;
 
     /**
      * @param string[] $supportedDataTypes
@@ -62,12 +65,12 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
         return 'data-object-advanced-column';
     }
 
-    public function getColumnConfigurations(array $availableColumnDefinitions, ?UserInterface $user = null): array
+    public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
         $test = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $this->getClassId(),
             $this->getFolderId(),
-            $user
+            $this->getUser()
         );
 
         $children = $test->getChildren();
@@ -76,7 +79,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
 
         return [$this->buildColumnConfigurations(
             $this->getSimpleFields($collectedDefinitions),
-            $this->getRelationFields($collectedDefinitions, $user)
+            $this->getRelationFields($collectedDefinitions)
         )];
     }
 
@@ -171,18 +174,17 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
      */
     private function getRelationFields(
         array $groupedDefinitions,
-        ?UserInterface $user = null
     ): array {
         $relations = [];
         foreach ($groupedDefinitions as $definition) {
             if ($definition instanceof AdvancedManyToManyObjectRelation) {
-                $relations[] = $this->buildAdvancedManyToManyObjectRelationFields($definition, $user);
+                $relations[] = $this->buildAdvancedManyToManyObjectRelationFields($definition);
 
                 continue;
             }
 
             if ($definition instanceof AbstractRelations) {
-                $relations[] = $this->buildAbstractRelationsFields($definition, $user);
+                $relations[] = $this->buildAbstractRelationsFields($definition);
             }
         }
 
@@ -192,7 +194,6 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
 
     private function buildAbstractRelationsFields(
         AbstractRelations $definition,
-        ?UserInterface $user = null
     ): RelationField {
         $classes  = $definition->getClasses();
         $fields = [];
@@ -202,7 +203,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
             }
 
             $fields = [
-                ...$this->buildFieldForClassName($class['classes'], $user),
+                ...$this->buildFieldForClassName($class['classes']),
                 ...$fields,
             ];
         }
@@ -226,14 +227,14 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
         return new RelationField(
             name: $definition->getTitle(),
             key: $definition->getName(),
-            fields: $this->buildFieldForClassName($className, $user)
+            fields: $this->buildFieldForClassName($className)
         );
     }
 
     /**
      * @return SimpleField[]
      */
-    private function buildFieldForClassName(string $className, ?UserInterface $user = null): array
+    private function buildFieldForClassName(string $className): array
     {
         try {
             $definitionOfTheRelation = $this->classDefinitionResolver->getByName($className);
@@ -248,7 +249,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
         $test = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $definitionOfTheRelation->getId(),
             $this->getFolderId(),
-            $user
+            $this->getUser()
         );
 
         return $this->getSimpleFields(

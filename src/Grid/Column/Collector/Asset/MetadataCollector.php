@@ -46,7 +46,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
      *
      * @return ColumnConfiguration[]
      */
-    public function getColumnConfigurations(array $availableColumnDefinitions, ?UserInterface $user = null): array
+    public function getColumnConfigurations(array $availableColumnDefinitions): array
     {
         return array_merge(
             $this->getDefaultMetadata(),

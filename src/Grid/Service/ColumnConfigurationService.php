@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
@@ -68,7 +69,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
     public function getAvailableDataObjectColumnConfiguration(
         string $classId,
         int $folderId,
-        ?UserInterface $user = null
+        UserInterface $user = null
     ): array {
         $columns = [];
         foreach ($this->gridService->getColumnCollectors() as $collector) {
@@ -84,10 +85,15 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
             if ($collector instanceof FolderIdInterface) {
                 $collector->setFolderId($folderId);
             }
+
+            if ($collector instanceof UseUserInterface) {
+                $collector->setUser($user);
+            }
+
             // rather use the spread operator instead of array_merge in a loop
             $columns = [
                 ...$columns,
-                ...$collector->getColumnConfigurations($this->gridService->getColumnDefinitions(), $user),
+                ...$collector->getColumnConfigurations($this->gridService->getColumnDefinitions()),
             ];
         }
 
