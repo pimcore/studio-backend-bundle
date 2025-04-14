@@ -48,8 +48,8 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
     public function createExportFile(
         int $id,
         GridExportData $gridExportData,
+        UserInterface $user,
         ?string $delimiter = null,
-        ?UserInterface $user = null,
     ): void {
         $storage = $this->storageService->getTempStorage();
 
@@ -128,11 +128,11 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
         );
     }
 
-    protected function getColumnConfigurations(array $csvExportDataInfo, ?UserInterface $user): array
+    protected function getColumnConfigurations(array $csvExportDataInfo, UserInterface $user): array
     {
         return match($csvExportDataInfo['type']) {
             ElementTypes::TYPE_OBJECT => $this->getDataObjectColumnConfigurations(
-                $csvExportDataInfo['className'],
+                $csvExportDataInfo['classId'],
                 $user
             ),
             ElementTypes::TYPE_ASSET => $this->getAssetColumnConfigurations(),
@@ -140,10 +140,10 @@ abstract readonly class AbstractExportService implements ExportServiceInterface
         };
     }
 
-    private function getDataObjectColumnConfigurations(string $className, ?UserInterface $user): array
+    private function getDataObjectColumnConfigurations(string $classId, UserInterface $user): array
     {
         return $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
-            $className,
+            $classId,
             1,
             $user
         );
