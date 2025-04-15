@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\DocumentSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 
@@ -25,6 +26,11 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
  */
 final class DocumentHydrator implements DocumentHydratorInterface
 {
+    public function __construct(
+        private ElementLockServiceInterface $elementLockService
+    ) {
+    }
+
     public function hydrate(DocumentSearchResultItem $item): Document
     {
         return new Document(
@@ -36,7 +42,11 @@ final class DocumentHydrator implements DocumentHydratorInterface
             userOwner: $item->getUserOwner(),
             userModification: $item->getModificationDate(),
             locked: $item->getLocked(),
-            isLocked: $item->isLocked(),
+            isLocked: $this->elementLockService->isElementLocked(
+                $item->getFullPath(),
+                $item->getElementType()->value,
+                $item->getLocked()
+            ),
             creationDate: $item->getCreationDate(),
             modificationDate: $item->getUserModification(),
         );

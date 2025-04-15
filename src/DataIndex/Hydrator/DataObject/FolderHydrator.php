@@ -17,12 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\SearchResultItem\Folder;
+use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
 final readonly class FolderHydrator implements FolderHydratorInterface
 {
     public function __construct(
+        private ElementLockServiceInterface $elementLockService,
         private IconServiceInterface $iconService,
         private PermissionsHydratorInterface $permissionsHydrator
     ) {
@@ -49,7 +51,11 @@ final readonly class FolderHydrator implements FolderHydratorInterface
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),
-            $item->isLocked(),
+            $this->elementLockService->isElementLocked(
+                $item->getFullPath(),
+                $item->getElementType()->value,
+                $item->getLocked()
+            ),
             $item->getCreationDate(),
             $item->getModificationDate()
         );
