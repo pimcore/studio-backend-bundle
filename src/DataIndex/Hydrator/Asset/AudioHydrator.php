@@ -17,12 +17,14 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Audio as AudioItem;
+use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
 final readonly class AudioHydrator implements AudioHydratorInterface
 {
     public function __construct(
+        private ElementLockServiceInterface $elementLockService,
         private IconServiceInterface $iconService,
         private PermissionsHydratorInterface $permissionsHydrator
     ) {
@@ -46,7 +48,11 @@ final readonly class AudioHydrator implements AudioHydratorInterface
             $item->getUserOwner(),
             $item->getUserModification(),
             $item->getLocked(),
-            $item->isLocked(),
+            $this->elementLockService->isElementLocked(
+                $item->getFullPath(),
+                $item->getElementType()->value,
+                $item->getLocked()
+            ),
             $item->getCreationDate(),
             $item->getModificationDate(),
             $item->getMetaData(),

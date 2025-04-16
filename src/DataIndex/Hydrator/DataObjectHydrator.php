@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\DataObjectSearchResultItem;
+use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\PermissionsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
@@ -24,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 final readonly class DataObjectHydrator implements DataObjectHydratorInterface
 {
     public function __construct(
+        private ElementLockServiceInterface $elementLockService,
         private IconServiceInterface $iconService,
         private PermissionsHydratorInterface $permissionsHydrator
     ) {
@@ -50,7 +52,11 @@ final readonly class DataObjectHydrator implements DataObjectHydratorInterface
             $dataObject->getUserOwner(),
             $dataObject->getUserModification(),
             $dataObject->getLocked(),
-            $dataObject->isLocked(),
+            $this->elementLockService->isElementLocked(
+                $dataObject->getFullPath(),
+                $dataObject->getElementType()->value,
+                $dataObject->getLocked()
+            ),
             $dataObject->getCreationDate(),
             $dataObject->getModificationDate()
         );
