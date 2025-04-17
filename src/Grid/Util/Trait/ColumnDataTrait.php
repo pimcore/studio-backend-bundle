@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 
-
 trait ColumnDataTrait
 {
     private function getColumnData(Column $column, mixed $value, ?InheritanceData $inheritanceData = null): ColumnData

@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 
-
 trait LocalizedValueTrait
 {
     /**
