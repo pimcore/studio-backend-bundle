@@ -16,9 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
-/**
- * @internal
- */
+
 interface ClassIdInterface
 {
     public function getClassId(): string;

@@ -18,9 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\DataObject;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 
-/**
- * @internal
- */
 abstract readonly class AbstractDefinition implements ColumnDefinitionInterface
 {
     abstract public function getType(): string;

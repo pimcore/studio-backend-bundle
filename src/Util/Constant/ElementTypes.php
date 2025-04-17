@@ -16,9 +16,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
 
-/**
- * @internal
- */
 final readonly class ElementTypes
 {
     public const TYPE_ASSET = 'asset';

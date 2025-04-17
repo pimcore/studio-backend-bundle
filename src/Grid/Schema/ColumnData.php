@@ -22,9 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\InheritanceData;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
-/**
- * @internal
- */
 #[Schema(
     title: 'GridColumnData',
     type: 'object'

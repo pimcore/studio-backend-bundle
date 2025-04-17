@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 /**
  * Contains all data to configure a grid column
  *
- * @internal
  */
 #[Schema(
     title: 'GridColumnConfiguration',

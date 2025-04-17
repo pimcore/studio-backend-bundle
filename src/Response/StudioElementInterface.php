@@ -18,9 +18,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Response;
 
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 
-/**
- * @internal
- */
 interface StudioElementInterface
 {
     public function getId(): int;
