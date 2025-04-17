@@ -21,9 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseErrorKeys;
 use Throwable;
 use function sprintf;
 
-/**
- * @internal
- */
 final class NotFoundException extends AbstractApiException
 {
     public function __construct(string $type, int|string $id, string $parameter = 'ID', ?Throwable $previous = null)

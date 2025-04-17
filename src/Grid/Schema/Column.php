@@ -27,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFi
 /**
  * Contains all data that is needed to get all the data for the column.
  *
- * @internal
  */
 #[Schema(
     title: 'Grid Column Request',
