@@ -79,11 +79,19 @@ final readonly class MultiSelectAdapter implements SetterDataInterface
 
     private function addValues(?array $existingValues, array $data): array
     {
+        if ($existingValues === null) {
+            return $data;
+        }
+
         return array_unique(array_merge($existingValues, $data));
     }
 
     private function removeValues(?array $existingValues, array $data): array
     {
+        if ($existingValues === null) {
+            return [];
+        }
+
         return array_diff($existingValues, $data);
     }
 }
