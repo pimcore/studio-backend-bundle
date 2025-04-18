@@ -76,7 +76,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
             $elementParameters->getId(),
             $user
         );
-        if (!$this->elementService->hasElementDependencies($element)) {
+        if (!$this->elementService->hasElementChildren($element)) {
             $this->addElementToRecycleBin($element, $user);
             $this->deleteParentElement($element, $user);
 
@@ -141,7 +141,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
             );
         }
 
-        if ($this->elementService->hasElementDependencies($element)) {
+        if ($this->elementService->hasElementChildren($element)) {
             throw new EnvironmentException(
                 'Element has existing children'
             );

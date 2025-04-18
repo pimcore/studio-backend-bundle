@@ -113,13 +113,15 @@ final readonly class ElementService implements ElementServiceInterface
         return $element;
     }
 
-    public function hasElementDependencies(
-        ElementInterface $element
-    ): bool {
-        if (($element instanceof Asset ||
-            $element instanceof Document ||
-            $element instanceof DataObject) &&
-            $element->hasChildren()) {
+    public function hasElementChildren(ElementInterface $element): bool
+    {
+        return ($element instanceof Asset || $element instanceof Document || $element instanceof DataObject) &&
+            $element->hasChildren();
+    }
+
+    public function hasElementDependencies(ElementInterface $element): bool
+    {
+        if ($this->hasElementChildren($element)) {
             return true;
         }
 
