@@ -127,28 +127,7 @@ final readonly class HotspotImageAdapter implements
         return $value;
     }
 
-    public function normalizeImageData(MarkerHotspotItem $hotspotItem): array
-    {
-        return [
-            'name' => $hotspotItem->getName(),
-            'type' => $hotspotItem->getType(),
-            'value' => $hotspotItem->getValue(),
-        ];
-    }
-
-    private function normalizeElementData(int $id, string $type, array $imageData): array
-    {
-        $element = $this->getElementData($id, $type);
-        if ($element instanceof AbstractObject || $element instanceof Document) {
-            $imageData['published'] = $element->isPublished();
-        }
-        $imageData['subtype'] = $element->getType();
-        $imageData['fullPath']  = $element->getFullPath();
-
-        return $imageData;
-    }
-
-    private function normalizeLocationData(array $locationData): array
+    public function normalizeLocationData(array $locationData): array
     {
         foreach ($locationData as &$location) {
             $data = $location['data'] ?? null;
@@ -174,6 +153,27 @@ final readonly class HotspotImageAdapter implements
         }
 
         return $locationData;
+    }
+
+    private function normalizeImageData(MarkerHotspotItem $hotspotItem): array
+    {
+        return [
+            'name' => $hotspotItem->getName(),
+            'type' => $hotspotItem->getType(),
+            'value' => $hotspotItem->getValue(),
+        ];
+    }
+
+    private function normalizeElementData(int $id, string $type, array $imageData): array
+    {
+        $element = $this->getElementData($id, $type);
+        if ($element instanceof AbstractObject || $element instanceof Document) {
+            $imageData['published'] = $element->isPublished();
+        }
+        $imageData['subtype'] = $element->getType();
+        $imageData['fullPath']  = $element->getFullPath();
+
+        return $imageData;
     }
 
     private function getElementData(int $id, string $type): Asset|Document|AbstractObject

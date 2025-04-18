@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterLoaderInterface;
@@ -23,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataT
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\PatchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Asset\SubTypes;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Hotspotimage;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ImageGallery;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\ImageGallery as ImageGalleryData;
@@ -34,7 +36,7 @@ use function is_array;
  * @internal
  */
 #[AutoconfigureTag(DataAdapterLoaderInterface::ADAPTER_TAG)]
-final readonly class ImageGalleryAdapter implements SetterDataInterface
+final readonly class ImageGalleryAdapter implements SetterDataInterface, DataNormalizerInterface
 {
     use ValidateObjectDataTrait;
 
@@ -78,6 +80,22 @@ final readonly class ImageGalleryAdapter implements SetterDataInterface
         return new ImageGalleryData($images);
     }
 
+    public function normalize(mixed $value, Data $fieldDefinition): ?array
+    {
+        if (!$value instanceof ImageGalleryData) {
+            return null;
+        }
+
+        $images = [];
+        $items = $value->getItems();
+        $itemsDefinition = new Hotspotimage();
+        foreach ($items as $item) {
+            $images[] = $this->hotspotImageAdapter->normalize($item, $itemsDefinition);
+        }
+
+        return $images;
+    }
+
     private function getPatchData(
         array $newData,
         Concrete $object,
@@ -100,25 +118,11 @@ final readonly class ImageGalleryAdapter implements SetterDataInterface
     private function normalizeHotspotAndMarkerData(array $existingValues): array
     {
         foreach ($existingValues as $index => $image) {
-            $image['hotspots'] = $this->normalizeNestedData($image['hotspots']);
-            $image['marker'] = $this->normalizeNestedData($image['marker']);
+            $image['hotspots'] = $this->hotspotImageAdapter->normalizeLocationData($image['hotspots']);
+            $image['marker'] = $this->hotspotImageAdapter->normalizeLocationData($image['marker']);
             $existingValues[$index] = $image;
         }
 
         return $existingValues;
-    }
-
-    private function normalizeNestedData(array $items): array
-    {
-        foreach ($items as $index => $item) {
-            if (!empty($item['data']) && is_array($item['data'])) {
-                foreach ($item['data'] as $dataIndex => $dataItem) {
-                    $item['data'][$dataIndex] = $this->hotspotImageAdapter->normalizeImageData($dataItem);
-                }
-            }
-            $items[$index] = $item;
-        }
-
-        return $items;
     }
 }
