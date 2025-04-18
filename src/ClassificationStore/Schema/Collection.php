@@ -40,6 +40,8 @@ final class Collection implements AdditionalAttributesInterface
         private readonly string $name,
         #[Property(description: 'Description', type: 'string', example: 'value')]
         private readonly string $description,
+        #[Property(description: 'List of Group IDs in collection', type: 'object')]
+        private readonly array $groups = [],
     ) {
     }
 
@@ -56,5 +58,9 @@ final class Collection implements AdditionalAttributesInterface
     public function getDescription(): string
     {
         return $this->description;
+    }
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 }

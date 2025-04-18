@@ -19,6 +19,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Hydrator;
 use Pimcore\Bundle\StudioBackendBundle\ClassificationStore\Schema\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Model\DataObject\Classificationstore\CollectionConfig;
+use Pimcore\Model\DataObject\Classificationstore\CollectionGroupRelation;
 
 /**
  * @internal
@@ -31,10 +32,16 @@ final class CollectionHydrator implements CollectionHydratorInterface
             throw new InvalidArgumentException('The collection id must not be empty.');
         }
 
+        $groupIds = array_map(
+            static fn(CollectionGroupRelation $relation) => $relation->getGroupId(),
+            $data->getRelations()
+        );
+
         return new Collection(
             id: $data->getId(),
             name: $data->getName(),
             description: $data->getDescription(),
+            groups: $groupIds,
         );
     }
 }
