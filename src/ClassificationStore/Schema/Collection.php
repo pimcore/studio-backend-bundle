@@ -59,6 +59,7 @@ final class Collection implements AdditionalAttributesInterface
     {
         return $this->description;
     }
+
     public function getGroups(): array
     {
         return $this->groups;

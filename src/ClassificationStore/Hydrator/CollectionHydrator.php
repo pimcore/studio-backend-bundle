@@ -33,7 +33,7 @@ final class CollectionHydrator implements CollectionHydratorInterface
         }
 
         $groupIds = array_map(
-            static fn(CollectionGroupRelation $relation) => $relation->getGroupId(),
+            static fn (CollectionGroupRelation $relation) => $relation->getGroupId(),
             $data->getRelations()
         );
 
