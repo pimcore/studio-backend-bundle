@@ -70,6 +70,8 @@ interface ElementServiceInterface
         UserInterface $user
     ): ElementInterface;
 
+    public function hasElementChildren(ElementInterface $element): bool;
+
     public function hasElementDependencies(
         ElementInterface $element
     ): bool;
