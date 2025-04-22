@@ -90,7 +90,6 @@ final readonly class PublishAdapter implements PatchAdapterInterface
     private function publishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
-        $element->deleteAutoSaveVersions($user->getId());
         $element->setPublished(true);
     }
 
