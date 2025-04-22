@@ -167,7 +167,7 @@ final readonly class HotspotImageAdapter implements
     private function normalizeElementData(int $id, string $type, array $imageData): array
     {
         $element = $this->getElementData($id, $type);
-        if ($element instanceof AbstractObject || $element instanceof Document) {
+        if ($element instanceof Concrete || $element instanceof Document) {
             $imageData['published'] = $element->isPublished();
         }
         $imageData['subtype'] = $element->getType();
