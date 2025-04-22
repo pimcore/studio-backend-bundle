@@ -37,10 +37,6 @@ trait ExportConfigValidationTrait
             throw new InvalidArgumentException('No settings provided');
         }
 
-        if (!isset($this->getConfig()[StepConfig::SETTINGS_DELIMITER->value])) {
-            throw new InvalidArgumentException('No delimiter provided');
-        }
-
         if (!in_array($this->getElementType(), ElementTypes::ALLOWED_TYPES, true)) {
             throw new InvalidArgumentException('Invalid type provided');
         }

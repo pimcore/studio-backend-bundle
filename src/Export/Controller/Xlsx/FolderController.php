@@ -55,7 +55,7 @@ final class FolderController extends AbstractApiController
         summary: 'export_xlsx_folder_summary',
         tags: [Tags::Export->name]
     )]
-    #[ExportFolderDataRequestBody]
+    #[ExportFolderDataRequestBody(addDelimiter: false)]
     #[CreatedResponse(
         description: 'export_xlsx_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')

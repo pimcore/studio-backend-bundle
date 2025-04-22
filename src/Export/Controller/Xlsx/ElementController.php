@@ -52,7 +52,7 @@ final class ElementController extends AbstractApiController
         summary: 'export_xlsx_summary',
         tags: [Tags::Export->name]
     )]
-    #[ExportDataRequestBody]
+    #[ExportDataRequestBody(addDelimiter: false)]
     #[CreatedResponse(
         description: 'export_xlsx_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
