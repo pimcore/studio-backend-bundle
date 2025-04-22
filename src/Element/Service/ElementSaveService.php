@@ -100,15 +100,6 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
             return;
         }
 
-        $this->handlePublishTasks($element, $user, $task);
-        $element->save();
-    }
-
-    /**
-     * @throws ForbiddenException
-     */
-    private function handlePublishTasks(Concrete|Document $element, UserInterface $user, string $task): void
-    {
         if ($task === ElementSaveTasks::PUBLISH->value) {
             $this->publishElement($element, $user);
 
@@ -119,22 +110,24 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     }
 
     /**
-     * @throws ForbiddenException
+     * @throws Exception|ForbiddenException
      */
     private function publishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
-        $element->deleteAutoSaveVersions($user->getId());
         $element->setPublished(true);
+        $element->save();
+        $element->deleteAutoSaveVersions($user->getId());
     }
 
     /**
-     * @throws ForbiddenException
+     * @throws Exception|ForbiddenException
      */
     private function unpublishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::UNPUBLISH_PERMISSION);
         $element->setOmitMandatoryCheck(true);
         $element->setPublished(false);
+        $element->save();
     }
 }
