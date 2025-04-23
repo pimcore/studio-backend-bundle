@@ -1,6 +1,6 @@
 # Studio User
 ## Default Key Bindings
-To change the default key bindings, you can add a synfony configuration file in your project. 
+To change the default key bindings, you can add a Symfony configuration file in your project. 
 The structure of the file should be like this:
 ```yaml
 pimcore_studio_backend:

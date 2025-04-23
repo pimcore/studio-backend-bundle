@@ -26,7 +26,7 @@ use function in_array;
  */
 final class TaggedIteratorAdapter implements AdapterLoaderInterface
 {
-    public const ADAPTER_TAG = 'pimcore.studio_backend.update_adapter';
+    public const string ADAPTER_TAG = 'pimcore.studio_backend.update_adapter';
 
     public function __construct(
         #[TaggedIterator(self::ADAPTER_TAG)]
