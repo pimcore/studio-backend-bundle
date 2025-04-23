@@ -31,8 +31,23 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ExportDataRequestBody extends RequestBody
 {
-    public function __construct()
+    public function __construct(bool $addDelimiter = true)
     {
+        $configProperties = [
+            new Property(
+                property: StepConfig::SETTINGS_HEADER->value,
+                type: 'string',
+                enum: StepConfig::values(),
+                example: StepConfig::SETTINGS_HEADER_TITLE->value
+            ),
+        ];
+        if ($addDelimiter) {
+            $configProperties[] = new Property(
+                property: StepConfig::SETTINGS_DELIMITER->value,
+                type: 'string',
+                example: ';'
+            );
+        }
         parent::__construct(
             content: new JsonContent(
                 properties: [
@@ -42,15 +57,7 @@ final class ExportDataRequestBody extends RequestBody
                         type: 'array',
                         items: new Items(ref: Column::class)
                     ),
-                    new Property(property: 'config', properties: [
-                        new Property(property: StepConfig::SETTINGS_DELIMITER->value, type: 'string', example: ';'),
-                        new Property(
-                            property: StepConfig::SETTINGS_HEADER->value,
-                            type: 'string',
-                            enum: StepConfig::values(),
-                            example: StepConfig::SETTINGS_HEADER_TITLE->value
-                        ),
-                    ], type: 'object'),
+                    new Property(property: 'config', properties: $configProperties, type: 'object'),
                     new Property(
                         property: 'elementType',
                         type: 'string',

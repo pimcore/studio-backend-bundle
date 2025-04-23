@@ -34,8 +34,8 @@ There are some configuration options available for the CSV export, which can be 
 ```yaml
 pimcore_studio_backend:
     csv_settings:
-        # Default delimiter for CSV files when no value is passed by grid configuration. Default value is ','.
-        default_delimiter: ','
+        # Default delimiter for CSV files when no value is passed by grid configuration. Default value is ';'.
+        default_delimiter: ';'
 ```
 
 ### Elements Cloning

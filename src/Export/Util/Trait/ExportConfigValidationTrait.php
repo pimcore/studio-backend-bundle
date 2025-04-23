@@ -17,7 +17,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Export\Util\Trait;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use function in_array;
 
@@ -35,10 +34,6 @@ trait ExportConfigValidationTrait
 
         if (empty($this->getConfig())) {
             throw new InvalidArgumentException('No settings provided');
-        }
-
-        if (!isset($this->getConfig()[StepConfig::SETTINGS_DELIMITER->value])) {
-            throw new InvalidArgumentException('No delimiter provided');
         }
 
         if (!in_array($this->getElementType(), ElementTypes::ALLOWED_TYPES, true)) {

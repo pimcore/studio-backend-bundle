@@ -324,7 +324,7 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('default_delimiter')
                         ->info('Default delimiter to be used for csv operations.')
-                        ->defaultValue(',')
+                        ->defaultValue(';')
                     ->end()
                 ->end()
             ->end();
