@@ -31,7 +31,7 @@ To add a custom endpoint to the Pimcore Studio Backend you need to implement it 
 ```php
 <?php
 declare(strict_types=1);
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Controller;
+namespace App\Note\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
@@ -60,9 +60,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
-/**
- * @internal
- */
+
 final class CollectionController extends AbstractApiController
 {
     use PaginatedResponseTrait;

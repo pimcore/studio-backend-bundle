@@ -18,7 +18,7 @@ You can also use classes as a reference to describe the content as seen in the e
 <?php
 declare(strict_types=1);
 
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Attribute\Request;
+namespace App\Note\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
@@ -50,14 +50,12 @@ Schemas should be unique and are shown at the bottom of the OpenApi documentatio
 <?php
 declare(strict_types=1);
 
-namespace Pimcore\Bundle\StudioBackendBundle\Note\Schema;
+namespace App\Note\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
-/**
- * @internal
- */
+
 #[Schema(
     title: 'CreateNote',
     required: [
