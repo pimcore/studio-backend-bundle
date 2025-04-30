@@ -33,7 +33,6 @@
     "ext-filter": "*"
   },
   "require-dev": {
-    "pimcore/admin-ui-classic-bundle": "2.x-dev",
     "codeception/codeception": "^5.0.10",
     "roave/security-advisories": "dev-latest",
     "codeception/phpunit-wrapper": "^9",
