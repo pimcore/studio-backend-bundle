@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function ini_get;
 
 /**
  * @internal
@@ -44,7 +45,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'availableAdminLanguages' => $this->getAvailableAdminLanguages(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
             'main_domain' => $this->systemSettings['general']['domain'],
-            'upload_max_filesize' => $this->getUploadMaxFilesize()
+            'upload_max_filesize' => $this->getUploadMaxFilesize(),
         ];
     }
 
