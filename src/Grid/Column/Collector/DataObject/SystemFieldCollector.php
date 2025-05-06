@@ -54,7 +54,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
                 key: $columnKey,
                 group: $this->getTypeName(),
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
-                editable: false,
+                editable: $this->isSystemFieldEditable($columnKey),
                 exportable: $availableColumnDefinitions[$type]->isExportable(),
                 filterable: $availableColumnDefinitions[$type]->isFilterable(),
                 localizable: false,
@@ -68,6 +68,14 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
         }
 
         return $columns;
+    }
+
+    private function isSystemFieldEditable(string $systemField): bool
+    {
+        return match ($systemField) {
+            'published',  => true,
+            default => false,
+        };
     }
 
     public function supportedElementTypes(): array
