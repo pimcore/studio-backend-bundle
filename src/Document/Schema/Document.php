@@ -35,8 +35,12 @@ final class Document extends Element implements AdditionalAttributesInterface
     use WorkflowAvailableTrait;
 
     public function __construct(
-        #[Property(description: 'Full path', type: 'string', example: '/path/to/asset.jpg')]
+        #[Property(description: 'Full path', type: 'string', example: '/path/to/document')]
         private readonly string $fullPath,
+        #[Property(description: 'Published', type: 'bool', example: false)]
+        private readonly bool $published,
+        #[Property(description: 'Type', type: 'string', example: 'link')]
+        private readonly string $type,
         int $id,
         int $parentId,
         string $path,
@@ -65,5 +69,15 @@ final class Document extends Element implements AdditionalAttributesInterface
     public function getFullPath(): string
     {
         return $this->fullPath;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->published;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
     }
 }
