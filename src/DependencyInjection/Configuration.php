@@ -279,8 +279,11 @@ class Configuration implements ConfigurationInterface
                         ->defaultValue('http://mercure/.well-known/mercure')
                     ->end()
                     ->scalarNode('hub_url_client')
-                        ->info('The url to the mercure hub for the (frontend) client.')
-                        ->defaultValue('http://localhost/hub')
+                        ->info(
+                            'The url to the mercure hub for the (frontend) client.'.
+                            ' If not set, default will be set to "http(s)://<PIMCORE_HOST>/hub".'
+                        )
+                        ->defaultNull()
                     ->end()
                     ->scalarNode('jwt_key')
                         ->info('The key used to sign the JWT token. Must be longer than 256 bits.')

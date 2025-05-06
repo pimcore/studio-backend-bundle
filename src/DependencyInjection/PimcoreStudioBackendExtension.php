@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigR
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
+use Pimcore\Tool;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -196,6 +197,11 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
                 continue;
             }
+
+            if ($key === 'hub_url_client' && $containerConfig['mercure_settings'][$key] === null) {
+                $containerConfig['mercure_settings'][$key] = Tool::getHostUrl() . '/hub';
+            }
+
             $container->setParameter(
                 'pimcore_studio_backend.mercure_settings.' . $key,
                 $containerConfig['mercure_settings'][$key]
