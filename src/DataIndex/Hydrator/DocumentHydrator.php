@@ -32,6 +32,8 @@ final class DocumentHydrator implements DocumentHydratorInterface
     {
         return new Document(
             fullPath: $item->getFullPath(),
+            published: $item->isPublished(),
+            type: $item->getType(),
             id: $item->getId(),
             parentId: $item->getParentId(),
             path: $item->getPath(),

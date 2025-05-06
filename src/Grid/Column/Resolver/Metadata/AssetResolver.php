@@ -57,7 +57,12 @@ final class AssetResolver implements ColumnResolverInterface, StudioElementColum
 
         return $this->getColumnData(
             $column,
-            $relatedAsset->getFullPath()
+            [
+                'id' => $relatedAsset->getId(),
+                'subtype' => $relatedAsset->getType(),
+                'type' => 'asset',
+                'fullPath' => $relatedAsset->getFullPath(),
+            ]
         );
     }
 

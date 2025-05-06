@@ -57,7 +57,13 @@ final class DocumentResolver implements ColumnResolverInterface, StudioElementCo
 
         return $this->getColumnData(
             $column,
-            $relatedDocument->getFullPath()
+            [
+                'id' => $relatedDocument->getId(),
+                'fullPath' => $relatedDocument->getFullPath(),
+                'subtype' => $relatedDocument->getType(),
+                'type' => 'document',
+                'isPublished' => $relatedDocument->isPublished(),
+            ]
         );
     }
 
