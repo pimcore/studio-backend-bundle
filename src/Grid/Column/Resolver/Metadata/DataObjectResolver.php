@@ -59,7 +59,8 @@ final class DataObjectResolver implements ColumnResolverInterface, StudioElement
             $column,
             [
                 'id' => $relatedObject->getId(),
-                'type' => $relatedObject->getType(),
+                'subtype' => $relatedObject->getType(),
+                'type' => 'object',
                 'fullPath' => $relatedObject->getFullPath(),
                 'isPublished' => $relatedObject->isPublished(),
             ]

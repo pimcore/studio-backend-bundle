@@ -60,7 +60,8 @@ final class DocumentResolver implements ColumnResolverInterface, StudioElementCo
             [
                 'id' => $relatedDocument->getId(),
                 'fullPath' => $relatedDocument->getFullPath(),
-                'type' => $relatedDocument->getType(),
+                'subtype' => $relatedDocument->getType(),
+                'type' => 'document',
                 'isPublished' => $relatedDocument->isPublished(),
             ]
         );
