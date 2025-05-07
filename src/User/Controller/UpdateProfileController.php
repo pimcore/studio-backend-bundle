@@ -75,8 +75,7 @@ final class UpdateProfileController extends AbstractApiController
     public function updateUserProfile(
         #[CurrentUser] User $user,
         #[MapRequestPayload] UpdateUserProfile $params
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->userUpdateService->updateUserProfile($user->getUser(), $params);
 
         return $this->jsonResponse($this->userInformationService->getUserInformation($user->getUser()));

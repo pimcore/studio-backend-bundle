@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParame
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUserProfile;
 use Pimcore\Model\User;
-use Pimcore\Model\UserInterface;
 
 /**
  * @internal

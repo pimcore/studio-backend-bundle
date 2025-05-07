@@ -31,7 +31,6 @@ use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUserProfile;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CacheKeys;
 use Pimcore\Model\User;
-use Pimcore\Model\UserInterface;
 use function sprintf;
 use function strlen;
 
