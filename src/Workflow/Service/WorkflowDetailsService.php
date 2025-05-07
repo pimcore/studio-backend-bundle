@@ -25,8 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Workflow\Manager;
-use Symfony\Component\ExpressionLanguage\SyntaxError;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\ExpressionLanguage\SyntaxError;
 use function count;
 
 /**
