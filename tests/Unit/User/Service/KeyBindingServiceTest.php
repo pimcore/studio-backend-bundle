@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\User\Service;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydrator;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingService;
+use Psr\Log\LoggerInterface;
 
 /**
  * @internal
@@ -42,7 +43,11 @@ final class KeyBindingServiceTest extends Unit
         ];
 
         $keyBindingHydrator = new KeyBindingHydrator();
-        $keyBindingService = new KeyBindingService($data, $keyBindingHydrator);
+        $keyBindingService = new KeyBindingService(
+            $data,
+            $keyBindingHydrator,
+            $this->makeEmpty(LoggerInterface::class)
+        );
 
         $keyBindings = $keyBindingService->getDefaultKeyBindings();
         $this->assertCount(2, $keyBindings);
