@@ -50,7 +50,7 @@ class Element implements StudioElementInterface
         #[Property(description: 'ID of owner', type: 'integer', example: 1)]
         private readonly int $userOwner,
         #[Property(description: 'User that modified the element', type: 'integer', example: 1)]
-        private readonly int $userModification,
+        private readonly ?int $userModification,
         #[Property(description: 'Locked', type: 'string', example: 'locked')]
         private readonly ?string $locked,
         #[Property(description: 'Is locked', type: 'boolean', example: false)]
