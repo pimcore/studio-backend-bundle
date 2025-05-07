@@ -60,6 +60,9 @@ services:
   #
   # Hydrators
   #
+  Pimcore\Bundle\StudioBackendBundle\User\Hydrator\ContentLanguagesHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\ContentLanguagesHydrator
+
   Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\UserTreeNodeHydrator
 
@@ -83,6 +86,9 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\KeyBindingHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\User\Hydrator\TwoFactorAuthHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\User\Hydrator\TwoFactorAuthHydrator
 
 
   #
