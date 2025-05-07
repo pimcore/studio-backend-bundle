@@ -131,3 +131,4 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.user_simple_role`
 - `pre_response.user_tree_node`
 - `pre_response.version`
+- `pre_response.workflow_details`
