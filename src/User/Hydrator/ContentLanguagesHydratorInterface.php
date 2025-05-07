@@ -11,19 +11,17 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-interface KeyBindingServiceInterface
+interface ContentLanguagesHydratorInterface
 {
     /**
-     * @return KeyBinding[]
+     * @return array<string>
      */
-    public function getDefaultKeyBindings(): array;
-
-    public function hydrateKeyBindings(?string $keyBindings): array;
+    public function hydrate(UserInterface $user): array;
 }

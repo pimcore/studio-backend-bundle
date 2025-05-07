@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -22,22 +24,36 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class UserInformationHydrator implements UserInformationHydratorInterface
 {
-    public function __construct(private UserPerspectiveServiceInterface $userPerspectiveService)
-    {
+    public function __construct(
+        private ContentLanguagesHydratorInterface $contentLanguagesHydrator,
+        private KeyBindingServiceInterface $keyBindingService,
+        private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
+        private UserPerspectiveServiceInterface $userPerspectiveService,
+    ) {
     }
 
     public function hydrate(UserInterface $user): UserInformation
     {
         return new UserInformation(
-            $user->getId(),
-            $user->getUsername(),
-            $user->getPermissions(),
-            $user->isAdmin(),
-            $user->getClasses(),
-            $user->getDocTypes(),
-            $user->getLanguage(),
-            $this->userPerspectiveService->getActivePerspective($user),
-            $this->userPerspectiveService->getAllowedPerspectives($user)
+            id: $user->getId(),
+            username: $user->getUsername(),
+            email: $user->getEmail(),
+            firstname: $user->getFirstname(),
+            lastname: $user->getLastname(),
+            permissions: $user->getPermissions(),
+            isAdmin: $user->isAdmin(),
+            classes: $user->getClasses(),
+            docTypes: $user->getDocTypes(),
+            language: $user->getLanguage(),
+            dateTimeLocale: $user instanceof User ? $user->getDateTimeLocale() : '',
+            welcomeScreen: $user->getWelcomeScreen(),
+            memorizeTabs: $user->getMemorizeTabs(),
+            hasImage: $user->hasImage(),
+            contentLanguages: $this->contentLanguagesHydrator->hydrate($user),
+            keyBindings: $this->keyBindingService->hydrateKeyBindings($user->getKeyBindings()),
+            twoFactorAuthentication: $this->twoFactorAuthHydrator->hydrate($user),
+            activePerspective: $this->userPerspectiveService->getActivePerspective($user),
+            perspectives: $this->userPerspectiveService->getAllowedPerspectives($user)
         );
     }
 }
