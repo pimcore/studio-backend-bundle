@@ -28,7 +28,7 @@ final class WorkflowDetailsContent extends JsonContent
             required: ['items', 'layoutId'],
             properties: [
                 new WorkflowDetailsCollection(),
-                new Property(property: 'layoutId', title: 'layoutId', type: 'string')
+                new Property(property: 'layoutId', title: 'layoutId', type: 'string'),
             ],
             type: 'object',
         );

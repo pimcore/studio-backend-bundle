@@ -31,7 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'graph',
         'workflowLayoutId',
         'allowedTransitions',
-        'globalActions'
+        'globalActions',
     ],
     type: 'object'
 )]

@@ -34,5 +34,4 @@ trait WorkflowLayoutTrait
 
         return $workflowLayoutId;
     }
-
 }
