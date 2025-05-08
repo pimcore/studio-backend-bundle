@@ -18,16 +18,15 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\AllowedTransitionsHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\GlobalActionsHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Event\PreResponse\WorkflowDetailsEvent;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Hydrator\WorkflowDetailsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\MappedParameter\WorkflowDetailsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Pimcore\Workflow\Manager;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
-use Symfony\Component\Workflow\WorkflowInterface;
 use function count;
 
 /**
@@ -38,13 +37,11 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
     use ElementProviderTrait;
 
     public function __construct(
-        private AllowedTransitionsHydratorInterface $allowedTransitionsHydrator,
-        private GlobalActionsHydratorInterface $globalActionsHydrator,
+        private EventDispatcherInterface $eventDispatcher,
         private Manager $workflowManager,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private WorkflowActionServiceInterface $workflowActionService,
-        private WorkflowGraphServiceInterface $workflowGraphService,
+        private WorkflowDetailsHydratorInterface $hydrator,
     ) {
     }
 
@@ -67,10 +64,17 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         $details =  [];
         $elementWorkflows = $this->workflowManager->getAllWorkflowsForSubject($element);
         foreach ($elementWorkflows as $workflow) {
-            $details[] = $this->hydrate(
+            $workflowDetails = $this->hydrator->hydrate(
                 $element,
                 $workflow
             );
+
+            $this->eventDispatcher->dispatch(
+                new WorkflowDetailsEvent($workflowDetails),
+                WorkflowDetailsEvent::EVENT_NAME
+            );
+
+            $details[] = $workflowDetails;
         }
 
         return $details;
@@ -105,59 +109,5 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         $version = $this->getLatestVersionForUser($element, $user);
 
         return $this->getVersionData($element, $version);
-    }
-
-    private function hydrate(
-        ElementInterface $element,
-        WorkflowInterface $workflow
-    ): WorkflowDetails {
-        return new WorkflowDetails(
-            $this->getWorkflowLabel($workflow),
-            $this->getStatusInfo($workflow, $element),
-            $this->workflowGraphService->getGraph(
-                $element,
-                $workflow,
-                'svg'
-            ),
-            $this->allowedTransitionsHydrator->hydrate(
-                $workflow->getEnabledTransitions($element),
-                $element
-            ),
-            $this->globalActionsHydrator->hydrate(
-                $this->workflowActionService->getGlobalActions($workflow, $element),
-                $element
-            ),
-        );
-    }
-
-    private function getWorkflowLabel(WorkflowInterface $workflow): string
-    {
-        return $this->workflowManager->getWorkflowConfig($workflow->getName())->getLabel();
-    }
-
-    private function getStatusInfo(
-        WorkflowInterface $workflow,
-        ElementInterface $element,
-    ): array {
-        $marking = $workflow->getMarking($element);
-        $statuses = $this->workflowManager->getOrderedPlaceConfigs($workflow, $marking);
-        $uniqueStatuses = [];
-        $statusInfos = [];
-
-        foreach ($statuses as $status) {
-            $uniqueStatuses[$status->getPlace()] = $status;
-        }
-
-        foreach ($uniqueStatuses as $status) {
-            $statusInfos[] = new WorkflowStatus(
-                $status->getColor(),
-                $status->getColorInverted(),
-                $status->getPlace(),
-                $status->getLabel(),
-                $status->isVisibleInHeader(),
-            );
-        }
-
-        return $statusInfos;
     }
 }

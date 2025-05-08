@@ -16,48 +16,58 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 /**
  * @internal
  */
 #[Schema(
     title: 'WorkflowDetails',
-    required: ['workflowName', 'workflowStatus', 'graph', 'allowedTransitions', 'globalActions'],
+    required: ['workflowName', 'workflowLabel', 'workflowStatus', 'graph', 'allowedTransitions', 'globalActions'],
     type: 'object'
 )]
-final readonly class WorkflowDetails
+final class WorkflowDetails implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(
             description: 'workflowName',
             type: 'string',
+            example: 'simple_asset'
+        )]
+        private readonly string $workflowName,
+        #[Property(
+            description: 'workflowLabel',
+            type: 'string',
             example: 'Sample Asset Workflow'
         )]
-        private string $workflowName,
+        private readonly string $workflowLabel,
         #[Property(
             description: 'workflowStatus',
             type: 'array',
             items: new Items(ref: WorkflowStatus::class)
         )]
-        private array $workflowStatus,
+        private readonly array $workflowStatus,
         #[Property(
             description: 'graph',
             type: 'string',
             example: '<svg>...</svg>'
         )]
-        private string $graph,
+        private readonly string $graph,
         #[Property(
             description: 'allowedTransitions',
             type: 'array',
             items: new Items(ref: AllowedTransition::class),
         )]
-        private array $allowedTransitions,
+        private readonly array $allowedTransitions,
         #[Property(
             description: 'globalActions',
             type: 'array',
             items: new Items(ref: GlobalAction::class)
         )]
-        private array $globalActions,
+        private readonly array $globalActions,
     ) {
 
     }
@@ -65,6 +75,11 @@ final readonly class WorkflowDetails
     public function getWorkflowName(): string
     {
         return $this->workflowName;
+    }
+
+    public function getWorkflowLabel(): string
+    {
+        return $this->workflowLabel;
     }
 
     public function getWorkflowStatus(): array
