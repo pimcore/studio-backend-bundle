@@ -689,6 +689,10 @@ user_update_active_perspective_success_response: Updated active perspective for 
 user_update_by_id_success_response: Updated data.
 user_update_by_id_summary: Update user by id.
 user_update_password_by_id_summary: Update password for a User by the User id.
+user_update_profile_description: |
+  Update the current user profile. <br> See the full description of updatable fields with the schema <strong>UpdateUserProfile</strong>
+user_update_profile_success_response: Successfully updated user profile
+user_update_profile_summary: Update the current user profile
 version_asset_download_by_id_description: |
   Download the asset version based on the provided version <strong>{id}</strong>.
 version_asset_download_by_id_success_response: Asset version binary file

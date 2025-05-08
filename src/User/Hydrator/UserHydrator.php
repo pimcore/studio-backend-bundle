@@ -13,16 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
-use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
-use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\User as UserSchema;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\ObjectDependenciesServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PermissionSanitationTrait;
-use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * @internal
@@ -32,12 +28,10 @@ final readonly class UserHydrator implements UserHydratorInterface
     use PermissionSanitationTrait;
 
     public function __construct(
-        private LoggerInterface $pimcoreLogger,
-        private ToolResolverInterface $toolResolver,
-        private AdminResolverInterface $adminToolResolver,
+        private ContentLanguagesHydratorInterface $contentLanguagesHydrator,
         private WorkspaceHydratorInterface $workspaceHydrator,
         private ObjectDependenciesServiceInterface $objectDependenciesService,
-        private KeyBindingHydratorInterface $keyBindingHydrator,
+        private KeyBindingServiceInterface $keyBindingService,
         private UserPerspectiveServiceInterface $userPerspectiveService
     ) {
     }
@@ -55,9 +49,9 @@ final readonly class UserHydrator implements UserHydratorInterface
             classes: $user->getClasses(),
             closeWarning: $user->getCloseWarning(),
             allowDirtyClose: $user->getAllowDirtyClose(),
-            contentLanguages: $this->getContentLanguages($user),
+            contentLanguages: $this->contentLanguagesHydrator->hydrate($user),
             hasImage: $user->hasImage(),
-            keyBindings: $this->hydrateKeyBindings($user->getKeyBindings()),
+            keyBindings: $this->keyBindingService->hydrateKeyBindings($user->getKeyBindings()),
             language: $user->getLanguage(),
             lastLogin: $user->getLastLogin(),
             memorizeTabs: $user->getMemorizeTabs(),
@@ -75,33 +69,5 @@ final readonly class UserHydrator implements UserHydratorInterface
             objectDependencies: $this->objectDependenciesService->getDependenciesForUser($user),
             perspectives: $this->userPerspectiveService->getConfigPerspectives($user),
         );
-    }
-
-    private function hydrateKeyBindings(?string $keyBindings): array
-    {
-        $bindings = [];
-
-        if (!$keyBindings) {
-            return $bindings;
-        }
-
-        try {
-            $decoded = json_decode($keyBindings, true, 512, JSON_THROW_ON_ERROR);
-
-            return $this->keyBindingHydrator->hydrate($decoded);
-        } catch (Exception $e) {
-            $this->pimcoreLogger->warning('Failed to decode key bindings', ['exception' => $e]);
-
-            return [];
-        }
-    }
-
-    private function getContentLanguages(UserInterface $user): array
-    {
-        $validLanguages = $this->toolResolver->getValidLanguages();
-        /** @var User $user */
-        $contentLanguagesString = $this->adminToolResolver->reorderWebsiteLanguages($user, $validLanguages);
-
-        return explode(',', $contentLanguagesString);
     }
 }

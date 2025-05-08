@@ -59,7 +59,7 @@ final class Image extends Asset implements ThumbnailPathInterface
         string $path,
         ElementIcon $icon,
         int $userOwner,
-        int $userModification,
+        ?int $userModification,
         ?string $locked,
         bool $isLocked,
         ?int $creationDate,
