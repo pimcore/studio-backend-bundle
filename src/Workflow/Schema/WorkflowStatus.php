@@ -21,7 +21,7 @@ use OpenApi\Attributes\Schema;
  */
 #[Schema(
     title: 'WorkflowStatus',
-    required: ['color', 'colorInverted', 'title', 'label'],
+    required: ['color', 'colorInverted', 'title', 'label', 'layoutId', 'visibleInDetail'],
     type: 'object'
 )]
 final readonly class WorkflowStatus
@@ -52,6 +52,12 @@ final readonly class WorkflowStatus
         )]
         private string $label,
         #[Property(
+            description: 'layoutId',
+            type: 'string',
+            example: 'someStatusLayoutId'
+        )]
+        private ?string $layoutId,
+        #[Property(
             description: 'visibleInDetail',
             type: 'boolean',
             example: true
@@ -79,6 +85,11 @@ final readonly class WorkflowStatus
     public function getLabel(): string
     {
         return $this->label;
+    }
+
+    public function getLayoutId(): ?string
+    {
+        return $this->layoutId;
     }
 
     public function isVisibleInDetail(): bool
