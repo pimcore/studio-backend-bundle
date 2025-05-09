@@ -56,7 +56,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     /**
      * @throws InvalidLocaleException
      */
-    public function getAllTranslations(string $locale, bool $use_fallback): Translation
+    public function getAllTranslations(string $locale, bool $useFallback): Translation
     {
         try {
             if ($this->translatorBag instanceof Translator) {
@@ -68,7 +68,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
             throw new InvalidLocaleException($locale);
         }
 
-        if ($use_fallback) {
+        if ($useFallback) {
             $catalogue = $this->applyFallback($locale, $catalogue);
         }
 
