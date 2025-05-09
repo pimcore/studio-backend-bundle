@@ -37,9 +37,9 @@ final readonly class Translation
             description: 'Keys for Translation - Fallback will be  applied to all Keys automatically',
             type: 'array',
             items: new Items(
-            type: 'string',
-            example: 'not_your_typical_key'
-        ))]
+                type: 'string',
+                example: 'not_your_typical_key'
+            ))]
         private array $keys = PublicTranslations::PUBLIC_KEYS,
         #[Property(
             description: 'Apply Fallback Language. Used only if no keys are defined',
