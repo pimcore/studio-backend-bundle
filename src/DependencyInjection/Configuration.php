@@ -24,6 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\HttpFoundation\Cookie;
 use function is_array;
 use function is_int;
 use function is_null;
@@ -46,6 +47,12 @@ class Configuration implements ConfigurationInterface
     private const string WIDGETS_ARRAY_VALUE_ERROR = 'Each widget id value must be a string.';
 
     private const string PERMISSION_ARRAY_VALUE_ERROR = 'Each permission value must be a boolean.';
+
+    private const array ALLOWED_COOKIE_SAME_SITE_VALUES = [
+        Cookie::SAMESITE_LAX,
+        Cookie::SAMESITE_NONE,
+        Cookie::SAMESITE_STRICT,
+    ];
 
     /**
      * {@inheritdoc}
@@ -273,15 +280,16 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('hub_url_server')
                         ->info(
-                            'The url to the mercure hub for the server. This can also be the docker container name.'.
-                            ' (e.g. http://mercure/.well-known/mercure)'
+                            'The url to the mercure hub for the server. This can also be the docker container name '.
+                            '(e.g., http://mercure/.well-known/mercure). ' .
+                            'If it is not set, default will be set to "http(s)://<PIMCORE_HOST>/hub/.well-known/mercure".'
                         )
-                        ->defaultValue('http://mercure/.well-known/mercure')
+                        ->defaultNull()
                     ->end()
                     ->scalarNode('hub_url_client')
-                        ->info(
-                            'The url to the mercure hub for the (frontend) client.'.
-                            ' If not set, default will be set to "http(s)://<PIMCORE_HOST>/hub".'
+                        ->info('The url to the mercure hub for the (frontend) client. ' .
+                            'If it is not set, the default will be set to "http(s)://<PIMCORE_HOST>/hub/.well-known/mercure".' .
+                            'It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host.'
                         )
                         ->defaultNull()
                     ->end()
@@ -293,6 +301,15 @@ class Configuration implements ConfigurationInterface
                      ->integerNode('cookie_lifetime')
                         ->info('Lifetime of the mercure cookie in seconds. Default is one hour.')
                         ->defaultValue(3600)
+                    ->end()
+                     ->enumNode('cookie_same_site')
+                        ->info('Same site setting for the mercure cookie. Default is "' .
+                            Cookie::SAMESITE_STRICT .'". ' .
+                            'Possible values are: ' .
+                            implode(',', self::ALLOWED_COOKIE_SAME_SITE_VALUES) .'".'
+                        )
+                        ->values(self::ALLOWED_COOKIE_SAME_SITE_VALUES)
+                        ->defaultValue(Cookie::SAMESITE_STRICT)
                     ->end()
                 ->end()
             ->end();

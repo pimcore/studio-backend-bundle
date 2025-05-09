@@ -15,7 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant\Mercure;
 use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 
 /**
  * @internal
@@ -23,25 +23,27 @@ use Symfony\Component\Mercure\HubInterface;
 final readonly class HubService implements HubServiceInterface
 {
     public function __construct(
-        private HubInterface $clientHub,
-        private int $cookieLifetime = 3600
+        private TokenProviderInterface $tokenProvider,
+        private UrlServiceInterface $urlService,
+        private int $cookieLifetime = 3600,
+        private string $cookieSameSite = Cookie::SAMESITE_STRICT,
     ) {
     }
 
     public function createCookie(): Cookie
     {
-        $urlParts = parse_url($this->clientHub->getPublicUrl());
+        $urlParts = parse_url($this->urlService->getClientSideUrl());
 
         return new Cookie(
             Mercure::AUTHORIZATION_COOKIE_NAME->value,
-            $this->clientHub->getProvider()->getJwt(),
+            $this->tokenProvider->getJwt(),
             time() + $this->cookieLifetime,
             $urlParts[Mercure::URL_PATH->value] ?? '/',
             $urlParts[Mercure::URL_HOST->value] ?? '',
             $urlParts[Mercure::URL_SCHEME->value] === Mercure::URL_SCHEME_HTTPS->value,
             true,
             false,
-            Cookie::SAMESITE_STRICT
+            $this->cookieSameSite
         );
     }
 }

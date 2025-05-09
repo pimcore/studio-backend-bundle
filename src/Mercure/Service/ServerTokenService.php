@@ -29,16 +29,16 @@ final readonly class ServerTokenService implements TokenProviderInterface
     ) {
     }
 
-    private function getTopicCollection(): TopicCollection
-    {
-        return $this->topicLoader->loadTopics();
-    }
-
     public function getJwt(): string
     {
         return $this->tokenFactory->create(
             $this->getTopicCollection()->getServerSubscribableTopics(),
             $this->getTopicCollection()->getServerPublishableTopics(),
         );
+    }
+
+    private function getTopicCollection(): TopicCollection
+    {
+        return $this->topicLoader->loadTopics();
     }
 }

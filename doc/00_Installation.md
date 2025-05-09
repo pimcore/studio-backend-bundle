@@ -95,21 +95,39 @@ Also make sure that the keys configured in pimcore match the keys in the (docker
 
 ### Configuration
 
-URLs for accessing Mercure server-side (for updating state information within application
-services) and client-side (for getting updates in Pimcore Studio UI) need to be configured via symfony configuration
-tree as follows:
+It is necessary to configure a JWT key for Mercure. This key is used to sign and verify the JWT tokens that are used for authentication.
 
-Additionally, you can configure the cookie lifetime for the JWT token in seconds. The default value is 3600 seconds.
+#### Optional Mercure configuration
+
+URLs for accessing Mercure server-side (for updating state information within application
+services) and client-side (for getting updates in Pimcore Studio UI) can be configured via a symfony configuration.
+
+Additionally, you can configure the cookie parameters like:
+- lifetime for the JWT token in seconds (default is 3600 seconds)
+- SameSite attribute (default is `Strict`, possible values are `Lax`, `Strict` or `None`)
 
 ```yaml
 pimcore_studio_backend:
     mercure_settings:
         jwt_key: '<your-256-bit-secret-min-32-chars>'
-        hub_url_client: 'https://your-app-domain.com/hub'
-        hub_url_server: 'http://mercure/.well-known/mercure'
         # Optional configuration
+
+        # The url to the mercure hub for the (frontend) client.
+        # If it is not set, the default will be set to "http(s)://<PIMCORE_HOST>/hub/.well-known/mercure".
+        # It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host.
+        hub_url_client: 'https://your-app-domain.com/hub'
+
+        # The url to the mercure hub for the server. 
+        # This can also be the docker container name (e.g., http://mercure/.well-known/mercure).
+        # If it is not set, the default will be set to "http(s)://<PIMCORE_HOST>/hub/.well-known/mercure".
+        hub_url_server: 'http://mercure/.well-known/mercure'
         cookie_lifetime: 3600
+        cookie_same_site: 'Strict'
 ```
+
+You need to configure the full URL including protocol, port and path to Mercure here. F
+or client side url it is also possible to use <PIMCORE_SCHEMA_HOST> for the current schema and host of client. 
+If these settings are not set, URLs will be generated based on Pimcore host and default paths.
 
 ## Changing the prefix of the Studio Backend
 It is possible to change the route where you can reach the API. By default, the route is `/pimcore-studio/api/`.  

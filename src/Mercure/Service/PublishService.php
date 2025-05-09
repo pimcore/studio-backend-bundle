@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Hub;
+use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
+use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
 use function is_string;
@@ -23,9 +25,10 @@ use function sprintf;
 final readonly class PublishService implements PublishServiceInterface
 {
     public function __construct(
-        private HubInterface $serverHub,
         private LoggerInterface $logger,
-        private SerializerInterface $serializer
+        private SerializerInterface $serializer,
+        private TokenProviderInterface $tokenProvider,
+        private UrlServiceInterface $urlService,
     ) {
     }
 
@@ -58,11 +61,19 @@ final readonly class PublishService implements PublishServiceInterface
             )
         );
 
-        $this->serverHub->publish(new Update($topics, $jsonData, $private, $id, $type, $retry));
+        $this->getServerHub()->publish(new Update($topics, $jsonData, $private, $id, $type, $retry));
     }
 
     public function getJsonData(mixed $data): string
     {
         return $this->serializer->serialize($data, 'json');
+    }
+
+    private function getServerHub(): Hub
+    {
+        return new Hub(
+            $this->urlService->getServerSideUrl(),
+            new StaticTokenProvider($this->tokenProvider->getJwt()),
+        );
     }
 }
