@@ -55,6 +55,14 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         $element = $this->getUserElement($parameters->getElementId(), $parameters->getElementType(), $user);
         $element->setUserModification($user->getId());
 
+        return $this->getElementWorkflows($element, $user);
+    }
+
+    /**
+     * @return WorkflowDetails[]
+     */
+    public function getElementWorkflows(ElementInterface $element, UserInterface $user): array
+    {
         $this->securityService->hasElementPermission(
             $element,
             $user,
@@ -64,11 +72,7 @@ final readonly class WorkflowDetailsService implements WorkflowDetailsServiceInt
         $details =  [];
         $elementWorkflows = $this->workflowManager->getAllWorkflowsForSubject($element);
         foreach ($elementWorkflows as $workflow) {
-            $workflowDetails = $this->hydrator->hydrate(
-                $element,
-                $workflow
-            );
-
+            $workflowDetails = $this->hydrator->hydrate($element, $workflow);
             $this->eventDispatcher->dispatch(
                 new WorkflowDetailsEvent($workflowDetails),
                 WorkflowDetailsEvent::EVENT_NAME

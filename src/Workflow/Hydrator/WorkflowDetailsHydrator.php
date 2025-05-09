@@ -17,6 +17,8 @@ use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowDetails;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Schema\WorkflowStatus;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowActionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowGraphServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Util\Trait\WorkflowLayoutTrait;
+use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Workflow\Manager;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -26,6 +28,8 @@ use Symfony\Component\Workflow\WorkflowInterface;
  */
 final readonly class WorkflowDetailsHydrator implements WorkflowDetailsHydratorInterface
 {
+    use WorkflowLayoutTrait;
+
     public function __construct(
         private AllowedTransitionsHydratorInterface $allowedTransitionsHydrator,
         private GlobalActionsHydratorInterface $globalActionsHydrator,
@@ -37,16 +41,18 @@ final readonly class WorkflowDetailsHydrator implements WorkflowDetailsHydratorI
 
     public function hydrate(ElementInterface $element, WorkflowInterface $workflow): WorkflowDetails
     {
+        $statusData = $this->getStatusInfo($workflow, $element);
 
         return new WorkflowDetails(
             $workflow->getName(),
             $this->getWorkflowLabel($workflow),
-            $this->getStatusInfo($workflow, $element),
+            $statusData,
             $this->workflowGraphService->getGraph(
                 $element,
                 $workflow,
                 'svg'
             ),
+            $this->getLastLayoutId($statusData),
             $this->allowedTransitionsHydrator->hydrate(
                 $workflow->getEnabledTransitions($element),
                 $element
@@ -77,11 +83,17 @@ final readonly class WorkflowDetailsHydrator implements WorkflowDetailsHydratorI
         }
 
         foreach ($uniqueStatuses as $status) {
+            $layoutId = null;
+            if ($element instanceof Concrete) {
+                $layoutId = $status->getObjectLayout($workflow, $element);
+            }
+
             $statusInfos[] = new WorkflowStatus(
                 $status->getColor(),
                 $status->getColorInverted(),
                 $status->getPlace(),
                 $status->getLabel(),
+                $layoutId,
                 $status->isVisibleInHeader(),
             );
         }

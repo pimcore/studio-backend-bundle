@@ -48,8 +48,8 @@ class GridConfiguration
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
 
-    #[ORM\Column(type: 'text', nullable: false)]
-    private string $description;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description;
 
     #[ORM\Column(type: 'boolean')]
     private bool $shareGlobal = false;
@@ -111,7 +111,7 @@ class GridConfiguration
         return $this->name;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
@@ -161,7 +161,7 @@ class GridConfiguration
         $this->name = $name;
     }
 
-    public function setDescription(string $description): void
+    public function setDescription(?string $description): void
     {
         $this->description = $description;
     }

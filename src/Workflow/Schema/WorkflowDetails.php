@@ -24,7 +24,15 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'WorkflowDetails',
-    required: ['workflowName', 'workflowLabel', 'workflowStatus', 'graph', 'allowedTransitions', 'globalActions'],
+    required: [
+        'workflowName',
+        'workflowLabel',
+        'workflowStatus',
+        'graph',
+        'workflowLayoutId',
+        'allowedTransitions',
+        'globalActions',
+    ],
     type: 'object'
 )]
 final class WorkflowDetails implements AdditionalAttributesInterface
@@ -56,6 +64,12 @@ final class WorkflowDetails implements AdditionalAttributesInterface
             example: '<svg>...</svg>'
         )]
         private readonly string $graph,
+        #[Property(
+            description: 'workflowLayoutId',
+            type: 'string',
+            example: 'someWorkflowLayoutId'
+        )]
+        private readonly ?string $workflowLayoutId,
         #[Property(
             description: 'allowedTransitions',
             type: 'array',
@@ -90,6 +104,11 @@ final class WorkflowDetails implements AdditionalAttributesInterface
     public function getGraph(): string
     {
         return $this->graph;
+    }
+
+    public function getLayoutId(): ?string
+    {
+        return $this->workflowLayoutId;
     }
 
     public function getAllowedTransitions(): array
