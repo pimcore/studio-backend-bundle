@@ -23,7 +23,6 @@ use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
 use Pimcore\Translation\Translator;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use function in_array;
 
 /**
  * @internal
