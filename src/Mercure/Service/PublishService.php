@@ -22,13 +22,15 @@ use Symfony\Component\Serializer\SerializerInterface;
 use function is_string;
 use function sprintf;
 
-final readonly class PublishService implements PublishServiceInterface
+final class PublishService implements PublishServiceInterface
 {
+    private ?Hub $publisher = null;
+
     public function __construct(
-        private LoggerInterface $logger,
-        private SerializerInterface $serializer,
-        private TokenProviderInterface $tokenProvider,
-        private UrlServiceInterface $urlService,
+        private readonly LoggerInterface $logger,
+        private readonly SerializerInterface $serializer,
+        private readonly TokenProviderInterface $tokenProvider,
+        private readonly UrlServiceInterface $urlService,
     ) {
     }
 
@@ -71,9 +73,13 @@ final readonly class PublishService implements PublishServiceInterface
 
     private function getServerHub(): Hub
     {
-        return new Hub(
-            $this->urlService->getServerSideUrl(),
-            new StaticTokenProvider($this->tokenProvider->getJwt()),
-        );
+        if ($this->publisher === null) {
+            $this->publisher = new Hub(
+                $this->urlService->getServerSideUrl(),
+                new StaticTokenProvider($this->tokenProvider->getJwt()),
+            );
+        }
+
+        return $this->publisher;
     }
 }
