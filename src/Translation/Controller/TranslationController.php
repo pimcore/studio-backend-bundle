@@ -71,7 +71,7 @@ final class TranslationController extends AbstractApiController
         if (empty($translation->getKeys())) {
             return $this->jsonResponse($this->translatorService->getAllTranslations(
                 $translation->getLocale(),
-                true
+                $translation->useFallback()
             ));
         }
 
