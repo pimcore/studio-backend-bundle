@@ -31,6 +31,11 @@ interface WorkflowDetailsServiceInterface
         UserInterface $user
     ): array;
 
+    /**
+     * @return WorkflowDetails[]
+     */
+    public function getElementWorkflows(ElementInterface $element, UserInterface $user): array;
+
     public function hasElementWorkflowsById(int $elementId, string $elementType, UserInterface $user): bool;
 
     public function hasElementWorkflows(ElementInterface $element): bool;
