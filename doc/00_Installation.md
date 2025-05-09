@@ -125,8 +125,8 @@ pimcore_studio_backend:
         cookie_same_site: 'Strict'
 ```
 
-You need to configure the full URL including protocol, port and path to Mercure here. F
-or client side url it is also possible to use <PIMCORE_SCHEMA_HOST> for the current schema and host of client. 
+You need to configure the full URL including protocol, port and path to Mercure here.
+For client side url it is also possible to use `<PIMCORE_SCHEMA_HOST>` for the current schema and host of client. 
 If these settings are not set, URLs will be generated based on Pimcore host and default paths.
 
 ## Changing the prefix of the Studio Backend
