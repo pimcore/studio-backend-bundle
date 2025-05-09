@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'GridConfiguration',
-    required: ['id', 'name', 'description'],
+    required: ['id', 'name'],
     type: 'object'
 )]
 final class Configuration implements AdditionalAttributesInterface
@@ -38,7 +38,7 @@ final class Configuration implements AdditionalAttributesInterface
         #[Property(description: 'Name', type: 'string', example: 'My Configuration')]
         private readonly string $name,
         #[Property(description: 'Description', type: 'string', example: 'My Configuration Description')]
-        private readonly string $description,
+        private readonly ?string $description,
     ) {
     }
 
@@ -52,7 +52,7 @@ final class Configuration implements AdditionalAttributesInterface
         return $this->name;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }

@@ -33,9 +33,8 @@ final readonly class ConfigurationParameter implements ConfigurationParameterInt
         #[NotBlank]
         private string $name,
         #[NotBlank]
-        private string $description,
-        #[NotBlank]
         private array $columns,
+        private ?string $description,
         private array $sharedUsers = [],
         private array $sharedRoles = [],
         private ?Filter $filter = null,
@@ -55,7 +54,7 @@ final readonly class ConfigurationParameter implements ConfigurationParameterInt
         return $this->name;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }

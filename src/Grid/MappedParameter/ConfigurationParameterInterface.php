@@ -25,7 +25,7 @@ interface ConfigurationParameterInterface
 
     public function getName(): string;
 
-    public function getDescription(): string;
+    public function getDescription(): ?string;
 
     public function shareGlobal(): bool;
 

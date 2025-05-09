@@ -272,7 +272,7 @@ final class Installer extends SettingsStoreAwareInstaller
         );
 
         $table->addColumn('name', 'string', ['notnull' => true, 'length' => 255]);
-        $table->addColumn('description', 'text', ['notnull' => true]);
+        $table->addColumn('description', 'text', ['notnull' => false]);
 
         $table->addColumn('pageSize', 'integer', [
             'notnull' => true,
