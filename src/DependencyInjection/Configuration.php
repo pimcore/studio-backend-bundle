@@ -280,16 +280,20 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->scalarNode('hub_url_server')
                         ->info(
-                            'The url to the mercure hub for the server. This can also be the docker container name '.
+                            'The url to the mercure hub for the server.' .
+                            'This can also be the docker container name '.
                             '(e.g., http://mercure/.well-known/mercure). ' .
-                            'If it is not set, default will be set to "http(s)://<PIMCORE_HOST>/hub/.well-known/mercure".'
+                            'If it is not set, default will be set to ' .
+                            '"http(s)://<PIMCORE_HOST>/hub/.well-known/mercure".'
                         )
                         ->defaultNull()
                     ->end()
                     ->scalarNode('hub_url_client')
                         ->info('The url to the mercure hub for the (frontend) client. ' .
-                            'If it is not set, the default will be set to "http(s)://<PIMCORE_HOST>/hub/.well-known/mercure".' .
-                            'It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host.'
+                            'If it is not set, the default will be set to ' .
+                            '"http(s)://<PIMCORE_HOST>/hub/.well-known/mercure". ' .
+                            'It is possible to use "<PIMCORE_SCHEMA_HOST>" ' .
+                            'as a placeholder for the current schema and host.'
                         )
                         ->defaultNull()
                     ->end()
