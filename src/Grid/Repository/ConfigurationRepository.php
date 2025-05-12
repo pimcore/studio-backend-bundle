@@ -81,7 +81,6 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
     /**
      * @return GridConfiguration[]
      */
-
     public function getForAsset(): array
     {
         $queryBuilder = $this->entityManager->createQueryBuilder()
@@ -91,7 +90,6 @@ final readonly class ConfigurationRepository implements ConfigurationRepositoryI
 
         return $queryBuilder->getQuery()->getResult();
     }
-
 
     /**
      * @return GridConfiguration[]
