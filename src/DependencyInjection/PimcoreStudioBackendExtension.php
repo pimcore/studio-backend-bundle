@@ -27,7 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\AdvancedColumnCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
@@ -36,7 +36,6 @@ use Pimcore\Bundle\StudioBackendBundle\Perspective\Repository\PerspectiveConfigR
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Service\WidgetValidationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
-use Pimcore\Tool;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
@@ -96,9 +95,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(ElementDeleteServiceInterface::class);
         $definition->setArgument('$recycleBinThreshold', $config['element_recycle_bin_threshold']);
-
-        $definition = $container->getDefinition(HubServiceInterface::class);
-        $definition->setArgument('$cookieLifetime', $config['mercure_settings']['cookie_lifetime']);
 
         $definition = $container->getDefinition(ZipServiceInterface::class);
         $definition->setArgument('$downloadLimits', $config['asset_download_settings']);
@@ -168,6 +164,12 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(MetadataAdapterServiceInterface::class);
         $definition->setArgument('$studioAdapters', $config['asset_metadata_adapter_mapping']);
+
+        $definition = $container->getDefinition(UrlServiceInterface::class);
+        $definition->setArguments([
+            '$serverSideUrl' => $config['mercure_settings']['hub_url_server'],
+            '$clientSideUrl' => $config['mercure_settings']['hub_url_client'],
+        ]);
     }
 
     /**
@@ -196,10 +198,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         foreach ($containerConfig['mercure_settings'] as $key => $setting) {
             if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
                 continue;
-            }
-
-            if ($key === 'hub_url_client' && $containerConfig['mercure_settings'][$key] === null) {
-                $containerConfig['mercure_settings'][$key] = Tool::getHostUrl() . '/hub';
             }
 
             $container->setParameter(

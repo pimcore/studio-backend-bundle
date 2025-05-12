@@ -11,17 +11,11 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Util\Constant;
+namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
-/**
- * @internal
- */
-enum Mercure: string
+interface UrlServiceInterface
 {
-    case AUTHORIZATION_COOKIE_NAME = 'mercureAuthorization';
-    case HOST_PLACEHOLDER = '<PIMCORE_SCHEMA_HOST>';
-    case URL_PATH = 'path';
-    case URL_HOST = 'host';
-    case URL_SCHEME = 'scheme';
-    case URL_SCHEME_HTTPS = 'https';
+    public function getServerSideUrl(): string;
+
+    public function getClientSideUrl(): string;
 }

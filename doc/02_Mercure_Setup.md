@@ -87,6 +87,12 @@ pimcore_studio_backend:
         hub_url_server: 'http://mercure/.well-known/mercure'
 ```
 
+If you would like to retrieve the URLs from within the application, you can use the following methods:
+- `getClientSideUrl()` to get the client URL
+- `getServerSideUrl()` to get the server URL
+
+These methods are available in the `Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface` class interface.
+
 ## Check if Mercure is running
 To see if Mercure is up and available, call ``https://your-app-domain.com/hub`` (or `client_side_url`
 you configured in configuration). This request should return the text
