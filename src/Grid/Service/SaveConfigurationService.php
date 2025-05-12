@@ -58,7 +58,7 @@ final readonly class SaveConfigurationService implements SaveConfigurationServic
 
         if ($configuration->setAsFavorite()) {
             $gridConfiguration = $this->favoriteService
-                ->setAssetConfigurationAsFavoriteForCurrentUser($gridConfiguration);
+                ->setAssetConfigurationAsFavoriteForCurrentUser($gridConfiguration, $configuration->getFolderId());
         }
 
         $gridConfiguration = $this->gridConfigurationRepository->create($gridConfiguration);

@@ -19,7 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -48,21 +47,17 @@ final class ListSavedConfigurationsController extends AbstractApiController
      * @throws NotFoundException|SearchException
      */
     #[Route(
-        '/assets/grid/configurations/{folderId}',
+        '/assets/grid/configurations',
         name: 'pimcore_studio_api_get_asset_saved_grid_configurations',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/grid/configurations/{folderId}',
+        path: self::PREFIX . '/assets/grid/configurations',
         operationId: 'asset_get_saved_grid_configurations',
         description: 'asset_get_saved_grid_configurations_description',
         summary: 'asset_get_saved_grid_configurations_summary',
         tags: [Tags::AssetGrid->value]
-    )]
-    #[IdParameter(
-        type: 'folderId',
-        name: 'folderId'
     )]
     #[SuccessResponse(
         description: 'asset_get_saved_grid_configurations_success_response',
@@ -73,9 +68,9 @@ final class ListSavedConfigurationsController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAssetSavedGridConfigurations(int $folderId): JsonResponse
+    public function getAssetSavedGridConfigurations(): JsonResponse
     {
-        $configurations = $this->configurationService->getConfigurationsForAssetsByFolder($folderId);
+        $configurations = $this->configurationService->getConfigurationsForAssets();
 
         return $this->jsonResponse($configurations);
     }

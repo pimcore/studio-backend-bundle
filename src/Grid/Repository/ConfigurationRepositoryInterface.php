@@ -40,6 +40,11 @@ interface ConfigurationRepositoryInterface
     /**
      * @return GridConfiguration[]
      */
+    public function getForAsset(): array;
+
+    /**
+     * @return GridConfiguration[]
+     */
     public function getByClassId(string $classId): array;
 
     public function delete(GridConfiguration $configuration): void;

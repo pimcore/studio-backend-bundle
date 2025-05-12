@@ -21,7 +21,8 @@ use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 interface FavoriteServiceInterface
 {
     public function setAssetConfigurationAsFavoriteForCurrentUser(
-        GridConfiguration $gridConfiguration
+        GridConfiguration $gridConfiguration,
+        int $folderId
     ): GridConfiguration;
 
     public function setDataObjectConfigurationAsFavoriteForCurrentUser(

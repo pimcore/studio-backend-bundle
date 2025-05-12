@@ -44,10 +44,6 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
             throw new NotFoundException('Configuration', $id);
         }
 
-        if ($configuration->getAssetFolderId() !== $configurationParams->getFolderId()) {
-            throw new InvalidArgumentException('Configuration does not belong to the given folder.');
-        }
-
         if ($configuration->getOwner() !== $this->securityService->getCurrentUser()->getId()) {
             throw new ForbiddenException('You are not allowed to update this configuration.');
         }
@@ -67,7 +63,7 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
 
         if ($configurationParams->setAsFavorite()) {
             $configuration = $this->favoriteService
-                ->setAssetConfigurationAsFavoriteForCurrentUser($configuration);
+                ->setAssetConfigurationAsFavoriteForCurrentUser($configuration, $configurationParams->getFolderId());
         }
 
         if (!$configurationParams->setAsFavorite()) {
@@ -144,11 +140,10 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
     {
         $configuration = $this->gridConfigurationRepository->getById($configurationId);
 
-        if ($configuration->getAssetFolderId() !== $folderId) {
-            throw new InvalidArgumentException('Configuration does not belong to the given folder.');
-        }
-
-        $configuration = $this->favoriteService->setAssetConfigurationAsFavoriteForCurrentUser($configuration);
+        $configuration = $this->favoriteService->setAssetConfigurationAsFavoriteForCurrentUser(
+            $configuration,
+            $folderId
+        );
 
         $this->gridConfigurationRepository->update($configuration);
     }

@@ -53,9 +53,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     ) {
     }
 
-    public function getConfigurationsForAssetsByFolder(int $folderId): Collection
+    public function getConfigurationsForAssets(): Collection
     {
-        $configurations = $this->configurationRepository->getByAssetFolderId($folderId);
+        $configurations = $this->configurationRepository->getForAsset();
 
         $filteredConfigurations = $this->filterConfigurationsForCurrentUser($configurations);
 
@@ -87,10 +87,11 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
         $configuration =  $this->configurationRepository->getById($configurationId);
 
-        $user = $this->securityService->getCurrentUser();
-        if ($configuration->getAssetFolderId() !== $folderId) {
-            return $this->getDefaultAssetGridConfiguration();
+        if ($configuration->getAssetFolderId() === null) {
+            throw new NotFoundException('Asset Configuration', $configurationId);
         }
+
+        $user = $this->securityService->getCurrentUser();
 
         if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
             return $this->getDefaultAssetGridConfiguration();
@@ -180,13 +181,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     /**
      * @throws ForbiddenException|InvalidArgumentException|NotFoundException
      */
-    public function deleteAssetConfiguration(int $configurationId, int $folderId): void
+    public function deleteAssetConfiguration(int $configurationId): void
     {
         $configuration = $this->configurationRepository->getById($configurationId);
-
-        if ($configuration->getAssetFolderId() !== $folderId) {
-            throw new InvalidArgumentException('Configuration does not belong to folder');
-        }
 
         if ($this->securityService->getCurrentUser()->getId() !== $configuration->getOwner()) {
             throw new ForbiddenException(
