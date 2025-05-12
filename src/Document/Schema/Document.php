@@ -33,7 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'hasChildren',
         'hasWorkflowWithPermissions',
         'permissions',
-        'hasWorkflowAvailable'
+        'hasWorkflowAvailable',
     ],
     type: 'object'
 )]

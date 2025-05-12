@@ -33,8 +33,7 @@ final readonly class DocumentHydratorService implements DocumentHydratorServiceI
 
     public function hydrateDocuments(
         DocumentSearchResultItem $item
-    ): Document|DocumentFolder
-    {
+    ): Document|DocumentFolder {
         $class = get_class($item);
         if ($this->hydratorLocator->has($class)) {
             return $this->hydratorLocator->get($class)->hydrate($item);
