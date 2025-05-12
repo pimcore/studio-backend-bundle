@@ -29,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'GridDetailedConfiguration',
     required: [
         'name',
-        'description',
         'shareGlobal',
         'saveFilter',
         'setAsFavorite',
@@ -48,8 +47,6 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
     public function __construct(
         #[Property(description: 'Name', type: 'string', example: 'My Configuration')]
         private readonly string $name,
-        #[Property(description: 'Description', type: 'string', example: 'My Configuration Description')]
-        private readonly string $description,
         #[Property(description: 'shareGlobal', type: 'boolean', example: false)]
         private readonly bool $shareGlobal,
         #[Property(description: 'saveFilter', type: 'boolean', example: false)]
@@ -66,6 +63,8 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         private readonly array $filter,
         #[Property(description: 'Page Size', type: 'integer', example: 42)]
         private readonly int $pageSize = 25,
+        #[Property(description: 'Description', type: 'string', example: 'My Configuration Description')]
+        private readonly ?string $description,
         #[Property(description: 'Modification Date', type: 'integer', example: 1634025600)]
         private readonly ?int $modificationDate = null,
         #[Property(description: 'Creation Date', type: 'integer', example: 1634025600)]
@@ -82,7 +81,7 @@ final class DetailedConfiguration implements AdditionalAttributesInterface
         return $this->name;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }

@@ -30,7 +30,6 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
 
         return new DetailedConfiguration(
             name: $data->getName(),
-            description: $data->getDescription(),
             shareGlobal: $data->isShareGlobal(),
             saveFilter: $data->saveFilter(),
             setAsFavorite: $isFavorite,
@@ -39,6 +38,7 @@ final readonly class DetailedConfigurationHydrator implements DetailedConfigurat
             columns: $data->getColumns(),
             filter: $data->getFilter() ?? [],
             pageSize: $data->getPageSize(),
+            description: $data->getDescription(),
             modificationDate: $data->getModificationDate()->getTimestamp(),
             creationDate: $data->getCreationDate()->getTimestamp(),
             ownerId: $data->getOwner(),
