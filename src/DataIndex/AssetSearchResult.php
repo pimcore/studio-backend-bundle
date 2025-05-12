@@ -25,6 +25,9 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultPaginationInterface;
 
+/**
+ * @internal
+ */
 final readonly class AssetSearchResult implements SearchResultItemInterface, SearchResultPaginationInterface
 {
     /**

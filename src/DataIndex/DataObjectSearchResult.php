@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultPaginationInterface;
 
+/**
+ * @internal
+ */
 final readonly class DataObjectSearchResult implements SearchResultItemInterface, SearchResultPaginationInterface
 {
     /**

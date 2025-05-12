@@ -22,6 +22,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Document\
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\DocumentHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -40,7 +41,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
     public function __construct(
         private SearchResultIdListServiceInterface $searchResultIdListService,
         private DocumentSearchServiceInterface $searchService,
-        private DocumentHydratorInterface $hydratorService
+        private DocumentHydratorServiceInterface $hydratorService
     ) {
     }
 
@@ -62,7 +63,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
             throw new NotFoundException('Document', $id);
         }
 
-        return $this->hydratorService->hydrate($document);
+        return $this->hydratorService->hydrateDocuments($document);
     }
 
     public function fetchDocumentIds(QueryInterface $documentQuery): array

@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Folder as FolderItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 
+/**
+ * @internal
+ */
 interface FolderHydratorInterface
 {
     public function hydrate(FolderItem $item): AssetFolder;

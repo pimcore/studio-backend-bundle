@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
 
 #[Schema(
     title: 'Data Object Permissions',
+    required: ['save', 'unpublish', 'localizedEdit', 'localizedView'],
     type: 'object'
 )]
 final readonly class DataObjectPermissions extends Permissions

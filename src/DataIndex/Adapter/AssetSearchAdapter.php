@@ -25,9 +25,9 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Asset\Ass
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Asset;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\AssetHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -38,11 +38,14 @@ use Pimcore\Model\UserInterface;
 use function get_class;
 use function sprintf;
 
+/**
+ * @internal
+ */
 final readonly class AssetSearchAdapter implements AssetSearchAdapterInterface
 {
     public function __construct(
         private AssetSearchServiceInterface $searchService,
-        private HydratorServiceInterface $hydratorService,
+        private AssetHydratorServiceInterface $hydratorService,
         private SearchResultIdListServiceInterface $searchResultIdListService,
         private FileSizeAggregationServiceInterface $fileSizeAggregationService,
     ) {

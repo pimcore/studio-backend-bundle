@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Archive as ArchiveItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 
+/**
+ * @internal
+ */
 interface ArchiveHydratorInterface
 {
     public function hydrate(ArchiveItem $item): Archive;

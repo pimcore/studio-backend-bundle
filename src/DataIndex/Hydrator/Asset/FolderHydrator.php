@@ -18,6 +18,9 @@ use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceI
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
+/**
+ * @internal
+ */
 final readonly class FolderHydrator implements FolderHydratorInterface
 {
     public function __construct(

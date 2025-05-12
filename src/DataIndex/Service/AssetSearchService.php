@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\AssetSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
@@ -24,20 +24,39 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\Element\Util\Trait\SearchTermTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
+use function count;
 
-interface AssetSearchServiceInterface
+/**
+ * @internal
+ */
+final readonly class AssetSearchService implements AssetSearchServiceInterface
 {
+    use SearchTermTrait;
+
+    public function __construct(
+        private AssetSearchAdapterInterface $assetSearchAdapter,
+        private AssetQueryProviderInterface $assetQueryProvider,
+    ) {
+    }
+
     /**
      * @throws SearchException|InvalidArgumentException
      */
-    public function searchAssets(AssetQueryInterface $assetQuery): AssetSearchResult;
+    public function searchAssets(AssetQueryInterface $assetQuery): AssetSearchResult
+    {
+        return $this->assetSearchAdapter->searchAssets($assetQuery);
+    }
 
     /**
      * @throws SearchException|NotFoundException
@@ -45,14 +64,19 @@ interface AssetSearchServiceInterface
     public function getAssetById(
         int $id,
         ?UserInterface $user = null
-    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video;
+    ): Asset|Archive|Audio|Document|AssetFolder|Image|Text|Unknown|Video {
+        return $this->assetSearchAdapter->getAssetById($id, $user);
+    }
 
     /**
      * @throws SearchException
      *
      * @return array<int>
      */
-    public function fetchAssetIds(AssetQueryInterface $assetQuery): array;
+    public function fetchAssetIds(AssetQueryInterface $assetQuery): array
+    {
+        return $this->assetSearchAdapter->fetchAssetIds($assetQuery);
+    }
 
     /**
      * @throws SearchException
@@ -62,29 +86,56 @@ interface AssetSearchServiceInterface
     public function getChildrenIds(
         string $parentPath,
         ?string $sortDirection = null
-    ): array;
+    ): array {
+        $query = $this->assetQueryProvider->createAssetQuery();
+        $query->filterPath($parentPath, true, false);
+        if ($sortDirection) {
+            $query->orderByPath($sortDirection);
+        }
 
-    /**
-     * @throws SearchException
-     *
-     */
+        return $this->fetchAssetIds($query);
+    }
+
     public function countChildren(
         string $parentPath,
         ?string $sortDirection = null
-    ): int;
+    ): int {
+
+        return count($this->getChildrenIds($parentPath, $sortDirection));
+    }
 
     /**
      * @throws AssetSearchException
      */
-    public function getTotalFileSizeByIds(array $ids): int;
+    public function getTotalFileSizeByIds(array $ids): int
+    {
+        $query = $this->assetQueryProvider->createAssetQuery();
+        $query->searchByIds($ids);
+
+        return $this->assetSearchAdapter->getTotalFileSizeByIds($query);
+    }
 
     /**
      * @throws NotFoundException|SearchException
      */
-    public function getBySearchTerm(string $searchTerm, ?UserInterface $user): int;
+    public function getBySearchTerm(string $searchTerm, ?UserInterface $user): int
+    {
+        $query = $this->assetQueryProvider->createAssetQuery();
+        $this->applySearchTerm($query, $searchTerm, $user);
+        $result = $this->assetSearchAdapter->fetchAssetIds($query);
+
+        if (empty($result)) {
+            throw $this->getNotFoundException('Asset', $searchTerm);
+        }
+
+        return reset($result);
+    }
 
     /**
      * @throws InvalidSearchException|SearchException
      */
-    public function findElementInTree(QueryInterface $query): ?ElementSearchResultItemInterface;
+    public function findElementInTree(QueryInterface $query): ?ElementSearchResultItemInterface
+    {
+        return $this->assetSearchAdapter->findInTree($query);
+    }
 }

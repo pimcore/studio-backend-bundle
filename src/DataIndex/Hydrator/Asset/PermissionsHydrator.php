@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 use Pimcore\Bundle\GenericDataIndexBundle\Permission\AssetPermissions as SearchAssetPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\AssetPermissions;
 
+/**
+ * @internal
+ */
 final class PermissionsHydrator implements PermissionsHydratorInterface
 {
     public function hydrate(SearchAssetPermissions $permissions): AssetPermissions

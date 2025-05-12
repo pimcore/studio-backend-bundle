@@ -18,6 +18,7 @@ use OpenApi\Attributes\Schema;
 
 #[Schema(
     title: 'Permissions',
+    required: ['list', 'view', 'publish', 'delete', 'rename', 'create', 'settings', 'versions', 'properties'],
     type: 'object'
 )]
 readonly class Permissions

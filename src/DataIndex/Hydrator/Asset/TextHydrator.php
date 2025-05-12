@@ -18,6 +18,9 @@ use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceI
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
+/**
+ * @internal
+ */
 final readonly class TextHydrator implements TextHydratorInterface
 {
     public function __construct(

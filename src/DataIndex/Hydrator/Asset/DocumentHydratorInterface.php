@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Document as DocumentItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
 
+/**
+ * @internal
+ */
 interface DocumentHydratorInterface
 {
     public function hydrate(DocumentItem $item): Document;

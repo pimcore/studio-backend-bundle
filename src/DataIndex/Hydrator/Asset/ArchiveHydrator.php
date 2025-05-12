@@ -18,6 +18,9 @@ use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceI
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
+/**
+ * @internal
+ */
 final readonly class ArchiveHydrator implements ArchiveHydratorInterface
 {
     public function __construct(

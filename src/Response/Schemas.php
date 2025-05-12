@@ -16,13 +16,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\Response;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Archive;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\AssetFolder;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
-use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document as AssetDocument;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Text;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\DocumentFolder;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
@@ -42,7 +44,7 @@ final readonly class Schemas
 {
     public const array ASSETS = [
        Image::class,
-       Document::class,
+       AssetDocument::class,
        Audio::class,
        Video::class,
        Archive::class,
@@ -54,6 +56,11 @@ final readonly class Schemas
     public const array DATA_OBJECTS = [
         DataObject::class,
         DataObjectFolder::class,
+    ];
+
+    public const array DOCUMENTS = [
+        Document::class,
+        DocumentFolder::class
     ];
 
     public const array ELEMENT_CONTEXT_PERMISSIONS = [

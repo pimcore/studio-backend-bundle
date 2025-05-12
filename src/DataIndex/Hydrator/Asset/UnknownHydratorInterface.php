@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown as UnknownItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 
+/**
+ * @internal
+ */
 interface UnknownHydratorInterface
 {
     public function hydrate(UnknownItem $item): Unknown;

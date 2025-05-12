@@ -18,6 +18,9 @@ use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceI
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Unknown;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
+/**
+ * @internal
+ */
 final readonly class UnknownHydrator implements UnknownHydratorInterface
 {
     public function __construct(
