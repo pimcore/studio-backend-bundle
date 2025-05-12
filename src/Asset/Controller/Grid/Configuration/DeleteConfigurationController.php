@@ -54,13 +54,12 @@ final class DeleteConfigurationController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
-        path: self::PREFIX . '/assets/grid/configuration/{folderId}/{configurationId}',
+        path: self::PREFIX . '/assets/grid/configuration/{configurationId}',
         operationId: 'asset_delete_grid_configuration_by_configurationId',
         description: 'asset_delete_grid_configuration_by_configurationId_description',
         summary: 'asset_delete_grid_configuration_by_configurationId_summary',
         tags: [Tags::AssetGrid->value]
     )]
-    #[IdParameterPath(name: 'folderId')]
     #[IdParameterPath(name: 'configurationId')]
     #[SuccessResponse(
         content: new JsonContent(ref: DetailedConfiguration::class)
@@ -71,12 +70,10 @@ final class DeleteConfigurationController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function deleteAssetGridConfiguration(
-        int $folderId,
         int $configurationId
     ): Response {
         $this->gridConfigurationService->deleteAssetConfiguration(
-            $configurationId,
-            $folderId
+            $configurationId
         );
 
         return new Response();

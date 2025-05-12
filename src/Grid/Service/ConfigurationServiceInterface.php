@@ -45,14 +45,14 @@ interface ConfigurationServiceInterface
         string $classId
     ): DetailedConfiguration;
 
-    public function getConfigurationsForAssetsByFolder(int $folderId): Collection;
+    public function getConfigurationsForAssets(): Collection;
 
     public function getConfigurationsForDataObjectsByClassId(string $classId): Collection;
 
     /**
      * @throws ForbiddenException|InvalidArgumentException|NotFoundException
      */
-    public function deleteAssetConfiguration(int $configurationId, int $folderId): void;
+    public function deleteAssetConfiguration(int $configurationId): void;
 
     /**
      * @throws ForbiddenException|NotFoundException

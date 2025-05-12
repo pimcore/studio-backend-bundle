@@ -32,7 +32,8 @@ final readonly class FavoriteService implements FavoriteServiceInterface
     }
 
     public function setAssetConfigurationAsFavoriteForCurrentUser(
-        GridConfiguration $gridConfiguration
+        GridConfiguration $gridConfiguration,
+        int $folderId
     ): GridConfiguration {
 
         $currentUser = $this->securityService->getCurrentUser();
@@ -45,13 +46,13 @@ final readonly class FavoriteService implements FavoriteServiceInterface
 
         $favorite = $this->gridConfigurationFavoriteRepository->getByUserAndAssetFolder(
             $this->securityService->getCurrentUser()->getId(),
-            $gridConfiguration->getAssetFolderId()
+            $folderId
         );
 
         // If there is no favorite for the current user and asset folder, create a new one
         if (!$favorite) {
             $favorite = new GridConfigurationFavorite();
-            $favorite->setFolder($gridConfiguration->getAssetFolderId());
+            $favorite->setFolder($folderId);
             $favorite->setUser($this->securityService->getCurrentUser()->getId());
         }
 
