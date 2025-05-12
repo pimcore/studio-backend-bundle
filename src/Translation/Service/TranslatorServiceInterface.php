@@ -35,7 +35,7 @@ interface TranslatorServiceInterface
     /**
      * @throws InvalidLocaleException
      */
-    public function getAllTranslations(string $locale): Translation;
+    public function getAllTranslations(string $locale, bool $useFallback): Translation;
 
     /**
      * @throws InvalidLocaleException
