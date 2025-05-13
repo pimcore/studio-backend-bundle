@@ -37,7 +37,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EqualComparisonInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
-use Pimcore\Model\Version as DataObjectVersionModal;
+use Pimcore\Model\Version as DataObjectVersionModel;
 use Pimcore\Normalizer\NormalizerInterface;
 use function array_key_exists;
 
@@ -62,7 +62,7 @@ final readonly class DataService implements DataServiceInterface
     public function setObjectDetailData(
         DataObjectFolder|DataObject|DataObjectVersion $dataObject,
         DataObjectModel $element,
-        ?DataObjectVersionModal $version = null,
+        ?DataObjectVersionModel $version = null,
     ): void {
         $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
         if ($dataObject instanceof DataObjectFolder || !$element instanceof Concrete) {

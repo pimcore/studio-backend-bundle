@@ -15,14 +15,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Service;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DocumentSearchAdapterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Element\Util\Trait\SearchTermTrait;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -39,7 +38,15 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * {@inheritDoc}
+     */
+    public function searchDocuments(DocumentQueryInterface $documentQuery): DocumentSearchResult
+    {
+        return $this->documentSearchAdapter->searchDocuments($documentQuery);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function getDocumentById(int $id, ?UserInterface $user): Document
     {
@@ -63,7 +70,7 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     }
 
     /**
-     * @throws NotFoundException|SearchException
+     * {@inheritDoc}
      */
     public function getSearchTerm(string $searchTerm, ?UserInterface $user): int
     {
@@ -79,7 +86,7 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     }
 
     /**
-     * @throws InvalidSearchException|SearchException
+     * {@inheritDoc}
      */
     public function findElementInTree(QueryInterface $query): ?ElementSearchResultItemInterface
     {

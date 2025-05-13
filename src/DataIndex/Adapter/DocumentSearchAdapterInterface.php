@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -26,6 +29,11 @@ use Pimcore\Model\UserInterface;
  */
 interface DocumentSearchAdapterInterface
 {
+    /**
+     * @throws SearchException|InvalidArgumentException
+     */
+    public function searchDocuments(DocumentQueryInterface $documentQuery): DocumentSearchResult;
+
     /**
      * @throws SearchException|NotFoundException
      */
