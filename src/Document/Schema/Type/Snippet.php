@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type;
 
-use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentPermissions;
@@ -24,13 +23,14 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     title: 'Snippet',
     required: [
         'controller', 'template', 'contentMainDocumentId', 'supportsContentMain',
-        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime'
+        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime',
     ],
     type: 'object'
 )]
 final class Snippet extends Document
 {
     use PageSnippetTrait;
+
     public function __construct(
         ?string $controller,
         ?string $template,

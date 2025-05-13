@@ -22,16 +22,22 @@ trait PageSnippetTrait
 {
     #[Property(description: 'Controller', type: 'string', example: 'App\\Controller\\PageController')]
     private ?string $controller;
+
     #[Property(description: 'Template', type: 'string', example: 'App\\Controller\\PageController')]
     private ?string $template;
+
     #[Property(description: 'Main document ID', type: 'integer', example: 1)]
     private ?int $contentMainDocumentId;
+
     #[Property(description: 'Supports main content', type: 'bool', example: false)]
     private bool $supportsContentMain = false;
+
     #[Property(description: 'Is missing required editable', type: 'bool', example: false)]
     private bool $missingRequiredEditable = false;
+
     #[Property(description: 'Is static generator enabled', type: 'bool', example: false)]
     private bool $staticGeneratorEnabled = false;
+
     #[Property(description: 'Lifetime of static generator', type: 'integer', example: 123456)]
     private ?int $staticGeneratorLifetime;
 

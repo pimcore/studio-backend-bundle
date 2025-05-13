@@ -24,13 +24,14 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     title: 'Page',
     required: [
         'title', 'description', 'prettyUrl', 'controller', 'template', 'contentMainDocumentId', 'supportsContentMain',
-        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime'
+        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime',
     ],
     type: 'object'
 )]
 final class Page extends Document
 {
     use PageSnippetTrait;
+
     public function __construct(
         #[Property(description: 'Title', type: 'string', example: 'Link Title')]
         private readonly ?string $title,
