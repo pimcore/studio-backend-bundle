@@ -17,6 +17,11 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\Doc
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\DocumentFolder;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Email;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Hardlink;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Link;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Page;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Snippet;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 use function get_class;
 
@@ -33,7 +38,7 @@ final readonly class DocumentHydratorService implements DocumentHydratorServiceI
 
     public function hydrateDocuments(
         DocumentSearchResultItem $item
-    ): Document|DocumentFolder {
+    ): Document|DocumentFolder|Email|Hardlink|Link|Page|Snippet {
         $class = get_class($item);
         if ($this->hydratorLocator->has($class)) {
             return $this->hydratorLocator->get($class)->hydrate($item);
