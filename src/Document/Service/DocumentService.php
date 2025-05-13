@@ -29,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\Document as DocumentModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -49,7 +48,6 @@ final readonly class DocumentService implements DocumentServiceInterface
         private FilterServiceProviderInterface $filterServiceProvider,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private WorkflowDetailsServiceInterface $workflowDetailsService
     ) {
     }
 
