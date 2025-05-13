@@ -26,5 +26,5 @@ interface DataServiceInterface
         Document $document,
         DocumentModel $element,
         ?Version $documentVersion = null,
-    );
+    ): void;
 }
