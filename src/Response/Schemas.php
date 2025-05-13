@@ -25,6 +25,11 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\DocumentFolder;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Email;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Hardlink;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Link;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Page;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Snippet;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\AssetContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DataObjectContextPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions\DocumentContextPermissions;
@@ -61,6 +66,11 @@ final readonly class Schemas
     public const array DOCUMENTS = [
         Document::class,
         DocumentFolder::class,
+        Email::class,
+        Hardlink::class,
+        Link::class,
+        Page::class,
+        Snippet::class,
     ];
 
     public const array ELEMENT_CONTEXT_PERMISSIONS = [

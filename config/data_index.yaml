@@ -35,7 +35,18 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydrator
-
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\EmailHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\EmailHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\FolderHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\FolderHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\LinkHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\LinkHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\HardlinkHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\HardlinkHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\PageHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\PageHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\SnippetHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\SnippetHydrator
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\PermissionsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\PermissionsHydrator
 
@@ -78,7 +89,6 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProvider
 
   # Data Objects
-
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapterInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapter
 
@@ -118,4 +128,9 @@ services:
     class: Symfony\Component\DependencyInjection\ServiceLocator
     tags: [ 'container.service_locator' ]
     arguments:
-      - Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Folder: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterface'
+      - Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Email: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\EmailHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Folder: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\FolderHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\HardLink: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\HardlinkHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Link: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\LinkHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Page: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\PageHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Snippet: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\SnippetHydratorInterface'
