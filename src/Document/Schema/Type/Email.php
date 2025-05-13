@@ -25,13 +25,14 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     required: [
         'subject', 'from', 'replyTo', 'to', 'cc', 'bcc',
         'controller', 'template', 'contentMainDocumentId', 'supportsContentMain',
-        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime'
+        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime',
     ],
     type: 'object'
 )]
 final class Email extends Document
 {
     use PageSnippetTrait;
+
     public function __construct(
         #[Property(description: 'Subject', type: 'string', example: 'Some subject')]
         private readonly string $subject,
