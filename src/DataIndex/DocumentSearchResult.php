@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Hardlink;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Link;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Page;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Snippet;
+
 /**
  * @internal
  */
