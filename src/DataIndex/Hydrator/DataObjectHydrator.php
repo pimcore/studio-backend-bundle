@@ -19,6 +19,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\Permissions
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
+/**
+ * @internal
+ */
 final readonly class DataObjectHydrator implements DataObjectHydratorInterface
 {
     public function __construct(

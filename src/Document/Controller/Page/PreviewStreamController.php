@@ -75,7 +75,7 @@ final class PreviewStreamController extends AbstractApiController
         summary: 'document_page_stream_preview_summary',
         tags: [Tags::Documents->name]
     )]
-    #[IdParameter(type: 'image')]
+    #[IdParameter(type: 'page')]
     #[SuccessResponse(
         description: 'document_page_stream_preview_success_response',
         content: [new MediaType('image/jpeg')],

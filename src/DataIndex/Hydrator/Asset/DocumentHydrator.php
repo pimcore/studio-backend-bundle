@@ -18,6 +18,9 @@ use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceI
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Document;
 use Pimcore\Bundle\StudioBackendBundle\Icon\Service\IconServiceInterface;
 
+/**
+ * @internal
+ */
 final readonly class DocumentHydrator implements DocumentHydratorInterface
 {
     public function __construct(

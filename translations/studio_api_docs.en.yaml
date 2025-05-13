@@ -208,6 +208,14 @@ data_object_update_by_id_description: |
   You can create/update/delete list entries like properties or data object editable fields. <br>  If you want to update (add/remove) only some data of a field (e.g data of multi-relation fields), use the PATCH method.
 data_object_update_by_id_success_response: Successfully updated data object
 data_object_update_by_id_summary: Update a data object by ID
+document_get_by_id_description: |
+  Retrieves a specific document based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document or folder.
+document_get_by_id_success_response: Successfully retrieved document data as JSON
+document_get_by_id_summary: Get a specific document by ID
+document_page_stream_preview_description: |
+  Stream page document PDF preview based on the provided <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing page
+document_page_stream_preview_success_response: Page preview stream
+document_page_stream_preview_summary: Stream page document preview by ID
 documents_list_available_sites_description: |
   List all available sites
 documents_list_available_sites_success_response: List of available sites

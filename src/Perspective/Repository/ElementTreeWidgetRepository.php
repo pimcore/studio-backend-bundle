@@ -17,9 +17,9 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchR
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\Search\LocateInTreeServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\PathServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\TreeQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\TreeLevelData;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;

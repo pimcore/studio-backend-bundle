@@ -100,6 +100,21 @@ final readonly class IconService implements IconServiceInterface
         return new ElementIcon(ElementIconTypes::NAME->value, $value);
     }
 
+    public function getIconForDocument(string $documentType): ElementIcon
+    {
+        $value = match ($documentType) {
+            'email' => 'email',
+            'hardlink' => 'hardlink',
+            'folder' => 'folder',
+            'link' => 'link',
+            'page' => 'page',
+            'snippet' => 'snippet',
+            default => self::DEFAULT_ICON
+        };
+
+        return new ElementIcon(ElementIconTypes::NAME->value, $value);
+    }
+
     public function getIconForTag(): string
     {
         return 'tag';

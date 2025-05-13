@@ -25,10 +25,19 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 #[Schema(
     schema: 'Document',
     title: 'Document',
-    required: ['id'],
+    required: [
+        'fullPath',
+        'published',
+        'type',
+        'key',
+        'hasChildren',
+        'hasWorkflowWithPermissions',
+        'permissions',
+        'hasWorkflowAvailable',
+    ],
     type: 'object'
 )]
-final class Document extends Element implements AdditionalAttributesInterface
+class Document extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
     use CustomAttributesTrait;
@@ -41,6 +50,14 @@ final class Document extends Element implements AdditionalAttributesInterface
         private readonly bool $published,
         #[Property(description: 'Type', type: 'string', example: 'link')]
         private readonly string $type,
+        #[Property(description: 'Key', type: 'string', example: 'page.html')]
+        private readonly string $key,
+        #[Property(description: 'Has children', type: 'bool', example: false)]
+        private readonly bool $hasChildren,
+        #[Property(description: 'Workflow permissions', type: 'bool', example: false)]
+        private readonly bool $hasWorkflowWithPermissions,
+        #[Property(ref: DocumentPermissions::class)]
+        private readonly DocumentPermissions $permissions,
         int $id,
         int $parentId,
         string $path,
@@ -79,5 +96,25 @@ final class Document extends Element implements AdditionalAttributesInterface
     public function getType(): string
     {
         return $this->type;
+    }
+
+    public function getKey(): string
+    {
+        return $this->key;
+    }
+
+    public function getHasChildren(): bool
+    {
+        return $this->hasChildren;
+    }
+
+    public function getHasWorkflowWithPermissions(): bool
+    {
+        return $this->hasWorkflowWithPermissions;
+    }
+
+    public function getPermissions(): DocumentPermissions
+    {
+        return $this->permissions;
     }
 }

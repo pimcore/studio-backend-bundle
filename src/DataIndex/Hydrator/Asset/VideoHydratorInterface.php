@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video as VideoItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Video;
 
+/**
+ * @internal
+ */
 interface VideoHydratorInterface
 {
     public function hydrate(VideoItem $item): Video;

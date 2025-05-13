@@ -24,6 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Model\UserInterface;
 
+/**
+ * @internal
+ */
 interface AssetSearchAdapterInterface
 {
     /**

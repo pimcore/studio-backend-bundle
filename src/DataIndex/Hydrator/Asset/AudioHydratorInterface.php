@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Audio as AudioItem;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Audio;
 
+/**
+ * @internal
+ */
 interface AudioHydratorInterface
 {
     public function hydrate(AudioItem $item): Audio;
