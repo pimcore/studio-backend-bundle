@@ -15,6 +15,9 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\DataService
+
   Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentService
 

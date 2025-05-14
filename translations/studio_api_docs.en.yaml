@@ -212,6 +212,12 @@ document_get_by_id_description: |
   Retrieves a specific document based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document or folder.
 document_get_by_id_success_response: Successfully retrieved document data as JSON
 document_get_by_id_summary: Get a specific document by ID
+document_get_tree_description: |
+  Listing of all documents and document folders in the system. <br>
+  Returns only data which are relevant for the tree <br>
+  You can use different query parameters to filter the assets and it is possible to exclude folders from the result completely
+document_get_tree_success_response: Paginated documents with total count as header param as JSON
+document_get_tree_summary: Get all document data for the tree
 document_page_stream_preview_description: |
   Stream page document PDF preview based on the provided <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing page
 document_page_stream_preview_success_response: Page preview stream
