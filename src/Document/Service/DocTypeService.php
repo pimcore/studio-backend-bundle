@@ -46,8 +46,8 @@ final readonly class DocTypeService implements DocTypeServiceInterface
         foreach ($docTypeList as $docType) {
             if (!$this->securityService->getCurrentUser()->isAllowed(
                 $docType->getId(),
-                ElementTypes::DOC_TYPE)
-            ) {
+                ElementTypes::DOC_TYPE
+            )) {
                 continue;
             }
 
