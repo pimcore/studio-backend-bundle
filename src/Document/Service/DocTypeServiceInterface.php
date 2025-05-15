@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 
 /**
  * @internal
@@ -21,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType;
 interface DocTypeServiceInterface
 {
     /**
+     * @throws InvalidArgumentException
      * @return DocType[]
      */
     public function listDocTypes(?string $type): array;

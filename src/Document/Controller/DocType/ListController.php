@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter\TypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocTypeServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -45,6 +46,9 @@ final class ListController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     #[Route(
         path: self::ROUTE,
         name: 'pimcore_studio_api_list_document_doc_type',

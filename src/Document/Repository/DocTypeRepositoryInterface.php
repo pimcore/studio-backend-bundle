@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Model\Document\DocType;
 
 /**
@@ -21,6 +22,7 @@ use Pimcore\Model\Document\DocType;
 interface DocTypeRepositoryInterface
 {
     /**
+     * @throws InvalidArgumentException
      * @return DocType[]
      */
     public function listDocTypes(?string $type = null): array;
