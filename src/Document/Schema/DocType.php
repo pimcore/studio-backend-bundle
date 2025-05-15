@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'DocType',
     required: [
         'id', 'name', 'type', 'group', 'controller', 'template', 'priority',
-        'creationDate', 'modificationDate', 'staticGeneratorEnabled', 'writeable'
+        'creationDate', 'modificationDate', 'staticGeneratorEnabled', 'writeable',
     ],
     type: 'object'
 )]

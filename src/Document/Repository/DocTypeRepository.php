@@ -17,6 +17,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverI
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Model\Document\DocType;
 use Pimcore\Model\Document\DocType\Listing;
+use function sprintf;
 
 /**
  * @internal
