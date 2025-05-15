@@ -23,12 +23,8 @@ enum DocumentTypes: string
     use EnumToValueArrayTrait;
 
     case EMAIL = 'email';
-
     case HARDLINK = 'hardlink';
-
     case LINK = 'link';
-
     case PAGE = 'page';
-
     case SNIPPET = 'snippet';
 }

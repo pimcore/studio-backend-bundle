@@ -29,11 +29,12 @@ use Pimcore\Model\Document\Email;
 use Pimcore\Model\Document\Hardlink;
 use Pimcore\Model\Document\Link;
 use Pimcore\Model\Document\Page;
+use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Document\Service;
 use Pimcore\Model\Document\Snippet;
-use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
+use function in_array;
 
 /**
  * @internal
@@ -41,7 +42,7 @@ use Pimcore\Resolver\ResolverInterface;
 final readonly class CreateService implements CreateServiceInterface
 {
     private const array PAGE_SNIPPET_TYPES = [
-        DocumentTypes::PAGE->value, DocumentTypes::SNIPPET->value, DocumentTypes::EMAIL->value
+        DocumentTypes::PAGE->value, DocumentTypes::SNIPPET->value, DocumentTypes::EMAIL->value,
     ];
 
     public function __construct(
@@ -90,8 +91,7 @@ final readonly class CreateService implements CreateServiceInterface
         UserInterface $user,
         DocumentAddParameters $parameters,
         ?Document $baseTranslationDocument
-    ): array
-    {
+    ): array {
         $data = $this->addBaseData($user, $parameters);
         $data = $this->addDocTypeData($data, $parameters, $baseTranslationDocument);
 
@@ -179,8 +179,7 @@ final readonly class CreateService implements CreateServiceInterface
         Document $document,
         Document $baseTranslationDocument,
         ?string $language
-    ): void
-    {
+    ): void {
         $properties = $baseTranslationDocument->getProperties();
         $properties = array_merge($properties, $document->getProperties());
         $document->setProperties($properties);

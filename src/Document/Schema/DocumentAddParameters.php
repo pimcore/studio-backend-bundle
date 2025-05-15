@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
     title: 'DocumentAdd',
     required: [
         'key', 'type', 'title', 'navigationName', 'docTypeId',
-        'translationsSourceId', 'language', 'inheritanceSourceId'
+        'translationsSourceId', 'language', 'inheritanceSourceId',
     ],
     type: 'object'
 )]

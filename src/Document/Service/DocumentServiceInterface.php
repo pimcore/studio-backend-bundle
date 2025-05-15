@@ -35,13 +35,12 @@ use Pimcore\Model\UserInterface;
  */
 interface DocumentServiceInterface
 {
-
     /**
      * @throws ElementExistsException|ElementSavingFailedException|ForbiddenException
      * @throws InvalidArgumentException|NotFoundException|UserNotFoundException
      */
     public function addDocument(int $parentId, DocumentAddParameters $parameters): int;
-    
+
     /**
      * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
      */
