@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
@@ -20,6 +21,9 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
@@ -32,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\Document as DocumentModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -42,13 +47,30 @@ final readonly class DocumentService implements DocumentServiceInterface
     use UserPermissionTrait;
 
     public function __construct(
-        private DocumentSearchServiceInterface $documentSearchService,
+        private CreateServiceInterface $createService,
         private DataServiceInterface $dataService,
+        private DocumentSearchServiceInterface $documentSearchService,
+        private DocumentServiceResolverInterface $documentServiceResolver,
         private EventDispatcherInterface $eventDispatcher,
         private FilterServiceProviderInterface $filterServiceProvider,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
     ) {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addDocument(int $parentId, DocumentAddParameters $parameters): int
+    {
+        $user = $this->securityService->getCurrentUser();
+        $parent = $this->getValidParent($user, $parentId);
+        $fullPath = $this->getElementFullPath($parent->getFullPath(), $parameters->getKey());
+        if ($this->documentServiceResolver->pathExists($fullPath)) {
+            throw new ElementExistsException(sprintf('Document with full path [%s] already exists', $fullPath));
+        }
+
+        return $this->createService->createDocument($parent, $parameters, $user);
     }
 
     /**
@@ -122,6 +144,17 @@ final readonly class DocumentService implements DocumentServiceInterface
         }
 
         return $document;
+    }
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function getValidParent(UserInterface $user, int $parentId): DocumentModel
+    {
+        $parent = $this->getDocumentElement($user, $parentId);
+        $this->securityService->hasElementPermission($parent, $user, ElementPermissions::CREATE_PERMISSION);
+
+        return $parent;
     }
 
     /**

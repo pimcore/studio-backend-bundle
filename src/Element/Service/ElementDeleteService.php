@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Asset\Event\AssetDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\DataObjectDeleteEvent;
+use Pimcore\Bundle\StudioBackendBundle\Document\Event\DocumentDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
@@ -31,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\Recyclebin\Item;
 use Pimcore\Model\User;
@@ -102,7 +104,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
 
         if (!$event->getDeletionAllowed()) {
             throw new ElementDeletionFailedException(
-                $event->getAsset()->getId(),
+                $event->getElement()->getId(),
                 $event->getReason()
             );
         }
@@ -214,10 +216,11 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
      */
     private function getDeleteEvent(
         ElementInterface $element
-    ): AssetDeleteEvent|DataObjectDeleteEvent {
+    ): AssetDeleteEvent|DataObjectDeleteEvent|DocumentDeleteEvent {
         return match (true) {
             $element instanceof Asset => new AssetDeleteEvent($element),
             $element instanceof DataObject => new DataObjectDeleteEvent($element),
+            $element instanceof Document => new DocumentDeleteEvent($element),
             default => throw new InvalidElementTypeException($element->getType())
         };
     }
