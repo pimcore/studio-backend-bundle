@@ -32,7 +32,7 @@ final readonly class DocTypeRepository implements DocTypeRepositoryInterface
     /**
      * {@inheritDoc}
      */
-    public function listDocTypes(string $type = null): array
+    public function listDocTypes(?string $type = null): array
     {
         $listing = new Listing();
         if ($type !== null) {

@@ -23,5 +23,5 @@ interface DocTypeRepositoryInterface
     /**
      * @return DocType[]
      */
-    public function listDocTypes(string $type = null): array;
+    public function listDocTypes(?string $type = null): array;
 }
