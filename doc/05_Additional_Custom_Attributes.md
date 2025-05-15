@@ -66,6 +66,9 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `additionalCssClasses` - Additional CSS classes that should be added to the tree element.
 
 ### List of available events
+- `asset.delete`
+- `data_object.delete`
+- `document.delete`
 - `pre_response.asset`
 - `pre_response.asset_custom_metadata`
 - `pre_response.asset_custom_settings`
@@ -91,6 +94,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.data_object_version`
 - `pre_response.dependency`
 - `pre_response.document`
+- `pre_response.document.doc_type_list`
 - `pre_response.document.sites_list_available`
 - `pre_response.document_version`
 - `pre_response.email.blocklist.entry`

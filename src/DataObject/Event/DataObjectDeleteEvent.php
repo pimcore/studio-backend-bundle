@@ -18,7 +18,7 @@ use Pimcore\Event\Model\DataObjectEvent;
 
 final class DataObjectDeleteEvent extends DataObjectEvent
 {
-    public const EVENT_NAME = 'dataObject.delete';
+    public const string EVENT_NAME = 'data_object.delete';
 
     use ElementDeleteParamsTrait;
 }
