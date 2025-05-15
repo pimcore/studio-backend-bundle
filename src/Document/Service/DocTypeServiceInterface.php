@@ -23,6 +23,7 @@ interface DocTypeServiceInterface
 {
     /**
      * @throws InvalidArgumentException
+     *
      * @return DocType[]
      */
     public function listDocTypes(?string $type): array;
