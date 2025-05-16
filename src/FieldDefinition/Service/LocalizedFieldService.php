@@ -25,11 +25,14 @@ final class LocalizedFieldService implements LocalizedFieldServiceInterface
 {
     public function getFieldDefinition(Localizedfields $localizedfields, string $key): Data
     {
-        $item = array_find($localizedfields->getChildren(), function (Data $field) use ($key) {
+        $item = array_filter($localizedfields->getChildren(), function (Data $field) use ($key) {
             return $field->getName() === $key;
         });
+        $item = reset($item);
 
-        if ($item === null) {
+
+
+        if (!$item) {
             throw new ParseException(sprintf('Localized field definition "%s" does not exist', $key));
         }
 
