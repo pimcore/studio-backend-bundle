@@ -30,8 +30,6 @@ final class LocalizedFieldService implements LocalizedFieldServiceInterface
         });
         $item = reset($item);
 
-
-
         if (!$item) {
             throw new ParseException(sprintf('Localized field definition "%s" does not exist', $key));
         }
