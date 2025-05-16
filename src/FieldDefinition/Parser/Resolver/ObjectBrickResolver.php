@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
 
 use Exception;
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface as ObjectBrickDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\Objectbrick\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\LocalizedFieldServiceInterface;
@@ -28,7 +28,7 @@ use function sprintf;
 final class ObjectBrickResolver extends AbstractResolver
 {
     public function __construct(
-        private readonly ObjectBrickDefinitionResolverInterface $objectBrickDefinitionResolver,
+        private readonly DefinitionResolverInterface $objectBrickDefinitionResolver,
         private readonly LocalizedFieldServiceInterface $localizedFieldService,
     ) {
     }
@@ -72,7 +72,13 @@ final class ObjectBrickResolver extends AbstractResolver
         $isAllowed = reset($isAllowed);
 
         if (!$isAllowed) {
-            throw new ParseException(sprintf('Object brick "%s" is not allowed/found in field "%s"', $dotNotationParts[1], $dotNotationParts[0]));
+            throw new ParseException(
+                sprintf(
+                    'Object brick "%s" is not allowed/found in field "%s"',
+                    $dotNotationParts[1],
+                    $dotNotationParts[0]
+                )
+            );
         }
 
         $objectBrickDefinition = $this->objectBrickDefinitionResolver->getByKey($dotNotationParts[1]);
@@ -80,7 +86,13 @@ final class ObjectBrickResolver extends AbstractResolver
         $fd = $objectBrickDefinition->getFieldDefinition($dotNotationParts[2]);
 
         if ($fd === null) {
-            throw new ParseException(sprintf('Field Definition "%s" does not exist in object brick "%s"', $dotNotationParts[2], $dotNotationParts[1]));
+            throw new ParseException(
+                sprintf(
+                    'Field Definition "%s" does not exist in object brick "%s"',
+                    $dotNotationParts[2],
+                    $dotNotationParts[1]
+                )
+            );
         }
 
         $localized = false;

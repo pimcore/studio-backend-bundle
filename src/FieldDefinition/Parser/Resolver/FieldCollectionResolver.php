@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
 
-use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface as FieldCollectionDefinitionResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\LocalizedFieldServiceInterface;
@@ -28,7 +28,7 @@ use function sprintf;
 final class FieldCollectionResolver extends AbstractResolver
 {
     public function __construct(
-        private readonly FieldCollectionDefinitionResolverInterface $fieldCollectionDefinitionResolver,
+        private readonly DefinitionResolverInterface $fieldCollectionDefinitionResolver,
         private readonly LocalizedFieldServiceInterface $localizedFieldService,
     ) {
     }
@@ -74,7 +74,13 @@ final class FieldCollectionResolver extends AbstractResolver
         $fd = $fieldCollectionDefinition->getFieldDefinition($dotNotationParts[2]);
 
         if ($fd === null) {
-            throw new ParseException(sprintf('Field collection "%s" does not have a field "%s"', $dotNotationParts[1], $dotNotationParts[2]));
+            throw new ParseException(
+                sprintf(
+                    'Field collection "%s" does not have a field "%s"',
+                    $dotNotationParts[1],
+                    $dotNotationParts[2]
+                )
+            );
         }
 
         $localized = false;
