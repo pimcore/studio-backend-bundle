@@ -88,7 +88,7 @@ final class FieldCollectionResolver extends AbstractResolver
         return $this->wrapFieldDefinition(
             fieldDefinition: $fd,
             containerType: 'fieldcollection',
-            fieldname: $dotNotationParts[3],
+            fieldname: $dotNotationParts[2],
             subContainerType: $localized ? 'localizedfield' : null,
             subContainerKey: $localized ? $dotNotationParts[3] : null,
         );

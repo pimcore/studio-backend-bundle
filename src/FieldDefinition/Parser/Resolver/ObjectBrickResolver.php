@@ -66,9 +66,10 @@ final class ObjectBrickResolver extends AbstractResolver
             throw new ParseException(sprintf('Field "%s" is not of type Object bricks', $dotNotationParts[0]));
         }
 
-        $isAllowed = array_find($objectBrickFd->getAllowedTypes(), function (string $type) use ($dotNotationParts) {
+        $isAllowed = array_filter($objectBrickFd->getAllowedTypes(), function (string $type) use ($dotNotationParts) {
             return $type === $dotNotationParts[1];
         });
+        $isAllowed = reset($isAllowed);
 
         if (!$isAllowed) {
             throw new ParseException(sprintf('Object brick "%s" is not allowed/found in field "%s"', $dotNotationParts[1], $dotNotationParts[0]));
@@ -93,7 +94,7 @@ final class ObjectBrickResolver extends AbstractResolver
         return $this->wrapFieldDefinition(
             fieldDefinition: $fd,
             containerType: 'objectbrick',
-            fieldname: $dotNotationParts[3],
+            fieldname: $dotNotationParts[2],
             subContainerType: $localized ? 'localizedfield' : null,
             subContainerKey: $localized ? $dotNotationParts[3] : null,
         );
