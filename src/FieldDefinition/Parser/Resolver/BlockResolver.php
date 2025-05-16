@@ -11,7 +11,6 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
@@ -19,6 +18,8 @@ use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\LocalizedFieldServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
+use function count;
+use function sprintf;
 
 /**
  * @internal
@@ -27,8 +28,7 @@ final class BlockResolver extends AbstractResolver
 {
     public function __construct(
         private readonly LocalizedFieldServiceInterface $localizedFieldService
-    )
-    {
+    ) {
     }
 
     public function getResolverName(): string
@@ -60,7 +60,7 @@ final class BlockResolver extends AbstractResolver
         $fd = $this->getFieldDefinition($dotNotationParts[0]);
 
         if (!$fd instanceof Block) {
-            throw new ParseException("Class Definition has to be of type Block");
+            throw new ParseException('Class Definition has to be of type Block');
         }
 
         $item = array_find($fd->getChildren(), function (Data $field) use ($dotNotationParts) {
@@ -70,7 +70,6 @@ final class BlockResolver extends AbstractResolver
         if ($item === null) {
             throw new ParseException(sprintf('Block field definition "%s" does not exist', $dotNotationParts[1]));
         }
-
 
         $localized = false;
         if ($item instanceof Data\Localizedfields && count($dotNotationParts) >= 3) {

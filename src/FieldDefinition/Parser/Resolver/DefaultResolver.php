@@ -11,18 +11,17 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
+use function count;
 
 /**
  * @internal
  */
 final class DefaultResolver extends AbstractResolver
 {
-
     public function getResolverName(): string
     {
         return 'default';

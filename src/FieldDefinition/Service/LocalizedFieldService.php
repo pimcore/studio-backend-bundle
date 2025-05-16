@@ -11,19 +11,18 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Localizedfields;
+use function sprintf;
 
 /**
  * @internal
  */
 final class LocalizedFieldService implements LocalizedFieldServiceInterface
 {
-
     public function getFieldDefinition(Localizedfields $localizedfields, string $key): Data
     {
         $item = array_find($localizedfields->getChildren(), function (Data $field) use ($key) {

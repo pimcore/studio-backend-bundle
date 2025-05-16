@@ -11,10 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition;
-
-
 
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 
@@ -29,8 +26,7 @@ final readonly class FieldDefinitionWrapper
         private string $fieldname,
         private ?string $subContainerType = null,
         private ?string $subContainerKey = null
-    )
-    {
+    ) {
     }
 
     public function getFieldDefinition(): Data

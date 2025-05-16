@@ -11,9 +11,9 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser;
 
+use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\ResolverInterface;
@@ -28,8 +28,7 @@ final class DotNotationParser implements DotNotationParserInterface
 {
     public function __construct(
         private readonly ResolverLoaderInterface $resolverLoader,
-    )
-    {
+    ) {
     }
 
     /**
@@ -44,7 +43,7 @@ final class DotNotationParser implements DotNotationParserInterface
 
     /**
      * @throws ParseException
-     * @throws \Exception
+     * @throws Exception
      */
     public function parse(Concrete $concreteObject, string $dotNotation): FieldDefinitionWrapper
     {
@@ -59,6 +58,7 @@ final class DotNotationParser implements DotNotationParserInterface
                 continue;
             }
             $fd = $resolver->resolve($parts);
+
             break;
 
         }

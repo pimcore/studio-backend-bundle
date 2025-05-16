@@ -11,15 +11,16 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
-
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Block;
 use Pimcore\Model\DataObject\Fieldcollection\Definition;
+use function array_key_exists;
+use function count;
+use function sprintf;
 
 abstract class AbstractResolver implements ResolverInterface
 {
@@ -33,12 +34,11 @@ abstract class AbstractResolver implements ResolverInterface
      */
     private array $resolvers = [];
 
+    abstract public function getResolverName(): string;
 
-    public abstract function getResolverName(): string;
+    abstract public function canResolve(array $dotNotationParts): bool;
 
-    public abstract function canResolve(array $dotNotationParts): bool;
-
-    public abstract function resolve(array $dotNotationParts): FieldDefinitionWrapper;
+    abstract public function resolve(array $dotNotationParts): FieldDefinitionWrapper;
 
     /**
      * @param array<string, Data> $fieldDefinitions
@@ -120,9 +120,8 @@ abstract class AbstractResolver implements ResolverInterface
         string $containerType,
         string $fieldname,
         ?string $subContainerType = null,
-        ?string$subContainerKey = null
-    ): FieldDefinitionWrapper
-    {
+        ?string $subContainerKey = null
+    ): FieldDefinitionWrapper {
         return new FieldDefinitionWrapper(
             $fieldDefinition,
             $containerType,

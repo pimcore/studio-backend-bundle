@@ -11,7 +11,6 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
 
 use Exception;
@@ -20,18 +19,18 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\LocalizedFieldServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use function count;
+use function sprintf;
 
 /**
  * @internal
  */
 final class ObjectBrickResolver extends AbstractResolver
 {
-
     public function __construct(
         private readonly ObjectBrickDefinitionResolverInterface $objectBrickDefinitionResolver,
         private readonly LocalizedFieldServiceInterface $localizedFieldService,
-    )
-    {
+    ) {
     }
 
     public function getResolverName(): string
@@ -47,7 +46,7 @@ final class ObjectBrickResolver extends AbstractResolver
 
         try {
             $fd = $this->getFieldDefinition($dotNotationParts[0]);
-        }catch (Exception) {
+        } catch (Exception) {
             return false;
         }
 

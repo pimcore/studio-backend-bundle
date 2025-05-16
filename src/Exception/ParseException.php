@@ -11,7 +11,6 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Exception;
 
 use Exception;
@@ -21,5 +20,4 @@ use Exception;
  */
 final class ParseException extends Exception
 {
-
 }

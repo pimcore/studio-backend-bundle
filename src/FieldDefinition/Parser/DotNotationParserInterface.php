@@ -11,7 +11,6 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser;
 
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;

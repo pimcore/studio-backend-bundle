@@ -11,13 +11,14 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\LocalizedFieldServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
+use function array_key_exists;
+use function count;
 
 /**
  * @internal
@@ -26,8 +27,7 @@ final class LocalizedFieldResolver extends AbstractResolver
 {
     public function __construct(
         private readonly LocalizedFieldServiceInterface $localizedFieldService,
-    )
-    {
+    ) {
     }
 
     public function getResolverName(): string
@@ -48,13 +48,13 @@ final class LocalizedFieldResolver extends AbstractResolver
     {
         $key = $dotNotationParts[1];
         if (!array_key_exists('localizedfields', $this->getFieldDefinitions())) {
-            throw new ParseException("Class Definition has no localized fields");
+            throw new ParseException('Class Definition has no localized fields');
         }
 
         $localizedFields = $this->getFieldDefinitions()['localizedfields'];
 
         if (!$localizedFields instanceof Data\Localizedfields) {
-            throw new ParseException("Class Definition has to be of type Localizedfields");
+            throw new ParseException('Class Definition has to be of type Localizedfields');
         }
 
         return $this->wrapFieldDefinition(

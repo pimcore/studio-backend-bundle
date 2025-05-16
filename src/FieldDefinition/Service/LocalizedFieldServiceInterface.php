@@ -11,7 +11,6 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service;
 
 use Pimcore\Model\DataObject\ClassDefinition\Data;

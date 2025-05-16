@@ -11,7 +11,6 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\FieldCollection\DefinitionResolverInterface as FieldCollectionDefinitionResolverInterface;
@@ -20,18 +19,18 @@ use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
 use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\LocalizedFieldServiceInterface;
 use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Fieldcollections;
+use function count;
+use function sprintf;
 
 /**
  * @internal
  */
 final class FieldCollectionResolver extends AbstractResolver
 {
-
     public function __construct(
         private readonly FieldCollectionDefinitionResolverInterface $fieldCollectionDefinitionResolver,
         private readonly LocalizedFieldServiceInterface $localizedFieldService,
-    )
-    {
+    ) {
     }
 
     public function getResolverName(): string
@@ -77,7 +76,6 @@ final class FieldCollectionResolver extends AbstractResolver
         if ($fd === null) {
             throw new ParseException(sprintf('Field collection "%s" does not have a field "%s"', $dotNotationParts[1], $dotNotationParts[2]));
         }
-
 
         $localized = false;
         if ($fd instanceof Data\Localizedfields && $dotNotationParts[3]) {

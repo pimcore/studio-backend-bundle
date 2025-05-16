@@ -11,7 +11,6 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
@@ -20,7 +19,6 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 
 interface ResolverInterface
 {
-
     public function getResolverName(): string;
 
     public function canResolve(array $dotNotationParts): bool;
@@ -39,5 +37,4 @@ interface ResolverInterface
      * @param array<string, ResolverInterface> $resolvers
      */
     public function setResolvers(array $resolvers): void;
-
 }
