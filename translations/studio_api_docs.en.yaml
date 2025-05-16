@@ -208,10 +208,24 @@ data_object_update_by_id_description: |
   You can create/update/delete list entries like properties or data object editable fields. <br>  If you want to update (add/remove) only some data of a field (e.g data of multi-relation fields), use the PATCH method.
 data_object_update_by_id_success_response: Successfully updated data object
 data_object_update_by_id_summary: Update a data object by ID
+document_add_description: |
+  Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DocumentAdd</strong>
+document_add_success_response: ID of added document
+document_add_summary: Add a new document
+document_doc_type_list_description: |
+  List all DocTypes. Results can be filtered based on the given <strong>{type}</strong>. <br> The <strong>{type}</strong> must be an existing DocType type.
+document_doc_type_list_success_response: List of all DocTypes
+document_doc_type_list_summary: List all document DocTypes
 document_get_by_id_description: |
   Retrieves a specific document based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document or folder.
 document_get_by_id_success_response: Successfully retrieved document data as JSON
 document_get_by_id_summary: Get a specific document by ID
+document_get_tree_description: |
+  Listing of all documents and document folders in the system. <br>
+  Returns only data which are relevant for the tree <br>
+  You can use different query parameters to filter the assets and it is possible to exclude folders from the result completely
+document_get_tree_success_response: Paginated documents with total count as header param as JSON
+document_get_tree_summary: Get all document data for the tree
 document_page_stream_preview_description: |
   Stream page document PDF preview based on the provided <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing page
 document_page_stream_preview_success_response: Page preview stream

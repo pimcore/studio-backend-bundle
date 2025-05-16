@@ -13,11 +13,20 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\Document as DocumentModel;
 use Pimcore\Model\UserInterface;
 
@@ -27,9 +36,20 @@ use Pimcore\Model\UserInterface;
 interface DocumentServiceInterface
 {
     /**
+     * @throws ElementExistsException|ElementSavingFailedException|ForbiddenException
+     * @throws InvalidArgumentException|NotFoundException|UserNotFoundException
+     */
+    public function addDocument(int $parentId, DocumentAddParameters $parameters): int;
+
+    /**
+     * @throws InvalidFilterServiceTypeException|SearchException|InvalidQueryTypeException|InvalidFilterTypeException
+     */
+    public function getDocuments(ElementParameters $parameters): Collection;
+
+    /**
      * @throws SearchException|NotFoundException|UserNotFoundException
      */
-    public function getDocument(int $id, bool $getWorkflowAvailable = true): Document;
+    public function getDocument(int $id, bool $getDetailData = true): Document;
 
     /**
      * @throws SearchException|NotFoundException

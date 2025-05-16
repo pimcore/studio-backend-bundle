@@ -13,24 +13,30 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidElementTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\Service\FilterServiceProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\Document as DocumentModel;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -41,31 +47,70 @@ final readonly class DocumentService implements DocumentServiceInterface
     use UserPermissionTrait;
 
     public function __construct(
+        private CreateServiceInterface $createService,
+        private DataServiceInterface $dataService,
         private DocumentSearchServiceInterface $documentSearchService,
+        private DocumentServiceResolverInterface $documentServiceResolver,
         private EventDispatcherInterface $eventDispatcher,
+        private FilterServiceProviderInterface $filterServiceProvider,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
-        private WorkflowDetailsServiceInterface $workflowDetailsService
     ) {
     }
 
     /**
-     * @throws SearchException|NotFoundException|UserNotFoundException
+     * {@inheritDoc}
      */
-    public function getDocument(int $id, bool $getWorkflowAvailable = true): Document
+    public function addDocument(int $parentId, DocumentAddParameters $parameters): int
     {
         $user = $this->securityService->getCurrentUser();
-        $document = $this->documentSearchService->getDocumentById(
-            $id,
-            $user
+        $parent = $this->getValidParent($user, $parentId);
+        $fullPath = $this->getElementFullPath($parent->getFullPath(), $parameters->getKey());
+        if ($this->documentServiceResolver->pathExists($fullPath)) {
+            throw new ElementExistsException(sprintf('Document with full path [%s] already exists', $fullPath));
+        }
+
+        return $this->createService->createDocument($parent, $parameters, $user);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDocuments(ElementParameters $parameters): Collection
+    {
+        /** @var SearchIndexFilterInterface $filterService */
+        $filterService = $this->filterServiceProvider->create(SearchIndexFilterInterface::SERVICE_TYPE);
+
+        /** @var DocumentQueryInterface $documentQuery */
+        $documentQuery = $filterService->applyFilters(
+            $parameters,
+            ElementTypes::TYPE_DOCUMENT
         );
 
-        if ($getWorkflowAvailable) {
-            $document->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflowsById(
-                $id,
-                ElementTypes::TYPE_DOCUMENT,
-                $user
-            ));
+        $documentQuery->orderByPath('asc');
+        $documentQuery->setUser($this->securityService->getCurrentUser());
+
+        $result = $this->documentSearchService->searchDocuments($documentQuery);
+
+        $items = $result->getItems();
+
+        foreach ($items as $item) {
+            $this->dispatchDocumentEvent($item);
+        }
+
+        return new Collection($result->getTotalItems(), $items);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDocument(int $id, bool $getDetailData = true): Document
+    {
+        $user = $this->securityService->getCurrentUser();
+        $document = $this->documentSearchService->getDocumentById($id, $user);
+
+        if ($getDetailData) {
+            $this->getDocumentDetailData($document);
         }
         $this->dispatchDocumentEvent($document);
 
@@ -73,7 +118,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * {@inheritDoc}
      */
     public function getDocumentForUser(int $id, UserInterface $user): Document
     {
@@ -85,7 +130,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     }
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * {@inheritDoc}
      */
     public function getDocumentElement(
         UserInterface $user,
@@ -99,6 +144,33 @@ final readonly class DocumentService implements DocumentServiceInterface
         }
 
         return $document;
+    }
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    private function getValidParent(UserInterface $user, int $parentId): DocumentModel
+    {
+        $parent = $this->getDocumentElement($user, $parentId);
+        $this->securityService->hasElementPermission($parent, $user, ElementPermissions::CREATE_PERMISSION);
+
+        return $parent;
+    }
+
+    /**
+     * @throws InvalidElementTypeException|NotFoundException
+     */
+    private function getDocumentDetailData(Document $document): void
+    {
+        $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_DOCUMENT, $document->getId());
+        $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
+        $element = $this->getVersionData($element, $version);
+
+        if (!$element instanceof DocumentModel) {
+            return;
+        }
+
+        $this->dataService->setDocumentDetailData($document, $element, $version);
     }
 
     private function dispatchDocumentEvent(mixed $document): void

@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Factory;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DataObjectQueryProviderInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidQueryTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -27,7 +28,8 @@ final readonly class QueryFactory implements QueryFactoryInterface
 {
     public function __construct(
         private AssetQueryProviderInterface $assetQueryProvider,
-        private DataObjectQueryProviderInterface $dataObjectQueryProvider
+        private DataObjectQueryProviderInterface $dataObjectQueryProvider,
+        private DocumentQueryProviderInterface $documentQueryProvider,
     ) {
 
     }
@@ -40,6 +42,7 @@ final readonly class QueryFactory implements QueryFactoryInterface
         return match($type) {
             ElementTypes::TYPE_ASSET => $this->assetQueryProvider->createAssetQuery(),
             ElementTypes::TYPE_DATA_OBJECT => $this->dataObjectQueryProvider->createDataObjectQuery(),
+            ElementTypes::TYPE_DOCUMENT => $this->documentQueryProvider->createDocumentQuery(),
             default => throw new InvalidQueryTypeException(
                 HttpResponseCodes::BAD_REQUEST->value,
                 "Unknown query type: $type"

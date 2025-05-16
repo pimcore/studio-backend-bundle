@@ -19,6 +19,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchR
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject;
@@ -103,12 +104,12 @@ final readonly class IconService implements IconServiceInterface
     public function getIconForDocument(string $documentType): ElementIcon
     {
         $value = match ($documentType) {
-            'email' => 'email',
-            'hardlink' => 'hardlink',
-            'folder' => 'folder',
-            'link' => 'link',
-            'page' => 'page',
-            'snippet' => 'snippet',
+            DocumentTypes::EMAIL->value => 'email',
+            DocumentTypes::HARDLINK->value => 'hardlink',
+            ElementTypes::TYPE_FOLDER => 'folder',
+            DocumentTypes::LINK->value => 'link',
+            DocumentTypes::PAGE->value => 'page',
+            DocumentTypes::SNIPPET->value => 'snippet',
             default => self::DEFAULT_ICON
         };
 
