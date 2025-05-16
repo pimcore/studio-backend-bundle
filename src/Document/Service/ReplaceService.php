@@ -21,10 +21,10 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Model\Document\PageSnippet;
-use Pimcore\Model\Document\Service as DocumentService;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Folder;
+use Pimcore\Model\Document\PageSnippet;
+use Pimcore\Model\Document\Service as DocumentService;
 use Pimcore\Model\UserInterface;
 
 /**
