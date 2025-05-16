@@ -11,14 +11,20 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\Document\MappedParameter;
 
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\ElementDeleteParamsTrait;
-use Pimcore\Event\Model\DataObjectEvent;
-
-final class DataObjectDeleteEvent extends DataObjectEvent
+/**
+ * @internal
+ */
+final readonly class TypeParameter
 {
-    public const string EVENT_NAME = 'data_object.delete';
+    public function __construct(
+        private ?string $type = null
+    ) {
+    }
 
-    use ElementDeleteParamsTrait;
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
 }

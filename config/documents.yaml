@@ -27,6 +27,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentService
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\DocTypeServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\DocTypeService
+
   Pimcore\Bundle\StudioBackendBundle\Document\Service\SiteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\SiteService
 
@@ -44,6 +47,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepository
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Repository\DocTypeRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Repository\DocTypeRepository
+
 
   #
   # Hydrators
@@ -51,3 +57,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\SiteHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\SiteHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeHydrator

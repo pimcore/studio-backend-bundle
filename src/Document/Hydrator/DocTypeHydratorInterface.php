@@ -11,14 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Event;
+namespace Pimcore\Bundle\StudioBackendBundle\Document\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\ElementDeleteParamsTrait;
-use Pimcore\Event\Model\DataObjectEvent;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType;
+use Pimcore\Model\Document\DocType as DocTypeModel;
 
-final class DataObjectDeleteEvent extends DataObjectEvent
+/**
+ * @internal
+ */
+interface DocTypeHydratorInterface
 {
-    public const string EVENT_NAME = 'data_object.delete';
-
-    use ElementDeleteParamsTrait;
+    public function hydrate(DocTypeModel $docType): DocType;
 }

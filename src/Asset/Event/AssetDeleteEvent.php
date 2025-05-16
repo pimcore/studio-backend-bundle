@@ -18,7 +18,7 @@ use Pimcore\Event\Model\AssetEvent;
 
 final class AssetDeleteEvent extends AssetEvent
 {
-    public const EVENT_NAME = 'asset.delete';
+    public const string EVENT_NAME = 'asset.delete';
 
     use ElementDeleteParamsTrait;
 }
