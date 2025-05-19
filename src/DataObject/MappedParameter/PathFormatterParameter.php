@@ -22,8 +22,8 @@ final readonly class PathFormatterParameter
 {
     public function __construct(
         #[NotBlank(message: 'The object id must not be empty.')]
-        private int    $objectId,
-        private array  $targets,
+        private int $objectId,
+        private array $targets,
         private string $fieldName,
 
     ) {

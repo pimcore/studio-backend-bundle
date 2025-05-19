@@ -18,7 +18,6 @@ use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleInteger;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\SingleString;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 final class PathFormatterRequestBody extends RequestBody
@@ -40,7 +39,7 @@ final class PathFormatterRequestBody extends RequestBody
                     ),
                     new Property(
                         property: 'fieldName',
-                        description: "Fieldname for the PathFormatter. Given as Dot Notation",
+                        description: 'Fieldname for the PathFormatter. Given as Dot Notation',
                         type: 'string',
                         example: 'attributes.Bodywork.numberOfDoors'
                     ),

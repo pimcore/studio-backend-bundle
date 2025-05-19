@@ -17,7 +17,6 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\FormatedPathEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\FormatedPathHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PathFormatterHelperInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PathFormatterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -75,7 +74,6 @@ final readonly class PathFormatterService implements PathFormatterServiceInterfa
     {
         $context = $this->dotNotationParser->parse($source, $dotNotation);
         $fd = $context->getFieldDefinition();
-
 
         if (!$fd instanceof PathFormatterAwareInterface) {
             throw new InvalidArgumentException('FieldDefinition is not PathFormatterAware');
