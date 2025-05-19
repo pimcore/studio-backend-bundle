@@ -59,9 +59,6 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\ApplyChangesHelperInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\ApplyChangesHelper
 
-  Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PathFormatterHelperInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PathFormatterHelper
-
 
   Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PreviewGenerator: ~
 
