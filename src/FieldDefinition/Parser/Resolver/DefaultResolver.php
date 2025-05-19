@@ -1,0 +1,52 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
+ * Full copyright and license information is available in
+ * LICENSE.md which is distributed with this source code.
+ *
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
+ */
+
+namespace Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver;
+
+use Pimcore\Bundle\StudioBackendBundle\Exception\ParseException;
+use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\FieldDefinitionWrapper;
+use function count;
+
+/**
+ * @internal
+ */
+final class DefaultResolver extends AbstractResolver
+{
+    public function getResolverName(): string
+    {
+        return 'default';
+    }
+
+    public function canResolve(array $dotNotationParts): bool
+    {
+        if (count($dotNotationParts) === 1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @throws ParseException
+     */
+    public function resolve(array $dotNotationParts): FieldDefinitionWrapper
+    {
+        $key = $dotNotationParts[0];
+
+        return $this->wrapFieldDefinition(
+            fieldDefinition: $this->getFieldDefinition($key),
+            containerType: 'object',
+            fieldname: $key,
+        );
+    }
+}

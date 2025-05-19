@@ -1,0 +1,31 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+
+  Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParser
+
+  Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\ResolverLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\Loader\TaggedIteratorResolverLoader
+
+  Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\LocalizedFieldServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Service\LocalizedFieldService
+
+
+  Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\DefaultResolver:
+    tags: [ 'pimcore.studio_backend.field_definition_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\LocalizedFieldResolver:
+    tags: [ 'pimcore.studio_backend.field_definition_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\ObjectBrickResolver:
+    tags: [ 'pimcore.studio_backend.field_definition_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\BlockResolver:
+    tags: [ 'pimcore.studio_backend.field_definition_resolver' ]
+
+  Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\Resolver\FieldCollectionResolver:
+    tags: [ 'pimcore.studio_backend.field_definition_resolver' ]
