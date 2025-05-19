@@ -65,7 +65,7 @@ final readonly class CloneService implements CloneServiceInterface
     public function cloneDocuments(int $sourceId, int $parentId, DocumentCloneParameters $parameters): ?int
     {
         $user = $this->securityService->getCurrentUser();
-        $source = $this->documentService->getDocumentElement($user, $sourceId,);
+        $source = $this->documentService->getDocumentElement($user, $sourceId, );
         $cloneData = new CloneData(
             $parameters->getLanguage(),
             $parameters->isEnableInheritance(),

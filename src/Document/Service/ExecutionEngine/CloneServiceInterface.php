@@ -34,8 +34,8 @@ interface CloneServiceInterface
      * @throws UserNotFoundException
      */
     public function cloneDocuments(
-        int                     $sourceId,
-        int                     $parentId,
+        int $sourceId,
+        int $parentId,
         DocumentCloneParameters $parameters,
     ): ?int;
 

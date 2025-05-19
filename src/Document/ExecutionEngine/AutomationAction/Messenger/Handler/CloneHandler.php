@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementDescriptor;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
+use function array_key_exists;
 
 /**
  * @internal
@@ -79,7 +80,7 @@ final class CloneHandler extends AbstractHandler
             [
                 EnvironmentVariables::ORIGINAL_PARENT_ID->value,
                 EnvironmentVariables::PARENT_ID->value,
-                EnvironmentVariables::CLONE_DATA->value
+                EnvironmentVariables::CLONE_DATA->value,
             ],
         );
 
@@ -117,7 +118,6 @@ final class CloneHandler extends AbstractHandler
             EnvironmentVariables::REWRITE_CONFIGURATION->value,
             [$source->getId() => $newObject->getId()]
         );
-
 
         if ($cloneData->isUpdateReferences() === true &&
             $this->getTotalSteps($jobRun) === ($this->getCurrentStep($jobRun) + 1)
