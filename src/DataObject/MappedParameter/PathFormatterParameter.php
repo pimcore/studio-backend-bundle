@@ -24,7 +24,7 @@ final readonly class PathFormatterParameter
         #[NotBlank(message: 'The object id must not be empty.')]
         private int $objectId,
         private array $targets,
-        private array $context,
+        private string $fieldName,
 
     ) {
     }
@@ -34,9 +34,9 @@ final readonly class PathFormatterParameter
         return $this->objectId;
     }
 
-    public function getContext(): array
+    public function getFieldName(): string
     {
-        return $this->context;
+        return $this->fieldName;
     }
 
     public function getTargets(): array

@@ -17,10 +17,10 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinition\Helper
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ConcreteObjectResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\PreResponse\FormatedPathEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Hydrator\FormatedPathHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Legacy\PathFormatterHelperInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter\PathFormatterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\FieldDefinition\Parser\DotNotationParserInterface;
 use Pimcore\Model\DataObject\ClassDefinition\PathFormatterAwareInterface;
 use Pimcore\Model\DataObject\ClassDefinition\PathFormatterInterface;
 use Pimcore\Model\DataObject\Concrete;
@@ -33,10 +33,10 @@ final readonly class PathFormatterService implements PathFormatterServiceInterfa
 {
     public function __construct(
         private ConcreteObjectResolverInterface $concreteObjectResolver,
-        private PathFormatterHelperInterface $pathFormatterHelper,
         private FormatedPathHydratorInterface $formatedPathHydrator,
         private EventDispatcherInterface $eventDispatcher,
-        private PathFormatterResolverInterface $pathFormatterResolver
+        private PathFormatterResolverInterface $pathFormatterResolver,
+        private DotNotationParserInterface $dotNotationParser,
     ) {
     }
 
@@ -50,7 +50,7 @@ final readonly class PathFormatterService implements PathFormatterServiceInterfa
 
         try {
             $result = [];
-            $formatedPaths = $this->convert($concreteObject, $parameter->getContext(), $parameter->getTargets());
+            $formatedPaths = $this->convert($concreteObject, $parameter->getFieldName(), $parameter->getTargets());
 
             foreach ($formatedPaths as $key => $formatedPath) {
                 $formatedPath = $this->formatedPathHydrator->hydrate($key, $formatedPath);
@@ -70,9 +70,10 @@ final readonly class PathFormatterService implements PathFormatterServiceInterfa
         }
     }
 
-    protected function convert(Concrete $source, array $context, array $targets): array
+    private function convert(Concrete $source, string $dotNotation, array $targets): array
     {
-        $fd = $this->pathFormatterHelper->getPathFormatterFieldDefinition($source, $context);
+        $context = $this->dotNotationParser->parse($source, $dotNotation);
+        $fd = $context->getFieldDefinition();
 
         if (!$fd instanceof PathFormatterAwareInterface) {
             throw new InvalidArgumentException('FieldDefinition is not PathFormatterAware');
@@ -92,7 +93,12 @@ final readonly class PathFormatterService implements PathFormatterServiceInterfa
 
         return $pathFormatter->formatPath([], $source, $targets, [
             'fd' => $fd,
-            'context' => $context,
+            'context' => [
+                'containerType' => $context->getContainerType(),
+                'fieldname' => $context->getFieldName(),
+                'subContainerType' => $context->getSubContainerType(),
+                'subContainerKey' => $context->getSubContainerKey(),
+            ],
         ]);
     }
 }

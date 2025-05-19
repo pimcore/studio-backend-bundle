@@ -38,9 +38,10 @@ final class PathFormatterRequestBody extends RequestBody
                         "nicePathKey":"object_10"}}'
                     ),
                     new Property(
-                        property: 'context',
-                        type: 'object',
-                        example: '{"containerType":"object","fieldname":"select","objectId":40,"layoutId":"0"}'
+                        property: 'fieldName',
+                        description: 'Fieldname for the PathFormatter. Given as Dot Notation',
+                        type: 'string',
+                        example: 'attributes.Bodywork.numberOfDoors'
                     ),
                 ]
             )
