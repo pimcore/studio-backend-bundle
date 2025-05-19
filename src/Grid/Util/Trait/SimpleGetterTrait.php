@@ -21,16 +21,11 @@ use function get_class;
 
 trait SimpleGetterTrait
 {
-    /**
-     * @throws InvalidArgumentException
-     */
     private function getValue(Column $column, StudioElementInterface|ElementInterface $element): mixed
     {
         $getter = $this->getGetter($column);
         if (method_exists($element, $getter) === false) {
-            throw new InvalidArgumentException(
-                'Method ' . $getter . ' does not exist on ' . get_class($element)
-            );
+            return null;
         }
 
         return $element->$getter();
