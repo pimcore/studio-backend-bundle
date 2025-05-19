@@ -284,16 +284,16 @@ class Configuration implements ConfigurationInterface
                             'This can also be the docker container name '.
                             '(e.g., http://mercure/.well-known/mercure). ' .
                             'If it is not set, default will be set to ' .
-                            '"http(s)://<PIMCORE_HOST>/hub/.well-known/mercure".'
+                            '"http(s)://<YOUR_PIMCORE_MAIN_DOMAIN>/hub".'
                         )
                         ->defaultNull()
                     ->end()
                     ->scalarNode('hub_url_client')
                         ->info('The url to the mercure hub for the (frontend) client. ' .
                             'If it is not set, the default will be set to ' .
-                            '"http(s)://<PIMCORE_HOST>/hub/.well-known/mercure". ' .
+                            '"http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub". ' .
                             'It is possible to use "<PIMCORE_SCHEMA_HOST>" ' .
-                            'as a placeholder for the current schema and host.'
+                            'as a placeholder for the current schema and host if path to mercure should be different.'
                         )
                         ->defaultNull()
                     ->end()
