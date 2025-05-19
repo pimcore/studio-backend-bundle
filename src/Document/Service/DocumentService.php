@@ -149,6 +149,21 @@ final readonly class DocumentService implements DocumentServiceInterface
     /**
      * @throws ForbiddenException|NotFoundException
      */
+    public function getDocumentElementByPath(UserInterface $user, string $path): DocumentModel
+    {
+        $document = $this->getElementByPath($this->serviceResolver, ElementTypes::TYPE_DOCUMENT, $path);
+        $this->securityService->hasElementPermission($document, $user, ElementPermissions::VIEW_PERMISSION);
+
+        if (!$document instanceof DocumentModel) {
+            throw new InvalidElementTypeException($document->getType());
+        }
+
+        return $document;
+    }
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
     private function getValidParent(UserInterface $user, int $parentId): DocumentModel
     {
         $parent = $this->getDocumentElement($user, $parentId);

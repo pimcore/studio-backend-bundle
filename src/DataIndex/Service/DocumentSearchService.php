@@ -92,4 +92,12 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     {
         return $this->documentSearchAdapter->findInTree($query);
     }
+
+    public function countChildren(
+        string $parentPath,
+        ?string $sortDirection = null
+    ): int {
+
+        return count($this->getChildrenIds($parentPath, $sortDirection));
+    }
 }

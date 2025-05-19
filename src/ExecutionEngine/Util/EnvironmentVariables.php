@@ -25,5 +25,8 @@ enum EnvironmentVariables: string
     case REWRITE_CONFIGURATION = 'rewriteConfiguration';
     case REWRITE_PARAMETERS = 'rewriteParameters';
     case BATCH_TAG_OPERATION = 'batchTagOperation';
+    case ENABLE_INHERITANCE = 'enableInheritance';
+    case LANGUAGE = 'language';
+    case CLONE_DATA = 'cloneData';
     case TAG_IDS = 'tagIds';
 }

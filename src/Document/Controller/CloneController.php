@@ -11,12 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\Document\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\CloneParameters;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\ExecutionEngine\CloneServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\ExecutionEngine\CloneServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentCloneParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -42,6 +42,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class CloneController extends AbstractApiController
 {
+    private const string ROUTE = '/documents/{id}/clone/{parentId}';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly CloneServiceInterface $cloneService,
@@ -55,37 +57,37 @@ final class CloneController extends AbstractApiController
      * @throws NotFoundException
      * @throws UserNotFoundException
      */
-    #[Route('/data-objects/{id}/clone/{parentId}', name: 'pimcore_studio_api_data_objects_clone', methods: ['POST'])]
-    #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_documents_clone', methods: ['POST'])]
+    #[IsGranted(UserPermissions::DOCUMENTS->value)]
     #[Post(
-        path: self::PREFIX . '/data-objects/{id}/clone/{parentId}',
-        operationId: 'data_object_clone',
-        description: 'data_object_clone_description',
-        summary: 'data_object_clone_summary',
-        tags: [Tags::DataObjects->value]
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'document_clone',
+        description: 'document_clone_description',
+        summary: 'document_clone_summary',
+        tags: [Tags::Documents->value]
     )]
     #[SuccessResponse(
-        description: 'data_object_clone_success_response',
+        description: 'document_clone_success_response',
     )]
     #[CreatedResponse(
-        description: 'data_object_clone_created_response',
+        description: 'document_clone_created_response',
         content: new IdJson('ID of created jobRun', 'jobRunId')
     )]
-    #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT)]
-    #[IdParameter(type: ElementTypes::TYPE_DATA_OBJECT, name: 'parentId')]
-    #[ReferenceRequestBody(CloneParameters::class)]
+    #[IdParameter(type: ElementTypes::TYPE_DOCUMENT)]
+    #[IdParameter(type: ElementTypes::TYPE_DOCUMENT, name: 'parentId')]
+    #[ReferenceRequestBody(DocumentCloneParameters::class)]
     #[DefaultResponses([
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function dataObjectClone(
+    public function documentClone(
         int $id,
         int $parentId,
-        #[MapRequestPayload] CloneParameters $parameters
+        #[MapRequestPayload] DocumentCloneParameters $parameters
     ): Response {
-        $jobRunId = $this->cloneService->cloneDataObjects($id, $parentId, $parameters);
+        $jobRunId = $this->cloneService->cloneDocuments($id, $parentId, $parameters);
         if ($jobRunId) {
 
             return $this->jsonResponse(['jobRunId' => $jobRunId], HttpResponseCodes::CREATED->value);

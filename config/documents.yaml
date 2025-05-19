@@ -15,6 +15,9 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\ExecutionEngine\CloneServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\ExecutionEngine\CloneService
+
   Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateService
     arguments:
@@ -63,3 +66,14 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeHydrator
+
+  #
+  # Handler
+  #
+  Pimcore\Bundle\StudioBackendBundle\Document\ExecutionEngine\AutomationAction\Messenger\Handler\CloneHandler: ~
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Document\EventSubscriber\CloneSubscriber: ~

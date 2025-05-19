@@ -25,6 +25,7 @@ enum Jobs: string
     case CLONE_DATA_OBJECTS = 'studio_ee_job_clone_data_objects';
     case REWRITE_REFERENCES = 'studio_ee_job_rewrite_element_references';
     case DELETE_DATA_OBJECTS = 'studio_ee_job_delete_data_objects';
+    case CLONE_DOCUMENTS = 'studio_ee_job_clone_documents';
     case DELETE_DOCUMENTS = 'studio_ee_job_delete_documents';
     case BATCH_TAG_ASSIGN = 'studio_ee_job_batch_tag_assign';
     case BATCH_TAG_REPLACE = 'studio_ee_job_batch_tag_replace';

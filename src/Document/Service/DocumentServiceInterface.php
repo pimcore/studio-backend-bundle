@@ -60,4 +60,9 @@ interface DocumentServiceInterface
      * @throws ForbiddenException|NotFoundException
      */
     public function getDocumentElement(UserInterface $user, int $documentId): DocumentModel;
+
+    /**
+     * @throws ForbiddenException|NotFoundException
+     */
+    public function getDocumentElementByPath(UserInterface $user, string $path): DocumentModel;
 }

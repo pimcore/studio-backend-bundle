@@ -11,21 +11,23 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Attribute\Request;
+namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request;
 
 use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\RequestBody;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\CloneParameters;
 
+/**
+ * @internal
+ */
 #[Attribute(Attribute::TARGET_METHOD)]
-final class CloneRequestBody extends RequestBody
+final class ReferenceRequestBody extends RequestBody
 {
-    public function __construct()
+    public function __construct(string $referenceClass)
     {
         parent::__construct(
             required: true,
-            content: new JsonContent(ref: CloneParameters::class)
+            content: new JsonContent(ref: $referenceClass)
         );
     }
 }

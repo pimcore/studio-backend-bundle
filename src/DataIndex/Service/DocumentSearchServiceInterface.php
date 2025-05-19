@@ -50,4 +50,9 @@ interface DocumentSearchServiceInterface
      * @throws InvalidSearchException|SearchException
      */
     public function findElementInTree(QueryInterface $query): ?ElementSearchResultItemInterface;
+
+    public function countChildren(
+        string $parentPath,
+        ?string $sortDirection = null
+    ): int;
 }
