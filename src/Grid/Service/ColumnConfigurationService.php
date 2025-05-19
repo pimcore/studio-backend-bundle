@@ -64,10 +64,21 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
     }
 
     public function getAvailableDataObjectColumnConfiguration(
-        string $classId,
-        int $folderId,
+        ?string $classId,
+        ?int $folderId,
         UserInterface $user
     ): array {
+        if (($classId === null && $folderId !== null) || ($classId !== null && $folderId === null)) {
+            throw new InvalidArgumentException('Either both classId and folderId must be set or both must be null');
+        }
+
+        if ($classId === null && $folderId === null) {
+            $columns = $this->getSystemDataObjectColumnConfiguration();
+            $this->dispatchEventForAllColumns($columns);
+
+            return $columns;
+        }
+
         $columns = [];
         foreach ($this->gridService->getColumnCollectors() as $collector) {
             // Only collect supported data object collectors
