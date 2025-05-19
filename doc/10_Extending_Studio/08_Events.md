@@ -16,9 +16,7 @@ use App\Model\Product\Car;
 use Pimcore\Bundle\StudioBackendBundle\Element\Event\PreResolve\ElementResolveEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-/**
- * @internal
- */
+
 final readonly class DataObjectSearchModifierSubscriber implements EventSubscriberInterface
 {
     public static function getSubscribedEvents(): array
@@ -44,6 +42,49 @@ final readonly class DataObjectSearchModifierSubscriber implements EventSubscrib
     {
 
         return Car::getByUid($searchTerm, 1)?->getId();
+    }
+}
+```
+
+
+#### Custom Attributes Example
+This subscriber adds an additional `isImage` attribute to an object of Image instance and adds a custom attribute to the schema.
+
+These custom attributes would be used to display a custom key in the tree and add a custom CSS class to an element.
+
+
+```php
+<?php
+
+namespace App\EventSubscriber;
+
+use Pimcore\Bundle\StudioBackendBundle\Asset\Event\PreResponse\AssetEvent;
+use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Type\Image;
+use Pimcore\Bundle\StudioBackendBundle\Element\Schema\CustomAttributes;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+
+final class AssetResponseSubscriber implements EventSubscriberInterface
+{
+
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            AssetEvent::EVENT_NAME => 'onAssetEvent',
+        ];
+    }
+
+    public function onAssetEvent(AssetEvent $event): void
+    {
+        if ($event->getAsset() instanceof Image) {
+            $event->addAdditionalAttribute('isImage', true);
+        }
+        
+        $event->setCustomAttributes(
+            new CustomAttributes(
+                key: 'My Awesome Key',
+                additionalCssClasses: ['my-awesome-css-class'],
+            )
+        );
     }
 }
 ```

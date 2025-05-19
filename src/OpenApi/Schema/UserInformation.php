@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema;
@@ -21,6 +18,8 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Schema\PerspectiveConfig;
 use Pimcore\Bundle\StudioBackendBundle\Perspective\Util\Constant\Perspectives;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\TwoFactorAuth;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
@@ -30,7 +29,11 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'User Information',
     description: 'Information about the user',
-    required: ['id', 'username', 'permissions', 'isAdmin', 'classes', 'docTypes', 'activePerspective', 'perspectives'],
+    required: [
+        'id', 'username', 'email', 'firstname', 'lastname', 'permissions', 'isAdmin', 'classes', 'docTypes',
+        'language', 'dateTimeLocale', 'welcomeScreen', 'memorizeTabs', 'hasImage', 'contentLanguages',
+        'keyBindings', 'activePerspective', 'perspectives',
+    ],
     type: 'object'
 )]
 final class UserInformation implements AdditionalAttributesInterface
@@ -42,6 +45,12 @@ final class UserInformation implements AdditionalAttributesInterface
         private readonly int $id,
         #[Property(description: 'Username', type: 'string', example: 'admin')]
         private readonly string $username,
+        #[Property(description: 'Email', type: 'string', example: '')]
+        private readonly ?string $email,
+        #[Property(description: 'Firstname', type: 'string', example: '')]
+        private readonly ?string $firstname,
+        #[Property(description: 'Lastname', type: 'string', example: '')]
+        private readonly ?string $lastname,
         #[Property(
             description: 'Permissions',
             type: 'array',
@@ -62,6 +71,30 @@ final class UserInformation implements AdditionalAttributesInterface
             items: new Items(type: 'string')
         )]
         private readonly array $docTypes,
+        #[Property(description: 'User Language', type: 'string', example: 'en')]
+        private readonly string $language,
+        #[Property(description: 'Locale for dateTime', type: 'string', example: '')]
+        private readonly ?string $dateTimeLocale,
+        #[Property(description: 'Welcome Screen', type: 'boolean', example: true)]
+        private readonly bool $welcomeScreen,
+        #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
+        private readonly bool $memorizeTabs,
+        #[Property(description: 'Has Image', type: 'boolean', example: true)]
+        private readonly bool $hasImage,
+        #[Property(
+            description: 'List of available content Language already sorted.',
+            type: 'object',
+            example: ['de', 'en']
+        )]
+        private readonly array $contentLanguages,
+        #[Property(description: 'Key Bindings', type: 'array', items: new Items(ref: KeyBinding::class))]
+        private readonly array $keyBindings,
+        #[Property(
+            description: 'Two Factor Authentication',
+            type: 'array',
+            items: new Items(ref: TwoFactorAuth::class)
+        )]
+        private readonly TwoFactorAuth $twoFactorAuthentication,
         #[Property(
             description: 'Active studio perspective ID',
             type: 'string',
@@ -92,6 +125,21 @@ final class UserInformation implements AdditionalAttributesInterface
         return $this->username;
     }
 
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function getFirstname(): ?string
+    {
+        return $this->firstname;
+    }
+
+    public function getLastname(): ?string
+    {
+        return $this->lastname;
+    }
+
     public function getIsAdmin(): bool
     {
         return $this->isAdmin;
@@ -105,6 +153,52 @@ final class UserInformation implements AdditionalAttributesInterface
     public function getDocTypes(): array
     {
         return $this->docTypes;
+    }
+
+    public function getLanguage(): string
+    {
+        return $this->language;
+    }
+
+    public function getDateTimeLocale(): ?string
+    {
+        return $this->dateTimeLocale;
+    }
+
+    public function isWelcomeScreen(): bool
+    {
+        return $this->welcomeScreen;
+    }
+
+    public function isMemorizeTabs(): bool
+    {
+        return $this->memorizeTabs;
+    }
+
+    public function isHasImage(): bool
+    {
+        return $this->hasImage;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getContentLanguages(): array
+    {
+        return $this->contentLanguages;
+    }
+
+    /**
+     * @return KeyBinding[]
+     */
+    public function getKeyBindings(): array
+    {
+        return $this->keyBindings;
+    }
+
+    public function getTwoFactorAuthentication(): TwoFactorAuth
+    {
+        return $this->twoFactorAuthentication;
     }
 
     public function getActivePerspective(): ?string

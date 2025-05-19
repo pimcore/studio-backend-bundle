@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
@@ -19,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -33,7 +31,11 @@ interface ColumnConfigurationServiceInterface
     /**
      * @return ColumnConfiguration[]
      */
-    public function getAvailableDataObjectColumnConfiguration(?string $classId, ?int $folderId): array;
+    public function getAvailableDataObjectColumnConfiguration(
+        ?string $classId,
+        ?int $folderId,
+        UserInterface $user
+    ): array;
 
     /**
      * @return ColumnConfiguration[]

@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
@@ -19,8 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter\LocalizedFieldsAdapter;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataExportInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\ClassData;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SearchPreviewDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObject;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\DataObjectDraftData;
@@ -28,6 +27,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Schema\Type\DataObjectFolder;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Bundle\StudioBackendBundle\Version\Schema\DataObjectVersion;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
@@ -37,7 +37,7 @@ use Pimcore\Model\DataObject\ClassDefinition\Data;
 use Pimcore\Model\DataObject\ClassDefinition\Data\EqualComparisonInterface;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\UserInterface;
-use Pimcore\Model\Version as DataObjectVersionModal;
+use Pimcore\Model\Version as DataObjectVersionModel;
 use Pimcore\Normalizer\NormalizerInterface;
 use function array_key_exists;
 
@@ -62,7 +62,7 @@ final readonly class DataService implements DataServiceInterface
     public function setObjectDetailData(
         DataObjectFolder|DataObject|DataObjectVersion $dataObject,
         DataObjectModel $element,
-        ?DataObjectVersionModal $version = null,
+        ?DataObjectVersionModel $version = null,
     ): void {
         $dataObject->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
         if ($dataObject instanceof DataObjectFolder || !$element instanceof Concrete) {
@@ -212,6 +212,44 @@ final readonly class DataService implements DataServiceInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getExportObjectData(Concrete $dataObject, ColumnCollection $columnCollection): array
+    {
+        $class = $this->getValidClass($this->classDefinitionResolver, $dataObject->getClassId());
+        $exportData = [];
+
+        foreach ($columnCollection->getColumns() as $column) {
+            $fieldDefinition = $class->getFieldDefinition($column->getKey());
+            if ($fieldDefinition === null) {
+                continue;
+            }
+
+            $exportData[] = $this->getExportFieldValue($dataObject, $fieldDefinition, $column->getKey()
+            );
+        }
+
+        return $exportData;
+    }
+
+    public function getExportFieldValue(
+        Concrete $dataObject,
+        Data $fieldDefinition,
+        string $key,
+        ?FieldContextData $contextData = null
+    ): string {
+        $adapter = $this->dataAdapterService->tryDataAdapter($fieldDefinition->getFieldType());
+        if ($adapter instanceof DataExportInterface) {
+            return $adapter->getExportData($dataObject, $fieldDefinition, $key, $contextData);
+        }
+
+        return $fieldDefinition->getForCsvExport(
+            $dataObject,
+            $contextData ? $contextData->getLegacyParameters() : []
+        );
+    }
+
     private function removeEmptyValues(array $previewFields): array
     {
         foreach ($previewFields as $previewFieldName => $previewField) {
@@ -252,7 +290,7 @@ final readonly class DataService implements DataServiceInterface
 
     private function getDraftData(
         DataObjectModel $dataObject,
-        ?DataObjectVersionModal $version = null
+        ?DataObjectVersionModel $version = null
     ): ?DataObjectDraftData {
         if (!$version || $dataObject->getModificationDate() < $version->getDate()) {
             return null;

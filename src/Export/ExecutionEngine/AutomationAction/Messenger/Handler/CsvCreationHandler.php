@@ -2,28 +2,26 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Handler;
 
 use Exception;
-use League\Flysystem\FilesystemException;
+use Pimcore\Bundle\StaticResolverBundle\Models\User\UserResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\AutomationAction\AbstractHandler;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Config;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\StepConfig;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Trait\HandlerProgressTrait;
 use Pimcore\Bundle\StudioBackendBundle\Export\ExecutionEngine\AutomationAction\Messenger\Messages\CsvCreationMessage;
-use Pimcore\Bundle\StudioBackendBundle\Export\ExportServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Export\Model\GridExportData;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\ExportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\PublishServiceInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
@@ -37,7 +35,9 @@ final class CsvCreationHandler extends AbstractHandler
 
     public function __construct(
         private readonly PublishServiceInterface $publishService,
-        private readonly ExportServiceInterface $csvService
+        private readonly UserResolverInterface $userResolver,
+        private readonly ExportServiceInterface $csvExportService,
+
     ) {
         parent::__construct();
     }
@@ -52,29 +52,43 @@ final class CsvCreationHandler extends AbstractHandler
             return;
         }
 
+        $user = $this->userResolver->getById($jobRun->getOwnerId());
+        if ($user === null) {
+            $this->abort($this->getAbortData(
+                Config::XLSX_CREATION_FAILED_MESSAGE->value,
+                ['message' => 'User not found']
+            ));
+        }
+
         $columns = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_COLUMNS->value);
         $settings = $this->extractConfigFieldFromJobStepConfig($message, StepConfig::CONFIG_CONFIGURATION->value);
         $headers = $settings[StepConfig::SETTINGS_HEADER->value] ?? StepConfig::SETTINGS_HEADER_NO_HEADER->value;
         $delimiter = $settings[StepConfig::SETTINGS_DELIMITER->value] ?? null;
 
-        if (!isset($jobRun->getContext()[StepConfig::CSV_EXPORT_DATA->value])) {
+        if (!isset($jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value])) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,
                 ['message' => 'Csv export data not found in job run context']
             ));
         }
-        $csvData = $jobRun->getContext()[StepConfig::CSV_EXPORT_DATA->value];
+        $csvData = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA->value];
+
+        $csvExportDataInfo = $jobRun->getContext()[StepConfig::GRID_EXPORT_DATA_INFO->value] ?? [];
 
         try {
-            $this->csvService->createExportFile(
+            $this->csvExportService->createExportFile(
                 $jobRun->getId(),
-                $columns,
-                $csvData,
-                $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
-                $headers === StepConfig::SETTINGS_HEADER_NAME,
-                $delimiter
+                new GridExportData(
+                    $columns,
+                    $csvData,
+                    $csvExportDataInfo,
+                    $headers !== StepConfig::SETTINGS_HEADER_NO_HEADER->value,
+                    $headers === StepConfig::SETTINGS_HEADER_NAME,
+                ),
+                $user,
+                $delimiter,
             );
-        } catch (Exception|FilesystemException $e) {
+        } catch (Exception $e) {
             $this->abort($this->getAbortData(
                 Config::CSV_CREATION_FAILED_MESSAGE->value,
                 ['message' => $e->getMessage()]

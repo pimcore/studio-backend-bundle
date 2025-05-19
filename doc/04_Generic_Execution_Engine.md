@@ -27,15 +27,18 @@ pimcore_studio_backend:
         size_limit: 5368709120
 ```
 
-### Asset CSV Export
-Assets can be exported based on the provided grid configuration as a CSV file. The export is done in the background and can be downloaded after its finished.
+### Element CSV Export
+Elements like Assets and Data Objects can be exported based on the provided grid configuration as a CSV file. The export is done in the background and can be downloaded after its finished.
 There are some configuration options available for the CSV export, which can be configured in the `config.yaml` file.
+
+### Element XLSX Export
+Elements like Assets and Data Objects can be exported based on the provided grid configuration as a XLSX file. The export is done in the background and can be downloaded after its finished.
 
 ```yaml
 pimcore_studio_backend:
     csv_settings:
-        # Default delimiter for CSV files when no value is passed by grid configuration. Default value is ','.
-        default_delimiter: ','
+        # Default delimiter for CSV files when no value is passed by grid configuration. Default value is ';'.
+        default_delimiter: ';'
 ```
 
 ### Elements Cloning

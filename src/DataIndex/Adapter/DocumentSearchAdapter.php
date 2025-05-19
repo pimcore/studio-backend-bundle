@@ -2,20 +2,18 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter;
 
+use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Exception\DocumentSearchException;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\DocumentSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchResultItemInterface;
@@ -23,9 +21,12 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterfac
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Document\DocumentSearchServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\DocumentHydratorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
@@ -43,12 +44,38 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
     public function __construct(
         private SearchResultIdListServiceInterface $searchResultIdListService,
         private DocumentSearchServiceInterface $searchService,
-        private DocumentHydratorInterface $hydratorService
+        private DocumentHydratorServiceInterface $hydratorService
     ) {
     }
 
     /**
-     * @throws SearchException|NotFoundException
+     * {@inheritDoc}
+     */
+    public function searchDocuments(DocumentQueryInterface $documentQuery): DocumentSearchResult
+    {
+        try {
+            $searchResult = $this->searchService->search($documentQuery->getSearch());
+        } catch (DocumentSearchException) {
+            throw new SearchException('documents');
+        } catch (Exception $e) {
+            throw new InvalidArgumentException($e->getMessage());
+        }
+
+        $result = [];
+        foreach ($searchResult->getItems() as $item) {
+            $result[] = $this->hydratorService->hydrateDocuments($item);
+        }
+
+        return new DocumentSearchResult(
+            $result,
+            $searchResult->getPagination()->getPage(),
+            $searchResult->getPagination()->getPageSize(),
+            $searchResult->getPagination()->getTotalItems(),
+        );
+    }
+
+    /**
+     * {@inheritDoc}
      */
     public function getDocumentById(int $id, ?UserInterface $user = null): Document
     {
@@ -65,7 +92,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
             throw new NotFoundException('Document', $id);
         }
 
-        return $this->hydratorService->hydrate($document);
+        return $this->hydratorService->hydrateDocuments($document);
     }
 
     public function fetchDocumentIds(QueryInterface $documentQuery): array
@@ -81,7 +108,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
     }
 
     /**
-     * @throws InvalidSearchException|SearchException
+     * {@inheritDoc}
      */
     public function findInTree(QueryInterface $dataObjectQuery): ?ElementSearchResultItemInterface
     {

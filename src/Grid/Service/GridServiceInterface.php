@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
@@ -43,7 +40,8 @@ interface GridServiceInterface
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array;
 
     /**
@@ -52,10 +50,17 @@ interface GridServiceInterface
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array;
 
-    public function getConfigurationFromArray(array $config, bool $isExport = false): ColumnCollection;
+    /**
+     * @throws InvalidArgumentException
+     */
+    public function getConfigurationForExport(
+        array $config,
+        array $columnsDefinitions
+    ): ColumnCollection;
 
     /**
      * @throws InvalidArgumentException
@@ -66,7 +71,10 @@ interface GridServiceInterface
      * @throws NotFoundException
      * @throws Exception
      */
-    public function getDataObjectGrid(GridParameter $gridParameter, ?string $classId): Collection;
+    public function getDataObjectGrid(
+        GridParameter $gridParameter,
+        ?string $classId
+    ): Collection;
 
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array;
 

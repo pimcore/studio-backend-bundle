@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
@@ -26,6 +23,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseClassIdTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseFolderIdTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\RelationField;
@@ -41,10 +40,15 @@ use function in_array;
 /**
  * @internal
  */
-final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassIdInterface, FolderIdInterface
+final class AdvancedColumnCollector implements
+    ColumnCollectorInterface,
+    ClassIdInterface,
+    FolderIdInterface,
+    UseUserInterface
 {
     use UseClassIdTrait;
     use UseFolderIdTrait;
+    use UseUserTrait;
 
     /**
      * @param string[] $supportedDataTypes
@@ -65,7 +69,8 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
     {
         $test = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $this->getClassId(),
-            $this->getFolderId()
+            $this->getFolderId(),
+            $this->getUser()
         );
 
         $children = $test->getChildren();
@@ -167,8 +172,9 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
     /**
      * @return RelationField[]
      */
-    private function getRelationFields(array $groupedDefinitions): array
-    {
+    private function getRelationFields(
+        array $groupedDefinitions,
+    ): array {
         $relations = [];
         foreach ($groupedDefinitions as $definition) {
             if ($definition instanceof AdvancedManyToManyObjectRelation) {
@@ -186,8 +192,9 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
 
     }
 
-    private function buildAbstractRelationsFields(AbstractRelations $definition): RelationField
-    {
+    private function buildAbstractRelationsFields(
+        AbstractRelations $definition,
+    ): RelationField {
         $classes  = $definition->getClasses();
         $fields = [];
         foreach ($classes as $class) {
@@ -209,7 +216,7 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
     }
 
     private function buildAdvancedManyToManyObjectRelationFields(
-        AdvancedManyToManyObjectRelation $definition
+        AdvancedManyToManyObjectRelation $definition,
     ): RelationField {
         $className = $definition->getAllowedClassId();
         if ($className === null) {
@@ -240,7 +247,8 @@ final class AdvancedColumnCollector implements ColumnCollectorInterface, ClassId
 
         $test = $this->classDefinitionService->getFilteredLayoutDefinitions(
             $definitionOfTheRelation->getId(),
-            $this->getFolderId()
+            $this->getFolderId(),
+            $this->getUser()
         );
 
         return $this->getSimpleFields(

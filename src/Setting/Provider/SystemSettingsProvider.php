@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Setting\Provider;
@@ -21,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Lib\Tools\AdminResolverInterface;
 use Pimcore\SystemSettingsConfig;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function ini_get;
 
 /**
  * @internal
@@ -47,6 +45,7 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
             'availableAdminLanguages' => $this->getAvailableAdminLanguages(),
             'debug_admin_translations' => (bool)$this->systemSettings['general']['debug_admin_translations'],
             'main_domain' => $this->systemSettings['general']['domain'],
+            'upload_max_filesize' => $this->getUploadMaxFilesize(),
         ];
     }
 
@@ -70,5 +69,14 @@ final readonly class SystemSettingsProvider implements SettingsProviderInterface
         });
 
         return $languages;
+    }
+
+    private function getUploadMaxFilesize(): int
+    {
+        $maxUpload = filesize2bytes(ini_get('upload_max_filesize') . 'B');
+        $maxPost = filesize2bytes(ini_get('post_max_size') . 'B');
+        $uploadMb = min($maxUpload, $maxPost) ?: $maxUpload;
+
+        return (int)$uploadMb;
     }
 }

@@ -22,13 +22,11 @@ On more infos on how to use the columns see the [Grid](../03_Grid.md)
 <?php
 declare(strict_types=1);
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Definition\Metadata;
+namespace App\Grid\Column\Definition\Metadata;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 
-/**
- * @internal
- */
+
 final readonly class CheckboxDefinition implements ColumnDefinitionInterface
 {
     public function getType(): string
@@ -65,20 +63,7 @@ final readonly class CheckboxDefinition implements ColumnDefinitionInterface
 <?php
 declare(strict_types=1);
 
-/**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
- * Full copyright and license information is available in
- * LICENSE.md which is distributed with this source code.
- *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
- */
-
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Resolver\Metadata;
+namespace App\Grid\Column\Resolver\Metadata;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
@@ -88,10 +73,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverIn
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ElementInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
-/**
- * @internal
- */
+
 final class FullPathResolver implements ColumnResolverInterface, StudioElementColumnResolverInterface, CoreElementColumnResolverInterface
 {
     public function resolveForStudioElement(Column $column, StudioElementInterface $element): ColumnData
@@ -107,7 +91,7 @@ final class FullPathResolver implements ColumnResolverInterface, StudioElementCo
 
     public function getType(): string
     {
-        return 'checkbox';
+        return 'fullpath';
     }
 
     public function supportedElementTypes(): array
@@ -127,29 +111,25 @@ final class FullPathResolver implements ColumnResolverInterface, StudioElementCo
 <?php
 declare(strict_types=1);
 
-namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector;
+namespace App\Grid\Column\Collector;
 
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
-use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use function array_key_exists;
 
-/**
- * @internal
- */
-final readonly class MetadataCollector implements ColumnCollectorInterface
+
+final readonly class MyCollector implements ColumnCollectorInterface
 {
     public function __construct(
-        private MetadataRepositoryInterface $metadataRepository,
+        private SomeRepositoryInterface $someRepository,
     ) {
     }
 
     public function getCollectorName(): string
     {
-        return 'metadata';
+        return 'my-collector';
     }
 
     /**
@@ -163,9 +143,9 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
          return [
             new ColumnConfiguration(
                 key: 'checkbox_key',
-                group: 'predefined_metadata',
+                group: 'my_group',
                 sortable: $availableColumnDefinitions['checkbox']->isSortable(),
-                editable: true,
+                editable: false,
                 localizable: false,
                 locale: null,
                 type: 'checkbox',
@@ -178,7 +158,7 @@ final readonly class MetadataCollector implements ColumnCollectorInterface
     public function supportedElementTypes(): array
     {
         return [
-            'asset'
+            ElementTypes::TYPE_ASSET,
         ];
     }
 }

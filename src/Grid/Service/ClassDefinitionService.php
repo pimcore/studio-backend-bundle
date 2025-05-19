@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
@@ -22,6 +19,8 @@ use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\DataObjectServiceResol
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Layout;
+use Pimcore\Model\User;
+use Pimcore\Model\UserInterface;
 
 /**
  * @internal
@@ -37,13 +36,18 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
     /**
      * {@inheritdoc}
      */
-    public function getFilteredLayoutDefinitions(string $classId, int $folderId): ?Layout
+    public function getFilteredLayoutDefinitions(string $classId, int $folderId, ?UserInterface $user = null): ?Layout
     {
         $classDefinition = $this->getClassDefinition($classId);
 
+        /**
+         *  @var User $user
+         *  Because Core needs a User
+         * */
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
             $classDefinition,
-            $folderId
+            $folderId,
+            $user
         );
 
         if (!isset($filteredDefinitions['layoutDefinition'])) {
@@ -54,26 +58,31 @@ final readonly class ClassDefinitionService implements ClassDefinitionServiceInt
         $layoutDefinitions = $filteredDefinitions['layoutDefinition'];
 
         $this->dataObjectServiceResolver->enrichLayoutDefinition(
-            $layoutDefinitions
+            $layoutDefinitions,
+            user: $user
         );
 
         return $layoutDefinitions;
     }
 
-    public function getFilteredFieldDefinitions(string $classId, int $folderId): array
-    {
+    public function getFilteredFieldDefinitions(
+        string $classId,
+        int $folderId,
+        ?UserInterface $user = null
+    ): array {
         $classDefinition = $this->getClassDefinition($classId);
 
+        /**
+         *  @var User $user
+         *  Because Core needs a User
+         * */
         $filteredDefinitions = $this->dataObjectServiceResolver->getCustomLayoutDefinitionForGridColumnConfig(
             $classDefinition,
-            $folderId
+            $folderId,
+            $user
         );
 
-        if (!isset($filteredDefinitions['fieldDefinition'])) {
-            return [];
-        }
-
-        return $filteredDefinitions['fieldDefinition'];
+        return $filteredDefinitions['fieldDefinition'] ?? [];
     }
 
     /**

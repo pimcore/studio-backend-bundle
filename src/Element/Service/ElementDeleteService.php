@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
@@ -19,9 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\SynchronousProcessingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\AssetDeleteEvent;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\DataObjectDeleteEvent;
+use Pimcore\Bundle\StudioBackendBundle\Document\Event\DocumentDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ExecutionEngine\DeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementDeletionFailedException;
@@ -34,6 +32,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\Asset;
 use Pimcore\Model\DataObject;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\Recyclebin\Item;
 use Pimcore\Model\User;
@@ -76,7 +75,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
             $elementParameters->getId(),
             $user
         );
-        if (!$this->elementService->hasElementDependencies($element)) {
+        if (!$this->elementService->hasElementChildren($element)) {
             $this->addElementToRecycleBin($element, $user);
             $this->deleteParentElement($element, $user);
 
@@ -105,7 +104,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
 
         if (!$event->getDeletionAllowed()) {
             throw new ElementDeletionFailedException(
-                $event->getAsset()->getId(),
+                $event->getElement()->getId(),
                 $event->getReason()
             );
         }
@@ -141,7 +140,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
             );
         }
 
-        if ($this->elementService->hasElementDependencies($element)) {
+        if ($this->elementService->hasElementChildren($element)) {
             throw new EnvironmentException(
                 'Element has existing children'
             );
@@ -217,10 +216,11 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
      */
     private function getDeleteEvent(
         ElementInterface $element
-    ): AssetDeleteEvent|DataObjectDeleteEvent {
+    ): AssetDeleteEvent|DataObjectDeleteEvent|DocumentDeleteEvent {
         return match (true) {
             $element instanceof Asset => new AssetDeleteEvent($element),
             $element instanceof DataObject => new DataObjectDeleteEvent($element),
+            $element instanceof Document => new DocumentDeleteEvent($element),
             default => throw new InvalidElementTypeException($element->getType())
         };
     }

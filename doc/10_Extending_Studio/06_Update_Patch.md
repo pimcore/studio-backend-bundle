@@ -27,14 +27,12 @@ The adapters will then check if the index key is in the payload and updates the 
 <?php
 declare(strict_types=1);
 
-namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
+namespace App\Updater\Adapter;
 
 use Pimcore\Model\Element\ElementInterface;
-use function array_key_exists;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
-/**
- * @internal
- */
+#[AutoconfigureTag('pimcore.studio_backend.update_adapter')]
 final readonly class ParentIdAdapter implements UpdateAdapterInterface
 {
     public function update(ElementInterface $element, array $data): void
@@ -54,9 +52,9 @@ final readonly class ParentIdAdapter implements UpdateAdapterInterface
     public function supportedElementTypes(): array
     {
         return [
-            'asset',
-            'document',
-            'object',
+            ElementTypes::TYPE_ASSET,
+            ElementTypes::TYPE_DOCUMENT,
+            ElementTypes::TYPE_OBJECT,
         ];
     }
 }
@@ -68,16 +66,13 @@ final readonly class ParentIdAdapter implements UpdateAdapterInterface
 <?php
 declare(strict_types=1);
 
-namespace Pimcore\Bundle\StudioBackendBundle\Patcher\Adapter;
+namespace App\Patcher\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\PatchAdapterInterface;
-use Pimcore\Bundle\StudioBackendBundle\Patcher\Service\Loader\TaggedIteratorAdapter;
 use Pimcore\Model\Element\ElementInterface;
-use function array_key_exists;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
-/**
- * @internal
- */
+#[AutoconfigureTag('pimcore.studio_backend.patch_adapter')]
 final readonly class ParentIdAdapter implements PatchAdapterInterface
 {
     public function patch(ElementInterface $element, array $data, UserInterface $user): void
@@ -97,9 +92,9 @@ final readonly class ParentIdAdapter implements PatchAdapterInterface
     public function supportedElementTypes(): array
     {
         return [
-            'asset',
-            'document',
-            'object',
+            ElementTypes::TYPE_ASSET,
+            ElementTypes::TYPE_DOCUMENT,
+            ElementTypes::TYPE_OBJECT,
         ];
     }
 }

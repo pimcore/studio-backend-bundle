@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Icon\Service;
@@ -22,6 +19,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchR
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
 use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementIconTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject;
@@ -97,6 +95,21 @@ final readonly class IconService implements IconServiceInterface
             ElementTypes::TYPE_OBJECT => 'data-object',
             ElementTypes::TYPE_VARIANT => 'data-object-variant',
             ElementTypes::TYPE_FOLDER => 'folder',
+            default => self::DEFAULT_ICON
+        };
+
+        return new ElementIcon(ElementIconTypes::NAME->value, $value);
+    }
+
+    public function getIconForDocument(string $documentType): ElementIcon
+    {
+        $value = match ($documentType) {
+            DocumentTypes::EMAIL->value => 'email',
+            DocumentTypes::HARDLINK->value => 'hardlink',
+            ElementTypes::TYPE_FOLDER => 'folder',
+            DocumentTypes::LINK->value => 'link',
+            DocumentTypes::PAGE->value => 'page',
+            DocumentTypes::SNIPPET->value => 'snippet',
             default => self::DEFAULT_ICON
         };
 

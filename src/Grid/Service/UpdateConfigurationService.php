@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
@@ -47,10 +44,6 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
             throw new NotFoundException('Configuration', $id);
         }
 
-        if ($configuration->getAssetFolderId() !== $configurationParams->getFolderId()) {
-            throw new InvalidArgumentException('Configuration does not belong to the given folder.');
-        }
-
         if ($configuration->getOwner() !== $this->securityService->getCurrentUser()->getId()) {
             throw new ForbiddenException('You are not allowed to update this configuration.');
         }
@@ -70,7 +63,7 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
 
         if ($configurationParams->setAsFavorite()) {
             $configuration = $this->favoriteService
-                ->setAssetConfigurationAsFavoriteForCurrentUser($configuration);
+                ->setAssetConfigurationAsFavoriteForCurrentUser($configuration, $configurationParams->getFolderId());
         }
 
         if (!$configurationParams->setAsFavorite()) {
@@ -147,11 +140,10 @@ final readonly class UpdateConfigurationService implements UpdateConfigurationSe
     {
         $configuration = $this->gridConfigurationRepository->getById($configurationId);
 
-        if ($configuration->getAssetFolderId() !== $folderId) {
-            throw new InvalidArgumentException('Configuration does not belong to the given folder.');
-        }
-
-        $configuration = $this->favoriteService->setAssetConfigurationAsFavoriteForCurrentUser($configuration);
+        $configuration = $this->favoriteService->setAssetConfigurationAsFavoriteForCurrentUser(
+            $configuration,
+            $folderId
+        );
 
         $this->gridConfigurationRepository->update($configuration);
     }

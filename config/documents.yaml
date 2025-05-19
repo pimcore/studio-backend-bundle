@@ -15,14 +15,32 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\CreateService
+    arguments:
+      $defaultController: '%pimcore.documents.default_controller%'
+      $classResolver: '@pimcore.class.resolver.document'
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\DataService
+
   Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentService
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\DocTypeServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\DocTypeService
 
   Pimcore\Bundle\StudioBackendBundle\Document\Service\SiteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\SiteService
 
   Pimcore\Bundle\StudioBackendBundle\Document\Service\BinaryServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\BinaryService
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\HydratorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\HydratorService
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\ReplaceServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\ReplaceService
 
 
   #
@@ -32,6 +50,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Repository\SiteRepository
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Repository\DocTypeRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Repository\DocTypeRepository
+
 
   #
   # Hydrators
@@ -39,3 +60,6 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\SiteHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\SiteHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeHydrator

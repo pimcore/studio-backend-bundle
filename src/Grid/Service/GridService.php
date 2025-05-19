@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
@@ -27,10 +24,12 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -82,15 +81,21 @@ final class GridService implements GridServiceInterface
     {
         $result = $this->gridSearch->searchAssets($gridParameter);
 
-        return $this->getCollectionFromSearchResult($result, $gridParameter, ElementTypes::TYPE_ASSET);
+        return $this->getCollectionFromSearchResult(
+            $result,
+            $gridParameter,
+            ElementTypes::TYPE_ASSET
+        );
     }
 
     /**
      * @throws NotFoundException
      * @throws Exception
      */
-    public function getDataObjectGrid(GridParameter $gridParameter, ?string $classId): Collection
-    {
+    public function getDataObjectGrid(
+        GridParameter $gridParameter,
+        ?string $classId
+    ): Collection {
         $filter = $gridParameter->getFilters();
 
         if ($classId) {
@@ -105,7 +110,11 @@ final class GridService implements GridServiceInterface
 
         $result = $this->gridSearch->searchDataObjects($gridParameter);
 
-        return $this->getCollectionFromSearchResult($result, $gridParameter, ElementTypes::TYPE_OBJECT);
+        return $this->getCollectionFromSearchResult(
+            $result,
+            $gridParameter,
+            ElementTypes::TYPE_OBJECT
+        );
     }
 
     /**
@@ -114,17 +123,14 @@ final class GridService implements GridServiceInterface
     public function getGridDataForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array {
         $data = [];
 
         $databaseElement = null;
         if ($elementType === ElementTypes::TYPE_OBJECT) {
-            $databaseElement = $this->getElement(
-                $this->serviceResolver,
-                $elementType,
-                $element->getId()
-            );
+            $databaseElement = $this->getElement($this->serviceResolver, $elementType, $element->getId());
         }
 
         foreach ($columnCollection->getColumns() as $column) {
@@ -136,6 +142,8 @@ final class GridService implements GridServiceInterface
             $resolver = $this->getColumnResolvers()[$column->getType()];
 
             $columnData = match (true) {
+                $databaseElement && $isExport && $resolver instanceof ExportResolverInterface =>
+                    $resolver->resolveForExport($column, $databaseElement),
                 $databaseElement && $resolver instanceof CoreElementColumnResolverInterface =>
                     $resolver->resolveForCoreElement($column, $databaseElement),
                 $resolver instanceof StudioElementColumnResolverInterface =>
@@ -167,9 +175,10 @@ final class GridService implements GridServiceInterface
     public function getGridValuesForElement(
         ColumnCollection $columnCollection,
         StudioElementInterface $element,
-        string $elementType
+        string $elementType,
+        bool $isExport = false
     ): array {
-        $data = $this->getGridDataForElement($columnCollection, $element, $elementType);
+        $data = $this->getGridDataForElement($columnCollection, $element, $elementType, $isExport);
 
         return array_map(
             static fn (ColumnData $columnData) => $columnData->getValue(),
@@ -190,28 +199,21 @@ final class GridService implements GridServiceInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function getConfigurationFromArray(array $config, bool $isExport = false): ColumnCollection
-    {
-        $columns = [];
+    public function getConfigurationForExport(
+        array $config,
+        array $columnsDefinitions
+    ): ColumnCollection {
+        $exportableColumns = [];
         foreach ($config as $column) {
-            if ($isExport && !$this->isExportable($column['type'])) {
+            $columnConfig = $this->findColumnConfiguration($column['key'], $columnsDefinitions);
+            if (!$columnConfig || !$columnConfig->isExportable()) {
                 continue;
             }
 
-            try {
-                $columns[] = new Column(
-                    key: $column['key'],
-                    locale: $column['locale'] ?? null,
-                    type: $column['type'],
-                    group: $column['group'] ?? null,
-                    config: $column['config']
-                );
-            } catch (Exception) {
-                throw new InvalidArgumentException('Invalid column configuration');
-            }
+            $exportableColumns[] = $column;
         }
 
-        return new ColumnCollection($columns);
+        return $this->getConfigurationFromArray($exportableColumns);
     }
 
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array
@@ -226,6 +228,31 @@ final class GridService implements GridServiceInterface
             },
             $columnCollection->getColumns()
         );
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getConfigurationFromArray(
+        array $config
+    ): ColumnCollection {
+
+        $columns = [];
+        foreach ($config as $column) {
+            try {
+                $columns[] = new Column(
+                    key: $column['key'],
+                    locale: $column['locale'] ?? null,
+                    type: $column['type'],
+                    group: $column['group'] ?? null,
+                    config: $column['config']
+                );
+            } catch (Exception) {
+                throw new InvalidArgumentException('Invalid column configuration');
+            }
+        }
+
+        return new ColumnCollection($columns);
     }
 
     private function supports(Column $column, string $elementType): bool
@@ -284,15 +311,6 @@ final class GridService implements GridServiceInterface
         return $this->columnResolvers;
     }
 
-    private function isExportable(string $type): bool
-    {
-        if (!array_key_exists($type, $this->getColumnDefinitions())) {
-            return false;
-        }
-
-        return $this->getColumnDefinitions()[$type]->isExportable();
-    }
-
     private function getCollectionFromSearchResult(
         SearchResultItemInterface $searchResultItem,
         GridParameter $gridParameter,
@@ -317,5 +335,15 @@ final class GridService implements GridServiceInterface
             totalItems: $searchResultItem->getTotalItems(),
             items: $data
         );
+    }
+
+    private function findColumnConfiguration(string $key, array $columnConfigurations): ?ColumnConfiguration
+    {
+        $configs = array_filter(
+            $columnConfigurations,
+            static fn (ColumnConfiguration $columnConfiguration) => $columnConfiguration->getKey() === $key
+        );
+
+        return reset($configs) ?: null;
     }
 }

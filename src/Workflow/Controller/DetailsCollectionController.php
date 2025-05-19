@@ -2,22 +2,18 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\ElementTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IdParameter;
@@ -27,9 +23,10 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
-use Pimcore\Bundle\StudioBackendBundle\Workflow\Attribute\Response\Property\WorkflowDetailsCollection;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Attribute\Response\Content\WorkflowDetailsContent;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\MappedParameter\WorkflowDetailsParameters;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Util\Trait\WorkflowLayoutTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
@@ -41,6 +38,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class DetailsCollectionController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+    use WorkflowLayoutTrait;
 
     public function __construct(
         SerializerInterface $serializer,
@@ -63,10 +61,7 @@ final class DetailsCollectionController extends AbstractApiController
     #[ElementTypeParameter]
     #[SuccessResponse(
         description: 'workflow_get_details_success_response',
-        content: new JsonContent(
-            properties: [new WorkflowDetailsCollection()],
-            type: 'object'
-        )
+        content: new WorkflowDetailsContent()
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
@@ -75,12 +70,11 @@ final class DetailsCollectionController extends AbstractApiController
     public function getDetails(#[MapQueryString] WorkflowDetailsParameters $parameters): JsonResponse
     {
         $user = $this->securityService->getCurrentUser();
+        $details = $this->workflowDetailsService->getWorkflowDetails($parameters, $user);
 
         return $this->jsonResponse([
-            'items' => $this->workflowDetailsService->getWorkflowDetails(
-                $parameters,
-                $user
-            ),
+            'items' => $details,
+            'layoutId' => $this->getLastLayoutId($details),
         ]);
     }
 }

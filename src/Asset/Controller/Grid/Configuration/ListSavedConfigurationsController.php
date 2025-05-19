@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
@@ -22,7 +19,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\SearchException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -51,21 +47,17 @@ final class ListSavedConfigurationsController extends AbstractApiController
      * @throws NotFoundException|SearchException
      */
     #[Route(
-        '/assets/grid/configurations/{folderId}',
+        '/assets/grid/configurations',
         name: 'pimcore_studio_api_get_asset_saved_grid_configurations',
         methods: ['GET']
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Get(
-        path: self::PREFIX . '/assets/grid/configurations/{folderId}',
+        path: self::PREFIX . '/assets/grid/configurations',
         operationId: 'asset_get_saved_grid_configurations',
         description: 'asset_get_saved_grid_configurations_description',
         summary: 'asset_get_saved_grid_configurations_summary',
         tags: [Tags::AssetGrid->value]
-    )]
-    #[IdParameter(
-        type: 'folderId',
-        name: 'folderId'
     )]
     #[SuccessResponse(
         description: 'asset_get_saved_grid_configurations_success_response',
@@ -76,9 +68,9 @@ final class ListSavedConfigurationsController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getAssetSavedGridConfigurations(int $folderId): JsonResponse
+    public function getAssetSavedGridConfigurations(): JsonResponse
     {
-        $configurations = $this->configurationService->getConfigurationsForAssetsByFolder($folderId);
+        $configurations = $this->configurationService->getConfigurationsForAssets();
 
         return $this->jsonResponse($configurations);
     }

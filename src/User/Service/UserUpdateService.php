@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Service;
@@ -31,7 +28,9 @@ use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdatePasswordParame
 use Pimcore\Bundle\StudioBackendBundle\User\MappedParameter\UpdateUserParameter;
 use Pimcore\Bundle\StudioBackendBundle\User\Repository\UserRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Schema\KeyBinding;
+use Pimcore\Bundle\StudioBackendBundle\User\Schema\UpdateUserProfile;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\CacheKeys;
+use Pimcore\Model\User;
 use function sprintf;
 use function strlen;
 
@@ -98,6 +97,26 @@ final readonly class UserUpdateService implements UserUpdateServiceInterface
 
         $this->cacheResolver->remove(CacheKeys::USER_PERMISSIONS->value);
 
+    }
+
+    /**
+     * @throws DatabaseException|ParseException
+     */
+    public function updateUserProfile(User $user, UpdateUserProfile $params): void
+    {
+        $user->setFirstName($params->getFirstName());
+        $user->setLastName($params->getLastName());
+        $user->setEmail($params->getEmail());
+        $user->setLanguage($params->getLanguage());
+        $user->setDatetimeLocale($params->getDatetimeLocale());
+        $user->setWelcomescreen($params->isWelcomeScreen());
+        $user->setMemorizeTabs($params->isMemorizeTabs());
+        $user->setContentLanguages($params->getContentLanguages());
+        $user->setKeyBindings(
+            $this->getKeyBindingsString($params->getKeyBindings())
+        );
+
+        $this->userRepository->updateUser($user);
     }
 
     /**

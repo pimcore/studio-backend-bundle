@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Grid\Configuration;
@@ -57,13 +54,12 @@ final class DeleteConfigurationController extends AbstractApiController
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
-        path: self::PREFIX . '/assets/grid/configuration/{folderId}/{configurationId}',
+        path: self::PREFIX . '/assets/grid/configuration/{configurationId}',
         operationId: 'asset_delete_grid_configuration_by_configurationId',
         description: 'asset_delete_grid_configuration_by_configurationId_description',
         summary: 'asset_delete_grid_configuration_by_configurationId_summary',
         tags: [Tags::AssetGrid->value]
     )]
-    #[IdParameterPath(name: 'folderId')]
     #[IdParameterPath(name: 'configurationId')]
     #[SuccessResponse(
         content: new JsonContent(ref: DetailedConfiguration::class)
@@ -74,12 +70,10 @@ final class DeleteConfigurationController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function deleteAssetGridConfiguration(
-        int $folderId,
         int $configurationId
     ): Response {
         $this->gridConfigurationService->deleteAssetConfiguration(
-            $configurationId,
-            $folderId
+            $configurationId
         );
 
         return new Response();

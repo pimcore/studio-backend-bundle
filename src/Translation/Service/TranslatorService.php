@@ -2,29 +2,27 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 
 use InvalidArgumentException;
+use Locale;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
+use Pimcore\Translation\Translator;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use function in_array;
 
 /**
  * @internal
@@ -58,15 +56,21 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     /**
      * @throws InvalidLocaleException
      */
-    public function getAllTranslations(string $locale): Translation
+    public function getAllTranslations(string $locale, bool $useFallback): Translation
     {
         try {
+            if ($this->translatorBag instanceof Translator) {
+                $this->translatorBag->lazyInitialize(self::DOMAIN, $locale);
+            }
+
             $catalogue = $this->translatorBag->getCatalogue($locale)->all(self::DOMAIN);
         } catch (InvalidArgumentException) {
             throw new InvalidLocaleException($locale);
         }
 
-        $catalogue = $this->addDatabaseTranslations($catalogue, $locale);
+        if ($useFallback) {
+            $catalogue = $this->applyFallback($locale, $catalogue);
+        }
 
         return new Translation(
             $locale,
@@ -79,20 +83,10 @@ final readonly class TranslatorService implements TranslatorServiceInterface
      */
     public function getTranslationsForKeys(string $locale, array $keys): Translation
     {
-        try {
-            $catalogue = $this->translatorBag->getCatalogue($locale);
-        } catch (InvalidArgumentException) {
-            throw new InvalidLocaleException($locale);
-        }
-
         $translations = [];
 
         foreach ($keys as $key) {
-            $translations[$key] = $catalogue->get($key, self::DOMAIN);
-        }
-
-        if (!empty($keys)) {
-            $translations = $this->addDatabaseTranslations($translations, $locale, $keys);
+            $translations[$key] = $this->translate($key);
         }
 
         return new Translation($locale, $translations);
@@ -122,27 +116,37 @@ final readonly class TranslatorService implements TranslatorServiceInterface
         return $this->translator;
     }
 
-    private function addDatabaseTranslations(array $catalogue, string $locale, array $keys = []): array
+    private function applyFallback(string $locale, array $translations): array
     {
-        $databaseCatalogue = [];
-        foreach ($this->translationRepository->getAllTranslations($locale) as $translation) {
-            if (!empty($keys) && !in_array($translation->getKey(), $keys, true)) {
-                continue;
-            }
-            $databaseCatalogue[$translation->getKey()] = $translation->getTranslation($locale);
-        }
+        $fallbackLanguages = $this->getFallbackLocals($locale);
 
-        foreach ($catalogue as $key => $translation) {
-            if (!empty($databaseCatalogue[$key])) {
-                $catalogue[$key] = $databaseCatalogue[$key];
+        foreach ($fallbackLanguages as $fallbackLanguage) {
+            if ($this->translatorBag instanceof Translator) {
+                $this->translatorBag->lazyInitialize(self::DOMAIN, $locale);
             }
 
-            unset($databaseCatalogue[$key]);
+            $catalogue = $this->translatorBag->getCatalogue($fallbackLanguage)->all(self::DOMAIN);
+            foreach ($catalogue as $key => $value) {
+                if (empty($translations[$key])) {
+                    $translations[$key] = $value;
+                }
+            }
         }
 
-        $catalogue = array_replace($databaseCatalogue, $catalogue);
-        ksort($catalogue);
+        return $translations;
+    }
 
-        return $catalogue;
+    private function getFallbackLocals(string $local): array
+    {
+        $fallbackLanguages  = [];
+        if (null !== Locale::getRegion($local)) {
+            $fallbackLanguages[] = Locale::getPrimaryLanguage($local);
+        }
+
+        if ($local != 'en') {
+            $fallbackLanguages[] = 'en';
+        }
+
+        return $fallbackLanguages;
     }
 }

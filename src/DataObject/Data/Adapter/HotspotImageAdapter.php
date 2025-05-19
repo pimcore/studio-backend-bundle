@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
@@ -102,15 +99,6 @@ final readonly class HotspotImageAdapter implements
         return $data;
     }
 
-    public function normalizeImageData(MarkerHotspotItem $hotspotItem): array
-    {
-        return [
-            'name' => $hotspotItem->getName(),
-            'type' => $hotspotItem->getType(),
-            'value' => $hotspotItem->getValue(),
-        ];
-    }
-
     public function normalize(mixed $value, Data $fieldDefinition): mixed
     {
         if (!($fieldDefinition instanceof HotspotImageData)) {
@@ -129,48 +117,60 @@ final readonly class HotspotImageAdapter implements
             return $value;
         }
 
-        $value['image'] = [
-            ... $value['image'],
-            ... $this->normalizeElementData($id, $type),
-        ];
+        $value['image'] = $this->normalizeElementData($id, $type, $value['image']);
         $value['hotspots'] = $this->normalizeLocationData($value['hotspots']);
         $value['marker'] = $this->normalizeLocationData($value['marker']);
 
         return $value;
     }
 
-    private function normalizeElementData(int $id, string $type): array
-    {
-        $element = $this->getElementData($id, $type);
-        if ($element instanceof AbstractObject || $element instanceof Document) {
-            $elementData['published'] = $element->isPublished();
-        }
-        $elementData['subtype'] = $element->getType();
-        $elementData['fullPath']  = $element->getFullPath();
-
-        return $elementData;
-    }
-
-    private function normalizeLocationData(array $locationData): array
+    public function normalizeLocationData(array $locationData): array
     {
         foreach ($locationData as &$location) {
             $data = $location['data'] ?? null;
             if (!is_array($data)) {
                 continue;
             }
-            foreach ($data as $item) {
-                if ($item instanceof MarkerHotspotItem &&
-                    $this->isValidItem($item)
-                ) {
-                    $location['data'] = [
-                        ... $this->normalizeImageData($item),
-                        ... $this->normalizeElementData($item->getValue(), $item->getType()),
-                        ];
+
+            foreach ($data as $key => $item) {
+                if (!($item instanceof MarkerHotspotItem)) {
+                    continue;
+                }
+
+                $imageData = $this->normalizeImageData($item);
+                $location['data'][$key] = $imageData;
+                if ($this->isValidItem($item)) {
+                    $location['data'][$key] = $this->normalizeElementData(
+                        $item->getValue(),
+                        $item->getType(),
+                        $imageData
+                    );
                 }
             }
         }
 
         return $locationData;
+    }
+
+    private function normalizeImageData(MarkerHotspotItem $hotspotItem): array
+    {
+        return [
+            'name' => $hotspotItem->getName(),
+            'type' => $hotspotItem->getType(),
+            'value' => $hotspotItem->getValue(),
+        ];
+    }
+
+    private function normalizeElementData(int $id, string $type, array $imageData): array
+    {
+        $element = $this->getElementData($id, $type);
+        if ($element instanceof Concrete || $element instanceof Document) {
+            $imageData['published'] = $element->isPublished();
+        }
+        $imageData['subtype'] = $element->getType();
+        $imageData['fullPath']  = $element->getFullPath();
+
+        return $imageData;
     }
 
     private function getElementData(int $id, string $type): Asset|Document|AbstractObject

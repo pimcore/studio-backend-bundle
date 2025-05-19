@@ -19,7 +19,7 @@ In this example, the query parameters are mapped via `#[MapQueryString]` into th
 <?php
 declare(strict_types=1);
 
-namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter;
+namespace App\MappedParameter;
 
 interface CollectionParametersInterface
 {
@@ -35,14 +35,11 @@ interface CollectionParametersInterface
 <?php
 declare(strict_types=1);
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
+namespace App\DataIndex\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParametersInterface;
 
-/**
- * @internal
- */
 final class PageFilter implements FilterInterface
 {
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
@@ -89,7 +86,7 @@ Note that every query parameter could also be mapped to a payload. In this case 
 declare(strict_types=1);
 
 
-namespace Pimcore\Bundle\StudioBackendBundle\Listing\Filter;
+namespace App\Listing\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;

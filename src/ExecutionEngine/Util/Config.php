@@ -1,16 +1,13 @@
 <?php
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util;
@@ -41,4 +38,6 @@ enum Config: string
     case NO_ELEMENT_DATA_FOUND = 'studio_ee_no_element_data_found';
     case ELEMENT_REWRITE_REFERENCES_FAILED_MESSAGE = 'studio_ee_element_rewrite_references_failed';
     case ELEMENT_TAG_OPERATION_FAILED_MESSAGE = 'studio_ee_element_tag_operation_failed';
+    case INVALID_ELEMENT_TYPE_PROVIDED = 'studio_ee_invalid_element_type_provided';
+    case XLSX_CREATION_FAILED_MESSAGE = 'studio_ee_xlsx_creation_failed';
 }

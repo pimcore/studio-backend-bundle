@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
@@ -22,6 +19,8 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseClassIdTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseFolderIdTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
@@ -39,10 +38,15 @@ use function array_key_exists;
 /**
  * @internal
  */
-final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInterface, FolderIdInterface
+final class ObjectBrickCollector implements
+    ColumnCollectorInterface,
+    ClassIdInterface,
+    FolderIdInterface,
+    UseUserInterface
 {
     use UseClassIdTrait;
     use UseFolderIdTrait;
+    use UseUserTrait;
 
     /**
      * @var ColumnConfiguration[]
@@ -73,7 +77,8 @@ final class ObjectBrickCollector implements ColumnCollectorInterface, ClassIdInt
 
         $filteredFieldDefinitions = $this->classDefinitionService->getFilteredFieldDefinitions(
             $this->getClassId(),
-            $this->getFolderId()
+            $this->getFolderId(),
+            $this->getUser()
         );
 
         foreach ($objectBrickList as $objectBrick) {

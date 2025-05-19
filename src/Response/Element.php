@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Response;
@@ -53,7 +50,7 @@ class Element implements StudioElementInterface
         #[Property(description: 'ID of owner', type: 'integer', example: 1)]
         private readonly int $userOwner,
         #[Property(description: 'User that modified the element', type: 'integer', example: 1)]
-        private readonly int $userModification,
+        private readonly ?int $userModification,
         #[Property(description: 'Locked', type: 'string', example: 'locked')]
         private readonly ?string $locked,
         #[Property(description: 'Is locked', type: 'boolean', example: false)]

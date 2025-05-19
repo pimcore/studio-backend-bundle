@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Element\Service;
@@ -100,15 +97,6 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
             return;
         }
 
-        $this->handlePublishTasks($element, $user, $task);
-        $element->save();
-    }
-
-    /**
-     * @throws ForbiddenException
-     */
-    private function handlePublishTasks(Concrete|Document $element, UserInterface $user, string $task): void
-    {
         if ($task === ElementSaveTasks::PUBLISH->value) {
             $this->publishElement($element, $user);
 
@@ -119,22 +107,24 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     }
 
     /**
-     * @throws ForbiddenException
+     * @throws Exception|ForbiddenException
      */
     private function publishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::PUBLISH_PERMISSION);
-        $element->deleteAutoSaveVersions($user->getId());
         $element->setPublished(true);
+        $element->save();
+        $element->deleteAutoSaveVersions($user->getId());
     }
 
     /**
-     * @throws ForbiddenException
+     * @throws Exception|ForbiddenException
      */
     private function unpublishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::UNPUBLISH_PERMISSION);
         $element->setOmitMandatoryCheck(true);
         $element->setPublished(false);
+        $element->save();
     }
 }

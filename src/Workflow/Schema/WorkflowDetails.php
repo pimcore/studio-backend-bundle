@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Schema;
@@ -19,48 +16,72 @@ namespace Pimcore\Bundle\StudioBackendBundle\Workflow\Schema;
 use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 /**
  * @internal
  */
 #[Schema(
     title: 'WorkflowDetails',
-    required: ['workflowName', 'workflowStatus', 'graph', 'allowedTransitions', 'globalActions'],
+    required: [
+        'workflowName',
+        'workflowLabel',
+        'workflowStatus',
+        'graph',
+        'workflowLayoutId',
+        'allowedTransitions',
+        'globalActions',
+    ],
     type: 'object'
 )]
-final readonly class WorkflowDetails
+final class WorkflowDetails implements AdditionalAttributesInterface
 {
+    use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(
             description: 'workflowName',
             type: 'string',
+            example: 'simple_asset'
+        )]
+        private readonly string $workflowName,
+        #[Property(
+            description: 'workflowLabel',
+            type: 'string',
             example: 'Sample Asset Workflow'
         )]
-        private string $workflowName,
+        private readonly string $workflowLabel,
         #[Property(
             description: 'workflowStatus',
             type: 'array',
             items: new Items(ref: WorkflowStatus::class)
         )]
-        private array $workflowStatus,
+        private readonly array $workflowStatus,
         #[Property(
             description: 'graph',
             type: 'string',
             example: '<svg>...</svg>'
         )]
-        private string $graph,
+        private readonly string $graph,
+        #[Property(
+            description: 'workflowLayoutId',
+            type: 'string',
+            example: 'someWorkflowLayoutId'
+        )]
+        private readonly ?string $workflowLayoutId,
         #[Property(
             description: 'allowedTransitions',
             type: 'array',
             items: new Items(ref: AllowedTransition::class),
         )]
-        private array $allowedTransitions,
+        private readonly array $allowedTransitions,
         #[Property(
             description: 'globalActions',
             type: 'array',
             items: new Items(ref: GlobalAction::class)
         )]
-        private array $globalActions,
+        private readonly array $globalActions,
     ) {
 
     }
@@ -68,6 +89,11 @@ final readonly class WorkflowDetails
     public function getWorkflowName(): string
     {
         return $this->workflowName;
+    }
+
+    public function getWorkflowLabel(): string
+    {
+        return $this->workflowLabel;
     }
 
     public function getWorkflowStatus(): array
@@ -78,6 +104,11 @@ final readonly class WorkflowDetails
     public function getGraph(): string
     {
         return $this->graph;
+    }
+
+    public function getLayoutId(): ?string
+    {
+        return $this->workflowLayoutId;
     }
 
     public function getAllowedTransitions(): array

@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid;
@@ -31,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringP
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -47,6 +45,7 @@ final class GetAvailableColumnsController extends AbstractApiController
     public function __construct(
         SerializerInterface $serializer,
         private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
+        private readonly SecurityServiceInterface $securityService,
     ) {
         parent::__construct($serializer);
     }
@@ -98,7 +97,8 @@ final class GetAvailableColumnsController extends AbstractApiController
     ): JsonResponse {
         $columns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
             $parameter->getClassId(),
-            $parameter->getFolderId()
+            $parameter->getFolderId(),
+            $this->securityService->getCurrentUser()
         );
 
         return $this->jsonResponse([

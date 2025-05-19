@@ -2,33 +2,35 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Mercure\Service;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Hub;
+use Symfony\Component\Mercure\Jwt\StaticTokenProvider;
+use Symfony\Component\Mercure\Jwt\TokenProviderInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\SerializerInterface;
 use function is_string;
 use function sprintf;
 
-final readonly class PublishService implements PublishServiceInterface
+final class PublishService implements PublishServiceInterface
 {
+    private ?Hub $publisher = null;
+
     public function __construct(
-        private HubInterface $serverHub,
-        private LoggerInterface $logger,
-        private SerializerInterface $serializer
+        private readonly LoggerInterface $logger,
+        private readonly SerializerInterface $serializer,
+        private readonly TokenProviderInterface $tokenProvider,
+        private readonly UrlServiceInterface $urlService,
     ) {
     }
 
@@ -61,11 +63,23 @@ final readonly class PublishService implements PublishServiceInterface
             )
         );
 
-        $this->serverHub->publish(new Update($topics, $jsonData, $private, $id, $type, $retry));
+        $this->getServerHub()->publish(new Update($topics, $jsonData, $private, $id, $type, $retry));
     }
 
     public function getJsonData(mixed $data): string
     {
         return $this->serializer->serialize($data, 'json');
+    }
+
+    private function getServerHub(): Hub
+    {
+        if ($this->publisher === null) {
+            $this->publisher = new Hub(
+                $this->urlService->getServerSideUrl(),
+                new StaticTokenProvider($this->tokenProvider->getJwt()),
+            );
+        }
+
+        return $this->publisher;
     }
 }

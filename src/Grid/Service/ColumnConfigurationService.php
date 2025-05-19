@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
@@ -19,10 +16,12 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnConfigurationEvent;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\ColumnFieldDefinition;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 use function array_key_exists;
@@ -64,7 +63,11 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
         return $columns;
     }
 
-    public function getAvailableDataObjectColumnConfiguration(?string $classId, ?int $folderId): array
+    public function getAvailableDataObjectColumnConfiguration(
+        ?string $classId,
+        ?int $folderId,
+        UserInterface $user
+    ): array
     {
         if (($classId === null && $folderId !== null) || ($classId !== null && $folderId === null)) {
             throw new InvalidArgumentException('Either both classId and folderId must be set or both must be null');
@@ -90,6 +93,10 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
 
             if ($collector instanceof FolderIdInterface) {
                 $collector->setFolderId($folderId);
+            }
+
+            if ($collector instanceof UseUserInterface) {
+                $collector->setUser($user);
             }
 
             // rather use the spread operator instead of array_merge in a loop

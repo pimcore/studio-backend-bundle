@@ -2,22 +2,21 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\User\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Schema\UserInformation;
+use Pimcore\Bundle\StudioBackendBundle\User\Service\KeyBindingServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\User\Service\UserPerspectiveServiceInterface;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
 /**
@@ -25,21 +24,36 @@ use Pimcore\Model\UserInterface;
  */
 final readonly class UserInformationHydrator implements UserInformationHydratorInterface
 {
-    public function __construct(private UserPerspectiveServiceInterface $userPerspectiveService)
-    {
+    public function __construct(
+        private ContentLanguagesHydratorInterface $contentLanguagesHydrator,
+        private KeyBindingServiceInterface $keyBindingService,
+        private TwoFactorAuthHydratorInterface $twoFactorAuthHydrator,
+        private UserPerspectiveServiceInterface $userPerspectiveService,
+    ) {
     }
 
     public function hydrate(UserInterface $user): UserInformation
     {
         return new UserInformation(
-            $user->getId(),
-            $user->getUsername(),
-            $user->getPermissions(),
-            $user->isAdmin(),
-            $user->getClasses(),
-            $user->getDocTypes(),
-            $this->userPerspectiveService->getActivePerspective($user),
-            $this->userPerspectiveService->getAllowedPerspectives($user),
+            id: $user->getId(),
+            username: $user->getUsername(),
+            email: $user->getEmail(),
+            firstname: $user->getFirstname(),
+            lastname: $user->getLastname(),
+            permissions: $user->getPermissions(),
+            isAdmin: $user->isAdmin(),
+            classes: $user->getClasses(),
+            docTypes: $user->getDocTypes(),
+            language: $user->getLanguage(),
+            dateTimeLocale: $user instanceof User ? $user->getDateTimeLocale() : '',
+            welcomeScreen: $user->getWelcomeScreen(),
+            memorizeTabs: $user->getMemorizeTabs(),
+            hasImage: $user->hasImage(),
+            contentLanguages: $this->contentLanguagesHydrator->hydrate($user),
+            keyBindings: $this->keyBindingService->hydrateKeyBindings($user->getKeyBindings()),
+            twoFactorAuthentication: $this->twoFactorAuthHydrator->hydrate($user),
+            activePerspective: $this->userPerspectiveService->getActivePerspective($user),
+            perspectives: $this->userPerspectiveService->getAllowedPerspectives($user)
         );
     }
 }

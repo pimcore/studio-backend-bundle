@@ -21,11 +21,8 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\UnknownHydrator
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydrator
-
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\AssetHydrator
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydrator
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\PermissionsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\PermissionsHydrator
 
@@ -36,35 +33,62 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\PermissionsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\PermissionsHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\EmailHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\EmailHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\FolderHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\FolderHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\LinkHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\LinkHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\HardlinkHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\HardlinkHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\PageHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\PageHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\SnippetHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\SnippetHydrator
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\PermissionsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\PermissionsHydrator
+
   # Services
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\TreeQueryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\TreeQuery
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\HydratorService
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\AssetHydratorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\AssetHydratorService
     arguments:
-      $assetHydratorLocator: '@search_index.asset_hydrator.service_locator'
-      $dataObjectHydratorLocator: '@search_index.data_object_hydrator.service_locator'
+      $hydratorLocator: '@search_index.asset_hydrator.service_locator'
 
-  # Elements
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\DataObjectHydratorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\DataObjectHydratorService
+    arguments:
+      $hydratorLocator: '@search_index.data_object_hydrator.service_locator'
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\ElementSearchService
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\DocumentHydratorServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\DocumentHydratorService
+    arguments:
+      $hydratorLocator: '@search_index.document_hydrator.service_locator'
 
-  # Assets
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\AssetSearchService
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\ElementSearchService
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchService
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchService
+
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchService
+
+ # Assets
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapterInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\AssetSearchAdapter
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProviderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\AssetQueryProvider
 
-  #Data Objects
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\DataObjectSearchService
-
+  # Data Objects
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapterInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DataObjectSearchAdapter
 
@@ -76,14 +100,11 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DocumentSearchAdapterInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Adapter\DocumentSearchAdapter
 
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchService
-
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProvider
 
 
-  #Service Locator
+  #Service Locators
   search_index.asset_hydrator.service_locator:
     class: Symfony\Component\DependencyInjection\ServiceLocator
     tags: [ 'container.service_locator' ]
@@ -97,9 +118,19 @@ services:
         Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Unknown: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\UnknownHydratorInterface'
         Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\SearchResult\SearchResultItem\Video: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Asset\VideoHydratorInterface'
 
-  #Service Locator
   search_index.data_object_hydrator.service_locator:
     class: Symfony\Component\DependencyInjection\ServiceLocator
     tags: [ 'container.service_locator' ]
     arguments:
       - Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\SearchResult\SearchResultItem\Folder: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DataObject\FolderHydratorInterface'
+
+  search_index.document_hydrator.service_locator:
+    class: Symfony\Component\DependencyInjection\ServiceLocator
+    tags: [ 'container.service_locator' ]
+    arguments:
+      - Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Email: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\EmailHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Folder: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\FolderHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\HardLink: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\HardlinkHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Link: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\LinkHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Page: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\PageHydratorInterface'
+        Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Snippet: '@Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\SnippetHydratorInterface'

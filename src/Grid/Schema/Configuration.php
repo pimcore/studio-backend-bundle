@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Schema;
@@ -28,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
  */
 #[Schema(
     title: 'GridConfiguration',
-    required: ['id', 'name', 'description'],
+    required: ['id', 'name'],
     type: 'object'
 )]
 final class Configuration implements AdditionalAttributesInterface
@@ -41,7 +38,7 @@ final class Configuration implements AdditionalAttributesInterface
         #[Property(description: 'Name', type: 'string', example: 'My Configuration')]
         private readonly string $name,
         #[Property(description: 'Description', type: 'string', example: 'My Configuration Description')]
-        private readonly string $description,
+        private readonly ?string $description,
     ) {
     }
 
@@ -55,7 +52,7 @@ final class Configuration implements AdditionalAttributesInterface
         return $this->name;
     }
 
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }

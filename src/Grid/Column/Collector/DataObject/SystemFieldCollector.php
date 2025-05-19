@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject;
@@ -57,7 +54,7 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
                 key: $columnKey,
                 group: $this->getTypeName(),
                 sortable: $availableColumnDefinitions[$type]->isSortable(),
-                editable: false,
+                editable: $this->isSystemFieldEditable($columnKey),
                 exportable: $availableColumnDefinitions[$type]->isExportable(),
                 filterable: $availableColumnDefinitions[$type]->isFilterable(),
                 localizable: false,
@@ -71,6 +68,14 @@ final readonly class SystemFieldCollector implements ColumnCollectorInterface
         }
 
         return $columns;
+    }
+
+    private function isSystemFieldEditable(string $systemField): bool
+    {
+        return match ($systemField) {
+            'published',  => true,
+            default => false,
+        };
     }
 
     public function supportedElementTypes(): array

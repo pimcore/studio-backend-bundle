@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Service;
@@ -29,10 +26,13 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\LayoutServiceInterface as SecurityLayoutServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Workflow\Util\Trait\WorkflowLayoutTrait;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\ClassDefinition\Layout as CoreLayout;
 use Pimcore\Model\DataObject\ClassDefinition\Layout\Panel;
 use Pimcore\Model\DataObject\Concrete;
+use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function get_class;
@@ -45,6 +45,7 @@ use function sprintf;
 final readonly class LayoutService implements LayoutServiceInterface
 {
     use ElementProviderTrait;
+    use WorkflowLayoutTrait;
 
     public function __construct(
         private CustomLayoutRepositoryInterface $customLayoutRepository,
@@ -54,6 +55,7 @@ final readonly class LayoutService implements LayoutServiceInterface
         private ObjectLayoutHydratorInterface $hydrator,
         private SecurityLayoutServiceInterface $securityLayoutService,
         private SecurityServiceInterface $securityService,
+        private WorkflowDetailsServiceInterface $workflowDetailsService,
     ) {
     }
 
@@ -105,6 +107,11 @@ final readonly class LayoutService implements LayoutServiceInterface
         ?string $layoutId = null
     ): CoreLayout {
         if ($layoutId === null) {
+            $workflowLayoutId = $this->getLayoutFromWorkflow($dataObject, $user);
+            if ($workflowLayoutId !== null) {
+                return $this->getLayoutById($dataObject, $class, $workflowLayoutId, $user);
+            }
+
             return $class->getLayoutDefinitions();
         }
 
@@ -132,5 +139,12 @@ final readonly class LayoutService implements LayoutServiceInterface
             '-1' => $this->dataObjectServiceResolver->getSuperLayoutDefinition($dataObject),
             default => $this->customLayoutRepository->getCustomLayout($layoutId)->getLayoutDefinitions(),
         };
+    }
+
+    private function getLayoutFromWorkflow(ElementInterface $element, UserInterface $user): ?string
+    {
+        $workflows = $this->workflowDetailsService->getElementWorkflows($element, $user);
+
+        return $this->getLastLayoutId($workflows);
     }
 }

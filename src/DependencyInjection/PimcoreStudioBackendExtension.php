@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\DependencyInjection;
@@ -26,10 +23,11 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInter
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
-use Pimcore\Bundle\StudioBackendBundle\Export\Csv\CsvExportService;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService;
+use Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\AdvancedColumnCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\HubServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Note\Service\NoteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Service\OpenApiServiceInterface;
@@ -98,13 +96,13 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(ElementDeleteServiceInterface::class);
         $definition->setArgument('$recycleBinThreshold', $config['element_recycle_bin_threshold']);
 
-        $definition = $container->getDefinition(HubServiceInterface::class);
-        $definition->setArgument('$cookieLifetime', $config['mercure_settings']['cookie_lifetime']);
-
         $definition = $container->getDefinition(ZipServiceInterface::class);
         $definition->setArgument('$downloadLimits', $config['asset_download_settings']);
 
         $definition = $container->getDefinition(CsvExportService::class);
+        $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
+
+        $definition = $container->getDefinition(XlsxExportService::class);
         $definition->setArgument('$defaultDelimiter', $config['csv_settings']['default_delimiter']);
 
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);
@@ -166,6 +164,12 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
 
         $definition = $container->getDefinition(MetadataAdapterServiceInterface::class);
         $definition->setArgument('$studioAdapters', $config['asset_metadata_adapter_mapping']);
+
+        $definition = $container->getDefinition(UrlServiceInterface::class);
+        $definition->setArguments([
+            '$serverSideUrl' => $config['mercure_settings']['hub_url_server'],
+            '$clientSideUrl' => $config['mercure_settings']['hub_url_client'],
+        ]);
     }
 
     /**
@@ -195,6 +199,7 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             if ($container->hasParameter('pimcore_studio_backend.mercure_settings.' . $key)) {
                 continue;
             }
+
             $container->setParameter(
                 'pimcore_studio_backend.mercure_settings.' . $key,
                 $containerConfig['mercure_settings'][$key]

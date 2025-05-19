@@ -2,16 +2,13 @@
 declare(strict_types=1);
 
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Commercial License (PCL)
+ * This source file is available under the terms of the
+ * Pimcore Open Core License (POCL)
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- *  @copyright  Copyright (c) Pimcore GmbH (http://www.pimcore.org)
- *  @license    http://www.pimcore.org/license     GPLv3 and PCL
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
@@ -56,9 +53,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     ) {
     }
 
-    public function getConfigurationsForAssetsByFolder(int $folderId): Collection
+    public function getConfigurationsForAssets(): Collection
     {
-        $configurations = $this->configurationRepository->getByAssetFolderId($folderId);
+        $configurations = $this->configurationRepository->getForAsset();
 
         $filteredConfigurations = $this->filterConfigurationsForCurrentUser($configurations);
 
@@ -90,10 +87,11 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
 
         $configuration =  $this->configurationRepository->getById($configurationId);
 
-        $user = $this->securityService->getCurrentUser();
-        if ($configuration->getAssetFolderId() !== $folderId) {
-            return $this->getDefaultAssetGridConfiguration();
+        if ($configuration->getAssetFolderId() === null) {
+            throw new NotFoundException('Asset Configuration', $configurationId);
         }
+
+        $user = $this->securityService->getCurrentUser();
 
         if (!$this->userRoleShareService->isConfigurationSharedWithUser($configuration, $user)) {
             return $this->getDefaultAssetGridConfiguration();
@@ -131,8 +129,10 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
             );
         }
 
+        $user = $this->securityService->getCurrentUser();
+
         return $this->buildDefaultConfiguration(
-            $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, 1),
+            $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration($classId, 1, $user),
             $this->dataObjectPredefinedColumns,
             true
         );
@@ -181,13 +181,9 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     /**
      * @throws ForbiddenException|InvalidArgumentException|NotFoundException
      */
-    public function deleteAssetConfiguration(int $configurationId, int $folderId): void
+    public function deleteAssetConfiguration(int $configurationId): void
     {
         $configuration = $this->configurationRepository->getById($configurationId);
-
-        if ($configuration->getAssetFolderId() !== $folderId) {
-            throw new InvalidArgumentException('Configuration does not belong to folder');
-        }
 
         if ($this->securityService->getCurrentUser()->getId() !== $configuration->getOwner()) {
             throw new ForbiddenException(
@@ -244,7 +240,8 @@ final readonly class ConfigurationService implements ConfigurationServiceInterfa
     {
         $availableColumns = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
             $classId,
-            $folderId
+            $folderId,
+            $this->securityService->getCurrentUser()
         );
 
         return $this->buildDefaultConfiguration(
