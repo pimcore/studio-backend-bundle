@@ -39,6 +39,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Document\Service\HydratorServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\HydratorService
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\ReplaceServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\ReplaceService
+
 
   #
   # Repositories
