@@ -67,8 +67,7 @@ final readonly class ColumnConfigurationService implements ColumnConfigurationSe
         ?string $classId,
         ?int $folderId,
         UserInterface $user
-    ): array
-    {
+    ): array {
         if (($classId === null && $folderId !== null) || ($classId !== null && $folderId === null)) {
             throw new InvalidArgumentException('Either both classId and folderId must be set or both must be null');
         }
