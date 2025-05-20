@@ -151,6 +151,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
                 if ($metadata['name'] === $columnConfiguration->getKey()) {
                     $definition = $columnConfiguration->getConfig()['definition'] ?? null;
                     $type = $definition?->getFieldtype();
+
                     break;
                 }
             }
