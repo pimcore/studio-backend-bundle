@@ -32,6 +32,7 @@ interface DataResolverServiceInterface
     public function denormalizeData(
         array $customMetadata,
         UserInterface $user,
+        string $adapterType,
         array $existingMetadata = [],
         bool $isPatch = false
     ): mixed;
