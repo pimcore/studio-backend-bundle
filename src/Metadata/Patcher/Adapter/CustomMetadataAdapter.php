@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Metadata\Patcher\Adapter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Repository\MetadataRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataResolverServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\MetadataServiceInterface;
@@ -42,6 +43,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
     ];
 
     public function __construct(
+        private readonly ColumnConfigurationServiceInterface $columnConfigurationService,
         private readonly DataResolverServiceInterface $dataResolverService,
         private readonly MetadataRepositoryInterface $metadataRepository
     ) {
@@ -57,7 +59,7 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         }
 
         $metadataForPatch = $data[self::INDEX_KEY];
-        $currentMetadata = $element->getMetadata(null, null, false, true);
+        $currentMetadata = $element->getMetadata(raw: true);
         $patchedMetadata = [];
 
         foreach ($currentMetadata as $metadata) {
@@ -119,7 +121,13 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
             return $metadata[$key];
         }
 
-        return $this->dataResolverService->denormalizeData($metadata, $user, $existingMetadata, true);
+        return $this->dataResolverService->denormalizeData(
+            $metadata,
+            $user,
+            $existingMetadata['type'],
+            $existingMetadata,
+            true
+        );
     }
 
     /**
@@ -136,17 +144,29 @@ final class CustomMetadataAdapter implements PatchAdapterInterface
         }
 
         $predefined = $this->metadataRepository->getPredefinedMetadataByName($metadata['name']);
+        $type = $predefined?->getType();
+        if (!$type) {
+            $columnConfigurations = $this->columnConfigurationService->getAvailableAssetColumnConfiguration();
+            foreach ($columnConfigurations as $columnConfiguration) {
+                if ($metadata['name'] === $columnConfiguration->getKey()) {
+                    $definition = $columnConfiguration->getConfig()['definition'] ?? null;
+                    $type = $definition?->getFieldtype();
 
-        if (!$predefined) {
-            throw new InvalidArgumentException(sprintf('Predefined metadata %s not found', $metadata['name']));
+                    break;
+                }
+            }
+
+            if (!$type) {
+                throw new InvalidArgumentException(sprintf('Asset metadata %s not found', $metadata['name']));
+            }
         }
 
         return [
-            'name' => $predefined->getName(),
+            'name' => $metadata['name'],
             'language' => $metadata['language'] ?? '',
-            'type' => $predefined->getType(),
+            'type' => $type,
             'data' => $metadata['data'] ?
-                $this->dataResolverService->denormalizeData($metadata, $user, [], true) :
+                $this->dataResolverService->denormalizeData($metadata, $user, $type, [], true) :
                 null,
         ];
     }
