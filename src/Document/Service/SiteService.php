@@ -88,7 +88,9 @@ final readonly class SiteService implements SiteServiceInterface
             $site->setMainDomain($parameters->getMainDomain());
             $site->setDomains($parameters->getDomains());
             $site->setErrorDocument($parameters->getErrorDocument());
-            $site->setLocalizedErrorDocuments($this->getLocalizedErrorDocuments($parameters->getLocalizedErrorDocuments()));
+            $site->setLocalizedErrorDocuments(
+                $this->getLocalizedErrorDocuments($parameters->getLocalizedErrorDocuments())
+            );
             $site->setRedirectToMainDomain($parameters->isRedirectToMainDomain());
             $site->save();
         } catch (Exception $exception) {
