@@ -119,7 +119,7 @@ pimcore_studio_backend:
 
         # The url to the mercure hub for the server. 
         # This can also be the docker container name (e.g., http://mercure/.well-known/mercure).
-        # If it is not set, the default will be set to "http(s)://<PIMCORE_HOST>/hub".
+        # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub/.well-known/mercure".
         hub_url_server: 'http://mercure/.well-known/mercure'
         cookie_lifetime: 3600
         cookie_same_site: 'Strict'

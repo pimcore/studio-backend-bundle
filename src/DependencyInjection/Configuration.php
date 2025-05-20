@@ -284,7 +284,7 @@ class Configuration implements ConfigurationInterface
                             'This can also be the docker container name '.
                             '(e.g., http://mercure/.well-known/mercure). ' .
                             'If it is not set, default will be set to ' .
-                            '"http(s)://<YOUR_PIMCORE_MAIN_DOMAIN>/hub".'
+                            '"http(s)://<YOUR_PIMCORE_MAIN_DOMAIN>/hub/.well-known/mercure".'
                         )
                         ->defaultNull()
                     ->end()
