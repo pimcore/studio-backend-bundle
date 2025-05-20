@@ -61,7 +61,7 @@ final class UpdateController extends AbstractApiController
         summary: 'document_update_site_summary',
         tags: [Tags::Documents->value]
     )]
-    #[SuccessResponse(description: 'document_update_site_success_response', )]
+    #[SuccessResponse(description: 'document_update_site_success_response')]
     #[IdParameter(type: ElementTypes::TYPE_DOCUMENT)]
     #[ReferenceRequestBody(UpdateSiteParameters::class)]
     #[DefaultResponses([

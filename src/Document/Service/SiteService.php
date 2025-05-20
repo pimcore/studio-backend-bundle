@@ -120,7 +120,7 @@ final readonly class SiteService implements SiteServiceInterface
 
     private function getLocalizedErrorDocuments(array $parameterDocuments): array
     {
-        if (count($parameterDocuments) === 0) {
+        if (empty($parameterDocuments)) {
             return [];
         }
 
