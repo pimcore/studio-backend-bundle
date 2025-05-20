@@ -25,6 +25,7 @@ studio_ee_job_create_xlsx: Create XLSX
 studio_ee_job_upload_assets: Upload Assets
 studio_ee_job_clone_data_objects: Clone Data Objects
 studio_ee_job_delete_data_objects: Delete Data Objects
+studio_ee_job_clone_documents: Clone Documents
 studio_ee_job_delete_documents: Delete Documents
 studio_ee_job_rewrite_element_references: Rewrite Element References
 studio_ee_job_batch_tag_assign: Tag Batch Assign
@@ -43,6 +44,7 @@ studio_ee_job_step_element_rewrite_references: Rewrite Element References
 studio_ee_job_step_element_deletion: Element Deletion
 studio_ee_job_step_element_recycling: Adding Element to Recycle Bin
 studio_ee_job_step_data_object_cloning: Data Object Cloning
+studio_ee_job_step_document_cloning: Document Cloning
 studio_ee_job_step_batch_tag_assign: Batch Tag Assign
 studio_ee_job_step_batch_tag_replace: Batch Tag Replace
 studio_ee_element_folder_collection_not_supported: 'Collection for folders is not supported. ID: %folderId%'

@@ -212,6 +212,12 @@ document_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DocumentAdd</strong>
 document_add_success_response: ID of added document
 document_add_summary: Add a new document
+document_clone_created_response: Successfully copied parent document and created
+  <strong>jobRun</strong> for copying children
+document_clone_description: |
+  Clones a specific document with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder or another document. See the full description of request fields with the schema <strong>Document Clone Parameters</strong>
+document_clone_success_response: Successfully copied documents
+document_clone_summary: Clone a specific document
 document_doc_type_list_description: |
   List all DocTypes. Results can be filtered based on the given <strong>{type}</strong>. <br> The <strong>{type}</strong> must be an existing DocType type.
 document_doc_type_list_success_response: List of all DocTypes

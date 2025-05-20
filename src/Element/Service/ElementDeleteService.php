@@ -18,6 +18,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Service\SearchIndex\IndexQueue\Synchro
 use Pimcore\Bundle\StudioBackendBundle\Asset\Event\AssetDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\AssetSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DataObjectSearchServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Event\DataObjectDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\DocumentDeleteEvent;
 use Pimcore\Bundle\StudioBackendBundle\Element\Schema\DeleteInfo;
@@ -52,6 +53,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         private AssetSearchServiceInterface $assetSearchService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
         private DeleteServiceInterface $deleteService,
+        private DocumentSearchServiceInterface $documentSearchService,
         private ElementServiceInterface $elementService,
         private EventDispatcherInterface $eventDispatcher,
         private SynchronousProcessingServiceInterface $synchronousProcessingService,
@@ -134,7 +136,7 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         if ($element->isLocked()) {
             throw new ForbiddenException(
                 sprintf(
-                    'Asset %s is locked',
+                    'Element %s is locked',
                     $element->getId()
                 )
             );
@@ -166,10 +168,11 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
         UserInterface $user
     ): bool {
         $path = $element->getRealFullPath();
-        // ToDo Implement For Documents
+
         $childrenCount = match (true) {
             $element instanceof Asset => $this->assetSearchService->countChildren($path),
             $element instanceof DataObject => $this->dataObjectSearchService->countChildren($path),
+            $element instanceof Document => $this->documentSearchService->countChildren($path),
             default => throw new InvalidElementTypeException($element->getType())
         };
 
@@ -203,10 +206,10 @@ final readonly class ElementDeleteService implements ElementDeleteServiceInterfa
     {
         $path = $element->getRealFullPath();
 
-        // ToDo Implement For Documents
         return match (true) {
             $element instanceof Asset => $this->assetSearchService->getChildrenIds($path, $sortDirection),
             $element instanceof DataObject => $this->dataObjectSearchService->getChildrenIds($path, $sortDirection),
+            $element instanceof Document => $this->documentSearchService->getChildrenIds($path, $sortDirection),
             default => throw new InvalidElementTypeException($element->getType())
         };
     }

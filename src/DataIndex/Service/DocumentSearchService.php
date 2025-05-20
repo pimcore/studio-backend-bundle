@@ -23,6 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Element\Util\Trait\SearchTermTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\UserInterface;
+use function count;
 
 /**
  * @internal
@@ -91,5 +92,13 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     public function findElementInTree(QueryInterface $query): ?ElementSearchResultItemInterface
     {
         return $this->documentSearchAdapter->findInTree($query);
+    }
+
+    public function countChildren(
+        string $parentPath,
+        ?string $sortDirection = null
+    ): int {
+
+        return count($this->getChildrenIds($parentPath, $sortDirection));
     }
 }
