@@ -113,13 +113,13 @@ pimcore_studio_backend:
         # Optional configuration
 
         # The url to the mercure hub for the (frontend) client.
-        # If it is not set, the default will be set to "http(s)://<PIMCORE_HOST>/hub/.well-known/mercure".
-        # It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host.
+        # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub".
+        # It is possible to use "<PIMCORE_SCHEMA_HOST>" as a placeholder for the current schema and host if path to mercure should be different.
         hub_url_client: 'https://your-app-domain.com/hub'
 
         # The url to the mercure hub for the server. 
         # This can also be the docker container name (e.g., http://mercure/.well-known/mercure).
-        # If it is not set, the default will be set to "http(s)://<PIMCORE_HOST>/hub/.well-known/mercure".
+        # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub/.well-known/mercure".
         hub_url_server: 'http://mercure/.well-known/mercure'
         cookie_lifetime: 3600
         cookie_same_site: 'Strict'

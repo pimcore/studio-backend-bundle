@@ -31,7 +31,7 @@ final readonly class UrlService implements UrlServiceInterface
     public function getServerSideUrl(): string
     {
         if (empty($this->serverSideUrl)) {
-            return $this->getDefaultUrl();
+            return $this->getDefaultServerUrl();
         }
 
         return $this->serverSideUrl;
@@ -40,13 +40,18 @@ final readonly class UrlService implements UrlServiceInterface
     public function getClientSideUrl(): string
     {
         if (empty($this->clientSideUrl)) {
-            return $this->getDefaultUrl();
+            return $this->getDefaultClientUrl();
         }
 
         return str_replace(Mercure::HOST_PLACEHOLDER->value, $this->toolResolver->getHostUrl(), $this->clientSideUrl);
     }
 
-    private function getDefaultUrl(): string
+    private function getDefaultServerUrl(): string
+    {
+        return $this->toolResolver->getHostUrl() . '/hub/.well-known/mercure';
+    }
+
+    private function getDefaultClientUrl(): string
     {
         return $this->toolResolver->getHostUrl() . '/hub';
     }
