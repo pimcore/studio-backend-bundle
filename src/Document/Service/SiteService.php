@@ -29,7 +29,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use function count;
 use function in_array;
 
 /**
