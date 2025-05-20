@@ -29,6 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderIds;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementFolderPaths;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
+use function in_array;
 
 /**
  * @internal
@@ -77,6 +79,7 @@ final readonly class SiteService implements SiteServiceInterface
         $this->documentService->getDocumentElement($this->securityService->getCurrentUser(), $documentId);
 
         $site = $this->siteResolver->getByRootId($documentId);
+
         try {
             if ($site === null) {
                 $site = $this->siteResolver->create(['rootId' => $documentId]);

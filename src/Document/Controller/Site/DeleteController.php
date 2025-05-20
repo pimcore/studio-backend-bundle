@@ -57,7 +57,7 @@ final class DeleteController extends AbstractApiController
         summary: 'document_remove_site_summary',
         tags: [Tags::Documents->value]
     )]
-    #[SuccessResponse(description: 'document_remove_site_success_response',)]
+    #[SuccessResponse(description: 'document_remove_site_success_response', )]
     #[IdParameter(type: ElementTypes::TYPE_DOCUMENT)]
     #[DefaultResponses([
         HttpResponseCodes::FORBIDDEN,
