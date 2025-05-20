@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Throwable;
 use function sprintf;
 
 /**
@@ -21,7 +22,7 @@ use function sprintf;
  */
 final class ElementSavingFailedException extends AbstractApiException
 {
-    public function __construct(?int $id, ?string $error = null)
+    public function __construct(?int $id, ?string $error = null, ?Throwable $previous = null)
     {
         $message = sprintf(
             'Failed to save new element: %s',
@@ -37,8 +38,9 @@ final class ElementSavingFailedException extends AbstractApiException
 
         }
         parent::__construct(
-            HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
-            $message
+            statusCode: HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
+            message: $message,
+            previous: $previous,
         );
     }
 }
