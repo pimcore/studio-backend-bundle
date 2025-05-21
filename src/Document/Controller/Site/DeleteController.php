@@ -48,23 +48,23 @@ final class DeleteController extends AbstractApiController
     /**
      * @throws ForbiddenException|UserNotFoundException|NotFoundException
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_documents_site_remove', methods: ['DELETE'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_documents_site_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::DOCUMENTS->value)]
     #[Delete(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'document_remove_site',
-        description: 'document_remove_site_description',
-        summary: 'document_remove_site_summary',
+        operationId: 'document_delete_site',
+        description: 'document_delete_site_description',
+        summary: 'document_delete_site_summary',
         tags: [Tags::Documents->value]
     )]
-    #[SuccessResponse(description: 'document_remove_site_success_response')]
+    #[SuccessResponse(description: 'document_delete_site_success_response')]
     #[IdParameter(type: ElementTypes::TYPE_DOCUMENT)]
     #[DefaultResponses([
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function removeSite(int $id): Response
+    public function deleteSite(int $id): Response
     {
         $this->siteService->deleteSite($id);
 
