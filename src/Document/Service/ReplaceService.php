@@ -31,6 +31,7 @@ use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Document\Service as DocumentService;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
+use function in_array;
 
 /**
  * @internal

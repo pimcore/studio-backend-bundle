@@ -22,6 +22,7 @@ use Pimcore\Model\Document\Link;
 use Pimcore\Model\Document\Page;
 use Pimcore\Model\Document\Snippet;
 use Pimcore\Resolver\ResolverInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -33,7 +34,7 @@ trait DocumentClassTrait
      */
     private function getClassByType(string $type, ResolverInterface $classResolver): string
     {
-         return match ($type) {
+        return match ($type) {
             DocumentTypes::EMAIL->value => Email::class,
             DocumentTypes::HARDLINK->value => Hardlink::class,
             DocumentTypes::LINK->value => Link::class,
