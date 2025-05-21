@@ -16,6 +16,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Schema;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'Document Clone Parameters',
     required: ['language', 'enableInheritance', 'recursive', 'updateReferences'],

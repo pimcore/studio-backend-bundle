@@ -18,6 +18,9 @@ use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
 
+/**
+ * @internal
+ */
 #[Schema(
     title: 'DocumentAdd',
     required: [
