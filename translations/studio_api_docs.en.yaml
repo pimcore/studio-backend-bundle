@@ -218,6 +218,11 @@ document_clone_description: |
   Clones a specific document with the given <strong>{id}</strong>. <br> The <strong>{parentId}</strong> must be a folder or another document. See the full description of request fields with the schema <strong>Document Clone Parameters</strong>
 document_clone_success_response: Successfully copied documents
 document_clone_summary: Clone a specific document
+document_convert_description: |
+  Change the <strong>{type}</strong> of a specific document with the given <strong>{id}</strong>. 
+  <br>The <strong>{id}</strong> must be an ID of existing document or folder and the <strong>{type}</strong> must be an existing Document Type type.
+document_convert_success_response: Successfully changed document type
+document_convert_summary: Change document type
 document_doc_type_list_description: |
   List all DocTypes. Results can be filtered based on the given <strong>{type}</strong>. <br> The <strong>{type}</strong> must be an existing DocType type.
 document_doc_type_list_success_response: List of all DocTypes
