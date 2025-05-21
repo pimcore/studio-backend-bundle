@@ -29,4 +29,13 @@ interface ReplaceServiceInterface
      * @throws NotFoundException
      */
     public function replaceContents(int $sourceId, int $targetId): void;
+
+    /**
+     * @throws ForbiddenException
+     * @throws ElementSavingFailedException
+     * @throws InvalidElementTypeException
+     * @throws UserNotFoundException
+     * @throws NotFoundException
+     */
+    public function convertType(int $id, string $type): void;
 }

@@ -18,6 +18,7 @@ use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocTypeResolverInterface
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
+use Pimcore\Bundle\StudioBackendBundle\Document\Util\Trait\DocumentClassTrait;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -25,13 +26,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\DocType;
-use Pimcore\Model\Document\Email;
-use Pimcore\Model\Document\Hardlink;
-use Pimcore\Model\Document\Link;
 use Pimcore\Model\Document\Page;
 use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Document\Service;
-use Pimcore\Model\Document\Snippet;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
 use function in_array;
@@ -41,6 +38,8 @@ use function in_array;
  */
 final readonly class CreateService implements CreateServiceInterface
 {
+    use DocumentClassTrait;
+
     private const array PAGE_SNIPPET_TYPES = [
         DocumentTypes::PAGE->value, DocumentTypes::SNIPPET->value, DocumentTypes::EMAIL->value,
     ];
@@ -197,15 +196,7 @@ final readonly class CreateService implements CreateServiceInterface
      */
     private function createDocumentElement(array $data, int $parentId, DocumentAddParameters $parameters): Document
     {
-        $documentClass = match ($parameters->getType()) {
-            DocumentTypes::EMAIL->value => Email::class,
-            DocumentTypes::HARDLINK->value => Hardlink::class,
-            DocumentTypes::LINK->value => Link::class,
-            DocumentTypes::PAGE->value => Page::class,
-            DocumentTypes::SNIPPET->value => Snippet::class,
-            default => $this->getCustomDocumentClass($parameters->getType())
-        };
-
+        $documentClass = $this->getClassByType($parameters->getType(), $this->classResolver);
         $document = $this->documentResolver->createByClassName($documentClass, $parentId, $data, false);
 
         if ($document instanceof Page) {
@@ -214,18 +205,5 @@ final readonly class CreateService implements CreateServiceInterface
         }
 
         return $document;
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     */
-    private function getCustomDocumentClass(string $customType): string
-    {
-        $className = $this->classResolver->resolve($customType);
-        if (!is_subclass_of($className, Document::class)) {
-            throw new InvalidArgumentException("Class $className must extend " . Document::class);
-        }
-
-        return $className;
     }
 }

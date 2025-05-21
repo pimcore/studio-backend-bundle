@@ -44,6 +44,8 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Document\Service\ReplaceServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\ReplaceService
+    arguments:
+      $classResolver: '@pimcore.class.resolver.document'
 
 
   #
