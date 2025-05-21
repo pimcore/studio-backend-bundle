@@ -241,9 +241,9 @@ document_replace_content_description: |
 document_replace_content_success_response: Successfully replaced contents of the document
 document_replace_content_summary: Replace content of a document
 document_delete_site_description: |
-  Remove the existing site by the given document <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document
-document_delete_site_success_response: Successfully removed site
-document_delete_site_summary: Remove the existing site by document ID
+  Delete the existing site by the given document <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document
+document_delete_site_success_response: Successfully deleted site
+document_delete_site_summary: Delete the existing site by its document ID
 document_update_site_description: |
   Use document as a site or update the existing site by the given document <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document
 document_update_site_success_response: Successfully created/updated site
