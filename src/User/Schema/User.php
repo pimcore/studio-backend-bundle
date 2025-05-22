@@ -50,7 +50,7 @@ final class User implements AdditionalAttributesInterface
         #[Property(description: 'If a User is active', type: 'boolean', example: true)]
         private readonly bool $active,
         #[Property(description: 'If User is admin', type: 'boolean', example: false)]
-        private bool $admin,
+        private readonly bool $admin,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private readonly array $classes,
         #[Property(type: 'boolean', example: true)]

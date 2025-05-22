@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Security\Service;
 
+use Pimcore\Bundle\StaticResolverBundle\Lib\ToolResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject;
@@ -26,7 +27,8 @@ use function sprintf;
 final readonly class LanguageService implements LanguageServiceInterface
 {
     public function __construct(
-        private SecurityServiceInterface $securityService
+        private SecurityServiceInterface $securityService,
+        private ToolResolverInterface $toolResolver,
     ) {
     }
 
@@ -39,10 +41,21 @@ final readonly class LanguageService implements LanguageServiceInterface
             throw new InvalidArgumentException(sprintf('Invalid permission "%s"', $permission));
         }
 
-        return $this->securityService->getSpecialDataObjectPermissions(
+        $languagePermissions =  $this->securityService->getSpecialDataObjectPermissions(
             $dataObject,
             $user,
             $permission
         );
+
+        if (empty($languagePermissions) || $this->isDefaultLanguagePermission($languagePermissions)) {
+            return $this->toolResolver->getValidLanguages();
+        }
+
+        return $languagePermissions;
+    }
+
+    private function isDefaultLanguagePermission(array $permissions): bool
+    {
+        return count($permissions) === 1 && in_array($permissions[0], ['', 'default'], true);
     }
 }
