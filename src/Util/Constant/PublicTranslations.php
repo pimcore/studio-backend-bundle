@@ -19,9 +19,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
 final readonly class PublicTranslations
 {
     public const PUBLIC_KEYS = [
-        'username',
-        'password',
-        'login',
-        'Forgot your password',
+        'aria.login-form-additional-logins.remember-me-checkbox',
+        'login-form.remember-me',
+        'login-form.forgot-password',
+        'login-form.login',
+        'login-form-additional-logins.or',
+        'aria.login-form-additional-logins.additional-login-provider',
+        'login-form.username',
+        'login-form.password'
     ];
 }
