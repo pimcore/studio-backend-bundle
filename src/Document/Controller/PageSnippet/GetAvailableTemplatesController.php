@@ -30,7 +30,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ListTemplatesController extends AbstractApiController
+final class GetAvailableTemplatesController extends AbstractApiController
 {
     private const string ROUTE = '/documents/get-available-templates';
 

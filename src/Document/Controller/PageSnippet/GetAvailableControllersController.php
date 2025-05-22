@@ -30,7 +30,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ListControllersController extends AbstractApiController
+final class GetAvailableControllersController extends AbstractApiController
 {
     private const string ROUTE = '/documents/get-available-controllers';
 
