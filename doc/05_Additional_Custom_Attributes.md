@@ -95,6 +95,8 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.dependency`
 - `pre_response.document`
 - `pre_response.document.doc_type_list`
+- `pre_response.document.list_available_controllers`
+- `pre_response.document.list_available_templates`
 - `pre_response.document.sites_list_available`
 - `pre_response.document_version`
 - `pre_response.email.blocklist.entry`

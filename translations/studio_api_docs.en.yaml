@@ -212,6 +212,14 @@ document_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DocumentAdd</strong>
 document_add_success_response: ID of added document
 document_add_summary: Add a new document
+document_available_controllers_list_description: |
+  List all available controllers for documents.
+document_available_controllers_list_response: List of available document controllers
+document_available_controllers_list_summary: List document controllers
+document_available_templates_list_description: |
+  List all available templates for documents.
+document_available_templates_list_response: List of available document templates
+document_available_templates_list_summary: List document templates
 document_clone_created_response: Successfully copied parent document and created
   <strong>jobRun</strong> for copying children
 document_clone_description: |
