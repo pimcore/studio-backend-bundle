@@ -26,6 +26,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
         'id',
         'domains',
         'domain',
+        'rootId',
+        'rootPath',
     ],
     type: 'object'
 )]
