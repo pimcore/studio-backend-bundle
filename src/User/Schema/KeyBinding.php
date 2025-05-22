@@ -30,7 +30,7 @@ final readonly class KeyBinding
     public function __construct(
         #[Property(description: 'ASCII Code for a key on the Keyboard', type: 'integer', example: '83')]
         private int $key,
-        #[Property(description: 'The action the key binding shoudl execute', type: 'string', example: 'save')]
+        #[Property(description: 'The action the key binding should execute', type: 'string', example: 'save')]
         private string $action,
         #[Property(description: 'If CTRL key should be pressed', type: 'boolean', example: 'true')]
         private bool $ctrl,
