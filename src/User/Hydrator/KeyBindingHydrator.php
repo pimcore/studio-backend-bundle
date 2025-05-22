@@ -27,9 +27,9 @@ final class KeyBindingHydrator implements KeyBindingHydratorInterface
             $keyBindings[] = new KeyBinding(
                 key: $keyBinding['key'],
                 action: $keyBinding['action'],
-                ctrl: $keyBinding['ctrl'],
-                alt: $keyBinding['alt'],
-                shift: $keyBinding['shift'],
+                ctrl: $keyBinding['ctrl'] ?? false,
+                alt: $keyBinding['alt'] ?? false,
+                shift: $keyBinding['shift'] ?? false,
             );
         }
 
