@@ -20,7 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
     title: 'NotificationListItem',
-    required: ['id', 'type', 'title', 'read', 'hasAttachment', 'sentDate', 'sender'],
+    required: ['id', 'type', 'title', 'read', 'hasAttachment', 'creationDate', 'sender'],
     type: 'object'
 )]
 class NotificationListItem implements AdditionalAttributesInterface
@@ -66,7 +66,7 @@ class NotificationListItem implements AdditionalAttributesInterface
         return $this->read;
     }
 
-    public function hasAttachment(): bool
+    public function getHasAttachment(): bool
     {
         return $this->hasAttachment;
     }
