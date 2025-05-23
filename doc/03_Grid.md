@@ -94,3 +94,76 @@ Filter by Tags:
 ]
 ...
 ```
+
+## Advanced Columns
+Advanced columns are a special type of column that can be used to display data in a more advanced way. There are tree types of data sources for advanced columns:
+- `simpleField` - a simple field in the object
+- `relationField` - a relation field in the object
+- `staticText` - a static text that is not related to the object
+
+Let's take a look at the `simpleField` type. The `simpleField` call the getter method of the object. You just have to pass the `field` To make sure the value works with the transformers, it has to be convertable to string. 
+```json
+...
+"columns": [
+    {
+        "key": "advanced",
+        "locale": "en",
+        "type": "dataobject.advanced",
+        "config": {
+            "advancedColumns": [
+                {
+                  "field": "name"
+                },
+                {
+                  "field": "productionYear"
+                }
+            ]
+        }
+    }
+]
+...
+```
+
+The `relationField` is a relation field in the object. You can pass the `relation` `and `field` to get the value of the relation. 
+```json
+...
+"columns": [
+    {
+        "key": "advanced",
+        "locale": "en",
+        "type": "dataobject.advanced",
+        "config": {
+            "advancedColumns": [
+                {
+                "relation": "manufacturer",
+                "field": "name"
+                }
+            ]
+        }
+    }
+]
+...
+```
+
+The `staticText` is a static text that is not related to the object. You can pass the `text` to get the value of the static text. 
+```json
+...
+"columns": [
+    {
+        "key": "advanced",
+        "locale": "en",
+        "type": "dataobject.advanced",
+        "config": {
+            "advancedColumns": [
+                {
+                "text": "My Cutom Text",
+                }
+            ]
+        }
+    }
+]
+...
+```
+
+All three types of advanced columns can be used together. You can also use the `relation` and `field` together with the `staticText`. All given values will be displayed in the same column. They will be concatenated by defaults with a `-` and the order of the columns will be the same as the order of the given values. 
+The concatenation value can be changed by applying a ConcatenationTransformer.
