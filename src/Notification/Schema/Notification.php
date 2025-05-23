@@ -29,7 +29,7 @@ final class Notification extends NotificationListItem
         string $title,
         bool $read,
         bool $hasAttachment,
-        int $sentDate,
+        int $creationDate,
         ?string $sender = null,
         #[Property(description: 'message', type: 'string', example: 'Notification message')]
         private readonly ?string $message = null,
@@ -40,7 +40,7 @@ final class Notification extends NotificationListItem
         #[Property(description: 'linked attachment ID', type: 'integer', example: 3669)]
         private readonly ?int $attachmentId = null,
     ) {
-        parent::__construct($id, $type, $title, $read, $hasAttachment, $sentDate, $sender);
+        parent::__construct($id, $type, $title, $read, $hasAttachment, $creationDate, $sender);
     }
 
     public function getMessage(): ?string
