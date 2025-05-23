@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\AdvancedColumnConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\StaticTextConfig;
 
 /**
  * Contains all data that is needed to get all the data for the column.
@@ -100,6 +101,14 @@ final readonly class Column
             if (isset($advancedColumn['field'])) {
                 $configs[] = new SimpleFieldConfig(
                     field: $advancedColumn['field'],
+                );
+
+                continue;
+            }
+
+            if (isset($advancedColumn['text'])) {
+                $configs[] = new StaticTextConfig(
+                    text: $advancedColumn['text'],
                 );
             }
         }

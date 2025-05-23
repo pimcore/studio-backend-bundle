@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\StaticTextConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\FieldDefinitionTrait;
@@ -68,6 +69,10 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
 
             if ($advancedColumn instanceof RelationFieldConfig) {
                 $this->resolveRelationField($advancedColumn, $column, $element);
+            }
+
+            if ($advancedColumn instanceof StaticTextConfig) {
+                $this->values[] = $advancedColumn->getText();
             }
         }
 

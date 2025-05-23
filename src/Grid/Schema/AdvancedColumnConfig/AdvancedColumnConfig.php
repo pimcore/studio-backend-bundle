@@ -35,15 +35,16 @@ final readonly class AdvancedColumnConfig
                 anyOf: [
                     new Schema(ref: RelationFieldConfig::class),
                     new Schema(ref: SimpleFieldConfig::class),
+                    new Schema(ref: StaticTextConfig::class),
                 ]
             ),
-            example: [['field' => 'name', 'relation' => 'manufacturer'], ['field' => 'name']])]
+            example: [['field' => 'name', 'relation' => 'manufacturer'], ['field' => 'name'], ['text' => 'name']])]
         private array $advancedColumn,
     ) {
     }
 
     /**
-     * @return RelationFieldConfig[]|SimpleFieldConfig[]
+     * @return RelationFieldConfig[]|SimpleFieldConfig[]|StaticTextConfig[]
      */
     public function getColumns(): array
     {
