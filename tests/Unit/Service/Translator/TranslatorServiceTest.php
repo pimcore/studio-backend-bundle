@@ -15,14 +15,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Translator;
 
 use Codeception\Test\Unit;
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Translation\Translator;
+use function count;
 
 final class TranslatorServiceTest extends Unit
 {
