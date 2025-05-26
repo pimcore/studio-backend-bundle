@@ -30,8 +30,7 @@ final class CollectionRequestBody extends RequestBody
         bool $includeDescendantsExample = false,
         string $columnFiltersExample = '[{"key":"name","type":"metadata.object","filterValue":1}]',
         string $sortFilterExample = '{"key":"id","direction":"ASC"}'
-    )
-    {
+    ) {
         parent::__construct(
             required: true,
             content: new JsonContent(

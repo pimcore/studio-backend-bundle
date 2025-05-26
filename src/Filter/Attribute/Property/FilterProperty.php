@@ -26,8 +26,7 @@ final class FilterProperty extends Property
         bool $includeDescendantsExample = false,
         string $columnFiltersExample = '[{"key":"name","type":"metadata.object","filterValue":1}]',
         string $sortFilterExample = '{"key":"id","direction":"ASC"}'
-    )
-    {
+    ) {
         parent::__construct(
             property: 'filters',
             properties: [
@@ -55,7 +54,7 @@ final class FilterProperty extends Property
                     property: 'sortFilter',
                     type: 'object',
                     example: $sortFilterExample
-                )
+                ),
             ],
             type: 'object'
         );
