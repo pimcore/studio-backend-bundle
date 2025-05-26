@@ -212,6 +212,11 @@ document_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DocumentAdd</strong>
 document_add_success_response: ID of added document
 document_add_summary: Add a new document
+document_add_translation_description: |
+  Link a new translation document (by <strong>{translationId}</strong>) to the given document with <strong>{id}</strong>. <br>
+  The <strong>{id}</strong> and <strong>{translationId}</strong> must be an ID of existing documents.
+document_add_translation_success_response: Successfully linked translation document
+document_add_translation_summary: Link a new translation document to the existing document
 document_available_controllers_list_description: |
   List all available controllers for documents.
 document_available_controllers_list_response: List of available document controllers
@@ -231,6 +236,11 @@ document_convert_description: |
   <br>The <strong>{id}</strong> must be an ID of existing document or folder and the <strong>{type}</strong> must be an existing Document Type type.
 document_convert_success_response: Successfully changed document type
 document_convert_summary: Change document type
+document_delete_translation_description: |
+  Delete the translation document with the given <strong>{translationId}</strong> from the given document with <strong>{id}</strong>. <br>
+  The <strong>{id}</strong> and <strong>{translationId}</strong> must be an ID of existing documents.
+document_delete_translation_success_response: Successfully deleted translation document
+document_delete_translation_summary: Delete a translation document from the existing document
 document_doc_type_list_description: |
   List all DocTypes. Results can be filtered based on the given <strong>{type}</strong>. <br> The <strong>{type}</strong> must be an existing DocType type.
 document_doc_type_list_success_response: List of all DocTypes
@@ -239,6 +249,15 @@ document_get_by_id_description: |
   Retrieves a specific document based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document or folder.
 document_get_by_id_success_response: Successfully retrieved document data as JSON
 document_get_by_id_summary: Get a specific document by ID
+document_get_translation_parent_by_language_description: |
+  Get the parent translation document of the document with the given <strong>{id}</strong> by <strong>{language}</strong>. <br>
+  The <strong>{id}</strong> must be an ID of existing document and the <strong>{language}</strong> must be a valid language code.
+document_get_translation_parent_by_language_success_response: Parent translation document data
+document_get_translation_parent_by_language_summary: Get the parent translation document data by language
+document_get_translations_description: |
+  Get all existing translations of the document with the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document.
+document_get_translations_success_response: Get all existing translations
+document_get_translations_summary: Get all existing translations of the document
 document_get_tree_description: |
   Listing of all documents and document folders in the system. <br>
   Returns only data which are relevant for the tree <br>

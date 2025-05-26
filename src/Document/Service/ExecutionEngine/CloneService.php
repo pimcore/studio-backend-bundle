@@ -36,6 +36,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Service as DocumentService;
 use Pimcore\Model\Element\ValidationException;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function sprintf;
 
@@ -44,8 +45,6 @@ use function sprintf;
  */
 final readonly class CloneService implements CloneServiceInterface
 {
-    private DocumentService $coreDocumentService;
-
     public function __construct(
         private DocumentServiceInterface $documentService,
         private DocumentSearchServiceInterface $documentSearchService,
@@ -53,7 +52,6 @@ final readonly class CloneService implements CloneServiceInterface
         private SecurityServiceInterface $securityService,
         private SynchronousProcessingServiceInterface $synchronousProcessingService
     ) {
-        $this->coreDocumentService = new DocumentService();
     }
 
     /**
@@ -112,7 +110,9 @@ final readonly class CloneService implements CloneServiceInterface
         $this->synchronousProcessingService->enable();
 
         try {
-            $document = $this->coreDocumentService->copyAsChild(
+            /** @var User $user */
+            $coreDocumentService = new DocumentService($user);
+            $document = $coreDocumentService->copyAsChild(
                 $parent,
                 $source,
                 $cloneData->isEnableInheritance(),
