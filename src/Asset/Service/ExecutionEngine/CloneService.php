@@ -45,7 +45,6 @@ use function sprintf;
  */
 final readonly class CloneService implements CloneServiceInterface
 {
-
     public function __construct(
         private AssetServiceInterface $assetService,
         private AssetSearchServiceInterface $assetSearchService,
@@ -117,6 +116,7 @@ final readonly class CloneService implements CloneServiceInterface
 
         try {
             $this->synchronousProcessingService->enable();
+
             /** @var User $user */
             return (new AssetService($user))->copyAsChild(
                 $parent,

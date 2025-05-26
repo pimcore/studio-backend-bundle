@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Service as DocumentService;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function sprintf;
 
 /**
  * @internal
@@ -136,7 +137,6 @@ final class TranslationService implements TranslationServiceInterface
         $this->coreDocumentService->addTranslation($source, $target);
     }
 
-
     /**
      * {@inheritdoc}
      */
@@ -147,7 +147,7 @@ final class TranslationService implements TranslationServiceInterface
         $target = $this->documentService->getDocumentElement($user, $targetId);
 
         try {
-             $this->coreDocumentService->removeTranslationLink($source, $target);
+            $this->coreDocumentService->removeTranslationLink($source, $target);
         } catch (Exception $exception) {
             throw new DatabaseException($exception->getMessage());
         }
@@ -168,5 +168,4 @@ final class TranslationService implements TranslationServiceInterface
             );
         }
     }
-
 }

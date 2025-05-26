@@ -26,7 +26,6 @@ use OpenApi\Attributes\Schema;
 )]
 final readonly class TranslationLink
 {
-
     public function __construct(
         #[Property(description: 'Language', type: 'string', example: 'en')]
         private string $language,
