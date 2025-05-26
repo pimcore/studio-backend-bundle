@@ -15,6 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\Service\Translator;
 
 use Codeception\Test\Unit;
 use Exception;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorService;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
@@ -37,6 +40,17 @@ final class TranslatorServiceTest extends Unit
         $this->assertEmpty($translations->getKeys());
     }
 
+    public function testGetAllTranslationsNotLoggedIn(): void
+    {
+        $translatorService = $this->mockTranslatorService(false);
+        $locale = 'en';
+
+        $translations = $translatorService->getAllTranslations($locale, true);
+
+        $this->assertEquals($locale, $translations->getLocale());
+        $this->assertCount(count(PublicTranslations::PUBLIC_KEYS), $translations->getKeys());
+    }
+
     /**
      * @throws Exception
      */
@@ -57,11 +71,14 @@ final class TranslatorServiceTest extends Unit
     /**
      * @throws Exception
      */
-    private function mockTranslatorService(): TranslatorServiceInterface
+    private function mockTranslatorService(bool $loggedIn = true): TranslatorServiceInterface
     {
         $translator = $this->makeEmpty(Translator::class);
         $repository = $this->makeEmpty(TranslationRepositoryInterface::class);
+        $securityService = $this->makeEmpty(SecurityServiceInterface::class, [
+            'isLoggedIn' => $loggedIn,
+        ]);
 
-        return new TranslatorService($translator, $repository);
+        return new TranslatorService($translator, $repository, $securityService);
     }
 }
