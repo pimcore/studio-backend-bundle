@@ -51,6 +51,7 @@ final readonly class SecurityService implements SecurityServiceInterface
     {
         try {
             $this->getCurrentUser();
+
             return true;
         } catch (UserNotFoundException) {
             return false;

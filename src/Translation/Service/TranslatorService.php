@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 use InvalidArgumentException;
 use Locale;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
-use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
