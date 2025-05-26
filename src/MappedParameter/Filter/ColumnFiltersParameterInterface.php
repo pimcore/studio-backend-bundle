@@ -24,4 +24,6 @@ interface ColumnFiltersParameterInterface
     public function getColumnFilterByType(string $type): iterable;
 
     public function getFirstColumnFilterByType(string $type): ?ColumnFilter;
+
+    public function getColumnFilters(): array;
 }
