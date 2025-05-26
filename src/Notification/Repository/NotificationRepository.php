@@ -34,8 +34,6 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
 
     }
 
-    private const DEFAULT_ORDER_KEY = 'creationDate';
-
     public function getListingForCurrentUser(
         UserInterface $user,
         FilterParameter $parameters = new FilterParameter()
@@ -49,6 +47,7 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
                     'filterValue' => $user->getId(),
                 ],
             ],
+            sortFilter: $parameters->getSortFilter()
         );
         $this->listingFilter->applyFilters($filterParameters, $listing);
 
@@ -74,8 +73,6 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
 
         $listing = new Listing();
         $this->listingFilter->applyFilters($parameters, $listing);
-        $listing->setOrderKey(self::DEFAULT_ORDER_KEY);
-        $listing->setOrder('DESC');
 
         return $listing;
     }

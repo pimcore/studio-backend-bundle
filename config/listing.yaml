@@ -26,12 +26,16 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Listing\Filter\PaginationFilter:
     tags: [ 'pimcore.studio_backend.listing.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\Listing\Filter\SortFilter:
+    tags: [ 'pimcore.studio_backend.listing.filter' ]
+
   #Service Locator
   listing.query_to_payload_filter.service_locator:
     class: Symfony\Component\DependencyInjection\ServiceLocator
     tags: [ 'container.service_locator' ]
     arguments:
       - Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters: '@Pimcore\Bundle\StudioBackendBundle\Property\Mapper\PropertiesParametersMapper'
+        Pimcore\Bundle\StudioBackendBundle\Notification\MappedParameter\CollectionFilterParameter: '@Pimcore\Bundle\StudioBackendBundle\Filter\Mapper\CollectionParametersMapper'
         Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters: '@Pimcore\Bundle\StudioBackendBundle\Filter\Mapper\CollectionParametersMapper'
 
   #

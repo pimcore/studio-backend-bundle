@@ -18,6 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Mapper\FilterMapperInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Notification\MappedParameter\CollectionFilterParameter;
 
 final class CollectionParametersMapper implements FilterMapperInterface
 {
@@ -26,30 +27,35 @@ final class CollectionParametersMapper implements FilterMapperInterface
      */
     public function map(mixed $parameters): FilterParameter
     {
-        if (!$parameters instanceof CollectionParameters) {
+        if (!$parameters instanceof CollectionParameters && !$parameters instanceof CollectionFilterParameter) {
             return new FilterParameter();
         }
 
-        $columnFilters = [];
+        $filters = $parameters->getFilters();
+        if ($filters === null) {
+            return new FilterParameter();
+        }
 
-        if ($parameters->getPage() !== null) {
+        $columnFilters = $filters->getColumnFilters();
+        if ($filters->getPage() !== null) {
             $columnFilters[] = [
                 'key' => 'page',
                 'type' => FilterType::PAGE->value,
-                'filterValue' => $parameters->getPage(),
+                'filterValue' => $filters->getPage(),
             ];
         }
 
-        if ($parameters->getPageSize() !== null) {
+        if ($filters->getPageSize() !== null) {
             $columnFilters[] = [
                 'key' => 'pageSize',
                 'type' => FilterType::PAGE_SIZE->value,
-                'filterValue' => $parameters->getPageSize(),
+                'filterValue' => $filters->getPageSize(),
             ];
         }
 
         return new FilterParameter(
             columnFilters: $columnFilters,
+            sortFilter: $filters->getSortFilter()
         );
     }
 }
