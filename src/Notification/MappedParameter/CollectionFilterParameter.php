@@ -11,19 +11,22 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\Notification\MappedParameter;
+
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 
 /**
  * @internal
  */
-interface ColumnFiltersParameterInterface
+readonly class CollectionFilterParameter
 {
-    /**
-     * @return ColumnFilter[]
-     */
-    public function getColumnFilterByType(string $type): iterable;
+    public function __construct(
+        private ?FilterParameter $filters = null,
+    ) {
+    }
 
-    public function getFirstColumnFilterByType(string $type): ?ColumnFilter;
-
-    public function getColumnFilters(): array;
+    public function getFilters(): ?FilterParameter
+    {
+        return $this->filters;
+    }
 }

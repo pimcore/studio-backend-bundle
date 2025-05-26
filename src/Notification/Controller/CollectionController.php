@@ -17,7 +17,9 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Notification\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationListItem;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
@@ -43,6 +45,7 @@ final class CollectionController extends AbstractApiController
 
     public function __construct(
         SerializerInterface $serializer,
+        private readonly FilterMapperServiceInterface $filterMapper,
         private readonly NotificationServiceInterface $notificationService,
     ) {
         parent::__construct($serializer);
@@ -60,7 +63,14 @@ final class CollectionController extends AbstractApiController
         summary: 'notification_get_collection_summary',
         tags: [Tags::Notifications->value]
     )]
-    #[CollectionRequestBody]
+    #[CollectionRequestBody(
+        columnFiltersExample: '[' .
+            '{"key":"creationDate", "type":"date", "filterValue":{"operator": "on", "value": "08/20/2024"}},' .
+            '{"key":"title", "type":"like", "filterValue": "notification"},' .
+            '{"key":"type", "type":"equals", "filterValue": "info"}'
+            . ']',
+        sortFilterExample: '{"key":"creationDate", "direction":"DESC"}'
+    )]
     #[SuccessResponse(
         description: 'notification_get_collection_success_response',
         content: new CollectionJson(new GenericCollection(NotificationListItem::class))
@@ -70,9 +80,14 @@ final class CollectionController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function getNotificationCollection(
-        #[MapRequestPayload] CollectionParameters $parameters
+        #[MapRequestPayload] CollectionFilterParameter $parameters
     ): JsonResponse {
-        $collection = $this->notificationService->listNotifications($parameters->getFilters());
+        $filterParameters = new FilterParameter();
+        if ($parameters->getFilters()) {
+            $filterParameters = $this->filterMapper->map($parameters);
+        }
+
+        $collection = $this->notificationService->listNotifications($filterParameters);
 
         return $this->getPaginatedCollection(
             $this->serializer,

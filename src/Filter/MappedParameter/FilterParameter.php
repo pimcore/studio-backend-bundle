@@ -141,6 +141,11 @@ final class FilterParameter implements
         return $column ?: null;
     }
 
+    public function getColumnFilters(): array
+    {
+        return $this->columnFilters;
+    }
+
     public function getSortFilter(): SortFilter
     {
         return $this->sortFilter;
