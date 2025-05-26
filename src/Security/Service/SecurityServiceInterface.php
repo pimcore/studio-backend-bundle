@@ -29,6 +29,8 @@ interface SecurityServiceInterface
      */
     public function getCurrentUser(): UserInterface;
 
+    public function isLoggedIn(): bool;
+
     /**
      * @throws ForbiddenException
      */

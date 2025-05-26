@@ -16,10 +16,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\Translation\Service;
 use InvalidArgumentException;
 use Locale;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidLocaleException;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityService;
+use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Repository\TranslationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\CreateTranslation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\Translation;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Schema\UpdateTranslation;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\PublicTranslations;
 use Pimcore\Translation\Translator;
 use Symfony\Component\Translation\TranslatorBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -36,6 +39,7 @@ final readonly class TranslatorService implements TranslatorServiceInterface
     public function __construct(
         private TranslatorInterface $translator,
         private TranslationRepositoryInterface $translationRepository,
+        private SecurityServiceInterface $securityService,
     ) {
         $this->translatorBag = $this->getTranslatorBag();
     }
@@ -63,7 +67,12 @@ final readonly class TranslatorService implements TranslatorServiceInterface
                 $this->translatorBag->lazyInitialize(self::DOMAIN, $locale);
             }
 
+            if (!$this->securityService->isLoggedIn()) {
+                return $this->getTranslationsForKeys($locale, PublicTranslations::PUBLIC_KEYS);
+            }
+
             $catalogue = $this->translatorBag->getCatalogue($locale)->all(self::DOMAIN);
+
         } catch (InvalidArgumentException) {
             throw new InvalidLocaleException($locale);
         }
@@ -74,7 +83,8 @@ final readonly class TranslatorService implements TranslatorServiceInterface
 
         return new Translation(
             $locale,
-            $catalogue
+            $catalogue,
+            $useFallback
         );
     }
 
