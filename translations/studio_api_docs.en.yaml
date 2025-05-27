@@ -276,6 +276,10 @@ document_delete_site_description: |
   Delete the existing site by the given document <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document
 document_delete_site_success_response: Successfully deleted site
 document_delete_site_summary: Delete the existing site by its document ID
+document_update_by_id_description: |
+  You can create/update/delete list entries like properties, settings or editable fields.
+document_update_by_id_success_response: Successfully updated document
+document_update_by_id_summary: Update a document by ID
 document_update_site_description: |
   Use document as a site or update the existing site by the given document <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document
 document_update_site_success_response: Successfully created/updated site

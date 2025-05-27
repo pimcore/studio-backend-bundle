@@ -15,8 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Service;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface as DataObjectDataService;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Util\Trait\ValidateObjectDataTrait;
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\DataServiceInterface as DocumentDataService;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementSaveServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
@@ -41,7 +42,8 @@ final readonly class UpdateService implements UpdateServiceInterface
 
     public function __construct(
         private AdapterLoaderInterface $adapterLoader,
-        private DataServiceInterface $objectDataService,
+        private DataObjectDataService $objectDataService,
+        private DocumentDataService $documentDataService,
         private SecurityServiceInterface $securityService,
         private ServiceResolverInterface $serviceResolver,
         private ElementSaveServiceInterface $elementSaveService,
@@ -56,8 +58,8 @@ final readonly class UpdateService implements UpdateServiceInterface
         $user = $this->securityService->getCurrentUser();
         $element = $this->getElement($this->serviceResolver, $elementType, $id);
         $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
+        $draftElement = $this->getDraftElement($element);
         if (isset($data[self::USE_DRAFT_DATA_KEY]) && $data[self::USE_DRAFT_DATA_KEY] === true) {
-            $draftElement = $this->getDraftElement($element);
             $considerDraftData = $element !== $draftElement;
 
             if ($considerDraftData && $draftElement instanceof Concrete && $element instanceof Concrete) {
@@ -69,6 +71,11 @@ final readonly class UpdateService implements UpdateServiceInterface
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
             $this->objectDataService->updateEditableData($element, $data[self::EDITABLE_DATA_KEY], $user);
             unset($data[self::EDITABLE_DATA_KEY]);
+        }
+
+        if ($element instanceof Document) {
+            $this->documentDataService->updateDocumentData($element, $data);
+            unset($data[self::EDITABLE_DATA_KEY], $data[self::SETTINGS_DATA_KEY]);
         }
 
         foreach ($this->adapterLoader->loadAdapters($elementType) as $adapter) {

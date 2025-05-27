@@ -35,4 +35,12 @@ final readonly class DataService implements DataServiceInterface
     ): void {
         $document->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
     }
+
+    public function updateDocumentData(
+        DocumentModel $document,
+        array $data
+    ): void
+    {
+        //ToDo: Add adapters to process specific data based on the type of the document
+    }
 }
