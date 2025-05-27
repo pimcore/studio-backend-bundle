@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NonPublicTranslationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PublicTranslationTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
