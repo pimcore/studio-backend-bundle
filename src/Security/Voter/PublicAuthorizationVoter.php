@@ -55,7 +55,7 @@ final class PublicAuthorizationVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        if ($this->userLoggedIn()) {
+        if ($this->securityService->isLoggedIn()) {
             return true;
         }
 
@@ -83,16 +83,5 @@ final class PublicAuthorizationVoter extends Voter
         }
 
         return '';
-    }
-
-    private function userLoggedIn(): bool
-    {
-        try {
-            $this->securityService->getCurrentUser();
-        } catch (UserNotFoundException) {
-            return false;
-        }
-
-        return true;
     }
 }
