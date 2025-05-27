@@ -20,7 +20,7 @@ final class DocumentTypeSchemasEvent extends Event
 {
     public const string EVENT_NAME = 'open_api.document_type_schemas';
 
-/**
+    /**
      * @param Schema[] $schemas
      */
     public function __construct(

@@ -39,8 +39,7 @@ final readonly class DataService implements DataServiceInterface
     public function updateDocumentData(
         DocumentModel $document,
         array $data
-    ): void
-    {
+    ): void {
         //ToDo: Add adapters to process specific data based on the type of the document
     }
 }

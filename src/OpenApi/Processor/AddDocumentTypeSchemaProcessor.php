@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentTypeSc
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function in_array;
 
 /**
  * @internal
