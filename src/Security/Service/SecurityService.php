@@ -47,6 +47,17 @@ final readonly class SecurityService implements SecurityServiceInterface
         return $pimcoreUser;
     }
 
+    public function isLoggedIn(): bool
+    {
+        try {
+            $this->getCurrentUser();
+
+            return true;
+        } catch (UserNotFoundException) {
+            return false;
+        }
+    }
+
     /**
      * @throws ForbiddenException
      */

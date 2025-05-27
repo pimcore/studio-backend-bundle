@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Security\Voter;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NonPublicTranslationException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NoRequestException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PublicTranslationTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\RequestTrait;
@@ -55,7 +54,7 @@ final class PublicAuthorizationVoter extends Voter
      */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        if ($this->userLoggedIn()) {
+        if ($this->securityService->isLoggedIn()) {
             return true;
         }
 
@@ -83,16 +82,5 @@ final class PublicAuthorizationVoter extends Voter
         }
 
         return '';
-    }
-
-    private function userLoggedIn(): bool
-    {
-        try {
-            $this->securityService->getCurrentUser();
-        } catch (UserNotFoundException) {
-            return false;
-        }
-
-        return true;
     }
 }
