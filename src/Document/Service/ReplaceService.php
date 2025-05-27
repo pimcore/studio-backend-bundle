@@ -29,6 +29,7 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Document\Folder;
 use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Document\Service as DocumentService;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use Pimcore\Resolver\ResolverInterface;
 use function in_array;
@@ -42,15 +43,12 @@ final class ReplaceService implements ReplaceServiceInterface
 
     private const array RESTRICTED_PARAMS = ['children', 'siblings', 'scheduledTasks', 'controller', 'template'];
 
-    private DocumentService $coreDocumentService;
-
     public function __construct(
         private readonly DocumentServiceInterface $documentService,
         private readonly ResolverInterface $classResolver,
         private readonly SecurityServiceInterface $securityService,
         private readonly RuntimeCacheResolverInterface $cacheResolver,
     ) {
-        $this->coreDocumentService = new DocumentService();
     }
 
     /**
@@ -69,7 +67,8 @@ final class ReplaceService implements ReplaceServiceInterface
                 $source->setPublished(false);
             }
 
-            $this->coreDocumentService->copyContents($target, $source);
+            /** @var User $user */
+            (new DocumentService($user))->copyContents($target, $source);
         } catch (Exception $e) {
             throw new ElementSavingFailedException($targetId, $e->getMessage(), $e);
         }

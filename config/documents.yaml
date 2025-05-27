@@ -50,6 +50,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Document\Service\PageSnippetServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\PageSnippetService
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\TranslationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\TranslationService
+
   #
   # Repositories
   #

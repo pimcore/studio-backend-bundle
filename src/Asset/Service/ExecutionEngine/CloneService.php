@@ -36,24 +36,22 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\Asset\Folder;
 use Pimcore\Model\Asset\Service as AssetService;
 use Pimcore\Model\Element\ElementDescriptor;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function sprintf;
 
 /**
  * @internal
  */
-final class CloneService implements CloneServiceInterface
+final readonly class CloneService implements CloneServiceInterface
 {
-    private AssetService $coreAssetService;
-
     public function __construct(
-        private readonly AssetServiceInterface $assetService,
-        private readonly AssetSearchServiceInterface $assetSearchService,
-        private readonly JobExecutionAgentInterface $jobExecutionAgent,
-        private readonly SecurityServiceInterface $securityService,
-        private readonly SynchronousProcessingServiceInterface $synchronousProcessingService
+        private AssetServiceInterface $assetService,
+        private AssetSearchServiceInterface $assetSearchService,
+        private JobExecutionAgentInterface $jobExecutionAgent,
+        private SecurityServiceInterface $securityService,
+        private SynchronousProcessingServiceInterface $synchronousProcessingService
     ) {
-        $this->coreAssetService = new AssetService();
     }
 
     /**
@@ -119,7 +117,8 @@ final class CloneService implements CloneServiceInterface
         try {
             $this->synchronousProcessingService->enable();
 
-            return $this->coreAssetService->copyAsChild(
+            /** @var User $user */
+            return (new AssetService($user))->copyAsChild(
                 $parent,
                 $source,
             );

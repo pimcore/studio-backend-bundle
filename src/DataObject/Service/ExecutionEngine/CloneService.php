@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject;
 use Pimcore\Model\DataObject\Service as DataObjectService;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 use function sprintf;
 
@@ -41,8 +42,6 @@ use function sprintf;
  */
 final readonly class CloneService implements CloneServiceInterface
 {
-    private DataObjectService $coreDataObjectService;
-
     public function __construct(
         private DataObjectServiceInterface $dataObjectService,
         private DataObjectSearchServiceInterface $dataObjectSearchService,
@@ -50,7 +49,6 @@ final readonly class CloneService implements CloneServiceInterface
         private SecurityServiceInterface $securityService,
         private SynchronousProcessingServiceInterface $synchronousProcessingService
     ) {
-        $this->coreDataObjectService = new DataObjectService();
     }
 
     /**
@@ -109,8 +107,8 @@ final readonly class CloneService implements CloneServiceInterface
         }
 
         $this->synchronousProcessingService->enable();
-
-        $dataObject = $this->coreDataObjectService->copyAsChild(
+        /** @var User $user */
+        $dataObject = (new DataObjectService($user))->copyAsChild(
             $parent,
             $source,
         );

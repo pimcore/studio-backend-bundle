@@ -23,20 +23,18 @@ use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Service as DataObjectService;
+use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
 /**
  * @internal
  */
-final class ReplaceService implements ReplaceServiceInterface
+final readonly class ReplaceService implements ReplaceServiceInterface
 {
-    private DataObjectService $coreDataObjectService;
-
     public function __construct(
-        private readonly DataObjectServiceInterface $dataObjectService,
-        private readonly SecurityServiceInterface $securityService,
+        private DataObjectServiceInterface $dataObjectService,
+        private SecurityServiceInterface $securityService,
     ) {
-        $this->coreDataObjectService = new DataObjectService();
     }
 
     /**
@@ -60,7 +58,8 @@ final class ReplaceService implements ReplaceServiceInterface
                 $source = $source->getLatestVersion()->loadData();
                 $source->setPublished(false);
             }
-            $this->coreDataObjectService->copyContents($target, $source);
+            /** @var User $user */
+            (new DataObjectService($user))->copyContents($target, $source);
         } catch (Exception $e) {
             throw new ElementSavingFailedException($targetId, $e->getMessage());
         }
