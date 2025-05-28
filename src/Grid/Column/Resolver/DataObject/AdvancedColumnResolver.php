@@ -19,6 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\ExistingColumnConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\StaticTextConfig;
@@ -29,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
+use function array_key_exists;
 use function is_array;
 use function sprintf;
 use function strval;
@@ -46,6 +48,11 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
      */
     private array $values = [];
 
+    /**
+     * @var string[]
+     */
+    private array $cache = [];
+
     public function __construct(
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DataServiceInterface $dataService,
@@ -57,6 +64,7 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
      */
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
     {
+        $this->cache[] = $column->getKey();
         $this->values = [];
         if (!$element instanceof Concrete) {
             throw new InvalidArgumentException('Element must be a concrete object');
@@ -74,13 +82,33 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
             if ($advancedColumn instanceof StaticTextConfig) {
                 $this->values[] = $advancedColumn->getText();
             }
+
+            if ($advancedColumn instanceof ExistingColumnConfig) {
+                $this->resolveExistingColumnConfig($advancedColumn);
+            }
+
         }
+
+        // TODO: Will be replaced later by transformers
+        $this->cache[$column->getKey()] = implode(' - ', $this->values);
 
         return new ColumnData(
             key: $column->getKey(),
             locale: $column->getLocale(),
-            value: implode(' - ', $this->values) // TODO: Will be replaced later by transformers
+            value: $this->cache[$column->getKey()]
         );
+    }
+
+    private function resolveExistingColumnConfig(ExistingColumnConfig $columnConfig): void
+    {
+        if (!array_key_exists($columnConfig->getExistingColumnName(), $this->cache)) {
+            throw new InvalidArgumentException(sprintf(
+                'Advanced Column %s is not resolved yet. Please resolve it before using it as existing column config.',
+                $columnConfig->getExistingColumnName()
+            ));
+        }
+
+        $this->values[] = $this->cache[$columnConfig->getExistingColumnName()];
     }
 
     /**
