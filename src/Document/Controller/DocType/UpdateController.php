@@ -16,7 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Controller\DocType;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Document\Attribute\Response\Content\OneOfDocumentsJson;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocTypeUpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocTypeServiceInterface;
@@ -78,10 +77,9 @@ final class UpdateController extends AbstractApiController
         HttpResponseCodes::NOT_FOUND,
     ])]
     public function documentUpdateById(
-        string $id, 
+        string $id,
         #[MapRequestPayload] DocTypeUpdateParameters $parameters
-    ): JsonResponse
-    {
+    ): JsonResponse {
 
         return $this->jsonResponse($this->docTypeService->updateDoctype($id, $parameters));
     }

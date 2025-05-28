@@ -27,6 +27,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\UserPermissionTrait;
 use Pimcore\Model\Document\DocType;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_key_exists;
+use function sprintf;
 
 /**
  * @internal
