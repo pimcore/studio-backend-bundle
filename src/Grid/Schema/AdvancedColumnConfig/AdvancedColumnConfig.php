@@ -36,6 +36,7 @@ final readonly class AdvancedColumnConfig
                     new Schema(ref: RelationFieldConfig::class),
                     new Schema(ref: SimpleFieldConfig::class),
                     new Schema(ref: StaticTextConfig::class),
+                    new Schema(ref: ExistingColumnConfig::class),
                 ]
             ),
             example: [['field' => 'name', 'relation' => 'manufacturer'], ['field' => 'name'], ['text' => 'name']])]

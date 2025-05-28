@@ -18,6 +18,7 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\AdvancedColumnConfig;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\ExistingColumnConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\StaticTextConfig;
@@ -109,6 +110,14 @@ final readonly class Column
             if (isset($advancedColumn['text'])) {
                 $configs[] = new StaticTextConfig(
                     text: $advancedColumn['text'],
+                );
+
+                continue;
+            }
+
+            if (isset($advancedColumn['existingColumnName'])) {
+                $configs[] = new ExistingColumnConfig(
+                    existingColumnName: $advancedColumn['existingColumnName'],
                 );
             }
         }
