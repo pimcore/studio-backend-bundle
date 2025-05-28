@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
+use function array_key_exists;
 use function is_array;
 use function sprintf;
 use function strval;
@@ -85,7 +86,6 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
             if ($advancedColumn instanceof ExistingColumnConfig) {
                 $this->resolveExistingColumnConfig($advancedColumn);
             }
-
 
         }
 
