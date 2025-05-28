@@ -18,7 +18,7 @@ use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
 
 final class DocTypeEvent extends AbstractPreResponseEvent
 {
-    public const string EVENT_NAME = 'pre_response.document.doc_type_list';
+    public const string EVENT_NAME = '_list';
 
     public function __construct(
         private readonly DocType $docType

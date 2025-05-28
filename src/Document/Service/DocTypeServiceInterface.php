@@ -14,13 +14,28 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocTypeAddParameters;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocTypeUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 
 /**
  * @internal
  */
 interface DocTypeServiceInterface
 {
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotWriteableException
+     */
+    public function addDoctype(DocTypeAddParameters $parameters): DocType;
+
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotWriteableException|NotFoundException
+     */
+    public function updateDoctype(string $id, DocTypeUpdateParameters $parameters): DocType;
+
     /**
      * @throws InvalidArgumentException
      *
