@@ -27,4 +27,9 @@ interface DataServiceInterface
         DocumentModel $element,
         ?Version $documentVersion = null,
     ): void;
+
+    public function updateDocumentData(
+        DocumentModel $document,
+        array $data
+    ): void;
 }
