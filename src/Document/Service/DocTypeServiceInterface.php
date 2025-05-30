@@ -15,7 +15,9 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocTypeAddParameters;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocTypeType;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocTypeUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -42,4 +44,14 @@ interface DocTypeServiceInterface
      * @return DocType[]
      */
     public function listDocTypes(?string $type): array;
+
+    /**
+     * @throws DatabaseException|NotFoundException|NotWriteableException
+     */
+    public function deleteDocType(string $id): void;
+
+    /**
+     * @return DocTypeType[]
+     */
+    public function listDocTypeTypes(): array;
 }

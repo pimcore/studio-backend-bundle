@@ -14,17 +14,19 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
+use Throwable;
 
 /**
  * @internal
  */
 final class DatabaseException extends AbstractApiException
 {
-    public function __construct(string $message = 'A database error occurred.')
+    public function __construct(string $message = 'A database error occurred.', ?Throwable $previous = null)
     {
         parent::__construct(
-            HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
-            $message
+            statusCode: HttpResponseCodes::INTERNAL_SERVER_ERROR->value,
+            message: $message,
+            previous: $previous,
         );
     }
 }

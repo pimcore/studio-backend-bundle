@@ -245,10 +245,18 @@ document_doc_type_add_description: |
   Add a new document <strong>DocType</string>. <br> See the full description of request fields with the schema <strong>DocTypeAdd</strong>
 document_doc_type_add_success_response: New DocType data as JSON
 document_doc_type_add_summary: Add a new document DocType
+document_doc_type_delete_description: |
+  Delete the existing document <strong>DocType</strong> with the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of an existing DocType.
+document_doc_type_delete_success_response: Successfully deleted document DocType
+document_doc_type_delete_summary: Delete an existing document DocType by ID
 document_doc_type_list_description: |
   List all DocTypes. Results can be filtered based on the given <strong>{type}</strong>. <br> The <strong>{type}</strong> must be an existing DocType type.
 document_doc_type_list_success_response: List of all DocTypes
 document_doc_type_list_summary: List all document DocTypes
+document_doc_type_type_list_description: |
+  List all available types for DocType.
+document_doc_type_type_list_success_response: List of available DocType types
+document_doc_type_type_list_summary: List DocType types
 document_doc_type_update_by_id_description: |
   Update the DocType with the given <strong>{id}</strong>. <br> 
   The <strong>{id}</strong> must be an ID of an existing DocType. <br>
