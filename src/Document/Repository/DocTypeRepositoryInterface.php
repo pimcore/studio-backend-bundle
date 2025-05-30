@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Model\Document\DocType;
 
 /**
@@ -27,4 +29,16 @@ interface DocTypeRepositoryInterface
      * @return DocType[]
      */
     public function listDocTypes(?string $type = null): array;
+
+    /**
+     * @throws NotFoundException|NotWriteableException
+     */
+    public function getById(string $id): DocType;
+
+    /**
+     * @throws NotWriteableException
+     */
+    public function addDocType(): DocType;
+
+    public function getTypesConfiguration(): array;
 }

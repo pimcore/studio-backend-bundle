@@ -13,8 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Repository;
 
+use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocTypeResolverInterface;
+use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotWriteableException;
 use Pimcore\Model\Document\DocType;
 use Pimcore\Model\Document\DocType\Listing;
 use function sprintf;
@@ -25,7 +29,9 @@ use function sprintf;
 final readonly class DocTypeRepository implements DocTypeRepositoryInterface
 {
     public function __construct(
+        private DocumentResolverInterface $documentResolver,
         private DocumentServiceResolverInterface $documentServiceResolver,
+        private DocTypeResolverInterface $docTypeResolver,
     ) {
     }
 
@@ -46,5 +52,40 @@ final readonly class DocTypeRepository implements DocTypeRepositoryInterface
         }
 
         return $listing->getDocTypes();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getById(string $id): DocType
+    {
+        $docType = $this->docTypeResolver->getById($id);
+        if (!$docType instanceof DocType) {
+            throw new NotFoundException(type: 'docType', id: $id);
+        }
+
+        if (!$docType->isWriteable()) {
+            throw new NotWriteableException(type: 'DocType', message: 'DocType is not writeable');
+        }
+
+        return $docType;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addDocType(): DocType
+    {
+        $docType = new DocType();
+        if (!$docType->isWriteable()) {
+            throw new NotWriteableException(type: 'DocType', message: 'DocType is not writeable');
+        }
+
+        return $docType;
+    }
+
+    public function getTypesConfiguration(): array
+    {
+        return $this->documentResolver->getTypesConfiguration();
     }
 }

@@ -241,10 +241,20 @@ document_delete_translation_description: |
   The <strong>{id}</strong> and <strong>{translationId}</strong> must be an ID of existing documents.
 document_delete_translation_success_response: Successfully deleted translation document
 document_delete_translation_summary: Delete a translation document from the existing document
+document_doc_type_add_description: |
+  Add a new document <strong>DocType</string>. <br> See the full description of request fields with the schema <strong>DocTypeAdd</strong>
+document_doc_type_add_success_response: New DocType data as JSON
+document_doc_type_add_summary: Add a new document DocType
 document_doc_type_list_description: |
   List all DocTypes. Results can be filtered based on the given <strong>{type}</strong>. <br> The <strong>{type}</strong> must be an existing DocType type.
 document_doc_type_list_success_response: List of all DocTypes
 document_doc_type_list_summary: List all document DocTypes
+document_doc_type_update_by_id_description: |
+  Update the DocType with the given <strong>{id}</strong>. <br> 
+  The <strong>{id}</strong> must be an ID of an existing DocType. <br>
+  Please note that <strong>all fields<strong> have to be provided.
+document_doc_type_update_by_id_success_response: Successfully updated DocType
+document_doc_type_update_by_id_summary: Update a document DocType by ID
 document_get_by_id_description: |
   Retrieves a specific document based on the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing document or folder.
 document_get_by_id_success_response: Successfully retrieved document data as JSON

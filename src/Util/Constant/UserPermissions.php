@@ -23,6 +23,7 @@ enum UserPermissions: string
     case ASSETS = 'assets';
     case DATA_OBJECTS = 'objects';
     case DOCUMENTS = 'documents';
+    case DOCUMENT_TYPES = 'document_types';
     case ELEMENT_TYPE_PERMISSION  = 'ELEMENT_TYPE_PERMISSION';
     case EMAILS = 'emails';
     case GDPR = 'gdpr_data_extractor';
