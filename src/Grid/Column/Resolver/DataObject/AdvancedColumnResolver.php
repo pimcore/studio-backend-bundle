@@ -89,8 +89,10 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
 
         }
 
-        // TODO: Will be replaced later by transformers
-        $this->cache[$column->getKey()] = implode(' - ', $this->values);
+        $this->cache[$column->getKey()] = implode(
+            $column->getAdvancedColumnConfig()->getConcatenationSymbol(),
+            $this->values
+        );
 
         return new ColumnData(
             key: $column->getKey(),

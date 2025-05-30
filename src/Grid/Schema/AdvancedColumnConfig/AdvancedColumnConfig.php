@@ -41,6 +41,8 @@ final readonly class AdvancedColumnConfig
             ),
             example: [['field' => 'name', 'relation' => 'manufacturer'], ['field' => 'name'], ['text' => 'name']])]
         private array $advancedColumn,
+        #[Property(description: 'Concatenation symbol to combine multiple columns', type: 'string', example: '-')]
+        private string $concatenationSymbol,
     ) {
     }
 
@@ -50,5 +52,10 @@ final readonly class AdvancedColumnConfig
     public function getColumns(): array
     {
         return $this->advancedColumn;
+    }
+
+    public function getConcatenationSymbol(): string
+    {
+        return $this->concatenationSymbol;
     }
 }
