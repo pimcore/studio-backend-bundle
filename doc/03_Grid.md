@@ -205,3 +205,6 @@ This example shows how to use the `existingColumnName`. It will take the value o
 
 All types of advanced columns can be used together. You can also use the `relation`, `field`, `existingColumnName` together with the `staticText`. All given values will be displayed in the same column. They will be concatenated by defaults with a `-` and the order of the columns will be the same as the order of the given values. 
 The concatenation value can be changed by applying a ConcatenationTransformer.
+
+### Concatenation Symbol
+To combine the values of the advanced columns, you can use the `concatenationSymbol`. This symbol will be used to concatenate the values of the advanced columns. By default, it is set to `-`. You can change it by setting the `concatenationSymbol` in the `config` of the advanced column.

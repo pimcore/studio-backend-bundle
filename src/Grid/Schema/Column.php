@@ -122,6 +122,9 @@ final readonly class Column
             }
         }
 
-        return new AdvancedColumnConfig($configs);
+        return new AdvancedColumnConfig(
+            $configs,
+            $this->config['concatenationSymbol'] ?? '-',
+        );
     }
 }
