@@ -127,7 +127,6 @@ final readonly class DocTypeService implements DocTypeServiceInterface
         }
     }
 
-
     /**
      * {@inheritDoc}
      */
