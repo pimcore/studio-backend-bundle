@@ -79,6 +79,6 @@ final class AddController extends AbstractApiController
         #[MapRequestPayload] DocTypeAddParameters $parameters
     ): JsonResponse {
 
-        return $this->jsonResponse($this->docTypeService->addDoctype($parameters));
+        return $this->jsonResponse($this->docTypeService->addDocType($parameters));
     }
 }
