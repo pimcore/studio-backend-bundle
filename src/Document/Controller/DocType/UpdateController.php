@@ -64,7 +64,7 @@ final class UpdateController extends AbstractApiController
         summary: 'document_doc_type_update_by_id_summary',
         tags: [Tags::Documents->value]
     )]
-    #[StringParameter(name: 'id', example: '1', description: 'The ID of the DocType to update')]
+    #[StringParameter(name: 'id', example: '1', description: 'The Id of the DocType to update')]
     #[ReferenceRequestBody(DocTypeUpdateParameters::class)]
     #[SuccessResponse(
         description: 'document_doc_type_update_by_id_success_response',
@@ -76,11 +76,11 @@ final class UpdateController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function documentUpdateById(
+    public function updateDocTypeById(
         string $id,
         #[MapRequestPayload] DocTypeUpdateParameters $parameters
     ): JsonResponse {
 
-        return $this->jsonResponse($this->docTypeService->updateDoctype($id, $parameters));
+        return $this->jsonResponse($this->docTypeService->updateDocType($id, $parameters));
     }
 }

@@ -48,7 +48,7 @@ final readonly class DocTypeService implements DocTypeServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function addDoctype(DocTypeAddParameters $parameters): DocTypeSchema
+    public function addDocType(DocTypeAddParameters $parameters): DocTypeSchema
     {
         $this->validateType($parameters->getType());
         $docType = $this->docTypeRepository->addDocType();
@@ -67,7 +67,7 @@ final readonly class DocTypeService implements DocTypeServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function updateDoctype(string $id, DocTypeUpdateParameters $parameters): DocTypeSchema
+    public function updateDocType(string $id, DocTypeUpdateParameters $parameters): DocTypeSchema
     {
         $this->validateType($parameters->getType());
         $docType = $this->docTypeRepository->getById($id);

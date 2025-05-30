@@ -75,7 +75,7 @@ final class AddController extends AbstractApiController
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function addDocument(
+    public function addDocType(
         #[MapRequestPayload] DocTypeAddParameters $parameters
     ): JsonResponse {
 

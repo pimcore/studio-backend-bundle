@@ -29,12 +29,12 @@ interface DocTypeServiceInterface
     /**
      * @throws ElementSavingFailedException|InvalidArgumentException|NotWriteableException
      */
-    public function addDoctype(DocTypeAddParameters $parameters): DocType;
+    public function addDocType(DocTypeAddParameters $parameters): DocType;
 
     /**
-     * @throws ElementSavingFailedException|InvalidArgumentException|NotWriteableException|NotFoundException
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException|NotWriteableException
      */
-    public function updateDoctype(string $id, DocTypeUpdateParameters $parameters): DocType;
+    public function updateDocType(string $id, DocTypeUpdateParameters $parameters): DocType;
 
     /**
      * @throws InvalidArgumentException
