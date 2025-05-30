@@ -27,6 +27,7 @@ use Pimcore\Model\DataObject\Data\Link;
 use Pimcore\Model\UserInterface;
 use Pimcore\Normalizer\NormalizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_array;
 
 /**
  * @internal
