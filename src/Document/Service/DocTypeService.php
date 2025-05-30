@@ -15,11 +15,14 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocTypeEvent;
+use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocTypeTypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeTypeHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Repository\DocTypeRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType as DocTypeSchema;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocTypeAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocTypeUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
@@ -39,6 +42,7 @@ final readonly class DocTypeService implements DocTypeServiceInterface
 
     public function __construct(
         private DocTypeHydratorInterface $hydrator,
+        private DocTypeTypeHydratorInterface $typeHydrator,
         private DocTypeRepositoryInterface $docTypeRepository,
         private EventDispatcherInterface $eventDispatcher,
         private SecurityServiceInterface $securityService,
@@ -107,6 +111,41 @@ final readonly class DocTypeService implements DocTypeServiceInterface
         }
 
         return $docTypes;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function deleteDocType(string $id): void
+    {
+        $docType = $this->docTypeRepository->getById($id);
+
+        try {
+            $docType->delete();
+        } catch (Exception $e) {
+            throw new DatabaseException('Failed to delete DocType', $e);
+        }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public function listDocTypeTypes(): array
+    {
+        $types = [];
+        $typeList = $this->docTypeRepository->getTypesConfiguration();
+        foreach ($typeList as $name => $data) {
+            $hydrated = $this->typeHydrator->hydrate($name, $data);
+            $this->eventDispatcher->dispatch(
+                new DocTypeTypeEvent($hydrated),
+                DocTypeTypeEvent::EVENT_NAME
+            );
+
+            $types[] = $hydrated;
+        }
+
+        return $types;
     }
 
     private function getDocType(DocType $docType): DocTypeSchema

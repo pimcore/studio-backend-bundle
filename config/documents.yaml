@@ -74,6 +74,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeTypeHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Hydrator\DocTypeTypeHydrator
+
   #
   # Handler
   #
