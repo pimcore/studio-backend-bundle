@@ -53,6 +53,10 @@ final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerI
         bool $isPatch = false
     ): ?Link {
 
+        if (!isset($data[$key]) || !is_array($data[$key])) {
+            return null;
+        }
+
         $link = new Link();
         $link->setValues($data[$key]);
 
