@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader;
 
-
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
 use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;

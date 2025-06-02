@@ -112,7 +112,6 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
 
         $this->applyTransformers($column->getAdvancedColumnConfig()->getTransformers());
 
-
         $this->cache[$column->getKey()] = implode(
             $column->getAdvancedColumnConfig()->getConcatenationSymbol(),
             $this->values

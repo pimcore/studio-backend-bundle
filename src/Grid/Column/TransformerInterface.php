@@ -11,12 +11,10 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
 interface TransformerInterface
 {
-
     /**
      * Transforms a value of the advanced column in the grid.
      * Any string operation can be performed here.

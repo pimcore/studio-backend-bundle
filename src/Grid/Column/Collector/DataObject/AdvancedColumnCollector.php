@@ -138,8 +138,7 @@ final class AdvancedColumnCollector implements
         array $simpleFields,
         array $relationFields,
         array $transformers
-    ): ColumnConfiguration
-    {
+    ): ColumnConfiguration {
         return new ColumnConfiguration(
             key: 'advanced',
             group: 'advanced',
