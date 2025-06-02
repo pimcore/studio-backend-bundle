@@ -1036,3 +1036,6 @@ classification_store_get_layout_by_group_response: Layout definition
 classification_store_get_layout_by_collection_description: Get Layout definition for given collection
 classification_store_get_layout_by_collection_summary: Get Layout definition for given collection
 classification_store_get_layout_by_collection_response: Layout definition
+data_object_get_grid_preview_description: Gives you a preview of an Advanced Column Grid for a given Data Object.
+data_object_get_grid_preview_summary: Get a preview of an Advanced Column Grid for a given Data Object.
+data_object_get_grid_preview_success_response: Preview of an Advanced Column Grid for a given Data Object.

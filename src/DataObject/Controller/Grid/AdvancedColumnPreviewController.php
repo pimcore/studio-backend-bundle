@@ -62,7 +62,7 @@ final class AdvancedColumnPreviewController extends AbstractApiController
     )]
     #[AdvancedColumnPreviewRequestBody]
     #[SuccessResponse(
-        description: 'data_object_get_grid_success_response',
+        description: 'data_object_get_grid_preview_success_response',
         content: new JsonContent(
             ref: ColumnData::class,
             type: 'object'
