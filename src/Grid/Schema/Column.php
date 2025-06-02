@@ -123,6 +123,19 @@ final readonly class Column
             }
         }
 
+        return new AdvancedColumnConfig(
+            $configs,
+            $this->config['concatenationSymbol'] ?? '-',
+            $this->getTransformers()
+        );
+    }
+
+    /**
+     *
+     * @return Transformer[]
+     */
+    private function getTransformers(): array
+    {
         $transformers = [];
         if (isset($this->config['transformers'])) {
             foreach ($this->config['transformers'] as $transformer) {
@@ -134,10 +147,6 @@ final readonly class Column
             }
         }
 
-        return new AdvancedColumnConfig(
-            $configs,
-            $this->config['concatenationSymbol'] ?? '-',
-            $transformers
-        );
+        return  $transformers;
     }
 }
