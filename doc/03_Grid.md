@@ -157,7 +157,7 @@ The `staticText` is a static text that is not related to the object. You can pas
         "config": {
             "advancedColumns": [
                 {
-                "text": "My Cutom Text",
+                "text": "My Custom Text",
                 }
             ]
         }
@@ -191,7 +191,7 @@ This example shows how to use the `existingColumnName`. It will take the value o
         "config": {
             "advancedColumns": [
                 {
-                "text": " Cutom Text",
+                "text": " Custom Text",
                 },
                 {
                 "existingColumnName": "advancedName"
@@ -208,3 +208,32 @@ The concatenation value can be changed by applying a ConcatenationTransformer.
 
 ### Concatenation Symbol
 To combine the values of the advanced columns, you can use the `concatenationSymbol`. This symbol will be used to concatenate the values of the advanced columns. By default, it is set to `-`. You can change it by setting the `concatenationSymbol` in the `config` of the advanced column.
+
+### Transformers
+Transformers can be applied to advanced columns to modify the output. For example, you can use the `uppercase` Transformer to change all values to uppercase.
+The transformer will be applied to all data sources of the advanced column separately.
+
+```json
+...
+"columns": [
+    {
+        "key": "advanced",
+        "locale": "en",
+        "type": "dataobject.advanced",
+        "config": {
+            "advancedColumns": [
+                {
+                "text": "My Custom Text",
+                }
+            ]
+            "transformers": [
+                {
+                  "key": "uppercase"
+                }
+            ]
+        }
+    }
+]
+...
+```
+

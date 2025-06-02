@@ -19,12 +19,15 @@ use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\ExistingColumnConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\StaticTextConfig;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\Transformer;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\FieldDefinitionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -53,10 +56,28 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
      */
     private array $cache = [];
 
+    /**
+     * @var array <string, TransformerInterface>
+     */
+    private array $transformers = [];
+
     public function __construct(
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly DataServiceInterface $dataService,
+        private readonly TransformerLoaderInterface $transformerLoader,
     ) {
+    }
+
+    public function getType(): string
+    {
+        return 'dataobject.advanced';
+    }
+
+    public function supportedElementTypes(): array
+    {
+        return [
+            ElementTypes::TYPE_OBJECT,
+        ];
     }
 
     /**
@@ -88,6 +109,9 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
             }
 
         }
+
+        $this->applyTransformers($column->getAdvancedColumnConfig()->getTransformers());
+
 
         $this->cache[$column->getKey()] = implode(
             $column->getAdvancedColumnConfig()->getConcatenationSymbol(),
@@ -173,15 +197,34 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
         $this->resolveField($relationFieldConfig, $column, $relation);
     }
 
-    public function getType(): string
+    /**
+     * @return array<string, TransformerInterface>
+     */
+    private function getTransformers(): array
     {
-        return 'dataobject.advanced';
+        if (!$this->transformers) {
+            $this->transformers = $this->transformerLoader->loadTransformers();
+        }
+
+        return $this->transformers;
     }
 
-    public function supportedElementTypes(): array
+    /**
+     * @param Transformer[] $transformers
+     */
+    private function applyTransformers(array $transformers): void
     {
-        return [
-            ElementTypes::TYPE_OBJECT,
-        ];
+        foreach ($transformers as $transformer) {
+            if (!array_key_exists($transformer->getKey(), $this->getTransformers())) {
+                throw new InvalidArgumentException(sprintf(
+                    'Transformer %s is not registered',
+                    $transformer->getKey()
+                ));
+            }
+
+            foreach ($this->values as $index => $value) {
+                $this->values[$index] = $this->getTransformers()[$transformer->getKey()]->transform($value);
+            }
+        }
     }
 }
