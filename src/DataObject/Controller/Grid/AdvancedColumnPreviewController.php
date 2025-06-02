@@ -14,16 +14,15 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Controller\Grid;
 
 use Exception;
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Property\GridCollection;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\GridRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\AdvancedColumnPreviewRequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\AdvancedColumnPreviewParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\StringParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -38,7 +37,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class GetController extends AbstractApiController
+final class AdvancedColumnPreviewController extends AbstractApiController
 {
     public function __construct(
         SerializerInterface $serializer,
@@ -52,35 +51,32 @@ final class GetController extends AbstractApiController
      * @throws Exception
      * @throws NotFoundException
      */
-    #[Route('/data-objects/grid/{classId}', name: 'pimcore_studio_api_get_data_object_grid', methods: ['POST'])]
+    #[Route('/data-objects/grid/preview', name: 'pimcore_studio_api_get_data_object_grid_preview', methods: ['POST'])]
     #[IsGranted(UserPermissions::DATA_OBJECTS->value)]
     #[Post(
-        path: self::PREFIX . '/data-objects/grid/{classId}',
-        operationId: 'data_object_get_grid',
-        description: 'data_object_get_grid_description',
-        summary: 'data_object_get_grid_summary',
+        path: self::PREFIX . '/data-objects/grid/preview',
+        operationId: 'data_object_get_grid_preview',
+        description: 'data_object_get_grid_preview_description',
+        summary: 'data_object_get_grid_preview_summary',
         tags: [Tags::DataObjectsGrid->value]
     )]
-    #[GridRequestBody]
+    #[AdvancedColumnPreviewRequestBody]
     #[SuccessResponse(
         description: 'data_object_get_grid_success_response',
-        content: new CollectionJson(
-            collection: new GridCollection()
+        content: new JsonContent(
+            ref: ColumnData::class,
+            type: 'object'
         )
-    )]
-    #[StringParameter(
-        name: 'classId',
-        example: 'EV',
-        description: 'Identifies the class name for which the the grid should be build.',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::BAD_REQUEST,
     ])]
-    public function getDataObjectGrid(#[MapRequestPayload] GridParameter $gridParameter, string $classId): JsonResponse
+    public function getPreviewOfAdvancedColumn(
+        #[MapRequestPayload] AdvancedColumnPreviewParameter $parameter,
+    ): JsonResponse
     {
-
-        return $this->jsonResponse($this->gridService->getDataObjectGrid($gridParameter, $classId));
+        return $this->jsonResponse($this->gridService->getPreviewOfAdvancedColumn($parameter));
     }
 }
