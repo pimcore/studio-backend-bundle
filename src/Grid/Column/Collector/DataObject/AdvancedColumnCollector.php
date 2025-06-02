@@ -132,7 +132,7 @@ final class AdvancedColumnCollector implements
     /**
      * @param SimpleField[] $simpleFields
      * @param RelationField[] $relationFields
-     * @param TransformerInterface  $transformers
+     * @param TransformerInterface[]  $transformers
      */
     private function buildColumnConfigurations(
         array $simpleFields,
