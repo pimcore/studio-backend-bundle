@@ -75,8 +75,7 @@ final class AdvancedColumnPreviewController extends AbstractApiController
     ])]
     public function getPreviewOfAdvancedColumn(
         #[MapRequestPayload] AdvancedColumnPreviewParameter $parameter,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return $this->jsonResponse($this->gridService->getPreviewOfAdvancedColumn($parameter));
     }
 }

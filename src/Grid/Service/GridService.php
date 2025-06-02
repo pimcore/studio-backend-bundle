@@ -127,9 +127,9 @@ final class GridService implements GridServiceInterface
         $filter = new FilterParameter(
             columnFilters: [
                 [
-                    "type" => "system.id",
-                    "filterValue" => $parameter->getObjectId()
-                ]
+                    'type' => 'system.id',
+                    'filterValue' => $parameter->getObjectId(),
+                ],
             ]
         );
 
@@ -141,14 +141,12 @@ final class GridService implements GridServiceInterface
 
         $gridData = $this->getDataObjectGrid($gridParameter, null);
 
-
         if (!isset($gridData->getItems()[0]['columns'][0])) {
             throw new NotFoundException('Data object', $parameter->getObjectId());
         }
 
         return $gridData->getItems()[0]['columns'][0];
     }
-
 
     /**
      * @throws InvalidArgumentException
