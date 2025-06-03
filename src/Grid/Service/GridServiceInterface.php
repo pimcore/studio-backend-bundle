@@ -19,7 +19,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\AdvancedColumnPreviewParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Collection\ColumnCollection;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Response\StudioElementInterface;
@@ -75,6 +77,13 @@ interface GridServiceInterface
         GridParameter $gridParameter,
         ?string $classId
     ): Collection;
+
+    /**
+     * @throws Exception
+     */
+    public function getPreviewOfAdvancedColumn(
+        AdvancedColumnPreviewParameter $parameter,
+    ): ColumnData;
 
     public function getColumnKeys(ColumnCollection $columnCollection, bool $withGroup = false): array;
 

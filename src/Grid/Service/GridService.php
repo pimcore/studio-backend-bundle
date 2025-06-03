@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\Grid\GridSearchInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnDefinitionInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
@@ -27,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInte
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ExportResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\StudioElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Event\GridColumnDataEvent;
+use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\AdvancedColumnPreviewParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\GridParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
@@ -115,6 +117,35 @@ final class GridService implements GridServiceInterface
             $gridParameter,
             ElementTypes::TYPE_OBJECT
         );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getPreviewOfAdvancedColumn(AdvancedColumnPreviewParameter $parameter): ColumnData
+    {
+        $filter = new FilterParameter(
+            columnFilters: [
+                [
+                    'type' => 'system.id',
+                    'filterValue' => $parameter->getObjectId(),
+                ],
+            ]
+        );
+
+        $gridParameter = new GridParameter(
+            folderId: 1,
+            columns: [$parameter->getColumn()],
+            filters: $filter
+        );
+
+        $gridData = $this->getDataObjectGrid($gridParameter, null);
+
+        if (!isset($gridData->getItems()[0]['columns'][0])) {
+            throw new NotFoundException('Data object', $parameter->getObjectId());
+        }
+
+        return $gridData->getItems()[0]['columns'][0];
     }
 
     /**
