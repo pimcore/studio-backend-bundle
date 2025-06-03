@@ -39,6 +39,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnCollectorLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorColumnCollectorLoader
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\Loader\TaggedIteratorTransformerLoader
+
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\FavoriteService
 
@@ -356,3 +359,23 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\AdvancedColumnCollector:
     tags: [ 'pimcore.studio_backend.grid_column_collector' ]
+
+
+  #
+  # Transformer
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Uppercase:
+      tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Lowercase:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Trim:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TrimEnd:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]
+
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TrimStart:
+    tags: [ 'pimcore.studio_backend.grid_transformer' ]

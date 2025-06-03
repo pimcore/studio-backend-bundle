@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\Existing
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\StaticTextConfig;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\Transformer;
 
 /**
  * Contains all data that is needed to get all the data for the column.
@@ -125,6 +126,27 @@ final readonly class Column
         return new AdvancedColumnConfig(
             $configs,
             $this->config['concatenationSymbol'] ?? '-',
+            $this->getTransformers()
         );
+    }
+
+    /**
+     *
+     * @return Transformer[]
+     */
+    private function getTransformers(): array
+    {
+        $transformers = [];
+        if (isset($this->config['transformers'])) {
+            foreach ($this->config['transformers'] as $transformer) {
+                if (isset($transformer['key'])) {
+                    $transformers[] = new Transformer(
+                        key: $transformer['key'],
+                    );
+                }
+            }
+        }
+
+        return  $transformers;
     }
 }

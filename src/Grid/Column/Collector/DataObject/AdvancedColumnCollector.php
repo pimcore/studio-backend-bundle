@@ -21,12 +21,14 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ClassIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnCollectorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FolderIdInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\FrontendType;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseClassIdTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseFolderIdTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\UseUserTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ClassDefinitionServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\RelationField;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\SimpleField;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
@@ -56,6 +58,7 @@ final class AdvancedColumnCollector implements
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
+        private readonly TransformerLoaderInterface $transformerLoader,
         private array $supportedDataTypes
     ) {
     }
@@ -79,7 +82,8 @@ final class AdvancedColumnCollector implements
 
         return [$this->buildColumnConfigurations(
             $this->getSimpleFields($collectedDefinitions),
-            $this->getRelationFields($collectedDefinitions)
+            $this->getRelationFields($collectedDefinitions),
+            $this->getTransformers()
         )];
     }
 
@@ -128,9 +132,13 @@ final class AdvancedColumnCollector implements
     /**
      * @param SimpleField[] $simpleFields
      * @param RelationField[] $relationFields
+     * @param TransformerInterface[]  $transformers
      */
-    private function buildColumnConfigurations(array $simpleFields, array $relationFields): ColumnConfiguration
-    {
+    private function buildColumnConfigurations(
+        array $simpleFields,
+        array $relationFields,
+        array $transformers
+    ): ColumnConfiguration {
         return new ColumnConfiguration(
             key: 'advanced',
             group: 'advanced',
@@ -146,6 +154,7 @@ final class AdvancedColumnCollector implements
                 [
                     'simpleField' => $simpleFields,
                     'relationField' => $relationFields,
+                    'transformers' => $transformers,
                 ],
             ],
         );
@@ -167,6 +176,14 @@ final class AdvancedColumnCollector implements
         }
 
         return $simpleFields;
+    }
+
+    /**
+     * @return TransformerInterface[]
+     */
+    public function getTransformers(): array
+    {
+        return $this->transformerLoader->loadTransformers();
     }
 
     /**
