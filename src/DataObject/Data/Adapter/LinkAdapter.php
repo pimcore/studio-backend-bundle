@@ -27,6 +27,7 @@ use Pimcore\Model\DataObject\Data\Link;
 use Pimcore\Model\UserInterface;
 use Pimcore\Normalizer\NormalizerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_array;
 
 /**
  * @internal
@@ -52,6 +53,10 @@ final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerI
         ?FieldContextData $contextData = null,
         bool $isPatch = false
     ): ?Link {
+
+        if (!isset($data[$key]) || !is_array($data[$key])) {
+            return null;
+        }
 
         $link = new Link();
         $link->setValues($data[$key]);

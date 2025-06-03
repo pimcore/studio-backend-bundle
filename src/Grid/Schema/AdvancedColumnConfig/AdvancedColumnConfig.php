@@ -43,6 +43,13 @@ final readonly class AdvancedColumnConfig
         private array $advancedColumn,
         #[Property(description: 'Concatenation symbol to combine multiple columns', type: 'string', example: '-')]
         private string $concatenationSymbol,
+        #[Property(
+            description: 'List if Transformers that should be applied',
+            type: 'array',
+            items: new Items(ref: Transformer::class))
+        ]
+        private array $transformers,
+
     ) {
     }
 
@@ -57,5 +64,13 @@ final readonly class AdvancedColumnConfig
     public function getConcatenationSymbol(): string
     {
         return $this->concatenationSymbol;
+    }
+
+    /**
+     * @return Transformer[]
+     */
+    public function getTransformers(): array
+    {
+        return $this->transformers;
     }
 }

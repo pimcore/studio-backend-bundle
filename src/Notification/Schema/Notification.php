@@ -18,7 +18,7 @@ use OpenApi\Attributes\Schema;
 
 #[Schema(
     title: 'Notification',
-    required: ['message', 'payload', 'attachmentType', 'attachmentId'],
+    required: ['message', 'payload', 'attachmentType', 'attachmentId', 'attachmentFullPath'],
     type: 'object'
 )]
 final class Notification extends NotificationListItem
@@ -39,6 +39,8 @@ final class Notification extends NotificationListItem
         private readonly ?string $attachmentType = null,
         #[Property(description: 'linked attachment ID', type: 'integer', example: 3669)]
         private readonly ?int $attachmentId = null,
+        #[Property(description: 'linked attachment fullPath', type: 'string', example: '/path/to/attachment.jpg')]
+        private readonly ?string $attachmentFullPath = null,
     ) {
         parent::__construct($id, $type, $title, $read, $hasAttachment, $creationDate, $sender);
     }
@@ -61,5 +63,10 @@ final class Notification extends NotificationListItem
     public function getAttachmentId(): ?int
     {
         return $this->attachmentId;
+    }
+
+    public function getAttachmentFullPath(): ?string
+    {
+        return $this->attachmentFullPath;
     }
 }

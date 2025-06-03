@@ -224,3 +224,42 @@ pimcore_studio_backend:
         - "wysiwyg"
         - "numeric"
 ```
+
+### Transformers for Advanced Columns
+You can also define transformers for Advanced Columns. These transformers will be used to transform the data before it is displayed in the grid.
+You need to implement the `TransformerInterface` and tag it with `pimcore.studio_backend.grid_transformer`.
+
+```php
+<?php
+declare(strict_types=1);
+
+
+namespace App\Transformer;
+
+use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
+
+final class Uppercase implements TransformerInterface
+{
+
+    public function transform(string $value): string
+    {
+        return strtoupper($value);
+    }
+
+    public function getName(): string
+    {
+        return 'Uppercase';
+    }
+
+    public function getKey(): string
+    {
+        return 'uppercase';
+    }
+
+    public function getDescription(): string
+    {
+        return 'Transforms the value to uppercase.';
+    }
+}
+
+```

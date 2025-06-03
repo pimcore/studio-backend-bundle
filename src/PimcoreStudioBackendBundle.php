@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\ListingF
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\MercureTopicsProviderPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\PatchAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\SettingsProviderPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\TransformerPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\UpdateAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\PimcoreStudioBackendExtension;
 use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
@@ -89,6 +90,7 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new SettingsProviderPass());
         $container->addCompilerPass(new MercureTopicsProviderPass());
         $container->addCompilerPass(new FieldDefinitionResolverPass());
+        $container->addCompilerPass(new TransformerPass());
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void
