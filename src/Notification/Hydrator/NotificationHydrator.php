@@ -51,6 +51,7 @@ final readonly class NotificationHydrator implements NotificationHydratorInterfa
             $notification->getPayload(),
             $notification->getLinkedElementType(),
             $notification->getLinkedElement()?->getId(),
+            $notification->getLinkedElement()?->getRealFullPath()
         );
     }
 
