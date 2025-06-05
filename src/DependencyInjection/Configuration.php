@@ -76,8 +76,9 @@ class Configuration implements ConfigurationInterface
         $this->addGridConfiguration($rootNode);
         $this->addSearchGridConfiguration($rootNode);
         $this->addNoteTypes($rootNode);
-        $this->addAssetMetadataAdapterMapping($rootNode);
-        $this->addDataObjectAdapterMapping($rootNode);
+        $this->addClassMapping($rootNode, 'asset_metadata_adapter_mapping');
+        $this->addClassMapping($rootNode, 'data_object_data_adapter_mapping');
+        $this->addClassMapping($rootNode, 'document_type_adapter_mapping');
         $this->addUserNode($rootNode);
         $this->addServerNode($rootNode);
         $this->addWidgetTypesNode($rootNode);
@@ -381,22 +382,10 @@ class Configuration implements ConfigurationInterface
         ->end();
     }
 
-    private function addDataObjectAdapterMapping(ArrayNodeDefinition $node): void
+    private function addClassMapping(ArrayNodeDefinition $node, string $name): void
     {
         $node->children()
-            ->arrayNode('data_object_data_adapter_mapping')
-                ->useAttributeAsKey('class')
-                ->arrayPrototype()
-                    ->scalarPrototype()
-                    ->end()
-                ->end()
-            ->end();
-    }
-
-    private function addAssetMetadataAdapterMapping(ArrayNodeDefinition $node): void
-    {
-        $node->children()
-            ->arrayNode('asset_metadata_adapter_mapping')
+            ->arrayNode($name)
                 ->useAttributeAsKey('class')
                 ->arrayPrototype()
                     ->scalarPrototype()

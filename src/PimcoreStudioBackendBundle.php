@@ -18,6 +18,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\PimcoreGenericDataIndexBundle;
 use Pimcore\Bundle\GenericExecutionEngineBundle\PimcoreGenericExecutionEngineBundle;
 use Pimcore\Bundle\StaticResolverBundle\PimcoreStaticResolverBundle;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\DataIndexFilterPass;
+use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\DocumentTypeAdapterPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\FieldDefinitionResolverPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\FilterMapperPass;
 use Pimcore\Bundle\StudioBackendBundle\DependencyInjection\CompilerPass\GridColumnDefinitionPass;
@@ -91,6 +92,7 @@ class PimcoreStudioBackendBundle extends AbstractPimcoreBundle implements Depend
         $container->addCompilerPass(new MercureTopicsProviderPass());
         $container->addCompilerPass(new FieldDefinitionResolverPass());
         $container->addCompilerPass(new TransformerPass());
+        $container->addCompilerPass(new DocumentTypeAdapterPass());
     }
 
     public static function registerDependentBundles(BundleCollection $collection): void

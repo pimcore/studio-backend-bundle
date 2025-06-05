@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Updater\Adapter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\AbstractObject;
+use Pimcore\Model\Document;
 use Pimcore\Model\Element\ElementInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use function array_key_exists;
@@ -28,14 +29,16 @@ use function sprintf;
 #[AutoconfigureTag('pimcore.studio_backend.update_adapter')]
 final readonly class IndexAdapter implements UpdateAdapterInterface
 {
-    private const INDEX_KEY = 'index';
+    private const string INDEX_KEY = 'index';
 
     /**
      * @throws ElementSavingFailedException
      */
     public function update(ElementInterface $element, array $data): void
     {
-        if (!$element instanceof AbstractObject || !array_key_exists($this->getIndexKey(), $data)) {
+        if ((!$element instanceof AbstractObject && !$element instanceof Document) ||
+            !array_key_exists($this->getIndexKey(), $data)
+        ) {
             return;
         }
 
@@ -59,6 +62,7 @@ final readonly class IndexAdapter implements UpdateAdapterInterface
     {
         return [
             ElementTypes::TYPE_OBJECT,
+            ElementTypes::TYPE_DOCUMENT,
         ];
     }
 }

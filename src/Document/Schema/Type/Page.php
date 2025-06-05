@@ -24,7 +24,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     title: 'Page',
     required: [
         'title', 'description', 'prettyUrl', 'controller', 'template', 'contentMainDocumentId', 'supportsContentMain',
-        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime',
+        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime', 'draftData',
     ],
     type: 'object'
 )]

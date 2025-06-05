@@ -53,6 +53,12 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Document\Service\TranslationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Document\Service\TranslationService
 
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeService
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Service\TypeAdapterLoaderInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Document\Service\Loader\TaggedIteratorTypeAdapter
+
   #
   # Repositories
   #
@@ -87,3 +93,13 @@ services:
   #
 
   Pimcore\Bundle\StudioBackendBundle\Document\EventSubscriber\CloneSubscriber: ~
+
+  #
+  # Type Adapters
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\HardlinkAdapter: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\LinkAdapter: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\PageSnippetAdapter: ~

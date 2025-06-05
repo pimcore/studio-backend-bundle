@@ -17,12 +17,14 @@ use Attribute;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateBooleanProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateIntegerProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateObjectProperty;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\UpdateStringProperty;
 use Pimcore\Bundle\StudioBackendBundle\Property\Attribute\Property\UpdateElementProperties;
 use Pimcore\Bundle\StudioBackendBundle\Updater\Service\UpdateServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 
 /**
@@ -41,13 +43,15 @@ final class UpdateDocumentRequestBody extends RequestBody
                     new Property(
                         property: 'data',
                         properties: [
-                            new UpdateIntegerProperty('parentId'),
+                            new UpdateIntegerProperty('parentId', 1),
+                            new UpdateIntegerProperty('index', 0),
                             new UpdateStringProperty('key'),
                             new Property(property:'task', type: 'string', enum: ElementSaveTasks::values()),
                             new UpdateStringProperty('locked'),
                             new UpdateBooleanProperty('published'),
-                            new UpdateObjectProperty(UpdateServiceInterface::EDITABLE_DATA_KEY),
-                            new UpdateObjectProperty(UpdateServiceInterface::SETTINGS_DATA_KEY),
+                            new UpdateObjectProperty(DocumentFieldKeys::EDITABLE_DATA->value),
+                            new UpdateObjectProperty(DocumentFieldKeys::SETTINGS_DATA->value),
+                            new UpdateBooleanProperty(DocumentFieldKeys::MISSING_REQUIRED_EDITABLE->value),
                             new UpdateElementProperties(),
                         ],
                         type: 'object',

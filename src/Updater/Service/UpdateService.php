@@ -24,9 +24,12 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedExceptio
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
+use Pimcore\Model\Document\Folder;
+use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\DuplicateFullPathException;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Element\ValidationException;
@@ -56,26 +59,17 @@ final readonly class UpdateService implements UpdateServiceInterface
     public function update(string $elementType, int $id, array $data): void
     {
         $user = $this->securityService->getCurrentUser();
-        $element = $this->getElement($this->serviceResolver, $elementType, $id);
         $task = $data[ElementSaveServiceInterface::INDEX_TASK] ?? null;
-        $draftElement = $this->getDraftElement($element);
-        if (isset($data[self::USE_DRAFT_DATA_KEY]) && $data[self::USE_DRAFT_DATA_KEY] === true) {
-            $considerDraftData = $element !== $draftElement;
-
-            if ($considerDraftData && $draftElement instanceof Concrete && $element instanceof Concrete) {
-                $this->objectDataService->handleDraftData($draftElement, $element, $task);
-                $element = $draftElement;
-            }
-        }
+        $element = $this->getLatestElement($this->getElement($this->serviceResolver, $elementType, $id), $data, $task);
 
         if (isset($data[self::EDITABLE_DATA_KEY]) && $element instanceof Concrete) {
             $this->objectDataService->updateEditableData($element, $data[self::EDITABLE_DATA_KEY], $user);
             unset($data[self::EDITABLE_DATA_KEY]);
         }
 
-        if ($element instanceof Document) {
-            $this->documentDataService->updateDocumentData($element, $data);
-            unset($data[self::EDITABLE_DATA_KEY], $data[self::SETTINGS_DATA_KEY]);
+        if ($element instanceof Document && !$element instanceof Folder) {
+            $this->documentDataService->updateDocumentData($element, $data, $user);
+            unset($data[DocumentFieldKeys::EDITABLE_DATA->value], $data[DocumentFieldKeys::SETTINGS_DATA->value]);
         }
 
         foreach ($this->adapterLoader->loadAdapters($elementType) as $adapter) {
@@ -95,9 +89,30 @@ final readonly class UpdateService implements UpdateServiceInterface
         }
     }
 
+    private function getLatestElement(
+        mixed $element,
+        array $data,
+        ?string $task
+    ): mixed {
+        if (($data[self::USE_DRAFT_DATA_KEY] ?? false) !== true) {
+            return $element;
+        }
+
+        $draftElement = $this->getDraftElement($element);
+        if ($element === $draftElement) {
+            return $element;
+        }
+
+        if ($draftElement instanceof Concrete && $element instanceof Concrete) {
+            $this->objectDataService->handleDraftData($draftElement, $element, $task);
+        }
+
+        return $draftElement;
+    }
+
     private function getDraftElement(ElementInterface $element): ElementInterface
     {
-        if (!$element instanceof Concrete && !$element instanceof Document) {
+        if (!$element instanceof Concrete && !$element instanceof PageSnippet) {
             return $element;
         }
 

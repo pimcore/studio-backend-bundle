@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementSaveTasks;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Document;
+use Pimcore\Model\Document\PageSnippet;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\UserInterface;
 
@@ -72,15 +73,16 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
      */
     private function processVersionTasks(ElementInterface $element, UserInterface $user, string $task): void
     {
-        if (!$element instanceof Concrete && !$element instanceof Document) {
+        if (!$element instanceof Concrete && !$element instanceof PageSnippet) {
             return;
         }
 
-        $element->setOmitMandatoryCheck(true);
+        if ($element instanceof Concrete) {
+            $element->setOmitMandatoryCheck(true);
+        }
+
         $autoSave = $task === ElementSaveTasks::AUTOSAVE->value;
-
         $element->saveVersion(true, true, null, $autoSave);
-
         if ($autoSave) {
             return;
         }
@@ -123,7 +125,9 @@ final readonly class ElementSaveService implements ElementSaveServiceInterface
     private function unpublishElement(Concrete|Document $element, UserInterface $user): void
     {
         $this->securityService->hasElementPermission($element, $user, ElementPermissions::UNPUBLISH_PERMISSION);
-        $element->setOmitMandatoryCheck(true);
+        if ($element instanceof Concrete) {
+            $element->setOmitMandatoryCheck(true);
+        }
         $element->setPublished(false);
         $element->save();
     }

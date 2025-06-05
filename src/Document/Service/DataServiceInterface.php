@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
+use Couchbase\User;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Model\Document as DocumentModel;
+use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
 
 /**
@@ -30,6 +32,7 @@ interface DataServiceInterface
 
     public function updateDocumentData(
         DocumentModel $document,
-        array $data
+        array $data,
+        UserInterface $user
     ): void;
 }

@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     title: 'Snippet',
     required: [
         'controller', 'template', 'contentMainDocumentId', 'supportsContentMain',
-        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime',
+        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime', 'draftData',
     ],
     type: 'object'
 )]

@@ -1,0 +1,10 @@
+pimcore_studio_backend:
+    asset_metadata_adapter_mapping:
+        Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\BooleanAdapter:
+            - "checkbox"
+        Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\ManyToOneRelationAdapter:
+            - "asset"
+            - "document"
+            - "object"
+        Pimcore\Bundle\StudioBackendBundle\Metadata\Data\Adapter\DateAdapter:
+            - "date"

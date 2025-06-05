@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
     required: [
         'subject', 'from', 'replyTo', 'to', 'cc', 'bcc',
         'controller', 'template', 'contentMainDocumentId', 'supportsContentMain',
-        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime',
+        'missingRequiredEditable', 'staticGeneratorEnabled', 'staticGeneratorLifetime', 'draftData',
     ],
     type: 'object'
 )]
