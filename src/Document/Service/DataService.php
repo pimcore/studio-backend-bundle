@@ -13,9 +13,13 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippetDraftData;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\Document as DocumentModel;
+use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
 
 /**
@@ -24,6 +28,7 @@ use Pimcore\Model\Version;
 final readonly class DataService implements DataServiceInterface
 {
     public function __construct(
+        private DocumentTypeServiceInterface $documentTypeService,
         private WorkflowDetailsServiceInterface $workflowDetailsService,
     ) {
     }
@@ -34,12 +39,44 @@ final readonly class DataService implements DataServiceInterface
         ?Version $documentVersion = null,
     ): void {
         $document->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
+
+        $detailData = [];
+        $adapter = $this->documentTypeService->tryTypeAdapter($document->getType());
+        if ($adapter instanceof DataNormalizerInterface) {
+            $detailData = $adapter->normalize($element);
+        }
+
+        $document->setDocumentDetailData($detailData);
+
+        if (method_exists($document, 'setDraftData')) {
+            $document->setDraftData($this->getDraftData($element, $documentVersion));
+        }
     }
 
     public function updateDocumentData(
         DocumentModel $document,
-        array $data
+        array $data,
+        UserInterface $user
     ): void {
-        //ToDo: Add adapters to process specific data based on the type of the document
+        $adapter = $this->documentTypeService->tryTypeAdapter($document->getType());
+        if (!$adapter instanceof SetterDataInterface) {
+            return;
+        }
+        $adapter->setData($document, $data, $user);
+    }
+
+    private function getDraftData(
+        DocumentModel $document,
+        ?Version $version = null
+    ): ?PageSnippetDraftData {
+        if (!$version || $document->getModificationDate() < $version->getDate()) {
+            return null;
+        }
+
+        return new PageSnippetDraftData(
+            $version->getId(),
+            $version->getDate(),
+            $version->isAutoSave()
+        );
     }
 }

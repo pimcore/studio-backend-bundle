@@ -41,7 +41,7 @@ final class UpdateDataObjectRequestBody extends RequestBody
                     new Property(
                         property: 'data',
                         properties: [
-                            new UpdateIntegerProperty('parentId'),
+                            new UpdateIntegerProperty('parentId', 1),
                             new UpdateIntegerProperty('index', 0),
                             new UpdateStringProperty('key'),
                             new UpdateBooleanProperty(UpdateServiceInterface::USE_DRAFT_DATA_KEY),

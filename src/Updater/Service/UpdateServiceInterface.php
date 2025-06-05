@@ -26,8 +26,6 @@ interface UpdateServiceInterface
 
     public const string EDITABLE_DATA_KEY = 'editableData';
 
-    public const string SETTINGS_DATA_KEY = 'settingsData';
-
     /**
      * @throws ElementSavingFailedException|FieldValidationFailedException|NotFoundException
      */

@@ -11,10 +11,11 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
+namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document;
 
-enum AdapterLoader: string
+enum DocumentFieldKeys: string
 {
-    case METADATA_ADAPTER_TAG = 'pimcore.studio_backend.metadata_adapter';
-    case DOCUMENT_TYPE_ADAPTER_TAG = 'pimcore.studio_backend.document_type_adapter';
+    case SETTINGS_DATA = 'settingsData';
+    case EDITABLE_DATA = 'editableData';
+    case MISSING_REQUIRED_EDITABLE = 'missingRequiredEditable';
 }

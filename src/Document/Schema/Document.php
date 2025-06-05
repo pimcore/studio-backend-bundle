@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'hasChildren',
         'hasWorkflowWithPermissions',
         'permissions',
+        'documentDetailData',
         'hasWorkflowAvailable',
     ],
     type: 'object'
@@ -68,6 +69,8 @@ class Document extends Element implements AdditionalAttributesInterface
         bool $isLocked,
         ?int $creationDate,
         ?int $modificationDate,
+        #[Property(description: 'Detail document data', type: 'object', example: ['fieldKey' => 'field value'])]
+        private array $documentDetailData = [],
     ) {
         parent::__construct(
             $id,
@@ -116,5 +119,15 @@ class Document extends Element implements AdditionalAttributesInterface
     public function getPermissions(): DocumentPermissions
     {
         return $this->permissions;
+    }
+
+    public function getDocumentDetailData(): array
+    {
+        return $this->documentDetailData;
+    }
+
+    public function setDocumentDetailData(array $data): void
+    {
+        $this->documentDetailData = $data;
     }
 }

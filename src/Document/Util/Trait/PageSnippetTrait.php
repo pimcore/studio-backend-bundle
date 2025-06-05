@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Util\Trait;
 
 use OpenApi\Attributes\Property;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippetDraftData;
 
 /**
  * @internal
@@ -40,6 +41,9 @@ trait PageSnippetTrait
 
     #[Property(description: 'Lifetime of static generator', type: 'integer', example: 123456)]
     private ?int $staticGeneratorLifetime;
+
+    #[Property(ref: PageSnippetDraftData::class)]
+    private ?PageSnippetDraftData $draftData = null;
 
     public function getController(): ?string
     {
@@ -109,5 +113,15 @@ trait PageSnippetTrait
     private function setStaticGeneratorLifetime(?int $staticGeneratorLifetime): void
     {
         $this->staticGeneratorLifetime = $staticGeneratorLifetime;
+    }
+
+    public function getDraftData(): ?PageSnippetDraftData
+    {
+        return $this->draftData;
+    }
+
+    public function setDraftData(?PageSnippetDraftData $draftData): void
+    {
+        $this->draftData = $draftData;
     }
 }

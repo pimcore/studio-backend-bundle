@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Model\Document as DocumentModel;
+use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
 
 /**
@@ -30,6 +31,7 @@ interface DataServiceInterface
 
     public function updateDocumentData(
         DocumentModel $document,
-        array $data
+        array $data,
+        UserInterface $user
     ): void;
 }

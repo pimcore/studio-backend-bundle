@@ -11,10 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
+namespace Pimcore\Bundle\StudioBackendBundle\Document\Data;
 
-enum AdapterLoader: string
+use Pimcore\Model\Document;
+use Pimcore\Model\UserInterface;
+
+interface SetterDataInterface
 {
-    case METADATA_ADAPTER_TAG = 'pimcore.studio_backend.metadata_adapter';
-    case DOCUMENT_TYPE_ADAPTER_TAG = 'pimcore.studio_backend.document_type_adapter';
+    public function setData(Document $document, array $data, UserInterface $user): void;
 }

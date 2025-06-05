@@ -19,6 +19,7 @@ use Pimcore\Bundle\CoreBundle\DependencyInjection\ConfigurationHelper;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\DownloadServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\ExecutionEngine\ZipServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataAdapterServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentTypeServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Element\Service\ElementDeleteServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\EventSubscriber\CorsSubscriber;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
@@ -132,8 +133,14 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(NoteServiceInterface::class);
         $definition->setArgument('$noteTypes', $config['notes']['types']);
 
+        $definition = $container->getDefinition(MetadataAdapterServiceInterface::class);
+        $definition->setArgument('$studioAdapters', $config['asset_metadata_adapter_mapping']);
+
         $definition = $container->getDefinition(DataAdapterServiceInterface::class);
         $definition->setArgument('$dataAdapters', $config['data_object_data_adapter_mapping']);
+
+        $definition = $container->getDefinition(DocumentTypeServiceInterface::class);
+        $definition->setArgument('$typeAdapters', $config['document_type_adapter_mapping']);
 
         $definition = $container->getDefinition(KeyBindingServiceInterface::class);
         $definition->setArgument('$defaultKeyBindings', $config['user']['default_key_bindings']);
@@ -161,9 +168,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
             '$perspectiveConfigurations' => $config[Configuration::PERSPECTIVES_NODE],
             '$storageConfig' => $config['config_location'][Configuration::PERSPECTIVES_NODE],
         ]);
-
-        $definition = $container->getDefinition(MetadataAdapterServiceInterface::class);
-        $definition->setArgument('$studioAdapters', $config['asset_metadata_adapter_mapping']);
 
         $definition = $container->getDefinition(UrlServiceInterface::class);
         $definition->setArguments([
