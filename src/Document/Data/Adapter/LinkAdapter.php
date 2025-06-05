@@ -43,11 +43,9 @@ final readonly class LinkAdapter implements SetterDataInterface, DataNormalizerI
 
     private const string RAW_HREF_KEY = 'rawHref';
 
-
     public function __construct(
         private ServiceResolverInterface $elementService,
-    )
-    {
+    ) {
     }
 
     public function setData(Document $document, array $data, UserInterface $user): void

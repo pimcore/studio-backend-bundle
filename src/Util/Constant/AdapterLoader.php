@@ -16,6 +16,5 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant;
 enum AdapterLoader: string
 {
     case METADATA_ADAPTER_TAG = 'pimcore.studio_backend.metadata_adapter';
-
     case DOCUMENT_TYPE_ADAPTER_TAG = 'pimcore.studio_backend.document_type_adapter';
 }

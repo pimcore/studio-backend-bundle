@@ -40,8 +40,7 @@ final readonly class PageSnippetAdapter implements SetterDataInterface, DataNorm
     public function __construct(
         private SecurityServiceInterface $securityService,
         private StaticPageGenerator $staticPageGenerator
-    )
-    {
+    ) {
     }
 
     public function setData(Document $document, array $data, UserInterface $user): void

@@ -34,8 +34,7 @@ final readonly class HardlinkAdapter implements SetterDataInterface, DataNormali
 
     public function __construct(
         private DocumentResolverInterface $documentResolver
-    )
-    {
+    ) {
     }
 
     public function setData(Document $document, array $data, UserInterface $user): void

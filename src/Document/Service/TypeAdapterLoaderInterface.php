@@ -19,8 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 /**
  * @internal
  */
-interface
-TypeAdapterLoaderInterface
+interface TypeAdapterLoaderInterface
 {
     /**
      * @throws InvalidArgumentException

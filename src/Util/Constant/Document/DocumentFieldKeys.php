@@ -16,8 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document;
 enum DocumentFieldKeys: string
 {
     case SETTINGS_DATA = 'settingsData';
-
     case EDITABLE_DATA = 'editableData';
-
     case MISSING_REQUIRED_EDITABLE = 'missingRequiredEditable';
 }
