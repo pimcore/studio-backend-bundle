@@ -30,6 +30,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'published',
         'type',
         'key',
+        'index',
         'hasChildren',
         'hasWorkflowWithPermissions',
         'permissions',
@@ -53,6 +54,8 @@ class Document extends Element implements AdditionalAttributesInterface
         private readonly string $type,
         #[Property(description: 'Key', type: 'string', example: 'page.html')]
         private readonly string $key,
+        #[Property(description: 'Custom index', type: 'integer', example: 0)]
+        private readonly int $index,
         #[Property(description: 'Has children', type: 'bool', example: false)]
         private readonly bool $hasChildren,
         #[Property(description: 'Workflow permissions', type: 'bool', example: false)]
@@ -104,6 +107,11 @@ class Document extends Element implements AdditionalAttributesInterface
     public function getKey(): string
     {
         return $this->key;
+    }
+
+    public function getIndex(): int
+    {
+        return $this->index;
     }
 
     public function getHasChildren(): bool
