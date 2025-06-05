@@ -196,6 +196,7 @@ final readonly class DocumentService implements DocumentServiceInterface
         foreach ($items as $index => $item) {
             if ($item->getParentId() === 0) {
                 unset($items[$index]);
+
                 return [$item, ...$items];
             }
         }
