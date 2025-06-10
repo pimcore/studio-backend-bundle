@@ -29,6 +29,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\FullTextSearch\W
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\QueryLanguage\PqlFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\OrderByField;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByFullPath;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderByIndexField;
 use Pimcore\Model\User;
 use Pimcore\Model\UserInterface;
 
@@ -108,6 +109,13 @@ final class DocumentQuery implements DocumentQueryInterface
     public function searchByIds(array $ids): self
     {
         $this->search->addModifier(new IdsFilter($ids));
+
+        return $this;
+    }
+
+    public function orderByIndex(): self
+    {
+        $this->search->addModifier(new OrderByIndexField());
 
         return $this;
     }

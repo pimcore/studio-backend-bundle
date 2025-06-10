@@ -89,7 +89,7 @@ final class TreeController extends AbstractApiController
     #[PathIncludeParentParameter]
     #[PathIncludeDescendantsParameter]
     #[SuccessResponse(
-        description: 'document_get_tree_success_description',
+        description: 'document_get_tree_success_response',
         content: new CollectionJson(new AnyOfDocument())
     )]
     #[DefaultResponses([

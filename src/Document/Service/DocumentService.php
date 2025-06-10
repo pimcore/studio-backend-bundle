@@ -87,12 +87,15 @@ final readonly class DocumentService implements DocumentServiceInterface
             ElementTypes::TYPE_DOCUMENT
         );
 
-        $documentQuery->orderByPath('asc');
+        $documentQuery->orderByIndex();
         $documentQuery->setUser($this->securityService->getCurrentUser());
 
         $result = $this->documentSearchService->searchDocuments($documentQuery);
 
         $items = $result->getItems();
+        if ($parameters->getPath() === '/' && $parameters->getPathIncludeParent()) {
+            $items = $this->sortRoot($items);
+        }
 
         foreach ($items as $item) {
             $this->dispatchDocumentEvent($item);
@@ -186,6 +189,19 @@ final readonly class DocumentService implements DocumentServiceInterface
         }
 
         $this->dataService->setDocumentDetailData($document, $element, $version);
+    }
+
+    private function sortRoot(array $items): array
+    {
+        foreach ($items as $index => $item) {
+            if ($item->getParentId() === 0) {
+                unset($items[$index]);
+
+                return [$item, ...$items];
+            }
+        }
+
+        return $items;
     }
 
     private function dispatchDocumentEvent(mixed $document): void

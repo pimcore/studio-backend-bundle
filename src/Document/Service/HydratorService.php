@@ -40,6 +40,7 @@ final readonly class HydratorService implements HydratorServiceInterface
             $item->isPublished(),
             $item->getType(),
             $item->getKey(),
+            $item->getIndex(),
             $item->isHasChildren(),
             $item->isHasWorkflowWithPermissions(),
             $this->permissionsHydrator->hydrate($item->getPermissions()),
