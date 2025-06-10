@@ -11,11 +11,11 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset\System;
+namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter;
 
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System\DatetimeFilter;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DatetimeFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;

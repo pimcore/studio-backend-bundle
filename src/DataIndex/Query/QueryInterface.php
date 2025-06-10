@@ -59,4 +59,13 @@ interface QueryInterface
         string $searchTerm,
         bool $enablePqlFieldNameResolution = true
     ): self;
+
+    public function filterDatetime(
+        string $field,
+        int|null $startDate = null,
+        int|null $endDate = null,
+        int|null $onDate = null,
+        bool $roundToDay = true,
+        bool $enablePqlFieldNameResolution = true
+    ): self;
 }

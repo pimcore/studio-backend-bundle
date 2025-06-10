@@ -20,6 +20,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\Exc
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IntegerFilter;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\FieldType\DateFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ClassIdsFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\ParentIdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Tree\PathFilter;
@@ -198,6 +199,26 @@ final class DataObjectQuery implements DataObjectQueryInterface
         bool $enablePqlFieldNameResolution = true
     ): self {
         $this->search->addModifier(new WildcardSearch($fieldName, $searchTerm, $enablePqlFieldNameResolution));
+
+        return $this;
+    }
+
+    public function filterDatetime(
+        string $field,
+        int|null $startDate = null,
+        int|null $endDate = null,
+        int|null $onDate = null,
+        bool $roundToDay = true,
+        bool $enablePqlFieldNameResolution = true
+    ): self {
+        $this->search->addModifier(new DateFilter(
+            $field,
+            $startDate,
+            $endDate,
+            $onDate,
+            $roundToDay,
+            $enablePqlFieldNameResolution
+        ));
 
         return $this;
     }
