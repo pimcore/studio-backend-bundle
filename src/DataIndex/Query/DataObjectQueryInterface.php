@@ -26,4 +26,6 @@ interface DataObjectQueryInterface extends QueryInterface
     public function setClassDefinitionName(string $classDefinitionId): self;
 
     public function setClassDefinitionIds(array $classDefinitionIds): self;
+
+    public function booleanFilter(string $fieldName, bool $value): self;
 }
