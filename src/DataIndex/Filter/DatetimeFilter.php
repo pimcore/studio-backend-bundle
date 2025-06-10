@@ -61,7 +61,6 @@ final class DatetimeFilter implements FilterInterface
             $query->filterDatetime($column->getKey(), $filterValue['from']);
         }
 
-
         return $query;
     }
 }
