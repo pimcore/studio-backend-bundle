@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Exception;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\DataObject\DataObjectSearch;
+use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\BooleanFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\ExcludeFoldersFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdFilter;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Basic\IdsFilter;
@@ -220,6 +221,13 @@ final class DataObjectQuery implements DataObjectQueryInterface
             $roundToDay,
             $enablePqlFieldNameResolution
         ));
+
+        return $this;
+    }
+
+    public function booleanFilter(string $fieldName, bool $value): self
+    {
+        $this->search->addModifier(new BooleanFilter($fieldName, $value));
 
         return $this;
     }
