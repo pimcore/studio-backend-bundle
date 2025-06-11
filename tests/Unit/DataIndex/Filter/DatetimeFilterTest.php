@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter;
 
+use Carbon\Carbon;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DatetimeFilter;
@@ -47,14 +48,14 @@ final class DatetimeFilterTest extends Unit
 
     public function testDateTimeFilterWithOn(): void
     {
-        $time = 1726753660;
+        $time = Carbon::parse("2025-06-10T00:00:00+00:00");
         $datetimeFilter = new DatetimeFilter();
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterDatetime' => Expected::once(function ($key, $start, $end, $on) use ($time) {
                 $this->assertSame('key', $key);
                 $this->assertNull($start);
                 $this->assertNull($end);
-                $this->assertSame($time, $on);
+                $this->assertSame($time->toDateTimeString(), $on->toDateTimeString());
 
                 return $this->makeEmpty(AssetQueryInterface::class);
             }),
@@ -68,12 +69,12 @@ final class DatetimeFilterTest extends Unit
 
     public function testDateTimeFilterWithFrom(): void
     {
-        $time = 1726753660;
+        $time = Carbon::parse("2025-06-10T00:00:00+00:00");
         $datetimeFilter = new DatetimeFilter();
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterDatetime' => Expected::once(function ($key, $start, $end, $on) use ($time) {
                 $this->assertSame('key', $key);
-                $this->assertSame($time, $start);
+                $this->assertSame($time->toDateTimeString(), $start->toDateTimeString());
                 $this->assertNull($end);
                 $this->assertNull($on);
 
@@ -88,13 +89,13 @@ final class DatetimeFilterTest extends Unit
 
     public function testDateTimeFilterWithTo(): void
     {
-        $time = 1726753660;
+        $time = Carbon::parse("2025-06-10T00:00:00+00:00");
         $datetimeFilter = new DatetimeFilter();
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterDatetime' => Expected::once(function ($key, $start, $end, $on) use ($time) {
                 $this->assertSame('key', $key);
                 $this->assertNull($start);
-                $this->assertSame($time, $end);
+                $this->assertSame($time->toDateTimeString(), $end->toDateTimeString());
                 $this->assertNull($on);
 
                 return $this->makeEmpty(AssetQueryInterface::class);
