@@ -90,6 +90,3 @@ jobs:
       EXPERIMENTAL: ${{ matrix.matrix.experimental }}
       PIMCORE_VERSION: ${{ matrix.matrix.pimcore_version }}
       COMPOSER_OPTIONS: ${{ matrix.matrix.composer_options }}
-    secrets:
-      SSH_PRIVATE_KEY_PIMCORE_DEPLOYMENTS_USER: ${{ secrets.SSH_PRIVATE_KEY_PIMCORE_DEPLOYMENTS_USER }}
-      COMPOSER_PIMCORE_REPO_PACKAGIST_TOKEN: ${{ secrets.COMPOSER_PIMCORE_REPO_PACKAGIST_TOKEN }}

@@ -104,7 +104,7 @@ services) and client-side (for getting updates in Pimcore Studio UI) can be conf
 
 Additionally, you can configure the cookie parameters like:
 - lifetime for the JWT token in seconds (default is 3600 seconds)
-- SameSite attribute (default is `Strict`, possible values are `Lax`, `Strict` or `None`)
+- SameSite attribute (default is `strict`, possible values are `lax`, `strict` or `none`)
 
 ```yaml
 pimcore_studio_backend:
@@ -122,7 +122,7 @@ pimcore_studio_backend:
         # If it is not set, the default will be set to "http(s)://<YOUR_CURRENT_PIMCORE_HOST>/hub/.well-known/mercure".
         hub_url_server: 'http://mercure/.well-known/mercure'
         cookie_lifetime: 3600
-        cookie_same_site: 'Strict'
+        cookie_same_site: 'strict'
 ```
 
 You need to configure the full URL including protocol, port and path to Mercure here.

@@ -32,7 +32,7 @@ Available filters are:
 |       Type        |     filterValue     |           Options           | `key` required |
 |:-----------------:|:-------------------:|:---------------------------:|:--------------:|
 |  metadata.select  |       string        |                             |      true      |
-|   metadata.date   | object of timestamp |    `from`, `to`, or `on`    |      true      |
+|   metadata.date   | object of ISO 8601  |    `from`, `to`, or `on`    |      true      |
 |  metadata.input   |       string        |                             |      true      |
 | metadata.checkbox |       boolean       |                             |      true      |
 | metadata.textarea |       string        |                             |      true      |
@@ -40,7 +40,7 @@ Available filters are:
 | metadata.document |       integer       |     ID fo the document      |      true      |
 |  metadata.asset   |       integer       |       ID fo the asset       |      true      |
 |   system.string   |       string        | Wildcard search can be used |      true      |
-|  system.datetime  |       integer       |    `from`, `to`, or `on`    |      true      |
+|  system.datetime  | object of ISO 8601  |    `from`, `to`, or `on`    |      true      |
 |    system.tag     |       object        | `considerChildTags`, `tags` |     false      |
 |    system.pql     |       string        |          PQL Query          |     false      |
 |     system.id     |       integer       |                             |     false      |
@@ -69,11 +69,11 @@ Filter by a date column:
 ...
 "columnFilters" [
   {
-    "key": "selectKey",
-    "type": "metadata.select",
+    "key": "dateKey",
+    "type": "metadata.date",
     "filterValue": {
-      "from": 1719792000,
-      "to": 1718792000
+      "from": "2025-04-16T22:00:09.000Z",
+      "to": "2025-04-17T22:00:09.000Z"
     }
   }
 ]

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Tests\Unit\DataIndex\Filter\Asset\Metadata;
 
+use Carbon\Carbon;
 use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\DefaultSearch\Query\DateFilter as GenericDateFilter;
@@ -39,20 +40,23 @@ final class DateFilterTest extends Unit
         $stringFilter = new DateFilter();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Filter value for date must be an array');
+        $this->expectExceptionMessage('Filter value for this filter must be an array');
         $stringFilter->apply($columnFilterMock, $queryMock);
     }
 
     public function testApplyDateFilterForOn(): void
     {
-        $time = 1726753660;
+        $time = Carbon::parse('2025-06-10T00:00:00+00:00');
         $columnFilterMock = $this->getColumnFilterMock('key', 'type', ['on' => $time]);
 
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterMetadata' => Expected::once(function ($key, $type, $value) use ($time) {
                 $this->assertSame('key', $key);
                 $this->assertSame(FilterType::DATE->value, $type);
-                $this->assertSame([GenericDateFilter::PARAM_ON => $time], $value);
+                $this->assertSame(
+                    $time->toDateTimeString(),
+                    $value[GenericDateFilter::PARAM_ON]->toDateTimeString()
+                );
 
                 return $this->makeEmpty(AssetQueryInterface::class);
             }),
@@ -64,14 +68,17 @@ final class DateFilterTest extends Unit
 
     public function testApplyDateFilterForTo(): void
     {
-        $time = 1726753660;
+        $time = Carbon::parse('2025-06-10T00:00:00+00:00');
         $columnFilterMock = $this->getColumnFilterMock('key', 'type', ['to' => $time]);
 
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterMetadata' => Expected::once(function ($key, $type, $value) use ($time) {
                 $this->assertSame('key', $key);
                 $this->assertSame(FilterType::DATE->value, $type);
-                $this->assertSame([GenericDateFilter::PARAM_END => $time], $value);
+                $this->assertSame(
+                    $time->toDateTimeString(),
+                    $value[GenericDateFilter::PARAM_END]->toDateTimeString()
+                );
 
                 return $this->makeEmpty(AssetQueryInterface::class);
             }),
@@ -83,14 +90,17 @@ final class DateFilterTest extends Unit
 
     public function testApplyDateFilterForFrom(): void
     {
-        $time = 1726753660;
+        $time = Carbon::parse('2025-06-10T00:00:00+00:00');
         $columnFilterMock = $this->getColumnFilterMock('key', 'type', ['from' => $time]);
 
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterMetadata' => Expected::once(function ($key, $type, $value) use ($time) {
                 $this->assertSame('key', $key);
                 $this->assertSame(FilterType::DATE->value, $type);
-                $this->assertSame([GenericDateFilter::PARAM_START => $time], $value);
+                $this->assertSame(
+                    $time->toDateTimeString(),
+                    $value[GenericDateFilter::PARAM_START]->toDateTimeString()
+                );
 
                 return $this->makeEmpty(AssetQueryInterface::class);
             }),

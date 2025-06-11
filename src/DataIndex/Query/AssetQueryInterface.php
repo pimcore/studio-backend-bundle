@@ -22,14 +22,5 @@ interface AssetQueryInterface extends QueryInterface
 {
     public function filterMetadata(string $name, string $type, mixed $data): self;
 
-    public function filterDatetime(
-        string $field,
-        int|null $startDate = null,
-        int|null $endDate = null,
-        int|null $onDate = null,
-        bool $roundToDay = true,
-        bool $enablePqlFieldNameResolution = true
-    ): self;
-
     public function getSearch(): AssetSearchInterface;
 }
