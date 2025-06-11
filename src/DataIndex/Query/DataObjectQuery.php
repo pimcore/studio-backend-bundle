@@ -203,7 +203,7 @@ final class DataObjectQuery implements DataObjectQueryInterface
         return $this;
     }
 
-    public function booleanFilter(string $fieldName, bool $value): QueryInterface
+    public function booleanFilter(string $fieldName, bool $value): self
     {
         $this->search->addModifier(new BooleanFilter($fieldName, $value));
 

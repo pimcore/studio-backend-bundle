@@ -11,27 +11,29 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject;
 
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DataObjectQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
-use function is_string;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 
 /**
  * @internal
  */
 final class BooleanFilter implements FilterInterface
 {
-    use IsAssetFilterTrait;
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
-        $parameters = $this->validateParameterType($parameters);
+        if (!$parameters instanceof ColumnFiltersParameterInterface) {
+            return $query;
+        }
 
-        if (!$parameters) {
+        if (!$query instanceof DataObjectQueryInterface) {
             return $query;
         }
 
@@ -42,13 +44,13 @@ final class BooleanFilter implements FilterInterface
         return $query;
     }
 
-    private function applyBooleanFilter(ColumnFilter $column, QueryInterface $query): QueryInterface
+    private function applyBooleanFilter(ColumnFilter $column, DataObjectQueryInterface $query): QueryInterface
     {
         if (!is_bool($column->getFilterValue())) {
             throw new InvalidArgumentException('Filter value for this filter must be a bool');
         }
 
-        $query->wildcardSearch($column->getKey(), $column->getFilterValue());
+        $query->booleanFilter($column->getKey(), $column->getFilterValue());
 
         return $query;
     }
