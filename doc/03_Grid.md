@@ -46,6 +46,7 @@ Available filters are:
 |     system.id     |       integer       |                             |     false      |
 |  system.integer   |       integer       |                             |      true      |
 |  system.fulltext  |       string        |                             |     false      |
+|  system.boolean   |       boolean       |                             |      true      |
 
 
 
