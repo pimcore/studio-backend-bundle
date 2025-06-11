@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
+use Carbon\Carbon;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Asset\AssetSearchInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Filter\Asset\AssetMetaDataFilter;
@@ -139,9 +140,9 @@ final class AssetQuery implements AssetQueryInterface
 
     public function filterDatetime(
         string $field,
-        int|null $startDate = null,
-        int|null $endDate = null,
-        int|null $onDate = null,
+        Carbon|int|null $startDate = null,
+        Carbon|int|null $endDate = null,
+        Carbon|int|null $onDate = null,
         bool $roundToDay = true,
         bool $enablePqlFieldNameResolution = true
     ): self {

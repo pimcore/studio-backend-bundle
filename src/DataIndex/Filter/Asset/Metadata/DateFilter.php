@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\DefaultSearch\Query\DateFilter as GenericDateFilter;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DateTimeTrait;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
@@ -29,6 +30,8 @@ use function is_array;
 final class DateFilter implements FilterInterface
 {
     use IsAssetFilterTrait;
+    use DateTimeTrait;
+
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
@@ -48,9 +51,8 @@ final class DateFilter implements FilterInterface
 
     private function applyDateFilter(ColumnFilter $column, AssetQueryInterface $query): AssetQueryInterface
     {
-        if (!is_array($column->getFilterValue())) {
-            throw new InvalidArgumentException('Filter value for date must be an array');
-        }
+
+        $this->setFilterValue($column);
 
         $filterValue = $column->getFilterValue();
 
@@ -58,7 +60,7 @@ final class DateFilter implements FilterInterface
             $query->filterMetadata(
                 $column->getKey(),
                 FilterType::DATE->value,
-                [GenericDateFilter::PARAM_ON => $filterValue['on']]
+                [GenericDateFilter::PARAM_ON => $this->getOnAsCarbon()]
             );
         }
 
@@ -66,7 +68,7 @@ final class DateFilter implements FilterInterface
             $query->filterMetadata(
                 $column->getKey(),
                 FilterType::DATE->value,
-                [GenericDateFilter::PARAM_END => $filterValue['to']]
+                [GenericDateFilter::PARAM_END => $this->getToAsCarbon()]
             );
         }
 
@@ -74,7 +76,7 @@ final class DateFilter implements FilterInterface
             $query->filterMetadata(
                 $column->getKey(),
                 FilterType::DATE->value,
-                [GenericDateFilter::PARAM_START => $filterValue['from']]
+                [GenericDateFilter::PARAM_START => $this->getFromAsCarbon()]
             );
         }
 

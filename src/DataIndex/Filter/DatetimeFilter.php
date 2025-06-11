@@ -27,6 +27,7 @@ use function is_array;
 final class DatetimeFilter implements FilterInterface
 {
     use IsAssetFilterTrait;
+    use DateTimeTrait;
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
@@ -43,22 +44,20 @@ final class DatetimeFilter implements FilterInterface
 
     private function applyDatetimeFilter(ColumnFilter $column, QueryInterface $query): QueryInterface
     {
-        if (!is_array($column->getFilterValue())) {
-            throw new InvalidArgumentException('Filter value for this filter must be an array');
-        }
+        $this->setFilterValue($column);
 
         $filterValue = $column->getFilterValue();
 
         if (isset($filterValue['on'])) {
-            $query->filterDatetime($column->getKey(), null, null, $filterValue['on']);
+            $query->filterDatetime($column->getKey(), null, null, $this->getOnAsCarbon());
         }
 
         if (isset($filterValue['to'])) {
-            $query->filterDatetime($column->getKey(), null, $filterValue['to']);
+            $query->filterDatetime($column->getKey(), null, $this->getToAsCarbon());
         }
 
         if (isset($filterValue['from'])) {
-            $query->filterDatetime($column->getKey(), $filterValue['from']);
+            $query->filterDatetime($column->getKey(), $this->getFromAsCarbon());
         }
 
         return $query;
