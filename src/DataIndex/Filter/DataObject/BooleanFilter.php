@@ -20,13 +20,13 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
+use function is_bool;
 
 /**
  * @internal
  */
 final class BooleanFilter implements FilterInterface
 {
-
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
         if (!$parameters instanceof ColumnFiltersParameterInterface) {
