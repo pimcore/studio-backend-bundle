@@ -56,6 +56,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\StringFilter:
     tags: [ 'pimcore.studio_backend.search_index.filter' ]
 
+  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DatetimeFilter:
+    tags: [ 'pimcore.studio_backend.search_index.filter' ]
+
   # DataObject
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\DataObject\ClassNameFilter:
       tags: [ 'pimcore.studio_backend.search_index.data_object.filter' ]
@@ -86,8 +89,4 @@ services:
     tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
 
   Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\Metadata\ObjectFilter:
-    tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]
-
-  # Asset System Data
-  Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System\DatetimeFilter:
     tags: [ 'pimcore.studio_backend.search_index.asset.filter' ]

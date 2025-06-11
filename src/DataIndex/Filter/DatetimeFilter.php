@@ -11,16 +11,13 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\System;
+namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter;
 
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\Asset\IsAssetFilterTrait;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Filter\FilterInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\AssetQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnType;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
-use function is_array;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFiltersParameterInterface;
 
 /**
  * @internal
@@ -28,41 +25,37 @@ use function is_array;
 final class DatetimeFilter implements FilterInterface
 {
     use IsAssetFilterTrait;
+    use DateTimeTrait;
 
     public function apply(mixed $parameters, QueryInterface $query): QueryInterface
     {
-        $parameters = $this->validateParameterType($parameters);
-        $assetQuery = $this->validateQueryType($query);
-
-        if (!$parameters || !$assetQuery) {
+        if (!$parameters instanceof ColumnFiltersParameterInterface) {
             return $query;
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_DATETIME->value) as $column) {
-            $assetQuery = $this->applyDatetimeFilter($column, $assetQuery);
+            $query = $this->applyDatetimeFilter($column, $query);
         }
 
-        return $assetQuery;
+        return $query;
     }
 
-    private function applyDatetimeFilter(ColumnFilter $column, AssetQueryInterface $query): AssetQueryInterface
+    private function applyDatetimeFilter(ColumnFilter $column, QueryInterface $query): QueryInterface
     {
-        if (!is_array($column->getFilterValue())) {
-            throw new InvalidArgumentException('Filter value for this filter must be an array');
-        }
+        $this->setFilterValue($column);
 
         $filterValue = $column->getFilterValue();
 
         if (isset($filterValue['on'])) {
-            $query->filterDatetime($column->getKey(), null, null, $filterValue['on']);
+            $query->filterDatetime($column->getKey(), null, null, $this->getOnAsCarbon());
         }
 
         if (isset($filterValue['to'])) {
-            $query->filterDatetime($column->getKey(), null, $filterValue['to']);
+            $query->filterDatetime($column->getKey(), null, $this->getToAsCarbon());
         }
 
         if (isset($filterValue['from'])) {
-            $query->filterDatetime($column->getKey(), $filterValue['from']);
+            $query->filterDatetime($column->getKey(), $this->getFromAsCarbon());
         }
 
         return $query;

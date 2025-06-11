@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Query;
 
+use Carbon\Carbon;
 use Pimcore\Bundle\GenericDataIndexBundle\Enum\Search\SortDirection;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\SearchInterface;
 use Pimcore\Model\UserInterface;
@@ -57,6 +58,15 @@ interface QueryInterface
     public function wildcardSearch(
         string $fieldName,
         string $searchTerm,
+        bool $enablePqlFieldNameResolution = true
+    ): self;
+
+    public function filterDatetime(
+        string $field,
+        Carbon|int|null $startDate = null,
+        Carbon|int|null $endDate = null,
+        Carbon|int|null $onDate = null,
+        bool $roundToDay = true,
         bool $enablePqlFieldNameResolution = true
     ): self;
 }
