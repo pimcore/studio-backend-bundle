@@ -38,19 +38,12 @@ final class BooleanFilter implements FilterInterface
         }
 
         foreach ($parameters->getColumnFilterByType(ColumnType::SYSTEM_BOOLEAN->value) as $column) {
-            $query = $this->applyBooleanFilter($column, $query);
+            if (!is_bool($column->getFilterValue())) {
+                throw new InvalidArgumentException('Filter value for this filter must be a bool');
+            }
+
+            $query->booleanFilter($column->getKey(), $column->getFilterValue());
         }
-
-        return $query;
-    }
-
-    private function applyBooleanFilter(ColumnFilter $column, DataObjectQueryInterface $query): QueryInterface
-    {
-        if (!is_bool($column->getFilterValue())) {
-            throw new InvalidArgumentException('Filter value for this filter must be a bool');
-        }
-
-        $query->booleanFilter($column->getKey(), $column->getFilterValue());
 
         return $query;
     }
