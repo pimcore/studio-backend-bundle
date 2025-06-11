@@ -30,7 +30,7 @@ trait DateTimeTrait
     public function setFilterValue(ColumnFilter $column): void
     {
         if (!is_array($column->getFilterValue())) {
-            throw new InvalidArgumentException('Filter value for date must be an array');
+            throw new InvalidArgumentException('Filter value for this filter must be an array');
         }
 
         $this->filterValue = $column->getFilterValue();
