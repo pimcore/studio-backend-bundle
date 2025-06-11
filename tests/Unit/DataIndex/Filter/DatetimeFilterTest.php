@@ -48,7 +48,7 @@ final class DatetimeFilterTest extends Unit
 
     public function testDateTimeFilterWithOn(): void
     {
-        $time = Carbon::parse("2025-06-10T00:00:00+00:00");
+        $time = Carbon::parse('2025-06-10T00:00:00+00:00');
         $datetimeFilter = new DatetimeFilter();
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterDatetime' => Expected::once(function ($key, $start, $end, $on) use ($time) {
@@ -69,7 +69,7 @@ final class DatetimeFilterTest extends Unit
 
     public function testDateTimeFilterWithFrom(): void
     {
-        $time = Carbon::parse("2025-06-10T00:00:00+00:00");
+        $time = Carbon::parse('2025-06-10T00:00:00+00:00');
         $datetimeFilter = new DatetimeFilter();
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterDatetime' => Expected::once(function ($key, $start, $end, $on) use ($time) {
@@ -89,7 +89,7 @@ final class DatetimeFilterTest extends Unit
 
     public function testDateTimeFilterWithTo(): void
     {
-        $time = Carbon::parse("2025-06-10T00:00:00+00:00");
+        $time = Carbon::parse('2025-06-10T00:00:00+00:00');
         $datetimeFilter = new DatetimeFilter();
         $queryMock = $this->makeEmpty(AssetQueryInterface::class, [
             'filterDatetime' => Expected::once(function ($key, $start, $end, $on) use ($time) {
