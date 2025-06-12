@@ -68,7 +68,7 @@ final readonly class HydratorService implements HydratorServiceInterface
             $item->getCreationDate(),
             $item->getUserModification(),
             $isSite,
-            $navigationExclude
+            $navigationExclude,
         ];
     }
 }
