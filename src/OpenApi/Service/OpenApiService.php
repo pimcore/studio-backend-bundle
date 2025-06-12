@@ -22,7 +22,6 @@ use OpenApi\Generator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function in_array;
 use function is_array;
 use function is_string;
@@ -33,7 +32,6 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     private const array TRANSLATABLE_PROPERTIES = ['summary', 'description'];
 
     public function __construct(
-        private EventDispatcherInterface $dispatcher,
         private TranslatorServiceInterface $translator,
         private string $routePrefix,
         private array $openApiScanPaths = [],
