@@ -35,6 +35,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
         'permissions',
         'documentDetailData',
         'isSite',
+        'navigationExclude',
     ],
     type: 'object'
 )]
@@ -71,7 +72,9 @@ class Document extends Element implements AdditionalAttributesInterface
         ?int $creationDate,
         ?int $modificationDate,
         #[Property(description: 'Is document a site', type: 'bool', example: false)]
-        private readonly bool $isSite = false
+        private readonly bool $isSite = false,
+        #[Property(description: 'Exclude document from navigation', type: 'bool', example: false)]
+        private readonly bool $navigationExclude = false,
     ) {
         parent::__construct(
             $id,
@@ -130,5 +133,10 @@ class Document extends Element implements AdditionalAttributesInterface
     public function getIsSite(): bool
     {
         return $this->isSite;
+    }
+
+    public function getNavigationExclude(): bool
+    {
+        return $this->navigationExclude;
     }
 }
