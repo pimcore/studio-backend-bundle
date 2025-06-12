@@ -15,9 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter;
 
 use Exception;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\PageSnippetData;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\AdapterLoader;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
@@ -72,7 +71,7 @@ abstract readonly class AbstractPageSnippetAdapter implements SetterDataInterfac
         if ($document->getStaticGeneratorEnabled()) {
             $staticLastGenerated = $this->staticPageGenerator->getLastModified($document);
         }
-        
+
         return [
             $document->getController(),
             $document->getTemplate(),
@@ -82,7 +81,7 @@ abstract readonly class AbstractPageSnippetAdapter implements SetterDataInterfac
             $document->getStaticGeneratorEnabled() ?? false,
             $document->getStaticGeneratorLifetime(),
             $staticLastGenerated,
-            $url
+            $url,
         ];
     }
 

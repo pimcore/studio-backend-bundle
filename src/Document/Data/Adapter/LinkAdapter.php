@@ -15,8 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Settings\LinkSettingsData;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\AdapterLoader;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;

@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\EditableDataNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippetDraftData;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;

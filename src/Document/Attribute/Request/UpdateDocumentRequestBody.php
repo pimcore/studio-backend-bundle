@@ -63,7 +63,7 @@ final class UpdateDocumentRequestBody extends RequestBody
                                     'staticGeneratorEnabled' => false,
                                     'staticGeneratorLifetime' => 123456,
                                     'staticLastGenerated' => 1700000000,
-                                    'url' => 'https://example.com/'
+                                    'url' => 'https://example.com/',
                                 ]
                             ),
                             new UpdateBooleanProperty(DocumentFieldKeys::MISSING_REQUIRED_EDITABLE->value),

@@ -37,7 +37,7 @@ trait DocumentSettingsDataTrait
             'staticGeneratorEnabled' => false,
             'staticGeneratorLifetime' => 123456,
             'staticLastGenerated' => 1700000000,
-            'url' => 'https://example.com/'
+            'url' => 'https://example.com/',
         ]
     )]
     private ?SettingsDataInterface $settingsData = null;

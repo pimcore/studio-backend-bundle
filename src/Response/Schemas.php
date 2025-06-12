@@ -60,7 +60,7 @@ final readonly class Schemas
 
     public const array DOCUMENTS = [
         Document::class,
-        DocumentDetail::class
+        DocumentDetail::class,
     ];
 
     public const array ELEMENT_CONTEXT_PERMISSIONS = [

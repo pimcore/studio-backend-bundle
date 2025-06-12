@@ -15,9 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\HardLinkData;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Settings\HardlinkSettingsData;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\AdapterLoader;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
