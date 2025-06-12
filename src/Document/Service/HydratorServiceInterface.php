@@ -14,9 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\DocumentSearchResultItem;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Email;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Page;
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Snippet;
 
 /**
  * @internal
@@ -24,6 +21,4 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\Sea
 interface HydratorServiceInterface
 {
     public function getBaseDocumentData(DocumentSearchResultItem $item): array;
-
-    public function getBasePageSnippetData(Email|Page|Snippet $item): array;
 }

@@ -97,9 +97,12 @@ services:
   #
   # Type Adapters
   #
+  Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\EmailAdapter: ~
 
   Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\HardlinkAdapter: ~
 
   Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\LinkAdapter: ~
 
-  Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\PageSnippetAdapter: ~
+  Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\PageAdapter: ~
+
+  Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\SnippetAdapter: ~

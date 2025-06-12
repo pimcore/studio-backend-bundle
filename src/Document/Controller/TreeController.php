@@ -16,7 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Document\Controller;
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Request\ElementParameters;
-use Pimcore\Bundle\StudioBackendBundle\Document\Attribute\Response\Property\AnyOfDocument;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterServiceTypeException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidFilterTypeException;
@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PathInc
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PathIncludeParentParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PathParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
@@ -90,7 +91,7 @@ final class TreeController extends AbstractApiController
     #[PathIncludeDescendantsParameter]
     #[SuccessResponse(
         description: 'document_get_tree_success_response',
-        content: new CollectionJson(new AnyOfDocument())
+        content: new CollectionJson(new GenericCollection(Document::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::BAD_REQUEST,

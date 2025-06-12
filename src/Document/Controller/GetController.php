@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Controller;
 
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Document\Attribute\Response\Content\OneOfDocumentsJson;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -59,7 +60,7 @@ final class GetController extends AbstractApiController
     #[IdParameter(type: 'document')]
     #[SuccessResponse(
         description: 'document_get_by_id_success_response',
-        content: new OneOFDocumentsJson(),
+        content: new JsonContent(ref: DocumentDetail::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,

@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document;
 
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\DocumentSearchResultItem;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\DocumentFolder;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 
 /**
  * @internal
  */
-interface FolderHydratorInterface
+interface DocumentDetailHydratorInterface
 {
-    public function hydrate(DocumentSearchResultItem $item): DocumentFolder;
+    public function hydrate(DocumentSearchResultItem $item): DocumentDetail;
 }

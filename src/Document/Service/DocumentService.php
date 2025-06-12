@@ -21,6 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchIndexFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\DocumentSearchServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Event\PreResponse\DocumentEvent;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentAddParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementExistsException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -107,7 +108,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function getDocument(int $id, bool $getDetailData = true): Document
+    public function getDocument(int $id, bool $getDetailData = true): DocumentDetail
     {
         $user = $this->securityService->getCurrentUser();
         $document = $this->documentSearchService->getDocumentById($id, $user);
@@ -123,7 +124,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     /**
      * {@inheritDoc}
      */
-    public function getDocumentForUser(int $id, UserInterface $user): Document
+    public function getDocumentForUser(int $id, UserInterface $user): DocumentDetail
     {
         $document = $this->documentSearchService->getDocumentById($id, $user);
 
@@ -178,7 +179,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     /**
      * @throws InvalidElementTypeException|NotFoundException
      */
-    private function getDocumentDetailData(Document $document): void
+    private function getDocumentDetailData(DocumentDetail $document): void
     {
         $element = $this->getElement($this->serviceResolver, ElementTypes::TYPE_DOCUMENT, $document->getId());
         $version = $this->getLatestVersionForUser($element, $this->securityService->getCurrentUser());
@@ -204,7 +205,7 @@ final readonly class DocumentService implements DocumentServiceInterface
         return $items;
     }
 
-    private function dispatchDocumentEvent(mixed $document): void
+    private function dispatchDocumentEvent(Document $document): void
     {
         $this->eventDispatcher->dispatch(
             new DocumentEvent($document),

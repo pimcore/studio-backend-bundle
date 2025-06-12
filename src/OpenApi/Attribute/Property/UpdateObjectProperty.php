@@ -20,12 +20,12 @@ use OpenApi\Attributes\Property;
  */
 final class UpdateObjectProperty extends Property
 {
-    public function __construct(string $propertyName)
+    public function __construct(string $propertyName, string|array $example = '{ "someFieldKey": "someValue" }')
     {
         parent::__construct(
             property: $propertyName,
             type: 'object',
-            example: '{ "someFieldKey": "someValue" }',
+            example: $example,
             nullable: true,
         );
     }

@@ -20,7 +20,6 @@ use Pimcore\Bundle\StudioBackendBundle\Response\ElementIcon;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
 
 #[Schema(
     schema: 'Document',
@@ -35,7 +34,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\WorkflowAvailableTrait;
         'hasWorkflowWithPermissions',
         'permissions',
         'documentDetailData',
-        'hasWorkflowAvailable',
+        'isSite',
     ],
     type: 'object'
 )]
@@ -43,7 +42,6 @@ class Document extends Element implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
     use CustomAttributesTrait;
-    use WorkflowAvailableTrait;
 
     public function __construct(
         #[Property(description: 'Full path', type: 'string', example: '/path/to/document')]
@@ -72,8 +70,8 @@ class Document extends Element implements AdditionalAttributesInterface
         bool $isLocked,
         ?int $creationDate,
         ?int $modificationDate,
-        #[Property(description: 'Detail document data', type: 'object', example: ['fieldKey' => 'field value'])]
-        private array $documentDetailData = [],
+        #[Property(description: 'Is document a site', type: 'bool', example: false)]
+        private readonly bool $isSite = false
     ) {
         parent::__construct(
             $id,
@@ -129,13 +127,8 @@ class Document extends Element implements AdditionalAttributesInterface
         return $this->permissions;
     }
 
-    public function getDocumentDetailData(): array
+    public function getIsSite(): bool
     {
-        return $this->documentDetailData;
-    }
-
-    public function setDocumentDetailData(array $data): void
-    {
-        $this->documentDetailData = $data;
+        return $this->isSite;
     }
 }

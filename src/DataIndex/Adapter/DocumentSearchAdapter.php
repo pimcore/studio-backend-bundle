@@ -22,10 +22,11 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Modifier\Sort\Tree\OrderB
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\Document\DocumentSearchServiceInterface;
 use Pimcore\Bundle\GenericDataIndexBundle\Service\Search\SearchService\SearchResultIdListServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document\DocumentDetailHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\DocumentHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\DataIndex\Service\Hydrator\DocumentHydratorServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -44,7 +45,8 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
     public function __construct(
         private SearchResultIdListServiceInterface $searchResultIdListService,
         private DocumentSearchServiceInterface $searchService,
-        private DocumentHydratorServiceInterface $hydratorService
+        private DocumentHydratorInterface $documentHydrator,
+        private DocumentDetailHydratorInterface $documentDetailHydrator,
     ) {
     }
 
@@ -63,7 +65,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
 
         $result = [];
         foreach ($searchResult->getItems() as $item) {
-            $result[] = $this->hydratorService->hydrateDocuments($item);
+            $result[] = $this->documentHydrator->hydrate($item);
         }
 
         return new DocumentSearchResult(
@@ -77,7 +79,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
     /**
      * {@inheritDoc}
      */
-    public function getDocumentById(int $id, ?UserInterface $user = null): Document
+    public function getDocumentById(int $id, ?UserInterface $user = null): DocumentDetail
     {
         try {
             /** @var User $user
@@ -92,7 +94,7 @@ final readonly class DocumentSearchAdapter implements DocumentSearchAdapterInter
             throw new NotFoundException('Document', $id);
         }
 
-        return $this->hydratorService->hydrateDocuments($document);
+        return $this->documentDetailHydrator->hydrate($document);
     }
 
     public function fetchDocumentIds(QueryInterface $documentQuery): array
