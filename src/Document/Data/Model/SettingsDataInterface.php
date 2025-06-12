@@ -11,11 +11,8 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Document\Data;
+namespace Pimcore\Bundle\StudioBackendBundle\Document\Data\Model;
 
-use Pimcore\Model\Document;
-
-interface DataNormalizerInterface
+interface SettingsDataInterface
 {
-    public function normalize(Document $document): mixed;
 }

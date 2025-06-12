@@ -21,9 +21,7 @@ use OpenApi\Attributes\Server;
 use OpenApi\Generator;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Processor\AddDocumentTypeSchemaProcessor;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use function in_array;
 use function is_array;
 use function is_string;
@@ -34,7 +32,6 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     private const array TRANSLATABLE_PROPERTIES = ['summary', 'description'];
 
     public function __construct(
-        private EventDispatcherInterface $dispatcher,
         private TranslatorServiceInterface $translator,
         private string $routePrefix,
         private array $openApiScanPaths = [],
@@ -52,9 +49,6 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         $config = Generator::scan([...$this->openApiScanPaths]);
 
         if ($config) {
-            $processor = new AddDocumentTypeSchemaProcessor($this->dispatcher);
-            $processor($config->paths);
-
             usort($config->components->schemas, [$this, 'sortSchemas']);
 
             // replace the configurable prefix in the paths

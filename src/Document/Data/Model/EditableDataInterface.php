@@ -11,15 +11,8 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document;
+namespace Pimcore\Bundle\StudioBackendBundle\Document\Data\Model;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Link as Item;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Link;
-
-/**
- * @internal
- */
-interface LinkHydratorInterface
+interface EditableDataInterface
 {
-    public function hydrate(Item $item): Link;
 }

@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Controller;
 
+use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Put;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Document\Attribute\Request\UpdateDocumentRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Document\Attribute\Response\Content\OneOfDocumentsJson;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 use Pimcore\Bundle\StudioBackendBundle\Document\Service\DocumentServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\FieldValidationFailedException;
@@ -67,7 +68,7 @@ final class UpdateController extends AbstractApiController
     #[UpdateDocumentRequestBody]
     #[SuccessResponse(
         description: 'document_update_by_id_success_response',
-        content: new OneOfDocumentsJson()
+        content: new JsonContent(ref: DocumentDetail::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::INTERNAL_SERVER_ERROR,

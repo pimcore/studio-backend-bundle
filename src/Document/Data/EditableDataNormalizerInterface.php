@@ -11,15 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type;
+namespace Pimcore\Bundle\StudioBackendBundle\Document\Data;
 
-use OpenApi\Attributes\Schema;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\EditableDataInterface;
+use Pimcore\Model\Document;
 
-#[Schema(
-    title: 'Document Folder',
-    type: 'object'
-)]
-final class DocumentFolder extends Document
+interface EditableDataNormalizerInterface
 {
+    public function normalizeEditableData(Document $document): ?EditableDataInterface;
 }

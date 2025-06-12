@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\DataNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\EditableDataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\PageSnippetDraftData;
 use Pimcore\Bundle\StudioBackendBundle\Workflow\Service\WorkflowDetailsServiceInterface;
 use Pimcore\Model\Document as DocumentModel;
@@ -34,19 +35,27 @@ final readonly class DataService implements DataServiceInterface
     }
 
     public function setDocumentDetailData(
-        Document $document,
+        DocumentDetail $document,
         DocumentModel $element,
         ?Version $documentVersion = null,
     ): void {
         $document->setHasWorkflowAvailable($this->workflowDetailsService->hasElementWorkflows($element));
 
-        $detailData = [];
         $adapter = $this->documentTypeService->tryTypeAdapter($document->getType());
-        if ($adapter instanceof DataNormalizerInterface) {
-            $detailData = $adapter->normalize($element);
+
+        if ($adapter instanceof EditableDataNormalizerInterface) {
+            $document->setEditableData($adapter->normalizeEditableData($element));
         }
 
-        $document->setDocumentDetailData($detailData);
+        if ($adapter instanceof SettingsNormalizerInterface) {
+            $document->setSettingsData($adapter->normalizeSettings($element));
+        }
+
+        if (method_exists($element, 'getMissingRequiredEditable')) {
+            $document->setMissingRequiredEditable(
+                $element->getMissingRequiredEditable() ?? false
+            );
+        }
 
         if (method_exists($document, 'setDraftData')) {
             $document->setDraftData($this->getDraftData($element, $documentVersion));

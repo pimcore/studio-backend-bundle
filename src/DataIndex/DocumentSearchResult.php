@@ -16,12 +16,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\DataIndex;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultItemInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\SearchResult\SearchResultPaginationInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\DocumentFolder;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Email;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Hardlink;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Link;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Page;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Snippet;
 
 /**
  * @internal
@@ -48,7 +42,7 @@ final readonly class DocumentSearchResult implements SearchResultItemInterface, 
     }
 
     /**
-     * @return array<int, Document|DocumentFolder|Email|Hardlink|Link|Page|Snippet>
+     * @return array<int, Document>
      */
     public function getItems(): array
     {

@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Provider\DocumentQueryProviderInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 use Pimcore\Bundle\StudioBackendBundle\Element\Util\Trait\SearchTermTrait;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Model\UserInterface;
@@ -49,7 +49,7 @@ final readonly class DocumentSearchService implements DocumentSearchServiceInter
     /**
      * {@inheritDoc}
      */
-    public function getDocumentById(int $id, ?UserInterface $user): Document
+    public function getDocumentById(int $id, ?UserInterface $user): DocumentDetail
     {
         return $this->documentSearchAdapter->getDocumentById($id, $user);
     }

@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter;
 
 use Exception;
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\DataNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\PageSnippetData;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\AdapterLoader;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
@@ -33,7 +33,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(AdapterLoader::DOCUMENT_TYPE_ADAPTER_TAG->value)]
-final readonly class PageSnippetAdapter implements SetterDataInterface, DataNormalizerInterface
+abstract readonly class AbstractPageSnippetAdapter implements SetterDataInterface, SettingsNormalizerInterface
 {
     private const string PRETTY_URL_KEY = 'prettyUrl';
 
@@ -57,10 +57,14 @@ final readonly class PageSnippetAdapter implements SetterDataInterface, DataNorm
         $this->setEditableData($document, $data);
     }
 
-    public function normalize(Document $document): array
+    abstract public function normalizeSettings(Document $document): ?SettingsDataInterface;
+
+    protected function getBasePageSnippetData(PageSnippet $document): array
     {
-        if (!$document instanceof PageSnippet) {
-            return [];
+        try {
+            $url = $document->getUrl();
+        } catch (Exception) {
+            $url = null;
         }
 
         $staticLastGenerated = null;
@@ -68,19 +72,17 @@ final readonly class PageSnippetAdapter implements SetterDataInterface, DataNorm
             $staticLastGenerated = $this->staticPageGenerator->getLastModified($document);
         }
 
-        try {
-            $url = $document->getUrl();
-        } catch (Exception) {
-            $url = null;
-        }
-
-        $data = new PageSnippetData(
-            url: $url,
-            staticLastGenerated: $staticLastGenerated,
-            contentMainDocumentPath: $document->getContentMainDocument()?->getRealFullPath()
-        );
-
-        return $data->toArray();
+        return [
+            $document->getController(),
+            $document->getTemplate(),
+            $document->getContentMainDocumentId(),
+            $document->getContentMainDocument()?->getRealFullPath(),
+            $document->supportsContentMain(),
+            $document->getStaticGeneratorEnabled() ?? false,
+            $document->getStaticGeneratorLifetime(),
+            $staticLastGenerated,
+            $url,
+        ];
     }
 
     private function setMissingEditable(Page|Snippet $document, array $data): void
@@ -96,18 +98,17 @@ final readonly class PageSnippetAdapter implements SetterDataInterface, DataNorm
             return;
         }
 
+        $this->securityService->hasElementPermission($document, $user, ElementPermissions::SETTINGS_PERMISSION);
         $settings = $data[DocumentFieldKeys::SETTINGS_DATA->value];
         if ($document instanceof Page && ($settings['published'] ?? false)) {
             $document->setMissingRequiredEditable(null);
         }
 
-        $this->securityService->hasElementPermission($document, $user, ElementPermissions::SETTINGS_PERMISSION);
         $prettyUrl = $settings[self::PRETTY_URL_KEY] ?? null;
-        if ($prettyUrl === null) {
-            return;
+        if ($prettyUrl !== null) {
+            $settings[self::PRETTY_URL_KEY] = htmlspecialchars($prettyUrl);
         }
 
-        $settings[self::PRETTY_URL_KEY] = htmlspecialchars($prettyUrl);
         $document->setValues($settings);
     }
 

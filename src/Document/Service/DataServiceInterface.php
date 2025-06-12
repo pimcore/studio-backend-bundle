@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 use Pimcore\Model\Document as DocumentModel;
 use Pimcore\Model\UserInterface;
 use Pimcore\Model\Version;
@@ -24,7 +24,7 @@ use Pimcore\Model\Version;
 interface DataServiceInterface
 {
     public function setDocumentDetailData(
-        Document $document,
+        DocumentDetail $document,
         DocumentModel $element,
         ?Version $documentVersion = null,
     ): void;

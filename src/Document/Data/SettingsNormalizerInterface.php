@@ -11,15 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\DataIndex\Hydrator\Document;
+namespace Pimcore\Bundle\StudioBackendBundle\Document\Data;
 
-use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\SearchResultItem\Email as Item;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Type\Email;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface;
+use Pimcore\Model\Document;
 
-/**
- * @internal
- */
-interface EmailHydratorInterface
+interface SettingsNormalizerInterface
 {
-    public function hydrate(Item $item): Email;
+    public function normalizeSettings(Document $document): ?SettingsDataInterface;
 }

@@ -14,9 +14,10 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter;
 
 use Pimcore\Bundle\StaticResolverBundle\Models\Document\DocumentResolverInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\DataNormalizerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\HardLinkData;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\Model\SettingsDataInterface;
 use Pimcore\Bundle\StudioBackendBundle\Document\Data\SetterDataInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Data\SettingsNormalizerInterface;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Settings\HardlinkSettingsData;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\AdapterLoader;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentFieldKeys;
 use Pimcore\Model\Document;
@@ -28,7 +29,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * @internal
  */
 #[AutoconfigureTag(AdapterLoader::DOCUMENT_TYPE_ADAPTER_TAG->value)]
-final readonly class HardlinkAdapter implements SetterDataInterface, DataNormalizerInterface
+final readonly class HardlinkAdapter implements SetterDataInterface, SettingsNormalizerInterface
 {
     private const string SOURCE_PATH_KEY = 'sourcePath';
 
@@ -43,34 +44,32 @@ final readonly class HardlinkAdapter implements SetterDataInterface, DataNormali
             return;
         }
 
-        if (!isset($data[DocumentFieldKeys::EDITABLE_DATA->value])) {
+        if (!isset($data[DocumentFieldKeys::SETTINGS_DATA->value])) {
             return;
         }
 
-        $editableData = $data[DocumentFieldKeys::EDITABLE_DATA->value];
+        $settingsData = $data[DocumentFieldKeys::SETTINGS_DATA->value];
         $sourceId = null;
-        if (isset($editableData[self::SOURCE_PATH_KEY])) {
-            $source = $this->documentResolver->getByPath($editableData[self::SOURCE_PATH_KEY]);
+        if (isset($settingsData[self::SOURCE_PATH_KEY])) {
+            $source = $this->documentResolver->getByPath($settingsData[self::SOURCE_PATH_KEY]);
             $sourceId = $source?->getId();
         }
 
         $document->setSourceId($sourceId);
-        $document->setValues($editableData);
+        $document->setValues($settingsData);
     }
 
-    public function normalize(Document $document): array
+    public function normalizeSettings(Document $document): ?SettingsDataInterface
     {
         if (!$document instanceof Hardlink) {
-            return [];
+            return null;
         }
 
-        $data = new HardLinkData(
+        return new HardlinkSettingsData(
             sourceId: $document->getSourceId(),
-            childrenFromSource: $document->getChildrenFromSource(),
             propertiesFromSource: $document->getPropertiesFromSource(),
+            childrenFromSource: $document->getChildrenFromSource(),
             sourcePath: $document->getSourceDocument()?->getRealFullPath()
         );
-
-        return $data->toArray();
     }
 }

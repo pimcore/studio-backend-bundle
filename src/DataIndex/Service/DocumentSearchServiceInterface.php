@@ -17,7 +17,7 @@ use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Interfaces\ElementSearchR
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\DocumentSearchResult;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\DocumentQueryInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataIndex\Query\QueryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\Document;
+use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocumentDetail;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidSearchException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -37,7 +37,7 @@ interface DocumentSearchServiceInterface
     /**
      * @throws SearchException|NotFoundException
      */
-    public function getDocumentById(int $id, ?UserInterface $user): Document;
+    public function getDocumentById(int $id, ?UserInterface $user): DocumentDetail;
 
     public function getChildrenIds(string $parentPath, ?string $sortDirection = null): array;
 

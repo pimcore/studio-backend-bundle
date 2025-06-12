@@ -1,10 +1,12 @@
 pimcore_studio_backend:
     document_type_adapter_mapping:
-        Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\PageSnippetAdapter:
-            - "page"
-            - "snippet"
+        Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\EmailAdapter:
             - "email"
         Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\HardlinkAdapter:
             - "hardlink"
         Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\LinkAdapter:
             - "link"
+        Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\PageAdapter:
+            - "page"
+        Pimcore\Bundle\StudioBackendBundle\Document\Data\Adapter\SnippetAdapter:
+            - "snippet"
