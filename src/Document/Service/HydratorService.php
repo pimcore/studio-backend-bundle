@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Document\Service;
 
+use Pimcore\Bundle\GenericDataIndexBundle\Enum\SearchIndex\FieldCategory\StandardField\Document\DocumentStandardField;
 use Pimcore\Bundle\GenericDataIndexBundle\Model\Search\Document\SearchResult\DocumentSearchResultItem;
 use Pimcore\Bundle\GenericDataIndexBundle\SearchIndexAdapter\ElementLockServiceInterface;
 use Pimcore\Bundle\StaticResolverBundle\Models\Site\SiteResolverInterface;
@@ -40,6 +41,9 @@ final readonly class HydratorService implements HydratorServiceInterface
             $isSite =  $this->siteResolver->getByRootId($item->getId()) !== null;
         }
 
+        $searchData = $item->getSearchIndexData();
+        $navigationExclude = $searchData['standard_fields'][DocumentStandardField::NAVIGATION_EXCLUDE->value] ?? false;
+
         return [
             $item->getFullPath(),
             $item->isPublished(),
@@ -64,6 +68,7 @@ final readonly class HydratorService implements HydratorServiceInterface
             $item->getCreationDate(),
             $item->getUserModification(),
             $isSite,
+            $navigationExclude,
         ];
     }
 }
