@@ -16,21 +16,29 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\MappedParameter\HideJobRunsParameter;
 
 /**
  * @internal
  */
 interface ExecutionEngineServiceInterface
 {
+
+    /**
+     * @throws UserNotFoundException
+     */
+    public function listRunningJobRuns(): array;
+
     /**
      * @throws DatabaseException|ForbiddenException|NotFoundException
      */
-    public function abortAction(
-        int $jobRunId,
-    ): void;
+    public function abortAction(int $jobRunId): void;
+
+    public function hideAction(HideJobRunsParameter $parameter): void;
 
     /**
-     * @throws ForbiddenException|NotFoundException
+     * @throws ForbiddenException|UserNotFoundException|NotFoundException
      */
     public function validateJobRun(int $jobRunId): void;
 }

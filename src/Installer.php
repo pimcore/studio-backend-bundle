@@ -19,6 +19,8 @@ use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\Comparator;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\SchemaException;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Utils\Constants\TableConstants;
+use Pimcore\Bundle\StudioBackendBundle\Entity\ExecutionEngine\JobRunHidden;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationFavorite;
 use Pimcore\Bundle\StudioBackendBundle\Entity\Grid\GridConfigurationShare;
@@ -58,6 +60,7 @@ final class Installer extends SettingsStoreAwareInstaller
         $this->createGridConfigurationSharesTable($schema);
         $this->createGridConfigurationFavoritesTable($schema);
         $this->createUserPerspectivesTable($schema);
+        $this->createJobRunHiddenTable($schema);
         $this->addUserPermission($schema);
         $this->executeDiffSql($schema);
 
@@ -87,6 +90,11 @@ final class Installer extends SettingsStoreAwareInstaller
         if ($schema->hasTable(UserPerspectiveData::TABLE_NAME)) {
             $schema->dropTable(UserPerspectiveData::TABLE_NAME);
         }
+
+        if ($schema->hasTable(JobRunHidden::TABLE_NAME)) {
+            $schema->dropTable(JobRunHidden::TABLE_NAME);
+        }
+
         $this->removeUserPermission($schema);
 
         $this->executeDiffSql($schema);
@@ -343,6 +351,34 @@ final class Installer extends SettingsStoreAwareInstaller
     }
 
     /**
+     * @throws SchemaException
+     */
+    public function createJobRunHiddenTable(Schema $schema): void
+    {
+        if ($schema->hasTable(JobRunHidden::TABLE_NAME)) {
+            return;
+        }
+
+        $table = $schema->createTable(JobRunHidden::TABLE_NAME);
+
+        $table->addColumn(
+            'jobRunId',
+            'integer',
+            ['notnull' => true, 'unsigned' => true]
+        );
+
+        $table->addForeignKeyConstraint(
+            TableConstants::JOB_RUN_TABLE,
+            ['jobRunId'],
+            ['id'],
+            ['onDelete' => 'CASCADE'],
+            'fk_' . JobRunHidden::TABLE_NAME.'_jobRunIds'
+        );
+
+        $table->setPrimaryKey(['jobRunId'], 'pk_' . JobRunHidden::TABLE_NAME);
+    }
+
+    /**
      * @throws Exception
      */
     private function addUserPermission(Schema $schema): void
@@ -393,10 +429,6 @@ final class Installer extends SettingsStoreAwareInstaller
         $schemaComparator = new Comparator($this->db->getDatabasePlatform());
         $schemaDiff = $schemaComparator->compareSchemas($currentSchema, $newSchema);
         $dbPlatform = $this->db->getDatabasePlatform();
-        if (!$dbPlatform instanceof AbstractPlatform) {
-            throw new InstallationException('Could not get database platform.');
-        }
-
         $sqlStatements = $dbPlatform->getAlterSchemaSQL($schemaDiff);
 
         if (!empty($sqlStatements)) {
