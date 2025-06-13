@@ -95,5 +95,9 @@ interface DataObjectServiceInterface
     /**
      * @throws ForbiddenException|InvalidQueryTypeException|NotFoundException|UserNotFoundException
      */
-    public function setTreeSorting(DataObjectModel $parent, QueryInterface $dataObjectQuery): void;
+    public function setTreeSorting(
+        DataObjectModel $parent,
+        QueryInterface $dataObjectQuery,
+        bool $includeParent
+    ): void;
 }
