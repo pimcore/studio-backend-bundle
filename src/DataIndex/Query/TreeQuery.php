@@ -51,7 +51,7 @@ final readonly class TreeQuery implements TreeQueryInterface
         $type = $widget->getElementType();
         $query = $filterService->applyFilters($this->getQueryParameters($widget, $parentId), $type);
         if ($type === ElementTypes::TYPE_DATA_OBJECT) {
-            $this->handleTreeSorting($type, $widget->getRootFolder(), $query, $user);
+            $this->handleTreeSorting($type, $widget->getRootFolder(), $widget->isShowRoot(), $query, $user);
 
             return $query;
         }
@@ -111,6 +111,7 @@ final readonly class TreeQuery implements TreeQueryInterface
     private function handleTreeSorting(
         string $type,
         string $rootPath,
+        bool $includeParent,
         QueryInterface $query,
         UserInterface $user
     ): void {
@@ -124,6 +125,6 @@ final readonly class TreeQuery implements TreeQueryInterface
             );
         }
 
-        $this->dataObjectService->setTreeSorting($parent, $query);
+        $this->dataObjectService->setTreeSorting($parent, $query, $includeParent);
     }
 }

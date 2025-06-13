@@ -139,7 +139,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             throw new NotFoundException(ElementTypes::TYPE_OBJECT, $parentId);
         }
 
-        $this->setTreeSorting($parent, $query);
+        $this->setTreeSorting($parent, $query, $parameters->getPathIncludeParent());
         $result = $this->dataObjectSearchService->searchDataObjects($query);
         $items = $result->getItems();
 
@@ -254,7 +254,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
     /**
      * @throws ForbiddenException|InvalidQueryTypeException|NotFoundException|UserNotFoundException
      */
-    public function setTreeSorting(DataObjectModel $parent, QueryInterface $dataObjectQuery): void
+    public function setTreeSorting(DataObjectModel $parent, QueryInterface $dataObjectQuery, bool $includeParent): void
     {
         if (!$dataObjectQuery instanceof DataObjectQuery) {
             throw new InvalidQueryTypeException(
@@ -263,7 +263,7 @@ final readonly class DataObjectService implements DataObjectServiceInterface
             );
         }
 
-        if ($parent->getChildrenSortBy() === self::INDEX_SORT) {
+        if ($includeParent === false && $parent->getChildrenSortBy() === self::INDEX_SORT) {
             $dataObjectQuery->orderByIndex();
 
             return;
