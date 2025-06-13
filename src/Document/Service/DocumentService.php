@@ -191,6 +191,7 @@ final readonly class DocumentService implements DocumentServiceInterface
     {
         if ($includeParent) {
             $documentQuery->orderByPath('asc');
+
             return;
         }
 
