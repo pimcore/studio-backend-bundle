@@ -24,7 +24,6 @@ use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\MappedParameter\HideJobRu
  */
 interface ExecutionEngineServiceInterface
 {
-
     /**
      * @throws UserNotFoundException
      */
