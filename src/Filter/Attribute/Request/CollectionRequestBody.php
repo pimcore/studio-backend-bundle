@@ -39,7 +39,7 @@ final class CollectionRequestBody extends RequestBody
                         pageSizeExample: $pageSizeExample,
                         columnFiltersExample: $columnFiltersExample,
                         sortFilterExample: $sortFilterExample
-                    )
+                    ),
                 ],
                 type: 'object',
             ),

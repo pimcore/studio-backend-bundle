@@ -28,7 +28,8 @@ final readonly class WebsiteSettingsRepository implements WebsiteSettingsReposit
 
     }
 
-    public function getListing(FilterParameter $parameters): Listing {
+    public function getListing(FilterParameter $parameters): Listing
+    {
         $listing = new Listing();
         $this->listingFilter->applyFilters($parameters, $listing);
 

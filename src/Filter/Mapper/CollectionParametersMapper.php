@@ -38,6 +38,7 @@ final class CollectionParametersMapper implements FilterMapperInterface
 
         $columnFilters = $filters->getColumnFilters();
         $columnFilters = $this->addPaging($parameters, $filters, $columnFilters);
+
         return new FilterParameter(
             columnFilters: $columnFilters,
             sortFilter: $filters->getSortFilter()
@@ -48,8 +49,7 @@ final class CollectionParametersMapper implements FilterMapperInterface
         CollectionParameters|CollectionFilterParameter $parameters,
         FilterParameter $filters,
         array $columnFilters
-    ): array
-    {
+    ): array {
         if ($parameters instanceof CollectionFilterParameter) {
             return $this->addPagingFromFilters($filters, $columnFilters);
         }
@@ -87,7 +87,7 @@ final class CollectionParametersMapper implements FilterMapperInterface
         return [
             'key' => 'pageSize',
             'type' => FilterType::PAGE_SIZE->value,
-            'filterValue' => $pageSize
+            'filterValue' => $pageSize,
         ];
 
     }
