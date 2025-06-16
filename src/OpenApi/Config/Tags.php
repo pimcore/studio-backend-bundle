@@ -143,6 +143,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_versions_description'
 )]
 #[Tag(
+    name: Tags::WebsiteSettings->value,
+    description: 'tag_website_settings_description'
+)]
+#[Tag(
     name: Tags::Workflows->value,
     description: 'tag_workflows_description'
 )]
@@ -179,5 +183,6 @@ enum Tags: string
     case Units = 'Units';
     case User = 'User Management';
     case Versions = 'Versions';
+    case WebsiteSettings = 'Website Settings';
     case Workflows = 'Workflows';
 }

@@ -17,8 +17,8 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\FilterType;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Mapper\FilterMapperInterface;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
-use Pimcore\Bundle\StudioBackendBundle\Notification\MappedParameter\CollectionFilterParameter;
 
 final class CollectionParametersMapper implements FilterMapperInterface
 {
@@ -37,25 +37,58 @@ final class CollectionParametersMapper implements FilterMapperInterface
         }
 
         $columnFilters = $filters->getColumnFilters();
-        if ($filters->getPage() !== null) {
-            $columnFilters[] = [
-                'key' => 'page',
-                'type' => FilterType::PAGE->value,
-                'filterValue' => $filters->getPage(),
-            ];
-        }
-
-        if ($filters->getPageSize() !== null) {
-            $columnFilters[] = [
-                'key' => 'pageSize',
-                'type' => FilterType::PAGE_SIZE->value,
-                'filterValue' => $filters->getPageSize(),
-            ];
-        }
-
+        $columnFilters = $this->addPaging($parameters, $filters, $columnFilters);
         return new FilterParameter(
             columnFilters: $columnFilters,
             sortFilter: $filters->getSortFilter()
         );
+    }
+
+    private function addPaging(
+        CollectionParameters|CollectionFilterParameter $parameters,
+        FilterParameter $filters,
+        array $columnFilters
+    ): array
+    {
+        if ($parameters instanceof CollectionFilterParameter) {
+            return $this->addPagingFromFilters($filters, $columnFilters);
+        }
+
+        $columnFilters[] = $this->addPageColumn($parameters->getPage());
+        $columnFilters[] = $this->addPageSizeColumn($parameters->getPageSize());
+
+        return $columnFilters;
+    }
+
+    private function addPagingFromFilters(FilterParameter $filters, array $columnFilters): array
+    {
+        if ($filters->getPage() !== null) {
+            $columnFilters[] = $this->addPageColumn($filters->getPage());
+        }
+
+        if ($filters->getPageSize() !== null) {
+            $columnFilters[] = $this->addPageSizeColumn($filters->getPageSize());
+        }
+
+        return $columnFilters;
+    }
+
+    private function addPageColumn(int $page): array
+    {
+        return [
+            'key' => 'page',
+            'type' => FilterType::PAGE->value,
+            'filterValue' => $page,
+        ];
+    }
+
+    public function addPageSizeColumn(int $pageSize): array
+    {
+        return [
+            'key' => 'pageSize',
+            'type' => FilterType::PAGE_SIZE->value,
+            'filterValue' => $pageSize
+        ];
+
     }
 }

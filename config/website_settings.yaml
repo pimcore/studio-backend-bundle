@@ -1,0 +1,33 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  # controllers are imported separately to make sure they're public
+  # and have a tag that allows actions to type-hint services
+  Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Controller\:
+    resource: '../src/WebsiteSettings/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Service\WebsiteSettingsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Service\WebsiteSettingsService
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Hydrator\WebsiteSettingsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Hydrator\WebsiteSettingsHydrator
+
+  #
+  # Repository
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Repository\WebsiteSettingsRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Repository\WebsiteSettingsRepository

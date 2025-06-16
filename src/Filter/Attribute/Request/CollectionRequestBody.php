@@ -27,20 +27,20 @@ final class CollectionRequestBody extends RequestBody
     public function __construct(
         int $pageExample = 1,
         int $pageSizeExample = 50,
-        bool $includeDescendantsExample = false,
         string $columnFiltersExample = '[{"key":"name","type":"metadata.object","filterValue":1}]',
         string $sortFilterExample = '{"key":"id","direction":"ASC"}'
     ) {
         parent::__construct(
             required: true,
             content: new JsonContent(
-                properties: [new FilterProperty(
-                    pageExample: $pageExample,
-                    pageSizeExample: $pageSizeExample,
-                    includeDescendantsExample: $includeDescendantsExample,
-                    columnFiltersExample: $columnFiltersExample,
-                    sortFilterExample: $sortFilterExample
-                )],
+                properties: [
+                    new FilterProperty(
+                        pageExample: $pageExample,
+                        pageSizeExample: $pageSizeExample,
+                        columnFiltersExample: $columnFiltersExample,
+                        sortFilterExample: $sortFilterExample
+                    )
+                ],
                 type: 'object',
             ),
         );

@@ -41,5 +41,6 @@ enum UserPermissions: string
     case THUMBNAILS = 'thumbnails';
     case TRANSLATIONS = 'translations';
     case USER_MANAGEMENT = 'users';
+    case WEBSITE_SETTINGS = 'website_settings';
     case WIDGET_EDITOR = 'studio_perspective_widget_editor';
 }
