@@ -124,12 +124,6 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         $definition = $container->getDefinition(ConfigurationServiceInterface::class);
         $definition->setArgument('$dataObjectPredefinedColumns', $config['grid']['data_object']['predefined_columns']);
 
-        $definition = $container->getDefinition(AdvancedColumnCollector::class);
-        $definition->setArgument(
-            '$supportedDataTypes',
-            $config['grid']['data_object']['advanced_column_supported_data_types']
-        );
-
         $definition = $container->getDefinition(NoteServiceInterface::class);
         $definition->setArgument('$noteTypes', $config['notes']['types']);
 

@@ -203,28 +203,6 @@ pimcore_studio_backend:
           group: system
 ```
 
-### Advanced Columns
-Not all data types are supported by Advanced Columns. Transforms for Advanced Columns can only work with strings.
-If you want to use a custom data type in Advanced Columns, ensure your Resolver returns a string. 
-Additionally, you need to add your data type to the `pimcore_studio_backend.grid.data_object.advanced_column_supported_data_types` section in the `config.yaml` file.
-
-Example:
-```yaml
-pimcore_studio_backend:
-  grid:
-    data_object:
-      advanced_column_supported_data_types:
-        - "email"
-        - "firstname"
-        - "input"
-        - "lastname"
-        - "password"
-        - "textarea"
-        - "time"
-        - "wysiwyg"
-        - "numeric"
-```
-
 ### Transformers for Advanced Columns
 You can also define transformers for Advanced Columns. These transformers will be used to transform the data before it is displayed in the grid.
 You need to implement the `TransformerInterface` and tag it with `pimcore.studio_backend.grid_transformer`.

@@ -52,14 +52,10 @@ final class AdvancedColumnCollector implements
     use UseFolderIdTrait;
     use UseUserTrait;
 
-    /**
-     * @param string[] $supportedDataTypes
-     */
     public function __construct(
         private readonly ClassDefinitionServiceInterface $classDefinitionService,
         private readonly ClassDefinitionResolverInterface $classDefinitionResolver,
         private readonly TransformerLoaderInterface $transformerLoader,
-        private array $supportedDataTypes
     ) {
     }
 
@@ -117,12 +113,7 @@ final class AdvancedColumnCollector implements
                 continue;
             }
 
-            if (
-                in_array($definition->getFieldType(), $this->supportedDataTypes, true) ||
-                $definition->isRelationType()
-            ) {
-                $groupedDefinitions[] = $definition;
-            }
+            $groupedDefinitions[] = $definition;
 
         }
 
