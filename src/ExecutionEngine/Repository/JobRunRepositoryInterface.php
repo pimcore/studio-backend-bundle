@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Repository;
 
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\Entity\ExecutionEngine\JobRunHidden;
 
 /**
@@ -23,4 +24,10 @@ interface JobRunRepositoryInterface
     public function update(JobRunHidden $jobRunHidden): void;
 
     public function getByJobRunId(int $jobRunId): ?JobRunHidden;
+
+    /**
+     *
+     * @return JobRun[]
+     */
+    public function getStudioJobRuns(int $ownerId): array;
 }

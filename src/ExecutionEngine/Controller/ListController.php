@@ -30,7 +30,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ListRunningController extends AbstractApiController
+final class ListController extends AbstractApiController
 {
     private const string ROUTE = '/execution-engine/running-jobs';
 
@@ -44,16 +44,16 @@ final class ListRunningController extends AbstractApiController
     /**
      * @throws InvalidArgumentException
      */
-    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_execution_engine_list_running', methods: ['GET'])]
+    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_execution_engine_list', methods: ['GET'])]
     #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'execution_engine_list_running_jobs',
-        description: 'execution_engine_list_running_jobs_description',
-        summary: 'execution_engine_list_running_jobs_summary',
+        operationId: 'execution_engine_list_jobs',
+        description: 'execution_engine_list_jobs_description',
+        summary: 'execution_engine_list_jobs_summary',
         tags: [Tags::ExecutionEngine->value]
     )]
     #[SuccessResponse(
-        description: 'execution_engine_list_running_jobs_success_response',
+        description: 'execution_engine_list_jobs_success_response',
         content: new ItemsJson(JobRun::class),
     )]
     #[DefaultResponses([
@@ -62,6 +62,6 @@ final class ListRunningController extends AbstractApiController
     ])]
     public function getRunningJobsList(): JsonResponse
     {
-        return $this->jsonResponse(['items' => $this->engineService->listRunningJobRuns()]);
+        return $this->jsonResponse(['items' => $this->engineService->listJobRuns()]);
     }
 }

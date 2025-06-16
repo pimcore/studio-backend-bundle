@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\StreamResourceNotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\MappedParameter\HideJobRunsParameter;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\StreamedResponseTrait;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\TempFilePathTrait;
@@ -66,6 +67,7 @@ final readonly class DownloadService implements DownloadServiceInterface
         try {
             $storage->delete($filePath);
             $this->storageService->cleanUpFolder($folderName);
+            $this->executionEngineService->hideJobRun($jobRunId);
         } catch (FilesystemException) {
             throw new EnvironmentException(
                 sprintf(
@@ -97,6 +99,7 @@ final readonly class DownloadService implements DownloadServiceInterface
                 ),
                 true
             );
+            $this->executionEngineService->hideJobRun($jobRunId);
         } catch (FilesystemException $e) {
             throw new EnvironmentException(
                 sprintf(

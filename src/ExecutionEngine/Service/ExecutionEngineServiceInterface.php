@@ -27,7 +27,7 @@ interface ExecutionEngineServiceInterface
     /**
      * @throws UserNotFoundException
      */
-    public function listRunningJobRuns(): array;
+    public function listJobRuns(): array;
 
     /**
      * @throws DatabaseException|ForbiddenException|NotFoundException
@@ -35,6 +35,8 @@ interface ExecutionEngineServiceInterface
     public function abortAction(int $jobRunId): void;
 
     public function hideAction(HideJobRunsParameter $parameter): void;
+
+    public function hideJobRun(int $jobRunId): void;
 
     /**
      * @throws ForbiddenException|UserNotFoundException|NotFoundException

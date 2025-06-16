@@ -3,6 +3,7 @@ imports:
     - { resource: firewall.yaml }
     - { resource: execution_engine.yaml }
     - { resource: doctrine.yaml }
+    - { resource: doctrine_migrations.yaml }
     - { resource: user_key_binding.yaml }
     - { resource: asset_metadata_adapters.yaml }
     - { resource: data_object_adapters.yaml }

@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service;
 
 use Exception;
 use Pimcore\Bundle\GenericExecutionEngineBundle\Agent\JobExecutionAgentInterface;
-use Pimcore\Bundle\GenericExecutionEngineBundle\Repository\JobRunRepositoryInterface as CoreJobRunRepository;
 use Pimcore\Bundle\StudioBackendBundle\Entity\ExecutionEngine\JobRunHidden;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
@@ -39,7 +38,6 @@ final readonly class ExecutionEngineService implements ExecutionEngineServiceInt
         private JobExecutionAgentInterface $jobExecutionAgent,
         private JobRunListHydratorInterface $jobRunHydrator,
         private JobRunRepositoryInterface $jobRunRepository,
-        private CoreJobRunRepository $coreJobRunRepository,
         private SecurityServiceInterface $securityService,
     ) {
 
@@ -48,20 +46,12 @@ final readonly class ExecutionEngineService implements ExecutionEngineServiceInt
     /**
      * {@inheritdoc}
      */
-    public function listRunningJobRuns(): array
+    public function listJobRuns(): array
     {
-        $jobs = $this->coreJobRunRepository->getRunningJobsByUserId(
-            $this->securityService->getCurrentUser()->getId(),
-            [],
-            100
-        );
-
+        $jobs = $this->jobRunRepository->getStudioJobRuns($this->securityService->getCurrentUser()->getId());
         $hydratedJobs = [];
-        foreach ($jobs as $job) {
-            if ($this->isHidden($job->getId())) {
-                continue;
-            }
 
+        foreach ($jobs as $job) {
             $hydrated = $this->jobRunHydrator->hydrate($job);
             $this->eventDispatcher->dispatch(new JobRunListEvent($hydrated), JobRunListEvent::EVENT_NAME);
             $hydratedJobs[] = $hydrated;
@@ -101,7 +91,7 @@ final readonly class ExecutionEngineService implements ExecutionEngineServiceInt
         }
     }
 
-    private function hideJobRun(int $jobRunId): void
+    public function hideJobRun(int $jobRunId): void
     {
         $jobRunHidden = new JobRunHidden();
         $jobRunHidden->setJobRunId($jobRunId);
@@ -125,15 +115,5 @@ final readonly class ExecutionEngineService implements ExecutionEngineServiceInt
         if (!$allowed) {
             throw new ForbiddenException('Only job owner can access the resource.');
         }
-    }
-
-    private function isHidden(int $jobRunId): bool
-    {
-        $hiddenEntry = $this->jobRunRepository->getByJobRunId($jobRunId);
-        if (!$hiddenEntry instanceof JobRunHidden) {
-            return false;
-        }
-
-        return true;
     }
 }

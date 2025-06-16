@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Repository;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Pimcore\Bundle\GenericExecutionEngineBundle\Entity\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\Entity\ExecutionEngine\JobRunHidden;
 
 /**
@@ -41,5 +42,24 @@ final readonly class JobRunRepository implements JobRunRepositoryInterface
     {
         return $this->entityManager->getRepository(JobRunHidden::class)
             ->findOneBy(['jobRunId' => $jobRunId]);
+    }
+
+    public function getStudioJobRuns(int $ownerId): array
+    {
+        $qb = $this->entityManager
+            ->getRepository(JobRun::class)
+            ->createQueryBuilder('jr')
+            ->leftJoin(JobRunHidden::class, 'jrh', 'WITH', 'jr.id = jrh.jobRunId')
+            ->where('jrh.jobRunId IS NULL');
+
+        // Add owner condition
+        $qb->andWhere('jr.ownerId = :ownerId')
+            ->setParameter('ownerId', $ownerId);
+
+        // Add execution contexts condition
+        $qb->andWhere('jr.executionContext IN (:executionContexts)')
+            ->setParameter('executionContexts', ['studio_stop_on_error', 'studio_continue_on_error']);
+
+        return $qb->getQuery()->getResult();
     }
 }
