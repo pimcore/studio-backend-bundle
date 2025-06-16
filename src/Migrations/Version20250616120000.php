@@ -29,22 +29,22 @@ final class Version20250616120000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql("
-            CREATE TABLE IF NOT EXISTS " . JobRunHidden::TABLE_NAME . " (
+        $this->addSql('
+            CREATE TABLE IF NOT EXISTS ' . JobRunHidden::TABLE_NAME . ' (
                 jobRunId INT UNSIGNED NOT NULL,
                 PRIMARY KEY (jobRunId),
-                CONSTRAINT fk_" . JobRunHidden::TABLE_NAME . "_jobRunIds
+                CONSTRAINT fk_' . JobRunHidden::TABLE_NAME . '_jobRunIds
                     FOREIGN KEY (jobRunId)
                     REFERENCES generic_execution_engine_job_run (id)
                     ON DELETE CASCADE
             )
-        ");
+        ');
 
-        $this->addSql("
-            INSERT INTO " . JobRunHidden::TABLE_NAME . " (jobRunId)
+        $this->addSql('
+            INSERT INTO ' . JobRunHidden::TABLE_NAME . ' (jobRunId)
             SELECT jr.id 
             FROM generic_execution_engine_job_run jr
-            LEFT JOIN " . JobRunHidden::TABLE_NAME . " jrh ON jr.id = jrh.jobRunId
+            LEFT JOIN ' . JobRunHidden::TABLE_NAME . " jrh ON jr.id = jrh.jobRunId
             WHERE jrh.jobRunId IS NULL 
             AND jr.executionContext IN ('studio_stop_on_error', 'studio_continue_on_error')
         ");
@@ -52,6 +52,6 @@ final class Version20250616120000 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        $this->addSql("DROP TABLE IF EXISTS " . JobRunHidden::TABLE_NAME);
+        $this->addSql('DROP TABLE IF EXISTS ' . JobRunHidden::TABLE_NAME);
     }
 }
