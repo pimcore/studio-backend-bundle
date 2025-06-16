@@ -402,6 +402,13 @@ error_config_name_invalid: Configuration name is invalid (only alphanumeric char
 error_validation_failed: Validation failed
 execution_engine_abort_job_run_by_id_description: Abort Job Run
 execution_engine_abort_job_run_by_id_summary: Abort Job Run by Id
+execution_engine_hide_job_runs_description: |
+  Hide Job Runs based on the given <strong>{jobRunIds}</strong>. <br> The <strong>{jobRunIds}</strong> must be an array of existing Job Run IDs.
+execution_engine_hide_job_runs_success_response: Successfully hidden Job Runs
+execution_engine_hide_job_runs_summary: Hide Job Runs by IDs
+execution_engine_list_jobs_description: List all studio jobs for the current user which are not hidden
+execution_engine_list_jobs_success_response: List of studio jobs
+execution_engine_list_jobs_summary: List studio jobs
 export_csv_created_response: Successfully created <strong>jobRun</strong> for
   csv export
 export_csv_description: |

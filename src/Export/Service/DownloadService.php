@@ -66,6 +66,7 @@ final readonly class DownloadService implements DownloadServiceInterface
         try {
             $storage->delete($filePath);
             $this->storageService->cleanUpFolder($folderName);
+            $this->executionEngineService->hideJobRun($jobRunId);
         } catch (FilesystemException) {
             throw new EnvironmentException(
                 sprintf(
@@ -97,6 +98,7 @@ final readonly class DownloadService implements DownloadServiceInterface
                 ),
                 true
             );
+            $this->executionEngineService->hideJobRun($jobRunId);
         } catch (FilesystemException $e) {
             throw new EnvironmentException(
                 sprintf(

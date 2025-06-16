@@ -22,6 +22,20 @@ services:
     class: Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineService
 
   #
+  # Repositories
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Repository\JobRunRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Repository\JobRunRepository
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Hydrator\JobRunListHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Hydrator\JobRunListHydrator
+
+  #
   # Event Subscriber
   #
 

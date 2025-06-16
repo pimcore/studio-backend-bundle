@@ -14,26 +14,29 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Controller;
 
 use OpenApi\Attributes\Post;
+use OpenApi\Attributes\RequestBody;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\MappedParameter\HideJobRunsParameter;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ScalarItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class AbortController extends AbstractApiController
+final class HideController extends AbstractApiController
 {
-    private const string ROUTE = '/execution-engine/abort/{jobRunId}';
+    private const string ROUTE = '/execution-engine/hide';
 
     public function __construct(
         private readonly ExecutionEngineServiceInterface $executionEngineService,
@@ -45,24 +48,26 @@ final class AbortController extends AbstractApiController
     /**
      * @throws DatabaseException|ForbiddenException|NotFoundException
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_execution_engine_abort', methods: ['POST'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_execution_engine_hide_jobs', methods: ['POST'])]
     #[Post(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'execution_engine_abort_job_run_by_id',
-        description: 'execution_engine_abort_job_run_by_id_description',
-        summary: 'execution_engine_abort_job_run_by_id_summary',
+        operationId: 'execution_engine_hide_job_runs',
+        description: 'execution_engine_hide_job_runs_description',
+        summary: 'execution_engine_hide_job_runs_summary',
         tags: [Tags::ExecutionEngine->value]
     )]
-    #[IdParameter(type: 'JobRun', name: 'jobRunId')]
+    #[RequestBody(
+        content: new ScalarItemsJson('integer', 'jobRunIds')
+    )]
     #[SuccessResponse]
     #[DefaultResponses([
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function abortJobRun(int $jobRunId): Response
+    public function hideJobRuns(#[MapRequestPayload] HideJobRunsParameter $parameter): Response
     {
-        $this->executionEngineService->abortAction($jobRunId);
+        $this->executionEngineService->hideAction($parameter);
 
         return new Response();
     }
