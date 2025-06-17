@@ -53,7 +53,7 @@ final class Combine implements TransformerInterface
 
     public function getName(): string
     {
-        return 'Combine';
+        return 'Combine Values';
     }
 
     public function getKey(): string

@@ -45,7 +45,7 @@ final class CaseChange implements TransformerInterface
 
     public function getName(): string
     {
-        return 'caseChange';
+        return 'Change Case';
     }
 
     public function getKey(): string
