@@ -57,4 +57,18 @@ final class CaseChange implements TransformerInterface
     {
         return 'Changes the case of the value to lower case. Available modes: lower, upper.';
     }
+
+    public function getConfigOptions(): array
+    {
+        return [
+            'mode' => [
+                'type' => 'select',
+                'options' => [
+                    ['value' => 'lowercase', 'label' => 'Lowercase'],
+                    ['value' => 'uppercase', 'label' => 'Uppercase'],
+                ],
+                'default' => 'lowercase',
+            ],
+        ];
+    }
 }

@@ -31,4 +31,6 @@ interface TransformerInterface
     public function getKey(): string;
 
     public function getDescription(): string;
+
+    public function getConfigOptions(): array;
 }

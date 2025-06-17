@@ -65,4 +65,16 @@ final class Combine implements TransformerInterface
     {
         return 'Combines multiple values into a single string.';
     }
+
+    public function getConfigOptions(): array
+    {
+        return [
+            'glue' => [
+                'type' => 'string',
+                'label' => 'Glue',
+                'description' => 'The string used to join the values together.',
+                'required' => true,
+            ],
+        ];
+    }
 }

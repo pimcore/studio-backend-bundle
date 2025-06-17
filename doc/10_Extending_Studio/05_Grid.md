@@ -223,7 +223,6 @@ final class Uppercase implements TransformerInterface
 {
 
      /**
-     *
      * @param AdvancedValue[] $value
      * @return AdvancedValue[]
      */
@@ -249,6 +248,11 @@ final class Uppercase implements TransformerInterface
     public function getDescription(): string
     {
         return 'Transforms the value to uppercase.';
+    }
+    
+    public function getConfigOptions(): array
+    {
+        return [];
     }
 }
 
