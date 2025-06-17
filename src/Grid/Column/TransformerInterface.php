@@ -13,17 +13,24 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column;
 
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
+
 interface TransformerInterface
 {
     /**
      * Transforms a value of the advanced column in the grid.
-     * Any string operation can be performed here.
+     *
+     * @param AdvancedValue[] $value
+     *
+     * @return AdvancedValue[]
      */
-    public function transform(string $value): string;
+    public function transform(array $value, array $config): array;
 
     public function getName(): string;
 
     public function getKey(): string;
 
     public function getDescription(): string;
+
+    public function getConfigOptions(): array;
 }

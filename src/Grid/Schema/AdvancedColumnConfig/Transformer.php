@@ -29,11 +29,19 @@ final readonly class Transformer
     public function __construct(
         #[Property(description: 'Key of the Transformer', type: 'string', example: 'uppercase')]
         private string $key,
+        #[Property(description: 'Configuration for the transformer', type: 'object')]
+        private array $config = []
+
     ) {
     }
 
     public function getKey(): string
     {
         return $this->key;
+    }
+
+    public function getConfig(): array
+    {
+        return $this->config;
     }
 }

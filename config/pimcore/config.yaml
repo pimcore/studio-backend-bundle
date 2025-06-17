@@ -75,17 +75,6 @@ pimcore_studio_backend:
                 - key: size
                   group: system
         data_object:
-            advanced_column_supported_data_types:
-                - "email"
-                - "firstname"
-                - "input"
-                - "lastname"
-                - "password"
-                - "textarea"
-                - "time"
-                - "wysiwyg"
-                - "numeric"
-
             predefined_columns:
                 - key: id
                   group: system
