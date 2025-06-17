@@ -125,7 +125,6 @@ final readonly class Column
 
         return new AdvancedColumnConfig(
             $configs,
-            $this->config['concatenationSymbol'] ?? '-',
             $this->getTransformers()
         );
     }
@@ -142,6 +141,7 @@ final readonly class Column
                 if (isset($transformer['key'])) {
                     $transformers[] = new Transformer(
                         key: $transformer['key'],
+                        config: $transformer['config'] ?? []
                     );
                 }
             }

@@ -36,13 +36,10 @@ final readonly class AdvancedColumnConfig
                     new Schema(ref: RelationFieldConfig::class),
                     new Schema(ref: SimpleFieldConfig::class),
                     new Schema(ref: StaticTextConfig::class),
-                    new Schema(ref: ExistingColumnConfig::class),
                 ]
             ),
             example: [['field' => 'name', 'relation' => 'manufacturer'], ['field' => 'name'], ['text' => 'name']])]
         private array $advancedColumn,
-        #[Property(description: 'Concatenation symbol to combine multiple columns', type: 'string', example: '-')]
-        private string $concatenationSymbol,
         #[Property(
             description: 'List if Transformers that should be applied',
             type: 'array',
@@ -54,16 +51,11 @@ final readonly class AdvancedColumnConfig
     }
 
     /**
-     * @return RelationFieldConfig[]|SimpleFieldConfig[]|StaticTextConfig[]|ExistingColumnConfig[]
+     * @return RelationFieldConfig[]|SimpleFieldConfig[]|StaticTextConfig[]
      */
     public function getColumns(): array
     {
         return $this->advancedColumn;
-    }
-
-    public function getConcatenationSymbol(): string
-    {
-        return $this->concatenationSymbol;
     }
 
     /**

@@ -364,18 +364,8 @@ services:
   #
   # Transformer
   #
-
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Uppercase:
-      tags: [ 'pimcore.studio_backend.grid_transformer' ]
-
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Lowercase:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\CaseChange:
     tags: [ 'pimcore.studio_backend.grid_transformer' ]
 
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Trim:
-    tags: [ 'pimcore.studio_backend.grid_transformer' ]
-
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TrimEnd:
-    tags: [ 'pimcore.studio_backend.grid_transformer' ]
-
-  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\TrimStart:
+  Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer\Combine:
     tags: [ 'pimcore.studio_backend.grid_transformer' ]

@@ -17,6 +17,7 @@ use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\DataObject\ClassDefinitionResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Service\DataServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
@@ -30,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\FieldDefinitionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
@@ -47,14 +49,9 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
     use LocalizedValueTrait;
 
     /**
-     * @var string[]
+     * @var AdvancedValue[]
      */
     private array $values = [];
-
-    /**
-     * @var string[]
-     */
-    private array $cache = [];
 
     /**
      * @var array <string, TransformerInterface>
@@ -101,39 +98,34 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
             }
 
             if ($advancedColumn instanceof StaticTextConfig) {
-                $this->values[] = $advancedColumn->getText();
-            }
-
-            if ($advancedColumn instanceof ExistingColumnConfig) {
-                $this->resolveExistingColumnConfig($advancedColumn);
+                $this->values[] = new AdvancedValue(
+                    type: 'string',
+                    value: $advancedColumn->getText()
+                );
             }
 
         }
 
-        $this->applyTransformers($column->getAdvancedColumnConfig()->getTransformers());
+        try {
+            $this->applyTransformers($column->getAdvancedColumnConfig()->getTransformers());
+        } catch (TransformerException $exception) {
+            $this->values = [
+                new AdvancedValue(
+                    type: 'error',
+                    value: sprintf(
+                        'Error applying transformer: %s',
+                        $exception->getMessage()
+                    )
+                )
+            ];
+        }
 
-        $this->cache[$column->getKey()] = implode(
-            $column->getAdvancedColumnConfig()->getConcatenationSymbol(),
-            $this->values
-        );
 
         return new ColumnData(
             key: $column->getKey(),
             locale: $column->getLocale(),
-            value: $this->cache[$column->getKey()]
+            value: $this->values
         );
-    }
-
-    private function resolveExistingColumnConfig(ExistingColumnConfig $columnConfig): void
-    {
-        if (!array_key_exists($columnConfig->getExistingColumnName(), $this->cache)) {
-            throw new InvalidArgumentException(sprintf(
-                'Advanced Column %s is not resolved yet. Please resolve it before using it as existing column config.',
-                $columnConfig->getExistingColumnName()
-            ));
-        }
-
-        $this->values[] = $this->cache[$columnConfig->getExistingColumnName()];
     }
 
     /**
@@ -155,11 +147,10 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
             return;
         }
 
-        try {
-            $this->values[] = strval($value);
-        } catch (Exception $e) {
-            throw new InvalidArgumentException(sprintf('Field %s is not a string', $fieldConfig->getField()));
-        }
+        $this->values[] = new AdvancedValue(
+            type: $fieldDefinition->getFieldType(),
+            value: $value
+        );
     }
 
     /**
@@ -221,9 +212,10 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
                 ));
             }
 
-            foreach ($this->values as $index => $value) {
-                $this->values[$index] = $this->getTransformers()[$transformer->getKey()]->transform($value);
-            }
+            $this->values = $this->getTransformers()[$transformer->getKey()]->transform(
+                $this->values,
+                $transformer->getConfig()
+            );
         }
     }
 }

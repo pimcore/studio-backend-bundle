@@ -207,6 +207,9 @@ pimcore_studio_backend:
 You can also define transformers for Advanced Columns. These transformers will be used to transform the data before it is displayed in the grid.
 You need to implement the `TransformerInterface` and tag it with `pimcore.studio_backend.grid_transformer`.
 
+`transform` must return an array of `AdvancedValue` objects, which are used to represent the transformed values in the grid.
+If there is an error during the transformation, you can throw a `Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException` with an error message.
+
 ```php
 <?php
 declare(strict_types=1);
@@ -219,9 +222,18 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 final class Uppercase implements TransformerInterface
 {
 
-    public function transform(string $value): string
+     /**
+     *
+     * @param AdvancedValue[] $value
+     * @return AdvancedValue[]
+     */
+    public function transform(array $value, array $config): array
     {
-        return strtoupper($value);
+        foreach ($value as $key => $val) {
+            $value->setValue(strtoupper($val->getValue()));
+        }
+        
+        return $value
     }
 
     public function getName(): string
