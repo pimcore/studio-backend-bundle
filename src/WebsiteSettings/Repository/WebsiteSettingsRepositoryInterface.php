@@ -13,7 +13,11 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Repository;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingsUpdate;
+use Pimcore\Model\WebsiteSetting;
 use Pimcore\Model\WebsiteSetting\Listing;
 
 /**
@@ -21,5 +25,20 @@ use Pimcore\Model\WebsiteSetting\Listing;
  */
 interface WebsiteSettingsRepositoryInterface
 {
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function create(string $name, string $type): WebsiteSetting;
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function update(WebsiteSetting $setting, WebsiteSettingsUpdate $parameters): WebsiteSetting;
+
     public function getListing(FilterParameter $parameters): Listing;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getById(int $id): WebsiteSetting;
 }

@@ -17,9 +17,16 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\WebsiteSettingTypes;
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Event\PreResponse\WebsiteSettingEvent;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Event\PreResponse\WebsiteSettingTypeEvent;
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Hydrator\WebsiteSettingsHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Repository\WebsiteSettingsRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSetting;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingsAdd;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingsUpdate;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingType;
+use Pimcore\Model\WebsiteSetting as WebsiteSettingModel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -35,6 +42,27 @@ final readonly class WebsiteSettingsService implements WebsiteSettingsServiceInt
     ) {
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function addWebsiteSetting(WebsiteSettingsAdd $parameters): WebsiteSetting
+    {
+        $setting = $this->websiteSettingsRepository->create($parameters->getName(), $parameters->getType());
+
+        return $this->getHydratedSetting($setting);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateWebsiteSetting(int $id, WebsiteSettingsUpdate $parameters): WebsiteSetting
+    {
+        $setting = $this->websiteSettingsRepository->getById($id);
+        $setting = $this->websiteSettingsRepository->update($setting, $parameters);
+
+        return $this->getHydratedSetting($setting);
+    }
+
     public function listWebsiteSettings(CollectionFilterParameter $parameters): Collection
     {
         $listing = $this->websiteSettingsRepository->getListing($this->getFilterParameters($parameters));
@@ -42,19 +70,51 @@ final readonly class WebsiteSettingsService implements WebsiteSettingsServiceInt
         $list = [];
 
         foreach ($settings as $setting) {
-            $entry = $this->hydrator->hydrate($setting);
-            $this->eventDispatcher->dispatch(
-                new WebsiteSettingEvent($entry),
-                WebsiteSettingEvent::EVENT_NAME
-            );
-
-            $list[] = $entry;
+            $list[] = $this->getHydratedSetting($setting);
         }
 
         return new Collection(
             $listing->count(),
             $list
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteWebsiteSetting(int $id): void
+    {
+        $this->websiteSettingsRepository->getById($id)->delete();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function listTypes(): array
+    {
+        $types = WebsiteSettingTypes::toNameValueArray();
+        $hydrated = [];
+        foreach ($types as $title => $key) {
+            $item = new WebsiteSettingType($key, $title);
+            $this->eventDispatcher->dispatch(
+                new WebsiteSettingTypeEvent($item),
+                WebsiteSettingTypeEvent::EVENT_NAME
+            );
+            $hydrated[] = $item;
+        }
+
+        return $hydrated;
+    }
+
+    private function getHydratedSetting(WebsiteSettingModel $setting): WebsiteSetting
+    {
+        $entry = $this->hydrator->hydrate($setting);
+        $this->eventDispatcher->dispatch(
+            new WebsiteSettingEvent($entry),
+            WebsiteSettingEvent::EVENT_NAME
+        );
+
+        return $entry;
     }
 
     private function getFilterParameters(CollectionFilterParameter $parameters): FilterParameter

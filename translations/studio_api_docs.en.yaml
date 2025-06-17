@@ -1047,6 +1047,16 @@ classification_store_get_layout_by_collection_response: Layout definition
 data_object_get_grid_preview_description: Gives you a preview of an Advanced Column Grid for a given Data Object.
 data_object_get_grid_preview_summary: Get a preview of an Advanced Column Grid for a given Data Object.
 data_object_get_grid_preview_success_response: Preview of an Advanced Column Grid for a given Data Object.
+website_settings_add_description: |
+  Add a new website setting with the provided name and type.
+  The following types are supported: <strong>text</strong>, <strong>document</strong>, <strong>asset</strong>, <strong>object</strong>, <strong>bool</strong>. <br>
+website_settings_add_summary: Add a new website setting
+website_settings_add_success_response: Successfully added website setting
+website_settings_delete_description: |
+  Delete a website setting with the given <strong>{id}</strong>.
+  The <strong>{id}</strong> must be an ID of an existing DocType. <br>
+website_settings_delete_summary: Delete a website setting
+website_settings_delete_success_response: Successfully deleted website setting
 website_settings_get_collection_description: |
   Get all paginated website settings. <br> You can specify different filters in your request body. Example filters are: <br>
   <ul>
@@ -1058,3 +1068,14 @@ website_settings_get_collection_description: |
   </ul>
 website_settings_get_collection_summary: Get paginated website settings
 website_settings_get_collection_success_response: Paginated website settings with total count
+website_settings_list_types_description: |
+  List all available website setting types.
+  Returns an array of website setting types with their keys and titles.
+website_settings_list_types_summary: List all website setting types
+website_settings_list_types_success_response: List of all available website setting types
+website_settings_update_description: |
+  Update a website setting with the given <strong>{id}</strong>.
+  The <strong>{id}</strong> must be an ID of an existing DocType. <br>
+  Please note that <strong>all fields<strong> have to be provided.
+website_settings_update_summary: Update a website setting
+website_settings_update_success_response: Successfully updated website setting

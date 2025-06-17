@@ -13,13 +13,40 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSetting;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingsAdd;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingsUpdate;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingType;
 
 /**
  * @internal
  */
 interface WebsiteSettingsServiceInterface
 {
+
+    /**
+     * @throws ElementSavingFailedException
+     */
+    public function addWebsiteSetting(WebsiteSettingsAdd $parameters): WebsiteSetting;
+
+    /**
+     * @throws ElementSavingFailedException|NotFoundException
+     */
+    public function updateWebsiteSetting(int $id, WebsiteSettingsUpdate $parameters): WebsiteSetting;
+    
     public function listWebsiteSettings(CollectionFilterParameter $parameters): Collection;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function deleteWebsiteSetting(int $id): void;
+
+    /**
+     * @return WebsiteSettingType[]
+     */
+    public function listTypes(): array;
 }

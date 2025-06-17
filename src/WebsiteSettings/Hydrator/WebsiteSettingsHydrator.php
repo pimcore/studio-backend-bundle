@@ -43,12 +43,12 @@ final readonly class WebsiteSettingsHydrator implements WebsiteSettingsHydratorI
         );
     }
 
-    private function getSettingData(string $type, mixed $data): string
+    private function getSettingData(string $type, mixed $data): null|string|bool
     {
         if ($data instanceof ElementInterface && in_array($type, ElementTypes::ALLOWED_TYPES, true)) {
             return $data->getRealFullPath();
         }
 
-        return (string)$data;
+        return $data;
     }
 }
