@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\ColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\CoreElementColumnResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\ExistingColumnConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\RelationFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\SimpleFieldConfig;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\StaticTextConfig;
@@ -29,16 +28,15 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\Transfor
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnData;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\TransformerLoaderInterface;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\FieldDefinitionTrait;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\Trait\LocalizedValueTrait;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\Element\ElementInterface;
 use function array_key_exists;
 use function is_array;
 use function sprintf;
-use function strval;
 
 /**
  * @internal
@@ -116,10 +114,9 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
                         'Error applying transformer: %s',
                         $exception->getMessage()
                     )
-                )
+                ),
             ];
         }
-
 
         return new ColumnData(
             key: $column->getKey(),

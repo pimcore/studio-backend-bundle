@@ -15,6 +15,8 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
+use function is_string;
+use function sprintf;
 
 /**
  * @internal

@@ -21,6 +21,7 @@ interface TransformerInterface
      * Transforms a value of the advanced column in the grid.
      *
      * @param AdvancedValue[] $value
+     *
      * @return AdvancedValue[]
      */
     public function transform(array $value, array $config): array;

@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\Column\Transformer;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\TransformerException;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Column\TransformerInterface;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Util\AdvancedValue;
+use function is_string;
 
 /**
  * @internal
@@ -46,7 +47,7 @@ final class Combine implements TransformerInterface
             new AdvancedValue(
                 'string',
                 implode($config['clue'], $values)
-            )
+            ),
         ];
     }
 

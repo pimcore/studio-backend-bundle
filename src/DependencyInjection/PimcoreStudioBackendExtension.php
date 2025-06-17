@@ -26,7 +26,6 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidHostException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidUrlPrefixException;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\CsvExportService;
 use Pimcore\Bundle\StudioBackendBundle\Export\Service\XlsxExportService;
-use Pimcore\Bundle\StudioBackendBundle\Grid\Column\Collector\DataObject\AdvancedColumnCollector;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\ConfigurationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Mercure\Service\UrlServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Metadata\Service\DataAdapterServiceInterface as MetadataAdapterServiceInterface;
