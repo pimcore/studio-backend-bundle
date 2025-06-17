@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Adapter;
 
 use Carbon\CarbonPeriod;
+use DatePeriod;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\DataNormalizerInterface;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\Model\FieldContextData;
 use Pimcore\Bundle\StudioBackendBundle\DataObject\Data\SetterDataInterface;
@@ -51,7 +52,7 @@ final readonly class DateRangeAdapter implements SetterDataInterface, DataNormal
 
     public function normalize(mixed $value, Data $fieldDefinition): array
     {
-        if (!$value instanceof CarbonPeriod) {
+        if (!$value instanceof DatePeriod) {
             return [];
         }
 

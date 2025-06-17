@@ -48,7 +48,7 @@ final readonly class GeoBoundsAdapter implements SetterDataInterface
     ): ?Geobounds {
 
         $geoBoundsData = $data[$key];
-        if ($this->validateBounds($geoBoundsData) === false) {
+        if (!is_array($geoBoundsData) || $this->validateBounds($geoBoundsData) === false) {
             return null;
         }
 
