@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Repository;
 
 use Exception;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingsUpdate;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingsUpdate;
 use Pimcore\Model\WebsiteSetting;
 use Pimcore\Model\WebsiteSetting\Listing;
 use function in_array;

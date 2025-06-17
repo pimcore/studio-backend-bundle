@@ -11,21 +11,21 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\WebsiteSettingTypes;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Event\PreResponse\WebsiteSettingEvent;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Event\PreResponse\WebsiteSettingTypeEvent;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Hydrator\WebsiteSettingsHydratorInterface;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Repository\WebsiteSettingsRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSetting;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingsAdd;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingsUpdate;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingType;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Event\PreResponse\WebsiteSettingEvent;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Event\PreResponse\WebsiteSettingTypeEvent;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Hydrator\WebsiteSettingsHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Repository\WebsiteSettingsRepositoryInterface;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSetting;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingsAdd;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingsUpdate;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingType;
 use Pimcore\Model\WebsiteSetting as WebsiteSettingModel;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 

@@ -11,10 +11,10 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Hydrator;
+namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSetting;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSetting;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\WebsiteSetting as WebsiteSettingModel;
 use function in_array;

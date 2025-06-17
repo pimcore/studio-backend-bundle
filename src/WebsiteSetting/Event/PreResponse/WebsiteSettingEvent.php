@@ -11,26 +11,26 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Event\PreResponse;
+namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Event\PreResponse;
 
 use Pimcore\Bundle\StudioBackendBundle\Event\AbstractPreResponseEvent;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingType;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSetting;
 
-final class WebsiteSettingTypeEvent extends AbstractPreResponseEvent
+final class WebsiteSettingEvent extends AbstractPreResponseEvent
 {
-    public const string EVENT_NAME = 'pre_response.website_settings.type';
+    public const string EVENT_NAME = 'pre_response.website_settings.item';
 
     public function __construct(
-        private readonly WebsiteSettingType $type
+        private readonly WebsiteSetting $websiteSetting
     ) {
-        parent::__construct($this->type);
+        parent::__construct($this->websiteSetting);
     }
 
     /**
      * Use this to get additional infos out of the response object
      */
-    public function getWebsiteSettingType(): WebsiteSettingType
+    public function getWebsiteSetting(): WebsiteSetting
     {
-        return $this->type;
+        return $this->websiteSetting;
     }
 }

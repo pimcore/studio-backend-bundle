@@ -11,7 +11,7 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema;
+namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema;
 
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;

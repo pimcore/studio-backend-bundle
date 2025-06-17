@@ -11,23 +11,21 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Controller;
 
 use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Put;
+use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Request\ReferenceRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSetting;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingsUpdate;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Service\WebsiteSettingsServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSetting;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingsAdd;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Service\WebsiteSettingsServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -37,44 +35,42 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class UpdateController extends AbstractApiController
+final class AddController extends AbstractApiController
 {
-    private const string ROUTE = '/website-settings/{id}';
+    private const string ROUTE = '/website-settings/add';
 
     public function __construct(
+        private readonly WebsiteSettingsServiceInterface $websiteSettingsService,
         SerializerInterface $serializer,
-        private readonly WebsiteSettingsServiceInterface $websiteSettingsService
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws ElementSavingFailedException|NotFoundException
+     * @throws ElementSavingFailedException
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_website_settings_update', methods: ['PUT'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_website_settings_add', methods: ['POST'])]
     #[IsGranted(UserPermissions::WEBSITE_SETTINGS->value)]
-    #[Put(
+    #[Post(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'website_settings_update',
-        description: 'website_settings_update_description',
-        summary: 'website_settings_update_summary',
+        operationId: 'website_settings_add',
+        description: 'website_settings_add_description',
+        summary: 'website_settings_add_summary',
         tags: [Tags::WebsiteSettings->value]
     )]
-    #[IdParameter(type: 'website setting')]
-    #[ReferenceRequestBody(WebsiteSettingsUpdate::class)]
     #[SuccessResponse(
-        description: 'website_settings_update_success_response',
+        description: 'website_settings_add_success_response',
         content: new JsonContent(ref: WebsiteSetting::class)
     )]
+    #[ReferenceRequestBody(WebsiteSettingsAdd::class)]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::NOT_FOUND,
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function updateWebsiteSetting(
-        int $id,
-        #[MapRequestPayload] WebsiteSettingsUpdate $parameters
+    public function addWebsiteSetting(
+        #[MapRequestPayload] WebsiteSettingsAdd $parameters
     ): JsonResponse {
-
-        return $this->jsonResponse($this->websiteSettingsService->updateWebsiteSetting($id, $parameters));
+        return $this->jsonResponse($this->websiteSettingsService->addWebsiteSetting($parameters));
     }
 }

@@ -11,19 +11,19 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Controller;
 
-use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Delete;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Service\WebsiteSettingsServiceInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Service\WebsiteSettingsServiceInterface;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -31,9 +31,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 /**
  * @internal
  */
-final class ListTypeController extends AbstractApiController
+final class DeleteController extends AbstractApiController
 {
-    private const string ROUTE = '/website-settings/types';
+    private const string ROUTE = '/website-settings/{id}';
 
     public function __construct(
         SerializerInterface $serializer,
@@ -42,24 +42,30 @@ final class ListTypeController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_website_settings_list_types', methods: ['GET'])]
+    /**
+     * @throws NotFoundException
+     */
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_website_settings_delete', methods: ['DELETE'])]
     #[IsGranted(UserPermissions::WEBSITE_SETTINGS->value)]
-    #[Get(
+    #[Delete(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'website_settings_list_types',
-        description: 'website_settings_list_types_description',
-        summary: 'website_settings_list_types_summary',
+        operationId: 'website_settings_delete',
+        description: 'website_settings_delete_description',
+        summary: 'website_settings_delete_summary',
         tags: [Tags::WebsiteSettings->value]
     )]
+    #[IdParameter(type: 'website setting')]
     #[SuccessResponse(
-        description: 'website_settings_list_types_success_response',
-        content: new ItemsJson(DocType::class),
+        description: 'website_settings_delete_success_response',
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
-    public function listTypes(): JsonResponse
+    public function deleteWebsiteSetting(int $id): Response
     {
-        return $this->jsonResponse(['items' => $this->websiteSettingsService->listTypes()]);
+        $this->websiteSettingsService->deleteWebsiteSetting($id);
+
+        return new Response();
     }
 }
