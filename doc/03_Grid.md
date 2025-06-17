@@ -208,7 +208,7 @@ Available modes:
 #### Combine Transformer
 
 Available configurations:
-- `clue` - combines the values of the advanced columns into a single string
+- `glue` - combines the values of the advanced columns into a single string
 
 ```json
 ...
@@ -230,7 +230,7 @@ Available configurations:
                 {
                   "key": "combine",
                   "congfig": {
-                    "clue": " - "
+                    "glue": " - "
                   }
                 }
             ]

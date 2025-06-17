@@ -25,17 +25,17 @@ final class Combine implements TransformerInterface
 {
     public function transform(array $value, array $config): array
     {
-        if (!isset($config['clue'])) {
+        if (!isset($config['glue'])) {
             throw new TransformerException(
                 $this->getName(),
-                'The "clue" configuration is required for the Combine transformer.'
+                'The "glue" configuration is required for the Combine transformer.'
             );
         }
 
-        if (!is_string($config['clue'])) {
+        if (!is_string($config['glue'])) {
             throw new TransformerException(
                 $this->getName(),
-                'The "clue" configuration must be a string.'
+                'The "glue" configuration must be a string.'
             );
         }
 
@@ -46,7 +46,7 @@ final class Combine implements TransformerInterface
         return [
             new AdvancedValue(
                 'string',
-                implode($config['clue'], $values)
+                implode($config['glue'], $values)
             ),
         ];
     }
