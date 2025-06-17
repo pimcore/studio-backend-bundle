@@ -17,6 +17,8 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\WebsiteSettingTypes;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal

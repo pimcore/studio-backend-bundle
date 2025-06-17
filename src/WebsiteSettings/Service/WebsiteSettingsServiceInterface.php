@@ -27,7 +27,6 @@ use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingType
  */
 interface WebsiteSettingsServiceInterface
 {
-
     /**
      * @throws ElementSavingFailedException
      */
@@ -37,7 +36,7 @@ interface WebsiteSettingsServiceInterface
      * @throws ElementSavingFailedException|NotFoundException
      */
     public function updateWebsiteSetting(int $id, WebsiteSettingsUpdate $parameters): WebsiteSetting;
-    
+
     public function listWebsiteSettings(CollectionFilterParameter $parameters): Collection;
 
     /**

@@ -23,13 +23,9 @@ enum WebsiteSettingTypes: string
     use EnumToValueArrayTrait;
 
     case ASSET = 'asset';
-
     case OBJECT = 'object';
-
     case DOCUMENT = 'document';
-
     case TEXT = 'text';
-
     case CHECKBOX = 'bool';
 
     public static function toNameValueArray(): array
@@ -38,6 +34,7 @@ enum WebsiteSettingTypes: string
             self::cases(),
             static function (array $values, self $case): array {
                 $values[ucfirst(strtolower($case->name))] = $case->value;
+
                 return $values;
             },
             []

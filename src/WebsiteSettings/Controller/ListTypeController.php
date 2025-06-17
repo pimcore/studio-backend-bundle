@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
@@ -24,7 +22,6 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessRespons
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
-use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingType;
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Service\WebsiteSettingsServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;

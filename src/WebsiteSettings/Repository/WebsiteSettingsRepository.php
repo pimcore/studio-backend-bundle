@@ -25,6 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSettingsUpdate;
 use Pimcore\Model\WebsiteSetting;
 use Pimcore\Model\WebsiteSetting\Listing;
+use function in_array;
 
 /**
  * @internal
@@ -49,6 +50,7 @@ final readonly class WebsiteSettingsRepository implements WebsiteSettingsReposit
         $setting = new WebsiteSetting();
         $setting->setName($name);
         $setting->setType($type);
+
         try {
             $setting->save();
         } catch (Exception $e) {
@@ -67,6 +69,7 @@ final readonly class WebsiteSettingsRepository implements WebsiteSettingsReposit
         $setting->setLanguage($parameters->getLanguage());
         $setting->setSiteId($parameters->getSiteId());
         $this->updateData($setting, $parameters->getData());
+
         try {
             $setting->save();
         } catch (Exception $e) {
