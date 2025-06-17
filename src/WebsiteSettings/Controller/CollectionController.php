@@ -11,17 +11,12 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
+namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Controller;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
-use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\NotificationListItem;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -30,6 +25,8 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Schema\WebsiteSetting;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Service\WebsiteSettingsServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -43,51 +40,44 @@ final class CollectionController extends AbstractApiController
 {
     use PaginatedResponseTrait;
 
+    private const string ROUTE = '/website-settings';
+
     public function __construct(
         SerializerInterface $serializer,
-        private readonly FilterMapperServiceInterface $filterMapper,
-        private readonly NotificationServiceInterface $notificationService,
+        private readonly WebsiteSettingsServiceInterface $websiteSettingsService,
     ) {
         parent::__construct($serializer);
     }
 
-    /**
-     * @throws UserNotFoundException
-     */
-    #[Route('/notifications', name: 'pimcore_studio_api_notifications_list', methods: ['POST'])]
-    #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_website_settings_collection', methods: ['POST'])]
+    #[IsGranted(UserPermissions::WEBSITE_SETTINGS->value)]
     #[Post(
-        path: self::PREFIX . '/notifications',
-        operationId: 'notification_get_collection',
-        description: 'notification_get_collection_description',
-        summary: 'notification_get_collection_summary',
-        tags: [Tags::Notifications->value]
+        path: self::PREFIX . self::ROUTE,
+        operationId: 'website_settings_get_collection',
+        description: 'website_settings_get_collection_description',
+        summary: 'website_settings_get_collection_summary',
+        tags: [Tags::WebsiteSettings->value]
     )]
     #[CollectionRequestBody(
         columnFiltersExample: '[' .
             '{"key":"creationDate", "type":"date", "filterValue":{"operator": "on", "value": "08/20/2024"}},' .
-            '{"key":"title", "type":"like", "filterValue": "notification"},' .
-            '{"key":"type", "type":"equals", "filterValue": "info"}'
+            '{"key":"name", "type":"like", "filterValue": "SettingsName"},' .
+            '{"key":"type", "type":"equals", "filterValue": "text"}'
             . ']',
-        sortFilterExample: '{"key":"creationDate", "direction":"DESC"}'
+        sortFilterExample: '{"key":"name", "direction":"DESC"}'
     )]
     #[SuccessResponse(
-        description: 'notification_get_collection_success_response',
-        content: new CollectionJson(new GenericCollection(NotificationListItem::class))
+        description: 'website_settings_get_collection_success_response',
+        content: new CollectionJson(new GenericCollection(WebsiteSetting::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getNotificationCollection(
+    public function getWebsiteSettings(
         #[MapRequestPayload] CollectionFilterParameter $parameters
     ): JsonResponse {
-        $filterParameters = new FilterParameter();
-        if ($parameters->getFilters()) {
-            $filterParameters = $this->filterMapper->map($parameters);
-        }
-
-        $collection = $this->notificationService->listNotifications($filterParameters);
+        $collection = $this->websiteSettingsService->listWebsiteSettings($parameters);
 
         return $this->getPaginatedCollection(
             $this->serializer,

@@ -35,7 +35,7 @@ services:
     tags: [ 'container.service_locator' ]
     arguments:
       - Pimcore\Bundle\StudioBackendBundle\Property\MappedParameter\PropertiesParameters: '@Pimcore\Bundle\StudioBackendBundle\Property\Mapper\PropertiesParametersMapper'
-        Pimcore\Bundle\StudioBackendBundle\Notification\MappedParameter\CollectionFilterParameter: '@Pimcore\Bundle\StudioBackendBundle\Filter\Mapper\CollectionParametersMapper'
+        Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter: '@Pimcore\Bundle\StudioBackendBundle\Filter\Mapper\CollectionParametersMapper'
         Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters: '@Pimcore\Bundle\StudioBackendBundle\Filter\Mapper\CollectionParametersMapper'
 
   #

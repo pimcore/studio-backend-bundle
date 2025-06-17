@@ -23,7 +23,6 @@ final class FilterProperty extends Property
     public function __construct(
         int $pageExample = 1,
         int $pageSizeExample = 50,
-        bool $includeDescendantsExample = false,
         string $columnFiltersExample = '[{"key":"name","type":"metadata.object","filterValue":1}]',
         string $sortFilterExample = '{"key":"id","direction":"ASC"}'
     ) {
@@ -39,11 +38,6 @@ final class FilterProperty extends Property
                     property: 'pageSize',
                     type: 'integer',
                     example: $pageSizeExample
-                ),
-                new Property(
-                    property: 'includeDescendants',
-                    type: 'boolean',
-                    example: $includeDescendantsExample
                 ),
                 new Property(
                     property: 'columnFilters',

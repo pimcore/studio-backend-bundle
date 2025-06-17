@@ -11,22 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Notification\MappedParameter;
+namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Repository;
 
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Model\WebsiteSetting\Listing;
 
 /**
  * @internal
  */
-readonly class CollectionFilterParameter
+interface WebsiteSettingsRepositoryInterface
 {
-    public function __construct(
-        private ?FilterParameter $filters = null,
-    ) {
-    }
-
-    public function getFilters(): ?FilterParameter
-    {
-        return $this->filters;
-    }
+    public function getListing(FilterParameter $parameters): Listing;
 }
