@@ -80,7 +80,6 @@ final class AdvancedColumnResolver implements ColumnResolverInterface, CoreEleme
      */
     public function resolveForCoreElement(Column $column, ElementInterface $element): ColumnData
     {
-        $this->cache[] = $column->getKey();
         $this->values = [];
         if (!$element instanceof Concrete) {
             throw new InvalidArgumentException('Element must be a concrete object');

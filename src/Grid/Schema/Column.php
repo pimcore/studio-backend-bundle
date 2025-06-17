@@ -115,12 +115,6 @@ final readonly class Column
 
                 continue;
             }
-
-            if (isset($advancedColumn['existingColumnName'])) {
-                $configs[] = new ExistingColumnConfig(
-                    existingColumnName: $advancedColumn['existingColumnName'],
-                );
-            }
         }
 
         return new AdvancedColumnConfig(
