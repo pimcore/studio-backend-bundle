@@ -111,8 +111,6 @@ final readonly class Column
                 $configs[] = new StaticTextConfig(
                     text: $advancedColumn['text'],
                 );
-
-                continue;
             }
         }
 
