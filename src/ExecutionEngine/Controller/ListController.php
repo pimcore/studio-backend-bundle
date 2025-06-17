@@ -13,57 +13,55 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Controller;
 
-use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
-use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Schema\JobRun;
 use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Service\ExecutionEngineServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @internal
  */
-final class AbortController extends AbstractApiController
+final class ListController extends AbstractApiController
 {
-    private const string ROUTE = '/execution-engine/abort/{jobRunId}';
+    private const string ROUTE = '/execution-engine/running-jobs';
 
     public function __construct(
-        private readonly ExecutionEngineServiceInterface $executionEngineService,
         SerializerInterface $serializer,
+        private readonly ExecutionEngineServiceInterface $engineService,
     ) {
         parent::__construct($serializer);
     }
 
     /**
-     * @throws DatabaseException|ForbiddenException|NotFoundException
+     * @throws InvalidArgumentException
      */
-    #[Route(self::ROUTE, name: 'pimcore_studio_api_execution_engine_abort', methods: ['POST'])]
-    #[Post(
+    #[Route(path: self::ROUTE, name: 'pimcore_studio_api_execution_engine_list', methods: ['GET'])]
+    #[Get(
         path: self::PREFIX . self::ROUTE,
-        operationId: 'execution_engine_abort_job_run_by_id',
-        description: 'execution_engine_abort_job_run_by_id_description',
-        summary: 'execution_engine_abort_job_run_by_id_summary',
+        operationId: 'execution_engine_list_jobs',
+        description: 'execution_engine_list_jobs_description',
+        summary: 'execution_engine_list_jobs_summary',
         tags: [Tags::ExecutionEngine->value]
     )]
-    #[IdParameter(type: 'JobRun', name: 'jobRunId')]
-    #[SuccessResponse]
+    #[SuccessResponse(
+        description: 'execution_engine_list_jobs_success_response',
+        content: new ItemsJson(JobRun::class),
+    )]
     #[DefaultResponses([
-        HttpResponseCodes::FORBIDDEN,
-        HttpResponseCodes::NOT_FOUND,
         HttpResponseCodes::UNAUTHORIZED,
+        HttpResponseCodes::NOT_FOUND,
     ])]
-    public function abortJobRun(int $jobRunId): Response
+    public function getRunningJobsList(): JsonResponse
     {
-        $this->executionEngineService->abortAction($jobRunId);
-
-        return new Response();
+        return $this->jsonResponse(['items' => $this->engineService->listJobRuns()]);
     }
 }
