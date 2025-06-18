@@ -6,8 +6,8 @@ services:
 
   # controllers are imported separately to make sure they're public
   # and have a tag that allows actions to type-hint services
-  Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Controller\:
-    resource: '../src/WebsiteSettings/Controller'
+  Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Controller\:
+    resource: '../src/WebsiteSetting/Controller'
     public: true
     tags: [ 'controller.service_arguments' ]
 
@@ -15,19 +15,19 @@ services:
   # Services
   #
 
-  Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Service\WebsiteSettingsServiceInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Service\WebsiteSettingsService
+  Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Service\WebsiteSettingsServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Service\WebsiteSettingsService
 
   #
   # Hydrators
   #
 
-  Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Hydrator\WebsiteSettingsHydratorInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Hydrator\WebsiteSettingsHydrator
+  Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Hydrator\WebsiteSettingsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Hydrator\WebsiteSettingsHydrator
 
   #
   # Repository
   #
 
-  Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Repository\WebsiteSettingsRepositoryInterface:
-    class: Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Repository\WebsiteSettingsRepository
+  Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Repository\WebsiteSettingsRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Repository\WebsiteSettingsRepository

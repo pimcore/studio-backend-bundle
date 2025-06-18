@@ -11,15 +11,15 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSettings\Repository;
+namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Hydrator;
 
-use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Model\WebsiteSetting\Listing;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSetting;
+use Pimcore\Model\WebsiteSetting as WebsiteSettingModel;
 
 /**
  * @internal
  */
-interface WebsiteSettingsRepositoryInterface
+interface WebsiteSettingsHydratorInterface
 {
-    public function getListing(FilterParameter $parameters): Listing;
+    public function hydrate(WebsiteSettingModel $settings): WebsiteSetting;
 }
