@@ -14,15 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Recipient;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Service\UserServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
@@ -35,6 +31,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
+use function count;
 
 /**
  * @internal
@@ -42,6 +39,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class RecipientsController extends AbstractApiController
 {
     use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly UserServiceInterface $userService,
@@ -74,6 +72,7 @@ final class RecipientsController extends AbstractApiController
     public function getRecipients(): JsonResponse
     {
         $items = $this->userService->getRecipientsForCurrentUser();
+
         return $this->getPaginatedCollection(
             $this->serializer,
             $items,

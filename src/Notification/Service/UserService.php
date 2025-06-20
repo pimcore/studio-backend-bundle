@@ -7,10 +7,9 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license    Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
-
 
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Service;
 
@@ -31,15 +30,13 @@ final class UserService implements UserServiceInterface
         private readonly CoreUserService $coreUserService,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly RecipientHydratorInterface $recipientHydrator,
-    )
-    {
+    ) {
     }
-
 
     public function getRecipientsForCurrentUser(): array
     {
         $currentUser = $this->securityService->getCurrentUser();
-        /* @var User $currentUser */
+        // @var User $currentUser
         $users = $this->coreUserService->findAll($currentUser);
 
         $recipients = [];

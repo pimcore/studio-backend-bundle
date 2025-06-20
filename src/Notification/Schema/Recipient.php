@@ -26,6 +26,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 final class Recipient implements AdditionalAttributesInterface
 {
     use AdditionalAttributesTrait;
+
     public function __construct(
         #[Property(description: 'ID of the Recipient', type: 'integer', example: 1)]
         private readonly int $id,
