@@ -35,7 +35,7 @@ final class UserService implements UserServiceInterface
 
     public function getRecipientsForCurrentUser(): array
     {
-        // @var User $currentUser
+        /** @var User $currentUser **/
         $currentUser = $this->securityService->getCurrentUser();
         $users = $this->coreUserService->findAll($currentUser);
 
