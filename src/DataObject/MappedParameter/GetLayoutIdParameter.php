@@ -7,10 +7,9 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license    Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
-
 
 namespace Pimcore\Bundle\StudioBackendBundle\DataObject\MappedParameter;
 
@@ -21,8 +20,7 @@ final readonly class GetLayoutIdParameter
 {
     public function __construct(
         private ?string $layoutId = null
-    )
-    {
+    ) {
     }
 
     public function getLayoutId(): ?string

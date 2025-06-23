@@ -79,8 +79,7 @@ final class LayoutController extends AbstractApiController
     public function getDataObjectLayoutById(
         int $id,
         #[MapQueryString] GetLayoutIdParameter $layoutIdParameter = new GetLayoutIdParameter()
-    ): JsonResponse
-    {
+    ): JsonResponse {
         return $this->jsonResponse($this->layoutService->getDataObjectLayout($id, $layoutIdParameter->getLayoutId()));
     }
 }
