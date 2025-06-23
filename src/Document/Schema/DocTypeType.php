@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     schema: 'DocTypeType',
     title: 'DocType Type',
     required: [
-        'name', 'validTable'
+        'name', 'validTable',
     ],
     type: 'object'
 )]
