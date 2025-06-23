@@ -76,15 +76,27 @@ final class ClassDefinition implements AdditionalAttributesInterface
         private readonly ?int $modificationDate,
         #[Property(description: 'User id of owner', type: 'integer', example: 1)]
         private readonly int $userOwner,
-        #[Property(description: 'Namespace of parent class', type: 'string', example: 'App\\Model\\DataObject\\AccessoryPart')]
+        #[Property(
+            description: 'Namespace of parent class',
+            type: 'string',
+            example: 'App\\Model\\DataObject\\AccessoryPart'
+        )]
         private readonly string $parentClass,
-        #[Property(description: 'Interface implementations', type: 'string', example: 'App\\Model\\DataObject\\Interface')]
+        #[Property(
+            description: 'Interface implementations',
+            type: 'string',
+            example: 'App\\Model\\DataObject\\Interface'
+        )]
         private readonly string $implementsInterfaces,
         #[Property(description: 'List of parent class', type: 'string', example: 'App\\Model\\DataObject\\Listing')]
         private readonly string $listingParentClass,
         #[Property(description: 'Traits usage', type: 'string', example: 'App\\Model\\DataObject\\Trait')]
         private readonly string $useTraits,
-        #[Property(description: 'Traits usage listing', type: 'string', example: 'App\\Model\\DataObject\\ListingTrait')]
+        #[Property(
+            description: 'Traits usage listing',
+            type: 'string',
+            example: 'App\\Model\\DataObject\\ListingTrait'
+        )]
         private readonly string $listingUseTraits,
         #[Property(description: 'Whether encryption is ued', type: 'boolean', example: true)]
         private readonly bool $encryption,
@@ -98,9 +110,17 @@ final class ClassDefinition implements AdditionalAttributesInterface
         private readonly ElementIcon $icon,
         #[Property(description: 'Show application logger tab', type: 'boolean', example: true)]
         private readonly bool $showAppLoggerTab,
-        #[Property(description: 'Namespace of link generator', type: 'string', example: 'App\\Model\\DataObject\\LinkGenerator')]
+        #[Property(
+            description: 'Namespace of link generator',
+            type: 'string',
+            example: 'App\\Model\\DataObject\\LinkGenerator'
+        )]
         private readonly string $linkGeneratorReference,
-        #[Property(description: 'Namespace of preview generator', type: 'string', example: 'App\\Model\\DataObject\\PreviewGenerator')]
+        #[Property(
+            description: 'Namespace of preview generator',
+            type: 'string',
+            example: 'App\\Model\\DataObject\\PreviewGenerator'
+        )]
         private readonly string $previewGeneratorReference,
         #[Property(description: 'Composite indices', type: 'object', example: [])]
         private readonly array $compositeIndices,
@@ -110,7 +130,12 @@ final class ClassDefinition implements AdditionalAttributesInterface
         private readonly array $propertyVisibility,
         #[Property(description: 'Whether grid locking is enabled', type: 'boolean', example: true)]
         private readonly bool $enableGridLocking,
-        #[Property(description: 'Blocked variables for export', type: 'array', items: new Items(type: 'string'), example: [])]
+        #[Property(
+            description: 'Blocked variables for export',
+            type: 'array',
+            items: new Items(type: 'string'),
+            example: []
+        )]
         /** @var string[] */
         private readonly array $blockedVarsForExport,
         #[Property(description: 'Whether the class definition can be written to', type: 'boolean', example: true)]
