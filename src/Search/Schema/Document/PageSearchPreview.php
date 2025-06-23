@@ -18,7 +18,7 @@ use OpenApi\Attributes\Schema;
 
 #[Schema(
     title: 'SimpleSearchPageDetail',
-    required: ['title', 'description', 'name', '$hasPreviewImage'],
+    required: ['title', 'description', 'name', 'hasPreviewImage'],
     type: 'object'
 )]
 final readonly class PageSearchPreview

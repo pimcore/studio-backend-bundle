@@ -28,7 +28,7 @@ final class Dependency implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'id', type: 'int')]
+        #[Property(description: 'id', type: 'integer', example: 1020)]
         private readonly int $id,
         #[Property(description: 'path', type: 'string', example: 'text')]
         private readonly string $path,

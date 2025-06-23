@@ -102,11 +102,11 @@ final class ClassDefinition implements AdditionalAttributesInterface
         private readonly string $linkGeneratorReference,
         #[Property(description: 'Namespace of preview generator', type: 'string', example: 'App\\Model\\DataObject\\PreviewGenerator')]
         private readonly string $previewGeneratorReference,
-        #[Property(description: 'Composite indices', type: 'array', items: new Items(type: 'string'))]
+        #[Property(description: 'Composite indices', type: 'object', example: [])]
         private readonly array $compositeIndices,
         #[Property(description: 'Show field lookup', type: 'boolean', example: true)]
         private readonly bool $showFieldLookup,
-        #[Property(description: 'Visibility of properties for grid, search, ...', type: 'array', items: new Items(type: 'string'), example: [])]
+        #[Property(description: 'Visibility of properties for grid, search, ...', type: 'object', example: [])]
         private readonly array $propertyVisibility,
         #[Property(description: 'Whether grid locking is enabled', type: 'boolean', example: true)]
         private readonly bool $enableGridLocking,
