@@ -44,7 +44,7 @@ final readonly class UpdateRole
         private ?string $name,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private array $classes,
-        #[Property(description: 'Parent ID',  type: 'integer', example: 2)]
+        #[Property(description: 'Parent ID', type: 'integer', example: 2)]
         private ?int $parentId,
         #[Property(description: 'List of permissions for the user', type: 'object', example: ['objects', 'documents'])]
         private array $permissions,
