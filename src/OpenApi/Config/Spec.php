@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Config;
 use OpenApi\Attributes\Info;
 use OpenApi\Attributes\License;
 use OpenApi\Attributes\OpenApi;
+use OpenApi\Attributes\Server;
 
 /**
  * @internal
@@ -34,6 +35,11 @@ use OpenApi\Attributes\OpenApi;
 #[License(
     name: 'Pimcore Open Core License (POCL)',
     url: 'https://github.com/pimcore/pimcore/blob/12.x/LICENSE.md'
+)]
+
+#[Server(
+    url: '/',
+    description: 'Pimcore Studio Backend API'
 )]
 
 final class Spec
