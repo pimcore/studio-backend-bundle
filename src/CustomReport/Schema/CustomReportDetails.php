@@ -60,9 +60,8 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         private readonly string $sql,
         #[Property(
             description: 'Configuration for data source. Content of array depends on selected adapter/data source',
-            type: 'array',
-            items: new Items(type: 'stdClass'),
-            example: '[]'
+            type: 'object',
+            example: []
         )]
         private readonly stdClass $dataSourceConfig,
         #[Property(

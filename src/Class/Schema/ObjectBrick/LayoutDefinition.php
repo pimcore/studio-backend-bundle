@@ -62,7 +62,7 @@ final class LayoutDefinition implements AdditionalAttributesInterface
         private readonly bool $collapsible = false,
         #[Property(description: 'collapsed', type: 'boolean', example: false)]
         private readonly bool $collapsed = false,
-        #[Property(description: 'Children', type: 'array', items: new Items(type: 'string'), example: '[]')]
+        #[Property(description: 'Children', type: 'object', example: [])]
         private readonly array $children = [],
     ) {
     }
