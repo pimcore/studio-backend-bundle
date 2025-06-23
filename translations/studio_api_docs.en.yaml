@@ -721,6 +721,7 @@ tag_notes_description: Note operations to list/delete notes
 tag_notifications_description: Notification operations to get/delete/send notifications
 tag_perspectives_description: Operations to get/update/create/delete properties and widgets
 tag_properties_description: Property operations to get/update/create/delete properties
+tag_recycle_bin_description: Recycle bin operations to list/restore/flush deleted elements
 tag_role_description: Role Management operations
 tag_search_description: Operations to get search configuration, search elements and get search result previews
 tag_schedule_description: Get schedules for an element
@@ -1047,6 +1048,21 @@ classification_store_get_layout_by_collection_response: Layout definition
 data_object_get_grid_preview_description: Gives you a preview of an Advanced Column Grid for a given Data Object.
 data_object_get_grid_preview_summary: Get a preview of an Advanced Column Grid for a given Data Object.
 data_object_get_grid_preview_success_response: Preview of an Advanced Column Grid for a given Data Object.
+recycle_bin_flush_description: |
+  Flush the recycle bin. <br> This will delete all items in the recycle bin.
+recycle_bin_flush_summary: Flush the recycle bin
+recycle_bin_flush_success_response: Successfully flushed recycle bin
+recycle_bin_get_collection_description: |
+  Get all paginated recycle bin items. <br> You can specify different filters in your request body. Example filters are: <br>
+  <ul>
+    <li><strong>page</strong>: Used for offset calculation in pagination. To be used, needs to be defined together with the page.size</li>
+    <li><strong>pageSize</strong>: Used for limiting the result numbers per page. To be used, needs to be defined together with the page</li>
+    <li><strong>date</strong>: Filter by deletion date (on, from, to)</li>
+    <li><strong>path</strong>: Filter by element path</li>
+    <li><strong>type</strong>: Filter by element type (asset, document, object)</li>
+  </ul>
+recycle_bin_get_collection_summary: Get paginated recycle bin items
+recycle_bin_get_collection_success_response: Paginated recycle bin items with total count
 website_settings_add_description: |
   Add a new website setting with the provided name and type.
   The following types are supported: <strong>text</strong>, <strong>document</strong>, <strong>asset</strong>, <strong>object</strong>, <strong>bool</strong>. <br>

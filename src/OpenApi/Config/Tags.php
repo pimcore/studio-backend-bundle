@@ -103,6 +103,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_properties_description'
 )]
 #[Tag(
+    name: Tags::RecycleBin->value,
+    description: 'tag_recycle_bin_description'
+)]
+#[Tag(
     name: Tags::Role->value,
     description: 'tag_role_description'
 )]
@@ -173,6 +177,7 @@ enum Tags: string
     case Notifications = 'Notifications';
     case Perspectives = 'Perspectives';
     case Properties = 'Properties';
+    case RecycleBin = 'Recycle Bin';
     case Role = 'Role Management';
     case Search = 'Search';
     case Schedule = 'Schedule';
