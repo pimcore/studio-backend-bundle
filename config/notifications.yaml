@@ -21,12 +21,19 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Notification\Service\SendNotificationServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Service\SendNotificationService
 
+  Pimcore\Bundle\StudioBackendBundle\Notification\Service\UserServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Service\UserService
+
+
   #
   # Hydrators
   #
 
   Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\RecipientHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\RecipientHydrator
 
   #
   # Repository

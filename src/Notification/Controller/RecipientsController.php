@@ -14,31 +14,35 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Notification\Controller;
 
 use OpenApi\Attributes\Get;
-use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ForbiddenException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
-use Pimcore\Bundle\StudioBackendBundle\Notification\Service\NotificationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Recipient;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Service\UserServiceInterface;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\CollectionJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\PaginatedResponseTrait;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
+use function count;
 
 /**
  * @internal
  */
-final class GetController extends AbstractApiController
+final class RecipientsController extends AbstractApiController
 {
+    use PaginatedResponseTrait;
+
     public function __construct(
         SerializerInterface $serializer,
-        private readonly NotificationServiceInterface $notificationService,
+        private readonly UserServiceInterface $userService,
     ) {
         parent::__construct($serializer);
     }
@@ -47,35 +51,32 @@ final class GetController extends AbstractApiController
      * @throws ForbiddenException
      * @throws UserNotFoundException
      */
-    #[Route(
-        '/notifications/{id}',
-        name: 'pimcore_studio_api_notification_get',
-        requirements: ['id' => '\d+'],
-        methods: ['GET']
-    )]
-    #[IsGranted(UserPermissions::NOTIFICATIONS->value)]
+    #[Route('/notifications/recipients', name: 'pimcore_studio_api_notification_get_recipients', methods: ['GET'])]
+    #[IsGranted(UserPermissions::NOTIFICATIONS_SEND->value)]
     #[Get(
-        path: self::PREFIX . '/notifications/{id}',
-        operationId: 'notification_get_by_id',
-        description: 'notification_get_by_id_description',
-        summary: 'notification_get_by_id_summary',
+        path: self::PREFIX . '/notifications/recipients',
+        operationId: 'notification_get_recipients',
+        description: 'notification_get_recipients_description',
+        summary: 'notification_get_recipients_summary',
         tags: [Tags::Notifications->value]
     )]
-    #[IdParameter(type: 'notification')]
     #[SuccessResponse(
-        description: 'notification_get_by_id_success_response',
-        content: new JsonContent(ref: Notification::class)
+        description: 'notification_get_recipients_success_response',
+        content: new CollectionJson(new GenericCollection(Recipient::class))
     )]
     #[DefaultResponses([
         HttpResponseCodes::FORBIDDEN,
         HttpResponseCodes::UNAUTHORIZED,
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getNotification(int $id): JsonResponse
+    public function getRecipients(): JsonResponse
     {
+        $items = $this->userService->getRecipientsForCurrentUser();
 
-        return $this->jsonResponse(
-            $this->notificationService->getNotificationById($id)
+        return $this->getPaginatedCollection(
+            $this->serializer,
+            $items,
+            count($items),
         );
     }
 }

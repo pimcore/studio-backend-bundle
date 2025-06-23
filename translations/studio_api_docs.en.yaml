@@ -1079,3 +1079,6 @@ website_settings_update_description: |
   Please note that <strong>all fields<strong> have to be provided.
 website_settings_update_summary: Update a website setting
 website_settings_update_success_response: Successfully updated website setting
+notification_get_recipients_description: Get all notification recipients for the current user
+notification_get_recipients_summary: Get all notification recipients for the current user
+notification_get_recipients_success_response: List of notification recipients for the current user
