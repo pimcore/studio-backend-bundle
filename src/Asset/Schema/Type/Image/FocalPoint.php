@@ -30,9 +30,9 @@ use OpenApi\Attributes\Schema;
 final readonly class FocalPoint
 {
     public function __construct(
-        #[Property(description: 'x', type: 'integer', example: 50)]
+        #[Property(description: 'x Coordinate of FocalPoint', type: 'integer', example: 50)]
         private int $x,
-        #[Property(description: 'y', type: 'integer', example: 50)]
+        #[Property(description: 'y Coordinate of FocalPoint', type: 'integer', example: 50)]
         private int $y,
     ) {
     }

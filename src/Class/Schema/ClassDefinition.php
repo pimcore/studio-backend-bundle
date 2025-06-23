@@ -62,60 +62,60 @@ final class ClassDefinition implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Id of class definition', type: 'string')]
+        #[Property(description: 'Id of class definition', type: 'string', example: 'AP')]
         private readonly string $id,
-        #[Property(description: 'Name of class definition', type: 'string')]
+        #[Property(description: 'Name of class definition', type: 'string', example: 'AccessoryPart')]
         private readonly string $name,
-        #[Property(description: 'Title', type: 'string')]
+        #[Property(description: 'Title', type: 'string', example: 'Accessory Part')]
         private readonly string $title,
-        #[Property(description: 'Description', type: 'string')]
+        #[Property(description: 'Description', type: 'string', example: 'This class represents an accessory part')]
         private readonly string $description,
-        #[Property(description: 'Creation date timestamp', type: 'integer')]
+        #[Property(description: 'Creation date timestamp', type: 'integer', example: 1700000000)]
         private readonly ?int $creationDate,
-        #[Property(description: 'Modification date timestamp', type: 'integer')]
+        #[Property(description: 'Modification date timestamp', type: 'integer', example: 1700000000)]
         private readonly ?int $modificationDate,
-        #[Property(description: 'User id of owner', type: 'integer')]
+        #[Property(description: 'User id of owner', type: 'integer', example: 1)]
         private readonly int $userOwner,
-        #[Property(description: 'Namespace of parent class', type: 'string')]
+        #[Property(description: 'Namespace of parent class', type: 'string', example: 'App\\Model\\DataObject\\AccessoryPart')]
         private readonly string $parentClass,
-        #[Property(description: 'Interface implementations', type: 'string')]
+        #[Property(description: 'Interface implementations', type: 'string', example: 'App\\Model\\DataObject\\Interface')]
         private readonly string $implementsInterfaces,
-        #[Property(description: 'List of parent class', type: 'string')]
+        #[Property(description: 'List of parent class', type: 'string', example: 'App\\Model\\DataObject\\Listing')]
         private readonly string $listingParentClass,
-        #[Property(description: 'Traits usage', type: 'string')]
+        #[Property(description: 'Traits usage', type: 'string', example: 'App\\Model\\DataObject\\Trait')]
         private readonly string $useTraits,
-        #[Property(description: 'Traits usage listing', type: 'string')]
+        #[Property(description: 'Traits usage listing', type: 'string', example: 'App\\Model\\DataObject\\ListingTrait')]
         private readonly string $listingUseTraits,
-        #[Property(description: 'Whether encryption is ued', type: 'boolean')]
+        #[Property(description: 'Whether encryption is ued', type: 'boolean', example: true)]
         private readonly bool $encryption,
-        #[Property(description: 'Whether inheritance is allowed', type: 'boolean')]
+        #[Property(description: 'Whether inheritance is allowed', type: 'boolean', example: true)]
         private readonly bool $allowInherit,
-        #[Property(description: 'Whether variants are allowed', type: 'boolean')]
+        #[Property(description: 'Whether variants are allowed', type: 'boolean', example: true)]
         private readonly bool $allowVariants,
-        #[Property(description: 'Whether variants are visible in the tree', type: 'boolean')]
+        #[Property(description: 'Whether variants are visible in the tree', type: 'boolean', example: true)]
         private readonly bool $showVariants,
         #[Property(description: 'icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
-        #[Property(description: 'Show application logger tab', type: 'boolean')]
+        #[Property(description: 'Show application logger tab', type: 'boolean', example: true)]
         private readonly bool $showAppLoggerTab,
-        #[Property(description: 'Namespace of link generator', type: 'string')]
+        #[Property(description: 'Namespace of link generator', type: 'string', example: 'App\\Model\\DataObject\\LinkGenerator')]
         private readonly string $linkGeneratorReference,
-        #[Property(description: 'Namespace of preview generator', type: 'string')]
+        #[Property(description: 'Namespace of preview generator', type: 'string', example: 'App\\Model\\DataObject\\PreviewGenerator')]
         private readonly string $previewGeneratorReference,
-        #[Property(description: 'Composite indices', type: 'array', items: new Items())]
+        #[Property(description: 'Composite indices', type: 'array', items: new Items(type: 'string'))]
         private readonly array $compositeIndices,
-        #[Property(description: 'Show field lookup', type: 'boolean')]
+        #[Property(description: 'Show field lookup', type: 'boolean', example: true)]
         private readonly bool $showFieldLookup,
-        #[Property(description: 'Visibility of properties for grid, search, ...', type: 'array', items: new Items())]
+        #[Property(description: 'Visibility of properties for grid, search, ...', type: 'array', items: new Items(type: 'string'), example: [])]
         private readonly array $propertyVisibility,
-        #[Property(description: 'Whether grid locking is enabled', type: 'boolean')]
+        #[Property(description: 'Whether grid locking is enabled', type: 'boolean', example: true)]
         private readonly bool $enableGridLocking,
-        #[Property(description: 'Blocked variables for export', type: 'array', items: new Items(type: 'string'))]
+        #[Property(description: 'Blocked variables for export', type: 'array', items: new Items(type: 'string'), example: [])]
         /** @var string[] */
         private readonly array $blockedVarsForExport,
-        #[Property(description: 'Whether the class definition can be written to', type: 'boolean')]
+        #[Property(description: 'Whether the class definition can be written to', type: 'boolean', example: true)]
         private readonly bool $isWriteable,
-        #[Property(description: 'Group', type: 'string')]
+        #[Property(description: 'Group', type: 'string', example: 'system')]
         private readonly ?string $group = null,
     ) {
     }

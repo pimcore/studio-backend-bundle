@@ -31,8 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\Element\Schema\Permissions;
         'locked',
         'isLocked',
         'creationDate',
-        'modificationDate',
-        'permissions',
+        'modificationDate'
     ],
     type: 'object'
 )]

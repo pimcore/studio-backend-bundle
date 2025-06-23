@@ -39,7 +39,7 @@ final readonly class AdvancedColumnConfig
                 ]
             ),
             example: [['field' => 'name', 'relation' => 'manufacturer'], ['field' => 'name'], ['text' => 'name']])]
-        private array $advancedColumn,
+        private array $advancedColumns,
         #[Property(
             description: 'List if Transformers that should be applied',
             type: 'array',
@@ -55,7 +55,7 @@ final readonly class AdvancedColumnConfig
      */
     public function getColumns(): array
     {
-        return $this->advancedColumn;
+        return $this->advancedColumns;
     }
 
     /**

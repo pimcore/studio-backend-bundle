@@ -42,17 +42,17 @@ final class LayoutDefinition implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Key of Object Brick', type: 'string')]
+        #[Property(description: 'Key of Object Brick', type: 'string', example: 'my_object_brick')]
         private readonly string $key,
         #[Property(description: 'Data Type', type: 'string', example: 'layout')]
         private readonly string $datatype,
         #[Property(description: 'Name', type: 'string', example: 'Layout')]
         private readonly ?string $name = null,
-        #[Property(description: 'Type', type: 'string')]
+        #[Property(description: 'Type', type: 'string', example: 'object')]
         private readonly ?string $type = null,
-        #[Property(description: 'Region', type: 'string')]
+        #[Property(description: 'Region', type: 'string', example: 'main')]
         private readonly ?string $region = null,
-        #[Property(description: 'Title', type: 'string')]
+        #[Property(description: 'Title', type: 'string', example: 'My Object Brick')]
         private readonly ?string $title = null,
         #[Property(description: 'Width', type: 'integer', example: 0)]
         private readonly int $width = 0,
@@ -62,7 +62,7 @@ final class LayoutDefinition implements AdditionalAttributesInterface
         private readonly bool $collapsible = false,
         #[Property(description: 'collapsed', type: 'boolean', example: false)]
         private readonly bool $collapsed = false,
-        #[Property(description: 'Children', type: 'array', items: new Items(), example: '[]')]
+        #[Property(description: 'Children', type: 'array', items: new Items(type: 'string'), example: '[]')]
         private readonly array $children = [],
     ) {
     }

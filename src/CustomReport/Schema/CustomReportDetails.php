@@ -29,7 +29,7 @@ use stdClass;
         'name',
         'sql',
         'dataSourceConfig',
-        'columnConfiguration',
+        'columnConfigurations',
         'niceName',
         'groupIconClass',
         'iconClass',
@@ -61,7 +61,7 @@ final class CustomReportDetails implements AdditionalAttributesInterface
         #[Property(
             description: 'Configuration for data source. Content of array depends on selected adapter/data source',
             type: 'array',
-            items: new Items(),
+            items: new Items(type: 'stdClass'),
             example: '[]'
         )]
         private readonly stdClass $dataSourceConfig,

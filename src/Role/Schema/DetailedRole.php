@@ -51,7 +51,7 @@ final class DetailedRole implements AdditionalAttributesInterface
         private readonly ?string $name,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private readonly array $classes,
-        #[Property(type: 'int', example: '2')]
+        #[Property(type: 'integer', example: 2)]
         private readonly ?int $parentId,
         #[Property(description: 'List of permissions for the user', type: 'object', example: ['objects', 'documents'])]
         private readonly array $permissions,
