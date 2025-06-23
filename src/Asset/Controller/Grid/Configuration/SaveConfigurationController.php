@@ -62,7 +62,6 @@ final class SaveConfigurationController extends AbstractApiController
         tags: [Tags::AssetGrid->value]
     )]
     #[ConfigurationRequestBody]
-    #[IdParameter(type: 'folder', name: 'folderId', required: true)]
     #[SuccessResponse(
         description: 'asset_save_grid_configuration_success_response',
         content: new JsonContent(ref: Configuration::class)

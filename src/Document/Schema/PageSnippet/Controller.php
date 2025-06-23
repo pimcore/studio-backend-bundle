@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
-    schema: 'Document Controller',
+    schema: 'DocumentController',
     title: 'Document Controller',
     required: ['name'],
     type: 'object'

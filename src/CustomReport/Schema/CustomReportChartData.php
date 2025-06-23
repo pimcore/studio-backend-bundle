@@ -34,8 +34,7 @@ final class CustomReportChartData implements AdditionalAttributesInterface
     public function __construct(
         #[Property(
             description: 'Chart data depending on the adapter in the report configuration.',
-            type: 'array',
-            items: new Items('')
+            type: 'object'
         )]
         private readonly array $data
     ) {

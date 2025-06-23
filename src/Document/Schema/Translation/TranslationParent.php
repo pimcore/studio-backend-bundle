@@ -19,7 +19,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
-    schema: 'Document Translation Parent',
+    schema: 'DocumentTranslationParent',
+    title: 'Document Translation Parent',
     required: ['id', 'fullPath'],
     type: 'object'
 )]

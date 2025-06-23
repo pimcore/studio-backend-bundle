@@ -20,7 +20,8 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
-    schema: 'Document Translation Links',
+    schema: 'DocumentTranslationLinks',
+    title: 'Document Translation Links',
     required: ['language', 'documentId'],
     type: 'object'
 )]
