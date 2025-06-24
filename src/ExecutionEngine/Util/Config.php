@@ -40,4 +40,6 @@ enum Config: string
     case ELEMENT_TAG_OPERATION_FAILED_MESSAGE = 'studio_ee_element_tag_operation_failed';
     case INVALID_ELEMENT_TYPE_PROVIDED = 'studio_ee_invalid_element_type_provided';
     case XLSX_CREATION_FAILED_MESSAGE = 'studio_ee_xlsx_creation_failed';
+    case RECYCLE_BIN_DELETE_FAILED = 'studio_ee_recycle_bin_delete_failed';
+    case RECYCLE_BIN_RESTORE_FAILED = 'studio_ee_recycle_bin_restore_failed';
 }

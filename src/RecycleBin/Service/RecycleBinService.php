@@ -13,10 +13,19 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service;
 
+use Exception;
+use Pimcore\Bundle\StaticResolverBundle\Models\RecycleBin\ItemResolverInterface;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
+use Pimcore\Bundle\StudioBackendBundle\ExecutionEngine\Util\Jobs;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\ItemsParameter;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Event\PreResponse\RecycleBinEvent;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\DeleteItemsMessage;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Messages\RestoreItemsMessage;
+use Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Util\JobSteps;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\RecycleBin\Schema\RecycleBin;
@@ -33,6 +42,8 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
+        private ItemResolverInterface $itemResolver,
+        private JobServiceInterface $jobService,
         private RecycleBinHydratorInterface $hydrator,
         private RecycleBinRepositoryInterface $recycleBinRepository
     ) {
@@ -54,10 +65,84 @@ final readonly class RecycleBinService implements RecycleBinServiceInterface
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function restore(ItemsParameter $parameter): ?int
+    {
+        $items = $parameter->getItems();
+        if (count($items) === 1) {
+            $this->restoreItem($items[0]);
+
+            return null;
+        }
+
+        return $this->jobService->createJob(
+            Jobs::RECYCLE_BIN_RESTORE->value,
+            JobSteps::RESTORE_ITEMS->value,
+            RestoreItemsMessage::class,
+            $items
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete(ItemsParameter $parameter): ?int
+    {
+        $items = $parameter->getItems();
+        if (count($items) === 1) {
+            $this->deleteItem($items[0]);
+
+            return null;
+        }
+
+        return $this->jobService->createJob(
+            Jobs::RECYCLE_BIN_DELETE->value,
+            JobSteps::DELETE_ITEMS->value,
+            DeleteItemsMessage::class,
+            $items
+        );
+    }
+
     public function flushRecycleBin(): void
     {
         $bin = new ElementRecycleBin();
         $bin->flush();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function restoreItem(int $id): void
+    {
+        $item = $this->itemResolver->getById($id);
+        if (!$item instanceof Item) {
+            throw new NotFoundException('recycle bin item', $id);
+        }
+
+        try {
+            $item->restore();
+        } catch (Exception $e) {
+            throw new EnvironmentException($e->getMessage());
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deleteItem(int $id): void
+    {
+        $item = $this->itemResolver->getById($id);
+        if (!$item instanceof Item) {
+            throw new NotFoundException('recycle bin item', $id);
+        }
+
+        try {
+            $item->delete();
+        } catch (Exception $e) {
+            throw new EnvironmentException($e->getMessage());
+        }
     }
 
     private function getHydratedItem(Item $item): RecycleBin

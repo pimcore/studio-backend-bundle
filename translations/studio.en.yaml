@@ -10,6 +10,8 @@ studio_ee_zip_file_upload_failed: 'Zip file could not be uploaded: %message%'
 studio_ee_zip_cleanup_failed: 'Zip directory %directory% could not be removed: %message%'
 studio_ee_csv_creation_failed: 'CSV Export failed: %message%'
 studio_ee_xlsx_creation_failed: 'XLSX Export failed: %message%'
+studio_ee_recycle_bin_delete_failed: 'Failed to delete Item with ID %id% from the Recycle Bin: %message%'
+studio_ee_recycle_bin_restore_failed: 'Item from Recycle Bin with ID %id% could not be restored: %message%'
 studio_ee_csv_data_collection_failed: 'Data for CSV export could not be extracted for %id%: %message%'
 studio_ee_element_patch_failed: 'Element with type %type% with ID %id% could not be updated: %message%'
 studio_ee_element_rewrite_references_failed: 'Element references with type %type% with ID %id% could not be rewritten: %message%'
@@ -30,6 +32,8 @@ studio_ee_job_delete_documents: Delete Documents
 studio_ee_job_rewrite_element_references: Rewrite Element References
 studio_ee_job_batch_tag_assign: Tag Batch Assign
 studio_ee_job_batch_tag_replace: Tag Batch Replace
+studio_ee_job_recycle_bin_delete: Delete Items from Recycle Bin
+studio_ee_job_recycle_bin_restore: Restore Items from Recycle Bin
 studio_ee_job_step_zip_creation: Zip Download Creation
 studio_ee_job_step_asset_cloning: Asset Cloning
 studio_ee_job_step_csv_file_not_found: CSV file not found
@@ -47,6 +51,8 @@ studio_ee_job_step_data_object_cloning: Data Object Cloning
 studio_ee_job_step_document_cloning: Document Cloning
 studio_ee_job_step_batch_tag_assign: Batch Tag Assign
 studio_ee_job_step_batch_tag_replace: Batch Tag Replace
+studio_ee_job_step_recycle_bin_delete: Deleting Items from Recycle Bin
+studio_ee_job_step_recycle_bin_restore: Restoring Items from Recycle Bin
 studio_ee_element_folder_collection_not_supported: 'Collection for folders is not supported. ID: %folderId%'
 studio_ee_file_not_found_for_job_run: 'File %type% not found for job run. ID: %jobRunId%'
 studio_ee_invalid_element_type_provided: 'Collection for element with ID %elementId% and type %elementType% is not supported.'

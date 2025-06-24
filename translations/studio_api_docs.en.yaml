@@ -1048,6 +1048,13 @@ classification_store_get_layout_by_collection_response: Layout definition
 data_object_get_grid_preview_description: Gives you a preview of an Advanced Column Grid for a given Data Object.
 data_object_get_grid_preview_summary: Get a preview of an Advanced Column Grid for a given Data Object.
 data_object_get_grid_preview_success_response: Preview of an Advanced Column Grid for a given Data Object.
+recycle_bin_delete_items_description: |
+  Delete items from the recycle bin based on the given <strong>{items}</strong> array. <br> 
+  The <strong>{items}</strong> array must contain IDs of existing recycle bin items. <br> 
+  If multiple items are being deleted, the operation is executed asynchronously.
+recycle_bin_delete_items_created_response: Successfully created <strong>jobRun</strong> to delete recycle bin items
+recycle_bin_delete_items_summary: Delete items from the recycle bin
+recycle_bin_delete_items_success_response: Successfully deleted recycle bin item
 recycle_bin_flush_description: |
   Flush the recycle bin. <br> This will delete all items in the recycle bin.
 recycle_bin_flush_summary: Flush the recycle bin
@@ -1063,6 +1070,13 @@ recycle_bin_get_collection_description: |
   </ul>
 recycle_bin_get_collection_summary: Get paginated recycle bin items
 recycle_bin_get_collection_success_response: Paginated recycle bin items with total count
+recycle_bin_restore_items_description: |
+  Restores items from the recycle bin based on the given <strong>{items}</strong> array. <br> 
+  The <strong>{items}</strong> array must contain IDs of existing recycle bin items. <br> 
+  If multiple items are being restored, the operation is executed asynchronously.
+recycle_bin_restore_items_created_response: Successfully created <strong>jobRun</strong> to restore recycle bin items
+recycle_bin_restore_items_summary: Restore items from the recycle bin
+recycle_bin_restore_items_success_response: Successfully restored recycle bin item
 website_settings_add_description: |
   Add a new website setting with the provided name and type.
   The following types are supported: <strong>text</strong>, <strong>document</strong>, <strong>asset</strong>, <strong>object</strong>, <strong>bool</strong>. <br>

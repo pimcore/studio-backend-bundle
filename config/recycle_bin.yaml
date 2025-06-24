@@ -13,6 +13,9 @@ services:
   # Services
   #
 
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\JobServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\JobService
+
   Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinService
 
@@ -29,3 +32,24 @@ services:
 
   Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepositoryInterface:
     class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepository
+
+  #
+  # Handler
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Handler\DeleteItemsHandler: ~
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\ExecutionEngine\Handler\RestoreItemsHandler: ~
+
+  #
+  # Event Subscriber
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\EventSubscriber\DeleteItemsSubscriber: ~
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\EventSubscriber\RestoreItemsSubscriber: ~
+
+  #
+  # Mercure SSE
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Mercure\Provider\RecycleBinTopicProvider:
+    tags: [ 'pimcore.studio_backend.mercure.topic.provider' ]
