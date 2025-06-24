@@ -1,0 +1,31 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Controller\:
+    resource: '../src/RecycleBin/Controller'
+    public: true
+    tags: [ 'controller.service_arguments' ]
+
+  #
+  # Services
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Service\RecycleBinService
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Hydrator\RecycleBinHydrator
+
+  #
+  # Repository
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepositoryInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\RecycleBin\Repository\RecycleBinRepository

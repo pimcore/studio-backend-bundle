@@ -128,6 +128,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.predefined_property`
 - `pre_response.quantity_value.unit.conversion_collection`
 - `pre_response.quantity_value.unit_list`
+- `pre_response.recycle_bin.item`
 - `pre_response.role_tree_node`
 - `pre_response.schedule`
 - `pre_response.simple_search.preview`

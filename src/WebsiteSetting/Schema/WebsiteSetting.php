@@ -29,7 +29,7 @@ final class WebsiteSetting implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'ID', type: 'int', example: 1)]
+        #[Property(description: 'ID', type: 'integer', example: 1)]
         private readonly int $id,
         #[Property(description: 'Name', type: 'string', example: 'site_title')]
         private readonly string $name,
