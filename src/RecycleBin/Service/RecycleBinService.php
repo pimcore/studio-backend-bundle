@@ -33,6 +33,7 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Model\Element\Recyclebin as ElementRecycleBin;
 use Pimcore\Model\Element\Recyclebin\Item;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function count;
 
 /**
  * @internal

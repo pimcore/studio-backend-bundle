@@ -49,6 +49,7 @@ final class RestoreItemsHandler extends AbstractHandler
         }
 
         $id = $message->getElement()->getId();
+
         try {
             $this->recycleBinService->restoreItem($id);
         } catch (Exception $e) {

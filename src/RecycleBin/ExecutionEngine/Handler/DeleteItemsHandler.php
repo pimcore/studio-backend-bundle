@@ -49,6 +49,7 @@ final class DeleteItemsHandler extends AbstractHandler
         }
 
         $id = $message->getElement()->getId();
+
         try {
             $this->recycleBinService->deleteItem($id);
         } catch (Exception $e) {
