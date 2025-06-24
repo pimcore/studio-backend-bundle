@@ -36,7 +36,7 @@ interface CustomReportServiceInterface
     /**
      * @throws NotFoundException
      */
-    public function getChartData(string $reportName, ExportParameter $chartDataParameter): CustomReportChartData;
+    public function getChartData(ExportParameter $chartDataParameter): CustomReportChartData;
 
     /**
      * @throws NotFoundException
