@@ -15,13 +15,13 @@ namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Controller;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
-use Pimcore\Bundle\StudioBackendBundle\Document\Schema\DocType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\UserPermissions;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSettingType;
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Service\WebsiteSettingsServiceInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -53,7 +53,7 @@ final class ListTypeController extends AbstractApiController
     )]
     #[SuccessResponse(
         description: 'website_settings_list_types_success_response',
-        content: new ItemsJson(DocType::class),
+        content: new ItemsJson(WebsiteSettingType::class),
     )]
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
