@@ -20,7 +20,7 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class ImageConfigParameter extends QueryParameter
 {
-    public function __construct(string $name, mixed $example = null)
+    public function __construct(string $name, int $example)
     {
         parent::__construct(
             name: $name,

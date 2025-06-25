@@ -29,7 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\AdvancedColumnConfig\Transfor
  */
 #[Schema(
     title: 'Grid Column Request',
-    required: ['key', 'type', 'config'],
+    required: ['type'],
     type: 'object'
 )]
 final readonly class Column

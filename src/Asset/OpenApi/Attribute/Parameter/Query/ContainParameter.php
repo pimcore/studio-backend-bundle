@@ -20,13 +20,13 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ContainParameter extends QueryParameter
 {
-    public function __construct(string $description = 'Contain', mixed $defaultValue = null)
+    public function __construct(string $description = 'Contain')
     {
         parent::__construct(
             name: 'contain',
             description: $description,
             in: 'query',
-            schema: new Schema(type: 'boolean', example: $defaultValue),
+            schema: new Schema(type: 'boolean', example: false),
         );
     }
 }

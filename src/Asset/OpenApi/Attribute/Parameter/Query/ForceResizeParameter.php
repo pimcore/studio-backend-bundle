@@ -20,13 +20,13 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class ForceResizeParameter extends QueryParameter
 {
-    public function __construct(string $description = 'ForceResize', mixed $defaultValue = null)
+    public function __construct(string $description = 'ForceResize')
     {
         parent::__construct(
             name: 'forceResize',
             description: $description,
             in: 'query',
-            schema: new Schema(type: 'boolean', example: $defaultValue),
+            schema: new Schema(type: 'boolean', example: false),
         );
     }
 }

@@ -20,13 +20,13 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class FrameParameter extends QueryParameter
 {
-    public function __construct(string $description = 'Frame', mixed $defaultValue = null)
+    public function __construct(string $description = 'Frame')
     {
         parent::__construct(
             name: 'frame',
             description: $description,
             in: 'query',
-            schema: new Schema(type: 'boolean', example: $defaultValue),
+            schema: new Schema(type: 'boolean', example: false),
         );
     }
 }

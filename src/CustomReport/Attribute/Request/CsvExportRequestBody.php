@@ -42,22 +42,22 @@ final class CsvExportRequestBody extends RequestBody
                     new Property(
                         property: 'sortBy',
                         type: 'string',
-                        example: null
+                        example: 'ASC'
                     ),
                     new Property(
                         property: 'filter',
                         type: 'string',
-                        example: null
+                        example: 'quality',
                     ),
                     new Property(
                         property: 'reportLimit',
                         type: 'integer',
-                        example: null
+                        example: 10
                     ),
                     new Property(
                         property: 'reportOffset',
                         type: 'integer',
-                        example: null
+                        example: 100
                     ),
                     new Property(
                         property: 'includeHeaders',
