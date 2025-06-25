@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller\Chart;
 
 use Exception;
 use OpenApi\Attributes\Get;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Path\NameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
@@ -29,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PagePar
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\SortOrderParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -56,21 +56,22 @@ final class GetController extends AbstractApiController
      * @throws NotFoundException|DatabaseException
      * @throws Exception
      */
-    #[Route('/custom-reports/chart/{name}',
+    #[Route('/custom-reports/chart',
         name: 'pimcore_studio_api_custom_reports_chart',
         methods: ['GET'])
     ]
     #[IsGranted(CustomReportPermissions::REPORTS->value)]
     #[Get(
-        path: self::PREFIX . '/custom-reports/chart/{name}',
+        path: self::PREFIX . '/custom-reports/chart',
         operationId: 'custom_reports_chart',
         summary: 'custom_reports_chart_summary',
         tags: [Tags::CustomReports->value]
     )]
-    #[NameParameter(
+    #[TextFieldParameter(
         name: 'name',
         description: 'custom_reports_chart_name_parameter',
-        example: 'Quality_Attributes'
+        required: true,
+        example: 'Quality_Attributes',
     )]
     #[PageParameter]
     #[PageSizeParameter]
@@ -99,12 +100,8 @@ final class GetController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
     ])]
-    public function getChartData(
-        string $name,
-        #[MapQueryString] ExportParameter $chartDataParameter
-    ): JsonResponse {
-        return $this->jsonResponse(
-            $this->customReportService->getChartData($name, $chartDataParameter)
-        );
+    public function getChartData(#[MapQueryString] ExportParameter $chartDataParameter): JsonResponse
+    {
+        return $this->jsonResponse($this->customReportService->getChartData($chartDataParameter));
     }
 }

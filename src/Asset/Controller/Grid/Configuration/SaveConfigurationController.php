@@ -21,7 +21,6 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Attribute\Request\ConfigurationReque
 use Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter\ConfigurationParameter;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Configuration;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Service\SaveConfigurationServiceInterface;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\SuccessResponse;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Config\Tags;
@@ -62,7 +61,6 @@ final class SaveConfigurationController extends AbstractApiController
         tags: [Tags::AssetGrid->value]
     )]
     #[ConfigurationRequestBody]
-    #[IdParameter(type: 'folder', name: 'folderId', required: true)]
     #[SuccessResponse(
         description: 'asset_save_grid_configuration_success_response',
         content: new JsonContent(ref: Configuration::class)

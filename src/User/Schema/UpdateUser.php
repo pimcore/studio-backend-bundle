@@ -47,9 +47,9 @@ final readonly class UpdateUser
         private bool $active,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private array $classes,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'Show Close Warning', type: 'boolean', example: true)]
         private bool $closeWarning,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'Allow Dirty Close', type: 'boolean', example: true)]
         private bool $allowDirtyClose,
         #[Property(
             description: 'List of available content Language already sorted.',
@@ -61,21 +61,21 @@ final readonly class UpdateUser
         private array $keyBindings,
         #[Property(description: 'Language of the User', type: 'string', example: 'de')]
         private string $language,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
         private bool $memorizeTabs,
-        #[Property(type: 'int', example: '2')]
+        #[Property(description: 'Parent ID', type: 'integer', example: 2)]
         private int $parentId,
         #[Property(description: 'List of permissions for the user', type: 'object', example: ['objects', 'documents'])]
         private array $permissions,
         #[Property(description: 'ID List of roles the user is assigned', type: 'object', example: [12, 14])]
         private array $roles,
-        #[Property(type: 'boolean', example: false)]
+        #[Property(description: 'Two Factor Authentication Enabled', type: 'boolean', example: false)]
         private bool $twoFactorAuthenticationEnabled,
-        #[Property(type: 'object', example: ['de', 'en'])]
+        #[Property(description: 'Website Translation Languages Edit', type: 'object', example: ['de', 'en'])]
         private array $websiteTranslationLanguagesEdit,
-        #[Property(type: 'object', example: ['de'])]
+        #[Property(description: 'Website Translation Languages View', type: 'object', example: ['de'])]
         private array $websiteTranslationLanguagesView,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'Show welcome Screen', type: 'boolean', example: true)]
         private bool $welcomeScreen,
         #[Property(description: 'Asset Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
         private array $assetWorkspaces,

@@ -49,9 +49,9 @@ final readonly class UpdateUserProfile
         private string $language,
         #[Property(description: 'Date Time Locale for the User', type: 'string', example: '')]
         private string $dateTimeLocale,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'Show Welcome Screen', type: 'boolean', example: true)]
         private bool $welcomeScreen,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
         private bool $memorizeTabs,
         #[Property(
             description: 'List of available content Language already sorted.',

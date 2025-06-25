@@ -19,7 +19,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
-    schema: 'Document Template',
+    schema: 'DocumentTemplate',
     title: 'Document Template',
     required: ['path'],
     type: 'object'

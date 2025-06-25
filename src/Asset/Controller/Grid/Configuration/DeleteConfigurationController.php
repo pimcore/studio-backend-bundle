@@ -48,13 +48,13 @@ final class DeleteConfigurationController extends AbstractApiController
      * @throws ForbiddenException|InvalidArgumentException|NotFoundException
      */
     #[Route(
-        '/assets/grid/configuration/{folderId}/{configurationId}',
+        '/assets/grid/configuration/{configurationId}/delete',
         name: 'pimcore_studio_api_delete_asset_grid_configuration',
         methods: ['DELETE'],
     )]
     #[IsGranted(UserPermissions::ASSETS->value)]
     #[Delete(
-        path: self::PREFIX . '/assets/grid/configuration/{configurationId}',
+        path: self::PREFIX . '/assets/grid/configuration/{configurationId}/delete',
         operationId: 'asset_delete_grid_configuration_by_configurationId',
         description: 'asset_delete_grid_configuration_by_configurationId_description',
         summary: 'asset_delete_grid_configuration_by_configurationId_summary',

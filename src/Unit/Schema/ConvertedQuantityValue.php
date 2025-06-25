@@ -19,9 +19,9 @@ use OpenApi\Attributes\Schema;
 #[Schema(
     title: 'Converted quantity values',
     required: [
-        'originalValue',
-        'fromUnitId',
-        'convertedValues',
+        'unitAbbreviation',
+        'unitLongName',
+        'convertedValue',
     ],
     type: 'object'
 )]

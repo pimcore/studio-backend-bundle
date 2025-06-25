@@ -20,7 +20,8 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    schema: 'Document Translation Link',
+    schema: 'DocumentTranslationLink',
+    title: 'Document Translation Link',
     required: ['language', 'documentId'],
     type: 'object'
 )]

@@ -27,7 +27,7 @@ use function in_array;
 #[Schema(
     title: 'SubmitAction',
     description: 'Schema for submission of workflow action',
-    required: ['actionType', 'elementId', 'elementType', 'workflowName', 'transition', 'workflowOptions'],
+    required: ['actionType', 'elementId', 'elementType', 'workflowId', 'transitionId', 'workflowOptions'],
     type: 'object'
 )]
 final readonly class SubmitAction

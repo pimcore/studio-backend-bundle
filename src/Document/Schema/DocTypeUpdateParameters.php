@@ -22,7 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Constant\Document\DocumentTypes;
  */
 #[Schema(
     title: 'DocTypeUpdate',
-    required: ['id', 'name', 'type', 'group', 'controller', 'template', 'priority', 'staticGeneratorEnabled'],
+    required: ['name', 'type', 'group', 'controller', 'template', 'priority', 'staticGeneratorEnabled'],
     type: 'object'
 )]
 final readonly class DocTypeUpdateParameters

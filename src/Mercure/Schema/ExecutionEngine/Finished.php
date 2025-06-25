@@ -27,7 +27,7 @@ use Pimcore\Bundle\GenericExecutionEngineBundle\Model\JobRunStates;
         'jobRunId',
         'jobRunName',
         'ownerId',
-        'state',
+        'status',
         'messages',
         'notifyAll',
     ],

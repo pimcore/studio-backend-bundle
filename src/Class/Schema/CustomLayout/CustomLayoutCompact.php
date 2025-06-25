@@ -36,11 +36,11 @@ final class CustomLayoutCompact implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Id of custom layout', type: 'string')]
+        #[Property(description: 'Id of custom layout', type: 'string', example: 'custom_layout_1')]
         private readonly string $id,
-        #[Property(description: 'Name', type: 'string')]
+        #[Property(description: 'Name', type: 'string', example: 'Custom Layout 1')]
         private readonly string $name,
-        #[Property(description: 'Whether it is the default layout', type: 'boolean')]
+        #[Property(description: 'Whether it is the default layout', type: 'boolean', example: false)]
         private readonly bool $default
     ) {
     }

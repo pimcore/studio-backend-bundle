@@ -33,7 +33,6 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\CustomAttributesTrait;
         'hasChildren',
         'hasWorkflowWithPermissions',
         'permissions',
-        'documentDetailData',
         'isSite',
         'navigationExclude',
     ],

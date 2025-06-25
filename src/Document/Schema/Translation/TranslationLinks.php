@@ -20,8 +20,9 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 
 #[Schema(
-    schema: 'Document Translation Links',
-    required: ['language', 'documentId'],
+    schema: 'DocumentTranslationLinks',
+    title: 'Document Translation Links',
+    required: ['language'],
     type: 'object'
 )]
 final class TranslationLinks implements AdditionalAttributesInterface

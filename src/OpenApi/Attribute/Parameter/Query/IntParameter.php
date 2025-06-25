@@ -31,7 +31,7 @@ final class IntParameter extends QueryParameter
             description: $description,
             in: 'query',
             required: $required,
-            schema: new Schema(type: 'int', example: $example),
+            schema: new Schema(type: 'integer', example: $example),
         );
     }
 }
