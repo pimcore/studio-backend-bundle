@@ -20,7 +20,9 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
  */
 final readonly class ItemsParameter
 {
-    /** @param array<int> $items */
+    /**
+     * @param array<int> $items
+     */
     public function __construct(
         private array $items
     ) {
