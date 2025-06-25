@@ -27,6 +27,11 @@ final class InvalidArgumentException extends AbstractApiException
         ?Throwable $previous = null,
         string $errorKey = HttpResponseErrorKeys::INVALID_ARGUMENT->value
     ) {
-        parent::__construct(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $message, previous: $previous, errorKey: $errorKey);
+        parent::__construct(
+            statusCode: HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
+            message: $message,
+            previous: $previous,
+            errorKey: $errorKey
+        );
     }
 }

@@ -23,6 +23,9 @@ final class InvalidParentIdException extends AbstractApiException
 {
     public function __construct(int $parentId)
     {
-        parent::__construct(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, sprintf('Invalid parent id: %s', $parentId));
+        parent::__construct(
+            HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
+            sprintf('Invalid parent id: %s', $parentId)
+        );
     }
 }

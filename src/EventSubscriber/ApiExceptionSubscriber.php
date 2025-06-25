@@ -86,7 +86,11 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         );
     }
 
-    private function handleSymfonyValidationFailedException(ValidationFailedException $exception, int $status, string $message): JsonResponse
+    private function handleSymfonyValidationFailedException(
+        ValidationFailedException $exception,
+        int $status,
+        string $message
+    ): JsonResponse
     {
         $violations = $exception->getViolations();
         $collectedViolations = [];

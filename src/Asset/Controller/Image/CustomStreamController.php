@@ -96,18 +96,18 @@ final class CustomStreamController extends AbstractApiController
         ResizeModes::NONE
     )]
     #[ImageConfigParameter('width', 140)]
-    #[ImageConfigParameter('height')]
+    #[ImageConfigParameter('height', 140)]
     #[ImageConfigParameter('quality', 85)]
-    #[ImageConfigParameter('dpi')]
+    #[ImageConfigParameter('dpi', 72)]
     #[ContainParameter]
     #[FrameParameter]
     #[CoverParameter]
     #[ForceResizeParameter]
     #[BoolParameter('cropPercent', '', false, false)]
-    #[ImageConfigParameter('cropWidth')]
-    #[ImageConfigParameter('cropHeight')]
-    #[ImageConfigParameter('cropTop')]
-    #[ImageConfigParameter('cropLeft')]
+    #[ImageConfigParameter('cropWidth', 0)]
+    #[ImageConfigParameter('cropHeight', 0)]
+    #[ImageConfigParameter('cropTop', 0)]
+    #[ImageConfigParameter('cropLeft', 0)]
     #[SuccessResponse(
         description: 'asset_image_stream_custom_success_response',
         content: [new MediaType('image/*')],
