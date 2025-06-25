@@ -23,7 +23,7 @@ final class InvalidFilterServiceTypeException extends AbstractApiException
     public function __construct(string $type)
     {
         parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
+            HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
             "Unknown filter type: $type"
         );
     }

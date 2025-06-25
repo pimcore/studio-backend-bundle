@@ -24,7 +24,7 @@ final class InvalidLocaleException extends AbstractApiException
     public function __construct(string $locale)
     {
         parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
+            HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
             sprintf('Invalid locale "%s"', $locale)
         );
     }
