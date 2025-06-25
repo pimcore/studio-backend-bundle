@@ -27,7 +27,7 @@ final class PathFormatterRequestBody extends RequestBody
         parent::__construct(
             required: true,
             content: new JsonContent(
-                required: ['objectId', 'targets', 'context'],
+                required: ['objectId', 'targets'],
                 properties: [
                     new SingleInteger('objectId'),
                     new Property(
