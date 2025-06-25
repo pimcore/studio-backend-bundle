@@ -84,7 +84,7 @@ final class ImageThumbnailStreamController extends AbstractApiController
     #[WidthParameter('Width of the video image thumbnail', 265)]
     #[HeightParameter('Height of the video image thumbnail', 265)]
     #[AspectRatioParameter('Aspect ratio of the video image thumbnail', false)]
-    #[FrameParameter('Frame of the video image thumbnail', true)]
+    #[FrameParameter('Frame of the video image thumbnail')]
     #[AsyncGenerationParameter(false)]
     #[SuccessResponse(
         description: 'asset_video_image_thumbnail_stream_success_response',
