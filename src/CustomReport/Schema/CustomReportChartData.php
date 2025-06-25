@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema;
 
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
 use Pimcore\Bundle\StudioBackendBundle\Util\Schema\AdditionalAttributesInterface;
@@ -34,8 +33,7 @@ final class CustomReportChartData implements AdditionalAttributesInterface
     public function __construct(
         #[Property(
             description: 'Chart data depending on the adapter in the report configuration.',
-            type: 'array',
-            items: new Items('')
+            type: 'object'
         )]
         private readonly array $data
     ) {

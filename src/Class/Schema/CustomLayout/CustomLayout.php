@@ -43,21 +43,21 @@ final class CustomLayout implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Id of custom layout', type: 'string')]
+        #[Property(description: 'Id of custom layout', type: 'string', example: 'custom_layout_1')]
         private readonly string $id,
-        #[Property(description: 'Name', type: 'string')]
+        #[Property(description: 'Name', type: 'string', example: 'Custom Layout 1')]
         private readonly string $name,
-        #[Property(description: 'Description', type: 'string')]
+        #[Property(description: 'Description', type: 'string', example: 'This is a custom layout')]
         private readonly string $description,
-        #[Property(description: 'Creation date timestamp', type: 'integer')]
+        #[Property(description: 'Creation date timestamp', type: 'integer', example: 1633036800)]
         private readonly int $creationDate,
-        #[Property(description: 'Modification date timestamp', type: 'integer')]
+        #[Property(description: 'Modification date timestamp', type: 'integer', example: 1633036800)]
         private readonly int $modificationDate,
-        #[Property(description: 'User id of owner', type: 'integer')]
+        #[Property(description: 'User id of owner', type: 'integer', example: 1)]
         private readonly int $userOwner,
-        #[Property(description: 'Class id', type: 'string')]
+        #[Property(description: 'Class id', type: 'string', example: 'Product')]
         private readonly string $classId,
-        #[Property(description: 'Whether it is the default layout', type: 'boolean')]
+        #[Property(description: 'Whether it is the default layout', type: 'boolean', example: false)]
         private readonly bool $default = false,
         #[Property(ref: Layout::class, description: 'Layout definitions', type: 'object')]
         private readonly ?Layout $layoutDefinition = null,

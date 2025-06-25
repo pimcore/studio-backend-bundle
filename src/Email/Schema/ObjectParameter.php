@@ -18,7 +18,7 @@ use OpenApi\Attributes\Schema;
 
 #[Schema(
     title: 'EmailLogObjectParameterData',
-    required: ['name', 'value'],
+    required: ['id', 'type', 'class', 'path'],
     type: 'object'
 )]
 final readonly class ObjectParameter

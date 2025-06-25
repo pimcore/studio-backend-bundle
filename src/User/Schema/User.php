@@ -53,9 +53,9 @@ final class User implements AdditionalAttributesInterface
         private readonly bool $admin,
         #[Property(description: 'Classes the user is allows to see', type: 'object', example: ['CAR'])]
         private readonly array $classes,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'Show close warning', type: 'boolean', example: true)]
         private readonly bool $closeWarning,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'Allow Dirty Close', type: 'boolean', example: true)]
         private readonly bool $allowDirtyClose,
         #[Property(
             description: 'List of available content Language already sorted.',
@@ -63,7 +63,7 @@ final class User implements AdditionalAttributesInterface
             example: ['de', 'en']
         )]
         private readonly array $contentLanguages,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'If User has an Image', type: 'boolean', example: true)]
         private readonly bool $hasImage,
         #[Property(description: 'Key Bindings', type: 'array', items: new Items(ref: KeyBinding::class))]
         private readonly array $keyBindings,
@@ -71,21 +71,21 @@ final class User implements AdditionalAttributesInterface
         private readonly string $language,
         #[Property(description: 'Timestamp of the last login', type: 'integer', example: '1718757677')]
         private readonly ?int $lastLogin,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'Memorize Tabs', type: 'boolean', example: true)]
         private readonly bool $memorizeTabs,
-        #[Property(type: 'int', example: '2')]
+        #[Property(description: 'Parent ID', type: 'integer', example: 2)]
         private readonly ?int $parentId,
         #[Property(description: 'List of permissions for the user', type: 'object', example: ['objects', 'documents'])]
         private readonly array $permissions,
         #[Property(description: 'ID List of roles the user is assigned', type: 'object', example: [12, 14])]
         private readonly array $roles,
-        #[Property(type: 'boolean', example: false)]
+        #[Property(description: 'Two Factor Authentication Enabled', type: 'boolean', example: false)]
         private readonly bool $twoFactorAuthenticationEnabled,
-        #[Property(type: 'object', example: ['de', 'en'])]
+        #[Property(description: 'Website Translation Languages Edit', type: 'object', example: ['de', 'en'])]
         private readonly array $websiteTranslationLanguagesEdit,
-        #[Property(type: 'object', example: ['de'])]
+        #[Property(description: 'Website Translation Languages View', type: 'object', example: ['de'])]
         private readonly array $websiteTranslationLanguagesView,
-        #[Property(type: 'boolean', example: true)]
+        #[Property(description: 'Show Welcome Screen', type: 'boolean', example: true)]
         private readonly bool $welcomeScreen,
         #[Property(description: 'Asset Workspace', type: 'array', items: new Items(ref: UserWorkspace::class))]
         private readonly array $assetWorkspaces,

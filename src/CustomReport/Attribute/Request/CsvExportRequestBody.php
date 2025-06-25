@@ -51,12 +51,12 @@ final class CsvExportRequestBody extends RequestBody
                     ),
                     new Property(
                         property: 'reportLimit',
-                        type: 'int',
+                        type: 'integer',
                         example: null
                     ),
                     new Property(
                         property: 'reportOffset',
-                        type: 'int',
+                        type: 'integer',
                         example: null
                     ),
                     new Property(

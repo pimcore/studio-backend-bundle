@@ -21,7 +21,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
 #[Schema(
     title: 'Simple User',
     description: 'A user with the most imported information.',
-    required: ['id', 'name'],
+    required: ['id', 'username'],
     type: 'object',
 )]
 final class SimpleUser implements AdditionalAttributesInterface

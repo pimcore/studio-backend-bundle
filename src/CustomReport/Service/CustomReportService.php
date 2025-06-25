@@ -81,9 +81,9 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         return $this->customReportRepository->loadByName($reportName);
     }
 
-    public function getChartData(string $reportName, ExportParameter $chartDataParameter): CustomReportChartData
+    public function getChartData(ExportParameter $chartDataParameter): CustomReportChartData
     {
-        $reportConfig = $this->getCustomReportByName($reportName);
+        $reportConfig = $this->getCustomReportByName($chartDataParameter->getName());
         $data = $this->adapterService->getData($reportConfig, $chartDataParameter);
         $chartData = $this->customReportHydrator->extractChartData($data);
 

@@ -32,7 +32,7 @@ final class ConvertedValueJson extends JsonContent
                     title: 'data',
                     description: 'Converted value',
                     example: 2.0,
-                    anyOf: [new Schema(type: 'float'), new Schema(type: 'integer')],
+                    anyOf: [new Schema(type: 'number'), new Schema(type: 'integer')],
                 ),
             ],
             type: 'object',

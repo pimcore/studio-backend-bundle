@@ -31,9 +31,9 @@ use OpenApi\Attributes\Schema;
 final readonly class CustomLayoutNew
 {
     public function __construct(
-        #[Property(description: 'Name', type: 'string')]
+        #[Property(description: 'Name', type: 'string', example: 'My Custom Layout')]
         private string $name,
-        #[Property(description: 'Data object class id', type: 'integer')]
+        #[Property(description: 'Data object class id', type: 'integer', example: 123)]
         private int $classId
     ) {
     }

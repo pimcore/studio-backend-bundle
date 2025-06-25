@@ -39,15 +39,15 @@ final class ClassDefinitionList implements AdditionalAttributesInterface
     use AdditionalAttributesTrait;
 
     public function __construct(
-        #[Property(description: 'Id of class definition', type: 'string')]
+        #[Property(description: 'Id of class definition', type: 'string', example: 'AP')]
         private readonly string $id,
-        #[Property(description: 'Name of class definition', type: 'string')]
+        #[Property(description: 'Name of class definition', type: 'string', example: 'AccessoryPart')]
         private readonly string $name,
-        #[Property(description: 'Title', type: 'string')]
+        #[Property(description: 'Title', type: 'string', example: 'Accessory Part')]
         private readonly string $title,
         #[Property(description: 'icon', type: ElementIcon::class)]
         private readonly ElementIcon $icon,
-        #[Property(description: 'Group', type: 'string')]
+        #[Property(description: 'Group', type: 'string', example: 'system')]
         private readonly ?string $group = null
     ) {
     }

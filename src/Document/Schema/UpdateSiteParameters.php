@@ -21,7 +21,8 @@ use OpenApi\Attributes\Schema;
  * @internal
  */
 #[Schema(
-    schema: 'Update Site',
+    schema: 'UpdateSite',
+    title: 'Update Site',
     required: [
         'mainDomain',
         'domains',
