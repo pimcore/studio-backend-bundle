@@ -100,7 +100,7 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 
         $responseData = [
             'message' => $message,
-            'violations' => $collectedViolations
+            'violations' => $collectedViolations,
         ];
 
         if ($this->environment === 'dev') {
