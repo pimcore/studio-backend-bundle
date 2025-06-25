@@ -90,8 +90,7 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         ValidationFailedException $exception,
         int $status,
         string $message
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $violations = $exception->getViolations();
         $collectedViolations = [];
 

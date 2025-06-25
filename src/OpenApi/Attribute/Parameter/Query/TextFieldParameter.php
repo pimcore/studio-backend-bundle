@@ -25,8 +25,7 @@ final class TextFieldParameter extends QueryParameter
         string $description,
         bool $required = false,
         ?string $example = 'Example string'
-    )
-    {
+    ) {
         parent::__construct(
             name: $name,
             description: $description,
