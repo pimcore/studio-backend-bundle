@@ -20,13 +20,13 @@ use OpenApi\Annotations\Tag;
 use OpenApi\Attributes\Schema;
 use OpenApi\Attributes\Server;
 use OpenApi\Generator;
+use Pimcore\Bundle\ApplicationLoggerBundle\PimcoreApplicationLoggerBundle;
+use Pimcore\Bundle\SeoBundle\PimcoreSeoBundle;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Extension\Bundle\Exception\BundleNotFoundException;
 use Pimcore\Extension\Bundle\PimcoreBundleManager;
-use Pimcore\Bundle\ApplicationLoggerBundle\PimcoreApplicationLoggerBundle;
-use Pimcore\Bundle\SeoBundle\PimcoreSeoBundle;
 use function in_array;
 use function is_array;
 use function is_string;
@@ -174,9 +174,8 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         string $bundle,
         string $routePrefix,
         string $tagName
-    ): void
-    {
-        try{
+    ): void {
+        try {
             $this->pimcoreBundleManager->getActiveBundle($bundle);
 
             return;
@@ -200,7 +199,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
 
         $config->tags = array_filter(
             $config->tags,
-            static fn(Tag $tag) => $tag->name !== $tagName
+            static fn (Tag $tag) => $tag->name !== $tagName
         );
         $config->tags = array_values($config->tags);
     }
