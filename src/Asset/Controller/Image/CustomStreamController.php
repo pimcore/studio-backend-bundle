@@ -15,10 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Image;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ContainParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\CoverParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ForceResizeParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\FrameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\MimeTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ResizeModeParameter;
@@ -99,10 +95,10 @@ final class CustomStreamController extends AbstractApiController
     #[ImageConfigParameter('height', 140)]
     #[ImageConfigParameter('quality', 85)]
     #[ImageConfigParameter('dpi', 72)]
-    #[ContainParameter]
-    #[FrameParameter]
-    #[CoverParameter]
-    #[ForceResizeParameter]
+    #[BoolParameter('contain', 'Contain', false, false)]
+    #[BoolParameter('frame', 'Frame', false, false)]
+    #[BoolParameter('cover', 'Cover', false, false)]
+    #[BoolParameter('forceResize', 'Force resize', false, false)]
     #[BoolParameter('cropPercent', '', false, false)]
     #[ImageConfigParameter('cropWidth', 0)]
     #[ImageConfigParameter('cropHeight', 0)]

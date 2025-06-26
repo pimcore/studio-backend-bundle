@@ -15,9 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Video;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\VideoImageStreamConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\AspectRatioParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\AsyncGenerationParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\FrameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\HeightParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\WidthParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Service\AssetServiceInterface;
@@ -30,6 +28,7 @@ use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailConfigurati
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidThumbnailException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\UserNotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Path\IdParameter;
+use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\BoolParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Content\MediaType;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\DefaultResponses;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Response\Header\ContentDisposition;
@@ -83,8 +82,8 @@ final class ImageThumbnailStreamController extends AbstractApiController
     #[IdParameter(type: 'video')]
     #[WidthParameter('Width of the video image thumbnail', 265)]
     #[HeightParameter('Height of the video image thumbnail', 265)]
-    #[AspectRatioParameter('Aspect ratio of the video image thumbnail', false)]
-    #[FrameParameter('Frame of the video image thumbnail')]
+    #[BoolParameter('aspectRatio', 'Aspect ratio of the video image thumbnail', false, false)]
+    #[BoolParameter('frame', 'Frame of the video image thumbnail', false, false)]
     #[AsyncGenerationParameter(false)]
     #[SuccessResponse(
         description: 'asset_video_image_thumbnail_stream_success_response',
