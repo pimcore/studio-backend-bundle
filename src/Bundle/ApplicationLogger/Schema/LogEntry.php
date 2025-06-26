@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     title: 'Bundle Application Logger Log Entry',
     required: [
         'id', 'priority', 'date', 'pid', 'message',
-        'fileObject', 'relatedObjectId', 'relatedObjectType', 'component', 'source'
+        'fileObject', 'relatedObjectId', 'relatedObjectType', 'component', 'source',
     ],
     type: 'object'
 )]
@@ -52,7 +52,7 @@ final class LogEntry implements AdditionalAttributesInterface
         private readonly ?string $component = null,
         #[Property(description: 'Source', type: 'string', example: 'Pimcore\Bundle')]
         private readonly ?string $source = null,
-        
+
     ) {
     }
 

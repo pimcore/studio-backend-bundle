@@ -27,6 +27,9 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\ColumnFilter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\Filter\SortFilter;
 use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
+use function count;
+use function in_array;
+use function is_int;
 
 /**
  * @internal
@@ -110,11 +113,10 @@ final class LogRepository implements LogRepositoryInterface
             $paramName = $key . '_' . $operation;
             $paramValue = $filter->getFilterValue();
             $paramType = is_int($filter->getFilterValue()) ? Types::INTEGER : Types::STRING;
-            if ($operation === FilterType::LIKE->value ) {
+            if ($operation === FilterType::LIKE->value) {
                 $paramType = Types::STRING;
                 $paramValue = '%' . $paramValue . '%';
             }
-
 
             $queryBuilder
                 ->andWhere($key . ' ' . $operator . ' :' . $paramName)

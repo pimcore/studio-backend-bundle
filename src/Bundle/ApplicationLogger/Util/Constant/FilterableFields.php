@@ -23,12 +23,8 @@ enum FilterableFields: string
     use EnumToValueArrayTrait;
 
     case PRIORITY = 'priority';
-
     case COMPONENT = 'component';
-
     case RELATED_OBJECT = 'relatedobject';
-
     case MESSAGE = 'message';
-
     case PID = 'pid';
 }
