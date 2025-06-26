@@ -159,6 +159,26 @@ asset_get_search_configuration: Get asset search configuration
 asset_get_search_configuration_description: Get asset configuration
 asset_get_search_configuration_summary: Get asset search configuration
 asset_get_search_configuration_success_response: Asset search configuration
+bundle_application_logger_get_collection_description: |
+  Get all paginated log entries. <br> 
+  You can specify different filters in your request body. Available filters are: <br>
+  <ul>
+    <li>
+      <strong>like and equals</strong>: Filter by key and value. Allowed keys:
+      <ul>
+        <li><strong>priority</strong></li>
+        <li><strong>component</strong></li>
+        <li><strong>relatedobject</strong></li>
+        <li><strong>message</strong></li>
+        <li><strong>pid</strong></li>
+      </ul>
+    </li>
+    <li><strong>dateFrom and dateTo</strong>: Filter by date (from, to)</li>
+    <li><strong>page</strong>: Used for offset calculation in pagination. To be used, needs to be defined together with the pageSize</li>
+    <li><strong>pageSize</strong>: Used for limiting the result numbers per page. To be used, needs to be defined together with the page</li>
+  </ul>
+bundle_application_logger_get_collection_success_response: Paginated log entries with total count as header param as JSON
+bundle_application_logger_get_collection_summary: Get all log entries
 data_object_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DataObjectAdd</strong>
 data_object_add_success_response: ID of added data object
@@ -746,6 +766,7 @@ tag_versions_description: Versions operations to get/list/publish/delete and cle
   versions
 tag_website_settings_description: Website settings operations to list/update/create/delete website settings
 tag_workflows_description: Workflows operations to get element workflow details
+tag_bundle_application_logger_description: Application logger operations to list/get log entries
 thumbnail_image_get_collection_description: |
   Get collection of thumbnails for images. <br>
   The thumbnails have to be defined as downloadable in order to be listed in the collection.
