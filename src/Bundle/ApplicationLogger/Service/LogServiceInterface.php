@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
@@ -21,5 +22,8 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
  */
 interface LogServiceInterface
 {
+    /**
+     * @throws DatabaseException
+     */
     public function listLogEntries(CollectionFilterParameter $parameters): Collection;
 }

@@ -33,6 +33,9 @@ final readonly class LogService implements LogServiceInterface
     ) {
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function listLogEntries(CollectionFilterParameter $parameters): Collection
     {
         $logs = $this->logRepository->list($parameters);

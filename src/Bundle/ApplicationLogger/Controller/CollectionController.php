@@ -17,6 +17,7 @@ use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Schema\LogEntry;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Service\LogServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
@@ -49,6 +50,9 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws DatabaseException
+     */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_bundle_application_logger_collection', methods: ['POST'])]
     #[IsGranted(UserPermissions::APPLICATION_LOGGING->value)]
     #[Post(
@@ -80,8 +84,8 @@ final class CollectionController extends AbstractApiController
         content: new CollectionJson(new GenericCollection(LogEntry::class))
     )]
     #[DefaultResponses([
+        HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
-        HttpResponseCodes::NOT_FOUND,
     ])]
     public function getLogs(
         #[MapRequestPayload] CollectionFilterParameter $parameters
