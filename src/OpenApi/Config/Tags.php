@@ -154,6 +154,10 @@ use OpenApi\Attributes\Tag;
     name: Tags::Workflows->value,
     description: 'tag_workflows_description'
 )]
+#[Tag(
+    name: Tags::BundleApplicationLogger->value,
+    description: 'tag_bundle_application_logger_description'
+)]
 enum Tags: string
 {
     case Assets = 'Assets';
@@ -190,4 +194,5 @@ enum Tags: string
     case Versions = 'Versions';
     case WebsiteSettings = 'Website Settings';
     case Workflows = 'Workflows';
+    case BundleApplicationLogger = 'Bundle Application Logger';
 }
