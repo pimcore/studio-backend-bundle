@@ -26,6 +26,8 @@ final readonly class ObjectParameter
     public function __construct(
         #[Property(description: 'id', type: 'int', example: 1020)]
         private int $id,
+        #[Property(description: 'elementType', type: 'string', example: 'object')]
+        private string $elementType,
         #[Property(description: 'type', type: 'string', example: 'object')]
         private string $type,
         #[Property(description: 'class', type: 'string', example: 'AppBundle\\Model\\MyObject')]
@@ -39,6 +41,11 @@ final readonly class ObjectParameter
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getElementType(): string
+    {
+        return $this->elementType;
     }
 
     public function getType(): string

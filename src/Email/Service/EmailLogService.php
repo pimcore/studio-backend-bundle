@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionParameters;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 use Pimcore\Mail;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\Tool\Email\Log;
@@ -43,7 +44,9 @@ use function sprintf;
  */
 final readonly class EmailLogService implements EmailLogServiceInterface
 {
-    private const CHILDREN_PARAMS_KEY = 'children';
+    use ElementProviderTrait;
+
+    private const string CHILDREN_PARAMS_KEY = 'children';
 
     public function __construct(
         private DocumentResolverInterface $documentResolver,
@@ -300,6 +303,7 @@ final readonly class EmailLogService implements EmailLogServiceInterface
             $path,
             new ObjectParameter(
                 $object->getId(),
+                $this->getElementType($object),
                 $object->getType(),
                 $object::class,
                 $path,
