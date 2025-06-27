@@ -1,4 +1,4 @@
-name: API tests
+name: Schema Validation
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
     - cron: '0 3 * * 1,2,3,4,5'
 
 jobs:
-  automated-api-tests:
+  schema-validation:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +18,6 @@ jobs:
           curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
       - name: Login to Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-      - name: Run API tests
+      - name: Run Schema Validation
         run: |
-          postman collection run "${{ github.workspace }}/tests/Api/postman/collections/Smoke Test.json" -e "38917228-a7031c27-2010-4199-87c8-38b5039143e7"
-          postman collection run "${{ github.workspace }}/tests/Api/postman/collections/Integration Test.json" -e "38917228-a7031c27-2010-4199-87c8-38b5039143e7"
+          postman collection run 38917228-9dd46798-6140-4954-b9f1-1adcdb28d5de -e 38917228-a7031c27-2010-4199-87c8-38b5039143e7
