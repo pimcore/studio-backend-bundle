@@ -65,17 +65,20 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $configPath = __DIR__ . '/../../config';
-        $configuration = new Configuration();
-        $config = $this->processConfiguration($configuration, $configs);
-
         // Load services and configuration
-        $loader = new YamlFileLoader($container, new FileLocator($configPath));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
 
         $files = glob(__DIR__ . '/../../config/*.yaml');
         foreach ($files as $file) {
-            $loader->load(basename($file));
+            $fileName = basename($file);
+            if (str_starts_with($fileName, 'bundle_')) {
+                continue;
+            }
+            $loader->load($fileName);
         }
+
+        $configuration = new Configuration();
+        $config = $this->processConfiguration($configuration, $configs);
 
         $this->checkValidUrlPrefix($config['url_prefix']);
         $this->checkValidServers($config['open_api_servers']);
@@ -174,6 +177,12 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
      */
     public function prepend(ContainerBuilder $container): void
     {
+        // Load bundles
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        if ($container->hasExtension('pimcore_application_logger')) {
+            $loader->load('bundle_application_logger.yaml');
+        }
+
         $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
             $container,
             Configuration::ROOT_NODE
