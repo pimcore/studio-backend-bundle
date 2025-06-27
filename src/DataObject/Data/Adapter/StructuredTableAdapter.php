@@ -44,6 +44,10 @@ final readonly class StructuredTableAdapter implements
         ?FieldContextData $contextData = null,
         bool $isPatch = false
     ): ?StructuredTable {
+        if (!isset($data[$key]) || !is_array($data[$key])) {
+            return null;
+        }
+
         $table = new StructuredTable();
         $tableData = [];
         foreach ($data[$key] as $id => $dataLine) {
