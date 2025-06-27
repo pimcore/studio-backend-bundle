@@ -20,5 +20,5 @@ jobs:
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
       - name: Run API tests
         run: |
-          postman collection run "${{ github.workspace }}/tests/Api/postman/collections/Smoke Test.json" -e "38917228-a7031c27-2010-4199-87c8-38b5039143e7"
-          postman collection run "${{ github.workspace }}/tests/Api/postman/collections/Integration Test.json" -e "38917228-a7031c27-2010-4199-87c8-38b5039143e7"
+          postman collection run "${{ github.workspace }}/tests/Api/postman/collections/Smoke Test.json" -e "38917228-1442681b-3cb9-45b9-b7d3-a67bed50e0c1"
+          postman collection run "${{ github.workspace }}/tests/Api/postman/collections/Integration Test.json" -e "38917228-1442681b-3cb9-45b9-b7d3-a67bed50e0c1"
