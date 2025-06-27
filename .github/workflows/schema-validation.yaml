@@ -2,9 +2,6 @@ name: Schema Validation
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - "add-schema-validation-workflow"
   schedule:
     - cron: '0 3 * * 1,2,3,4,5'
 
