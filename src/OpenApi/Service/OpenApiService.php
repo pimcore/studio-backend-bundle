@@ -176,31 +176,29 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         string $tagName
     ): void {
         try {
+
             $this->pimcoreBundleManager->getActiveBundle($bundle);
-
-            return;
         } catch (BundleNotFoundException) {
-            // If the bundle is not present, we will filter out paths and schemas
-        }
 
-        foreach ($config->paths as $path => $pathItem) {
-            if (str_contains($pathItem->path, $routePrefix)) {
-                unset($config->paths[$path]);
+            foreach ($config->paths as $path => $pathItem) {
+                if (str_contains($pathItem->path, $routePrefix)) {
+                    unset($config->paths[$path]);
+                }
             }
-        }
 
-        foreach ($config->components->schemas as $index => $schema) {
-            if (str_starts_with($schema->title, $tagName)) {
-                unset($config->components->schemas[$index]);
+            foreach ($config->components->schemas as $index => $schema) {
+                if (str_starts_with($schema->title, $tagName)) {
+                    unset($config->components->schemas[$index]);
+                }
             }
+
+            $config->components->schemas = array_values($config->components->schemas);
+
+            $config->tags = array_filter(
+                $config->tags,
+                static fn (Tag $tag) => $tag->name !== $tagName
+            );
+            $config->tags = array_values($config->tags);
         }
-
-        $config->components->schemas = array_values($config->components->schemas);
-
-        $config->tags = array_filter(
-            $config->tags,
-            static fn (Tag $tag) => $tag->name !== $tagName
-        );
-        $config->tags = array_values($config->tags);
     }
 }
