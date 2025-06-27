@@ -26,4 +26,11 @@ interface LogServiceInterface
      * @throws DatabaseException
      */
     public function listLogEntries(CollectionFilterParameter $parameters): Collection;
+
+    /**
+     * @throws DatabaseException
+     */
+    public function listComponents(): array;
+
+    public function listPriorities(): array;
 }

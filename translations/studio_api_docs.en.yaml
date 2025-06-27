@@ -179,6 +179,14 @@ bundle_application_logger_get_collection_description: |
   </ul>
 bundle_application_logger_get_collection_success_response: Paginated log entries with total count as header param as JSON
 bundle_application_logger_get_collection_summary: Get all log entries
+bundle_application_logger_list_components_description: |
+  List all available components used for filtering for the application logger.
+bundle_application_logger_list_components_success_response: List of available components
+bundle_application_logger_list_components_summary: List application logger components
+bundle_application_logger_list_priorities_description: |
+  List all available priorities for the application logger.
+bundle_application_logger_list_priorities_success_response: List of available priorities
+bundle_application_logger_list_priorities_summary: List application logger priorities
 data_object_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DataObjectAdd</strong>
 data_object_add_success_response: ID of added data object
