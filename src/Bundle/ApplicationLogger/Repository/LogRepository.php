@@ -91,6 +91,26 @@ final class LogRepository implements LogRepositoryInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getComponents(): array
+    {
+        $qb = $this->dbResolver->get()->createQueryBuilder();
+        $qb
+            ->select('component')
+            ->from(ApplicationLoggerDb::TABLE_NAME)
+            ->where($qb->expr()->isNotNull('component'))
+            ->groupBy('component');
+
+        try {
+
+            return $qb->executeQuery()->fetchFirstColumn();
+        } catch (Exception $e) {
+            throw new DatabaseException($e->getMessage(), $e);
+        }
+    }
+
     private function addKeyFilters(QueryBuilder $queryBuilder, FilterParameter $parameters, string $operation): void
     {
         $filters =  iterator_to_array($parameters->getColumnFilterByType($operation));

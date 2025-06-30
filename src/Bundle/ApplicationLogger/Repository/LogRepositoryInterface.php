@@ -30,4 +30,9 @@ interface LogRepositoryInterface
      * @throws DatabaseException
      */
     public function getTotalCount(): int;
+
+    /**
+     * @throws DatabaseException
+     */
+    public function getComponents(): array;
 }

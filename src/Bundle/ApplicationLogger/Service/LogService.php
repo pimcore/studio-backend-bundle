@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Service;
 
+use Pimcore\Bundle\ApplicationLoggerBundle\Enum\LogLevel;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Event\PreResponse\LogEntryEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Hydrator\LogHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\ApplicationLogger\Repository\LogRepositoryInterface;
@@ -49,6 +50,19 @@ final readonly class LogService implements LogServiceInterface
             $this->logRepository->getTotalCount(),
             $list
         );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function listComponents(): array
+    {
+        return $this->logRepository->getComponents();
+    }
+
+    public function listPriorities(): array
+    {
+        return array_column(LogLevel::cases(), 'value');
     }
 
     private function getHydratedLogs(array $log): LogEntry
