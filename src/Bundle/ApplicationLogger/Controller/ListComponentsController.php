@@ -62,7 +62,7 @@ final class ListComponentsController extends AbstractApiController
         HttpResponseCodes::INTERNAL_SERVER_ERROR,
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function listTypes(): JsonResponse
+    public function listComponents(): JsonResponse
     {
         return $this->jsonResponse(['items' => $this->logService->listComponents()]);
     }
