@@ -30,8 +30,7 @@ final readonly class UrlFilter implements FilterInterface
     public function __construct(
         private RedirectHandler $redirectHandler,
         private SiteResolverInterface $siteResolver,
-    )
-    {
+    ) {
     }
 
     public function apply(
@@ -44,6 +43,7 @@ final readonly class UrlFilter implements FilterInterface
         }
 
         $filterValue = $column->getFilterValue();
+
         try {
             $dummyRequest = Request::create($filterValue);
             $site = $this->siteResolver->getByDomain($dummyRequest->getHost());

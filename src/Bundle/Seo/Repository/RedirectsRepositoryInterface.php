@@ -15,7 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository;
 
 use Pimcore\Bundle\SeoBundle\Model\Redirect\Listing;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 
 /**
  * @internal

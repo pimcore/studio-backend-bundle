@@ -25,7 +25,7 @@ use Pimcore\Bundle\StudioBackendBundle\Util\Trait\AdditionalAttributesTrait;
     required: [
         'id', 'type', 'source', 'sourceSite', 'passThroughParameters', 'target', 'targetSite',
         'statusCode', 'priority', 'regex', 'active', 'expiry', 'creationDate', 'modificationDate',
-        'userOwner', 'userModification'
+        'userOwner', 'userModification',
     ],
     type: 'object'
 )]

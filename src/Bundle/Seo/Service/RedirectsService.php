@@ -16,10 +16,10 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service;
 use Pimcore\Bundle\SeoBundle\Model\Redirect as RedirectModel;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Event\PreResponse\RedirectListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository\RedirectsRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\Redirect;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\FilterMapperServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository\RedirectsRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
