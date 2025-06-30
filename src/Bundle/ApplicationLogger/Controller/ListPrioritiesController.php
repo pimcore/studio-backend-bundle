@@ -57,7 +57,7 @@ final class ListPrioritiesController extends AbstractApiController
     #[DefaultResponses([
         HttpResponseCodes::UNAUTHORIZED,
     ])]
-    public function listTypes(): JsonResponse
+    public function listPriorities(): JsonResponse
     {
         return $this->jsonResponse(['priorities' => $this->logService->listPriorities()]);
     }
