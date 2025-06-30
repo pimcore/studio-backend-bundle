@@ -37,6 +37,7 @@ enum UserPermissions: string
     case PIMCORE_USER = 'ROLE_PIMCORE_USER';
     case PREDEFINED_PROPERTIES = 'predefined_properties';
     case RECYCLE_BIN = 'recyclebin';
+    case REDIRECTS = 'redirects';
     case TAGS_CONFIGURATION = 'tags_configuration';
     case TAGS_ASSIGNMENT = 'tags_assignment';
     case TAGS_SEARCH = 'tags_search';

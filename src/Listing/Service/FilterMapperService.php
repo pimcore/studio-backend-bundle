@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Listing\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Symfony\Contracts\Service\ServiceProviderInterface;
 use function get_class;
 
@@ -25,6 +26,9 @@ final readonly class FilterMapperService implements FilterMapperServiceInterface
     ) {
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function map(mixed $parameters): FilterParameter
     {
         if (!$this->filterMapperLocator->has(get_class($parameters))) {
@@ -32,5 +36,18 @@ final readonly class FilterMapperService implements FilterMapperServiceInterface
         }
 
         return $this->filterMapperLocator->get(get_class($parameters))->map($parameters);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFilterParameters(CollectionFilterParameter $parameters): FilterParameter
+    {
+        $filterParameters = new FilterParameter();
+        if ($parameters->getFilters()) {
+            $filterParameters = $this->map($parameters);
+        }
+
+        return $filterParameters;
     }
 }

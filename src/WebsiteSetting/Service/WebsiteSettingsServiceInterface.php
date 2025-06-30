@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
@@ -37,6 +38,9 @@ interface WebsiteSettingsServiceInterface
      */
     public function updateWebsiteSetting(int $id, WebsiteSettingsUpdate $parameters): WebsiteSetting;
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public function listWebsiteSettings(CollectionFilterParameter $parameters): Collection;
 
     /**

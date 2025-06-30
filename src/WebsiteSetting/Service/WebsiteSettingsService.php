@@ -63,9 +63,14 @@ final readonly class WebsiteSettingsService implements WebsiteSettingsServiceInt
         return $this->getHydratedSetting($setting);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function listWebsiteSettings(CollectionFilterParameter $parameters): Collection
     {
-        $listing = $this->websiteSettingsRepository->getListing($this->getFilterParameters($parameters));
+        $listing = $this->websiteSettingsRepository->getListing(
+            $this->filterMapper->getFilterParameters($parameters)
+        );
         $settings = $listing->load();
         $list = [];
 
@@ -115,15 +120,5 @@ final readonly class WebsiteSettingsService implements WebsiteSettingsServiceInt
         );
 
         return $entry;
-    }
-
-    private function getFilterParameters(CollectionFilterParameter $parameters): FilterParameter
-    {
-        $filterParameters = new FilterParameter();
-        if ($parameters->getFilters()) {
-            $filterParameters = $this->filterMapper->map($parameters);
-        }
-
-        return $filterParameters;
     }
 }

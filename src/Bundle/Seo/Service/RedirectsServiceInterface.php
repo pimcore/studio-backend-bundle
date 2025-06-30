@@ -11,21 +11,19 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Listing\Service;
+namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
-use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
+use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
-interface FilterMapperServiceInterface
+/**
+ * @internal
+ */
+interface RedirectsServiceInterface
 {
     /**
      * @throws InvalidArgumentException
      */
-    public function map(mixed $parameters): FilterParameter;
-
-    /**
-     * @throws InvalidArgumentException
-     */
-    public function getFilterParameters(CollectionFilterParameter $parameters): FilterParameter;
+    public function listRedirects(CollectionFilterParameter $parameters): Collection;
 }
