@@ -25,7 +25,7 @@ use function sprintf;
 final class ContextPermissionService implements ContextPermissionsServiceInterface
 {
     private array $extraPermissions = [
-        'applicationLog' => true,
+        'applicationlog' => true,
         'emails' => true,
         'gdpr_data_extractor' => true,
         'glossary' => true,
