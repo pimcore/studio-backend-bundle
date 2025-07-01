@@ -17,7 +17,6 @@ use Pimcore\Bundle\SeoBundle\Model\Redirect as RedirectModel;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\Redirect;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
-use Pimcore\Bundle\StudioBackendBundle\Util\Trait\ElementProviderTrait;
 
 /**
  * @internal
@@ -26,8 +25,7 @@ final readonly class RedirectHydrator implements RedirectHydratorInterface
 {
     public function __construct(
         private ServiceResolverInterface $serviceResolver,
-    )
-    {
+    ) {
     }
 
     public function hydrate(RedirectModel $redirect): Redirect

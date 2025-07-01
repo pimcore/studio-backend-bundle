@@ -29,6 +29,8 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function in_array;
+use function sprintf;
 
 /**
  * @internal
