@@ -139,7 +139,6 @@ final readonly class NotificationService implements NotificationServiceInterface
         return new UnreadCount($count);
     }
 
-
     /**
      * @throws ForbiddenException
      * @throws UserNotFoundException
