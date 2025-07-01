@@ -75,6 +75,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.asset_predefined_metadata`
 - `pre_response.asset_version`
 - `pre_response.bundle_application_logger.list`
+- `pre_response.bundle_seo.redirect.list`
 - `pre_response.class_definition`
 - `pre_response.class_definition.collection`
 - `pre_response.class_definition.folder.collection`
