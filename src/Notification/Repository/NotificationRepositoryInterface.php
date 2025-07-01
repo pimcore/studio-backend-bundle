@@ -37,4 +37,6 @@ interface NotificationRepositoryInterface
     public function getListing(
         FilterParameter $parameters
     ): Listing;
+
+    public function getUnreadCountByUser(UserInterface $user): int;
 }
