@@ -20,6 +20,7 @@ enum UserPermissions: string
 {
     case PERMISSIONS_CATEGORY = 'Pimcore Studio Backend Bundle';
     case DEFINITIONS_TABLE = 'users_permission_definitions';
+    case APPLICATION_LOGGING = 'application_logging';
     case ASSETS = 'assets';
     case DATA_OBJECTS = 'objects';
     case DOCUMENTS = 'documents';

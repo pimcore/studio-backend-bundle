@@ -24,6 +24,7 @@ use Pimcore\Model\DataObject\Concrete;
 use Pimcore\Model\DataObject\Data\StructuredTable;
 use Pimcore\Model\UserInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use function is_array;
 use function is_bool;
 
 /**
@@ -44,6 +45,10 @@ final readonly class StructuredTableAdapter implements
         ?FieldContextData $contextData = null,
         bool $isPatch = false
     ): ?StructuredTable {
+        if (!isset($data[$key]) || !is_array($data[$key])) {
+            return null;
+        }
+
         $table = new StructuredTable();
         $tableData = [];
         foreach ($data[$key] as $id => $dataLine) {

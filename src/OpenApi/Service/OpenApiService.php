@@ -16,12 +16,17 @@ namespace Pimcore\Bundle\StudioBackendBundle\OpenApi\Service;
 use JsonException;
 use OpenApi\Annotations\OpenApi;
 use OpenApi\Annotations\PathItem;
+use OpenApi\Annotations\Tag;
 use OpenApi\Attributes\Schema;
 use OpenApi\Attributes\Server;
 use OpenApi\Generator;
+use Pimcore\Bundle\ApplicationLoggerBundle\PimcoreApplicationLoggerBundle;
+use Pimcore\Bundle\SeoBundle\PimcoreSeoBundle;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
 use Pimcore\Bundle\StudioBackendBundle\Translation\Service\TranslatorServiceInterface;
+use Pimcore\Extension\Bundle\Exception\BundleNotFoundException;
+use Pimcore\Extension\Bundle\PimcoreBundleManager;
 use function in_array;
 use function is_array;
 use function is_string;
@@ -32,6 +37,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     private const array TRANSLATABLE_PROPERTIES = ['summary', 'description'];
 
     public function __construct(
+        private PimcoreBundleManager $pimcoreBundleManager,
         private TranslatorServiceInterface $translator,
         private string $routePrefix,
         private array $openApiScanPaths = [],
@@ -49,6 +55,8 @@ final readonly class OpenApiService implements OpenApiServiceInterface
         $config = Generator::scan([...$this->openApiScanPaths]);
 
         if ($config) {
+            $this->filterConfigs($config);
+
             usort($config->components->schemas, [$this, 'sortSchemas']);
 
             // replace the configurable prefix in the paths
@@ -141,6 +149,56 @@ final readonly class OpenApiService implements OpenApiServiceInterface
                     )
                 );
             }
+        }
+    }
+
+    private function filterConfigs(OpenApi $config): void
+    {
+        $this->filterConfigByBundle(
+            $config,
+            PimcoreApplicationLoggerBundle::class,
+            '{prefix}/bundle/application-logger',
+            'Bundle Application Logger'
+        );
+
+        $this->filterConfigByBundle(
+            $config,
+            PimcoreSeoBundle::class,
+            '{prefix}/bundle/seo',
+            'Bundle Seo'
+        );
+    }
+
+    private function filterConfigByBundle(
+        OpenApi $config,
+        string $bundle,
+        string $routePrefix,
+        string $tagName
+    ): void {
+        try {
+
+            $this->pimcoreBundleManager->getActiveBundle($bundle);
+        } catch (BundleNotFoundException) {
+
+            foreach ($config->paths as $path => $pathItem) {
+                if (str_contains($pathItem->path, $routePrefix)) {
+                    unset($config->paths[$path]);
+                }
+            }
+
+            foreach ($config->components->schemas as $index => $schema) {
+                if (str_starts_with($schema->title, $tagName)) {
+                    unset($config->components->schemas[$index]);
+                }
+            }
+
+            $config->components->schemas = array_values($config->components->schemas);
+
+            $config->tags = array_filter(
+                $config->tags,
+                static fn (Tag $tag) => $tag->name !== $tagName
+            );
+            $config->tags = array_values($config->tags);
         }
     }
 }
