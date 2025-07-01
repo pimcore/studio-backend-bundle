@@ -27,12 +27,7 @@ final class ValueParameter extends QueryParameter
             description: 'Value to convert.',
             in: 'query',
             required: true,
-            schema: new Schema(
-                anyOf: [
-                    new Schema(type: 'integer', format: 'int32'),
-                    new Schema(type: 'number', format: 'float'),
-                ],
-            ),
+            schema: new Schema(type: 'number', format: 'number', example: 3.14),
             example: 5
         );
     }

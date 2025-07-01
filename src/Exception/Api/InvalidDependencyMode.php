@@ -22,6 +22,6 @@ final class InvalidDependencyMode extends AbstractApiException
 {
     public function __construct(string $message = 'Invalid dependency mode')
     {
-        parent::__construct(HttpResponseCodes::BAD_REQUEST->value, $message);
+        parent::__construct(HttpResponseCodes::UNPROCESSABLE_CONTENT->value, $message);
     }
 }

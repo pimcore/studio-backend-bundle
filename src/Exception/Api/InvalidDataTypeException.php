@@ -24,7 +24,7 @@ final class InvalidDataTypeException extends AbstractApiException
     public function __construct(string $type, string $actualType, string $key = 'FieldDefinition')
     {
         parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
+            HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
             sprintf(
                 'Invalid %s type: should be %s and was %s',
                 $key,

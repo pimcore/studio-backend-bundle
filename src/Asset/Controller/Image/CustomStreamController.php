@@ -15,10 +15,6 @@ namespace Pimcore\Bundle\StudioBackendBundle\Asset\Controller\Image;
 
 use OpenApi\Attributes\Get;
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\ImageDownloadConfigParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ContainParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\CoverParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ForceResizeParameter;
-use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\FrameParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ImageConfigParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\MimeTypeParameter;
 use Pimcore\Bundle\StudioBackendBundle\Asset\OpenApi\Attribute\Parameter\Query\ResizeModeParameter;
@@ -96,18 +92,18 @@ final class CustomStreamController extends AbstractApiController
         ResizeModes::NONE
     )]
     #[ImageConfigParameter('width', 140)]
-    #[ImageConfigParameter('height')]
+    #[ImageConfigParameter('height', 140)]
     #[ImageConfigParameter('quality', 85)]
-    #[ImageConfigParameter('dpi')]
-    #[ContainParameter]
-    #[FrameParameter]
-    #[CoverParameter]
-    #[ForceResizeParameter]
+    #[ImageConfigParameter('dpi', 72)]
+    #[BoolParameter('contain', 'Contain', false, false)]
+    #[BoolParameter('frame', 'Frame', false, false)]
+    #[BoolParameter('cover', 'Cover', false, false)]
+    #[BoolParameter('forceResize', 'Force resize', false, false)]
     #[BoolParameter('cropPercent', '', false, false)]
-    #[ImageConfigParameter('cropWidth')]
-    #[ImageConfigParameter('cropHeight')]
-    #[ImageConfigParameter('cropTop')]
-    #[ImageConfigParameter('cropLeft')]
+    #[ImageConfigParameter('cropWidth', 0)]
+    #[ImageConfigParameter('cropHeight', 0)]
+    #[ImageConfigParameter('cropTop', 0)]
+    #[ImageConfigParameter('cropLeft', 0)]
     #[SuccessResponse(
         description: 'asset_image_stream_custom_success_response',
         content: [new MediaType('image/*')],

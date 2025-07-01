@@ -19,7 +19,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\Validator\Exception\ValidationFailedException;
 
 /**
  * @internal
@@ -57,8 +59,16 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 
     private function createResponse(HttpExceptionInterface $exception): Response
     {
+        if ($exception instanceof HttpException && $exception->getPrevious() instanceof ValidationFailedException) {
+            return $this->handleSymfonyValidationFailedException(
+                $exception->getPrevious(),
+                $exception->getStatusCode(),
+                $exception->getMessage()
+            );
+        }
+
         if (!$exception instanceof AbstractApiException || !$exception->getMessage()) {
-            return new Response(null, $exception->getStatusCode());
+            return new JsonResponse($exception->getMessage(), $exception->getStatusCode());
         }
 
         $responseData = [
@@ -73,6 +83,36 @@ final readonly class ApiExceptionSubscriber implements EventSubscriberInterface
         return new JsonResponse(
             $responseData,
             $exception->getStatusCode(),
+        );
+    }
+
+    private function handleSymfonyValidationFailedException(
+        ValidationFailedException $exception,
+        int $status,
+        string $message
+    ): JsonResponse {
+        $violations = $exception->getViolations();
+        $collectedViolations = [];
+
+        foreach ($violations as $violation) {
+            $collectedViolations[] = [
+                'propertyPath' => $violation->getPropertyPath(),
+                'message' => $violation->getMessage(),
+            ];
+        }
+
+        $responseData = [
+            'message' => $message,
+            'violations' => $collectedViolations,
+        ];
+
+        if ($this->environment === 'dev') {
+            $responseData['detail'] = $exception->getTraceAsString();
+        }
+
+        return new JsonResponse(
+            $responseData,
+            $status
         );
     }
 }

@@ -20,8 +20,12 @@ use OpenApi\Attributes\Schema;
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class TextFieldParameter extends QueryParameter
 {
-    public function __construct(string $name, string $description, bool $required = false, ?string $example = null)
-    {
+    public function __construct(
+        string $name,
+        string $description,
+        bool $required = false,
+        ?string $example = 'Example string'
+    ) {
         parent::__construct(
             name: $name,
             description: $description,

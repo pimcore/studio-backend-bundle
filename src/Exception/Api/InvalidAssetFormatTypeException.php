@@ -24,7 +24,7 @@ final class InvalidAssetFormatTypeException extends AbstractApiException
     public function __construct(string $type)
     {
         parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
+            HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
             sprintf(
                 'Invalid asset format type: %s',
                 $type

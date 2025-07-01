@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Exception\Api;
 
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseCodes;
 use function sprintf;
 
 /**
@@ -22,6 +23,9 @@ final class InvalidParentIdException extends AbstractApiException
 {
     public function __construct(int $parentId)
     {
-        parent::__construct(400, sprintf('Invalid parent id: %s', $parentId));
+        parent::__construct(
+            HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
+            sprintf('Invalid parent id: %s', $parentId)
+        );
     }
 }

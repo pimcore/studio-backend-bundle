@@ -24,7 +24,7 @@ final class BoolParameter extends QueryParameter
         string $name,
         string $description,
         bool $required = true,
-        ?bool $example = null,
+        bool $example = true,
     ) {
         parent::__construct(
             name: $name,

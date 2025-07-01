@@ -24,7 +24,7 @@ final class InvalidThumbnailException extends AbstractApiException
     public function __construct(string $thumbnailName)
     {
         parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
+            HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
             sprintf('Invalid thumbnail: %s', $thumbnailName)
         );
     }

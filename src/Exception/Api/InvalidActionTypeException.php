@@ -24,7 +24,7 @@ final class InvalidActionTypeException extends AbstractApiException
     public function __construct(string $actionType)
     {
         parent::__construct(
-            HttpResponseCodes::BAD_REQUEST->value,
+            HttpResponseCodes::UNPROCESSABLE_CONTENT->value,
             sprintf('Invalid workflow action type: %s', $actionType)
         );
     }
