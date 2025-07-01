@@ -22,6 +22,7 @@ use Pimcore\Bundle\StudioBackendBundle\Notification\Event\NotificationListEvent;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Hydrator\NotificationHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Repository\NotificationRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\Notification;
+use Pimcore\Bundle\StudioBackendBundle\Notification\Schema\UnreadCount;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Security\Service\SecurityServiceInterface;
 use Pimcore\Model\Notification as NotificationModel;
@@ -125,6 +126,19 @@ final readonly class NotificationService implements NotificationServiceInterface
             $notification->delete();
         }
     }
+
+    /**
+     * @throws UserNotFoundException
+     */
+    public function getUnreadNotificationsCount(): UnreadCount
+    {
+        $count = $this->notificationRepository->getUnreadCountByUser(
+            $this->securityService->getCurrentUser()
+        );
+
+        return new UnreadCount($count);
+    }
+
 
     /**
      * @throws ForbiddenException

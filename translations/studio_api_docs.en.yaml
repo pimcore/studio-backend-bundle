@@ -1141,3 +1141,6 @@ website_settings_update_success_response: Successfully updated website setting
 notification_get_recipients_description: Get all notification recipients for the current user
 notification_get_recipients_summary: Get all notification recipients for the current user
 notification_get_recipients_success_response: List of notification recipients for the current user
+notification_get_unread_count_description: Count of unread notifications for the current user
+notification_get_unread_count_summary: Count of unread notifications for the current user
+notification_get_unread_count_success_response: Count of unread notifications for the current user

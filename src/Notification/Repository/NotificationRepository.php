@@ -76,4 +76,12 @@ final readonly class NotificationRepository implements NotificationRepositoryInt
 
         return $listing;
     }
+
+    public function getUnreadCountByUser(UserInterface $user): int
+    {
+        $listing = new Listing();
+        $listing->setCondition('recipient = ? AND `read` = 0', [$user->getId()]);
+
+        return $listing->count();
+    }
 }
