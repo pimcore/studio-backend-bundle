@@ -182,6 +182,9 @@ class PimcoreStudioBackendExtension extends Extension implements PrependExtensio
         if ($container->hasExtension('pimcore_application_logger')) {
             $loader->load('bundle_application_logger.yaml');
         }
+        if ($container->hasExtension('pimcore_seo')) {
+            $loader->load('bundle_seo.yaml');
+        }
 
         $containerConfig = ConfigurationHelper::getConfigNodeFromSymfonyTree(
             $container,
