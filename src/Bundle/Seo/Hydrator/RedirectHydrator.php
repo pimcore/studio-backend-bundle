@@ -14,13 +14,20 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator;
 
 use Pimcore\Bundle\SeoBundle\Model\Redirect as RedirectModel;
+use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\Redirect;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 
 /**
  * @internal
  */
 final readonly class RedirectHydrator implements RedirectHydratorInterface
 {
+    public function __construct(
+        private ServiceResolverInterface $serviceResolver,
+    ) {
+    }
+
     public function hydrate(RedirectModel $redirect): Redirect
     {
         return new Redirect(
@@ -29,7 +36,7 @@ final readonly class RedirectHydrator implements RedirectHydratorInterface
             source: $redirect->getSource(),
             sourceSite: $redirect->getSourceSite(),
             passThroughParameters: $redirect->getPassThroughParameters(),
-            target: $redirect->getTarget(),
+            target: $this->getTarget($redirect->getTarget()),
             targetSite: $redirect->getTargetSite(),
             statusCode: $redirect->getStatusCode(),
             priority: $redirect->getPriority(),
@@ -41,5 +48,19 @@ final readonly class RedirectHydrator implements RedirectHydratorInterface
             userOwner: $redirect->getUserOwner(),
             userModification: $redirect->getUserModification(),
         );
+    }
+
+    private function getTarget(?string $target): ?string
+    {
+        if (!is_numeric($target)) {
+            return $target;
+        }
+
+        $document = $this->serviceResolver->getElementById(ElementTypes::TYPE_DOCUMENT, (int)$target);
+        if ($document === null) {
+            return $target;
+        }
+
+        return $document->getRealFullPath();
     }
 }

@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository;
 
+use Pimcore\Bundle\SeoBundle\Model\Redirect;
 use Pimcore\Bundle\SeoBundle\Model\Redirect\Listing;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Listing\Service\ListingFilterInterface;
 
@@ -34,5 +36,18 @@ final readonly class RedirectsRepository implements RedirectsRepositoryInterface
         $this->listingFilter->applyFilters($parameters, $listing);
 
         return $listing;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getById(int $id): Redirect
+    {
+        $redirect = Redirect::getById($id);
+        if (!$redirect instanceof Redirect) {
+            throw new NotFoundException(type: 'redirect', id: $id);
+        }
+
+        return $redirect;
     }
 }

@@ -11,12 +11,13 @@ declare(strict_types=1);
  *  @license    Pimcore Open Core License (POCL)
  */
 
-namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Controller\Redirects;
+namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Controller\Redirect;
 
 use OpenApi\Attributes\Post;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\Redirect;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RedirectsServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\Attribute\Request\CollectionRequestBody;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Property\GenericCollection;
@@ -49,6 +50,9 @@ final class CollectionController extends AbstractApiController
         parent::__construct($serializer);
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     #[Route(self::ROUTE, name: 'pimcore_studio_api_bundle_seo_redirects_collection', methods: ['POST'])]
     #[IsGranted(UserPermissions::REDIRECTS->value)]
     #[Post(
@@ -64,7 +68,7 @@ final class CollectionController extends AbstractApiController
         '{"key":"source", "type":"like", "filterValue": "en/news"},' .
         '{"key":"target", "type":"equals", "filterValue": "en/news/new"}'
         . ']',
-        sortFilterExample: '{"key":"id", "direction":"DESC"}'
+        sortFilterExample: '{"key":"priority", "direction":"ASC"}'
     )]
     #[SuccessResponse(
         description: 'bundle_seo_redirects_get_collection_success_response',
