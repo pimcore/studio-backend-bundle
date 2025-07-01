@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository;
 
+use Pimcore\Bundle\SeoBundle\Model\Redirect;
 use Pimcore\Bundle\SeoBundle\Model\Redirect\Listing;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 
 /**
@@ -22,4 +24,9 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
 interface RedirectsRepositoryInterface
 {
     public function getListing(FilterParameter $parameters): Listing;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getById(int $id): Redirect;
 }

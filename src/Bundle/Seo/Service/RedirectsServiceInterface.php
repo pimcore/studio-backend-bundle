@@ -13,7 +13,12 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service;
 
+use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\Redirect;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\RedirectAddParameters;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\RedirectUpdateParameters;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 
@@ -23,7 +28,22 @@ use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 interface RedirectsServiceInterface
 {
     /**
+     * @throws ElementSavingFailedException|InvalidArgumentException
+     */
+    public function addRedirect(RedirectAddParameters $parameters): Redirect;
+
+    /**
+     * @throws ElementSavingFailedException|InvalidArgumentException|NotFoundException
+     */
+    public function updateRedirect(int $id, RedirectUpdateParameters $parameters): Redirect;
+
+    /**
      * @throws InvalidArgumentException
      */
     public function listRedirects(CollectionFilterParameter $parameters): Collection;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function deleteRedirect(int $id): void;
 }

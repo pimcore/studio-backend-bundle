@@ -187,6 +187,14 @@ bundle_application_logger_list_priorities_description: |
   List all available priorities for the application logger.
 bundle_application_logger_list_priorities_success_response: List of available priorities
 bundle_application_logger_list_priorities_summary: List application logger priorities
+bundle_seo_redirect_add_description: |
+  Add a new redirect entry. <br> See the full description of request fields with the schema <strong>BundleSeoRedirectAdd</strong>
+bundle_seo_redirect_add_success_response: New redirect data as JSON
+bundle_seo_redirect_add_summary: Add a new redirect
+bundle_seo_redirect_delete_description: |
+  Delete the redirect with the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing redirect.
+bundle_seo_redirect_delete_success_response: Successfully deleted redirect
+bundle_seo_redirect_delete_summary: Delete a redirect by ID
 bundle_seo_redirects_get_collection_description: |
   Get all paginated redirects entries. <br> You can specify different filters in your request body. Example filters are: <br>
   <ul>
@@ -198,6 +206,12 @@ bundle_seo_redirects_get_collection_description: |
   </ul>
 bundle_seo_redirects_get_collection_success_response: Paginated redirects with total count as header param as JSON
 bundle_seo_redirects_get_collection_summary: Get all redirects
+bundle_seo_redirect_update_by_id_description: |
+    Update the redirect with the given <strong>{id}</strong>. The <strong>{id}</strong> must be an ID of existing redirect. <br>
+    See the full description of updatable fields with the schema <strong>BundleSeoRedirectUpdate</strong> <br>
+    Please note that <strong>all fields<strong> have to be provided.
+bundle_seo_redirect_update_by_id_success_response: Successfully updated redirect
+bundle_seo_redirect_update_by_id_summary: Update a redirect by ID
 data_object_add_description: |
   Add a new data object to the given <strong>{parentId}</strong>. <br> The <strong>{parentId}</strong> must be an ID of a folder or another data object. See the full description of request fields with the schema <strong>DataObjectAdd</strong>
 data_object_add_success_response: ID of added data object
