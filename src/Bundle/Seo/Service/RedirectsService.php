@@ -130,6 +130,17 @@ final readonly class RedirectsService implements RedirectsServiceInterface
         $redirect->delete();
     }
 
+    public function cleanupRedirects(): void
+    {
+        $listing = $this->repository->getListing();
+        $listing->setCondition('expiry IS NOT NULL AND expiry <' . time());
+        $expiredRedirects = $listing->load();
+
+        foreach ($expiredRedirects as $expiredRedirect) {
+            $expiredRedirect->delete();
+        }
+    }
+
     private function getHydratedRedirect(RedirectModel $redirect): Redirect
     {
         $entry = $this->hydrator->hydrate($redirect);
