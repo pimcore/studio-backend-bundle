@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Hydrator;
 
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
+use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\ElementParameter;
 use Pimcore\Bundle\StudioBackendBundle\WebsiteSetting\Schema\WebsiteSetting;
 use Pimcore\Model\Element\ElementInterface;
 use Pimcore\Model\WebsiteSetting as WebsiteSettingModel;
@@ -43,10 +44,10 @@ final readonly class WebsiteSettingsHydrator implements WebsiteSettingsHydratorI
         );
     }
 
-    private function getSettingData(string $type, mixed $data): null|string|bool
+    private function getSettingData(string $type, mixed $data): null|string|bool|ElementParameter
     {
         if ($data instanceof ElementInterface && in_array($type, ElementTypes::ALLOWED_TYPES, true)) {
-            return $data->getRealFullPath();
+            return new ElementParameter($data->getId(), $data->getRealFullPath());
         }
 
         return $data;

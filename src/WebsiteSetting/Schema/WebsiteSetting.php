@@ -37,8 +37,16 @@ final class WebsiteSetting implements AdditionalAttributesInterface
         private readonly string $language,
         #[Property(description: 'Type', type: 'string', example: 'text')]
         private readonly ?string $type = null,
-        #[Property(description: 'Data', type: 'string', example: 'Some/setting/data')]
-        private readonly null|string|bool $data = null,
+        #[Property(
+            description: 'Data',
+            example: 'Some text data',
+            anyOf: [
+                new Schema(type: 'string'),
+                new Schema(type: 'boolean'),
+                new Schema(ref: ElementParameter::class, type: 'object')
+            ]
+        )]
+        private readonly null|string|bool|ElementParameter $data = null,
         #[Property(description: 'Site ID', type: 'integer', example: 1)]
         private readonly ?int $siteId = null,
         #[Property(description: 'Creation date', type: 'integer', example: null)]
@@ -68,7 +76,7 @@ final class WebsiteSetting implements AdditionalAttributesInterface
         return $this->type;
     }
 
-    public function getData(): null|string|bool
+    public function getData(): null|string|bool|ElementParameter
     {
         return $this->data;
     }
