@@ -20,6 +20,7 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectImportStatsHy
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository\RedirectsRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\RedirectImportStats;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
+use Pimcore\Bundle\StudioBackendBundle\Util\Constant\HttpResponseHeaders;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -49,12 +50,15 @@ final readonly class CsvService implements CsvServiceInterface
         try {
             $writer = $this->csvService->createExportWriter($listing);
             $response = new Response();
-            $response->headers->set('Content-Encoding', 'none');
-            $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
-            $response->headers->set('Content-Disposition', $response->headers->makeDisposition(
-                ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-                'redirects.csv'
-            ));
+            $response->headers->set(HttpResponseHeaders::HEADER_CONTENT_ENCODING->value, 'none');
+            $response->headers->set(HttpResponseHeaders::HEADER_CONTENT_TYPE->value, 'text/csv; charset=UTF-8');
+            $response->headers->set(
+                HttpResponseHeaders::HEADER_CONTENT_DISPOSITION->value,
+                $response->headers->makeDisposition(
+                    ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+                    'redirects.csv'
+                )
+            );
 
             $response->setContent($writer->toString());
         } catch (Exception $e) {
