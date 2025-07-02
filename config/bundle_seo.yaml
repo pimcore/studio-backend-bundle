@@ -18,12 +18,18 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RedirectsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\RedirectsService
 
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\CsvServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service\CsvService
+
   #
   # Hydrators
   #
 
   Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydrator
+
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectImportStatsHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectImportStatsHydrator
 
   #
   # Repository

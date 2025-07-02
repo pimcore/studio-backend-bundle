@@ -46,4 +46,6 @@ interface RedirectsServiceInterface
      * @throws NotFoundException
      */
     public function deleteRedirect(int $id): void;
+
+    public function cleanupRedirects(): void;
 }

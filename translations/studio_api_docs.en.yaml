@@ -195,6 +195,14 @@ bundle_seo_redirect_delete_description: |
   Delete the redirect with the given <strong>{id}</strong>. <br> The <strong>{id}</strong> must be an ID of existing redirect.
 bundle_seo_redirect_delete_success_response: Successfully deleted redirect
 bundle_seo_redirect_delete_summary: Delete a redirect by ID
+bundle_seo_redirects_export_description: |
+  Export all redirects as CSV file.
+bundle_seo_redirects_export_success_response: CSV file with redirects as attachment
+bundle_seo_redirects_export_summary: Export all redirects as CSV
+bundle_seo_redirect_cleanup_description: |
+  Cleanup all expired redirects. <br> This will delete all redirects which are expired based on the <strong>expiry</strong> field.
+bundle_seo_redirect_cleanup_success_response: Successfully cleaned up expired redirects
+bundle_seo_redirect_cleanup_summary: Cleanup expired redirects
 bundle_seo_redirects_get_collection_description: |
   Get all paginated redirects entries. <br> You can specify different filters in your request body. Example filters are: <br>
   <ul>
@@ -206,6 +214,10 @@ bundle_seo_redirects_get_collection_description: |
   </ul>
 bundle_seo_redirects_get_collection_success_response: Paginated redirects with total count as header param as JSON
 bundle_seo_redirects_get_collection_summary: Get all redirects
+bundle_seo_redirects_import_description: |
+  Import all redirects using a previously exported a CSV file.
+bundle_seo_redirects_import_success_response: Import statistics data as JSON
+bundle_seo_redirects_import_summary: Import redirects from CSV
 bundle_seo_redirect_update_by_id_description: |
     Update the redirect with the given <strong>{id}</strong>. The <strong>{id}</strong> must be an ID of existing redirect. <br>
     See the full description of updatable fields with the schema <strong>BundleSeoRedirectUpdate</strong> <br>

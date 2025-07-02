@@ -23,7 +23,7 @@ use Pimcore\Bundle\StudioBackendBundle\Filter\MappedParameter\FilterParameter;
  */
 interface RedirectsRepositoryInterface
 {
-    public function getListing(FilterParameter $parameters): Listing;
+    public function getListing(?FilterParameter $parameters = null): Listing;
 
     /**
      * @throws NotFoundException

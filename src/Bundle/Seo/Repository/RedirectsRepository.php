@@ -30,10 +30,12 @@ final readonly class RedirectsRepository implements RedirectsRepositoryInterface
 
     }
 
-    public function getListing(FilterParameter $parameters): Listing
+    public function getListing(?FilterParameter $parameters = null): Listing
     {
         $listing = new Listing();
-        $this->listingFilter->applyFilters($parameters, $listing);
+        if ($parameters !== null) {
+            $this->listingFilter->applyFilters($parameters, $listing);
+        }
 
         return $listing;
     }
