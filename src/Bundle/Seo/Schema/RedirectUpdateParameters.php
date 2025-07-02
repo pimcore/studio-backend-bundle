@@ -24,7 +24,7 @@ use Pimcore\Bundle\SeoBundle\Model\Redirect as CoreRedirect;
     schema: 'BundleSeoRedirectUpdate',
     title: 'Bundle Seo Redirect Update',
     required: [
-        'id', 'type', 'sourceSite', 'source', 'targetSite', 'target',
+        'type', 'sourceSite', 'source', 'targetSite', 'target',
         'statusCode', 'priority', 'regex', 'active', 'passThroughParameters', 'expiry',
     ],
     type: 'object'
