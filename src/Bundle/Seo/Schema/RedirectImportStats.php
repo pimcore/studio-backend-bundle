@@ -45,7 +45,7 @@ final class RedirectImportStats implements AdditionalAttributesInterface
             type: 'array',
             items: new Items(
                 type: 'object',
-                example: ["3" => 'Invalid source URL', "5" => 'Target URL already exists']
+                example: ['3' => 'Invalid source URL', '5' => 'Target URL already exists']
             )
         )]
         public readonly array $errors = [],

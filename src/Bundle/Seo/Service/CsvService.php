@@ -61,7 +61,6 @@ final readonly class CsvService implements CsvServiceInterface
             throw new EnvironmentException($e->getMessage());
         }
 
-
         return $response;
     }
 
