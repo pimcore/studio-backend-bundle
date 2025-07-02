@@ -32,7 +32,14 @@ final readonly class WebsiteSettingsUpdate
         private string $name,
         #[Property(description: 'Language', type: 'string', example: 'en')]
         private string $language,
-        #[Property(description: 'Data', type: 'string', example: 'Some/setting/data')]
+        #[Property(
+            description: 'Data',
+            example: true,
+            anyOf: [
+                new Schema(type: 'string'),
+                new Schema(type: 'boolean'),
+            ]
+        )]
         private null|string|bool $data = null,
         #[Property(description: 'Site ID', type: 'integer', example: 1)]
         private ?int $siteId = null,
