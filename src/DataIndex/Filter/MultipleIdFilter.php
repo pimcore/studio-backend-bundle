@@ -37,14 +37,14 @@ final class MultipleIdFilter implements FilterInterface
         }
 
         if (!is_array($filter->getFilterValue())) {
-            throw new InvalidArgumentException('Filter value for this filter must be a array of integers.');
+            throw new InvalidArgumentException('Filter value for this filter must be an array of integers.');
         }
 
         $ids = [];
 
         foreach ($filter->getFilterValue() as $value) {
             if (!is_int($value)) {
-                throw new InvalidArgumentException('Filter value for this filter must be a array of integers.');
+                throw new InvalidArgumentException('Each filter value for this filter must be an integer.');
             }
             $ids[] = $value;
         }
