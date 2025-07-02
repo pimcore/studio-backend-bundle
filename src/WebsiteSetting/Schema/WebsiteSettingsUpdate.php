@@ -37,7 +37,7 @@ final readonly class WebsiteSettingsUpdate
             example: true,
             anyOf: [
                 new Schema(type: 'string'),
-                new Schema(type: 'boolean')
+                new Schema(type: 'boolean'),
             ]
         )]
         private null|string|bool $data = null,

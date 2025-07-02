@@ -43,7 +43,7 @@ final class WebsiteSetting implements AdditionalAttributesInterface
             anyOf: [
                 new Schema(type: 'string'),
                 new Schema(type: 'boolean'),
-                new Schema(ref: ElementParameter::class, type: 'object')
+                new Schema(ref: ElementParameter::class, type: 'object'),
             ]
         )]
         private readonly null|string|bool|ElementParameter $data = null,
