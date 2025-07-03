@@ -218,6 +218,18 @@ bundle_seo_redirects_import_description: |
   Import all redirects using a previously exported a CSV file.
 bundle_seo_redirects_import_success_response: Import statistics data as JSON
 bundle_seo_redirects_import_summary: Import redirects from CSV
+bundle_seo_redirect_list_priorities_description: |
+  List all available priorities for the redirects. Priority 1 is the lowest, 10 highest and 99 is to overwrite all other redirects.
+bundle_seo_redirect_list_priorities_success_response: List of available redirect priorities
+bundle_seo_redirect_list_priorities_summary: List redirect priorities
+bundle_seo_redirect_list_statuses_description: |
+  List all available statuses for the redirects.
+bundle_seo_redirect_list_statuses_success_response: List of available redirect statuses
+bundle_seo_redirect_list_statuses_summary: List redirect statuses
+bundle_seo_redirect_list_types_description: |
+  List all available types for the redirects.
+bundle_seo_redirect_list_types_success_response: List of available redirect types
+bundle_seo_redirect_list_types_summary: List redirect types
 bundle_seo_redirect_update_by_id_description: |
     Update the redirect with the given <strong>{id}</strong>. The <strong>{id}</strong> must be an ID of existing redirect. <br>
     See the full description of updatable fields with the schema <strong>BundleSeoRedirectUpdate</strong> <br>

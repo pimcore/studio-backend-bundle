@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Service;
 
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\Redirect;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\RedirectAddParameters;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\RedirectStatus;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\RedirectUpdateParameters;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\ElementSavingFailedException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\InvalidArgumentException;
@@ -48,4 +49,19 @@ interface RedirectsServiceInterface
     public function deleteRedirect(int $id): void;
 
     public function cleanupRedirects(): void;
+
+    /**
+     * @return string[]
+     */
+    public function listTypes(): array;
+
+    /**
+     * @return int[]
+     */
+    public function listPriorities(): array;
+
+    /**
+     * @return RedirectStatus[]
+     */
+    public function listStatuses(): array;
 }

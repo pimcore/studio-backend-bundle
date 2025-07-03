@@ -17,7 +17,9 @@ use Exception;
 use Pimcore\Bundle\SeoBundle\Model\Redirect as RedirectModel;
 use Pimcore\Bundle\StaticResolverBundle\Models\Element\ServiceResolverInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Event\PreResponse\RedirectListEvent;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Event\PreResponse\RedirectStatusEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectStatusHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Repository\RedirectsRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\Redirect;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Schema\RedirectAddParameters;
@@ -41,6 +43,7 @@ final readonly class RedirectsService implements RedirectsServiceInterface
         private EventDispatcherInterface $eventDispatcher,
         private FilterMapperServiceInterface $filterMapper,
         private RedirectHydratorInterface $hydrator,
+        private RedirectStatusHydratorInterface $statusHydrator,
         private RedirectsRepositoryInterface $repository,
         private ServiceResolverInterface $serviceResolver,
     ) {
@@ -73,6 +76,8 @@ final readonly class RedirectsService implements RedirectsServiceInterface
     public function updateRedirect(int $id, RedirectUpdateParameters $parameters): Redirect
     {
         $this->validateType($parameters->getType());
+        $this->validatePriority($parameters->getPriority());
+        $this->validateStatus($parameters->getStatusCode());
 
         $source = $parameters->getSource();
         if ($source !== null && $parameters->isRegex() === false) {
@@ -141,6 +146,41 @@ final readonly class RedirectsService implements RedirectsServiceInterface
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function listTypes(): array
+    {
+        return RedirectModel::TYPES;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function listPriorities(): array
+    {
+        return [1, 2, 3, 4, 5,6, 7, 8, 9, 10, 99];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function listStatuses(): array
+    {
+        $statuses = RedirectModel::getStatusCodes();
+        $entries = [];
+        foreach ($statuses as $code => $label) {
+            $entry = $this->statusHydrator->hydrate($code, $label);
+            $this->eventDispatcher->dispatch(
+                new RedirectStatusEvent($entry),
+                RedirectStatusEvent::EVENT_NAME
+            );
+            $entries[] = $entry;
+        }
+
+        return $entries;
+    }
+
     private function getHydratedRedirect(RedirectModel $redirect): Redirect
     {
         $entry = $this->hydrator->hydrate($redirect);
@@ -153,12 +193,32 @@ final readonly class RedirectsService implements RedirectsServiceInterface
     }
 
     /**
-     * @throws InvalidArgumentException If the type is not valid.
+     * @throws InvalidArgumentException
      */
     private function validateType(string $type): void
     {
-        if (!in_array($type, RedirectModel::TYPES)) {
+        if (!in_array($type, $this->listTypes(), true)) {
             throw new InvalidArgumentException(sprintf('Invalid redirect type: %s', $type));
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validatePriority(int $priority): void
+    {
+        if (!in_array($priority, $this->listPriorities(), true)) {
+            throw new InvalidArgumentException(sprintf('Invalid redirect priority: %s', $priority));
+        }
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function validateStatus(int $statusCode): void
+    {
+        if (!array_key_exists($statusCode, RedirectModel::getStatusCodes())) {
+            throw new InvalidArgumentException(sprintf('Invalid redirect status: %d', $statusCode));
         }
     }
 
