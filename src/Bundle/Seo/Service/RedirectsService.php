@@ -31,6 +31,7 @@ use Pimcore\Bundle\StudioBackendBundle\MappedParameter\CollectionFilterParameter
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Pimcore\Bundle\StudioBackendBundle\Util\Constant\ElementTypes;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use function array_key_exists;
 use function in_array;
 use function sprintf;
 
@@ -159,7 +160,7 @@ final readonly class RedirectsService implements RedirectsServiceInterface
      */
     public function listPriorities(): array
     {
-        return [1, 2, 3, 4, 5,6, 7, 8, 9, 10, 99];
+        return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 99];
     }
 
     /**
