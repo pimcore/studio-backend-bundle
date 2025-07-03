@@ -33,7 +33,7 @@ final class StatusesJson extends JsonContent
                     title: 'Redirect statuses',
                     description: 'List of redirect statuses used in the PimcoreSeoBundle.',
                     type: 'array',
-                    items: new Items(ref: RedirectStatus::class, ),
+                    items: new Items(ref: RedirectStatus::class),
                 ),
             ],
             type: 'object'
