@@ -89,7 +89,7 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
     {
         return new CustomReportDrillDownOption(
             $drillDownData['name'] ?? '',
-                $drillDownData['value'] ?? ''
+            $drillDownData['value'] ?? ''
         );
     }
 

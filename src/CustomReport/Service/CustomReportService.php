@@ -29,6 +29,7 @@ use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use TypeError;
+use function is_string;
 
 /**
  * @internal
@@ -150,6 +151,7 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         $options = [];
         $config = $this->getCustomReportByName($parameters->getName());
         $adapter = $this->adapterService->getAdapter($config);
+
         try {
             $data = $adapter->getAvailableOptions(
                 $this->sanitizeColumnFilterValues($parameters->getFilters()->getColumnFilters()),

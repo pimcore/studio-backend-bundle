@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter;
 
-use Hoa\Iterator\Filter;
-
 /**
  * @internal
  */
