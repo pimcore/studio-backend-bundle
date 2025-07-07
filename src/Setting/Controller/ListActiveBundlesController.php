@@ -52,7 +52,7 @@ final class ListActiveBundlesController extends AbstractApiController
         content: new ActiveBundlesJson()
     )]
     #[DefaultResponses([
-        HttpResponseCodes::UNAUTHORIZED
+        HttpResponseCodes::UNAUTHORIZED,
     ])]
     public function getActiveBundles(): JsonResponse
     {
