@@ -28,6 +28,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectHydrator
 
+  Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectStatusHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectStatusHydrator
+
   Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectImportStatsHydratorInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Bundle\Seo\Hydrator\RedirectImportStatsHydrator
 
