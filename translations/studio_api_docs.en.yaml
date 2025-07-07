@@ -1,3 +1,7 @@
+active_bundles_get_description: |
+  List all active and installed bundles in the system.
+active_bundles_get_success_response: List of active bundles
+active_bundles_get_summary: List all active bundles
 asset_add_description: |
   Add a new asset based on the binary <strong>{file}</strong> to the given <strong>{parentId}</strong>. <br> 
   The <strong>{parentId}</strong> must be an ID of existing folder.

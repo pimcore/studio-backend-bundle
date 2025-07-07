@@ -12,11 +12,29 @@ services:
     tags: [ 'controller.service_arguments' ]
 
 
+  #
+  # Services
+  #
+
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingProviderLoaderInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\Loader\TaggedIteratorAdapter
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\SettingsService
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Service\BundlesServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Service\BundlesService
+
+  #
+  # Hydrators
+  #
+
+  Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\ActiveBundleHydratorInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Setting\Hydrator\ActiveBundleHydrator
+
+  #
+  # Providers
+  #
 
   Pimcore\Bundle\StudioBackendBundle\Setting\Provider\ConfigSettingsProvider:
     tags: [ 'pimcore.studio_backend.settings_provider' ]
