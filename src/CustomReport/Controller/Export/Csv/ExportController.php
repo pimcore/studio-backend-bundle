@@ -35,6 +35,8 @@ use Symfony\Component\Serializer\SerializerInterface;
  */
 final class ExportController extends AbstractApiController
 {
+    private const string ROUTE = '/custom-reports/export/csv';
+
     public function __construct(
         SerializerInterface $serializer,
         private readonly CsvServiceInterface $csvService
@@ -42,10 +44,10 @@ final class ExportController extends AbstractApiController
         parent::__construct($serializer);
     }
 
-    #[Route('/custom-report/export/csv', name: 'pimcore_studio_api_custom_report_export_csv', methods: ['Post'])]
+    #[Route(self::ROUTE, name: 'pimcore_studio_api_custom_report_export_csv', methods: ['Post'])]
     #[IsGranted(CustomReportPermissions::REPORTS->value)]
     #[Post(
-        path: self::PREFIX . '/custom-report/export/csv',
+        path: self::PREFIX . self::ROUTE,
         operationId: 'custom_report_export_csv',
         description: 'custom_report_export_csv_description',
         summary: 'custom_report_export_csv_summary',

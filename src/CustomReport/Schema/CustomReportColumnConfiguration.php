@@ -38,6 +38,8 @@ final readonly class CustomReportColumnConfiguration
         private string $label,
         #[Property(description: 'Id', type: 'string', example: '401-3')]
         private string $id,
+        #[Property(description: 'Drilldown filter', type: 'string', example: 'only_filter')]
+        private ?string $filterDrilldown = null,
     ) {
 
     }
@@ -70,5 +72,10 @@ final readonly class CustomReportColumnConfiguration
     public function getId(): string
     {
         return $this->id;
+    }
+
+    public function getFilterDrilldown(): ?string
+    {
+        return $this->filterDrilldown;
     }
 }

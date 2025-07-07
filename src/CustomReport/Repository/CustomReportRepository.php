@@ -35,10 +35,7 @@ final readonly class CustomReportRepository implements CustomReportRepositoryInt
 
     public function loadForUser(User $user): array
     {
-        /** @var Dao $dao */
-        $dao = (new Listing())->getDao();
-
-        return $dao->loadForGivenUser(
+        return (new Listing())->getDao()->loadForGivenUser(
             $user
         );
     }

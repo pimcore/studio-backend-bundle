@@ -17,6 +17,7 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportColumnConfiguration;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDrillDownOption;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeNode;
 
@@ -84,6 +85,14 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
         );
     }
 
+    public function hydrateDrillDownOption(array $drillDownData): CustomReportDrillDownOption
+    {
+        return new CustomReportDrillDownOption(
+            $drillDownData['name'] ?? '',
+                $drillDownData['value'] ?? ''
+        );
+    }
+
     private function getCustomReportColumnConfiguration(array $columns): array
     {
         $columnConfig = [];
@@ -94,7 +103,8 @@ final readonly class CustomReportHydrator implements CustomReportHydratorInterfa
                 $column['export'] ?? '',
                 $column['order'] ?? '',
                 $column['label'] ?? '',
-                $column['id'] ?? ''
+                $column['id'] ?? '',
+                $column['filter_drilldown'] ?? null
             );
         }
 

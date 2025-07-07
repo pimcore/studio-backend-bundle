@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller\Chart;
 
 use Exception;
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
@@ -73,8 +74,6 @@ final class GetController extends AbstractApiController
         required: true,
         example: 'Quality_Attributes',
     )]
-    #[PageParameter]
-    #[PageSizeParameter]
     #[SortOrderParameter]
     #[StringParameter(
         name: 'sortBy',
@@ -86,16 +85,18 @@ final class GetController extends AbstractApiController
     #[IntParameter(
         name: 'reportOffset',
         description: 'custom_reports_chart_report_offset_parameter',
-        required: false
+        required: false,
+        example: 0
     )]
     #[IntParameter(
         name: 'reportLimit',
         description: 'custom_reports_chart_report_limit_parameter',
-        required: false
+        required: false,
+        example: 10
     )]
     #[SuccessResponse(
         description: 'custom_reports_chart_success_response',
-        content: new ItemsJson(CustomReportChartData::class)
+        content: new JsonContent(ref: CustomReportChartData::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,

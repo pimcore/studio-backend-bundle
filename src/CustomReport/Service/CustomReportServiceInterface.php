@@ -14,9 +14,11 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\DrillDownParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 
 /**
@@ -46,4 +48,9 @@ interface CustomReportServiceInterface
     public function getFieldsForExport(Config $reportConfig): array;
 
     public function generateCsvData(array $reportData, array $exportFields, bool $includeHeaders): array;
+
+    /**
+     * @throws DatabaseException|NotFoundException
+     */
+    public function getDrillDownOptions(DrillDownParameter $parameters): array;
 }
