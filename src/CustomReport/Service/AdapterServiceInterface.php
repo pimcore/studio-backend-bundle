@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
+use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
@@ -26,4 +27,9 @@ interface AdapterServiceInterface
      * @throws NotFoundException
      */
     public function getData(Config $report, ExportParameter $chartDataParameter): array;
+
+    /**
+     * @throws NotFoundException
+     */
+    public function getAdapter(Config $report): CustomReportAdapterInterface;
 }

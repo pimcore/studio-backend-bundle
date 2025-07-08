@@ -16,6 +16,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDrillDownOption;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeConfigNode;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportTreeNode;
 
@@ -31,4 +32,6 @@ interface CustomReportHydratorInterface
     public function extractTreeData(Config $report): CustomReportTreeNode;
 
     public function extractChartData(array $chartData): CustomReportChartData;
+
+    public function hydrateDrillDownOption(array $drillDownData): CustomReportDrillDownOption;
 }

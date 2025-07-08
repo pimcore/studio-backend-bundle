@@ -47,7 +47,7 @@ final readonly class AdapterService implements AdapterServiceInterface
     /**
      * @throws NotFoundException
      */
-    private function getAdapter(Config $report): CustomReportAdapterInterface
+    public function getAdapter(Config $report): CustomReportAdapterInterface
     {
         $configuration = $report->getDataSourceConfig();
         if (!$configuration instanceof stdClass) {

@@ -13,23 +13,31 @@ declare(strict_types=1);
 
 namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Service;
 
+use Exception;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\ChartDataEvent;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\DrillDownOptionEvent;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\ReportEvent;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\TreeConfigNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Event\TreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Hydrator\CustomReportHydratorInterface;
+use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\DrillDownParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Repository\CustomReportRepositoryInterface;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportDetails;
+use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use TypeError;
+use function is_string;
 
 /**
  * @internal
  */
 final readonly class CustomReportService implements CustomReportServiceInterface
 {
+    private const string VALUE_KEY = 'value';
+
     public function __construct(
         private CustomReportHydratorInterface $customReportHydrator,
         private CustomReportRepositoryInterface $customReportRepository,
@@ -133,5 +141,70 @@ final readonly class CustomReportService implements CustomReportServiceInterface
         }
 
         return $csvData;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getDrillDownOptions(DrillDownParameter $parameters): array
+    {
+        $options = [];
+        $config = $this->getCustomReportByName($parameters->getName());
+        $adapter = $this->adapterService->getAdapter($config);
+
+        try {
+            $data = $adapter->getAvailableOptions(
+                $this->sanitizeColumnFilterValues($parameters->getFilters()->getColumnFilters()),
+                $parameters->getField(),
+                $this->sanitizeDrillDownFilterValues($parameters->getFilters()->getDrillDownFilters())
+            );
+        } catch (Exception|TypeError $e) {
+            throw new DatabaseException($e->getMessage(), $e);
+        }
+
+        if (!isset($data['data'])) {
+            return $options;
+        }
+
+        foreach ($data['data'] as $entry) {
+            $option = $this->customReportHydrator->hydrateDrillDownOption($entry);
+            $this->eventDispatcher->dispatch(
+                new DrillDownOptionEvent($option),
+                DrillDownOptionEvent::EVENT_NAME
+            );
+            $options[] = $option;
+        }
+
+        return $options;
+    }
+
+    private function sanitizeColumnFilterValues(array $columnFilters): array
+    {
+        // Ensure all values in column filters are strings
+        // This is necessary to ensure compatibility with the core adapter and database queries
+        foreach ($columnFilters as $index => $columnFilter) {
+            if (!isset($columnFilter[self::VALUE_KEY])) {
+                unset($columnFilters[$index]);
+            }
+
+            if (!is_string($columnFilter[self::VALUE_KEY])) {
+                $columnFilters[$index][self::VALUE_KEY] = (string) $columnFilter[self::VALUE_KEY];
+            }
+        }
+
+        return $columnFilters;
+    }
+
+    private function sanitizeDrillDownFilterValues(array $filters): array
+    {
+        // Ensure all values in column filters are strings
+        // This is necessary to ensure compatibility with the core adapter and database queries
+        foreach ($filters as $key => $value) {
+            if (!is_string($value)) {
+                $filters[$key] = (string)$value;
+            }
+        }
+
+        return $filters;
     }
 }

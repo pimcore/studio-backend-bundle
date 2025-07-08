@@ -15,17 +15,15 @@ namespace Pimcore\Bundle\StudioBackendBundle\CustomReport\Controller\Chart;
 
 use Exception;
 use OpenApi\Attributes\Get;
+use OpenApi\Attributes\JsonContent;
 use Pimcore\Bundle\StudioBackendBundle\Controller\AbstractApiController;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\CustomReport\Service\CustomReportServiceInterface;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Content\ItemsJson;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\FilterParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\IntParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageParameter;
-use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\PageSizeParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\SortOrderParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\StringParameter;
 use Pimcore\Bundle\StudioBackendBundle\OpenApi\Attribute\Parameter\Query\TextFieldParameter;
@@ -73,8 +71,6 @@ final class GetController extends AbstractApiController
         required: true,
         example: 'Quality_Attributes',
     )]
-    #[PageParameter]
-    #[PageSizeParameter]
     #[SortOrderParameter]
     #[StringParameter(
         name: 'sortBy',
@@ -86,16 +82,18 @@ final class GetController extends AbstractApiController
     #[IntParameter(
         name: 'reportOffset',
         description: 'custom_reports_chart_report_offset_parameter',
-        required: false
+        required: false,
+        example: 0
     )]
     #[IntParameter(
         name: 'reportLimit',
         description: 'custom_reports_chart_report_limit_parameter',
-        required: false
+        required: false,
+        example: 10
     )]
     #[SuccessResponse(
         description: 'custom_reports_chart_success_response',
-        content: new ItemsJson(CustomReportChartData::class)
+        content: new JsonContent(ref: CustomReportChartData::class)
     )]
     #[DefaultResponses([
         HttpResponseCodes::NOT_FOUND,
