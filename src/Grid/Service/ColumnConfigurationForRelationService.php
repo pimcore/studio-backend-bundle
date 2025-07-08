@@ -52,7 +52,9 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
         $fieldDefinition = $class->getFieldDefinition($relationField);
 
         if (!$fieldDefinition) {
-            throw new InvalidArgumentException(sprintf('Field %s not found in class %s', $relationField, $classId));
+            throw new InvalidArgumentException(
+                sprintf('Field %s not found in class %s', $relationField, $classId)
+            );
         }
 
         if ($fieldDefinition instanceof AdvancedManyToManyObjectRelation) {
@@ -88,7 +90,8 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
         $classes = $fieldDefinition->getClasses();
         $availableConfigurationsForRelation = [];
         if (count($classes) > 1) {
-            $availableConfigurationsForRelation = $this->columnConfigurationService->getSystemDataObjectColumnConfiguration();
+            $availableConfigurationsForRelation = $this->columnConfigurationService
+                ->getSystemDataObjectColumnConfiguration();
         }
 
         if (count($classes) === 1) {
@@ -96,7 +99,8 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
                 $classes[0]['classes'],
             )->getId();
 
-            $availableConfigurationsForRelation = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
+            $availableConfigurationsForRelation = $this->columnConfigurationService
+                ->getAvailableDataObjectColumnConfiguration(
                 $classId,
                 0,
                 $user
@@ -121,7 +125,8 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
             $fieldDefinition->getAllowedClassId()
         )->getId();
 
-        $availableConfigurationsForRelation = $this->columnConfigurationService->getAvailableDataObjectColumnConfiguration(
+        $availableConfigurationsForRelation = $this->columnConfigurationService
+            ->getAvailableDataObjectColumnConfiguration(
             $classId,
             0,
             $user
