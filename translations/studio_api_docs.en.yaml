@@ -765,11 +765,13 @@ tag_batch_operation_to_elements_by_type_and_id_description: |
   Operation parameter <strong>{operation}</strong> must be one of the <strong>assign</strong or <strong>replace</strong>.
 tag_batch_operation_to_elements_by_type_and_id_created_response: Successfully created jobRun for batch tag assignment/replacement
 tag_batch_operation_to_elements_by_type_and_id_summary: Batch assign/replace tags for children elements
+tag_bundle_application_logger_description: Application logger operations to list/get log entries
+tag_bundle_custom_reports_description: Custom reports bundle operations to e.g. list reports and their configurations
+tag_bundle_seo_description: Seo bundle related operations (e.g. add/remove/list redirects)
 tag_create_description: |
   Create a new tag. <br> See the full description of request fields with the schema <strong>Create Tag Parameters</strong>
 tag_create_success_response: Created tag data as JSON
 tag_create_summary: Create a new tag
-tag_custom_reports_description: List custom reports and their configurations
 tag_dataobjects_description: DataObject operations to get/update/create/delete data
   objects
 tag_dataobject_grid_description: DataObject Grid operations
@@ -828,8 +830,6 @@ tag_versions_description: Versions operations to get/list/publish/delete and cle
   versions
 tag_website_settings_description: Website settings operations to list/update/create/delete website settings
 tag_workflows_description: Workflows operations to get element workflow details
-tag_bundle_application_logger_description: Application logger operations to list/get log entries
-tag_bundle_seo_description: Seo bundle related operations (e.g. add/remove/list redirects)
 thumbnail_image_get_collection_description: |
   Get collection of thumbnails for images. <br>
   The thumbnails have to be defined as downloadable in order to be listed in the collection.

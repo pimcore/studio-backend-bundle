@@ -43,10 +43,6 @@ use OpenApi\Attributes\Tag;
     description: 'tag_classification_store'
 )]
 #[Tag(
-    name: Tags::CustomReports->value,
-    description: 'tag_custom_reports_description'
-)]
-#[Tag(
     name: Tags::DataObjects->value,
     description: 'tag_dataobjects_description'
 )]
@@ -159,6 +155,10 @@ use OpenApi\Attributes\Tag;
     description: 'tag_bundle_application_logger_description'
 )]
 #[Tag(
+    name: Tags::BundleCustomReports->value,
+    description: 'tag_bundle_custom_reports_description'
+)]
+#[Tag(
     name: Tags::BundleSeo->value,
     description: 'tag_bundle_seo_description'
 )]
@@ -168,9 +168,11 @@ enum Tags: string
     case AssetGrid = 'Asset Grid';
     case AssetThumbnails = 'Asset Thumbnails';
     case Authorization = 'Authorization';
+    case BundleApplicationLogger = 'Bundle Application Logger';
+    case BundleCustomReports = 'Bundle Custom Reports';
+    case BundleSeo = 'Bundle Seo';
     case ClassDefinition = 'Class Definition';
     case ClassificationStore = 'Classification Store';
-    case CustomReports = 'Custom Reports';
     case DataObjects = 'Data Objects';
     case DataObjectsGrid = 'Data Object Grid';
     case Dependencies = 'Dependencies';
@@ -198,6 +200,4 @@ enum Tags: string
     case Versions = 'Versions';
     case WebsiteSettings = 'Website Settings';
     case Workflows = 'Workflows';
-    case BundleApplicationLogger = 'Bundle Application Logger';
-    case BundleSeo = 'Bundle Seo';
 }
