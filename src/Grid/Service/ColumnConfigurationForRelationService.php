@@ -7,10 +7,9 @@ declare(strict_types=1);
  * Full copyright and license information is available in
  * LICENSE.md which is distributed with this source code.
  *
- * @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
- * @license    Pimcore Open Core License (POCL)
+ *  @copyright  Copyright (c) Pimcore GmbH (https://www.pimcore.com)
+ *  @license    Pimcore Open Core License (POCL)
  */
-
 
 namespace Pimcore\Bundle\StudioBackendBundle\Grid\Service;
 
@@ -21,6 +20,9 @@ use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\ColumnConfiguration;
 use Pimcore\Model\DataObject\ClassDefinition\Data\AdvancedManyToManyObjectRelation;
 use Pimcore\Model\DataObject\ClassDefinition\Data\ManyToManyObjectRelation;
 use Pimcore\Model\UserInterface;
+use function count;
+use function is_string;
+use function sprintf;
 
 /**
  * @internal
@@ -30,8 +32,7 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
     public function __construct(
         private ClassDefinitionResolverInterface $classDefinitionResolver,
         private ColumnConfigurationServiceInterface $columnConfigurationService
-    )
-    {
+    ) {
     }
 
     /**
@@ -41,8 +42,7 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
         string $classId,
         string $relationField,
         UserInterface $user
-    ): array
-    {
+    ): array {
         $class = $this->classDefinitionResolver->getById($classId);
 
         if (!$class) {
@@ -55,14 +55,14 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
             throw new InvalidArgumentException(sprintf('Field %s not found in class %s', $relationField, $classId));
         }
 
-        if($fieldDefinition instanceof AdvancedManyToManyObjectRelation) {
+        if ($fieldDefinition instanceof AdvancedManyToManyObjectRelation) {
             return $this->resolveConfigurationForAdvancedManyToManyObjectRelation(
                 $fieldDefinition,
                 $user
             );
         }
 
-        if($fieldDefinition instanceof ManyToManyObjectRelation) {
+        if ($fieldDefinition instanceof ManyToManyObjectRelation) {
             return $this->resolveConfigurationForManyToManyObjectRelation(
                 $fieldDefinition,
                 $user
@@ -78,13 +78,13 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 
     /**
      * @return ColumnConfiguration[]
+     *
      * @throws Exception
      */
     private function resolveConfigurationForManyToManyObjectRelation(
         ManyToManyObjectRelation $fieldDefinition,
         UserInterface $user
-    ): array
-    {
+    ): array {
         $classes = $fieldDefinition->getClasses();
         $availableConfigurationsForRelation = [];
         if (count($classes) > 1) {
@@ -105,20 +105,18 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 
         $visibleGridFields = $this->extractVisibleGridFields($fieldDefinition);
 
-
         return $this->findConfigurations($visibleGridFields, $availableConfigurationsForRelation);
     }
 
-
     /**
      * @return ColumnConfiguration[]
+     *
      * @throws Exception
      */
     private function resolveConfigurationForAdvancedManyToManyObjectRelation(
         AdvancedManyToManyObjectRelation $fieldDefinition,
         UserInterface $user
-    ): array
-    {
+    ): array {
         $classId = $this->classDefinitionResolver->getByName(
             $fieldDefinition->getAllowedClassId()
         )->getId();
@@ -131,10 +129,8 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 
         $visibleGridFields = $this->extractVisibleGridFields($fieldDefinition);
 
-
         return $this->findConfigurations($visibleGridFields, $availableConfigurationsForRelation);
     }
-
 
     private function extractVisibleGridFields(ManyToManyObjectRelation $fieldDefinition): array
     {
@@ -160,6 +156,7 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
             foreach ($allConfigurations as $configuration) {
                 if ($configuration->getKey() === $allowedField) {
                     $configurations[] = $configuration;
+
                     break;
                 }
             }
@@ -167,5 +164,4 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 
         return $configurations;
     }
-
 }
