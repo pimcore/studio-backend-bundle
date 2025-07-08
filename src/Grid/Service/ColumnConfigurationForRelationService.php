@@ -53,7 +53,11 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 
         if (!$fieldDefinition) {
             throw new InvalidArgumentException(
-                sprintf('Field %s not found in class %s', $relationField, $classId)
+                sprintf(
+                    'Field %s not found in class %s',
+                    $relationField,
+                    $classId
+                )
             );
         }
 
