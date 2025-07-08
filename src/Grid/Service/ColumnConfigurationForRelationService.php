@@ -101,10 +101,10 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 
             $availableConfigurationsForRelation = $this->columnConfigurationService
                 ->getAvailableDataObjectColumnConfiguration(
-                $classId,
-                0,
-                $user
-            );
+                    $classId,
+                    0,
+                    $user
+                );
         }
 
         $visibleGridFields = $this->extractVisibleGridFields($fieldDefinition);
@@ -127,10 +127,10 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 
         $availableConfigurationsForRelation = $this->columnConfigurationService
             ->getAvailableDataObjectColumnConfiguration(
-            $classId,
-            0,
-            $user
-        );
+                $classId,
+                0,
+                $user
+            );
 
         $visibleGridFields = $this->extractVisibleGridFields($fieldDefinition);
 
