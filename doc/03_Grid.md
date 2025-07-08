@@ -202,7 +202,7 @@ Available modes:
                 {
                     "key": "staticText",
                     "config": {
-                      "value": "my-static-text",
+                      "text": "my-static-text",
                     }
                 }
             ]
@@ -238,13 +238,13 @@ Available configurations:
                 {
                     "key": "staticText",
                     "config": {
-                      "value": "my-static-text",
+                      "text": "my-static-text",
                     }
                 },
                 {
                     "key": "staticText",
                     "config": {
-                      "value": "my-static-text",
+                      "text": "my-static-text",
                     }
                 }
             ]
