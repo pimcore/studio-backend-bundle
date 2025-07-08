@@ -77,7 +77,8 @@ final readonly class ColumnConfigurationForRelationService implements ColumnConf
 
         throw new InvalidArgumentException(
             sprintf(
-                'Field %s is not a ManyToManyObjectRelation or AdvancedManyToManyObjectRelation', $relationField
+                'Field %s is not a ManyToManyObjectRelation or AdvancedManyToManyObjectRelation',
+                $relationField
             )
         );
     }
