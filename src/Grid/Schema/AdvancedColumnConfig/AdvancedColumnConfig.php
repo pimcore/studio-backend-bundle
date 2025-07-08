@@ -38,7 +38,7 @@ final readonly class AdvancedColumnConfig
                         property: 'key',
                         description: 'Type of the column, e.g. "simpleField", "relationField", "staticText"',
                         type: 'string',
-                        example: "simpleField"
+                        example: 'simpleField'
                     ),
                     new Property(
                         property: 'config',
@@ -52,7 +52,7 @@ final readonly class AdvancedColumnConfig
                         ),
                         example: [
                             'field' => 'name',
-                            'relation' => 'manufacturer'
+                            'relation' => 'manufacturer',
                         ]
                     ),
                 ]
@@ -60,8 +60,8 @@ final readonly class AdvancedColumnConfig
             example: [
                 [
                     'key' => 'simpleField',
-                    'config' => ['field' => 'name']
-                ]
+                    'config' => ['field' => 'name'],
+                ],
             ]
         )]
         private array $advancedColumns,
