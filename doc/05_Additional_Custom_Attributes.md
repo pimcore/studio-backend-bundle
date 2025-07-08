@@ -135,6 +135,7 @@ final class AssetEvent extends AbstractPreResponseEvent
 - `pre_response.recycle_bin.item`
 - `pre_response.role_tree_node`
 - `pre_response.schedule`
+- `pre_response.settings.active_bundle`
 - `pre_response.simple_search.preview`
 - `pre_response.simple_search.result`
 - `pre_response.simple_user`
