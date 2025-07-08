@@ -90,26 +90,26 @@ final readonly class Column
         }
 
         foreach ($this->config['advancedColumns'] as $advancedColumn) {
-            if (isset($advancedColumn['field']) && isset($advancedColumn['relation'])) {
+            if ($advancedColumn['key'] === 'relationField') {
                 $configs[] = new RelationFieldConfig(
-                    relation: $advancedColumn['relation'],
-                    field: $advancedColumn['field'],
+                    relation: $advancedColumn['config']['relation'],
+                    field: $advancedColumn['config']['field'],
                 );
 
                 continue;
             }
 
-            if (isset($advancedColumn['field'])) {
+            if ($advancedColumn['key'] === 'simpleField') {
                 $configs[] = new SimpleFieldConfig(
-                    field: $advancedColumn['field'],
+                    field: $advancedColumn['config']['field'],
                 );
 
                 continue;
             }
 
-            if (isset($advancedColumn['text'])) {
+            if ($advancedColumn['key'] === 'staticText') {
                 $configs[] = new StaticTextConfig(
-                    text: $advancedColumn['text'],
+                    text: $advancedColumn['config']['text'],
                 );
             }
         }

@@ -114,10 +114,16 @@ Let's take a look at the `simpleField` type. The `simpleField` call the getter m
         "config": {
             "advancedColumns": [
                 {
-                  "field": "name"
+                    "key": "simpleField",
+                    "config": {
+                      "field": "name"
+                    }
                 },
                 {
-                  "field": "productionYear"
+                    "key": "simpleField",
+                    "config": {
+                      "field": "productionYear"
+                    }
                 }
             ]
         }
@@ -126,7 +132,7 @@ Let's take a look at the `simpleField` type. The `simpleField` call the getter m
 ...
 ```
 
-The `relationField` is a relation field in the object. You can pass the `relation` `and `field` to get the value of the relation. 
+The `relationField` is a relation field in the object. You can pass the `relation` and `field` to get the value of the relation. 
 ```json
 ...
 "columns": [
@@ -137,8 +143,11 @@ The `relationField` is a relation field in the object. You can pass the `relatio
         "config": {
             "advancedColumns": [
                 {
-                "relation": "manufacturer",
-                "field": "name"
+                    "key": "relationField",
+                    "config": {
+                      "field": "name",
+                      "relation": "manufacturer",
+                    }
                 }
             ]
         }
@@ -158,7 +167,10 @@ The `staticText` is a static text that is not related to the object. You can pas
         "config": {
             "advancedColumns": [
                 {
-                "text": "My Custom Text",
+                    "key": "staticText",
+                    "config": {
+                        "text": "my-static-text",
+                    }
                 }
             ]
         }
@@ -188,13 +200,16 @@ Available modes:
         "config": {
             "advancedColumns": [
                 {
-                "text": "My Custom Text",
+                    "key": "staticText",
+                    "config": {
+                      "value": "my-static-text",
+                    }
                 }
             ]
             "transformers": [
                 {
                   "key": "changeChase",
-                  "congfig": {
+                  "config": {
                     "mode": "uppercase"
                   }
                 }
@@ -221,10 +236,16 @@ Available configurations:
         "config": {
             "advancedColumns": [
                 {
-                   "text": "My Custom Text",
+                    "key": "staticText",
+                    "config": {
+                      "value": "my-static-text",
+                    }
                 },
                 {
-                  "text": "My Custom Text",
+                    "key": "staticText",
+                    "config": {
+                      "value": "my-static-text",
+                    }
                 }
             ]
             "transformers": [
