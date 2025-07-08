@@ -139,13 +139,12 @@ final class AdvancedColumnCollector implements
             locale: null,
             type: 'dataobject.advanced',
             frontendType: FrontendType::INPUT->value,
-            config: [
+            config:
                 [
                     'simpleField' => $simpleFields,
                     'relationField' => $relationFields,
                     'transformers' => $transformers,
-                ],
-            ],
+                ]
         );
     }
 
