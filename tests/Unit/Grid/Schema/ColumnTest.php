@@ -52,8 +52,8 @@ final class ColumnTest extends Unit
                     [
                         'key' => 'simpleField',
                         'config' => [
-                            'field' => 'name'
-                        ]
+                            'field' => 'name',
+                        ],
                     ],
                 ],
             ],
@@ -77,8 +77,8 @@ final class ColumnTest extends Unit
                 'advancedColumns' => [
                     [
                         'key' => 'relationField',
-                        'config' => ['field' => 'name', 'relation' => 'manufacturer']
-                    ]
+                        'config' => ['field' => 'name', 'relation' => 'manufacturer'],
+                    ],
                 ],
             ],
         );
