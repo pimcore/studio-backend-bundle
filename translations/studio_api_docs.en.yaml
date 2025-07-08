@@ -1204,3 +1204,6 @@ notification_get_recipients_success_response: List of notification recipients fo
 notification_get_unread_count_description: Count of unread notifications for the current user
 notification_get_unread_count_summary: Count of unread notifications for the current user
 notification_get_unread_count_success_response: Count of unread notifications for the current user
+data_object_get_available_grid_columns_for_relation_description: Get all available grid columns for data objects Many to many relation field (defined in the visible columns)
+data_object_get_available_grid_columns_for_relation_summary: Get all available grid columns for data objects Many to many relation field
+data_object_get_available_grid_columns_success_for_relation_response: List of available grid columns for data objects Many to many relation field
