@@ -57,6 +57,9 @@ services:
   Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridSearchServiceInterface:
     class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\GridSearchService
 
+  Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationForRelationServiceInterface:
+    class: Pimcore\Bundle\StudioBackendBundle\Grid\Service\ColumnConfigurationForRelationService
+
   #
   # Repository
   #
