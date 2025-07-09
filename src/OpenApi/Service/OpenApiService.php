@@ -21,6 +21,7 @@ use OpenApi\Attributes\Schema;
 use OpenApi\Attributes\Server;
 use OpenApi\Generator;
 use Pimcore\Bundle\ApplicationLoggerBundle\PimcoreApplicationLoggerBundle;
+use Pimcore\Bundle\CustomReportsBundle\PimcoreCustomReportsBundle;
 use Pimcore\Bundle\SeoBundle\PimcoreSeoBundle;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\EnvironmentException;
 use Pimcore\Bundle\StudioBackendBundle\Exception\InvalidPathException;
@@ -58,6 +59,7 @@ final readonly class OpenApiService implements OpenApiServiceInterface
             $this->filterConfigs($config);
 
             usort($config->components->schemas, [$this, 'sortSchemas']);
+            usort($config->tags, [$this, 'sortTags']);
 
             // replace the configurable prefix in the paths
             $prefix = $this->routePrefix;
@@ -101,6 +103,18 @@ final readonly class OpenApiService implements OpenApiServiceInterface
     private function sortSchemas(Schema $a, Schema $b): int
     {
         return $a->title <=> $b->title;
+    }
+
+    private function sortTags(Tag $a, Tag $b): int
+    {
+        $aIsBundle = str_starts_with($a->name, 'Bundle');
+        $bIsBundle = str_starts_with($b->name, 'Bundle');
+
+        if ($aIsBundle !== $bIsBundle) {
+            return $aIsBundle ? 1 : -1;
+        }
+
+        return $aIsBundle ? $a->name <=> $b->name : 0;
     }
 
     private function translateRecursive(array &$config, string $locale = 'en'): void
@@ -159,6 +173,13 @@ final readonly class OpenApiService implements OpenApiServiceInterface
             PimcoreApplicationLoggerBundle::class,
             '{prefix}/bundle/application-logger',
             'Bundle Application Logger'
+        );
+
+        $this->filterConfigByBundle(
+            $config,
+            PimcoreCustomReportsBundle::class,
+            '{prefix}/bundle/custom-reports',
+            'Bundle Custom Reports'
         );
 
         $this->filterConfigByBundle(
