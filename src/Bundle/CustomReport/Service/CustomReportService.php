@@ -23,16 +23,13 @@ use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Event\TreeNodeEvent;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Hydrator\CustomReportHydratorInterface;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\DrillDownParameter;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Repository\CustomReportRepositoryInterface;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportChartData;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Schema\CustomReportDetails;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\DatabaseException;
 use Pimcore\Bundle\StudioBackendBundle\Response\Collection;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use TypeError;
 use function is_string;
-use function Sabre\Xml\Serializer\enum;
 
 /**
  * @internal
@@ -108,7 +105,6 @@ final readonly class CustomReportService implements CustomReportServiceInterface
 
             $hydratedData[] = $chartData;
         }
-
 
         return new Collection($data['total'] ?? 0, $hydratedData);
     }

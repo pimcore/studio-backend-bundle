@@ -17,7 +17,6 @@ use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterFactoryIn
 use Pimcore\Bundle\CustomReportsBundle\Tool\Adapter\CustomReportAdapterInterface;
 use Pimcore\Bundle\CustomReportsBundle\Tool\Config;
 use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ChartDataParameter;
-use Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\MappedParameter\ExportParameter;
 use Pimcore\Bundle\StudioBackendBundle\Exception\Api\NotFoundException;
 use stdClass;
 use Symfony\Component\DependencyInjection\ServiceLocator;

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Pimcore\Bundle\StudioBackendBundle\Bundle\CustomReport\Attribute\Request;
 
 use Attribute;
-use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
@@ -57,13 +56,12 @@ class ChartDataRequestBody extends RequestBody
                 type: 'integer',
                 minimum: 1,
                 example: '50'
-            )
+            ),
         ];
 
         if (!empty($additionalProperties)) {
             $properties = array_merge($properties, $additionalProperties);
         }
-
 
         parent::__construct(
             required: true,

@@ -57,7 +57,6 @@ final readonly class ExportParameter extends ChartDataParameter
         );
     }
 
-
     public function getIncludeHeaders(): bool
     {
         return $this->includeHeaders;

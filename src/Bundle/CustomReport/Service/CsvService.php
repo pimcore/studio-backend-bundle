@@ -45,7 +45,7 @@ final readonly class CsvService implements CsvServiceInterface
 
         $creationSettings = [
             StepConfig::CONFIG_CONFIGURATION->value => [
-                StepConfig::SETTINGS_DELIMITER->value => $exportParameter->getDelimiter()
+                StepConfig::SETTINGS_DELIMITER->value => $exportParameter->getDelimiter(),
             ],
         ];
 
@@ -76,6 +76,7 @@ final readonly class CsvService implements CsvServiceInterface
             $this->securityService->getCurrentUser()->getId(),
             Config::CONTEXT_STOP_ON_ERROR->value
         );
+
         return $jobRun->getId();
     }
 }
