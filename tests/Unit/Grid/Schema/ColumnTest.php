@@ -49,7 +49,12 @@ final class ColumnTest extends Unit
             group: 'test',
             config: [
                 'advancedColumns' => [
-                    ['field' => 'name'],
+                    [
+                        'key' => 'simpleField',
+                        'config' => [
+                            'field' => 'name',
+                        ],
+                    ],
                 ],
             ],
         );
@@ -70,7 +75,10 @@ final class ColumnTest extends Unit
             group: 'test',
             config: [
                 'advancedColumns' => [
-                    ['field' => 'name', 'relation' => 'manufacturer'],
+                    [
+                        'key' => 'relationField',
+                        'config' => ['field' => 'name', 'relation' => 'manufacturer'],
+                    ],
                 ],
             ],
         );

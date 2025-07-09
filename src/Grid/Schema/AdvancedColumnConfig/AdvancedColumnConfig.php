@@ -32,13 +32,38 @@ final readonly class AdvancedColumnConfig
             description: 'advancedColumns',
             type: 'array',
             items: new Items(
-                anyOf: [
-                    new Schema(ref: RelationFieldConfig::class),
-                    new Schema(ref: SimpleFieldConfig::class),
-                    new Schema(ref: StaticTextConfig::class),
+                required: ['key', 'config'],
+                properties: [
+                    new Property(
+                        property: 'key',
+                        description: 'Type of the column, e.g. "simpleField", "relationField", "staticText"',
+                        type: 'string',
+                        example: 'simpleField'
+                    ),
+                    new Property(
+                        property: 'config',
+                        type: 'array',
+                        items: new Items(
+                            anyOf: [
+                                new Schema(ref: RelationFieldConfig::class),
+                                new Schema(ref: SimpleFieldConfig::class),
+                                new Schema(ref: StaticTextConfig::class),
+                            ]
+                        ),
+                        example: [
+                            'field' => 'name',
+                            'relation' => 'manufacturer',
+                        ]
+                    ),
                 ]
             ),
-            example: [['field' => 'name', 'relation' => 'manufacturer'], ['field' => 'name'], ['text' => 'name']])]
+            example: [
+                [
+                    'key' => 'simpleField',
+                    'config' => ['field' => 'name'],
+                ],
+            ]
+        )]
         private array $advancedColumns,
         #[Property(
             description: 'List if Transformers that should be applied',
