@@ -15,6 +15,7 @@ namespace Pimcore\Bundle\StudioBackendBundle\Grid\MappedParameter;
 
 use Pimcore\Bundle\StudioBackendBundle\Asset\MappedParameter\Grid\ColumnsAsArrayTrait;
 use Pimcore\Bundle\StudioBackendBundle\Asset\Schema\Grid\ColumnSchema;
+use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Column;
 use Pimcore\Bundle\StudioBackendBundle\Grid\Schema\Filter;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -85,7 +86,7 @@ readonly class ConfigurationParameter implements ConfigurationParameterInterface
     }
 
     /**
-     * @return ColumnSchema[]
+     * @return ColumnSchema[]|Column[]
      */
     public function getColumns(): array
     {
